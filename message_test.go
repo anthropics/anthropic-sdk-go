@@ -47,9 +47,9 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		Tools: anthropic.F([]anthropic.ToolParam{{
 			Description: anthropic.F("Get the current weather in a given location"),
 			Name:        anthropic.F("x"),
-			InputSchema: anthropic.F[interface{}](map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
+			InputSchema: anthropic.F(anthropic.ToolInputSchemaParam{
+				Type: anthropic.F(anthropic.ToolInputSchemaTypeObject),
+				Properties: anthropic.F[any](map[string]interface{}{
 					"location": map[string]interface{}{
 						"description": "The city and state, e.g. San Francisco, CA",
 						"type":        "string",
@@ -58,7 +58,39 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 						"description": "Unit for the output - one of (celsius, fahrenheit)",
 						"type":        "string",
 					},
-				},
+				}),
+			}),
+		}, {
+			Description: anthropic.F("Get the current weather in a given location"),
+			Name:        anthropic.F("x"),
+			InputSchema: anthropic.F(anthropic.ToolInputSchemaParam{
+				Type: anthropic.F(anthropic.ToolInputSchemaTypeObject),
+				Properties: anthropic.F[any](map[string]interface{}{
+					"location": map[string]interface{}{
+						"description": "The city and state, e.g. San Francisco, CA",
+						"type":        "string",
+					},
+					"unit": map[string]interface{}{
+						"description": "Unit for the output - one of (celsius, fahrenheit)",
+						"type":        "string",
+					},
+				}),
+			}),
+		}, {
+			Description: anthropic.F("Get the current weather in a given location"),
+			Name:        anthropic.F("x"),
+			InputSchema: anthropic.F(anthropic.ToolInputSchemaParam{
+				Type: anthropic.F(anthropic.ToolInputSchemaTypeObject),
+				Properties: anthropic.F[any](map[string]interface{}{
+					"location": map[string]interface{}{
+						"description": "The city and state, e.g. San Francisco, CA",
+						"type":        "string",
+					},
+					"unit": map[string]interface{}{
+						"description": "Unit for the output - one of (celsius, fahrenheit)",
+						"type":        "string",
+					},
+				}),
 			}),
 		}}),
 		TopK: anthropic.F(int64(5)),

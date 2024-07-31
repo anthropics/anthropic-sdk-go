@@ -52,9 +52,10 @@ func main() {
 	)
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		MaxTokens: anthropic.F(int64(1024)),
-		Messages: anthropic.F([]anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock("What is the weather in SF?")),
-		}),
+		Messages: anthropic.F([]anthropic.MessageParam{{
+			Role:    anthropic.F(anthropic.MessageParamRoleUser),
+			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("What is a quaternion?")}}),
+		}}),
 		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 	})
 	if err != nil {
@@ -180,9 +181,10 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 ```go
 _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 	MaxTokens: anthropic.F(int64(1024)),
-	Messages: anthropic.F([]anthropic.MessageParam{
-		anthropic.NewUserMessage(anthropic.NewTextBlock("What is the weather in SF?")),
-	}),
+	Messages: anthropic.F([]anthropic.MessageParam{{
+		Role:    anthropic.F(anthropic.MessageParamRoleUser),
+		Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("What is a quaternion?")}}),
+	}}),
 	Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 })
 if err != nil {
@@ -213,9 +215,10 @@ client.Messages.New(
 	ctx,
 	anthropic.MessageNewParams{
 		MaxTokens: anthropic.F(int64(1024)),
-		Messages: anthropic.F([]anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock("What is the weather in SF?")),
-		}),
+		Messages: anthropic.F([]anthropic.MessageParam{{
+			Role:    anthropic.F(anthropic.MessageParamRoleUser),
+			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("What is a quaternion?")}}),
+		}}),
 		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 	},
 	// This sets the per-retry timeout
@@ -255,9 +258,10 @@ client.Messages.New(
 	context.TODO(),
 	anthropic.MessageNewParams{
 		MaxTokens: anthropic.F(int64(1024)),
-		Messages: anthropic.F([]anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock("What is the weather in SF?")),
-		}),
+		Messages: anthropic.F([]anthropic.MessageParam{{
+			Role:    anthropic.F(anthropic.MessageParamRoleUser),
+			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("What is a quaternion?")}}),
+		}}),
 		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 	},
 	option.WithMaxRetries(5),
@@ -349,62 +353,6 @@ You may also replace the default `http.Client` with
 `option.WithHTTPClient(client)`. Only one http client is
 accepted (this overwrites any previous client) and receives requests after any
 middleware has been applied.
-
-## Amazon Bedrock
-
-To use this library with [Amazon Bedrock](https://aws.amazon.com/bedrock/claude/),
-use the bedrock request option `bedrock.WithLoadDefaultConfig(…)` which reads the
-[default config](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
-
-Importing the `bedrock` library also globally registers a decoder for `application/vnd.amazon.eventstream` for
-streaming.
-
-```go
-package main
-
-import (
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/bedrock"
-)
-
-func main() {
-	client := anthropic.NewClient(
-		bedrock.WithLoadDefaultConfig(context.Background()),
-	)
-}
-```
-
-If you already have an `aws.Config`, you can also use it directly with `bedrock.WithConfig(cfg)`.
-
-Read more about Anthropic and Amazon Bedrock [here](https://docs.anthropic.com/en/api/claude-on-amazon-bedrock).
-
-## Google Vertex AI
-
-To use this library with [Google Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude),
-use the request option `vertex.WithGoogleAuth(…)` which reads the
-[Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials).
-
-```go
-package main
-
-import (
-	"context"
-
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/vertex"
-)
-
-func main() {
-	client := anthropic.NewClient(
-		vertex.WithGoogleAuth(context.Background(), "us-central1", "stainless-399616"),
-	)
-}
-```
-
-If you already have `*google.Credentials`, you can also use it directly with
-`vertex.WithCredentials(ctx, region, projectId, creds)`.
-
-Read more about Anthropic and Google Vertex [here](https://docs.anthropic.com/en/api/claude-on-vertex-ai).
 
 ## Semantic versioning
 

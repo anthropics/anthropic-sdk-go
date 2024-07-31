@@ -4,8 +4,6 @@ package anthropic
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"reflect"
 
@@ -74,11 +72,12 @@ func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams
 }
 
 type ContentBlock struct {
-	Type  ContentBlockType `json:"type,required"`
-	Text  string           `json:"text"`
-	ID    string           `json:"id"`
-	Name  string           `json:"name"`
-	Input json.RawMessage  `json:"input,required"`
+	Type ContentBlockType `json:"type,required"`
+	Text string           `json:"text"`
+	ID   string           `json:"id"`
+	Name string           `json:"name"`
+	// This field can have the runtime type of [interface{}].
+	Input interface{}      `json:"input,required"`
 	JSON  contentBlockJSON `json:"-"`
 	union ContentBlockUnion
 }
@@ -155,17 +154,6 @@ func (r ContentBlockType) IsKnown() bool {
 type ImageBlockParam struct {
 	Source param.Field[ImageBlockParamSource] `json:"source,required"`
 	Type   param.Field[ImageBlockParamType]   `json:"type,required"`
-}
-
-func NewImageBlockBase64(mediaType string, encodedData string) ImageBlockParam {
-	return ImageBlockParam{
-		Type: F(ImageBlockParamTypeImage),
-		Source: F(ImageBlockParamSource{
-			Type:      F(ImageBlockParamSourceTypeBase64),
-			Data:      F(encodedData),
-			MediaType: F(ImageBlockParamSourceMediaType(mediaType)),
-		}),
-	}
 }
 
 func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
@@ -269,65 +257,6 @@ func (r InputJSONDeltaType) IsKnown() bool {
 	return false
 }
 
-// Accumulate builds up the Message incrementally from a MessageStreamEvent. The Message then can be used as
-// any other Message, except with the caveat that the Message.JSON field which normally can be used to inspect
-// the JSON sent over the network may not be populated fully.
-//
-//	message := anthropic.Message{}
-//	for stream.Next() {
-//		event := stream.Current()
-//		message.Accumulate(event)
-//	}
-func (a *Message) Accumulate(event MessageStreamEvent) error {
-	if a == nil {
-		*a = Message{}
-	}
-
-	switch event := event.AsUnion().(type) {
-	case MessageStartEvent:
-		*a = event.Message
-
-	case MessageDeltaEvent:
-		a.StopReason = MessageStopReason(event.Delta.StopReason)
-		a.JSON.StopReason = event.Delta.JSON.StopReason
-		a.StopSequence = event.Delta.StopSequence
-		a.JSON.StopSequence = event.Delta.JSON.StopSequence
-		a.Usage.OutputTokens = event.Usage.OutputTokens
-		a.Usage.JSON.OutputTokens = event.Usage.JSON.OutputTokens
-
-	case MessageStopEvent:
-
-	case ContentBlockStartEvent:
-		a.Content = append(a.Content, ContentBlock{})
-		err := a.Content[len(a.Content)-1].UnmarshalJSON([]byte(event.ContentBlock.JSON.RawJSON()))
-		if err != nil {
-			return err
-		}
-
-	case ContentBlockDeltaEvent:
-		if len(a.Content) == 0 {
-			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
-		}
-		switch delta := event.Delta.AsUnion().(type) {
-		case TextDelta:
-			a.Content[len(a.Content)-1].Text += delta.Text
-		case InputJSONDelta:
-			cb := &a.Content[len(a.Content)-1]
-			if string(cb.Input) == "{}" {
-				cb.Input = json.RawMessage{}
-			}
-			cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
-		}
-
-	case ContentBlockStopEvent:
-		if len(a.Content) == 0 {
-			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
-		}
-	}
-
-	return nil
-}
-
 type Message struct {
 	// Unique object identifier.
 	//
@@ -427,39 +356,6 @@ type messageJSON struct {
 	ExtraFields  map[string]apijson.Field
 }
 
-func (r *Message) ToParam() MessageParam {
-	content := []MessageParamContentUnion{}
-
-	for _, block := range r.Content {
-		content = append(content, MessageParamContent{
-			Type: F(MessageParamContentType(block.Type)),
-			ID: param.Field[string]{
-				Value:   block.ID,
-				Present: !block.JSON.ID.IsNull(),
-			},
-			Text: param.Field[string]{
-				Value:   block.Text,
-				Present: !block.JSON.Text.IsNull(),
-			},
-			Name: param.Field[string]{
-				Value:   block.Name,
-				Present: !block.JSON.Name.IsNull(),
-			},
-			Input: param.Field[interface{}]{
-				Value:   block.Input,
-				Present: len(block.Input) > 0 && !block.JSON.Input.IsNull(),
-			},
-		})
-	}
-
-	message := MessageParam{
-		Role:    F(MessageParamRole(r.Role)),
-		Content: F(content),
-	}
-
-	return message
-}
-
 func (r *Message) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -555,20 +451,6 @@ func (r messageDeltaUsageJSON) RawJSON() string {
 type MessageParam struct {
 	Content param.Field[[]MessageParamContentUnion] `json:"content,required"`
 	Role    param.Field[MessageParamRole]           `json:"role,required"`
-}
-
-func NewUserMessage(blocks ...MessageParamContentUnion) MessageParam {
-	return MessageParam{
-		Role:    F(MessageParamRoleUser),
-		Content: F(blocks),
-	}
-}
-
-func NewAssistantMessage(blocks ...MessageParamContentUnion) MessageParam {
-	return MessageParam{
-		Role:    F(MessageParamRoleAssistant),
-		Content: F(blocks),
-	}
 }
 
 func (r MessageParam) MarshalJSON() (data []byte, err error) {
@@ -792,11 +674,12 @@ func (r contentBlockStartEventJSON) RawJSON() string {
 func (r ContentBlockStartEvent) implementsMessageStreamEvent() {}
 
 type ContentBlockStartEventContentBlock struct {
-	Type  ContentBlockStartEventContentBlockType `json:"type,required"`
-	Text  string                                 `json:"text"`
-	ID    string                                 `json:"id"`
-	Name  string                                 `json:"name"`
-	Input json.RawMessage                        `json:"input,required"`
+	Type ContentBlockStartEventContentBlockType `json:"type,required"`
+	Text string                                 `json:"text"`
+	ID   string                                 `json:"id"`
+	Name string                                 `json:"name"`
+	// This field can have the runtime type of [interface{}].
+	Input interface{}                            `json:"input,required"`
 	JSON  contentBlockStartEventContentBlockJSON `json:"-"`
 	union ContentBlockStartEventContentBlockUnion
 }
@@ -1262,13 +1145,6 @@ type TextBlockParam struct {
 	Type param.Field[TextBlockParamType] `json:"type,required"`
 }
 
-func NewTextBlock(text string) TextBlockParam {
-	return TextBlockParam{
-		Text: F(text),
-		Type: F(TextBlockParamTypeText),
-	}
-}
-
 func (r TextBlockParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
@@ -1334,8 +1210,8 @@ type ToolParam struct {
 	//
 	// This defines the shape of the `input` that your tool accepts and that the model
 	// will produce.
-	InputSchema param.Field[interface{}] `json:"input_schema,required"`
-	Name        param.Field[string]      `json:"name,required"`
+	InputSchema param.Field[ToolInputSchemaParam] `json:"input_schema,required"`
+	Name        param.Field[string]               `json:"name,required"`
 	// Description of what this tool does.
 	//
 	// Tool descriptions should be as detailed as possible. The more information that
@@ -1349,20 +1225,39 @@ func (r ToolParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
+// [JSON schema](https://json-schema.org/) for this tool's input.
+//
+// This defines the shape of the `input` that your tool accepts and that the model
+// will produce.
+type ToolInputSchemaParam struct {
+	Type        param.Field[ToolInputSchemaType] `json:"type,required"`
+	Properties  param.Field[interface{}]         `json:"properties"`
+	ExtraFields map[string]interface{}           `json:"-,extras"`
+}
+
+func (r ToolInputSchemaParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ToolInputSchemaType string
+
+const (
+	ToolInputSchemaTypeObject ToolInputSchemaType = "object"
+)
+
+func (r ToolInputSchemaType) IsKnown() bool {
+	switch r {
+	case ToolInputSchemaTypeObject:
+		return true
+	}
+	return false
+}
+
 type ToolResultBlockParam struct {
 	ToolUseID param.Field[string]                             `json:"tool_use_id,required"`
 	Type      param.Field[ToolResultBlockParamType]           `json:"type,required"`
 	Content   param.Field[[]ToolResultBlockParamContentUnion] `json:"content"`
 	IsError   param.Field[bool]                               `json:"is_error"`
-}
-
-func NewToolResultBlock(toolUseID string, content string, isError bool) ToolResultBlockParam {
-	return ToolResultBlockParam{
-		Type:      F(ToolResultBlockParamTypeToolResult),
-		ToolUseID: F(toolUseID),
-		Content:   F([]ToolResultBlockParamContentUnion{NewTextBlock(content)}),
-		IsError:   F(isError),
-	}
 }
 
 func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
@@ -1419,7 +1314,7 @@ func (r ToolResultBlockParamContentType) IsKnown() bool {
 
 type ToolUseBlock struct {
 	ID    string           `json:"id,required"`
-	Input json.RawMessage  `json:"input,required"`
+	Input interface{}      `json:"input,required"`
 	Name  string           `json:"name,required"`
 	Type  ToolUseBlockType `json:"type,required"`
 	JSON  toolUseBlockJSON `json:"-"`
@@ -1466,15 +1361,6 @@ type ToolUseBlockParam struct {
 	Input param.Field[interface{}]           `json:"input,required"`
 	Name  param.Field[string]                `json:"name,required"`
 	Type  param.Field[ToolUseBlockParamType] `json:"type,required"`
-}
-
-func NewToolUseBlockParam(id string, name string, input interface{}) ToolUseBlockParam {
-	return ToolUseBlockParam{
-		ID:    F(id),
-		Input: F(input),
-		Name:  F(name),
-		Type:  F(ToolUseBlockParamTypeToolUse),
-	}
 }
 
 func (r ToolUseBlockParam) MarshalJSON() (data []byte, err error) {

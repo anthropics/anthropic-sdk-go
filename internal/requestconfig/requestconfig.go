@@ -332,7 +332,6 @@ func (cfg *RequestConfig) Execute() (err error) {
 		handler = applyMiddleware(cfg.Middlewares[i], handler)
 	}
 
-	var req *http.Request
 	var res *http.Response
 	for retryCount := 0; retryCount <= cfg.MaxRetries; retryCount += 1 {
 		ctx := cfg.Request.Context()
@@ -342,8 +341,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 			defer cancel()
 		}
 
-		req = cfg.Request.Clone(ctx)
-		res, err = handler(req)
+		res, err = handler(cfg.Request.Clone(ctx))
 		if ctx != nil && ctx.Err() != nil {
 			return ctx.Err()
 		}
@@ -395,7 +393,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 		res.Body = io.NopCloser(bytes.NewBuffer(contents))
 
 		// Load the contents into the error format if it is provided.
-		aerr := apierror.Error{Request: req, Response: res, StatusCode: res.StatusCode}
+		aerr := apierror.Error{Request: cfg.Request, Response: res, StatusCode: res.StatusCode}
 		err = aerr.UnmarshalJSON(contents)
 		if err != nil {
 			return err
@@ -441,7 +439,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 
 	err = json.NewDecoder(bytes.NewReader(contents)).Decode(cfg.ResponseBodyInto)
 	if err != nil {
-		err = fmt.Errorf("error parsing response json: %w", err)
+		return fmt.Errorf("error parsing response json: %w", err)
 	}
 
 	return nil

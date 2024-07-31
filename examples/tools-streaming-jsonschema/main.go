@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/invopop/jsonschema"
 	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/invopop/jsonschema"
 )
 
 func main() {

@@ -310,13 +310,23 @@ func (a *Message) Accumulate(event MessageStreamEvent) error {
 		}
 		switch delta := event.Delta.AsUnion().(type) {
 		case TextDelta:
-			a.Content[len(a.Content)-1].Text += delta.Text
+			cb := &a.Content[len(a.Content)-1]
+			cb.Text += delta.Text
+			if tb, ok := cb.union.(TextBlock); ok {
+				tb.Text = cb.Text
+				cb.union = tb
+			}
+
 		case InputJSONDelta:
 			cb := &a.Content[len(a.Content)-1]
 			if string(cb.Input) == "{}" {
 				cb.Input = json.RawMessage{}
 			}
 			cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
+			if tb, ok := cb.union.(ToolUseBlock); ok {
+				tb.Input = cb.Input
+				cb.union = tb
+			}
 		}
 
 	case ContentBlockStopEvent:

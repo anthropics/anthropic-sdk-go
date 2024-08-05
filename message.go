@@ -1653,7 +1653,7 @@ type MessageNewParams struct {
 	// A system prompt is a way of providing context and instructions to Claude, such
 	// as specifying a particular goal or role. See our
 	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
-	System param.Field[MessageNewParamsSystemUnion] `json:"system"`
+	System param.Field[string] `json:"system"`
 	// Amount of randomness injected into the response.
 	//
 	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`
@@ -1778,21 +1778,6 @@ type MessageNewParamsMetadata struct {
 func (r MessageNewParamsMetadata) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
-
-// System prompt.
-//
-// A system prompt is a way of providing context and instructions to Claude, such
-// as specifying a particular goal or role. See our
-// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
-//
-// Satisfied by [shared.UnionString], [MessageNewParamsSystemArray].
-type MessageNewParamsSystemUnion interface {
-	ImplementsMessageNewParamsSystemUnion()
-}
-
-type MessageNewParamsSystemArray []TextBlockParam
-
-func (r MessageNewParamsSystemArray) ImplementsMessageNewParamsSystemUnion() {}
 
 // How the model should use the provided tools. The model can use a specific tool,
 // any available tool, or decide by itself.

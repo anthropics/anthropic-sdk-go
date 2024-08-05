@@ -4,5 +4,4 @@ package shared
 
 type UnionString string
 
-func (UnionString) ImplementsModel()                       {}
-func (UnionString) ImplementsMessageNewParamsSystemUnion() {}
+func (UnionString) ImplementsModel() {}

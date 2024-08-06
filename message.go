@@ -1653,7 +1653,7 @@ type MessageNewParams struct {
 	// A system prompt is a way of providing context and instructions to Claude, such
 	// as specifying a particular goal or role. See our
 	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
-	System param.Field[string] `json:"system"`
+	System param.Field[[]TextBlockParam] `json:"system"`
 	// Amount of randomness injected into the response.
 	//
 	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`

@@ -36,7 +36,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		}),
 		StopSequences: anthropic.F([]string{"string", "string", "string"}),
-		System:        anthropic.F("string"),
+		System:        anthropic.F([]anthropic.TextBlockParam{{Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("x")}, {Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("x")}, {Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("x")}}),
 		Temperature:   anthropic.F(1.000000),
 		ToolChoice: anthropic.F[anthropic.MessageNewParamsToolChoiceUnion](anthropic.MessageNewParamsToolChoiceToolChoiceAuto{
 			Type: anthropic.F(anthropic.MessageNewParamsToolChoiceToolChoiceAutoTypeAuto),

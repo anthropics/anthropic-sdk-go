@@ -338,6 +338,8 @@ func (a *Message) Accumulate(event MessageStreamEvent) error {
 	return nil
 }
 
+// ToParam converts a Message to a MessageParam, which can be used when constructing a new
+// Create
 type Message struct {
 	// Unique object identifier.
 	//
@@ -437,6 +439,29 @@ type messageJSON struct {
 	ExtraFields  map[string]apijson.Field
 }
 
+// ToParam converts a Message to a MessageParam which can be used when making another network
+// request. This is useful when interacting with Claude conversationally or when tool calling.
+//
+//	messages := []anthropic.MessageParam{
+//		anthropic.NewUserMessage(anthropic.NewTextBlock("What is my first name?")),
+//	}
+//	
+//	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+//		MaxTokens: anthropic.F(int64(1024)),
+//		Messages: anthropic.F(messages),
+//		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+//	})
+//	
+//	messages = append(messages, message.ToParam())
+//	messages = append(messages, anthropic.NewUserMessage(
+//		anthropic.NewTextBlock("My full name is John Doe"),
+//	))
+//	
+//	message, err = client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+//		MaxTokens: anthropic.F(int64(1024)),
+//		Messages: anthropic.F(messages),
+//		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+//	})
 func (r *Message) ToParam() MessageParam {
 	content := []MessageParamContentUnion{}
 

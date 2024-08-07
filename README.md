@@ -51,11 +51,11 @@ func main() {
 		option.WithAPIKey("my-anthropic-api-key"), // defaults to os.LookupEnv("ANTHROPIC_API_KEY")
 	)
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+		Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock("What is the weather in SF?")),
 		}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 	})
 	if err != nil {
 		panic(err.Error())
@@ -64,6 +64,205 @@ func main() {
 }
 
 ```
+
+<details>
+<summary>Conversations</summary>
+
+```go
+messages := []anthropic.MessageParam{
+	anthropic.NewUserMessage(anthropic.NewTextBlock("What is my first name?")),
+}
+
+message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+	Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+	Messages:  anthropic.F(messages),
+	MaxTokens: anthropic.F(int64(1024)),
+})
+
+messages = append(messages, message.ToParam())
+messages = append(messages, anthropic.NewUserMessage(
+	anthropic.NewTextBlock("My full name is John Doe"),
+))
+
+message, err = client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+	Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+	Messages:  anthropic.F(messages),
+	MaxTokens: anthropic.F(int64(1024)),
+})
+```
+
+</details>
+
+<details>
+<summary>System prompts</summary>
+
+```go
+messages := []anthropic.MessageParam{
+	anthropic.NewUserMessage(anthropic.NewTextBlock("What is my first name?")),
+}
+
+message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+	Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+	MaxTokens: anthropic.Int(1024),
+	System: anthropic.F([]anthropic.TextBlockParam{
+		anthropic.NewTextBlock("Be very serious at all times."),
+	}),
+	Messages: anthropic.F(messages),
+})
+```
+
+</details>
+
+<details>
+<summary>Streaming</summary>
+
+```go
+stream := client.Messages.NewStreaming(context.TODO(), anthropic.MessageNewParams{
+	Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+	MaxTokens: anthropic.Int(1024),
+	Messages: anthropic.F([]anthropic.MessageParam{
+		anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
+	}),
+})
+
+message := anthropic.Message{}
+for stream.Next() {
+	event := stream.Current()
+	message.Accumulate(event)
+
+	switch delta := event.Delta.(type) {
+	case anthropic.ContentBlockDeltaEventDelta:
+		if delta.Text != "" {
+		    print(delta.Text)
+		}
+	}
+}
+
+if stream.Err() != nil {
+	panic(stream.Err())
+}
+```
+
+</details>
+
+<details>
+<summary>Tool calling</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"github.com/invopop/jsonschema"
+	"github.com/anthropics/anthropic-sdk-go"
+)
+
+func main() {
+	client := anthropic.NewClient()
+
+	content := "Where is San Francisco?"
+
+	println("[user]: " + content)
+
+	messages := []anthropic.MessageParam{
+		anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
+	}
+
+	tools := []anthropic.ToolParam{
+		{
+			Name:        anthropic.F("get_coordinates"),
+			Description: anthropic.F("Accepts a place as an address, then returns the latitude and longitude coordinates."),
+			InputSchema: anthropic.F(GetCoordinatesInputSchema),
+		},
+	}
+
+	for {
+		message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+			Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+			MaxTokens: anthropic.Int(1024),
+			Messages:  anthropic.F(messages),
+			Tools:     anthropic.F(tools),
+		})
+
+		if err != nil {
+			panic(err)
+		}
+
+		print(color("[assistant]: "))
+		for _, block := range message.Content {
+			switch block := block.AsUnion().(type) {
+			case anthropic.TextBlock:
+				println(block.Text)
+			case anthropic.ToolUseBlock:
+				println(block.Name + ": " + string(block.Input))
+			}
+		}
+
+		messages = append(messages, message.ToParam())
+		toolResults := []anthropic.MessageParamContentUnion{}
+
+		for _, block := range message.Content {
+			if block.Type == anthropic.ContentBlockTypeToolUse {
+				print("[user (" + block.Name + ")]: ")
+
+				var response interface{}
+				switch block.Name {
+				case "get_coordinates":
+					input := GetCoordinatesInput{}
+					err := json.Unmarshal(block.Input, &input)
+					if err != nil {
+						panic(err)
+					}
+					response = GetCoordinates(input.Location)
+				}
+
+				b, err := json.Marshal(response)
+				if err != nil {
+					panic(err)
+				}
+
+				toolResults = append(toolResults, anthropic.NewToolResultBlock(block.ID, string(b), false))
+			}
+		}
+		if len(toolResults) == 0 {
+			break
+		}
+		messages = append(messages, anthropic.NewUserMessage(toolResults...))
+	}
+}
+
+type GetCoordinatesInput struct {
+	Location string `json:"location" jsonschema_description:"The location to look up."`
+}
+
+var GetCoordinatesInputSchema = GenerateSchema[GetCoordinatesInput]()
+
+type GetCoordinateResponse struct {
+	Long float64 `json:"long"`
+	Lat  float64 `json:"lat"`
+}
+
+func GetCoordinates(location string) GetCoordinateResponse {
+	return GetCoordinateResponse{
+		Long: -122.4194,
+		Lat:  37.7749,
+	}
+}
+
+func GenerateSchema[T any]() interface{} {
+	reflector := jsonschema.Reflector{
+		AllowAdditionalProperties: false,
+		DoNotReference:            true,
+	}
+	var v T
+	return reflector.Reflect(v)
+}
+```
+
+</details>
 
 ### Request fields
 
@@ -276,17 +475,17 @@ To make requests to undocumented endpoints, you can use `client.Get`, `client.Po
 
 ```go
 var (
-    // params can be an io.Reader, a []byte, an encoding/json serializable object,
-    // or a "…Params" struct defined in this library.
-    params map[string]interface{}
+	// params can be an io.Reader, a []byte, an encoding/json serializable object,
+	// or a "…Params" struct defined in this library.
+	params map[string]interface{}
 
-    // result can be an []byte, *http.Response, a encoding/json deserializable object,
-    // or a model defined in this library.
-    result *http.Response
+	// result can be an []byte, *http.Response, a encoding/json deserializable object,
+	// or a model defined in this library.
+	result *http.Response
 )
 err := client.Post(context.Background(), "/unspecified", params, &result)
 if err != nil {
-    …
+	…
 }
 ```
 
@@ -297,10 +496,10 @@ or the `option.WithJSONSet()` methods.
 
 ```go
 params := FooNewParams{
-    ID:   anthropic.F("id_xxxx"),
-    Data: anthropic.F(FooNewParamsData{
-        FirstName: anthropic.F("John"),
-    }),
+	ID:   anthropic.F("id_xxxx"),
+	Data: anthropic.F(FooNewParamsData{
+		FirstName: anthropic.F("John"),
+	}),
 }
 client.Foo.New(context.Background(), params, option.WithJSONSet("data.last_name", "Doe"))
 ```
@@ -331,7 +530,7 @@ func Logger(req *http.Request, next option.MiddlewareNext) (res *http.Response, 
 	end := time.Now()
 	LogRes(res, err, start - end)
 
-    return res, err
+	return res, err
 }
 
 client := anthropic.NewClient(

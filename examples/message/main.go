@@ -15,6 +15,9 @@ func main() {
 
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		MaxTokens: anthropic.Int(1024),
+		System: anthropic.F([]anthropic.TextBlockParam{
+			anthropic.NewTextBlock("Be very serious"),
+		}),
 		Messages: anthropic.F([]anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
 		}),

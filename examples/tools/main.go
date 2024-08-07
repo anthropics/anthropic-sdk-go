@@ -150,10 +150,7 @@ func main() {
 			break
 		}
 
-		messages = append(messages, anthropic.MessageParam{
-			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F(toolResults),
-		})
+		messages = append(messages, anthropic.NewUserMessage(toolResults...))
 	}
 }
 

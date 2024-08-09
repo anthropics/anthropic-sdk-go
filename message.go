@@ -310,13 +310,23 @@ func (a *Message) Accumulate(event MessageStreamEvent) error {
 		}
 		switch delta := event.Delta.AsUnion().(type) {
 		case TextDelta:
-			a.Content[len(a.Content)-1].Text += delta.Text
+			cb := &a.Content[len(a.Content)-1]
+			cb.Text += delta.Text
+			if tb, ok := cb.union.(TextBlock); ok {
+				tb.Text = cb.Text
+				cb.union = tb
+			}
+
 		case InputJSONDelta:
 			cb := &a.Content[len(a.Content)-1]
 			if string(cb.Input) == "{}" {
 				cb.Input = json.RawMessage{}
 			}
 			cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
+			if tb, ok := cb.union.(ToolUseBlock); ok {
+				tb.Input = cb.Input
+				cb.union = tb
+			}
 		}
 
 	case ContentBlockStopEvent:
@@ -328,6 +338,8 @@ func (a *Message) Accumulate(event MessageStreamEvent) error {
 	return nil
 }
 
+// ToParam converts a Message to a MessageParam, which can be used when constructing a new
+// Create
 type Message struct {
 	// Unique object identifier.
 	//
@@ -427,6 +439,29 @@ type messageJSON struct {
 	ExtraFields  map[string]apijson.Field
 }
 
+// ToParam converts a Message to a MessageParam which can be used when making another network
+// request. This is useful when interacting with Claude conversationally or when tool calling.
+//
+//	messages := []anthropic.MessageParam{
+//		anthropic.NewUserMessage(anthropic.NewTextBlock("What is my first name?")),
+//	}
+//	
+//	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+//		MaxTokens: anthropic.F(int64(1024)),
+//		Messages: anthropic.F(messages),
+//		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+//	})
+//	
+//	messages = append(messages, message.ToParam())
+//	messages = append(messages, anthropic.NewUserMessage(
+//		anthropic.NewTextBlock("My full name is John Doe"),
+//	))
+//	
+//	message, err = client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+//		MaxTokens: anthropic.F(int64(1024)),
+//		Messages: anthropic.F(messages),
+//		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+//	})
 func (r *Message) ToParam() MessageParam {
 	content := []MessageParamContentUnion{}
 
@@ -1643,7 +1678,7 @@ type MessageNewParams struct {
 	// A system prompt is a way of providing context and instructions to Claude, such
 	// as specifying a particular goal or role. See our
 	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
-	System param.Field[MessageNewParamsSystemUnion] `json:"system"`
+	System param.Field[[]TextBlockParam] `json:"system"`
 	// Amount of randomness injected into the response.
 	//
 	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`
@@ -1768,21 +1803,6 @@ type MessageNewParamsMetadata struct {
 func (r MessageNewParamsMetadata) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
-
-// System prompt.
-//
-// A system prompt is a way of providing context and instructions to Claude, such
-// as specifying a particular goal or role. See our
-// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
-//
-// Satisfied by [shared.UnionString], [MessageNewParamsSystemArray].
-type MessageNewParamsSystemUnion interface {
-	ImplementsMessageNewParamsSystemUnion()
-}
-
-type MessageNewParamsSystemArray []TextBlockParam
-
-func (r MessageNewParamsSystemArray) ImplementsMessageNewParamsSystemUnion() {}
 
 // How the model should use the provided tools. The model can use a specific tool,
 // any available tool, or decide by itself.

@@ -1,6 +1,6 @@
 module github.com/anthropics/anthropic-sdk-go
 
-go 1.19
+go 1.21
 
 require (
 	github.com/google/uuid v1.3.0 // indirect

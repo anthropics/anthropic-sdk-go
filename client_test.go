@@ -40,7 +40,7 @@ func TestUserAgentHeader(t *testing.T) {
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{{
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("What is a quaternion?")}}),
+			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 	})
@@ -70,7 +70,7 @@ func TestRetryAfter(t *testing.T) {
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{{
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("What is a quaternion?")}}),
+			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 	})
@@ -103,7 +103,7 @@ func TestRetryAfterMs(t *testing.T) {
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{{
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("What is a quaternion?")}}),
+			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 	})
@@ -132,7 +132,7 @@ func TestContextCancel(t *testing.T) {
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{{
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("What is a quaternion?")}}),
+			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 	})
@@ -158,7 +158,7 @@ func TestContextCancelDelay(t *testing.T) {
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{{
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("What is a quaternion?")}}),
+			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 	})
@@ -190,7 +190,7 @@ func TestContextDeadline(t *testing.T) {
 			MaxTokens: anthropic.F(int64(1024)),
 			Messages: anthropic.F([]anthropic.MessageParam{{
 				Role:    anthropic.F(anthropic.MessageParamRoleUser),
-				Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Type: anthropic.F(anthropic.TextBlockParamTypeText), Text: anthropic.F("What is a quaternion?")}}),
+				Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 			}}),
 			Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 		})

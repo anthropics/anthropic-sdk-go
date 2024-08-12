@@ -54,7 +54,7 @@ func main() {
 		Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock("What is the weather in SF?")),
+			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
 		}),
 	})
 	if err != nil {
@@ -379,9 +379,7 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 ```go
 _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 	MaxTokens: anthropic.F(int64(1024)),
-	Messages: anthropic.F([]anthropic.MessageParam{
-		anthropic.NewUserMessage(anthropic.NewTextBlock("What is the weather in SF?")),
-	}),
+
 	Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 })
 if err != nil {
@@ -413,7 +411,7 @@ client.Messages.New(
 	anthropic.MessageNewParams{
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock("What is the weather in SF?")),
+			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
 		}),
 		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 	},
@@ -455,7 +453,7 @@ client.Messages.New(
 	anthropic.MessageNewParams{
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock("What is the weather in SF?")),
+			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
 		}),
 		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 	},

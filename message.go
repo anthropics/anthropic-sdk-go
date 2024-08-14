@@ -556,6 +556,8 @@ func (r contentBlockDeltaEventJSON) RawJSON() string {
 
 func (r ContentBlockDeltaEvent) implementsMessageStreamEvent() {}
 
+func (r ContentBlockDeltaEvent) implementsRawPromptCachingBetaMessageStreamEvent() {}
+
 type ContentBlockDeltaEventDelta struct {
 	Type        ContentBlockDeltaEventDeltaType `json:"type,required"`
 	Text        string                          `json:"text"`
@@ -672,6 +674,8 @@ func (r contentBlockStartEventJSON) RawJSON() string {
 }
 
 func (r ContentBlockStartEvent) implementsMessageStreamEvent() {}
+
+func (r ContentBlockStartEvent) implementsRawPromptCachingBetaMessageStreamEvent() {}
 
 type ContentBlockStartEventContentBlock struct {
 	Type ContentBlockStartEventContentBlockType `json:"type,required"`
@@ -793,6 +797,8 @@ func (r contentBlockStopEventJSON) RawJSON() string {
 
 func (r ContentBlockStopEvent) implementsMessageStreamEvent() {}
 
+func (r ContentBlockStopEvent) implementsRawPromptCachingBetaMessageStreamEvent() {}
+
 type ContentBlockStopEventType string
 
 const (
@@ -845,6 +851,8 @@ func (r messageDeltaEventJSON) RawJSON() string {
 }
 
 func (r MessageDeltaEvent) implementsMessageStreamEvent() {}
+
+func (r MessageDeltaEvent) implementsRawPromptCachingBetaMessageStreamEvent() {}
 
 type MessageDeltaEventDelta struct {
 	StopReason   MessageDeltaEventDeltaStopReason `json:"stop_reason,required,nullable"`
@@ -961,6 +969,8 @@ func (r messageStopEventJSON) RawJSON() string {
 }
 
 func (r MessageStopEvent) implementsMessageStreamEvent() {}
+
+func (r MessageStopEvent) implementsRawPromptCachingBetaMessageStreamEvent() {}
 
 type MessageStopEventType string
 
@@ -1500,8 +1510,8 @@ type MessageNewParams struct {
 	// We currently support the `base64` source type for images, and the `image/jpeg`,
 	// `image/png`, `image/gif`, and `image/webp` media types.
 	//
-	// See [examples](https://docs.anthropic.com/en/api/messages-examples) for more
-	// input examples.
+	// See [examples](https://docs.anthropic.com/en/api/messages-examples#vision) for
+	// more input examples.
 	//
 	// Note that if you want to include a
 	// [system prompt](https://docs.anthropic.com/en/docs/system-prompts), you can use

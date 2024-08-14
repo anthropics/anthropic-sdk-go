@@ -18,6 +18,7 @@ type Client struct {
 	Options     []option.RequestOption
 	Completions *CompletionService
 	Messages    *MessageService
+	Beta        *BetaService
 }
 
 // NewClient generates a new client with the default option read from the
@@ -38,6 +39,7 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 
 	r.Completions = NewCompletionService(opts...)
 	r.Messages = NewMessageService(opts...)
+	r.Beta = NewBetaService(opts...)
 
 	return
 }

@@ -4,4 +4,6 @@ package shared
 
 type UnionString string
 
-func (UnionString) ImplementsModel() {}
+func (UnionString) ImplementsModel()                                             {}
+func (UnionString) ImplementsPromptCachingBetaToolResultBlockParamContentUnion() {}
+func (UnionString) ImplementsBetaPromptCachingMessageNewParamsSystemUnion()      {}

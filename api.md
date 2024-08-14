@@ -32,3 +32,30 @@ Response Types:
 Methods:
 
 - <code title="post /v1/messages">client.Messages.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageService.New">New</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageNewParams">MessageNewParams</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#Message">Message</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+# Beta
+
+## PromptCaching
+
+### Messages
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaCacheControlEphemeralParam">PromptCachingBetaCacheControlEphemeralParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaImageBlockParam">PromptCachingBetaImageBlockParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaMessageParam">PromptCachingBetaMessageParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaTextBlockParam">PromptCachingBetaTextBlockParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaToolParam">PromptCachingBetaToolParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaToolResultBlockParam">PromptCachingBetaToolResultBlockParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaToolUseBlockParam">PromptCachingBetaToolUseBlockParam</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaMessage">PromptCachingBetaMessage</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaUsage">PromptCachingBetaUsage</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#RawPromptCachingBetaMessageStartEvent">RawPromptCachingBetaMessageStartEvent</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#RawPromptCachingBetaMessageStreamEvent">RawPromptCachingBetaMessageStreamEvent</a>
+
+Methods:
+
+- <code title="post /v1/messages?beta=prompt_caching">client.Beta.PromptCaching.Messages.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaPromptCachingMessageService.New">New</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaPromptCachingMessageNewParams">BetaPromptCachingMessageNewParams</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaMessage">PromptCachingBetaMessage</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>

@@ -59,9 +59,6 @@
       "hidden": true
     }
   ],
-  "reviewers": [
-    "@anthropics/sdk"
-  ],
   "release-type": "go",
   "extra-files": [
     "internal/version.go",

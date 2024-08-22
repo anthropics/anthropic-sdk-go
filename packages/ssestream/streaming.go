@@ -151,7 +151,7 @@ func (s *Stream[T]) Next() bool {
 		case "ping":
 			continue
 		case "error":
-			s.err = fmt.Errorf("%s", string(s.decoder.Event().Data))
+			s.err = fmt.Errorf("received error while streaming: %s", string(s.decoder.Event().Data))
 			return false
 		}
 	}

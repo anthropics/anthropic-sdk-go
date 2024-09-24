@@ -137,6 +137,7 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 	}
 
 	req.Header.Set("Accept", "application/json")
+	req.Header.Set("X-Stainless-Retry-Count", "0")
 	for k, v := range getDefaultHeaders() {
 		req.Header.Add(k, v)
 	}
@@ -332,6 +333,9 @@ func (cfg *RequestConfig) Execute() (err error) {
 		handler = applyMiddleware(cfg.Middlewares[i], handler)
 	}
 
+	// Don't send the current retry count in the headers if the caller modified the header defaults.
+	shouldSendRetryCount := cfg.Request.Header.Get("X-Stainless-Retry-Count") == "0"
+
 	var req *http.Request
 	var res *http.Response
 	for retryCount := 0; retryCount <= cfg.MaxRetries; retryCount += 1 {
@@ -343,6 +347,10 @@ func (cfg *RequestConfig) Execute() (err error) {
 		}
 
 		req = cfg.Request.Clone(ctx)
+		if shouldSendRetryCount {
+			req.Header.Set("X-Stainless-Retry-Count", strconv.Itoa(retryCount))
+		}
+
 		res, err = handler(req)
 		if ctx != nil && ctx.Err() != nil {
 			return ctx.Err()

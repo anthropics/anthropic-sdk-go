@@ -1669,6 +1669,11 @@ func (r MessageNewParamsMetadata) MarshalJSON() (data []byte, err error) {
 // any available tool, or decide by itself.
 type MessageNewParamsToolChoice struct {
 	Type param.Field[MessageNewParamsToolChoiceType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output at most one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
 	// The name of the tool to use.
 	Name param.Field[string] `json:"name"`
 }
@@ -1692,6 +1697,11 @@ type MessageNewParamsToolChoiceUnion interface {
 // The model will automatically decide whether to use tools.
 type MessageNewParamsToolChoiceToolChoiceAuto struct {
 	Type param.Field[MessageNewParamsToolChoiceToolChoiceAutoType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output at most one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
 }
 
 func (r MessageNewParamsToolChoiceToolChoiceAuto) MarshalJSON() (data []byte, err error) {
@@ -1717,6 +1727,11 @@ func (r MessageNewParamsToolChoiceToolChoiceAutoType) IsKnown() bool {
 // The model will use any available tools.
 type MessageNewParamsToolChoiceToolChoiceAny struct {
 	Type param.Field[MessageNewParamsToolChoiceToolChoiceAnyType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output exactly one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
 }
 
 func (r MessageNewParamsToolChoiceToolChoiceAny) MarshalJSON() (data []byte, err error) {
@@ -1744,6 +1759,11 @@ type MessageNewParamsToolChoiceToolChoiceTool struct {
 	// The name of the tool to use.
 	Name param.Field[string]                                       `json:"name,required"`
 	Type param.Field[MessageNewParamsToolChoiceToolChoiceToolType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output exactly one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
 }
 
 func (r MessageNewParamsToolChoiceToolChoiceTool) MarshalJSON() (data []byte, err error) {

@@ -45,7 +45,8 @@ func TestBetaPromptCachingMessageNewWithOptionalParams(t *testing.T) {
 		}})),
 		Temperature: anthropic.F(1.000000),
 		ToolChoice: anthropic.F[anthropic.BetaPromptCachingMessageNewParamsToolChoiceUnion](anthropic.BetaPromptCachingMessageNewParamsToolChoiceToolChoiceAuto{
-			Type: anthropic.F(anthropic.BetaPromptCachingMessageNewParamsToolChoiceToolChoiceAutoTypeAuto),
+			Type:                   anthropic.F(anthropic.BetaPromptCachingMessageNewParamsToolChoiceToolChoiceAutoTypeAuto),
+			DisableParallelToolUse: anthropic.F(true),
 		}),
 		Tools: anthropic.F([]anthropic.PromptCachingBetaToolParam{{
 			InputSchema: anthropic.F(anthropic.PromptCachingBetaToolInputSchemaParam{

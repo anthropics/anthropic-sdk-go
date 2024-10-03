@@ -39,7 +39,8 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		System:        anthropic.F([]anthropic.TextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}, {Text: anthropic.F("x"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}, {Text: anthropic.F("x"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		Temperature:   anthropic.F(1.000000),
 		ToolChoice: anthropic.F[anthropic.MessageNewParamsToolChoiceUnion](anthropic.MessageNewParamsToolChoiceToolChoiceAuto{
-			Type: anthropic.F(anthropic.MessageNewParamsToolChoiceToolChoiceAutoTypeAuto),
+			Type:                   anthropic.F(anthropic.MessageNewParamsToolChoiceToolChoiceAutoTypeAuto),
+			DisableParallelToolUse: anthropic.F(true),
 		}),
 		Tools: anthropic.F([]anthropic.ToolParam{{
 			Description: anthropic.F("Get the current weather in a given location"),

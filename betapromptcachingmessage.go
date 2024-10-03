@@ -1046,6 +1046,11 @@ func (r BetaPromptCachingMessageNewParamsSystemArray) ImplementsBetaPromptCachin
 // any available tool, or decide by itself.
 type BetaPromptCachingMessageNewParamsToolChoice struct {
 	Type param.Field[BetaPromptCachingMessageNewParamsToolChoiceType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output at most one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
 	// The name of the tool to use.
 	Name param.Field[string] `json:"name"`
 }
@@ -1071,6 +1076,11 @@ type BetaPromptCachingMessageNewParamsToolChoiceUnion interface {
 // The model will automatically decide whether to use tools.
 type BetaPromptCachingMessageNewParamsToolChoiceToolChoiceAuto struct {
 	Type param.Field[BetaPromptCachingMessageNewParamsToolChoiceToolChoiceAutoType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output at most one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
 }
 
 func (r BetaPromptCachingMessageNewParamsToolChoiceToolChoiceAuto) MarshalJSON() (data []byte, err error) {
@@ -1097,6 +1107,11 @@ func (r BetaPromptCachingMessageNewParamsToolChoiceToolChoiceAutoType) IsKnown()
 // The model will use any available tools.
 type BetaPromptCachingMessageNewParamsToolChoiceToolChoiceAny struct {
 	Type param.Field[BetaPromptCachingMessageNewParamsToolChoiceToolChoiceAnyType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output exactly one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
 }
 
 func (r BetaPromptCachingMessageNewParamsToolChoiceToolChoiceAny) MarshalJSON() (data []byte, err error) {
@@ -1125,6 +1140,11 @@ type BetaPromptCachingMessageNewParamsToolChoiceToolChoiceTool struct {
 	// The name of the tool to use.
 	Name param.Field[string]                                                        `json:"name,required"`
 	Type param.Field[BetaPromptCachingMessageNewParamsToolChoiceToolChoiceToolType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output exactly one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
 }
 
 func (r BetaPromptCachingMessageNewParamsToolChoiceToolChoiceTool) MarshalJSON() (data []byte, err error) {

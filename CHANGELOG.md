@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.1.0-alpha.2 (2024-10-04)
+
+Full Changelog: [v0.1.0-alpha.1...v0.1.0-alpha.2](https://github.com/anthropics/anthropic-sdk-go/compare/v0.1.0-alpha.1...v0.1.0-alpha.2)
+
+### Features
+
+* **api:** support disabling parallel tool use ([#22](https://github.com/anthropics/anthropic-sdk-go/issues/22)) ([1d8c00b](https://github.com/anthropics/anthropic-sdk-go/commit/1d8c00b317536d77a26f74d0008e1a4760b17d2e))
+* **client:** send retry count header ([#19](https://github.com/anthropics/anthropic-sdk-go/issues/19)) ([d1c8ea1](https://github.com/anthropics/anthropic-sdk-go/commit/d1c8ea1f84d05002705ac7aa4d47a5ba13c388e9))
+* improve error message ([#15](https://github.com/anthropics/anthropic-sdk-go/issues/15)) ([98d1ffd](https://github.com/anthropics/anthropic-sdk-go/commit/98d1ffd29f97e85ea543f36ce104c341e729a7d2))
+
+
+### Bug Fixes
+
+* **requestconfig:** copy over more fields when cloning ([#17](https://github.com/anthropics/anthropic-sdk-go/issues/17)) ([d5e7415](https://github.com/anthropics/anthropic-sdk-go/commit/d5e741578ac0ff88db3b04564810321b18f4dd40))
+
+
+### Chores
+
+* **ci:** add CODEOWNERS file ([#12](https://github.com/anthropics/anthropic-sdk-go/issues/12)) ([71c33b8](https://github.com/anthropics/anthropic-sdk-go/commit/71c33b841dece97e77f04ea4feae3d586b59b0d6))
+
+
+### Documentation
+
+* improve and reference contributing documentation ([#21](https://github.com/anthropics/anthropic-sdk-go/issues/21)) ([7288df1](https://github.com/anthropics/anthropic-sdk-go/commit/7288df1e1e62401487bee0685f77119bae5287ee))
+* update CONTRIBUTING.md ([#18](https://github.com/anthropics/anthropic-sdk-go/issues/18)) ([dcfcbf8](https://github.com/anthropics/anthropic-sdk-go/commit/dcfcbf8d07e3d7a7d6b6398d60724f38eca050a4))
+
 ## 0.1.0-alpha.1 (2024-08-14)
 
 Full Changelog: [v0.0.1-alpha.0...v0.1.0-alpha.1](https://github.com/anthropics/anthropic-sdk-go/compare/v0.0.1-alpha.0...v0.1.0-alpha.1)

@@ -7,6 +7,10 @@ Params Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#Model">Model</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#TextBlockParam">TextBlockParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ToolParam">ToolParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ToolChoiceUnionParam">ToolChoiceUnionParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ToolChoiceAnyParam">ToolChoiceAnyParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ToolChoiceAutoParam">ToolChoiceAutoParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ToolChoiceToolParam">ToolChoiceToolParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ToolResultBlockParam">ToolResultBlockParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ToolUseBlockParam">ToolUseBlockParam</a>
 

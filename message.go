@@ -1394,6 +1394,170 @@ func (r ToolParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
+// [JSON schema](https://json-schema.org/) for this tool's input.
+//
+// This defines the shape of the `input` that your tool accepts and that the model
+// will produce.
+type ToolInputSchemaParam struct {
+	Type        param.Field[ToolInputSchemaType] `json:"type,required"`
+	Properties  param.Field[interface{}]         `json:"properties"`
+	ExtraFields map[string]interface{}           `json:"-,extras"`
+}
+
+func (r ToolInputSchemaParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ToolInputSchemaType string
+
+const (
+	ToolInputSchemaTypeObject ToolInputSchemaType = "object"
+)
+
+func (r ToolInputSchemaType) IsKnown() bool {
+	switch r {
+	case ToolInputSchemaTypeObject:
+		return true
+	}
+	return false
+}
+
+// How the model should use the provided tools. The model can use a specific tool,
+// any available tool, or decide by itself.
+type ToolChoiceParam struct {
+	Type param.Field[ToolChoiceType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output at most one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
+	// The name of the tool to use.
+	Name param.Field[string] `json:"name"`
+}
+
+func (r ToolChoiceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolChoiceParam) implementsToolChoiceUnionParam() {}
+
+// How the model should use the provided tools. The model can use a specific tool,
+// any available tool, or decide by itself.
+//
+// Satisfied by [ToolChoiceAutoParam], [ToolChoiceAnyParam], [ToolChoiceToolParam],
+// [ToolChoiceParam].
+type ToolChoiceUnionParam interface {
+	implementsToolChoiceUnionParam()
+}
+
+type ToolChoiceType string
+
+const (
+	ToolChoiceTypeAuto ToolChoiceType = "auto"
+	ToolChoiceTypeAny  ToolChoiceType = "any"
+	ToolChoiceTypeTool ToolChoiceType = "tool"
+)
+
+func (r ToolChoiceType) IsKnown() bool {
+	switch r {
+	case ToolChoiceTypeAuto, ToolChoiceTypeAny, ToolChoiceTypeTool:
+		return true
+	}
+	return false
+}
+
+// The model will use any available tools.
+type ToolChoiceAnyParam struct {
+	Type param.Field[ToolChoiceAnyType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output exactly one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
+}
+
+func (r ToolChoiceAnyParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolChoiceAnyParam) implementsToolChoiceUnionParam() {}
+
+type ToolChoiceAnyType string
+
+const (
+	ToolChoiceAnyTypeAny ToolChoiceAnyType = "any"
+)
+
+func (r ToolChoiceAnyType) IsKnown() bool {
+	switch r {
+	case ToolChoiceAnyTypeAny:
+		return true
+	}
+	return false
+}
+
+// The model will automatically decide whether to use tools.
+type ToolChoiceAutoParam struct {
+	Type param.Field[ToolChoiceAutoType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output at most one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
+}
+
+func (r ToolChoiceAutoParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolChoiceAutoParam) implementsToolChoiceUnionParam() {}
+
+type ToolChoiceAutoType string
+
+const (
+	ToolChoiceAutoTypeAuto ToolChoiceAutoType = "auto"
+)
+
+func (r ToolChoiceAutoType) IsKnown() bool {
+	switch r {
+	case ToolChoiceAutoTypeAuto:
+		return true
+	}
+	return false
+}
+
+// The model will use the specified tool with `tool_choice.name`.
+type ToolChoiceToolParam struct {
+	// The name of the tool to use.
+	Name param.Field[string]             `json:"name,required"`
+	Type param.Field[ToolChoiceToolType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output exactly one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
+}
+
+func (r ToolChoiceToolParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolChoiceToolParam) implementsToolChoiceUnionParam() {}
+
+type ToolChoiceToolType string
+
+const (
+	ToolChoiceToolTypeTool ToolChoiceToolType = "tool"
+)
+
+func (r ToolChoiceToolType) IsKnown() bool {
+	switch r {
+	case ToolChoiceToolTypeTool:
+		return true
+	}
+	return false
+}
+
 type ToolResultBlockParam struct {
 	ToolUseID param.Field[string]                             `json:"tool_use_id,required"`
 	Type      param.Field[ToolResultBlockParamType]           `json:"type,required"`
@@ -1700,7 +1864,7 @@ type MessageNewParams struct {
 	Temperature param.Field[float64] `json:"temperature"`
 	// How the model should use the provided tools. The model can use a specific tool,
 	// any available tool, or decide by itself.
-	ToolChoice param.Field[MessageNewParamsToolChoiceUnion] `json:"tool_choice"`
+	ToolChoice param.Field[ToolChoiceUnionParam] `json:"tool_choice"`
 	// Definitions of tools that the model may use.
 	//
 	// If you include `tools` in your API request, the model may return `tool_use`
@@ -1812,141 +1976,4 @@ type MessageNewParamsMetadata struct {
 
 func (r MessageNewParamsMetadata) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
-}
-
-// How the model should use the provided tools. The model can use a specific tool,
-// any available tool, or decide by itself.
-type MessageNewParamsToolChoice struct {
-	Type param.Field[MessageNewParamsToolChoiceType] `json:"type,required"`
-	// Whether to disable parallel tool use.
-	//
-	// Defaults to `false`. If set to `true`, the model will output at most one tool
-	// use.
-	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
-	// The name of the tool to use.
-	Name param.Field[string] `json:"name"`
-}
-
-func (r MessageNewParamsToolChoice) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-func (r MessageNewParamsToolChoice) implementsMessageNewParamsToolChoiceUnion() {}
-
-// How the model should use the provided tools. The model can use a specific tool,
-// any available tool, or decide by itself.
-//
-// Satisfied by [MessageNewParamsToolChoiceToolChoiceAuto],
-// [MessageNewParamsToolChoiceToolChoiceAny],
-// [MessageNewParamsToolChoiceToolChoiceTool], [MessageNewParamsToolChoice].
-type MessageNewParamsToolChoiceUnion interface {
-	implementsMessageNewParamsToolChoiceUnion()
-}
-
-// The model will automatically decide whether to use tools.
-type MessageNewParamsToolChoiceToolChoiceAuto struct {
-	Type param.Field[MessageNewParamsToolChoiceToolChoiceAutoType] `json:"type,required"`
-	// Whether to disable parallel tool use.
-	//
-	// Defaults to `false`. If set to `true`, the model will output at most one tool
-	// use.
-	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
-}
-
-func (r MessageNewParamsToolChoiceToolChoiceAuto) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-func (r MessageNewParamsToolChoiceToolChoiceAuto) implementsMessageNewParamsToolChoiceUnion() {}
-
-type MessageNewParamsToolChoiceToolChoiceAutoType string
-
-const (
-	MessageNewParamsToolChoiceToolChoiceAutoTypeAuto MessageNewParamsToolChoiceToolChoiceAutoType = "auto"
-)
-
-func (r MessageNewParamsToolChoiceToolChoiceAutoType) IsKnown() bool {
-	switch r {
-	case MessageNewParamsToolChoiceToolChoiceAutoTypeAuto:
-		return true
-	}
-	return false
-}
-
-// The model will use any available tools.
-type MessageNewParamsToolChoiceToolChoiceAny struct {
-	Type param.Field[MessageNewParamsToolChoiceToolChoiceAnyType] `json:"type,required"`
-	// Whether to disable parallel tool use.
-	//
-	// Defaults to `false`. If set to `true`, the model will output exactly one tool
-	// use.
-	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
-}
-
-func (r MessageNewParamsToolChoiceToolChoiceAny) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-func (r MessageNewParamsToolChoiceToolChoiceAny) implementsMessageNewParamsToolChoiceUnion() {}
-
-type MessageNewParamsToolChoiceToolChoiceAnyType string
-
-const (
-	MessageNewParamsToolChoiceToolChoiceAnyTypeAny MessageNewParamsToolChoiceToolChoiceAnyType = "any"
-)
-
-func (r MessageNewParamsToolChoiceToolChoiceAnyType) IsKnown() bool {
-	switch r {
-	case MessageNewParamsToolChoiceToolChoiceAnyTypeAny:
-		return true
-	}
-	return false
-}
-
-// The model will use the specified tool with `tool_choice.name`.
-type MessageNewParamsToolChoiceToolChoiceTool struct {
-	// The name of the tool to use.
-	Name param.Field[string]                                       `json:"name,required"`
-	Type param.Field[MessageNewParamsToolChoiceToolChoiceToolType] `json:"type,required"`
-	// Whether to disable parallel tool use.
-	//
-	// Defaults to `false`. If set to `true`, the model will output exactly one tool
-	// use.
-	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
-}
-
-func (r MessageNewParamsToolChoiceToolChoiceTool) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-func (r MessageNewParamsToolChoiceToolChoiceTool) implementsMessageNewParamsToolChoiceUnion() {}
-
-type MessageNewParamsToolChoiceToolChoiceToolType string
-
-const (
-	MessageNewParamsToolChoiceToolChoiceToolTypeTool MessageNewParamsToolChoiceToolChoiceToolType = "tool"
-)
-
-func (r MessageNewParamsToolChoiceToolChoiceToolType) IsKnown() bool {
-	switch r {
-	case MessageNewParamsToolChoiceToolChoiceToolTypeTool:
-		return true
-	}
-	return false
-}
-
-type MessageNewParamsToolChoiceType string
-
-const (
-	MessageNewParamsToolChoiceTypeAuto MessageNewParamsToolChoiceType = "auto"
-	MessageNewParamsToolChoiceTypeAny  MessageNewParamsToolChoiceType = "any"
-	MessageNewParamsToolChoiceTypeTool MessageNewParamsToolChoiceType = "tool"
-)
-
-func (r MessageNewParamsToolChoiceType) IsKnown() bool {
-	switch r {
-	case MessageNewParamsToolChoiceTypeAuto, MessageNewParamsToolChoiceTypeAny, MessageNewParamsToolChoiceTypeTool:
-		return true
-	}
-	return false
 }

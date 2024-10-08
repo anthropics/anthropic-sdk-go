@@ -29,7 +29,7 @@ func TestCompletionNewWithOptionalParams(t *testing.T) {
 		MaxTokensToSample: anthropic.F(int64(256)),
 		Model:             anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 		Prompt:            anthropic.F("\n\nHuman: Hello, world!\n\nAssistant:"),
-		Metadata: anthropic.F(anthropic.CompletionNewParamsMetadata{
+		Metadata: anthropic.F(anthropic.MetadataParam{
 			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		}),
 		StopSequences: anthropic.F([]string{"string", "string", "string"}),

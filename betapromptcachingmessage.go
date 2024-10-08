@@ -45,6 +45,7 @@ func NewBetaPromptCachingMessageService(opts ...option.RequestOption) (r *BetaPr
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaPromptCachingMessageService) New(ctx context.Context, body BetaPromptCachingMessageNewParams, opts ...option.RequestOption) (res *PromptCachingBetaMessage, err error) {
 	opts = append(r.Options[:], opts...)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "prompt-caching-2024-07-31")}, opts...)
 	path := "v1/messages?beta=prompt_caching"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
@@ -65,7 +66,7 @@ func (r *BetaPromptCachingMessageService) NewStreaming(ctx context.Context, body
 		err error
 	)
 	opts = append(r.Options[:], opts...)
-	opts = append([]option.RequestOption{option.WithJSONSet("stream", true)}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "prompt-caching-2024-07-31"), option.WithJSONSet("stream", true)}, opts...)
 	path := "v1/messages?beta=prompt_caching"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &raw, opts...)
 	return ssestream.NewStream[RawPromptCachingBetaMessageStreamEvent](ssestream.NewDecoder(raw), err)

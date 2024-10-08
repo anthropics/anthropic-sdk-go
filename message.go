@@ -513,6 +513,19 @@ func (r MessageParamRole) IsKnown() bool {
 	return false
 }
 
+type MetadataParam struct {
+	// An external identifier for the user who is associated with the request.
+	//
+	// This should be a uuid, hash value, or other opaque identifier. Anthropic may use
+	// this id to help detect abuse. Do not include any identifying information such as
+	// name, email address, or phone number.
+	UserID param.Field[string] `json:"user_id"`
+}
+
+func (r MetadataParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
 type Model = string
 
 const (
@@ -1659,7 +1672,7 @@ type MessageNewParams struct {
 	// details and options.
 	Model param.Field[Model] `json:"model,required"`
 	// An object describing metadata about the request.
-	Metadata param.Field[MessageNewParamsMetadata] `json:"metadata"`
+	Metadata param.Field[MetadataParam] `json:"metadata"`
 	// Custom text sequences that will cause the model to stop generating.
 	//
 	// Our models will normally stop when they have naturally completed their turn,
@@ -1784,19 +1797,5 @@ type MessageNewParams struct {
 }
 
 func (r MessageNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// An object describing metadata about the request.
-type MessageNewParamsMetadata struct {
-	// An external identifier for the user who is associated with the request.
-	//
-	// This should be a uuid, hash value, or other opaque identifier. Anthropic may use
-	// this id to help detect abuse. Do not include any identifying information such as
-	// name, email address, or phone number.
-	UserID param.Field[string] `json:"user_id"`
-}
-
-func (r MessageNewParamsMetadata) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }

@@ -883,7 +883,7 @@ type BetaPromptCachingMessageNewParams struct {
 	// details and options.
 	Model param.Field[Model] `json:"model,required"`
 	// An object describing metadata about the request.
-	Metadata param.Field[BetaPromptCachingMessageNewParamsMetadata] `json:"metadata"`
+	Metadata param.Field[MetadataParam] `json:"metadata"`
 	// Custom text sequences that will cause the model to stop generating.
 	//
 	// Our models will normally stop when they have naturally completed their turn,
@@ -1008,20 +1008,6 @@ type BetaPromptCachingMessageNewParams struct {
 }
 
 func (r BetaPromptCachingMessageNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// An object describing metadata about the request.
-type BetaPromptCachingMessageNewParamsMetadata struct {
-	// An external identifier for the user who is associated with the request.
-	//
-	// This should be a uuid, hash value, or other opaque identifier. Anthropic may use
-	// this id to help detect abuse. Do not include any identifying information such as
-	// name, email address, or phone number.
-	UserID param.Field[string] `json:"user_id"`
-}
-
-func (r BetaPromptCachingMessageNewParamsMetadata) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 

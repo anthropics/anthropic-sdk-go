@@ -158,7 +158,7 @@ type CompletionNewParams struct {
 	// details.
 	Prompt param.Field[string] `json:"prompt,required"`
 	// An object describing metadata about the request.
-	Metadata param.Field[CompletionNewParamsMetadata] `json:"metadata"`
+	Metadata param.Field[MetadataParam] `json:"metadata"`
 	// Sequences that will cause the model to stop generating.
 	//
 	// Our models stop on `"\n\nHuman:"`, and may include additional built-in stop
@@ -195,19 +195,5 @@ type CompletionNewParams struct {
 }
 
 func (r CompletionNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-// An object describing metadata about the request.
-type CompletionNewParamsMetadata struct {
-	// An external identifier for the user who is associated with the request.
-	//
-	// This should be a uuid, hash value, or other opaque identifier. Anthropic may use
-	// this id to help detect abuse. Do not include any identifying information such as
-	// name, email address, or phone number.
-	UserID param.Field[string] `json:"user_id"`
-}
-
-func (r CompletionNewParamsMetadata) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }

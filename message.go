@@ -34,8 +34,6 @@ func NewMessageService(opts ...option.RequestOption) (r *MessageService) {
 	return
 }
 
-// Create a Message.
-//
 // Send a structured list of input messages with text and/or image content, and the
 // model will generate the next message in the conversation.
 //
@@ -50,8 +48,6 @@ func (r *MessageService) New(ctx context.Context, body MessageNewParams, opts ..
 	return
 }
 
-// Create a Message.
-//
 // Send a structured list of input messages with text and/or image content, and the
 // model will generate the next message in the conversation.
 //

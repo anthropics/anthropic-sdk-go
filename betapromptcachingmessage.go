@@ -34,8 +34,6 @@ func NewBetaPromptCachingMessageService(opts ...option.RequestOption) (r *BetaPr
 	return
 }
 
-// Create a Message.
-//
 // Send a structured list of input messages with text and/or image content, and the
 // model will generate the next message in the conversation.
 //
@@ -43,16 +41,14 @@ func NewBetaPromptCachingMessageService(opts ...option.RequestOption) (r *BetaPr
 // conversations.
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
-func (r *BetaPromptCachingMessageService) New(ctx context.Context, body BetaPromptCachingMessageNewParams, opts ...option.RequestOption) (res *PromptCachingBetaMessage, err error) {
+func (r *BetaPromptCachingMessageService) New(ctx context.Context, params BetaPromptCachingMessageNewParams, opts ...option.RequestOption) (res *PromptCachingBetaMessage, err error) {
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "prompt-caching-2024-07-31")}, opts...)
 	path := "v1/messages?beta=prompt_caching"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return
 }
 
-// Create a Message.
-//
 // Send a structured list of input messages with text and/or image content, and the
 // model will generate the next message in the conversation.
 //
@@ -60,7 +56,7 @@ func (r *BetaPromptCachingMessageService) New(ctx context.Context, body BetaProm
 // conversations.
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
-func (r *BetaPromptCachingMessageService) NewStreaming(ctx context.Context, body BetaPromptCachingMessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[RawPromptCachingBetaMessageStreamEvent]) {
+func (r *BetaPromptCachingMessageService) NewStreaming(ctx context.Context, params BetaPromptCachingMessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[RawPromptCachingBetaMessageStreamEvent]) {
 	var (
 		raw *http.Response
 		err error
@@ -68,7 +64,7 @@ func (r *BetaPromptCachingMessageService) NewStreaming(ctx context.Context, body
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "prompt-caching-2024-07-31"), option.WithJSONSet("stream", true)}, opts...)
 	path := "v1/messages?beta=prompt_caching"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &raw, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &raw, opts...)
 	return ssestream.NewStream[RawPromptCachingBetaMessageStreamEvent](ssestream.NewDecoder(raw), err)
 }
 
@@ -1006,6 +1002,8 @@ type BetaPromptCachingMessageNewParams struct {
 	// Recommended for advanced use cases only. You usually only need to use
 	// `temperature`.
 	TopP param.Field[float64] `json:"top_p"`
+	// Optional header to specify the beta version(s) you want to use.
+	Betas param.Field[[]AnthropicBeta] `header:"anthropic-beta"`
 }
 
 func (r BetaPromptCachingMessageNewParams) MarshalJSON() (data []byte, err error) {

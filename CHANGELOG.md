@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.2.0-alpha.1 (2024-10-08)
+
+Full Changelog: [v0.1.0-alpha.2...v0.2.0-alpha.1](https://github.com/anthropics/anthropic-sdk-go/compare/v0.1.0-alpha.2...v0.2.0-alpha.1)
+
+### Features
+
+* **api:** add message batches api ([#28](https://github.com/anthropics/anthropic-sdk-go/issues/28)) ([169eb3c](https://github.com/anthropics/anthropic-sdk-go/commit/169eb3c83d39126b4f9ec3a8d7f70c06466d9ef6))
+
+
+### Bug Fixes
+
+* **beta:** pass beta header by default ([#27](https://github.com/anthropics/anthropic-sdk-go/issues/27)) ([c79ba68](https://github.com/anthropics/anthropic-sdk-go/commit/c79ba6826c452ca1eeefd34db1638722fa942082))
+
+
+### Refactors
+
+* **types:** improve metadata type names ([#26](https://github.com/anthropics/anthropic-sdk-go/issues/26)) ([95f0266](https://github.com/anthropics/anthropic-sdk-go/commit/95f0266f62ba90590db68f1f98e41d80ea8f5388))
+* **types:** improve tool type names ([#23](https://github.com/anthropics/anthropic-sdk-go/issues/23)) ([79e4d75](https://github.com/anthropics/anthropic-sdk-go/commit/79e4d75d26bbf2339841d27696477817c01a55fc))
+
 ## 0.1.0-alpha.2 (2024-10-04)
 
 Full Changelog: [v0.1.0-alpha.1...v0.1.0-alpha.2](https://github.com/anthropics/anthropic-sdk-go/compare/v0.1.0-alpha.1...v0.1.0-alpha.2)

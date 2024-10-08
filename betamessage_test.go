@@ -13,7 +13,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
-func TestBetaPromptCachingMessageNewWithOptionalParams(t *testing.T) {
+func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -25,32 +25,26 @@ func TestBetaPromptCachingMessageNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Beta.PromptCaching.Messages.New(context.TODO(), anthropic.BetaPromptCachingMessageNewParams{
+	_, err := client.Beta.Messages.New(context.TODO(), anthropic.BetaMessageNewParams{
 		MaxTokens: anthropic.F(int64(1024)),
-		Messages: anthropic.F([]anthropic.PromptCachingBetaMessageParam{{
-			Content: anthropic.F([]anthropic.PromptCachingBetaMessageParamContentUnion{anthropic.PromptCachingBetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.PromptCachingBetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralTypeEphemeral)})}}),
-			Role:    anthropic.F(anthropic.PromptCachingBetaMessageParamRoleUser),
+		Messages: anthropic.F([]anthropic.BetaMessageParam{{
+			Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
+			Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
-		Metadata: anthropic.F(anthropic.MetadataParam{
+		Metadata: anthropic.F(anthropic.BetaMetadataParam{
 			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		}),
 		StopSequences: anthropic.F([]string{"string", "string", "string"}),
-		System: anthropic.F[anthropic.BetaPromptCachingMessageNewParamsSystemUnion](anthropic.BetaPromptCachingMessageNewParamsSystemArray([]anthropic.PromptCachingBetaTextBlockParam{{
-			Text: anthropic.F("Today's date is 2024-06-01."),
-			Type: anthropic.F(anthropic.PromptCachingBetaTextBlockParamTypeText),
-			CacheControl: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralParam{
-				Type: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralTypeEphemeral),
-			}),
-		}})),
-		Temperature: anthropic.F(1.000000),
-		ToolChoice: anthropic.F[anthropic.ToolChoiceUnionParam](anthropic.ToolChoiceAutoParam{
-			Type:                   anthropic.F(anthropic.ToolChoiceAutoTypeAuto),
+		System:        anthropic.F([]anthropic.BetaTextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}, {Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}, {Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
+		Temperature:   anthropic.F(1.000000),
+		ToolChoice: anthropic.F[anthropic.BetaToolChoiceUnionParam](anthropic.BetaToolChoiceAutoParam{
+			Type:                   anthropic.F(anthropic.BetaToolChoiceAutoTypeAuto),
 			DisableParallelToolUse: anthropic.F(true),
 		}),
-		Tools: anthropic.F([]anthropic.PromptCachingBetaToolParam{{
-			InputSchema: anthropic.F(anthropic.PromptCachingBetaToolInputSchemaParam{
-				Type: anthropic.F(anthropic.PromptCachingBetaToolInputSchemaTypeObject),
+		Tools: anthropic.F([]anthropic.BetaToolParam{{
+			InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
+				Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 				Properties: anthropic.F[any](map[string]interface{}{
 					"location": map[string]interface{}{
 						"description": "The city and state, e.g. San Francisco, CA",
@@ -63,13 +57,13 @@ func TestBetaPromptCachingMessageNewWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Name: anthropic.F("x"),
-			CacheControl: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralParam{
-				Type: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralTypeEphemeral),
+			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
+				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 			}),
 			Description: anthropic.F("Get the current weather in a given location"),
 		}, {
-			InputSchema: anthropic.F(anthropic.PromptCachingBetaToolInputSchemaParam{
-				Type: anthropic.F(anthropic.PromptCachingBetaToolInputSchemaTypeObject),
+			InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
+				Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 				Properties: anthropic.F[any](map[string]interface{}{
 					"location": map[string]interface{}{
 						"description": "The city and state, e.g. San Francisco, CA",
@@ -82,13 +76,13 @@ func TestBetaPromptCachingMessageNewWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Name: anthropic.F("x"),
-			CacheControl: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralParam{
-				Type: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralTypeEphemeral),
+			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
+				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 			}),
 			Description: anthropic.F("Get the current weather in a given location"),
 		}, {
-			InputSchema: anthropic.F(anthropic.PromptCachingBetaToolInputSchemaParam{
-				Type: anthropic.F(anthropic.PromptCachingBetaToolInputSchemaTypeObject),
+			InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
+				Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 				Properties: anthropic.F[any](map[string]interface{}{
 					"location": map[string]interface{}{
 						"description": "The city and state, e.g. San Francisco, CA",
@@ -101,8 +95,8 @@ func TestBetaPromptCachingMessageNewWithOptionalParams(t *testing.T) {
 				}),
 			}),
 			Name: anthropic.F("x"),
-			CacheControl: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralParam{
-				Type: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralTypeEphemeral),
+			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
+				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 			}),
 			Description: anthropic.F("Get the current weather in a given location"),
 		}}),

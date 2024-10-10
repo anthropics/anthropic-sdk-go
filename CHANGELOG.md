@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0-alpha.2 (2024-10-10)
+
+Full Changelog: [v0.2.0-alpha.1...v0.2.0-alpha.2](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.1...v0.2.0-alpha.2)
+
+### Chores
+
+* fix GetNextPage docstring ([#29](https://github.com/anthropics/anthropic-sdk-go/issues/29)) ([acf8009](https://github.com/anthropics/anthropic-sdk-go/commit/acf8009c886ec27cc07665b0377a2a3b3493c336))
+
 ## 0.2.0-alpha.1 (2024-10-08)
 
 Full Changelog: [v0.1.0-alpha.2...v0.2.0-alpha.1](https://github.com/anthropics/anthropic-sdk-go/compare/v0.1.0-alpha.2...v0.2.0-alpha.1)

@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.2.0-alpha.2 (2024-10-17)
+
+Full Changelog: [v0.2.0-alpha.1...v0.2.0-alpha.2](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.1...v0.2.0-alpha.2)
+
+### Features
+
+* move pagination package from internal to packages ([#33](https://github.com/anthropics/anthropic-sdk-go/issues/33)) ([ee3edb1](https://github.com/anthropics/anthropic-sdk-go/commit/ee3edb16dcd406435ade212cb7553f75b161e297))
+
+
+### Bug Fixes
+
+* **beta:** merge betas param with the default value ([#32](https://github.com/anthropics/anthropic-sdk-go/issues/32)) ([9191ae0](https://github.com/anthropics/anthropic-sdk-go/commit/9191ae0b8a47c3c6ea9dfbb5073f1e66f5b4e1d8))
+
+
+### Chores
+
+* fix GetNextPage docstring ([#29](https://github.com/anthropics/anthropic-sdk-go/issues/29)) ([acf8009](https://github.com/anthropics/anthropic-sdk-go/commit/acf8009c886ec27cc07665b0377a2a3b3493c336))
+* **internal:** update spec URL ([#31](https://github.com/anthropics/anthropic-sdk-go/issues/31)) ([240f1c3](https://github.com/anthropics/anthropic-sdk-go/commit/240f1c3d7e4dc145988d2f8d11e45ccfd255861e))
+
 ## 0.2.0-alpha.1 (2024-10-08)
 
 Full Changelog: [v0.1.0-alpha.2...v0.2.0-alpha.1](https://github.com/anthropics/anthropic-sdk-go/compare/v0.1.0-alpha.2...v0.2.0-alpha.1)

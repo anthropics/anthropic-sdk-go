@@ -38,7 +38,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
 					Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 				}}),
-				Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+				Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 				Metadata: anthropic.F(anthropic.BetaMetadataParam{
 					UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				}),
@@ -50,7 +50,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					Type:                   anthropic.F(anthropic.BetaToolChoiceAutoTypeAuto),
 					DisableParallelToolUse: anthropic.F(true),
 				}),
-				Tools: anthropic.F([]anthropic.BetaToolParam{{
+				Tools: anthropic.F([]anthropic.BetaToolUnionUnionParam{anthropic.BetaToolParam{
 					InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
 						Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 						Properties: anthropic.F[any](map[string]interface{}{
@@ -69,7 +69,8 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 					}),
 					Description: anthropic.F("Get the current weather in a given location"),
-				}, {
+					Type:        anthropic.F(anthropic.BetaToolTypeCustom),
+				}, anthropic.BetaToolParam{
 					InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
 						Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 						Properties: anthropic.F[any](map[string]interface{}{
@@ -88,7 +89,8 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 					}),
 					Description: anthropic.F("Get the current weather in a given location"),
-				}, {
+					Type:        anthropic.F(anthropic.BetaToolTypeCustom),
+				}, anthropic.BetaToolParam{
 					InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
 						Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 						Properties: anthropic.F[any](map[string]interface{}{
@@ -107,6 +109,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 					}),
 					Description: anthropic.F("Get the current weather in a given location"),
+					Type:        anthropic.F(anthropic.BetaToolTypeCustom),
 				}}),
 				TopK: anthropic.F(int64(5)),
 				TopP: anthropic.F(0.700000),
@@ -119,7 +122,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
 					Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 				}}),
-				Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+				Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 				Metadata: anthropic.F(anthropic.BetaMetadataParam{
 					UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				}),
@@ -131,7 +134,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					Type:                   anthropic.F(anthropic.BetaToolChoiceAutoTypeAuto),
 					DisableParallelToolUse: anthropic.F(true),
 				}),
-				Tools: anthropic.F([]anthropic.BetaToolParam{{
+				Tools: anthropic.F([]anthropic.BetaToolUnionUnionParam{anthropic.BetaToolParam{
 					InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
 						Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 						Properties: anthropic.F[any](map[string]interface{}{
@@ -150,7 +153,8 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 					}),
 					Description: anthropic.F("Get the current weather in a given location"),
-				}, {
+					Type:        anthropic.F(anthropic.BetaToolTypeCustom),
+				}, anthropic.BetaToolParam{
 					InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
 						Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 						Properties: anthropic.F[any](map[string]interface{}{
@@ -169,7 +173,8 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 					}),
 					Description: anthropic.F("Get the current weather in a given location"),
-				}, {
+					Type:        anthropic.F(anthropic.BetaToolTypeCustom),
+				}, anthropic.BetaToolParam{
 					InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
 						Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 						Properties: anthropic.F[any](map[string]interface{}{
@@ -188,6 +193,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 					}),
 					Description: anthropic.F("Get the current weather in a given location"),
+					Type:        anthropic.F(anthropic.BetaToolTypeCustom),
 				}}),
 				TopK: anthropic.F(int64(5)),
 				TopP: anthropic.F(0.700000),
@@ -200,7 +206,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
 					Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 				}}),
-				Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+				Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 				Metadata: anthropic.F(anthropic.BetaMetadataParam{
 					UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				}),
@@ -212,7 +218,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					Type:                   anthropic.F(anthropic.BetaToolChoiceAutoTypeAuto),
 					DisableParallelToolUse: anthropic.F(true),
 				}),
-				Tools: anthropic.F([]anthropic.BetaToolParam{{
+				Tools: anthropic.F([]anthropic.BetaToolUnionUnionParam{anthropic.BetaToolParam{
 					InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
 						Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 						Properties: anthropic.F[any](map[string]interface{}{
@@ -231,7 +237,8 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 					}),
 					Description: anthropic.F("Get the current weather in a given location"),
-				}, {
+					Type:        anthropic.F(anthropic.BetaToolTypeCustom),
+				}, anthropic.BetaToolParam{
 					InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
 						Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 						Properties: anthropic.F[any](map[string]interface{}{
@@ -250,7 +257,8 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 					}),
 					Description: anthropic.F("Get the current weather in a given location"),
-				}, {
+					Type:        anthropic.F(anthropic.BetaToolTypeCustom),
+				}, anthropic.BetaToolParam{
 					InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
 						Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
 						Properties: anthropic.F[any](map[string]interface{}{
@@ -269,6 +277,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 					}),
 					Description: anthropic.F("Get the current weather in a given location"),
+					Type:        anthropic.F(anthropic.BetaToolTypeCustom),
 				}}),
 				TopK: anthropic.F(int64(5)),
 				TopP: anthropic.F(0.700000),

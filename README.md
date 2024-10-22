@@ -408,7 +408,6 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 ```go
 _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 	MaxTokens: anthropic.F(int64(1024)),
-
 	Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 })
 if err != nil {

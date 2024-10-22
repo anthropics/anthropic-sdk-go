@@ -31,7 +31,7 @@ func TestBetaPromptCachingMessageNewWithOptionalParams(t *testing.T) {
 			Content: anthropic.F([]anthropic.PromptCachingBetaMessageParamContentUnion{anthropic.PromptCachingBetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.PromptCachingBetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralTypeEphemeral)})}}),
 			Role:    anthropic.F(anthropic.PromptCachingBetaMessageParamRoleUser),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 		Metadata: anthropic.F(anthropic.MetadataParam{
 			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		}),

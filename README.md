@@ -56,7 +56,7 @@ func main() {
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	})
 	if err != nil {
 		panic(err.Error())
@@ -214,7 +214,7 @@ _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		Role:    anthropic.F(anthropic.MessageParamRoleUser),
 		Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 	}}),
-	Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+	Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 })
 if err != nil {
 	var apierr *anthropic.Error
@@ -248,7 +248,7 @@ client.Messages.New(
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	},
 	// This sets the per-retry timeout
 	option.WithRequestTimeout(20*time.Second),
@@ -291,7 +291,7 @@ client.Messages.New(
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	},
 	option.WithMaxRetries(5),
 )

@@ -526,7 +526,13 @@ type Model = string
 
 const (
 	// Our most intelligent model
+	ModelClaude3_5SonnetLatest Model = "claude-3-5-sonnet-latest"
+	// Our most intelligent model
+	ModelClaude3_5Sonnet20241022 Model = "claude-3-5-sonnet-20241022"
+	// Our previous most intelligent model
 	ModelClaude_3_5_Sonnet_20240620 Model = "claude-3-5-sonnet-20240620"
+	// Excels at writing and complex tasks
+	ModelClaude3OpusLatest Model = "claude-3-opus-latest"
 	// Excels at writing and complex tasks
 	ModelClaude_3_Opus_20240229 Model = "claude-3-opus-20240229"
 	// Balance of speed and intelligence
@@ -1576,11 +1582,12 @@ type MessageNewParams struct {
 	// Our models are trained to operate on alternating `user` and `assistant`
 	// conversational turns. When creating a new `Message`, you specify the prior
 	// conversational turns with the `messages` parameter, and the model then generates
-	// the next `Message` in the conversation.
+	// the next `Message` in the conversation. Consecutive `user` or `assistant` turns
+	// in your request will be combined into a single turn.
 	//
 	// Each input message must be an object with a `role` and `content`. You can
 	// specify a single `user`-role message, or you can include multiple `user` and
-	// `assistant` messages. The first message must always use the `user` role.
+	// `assistant` messages.
 	//
 	// If the final message uses the `assistant` role, the response content will
 	// continue immediately from the content in that message. This can be used to

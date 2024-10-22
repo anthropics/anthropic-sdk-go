@@ -43,7 +43,7 @@ func TestUserAgentHeader(t *testing.T) {
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	})
 	if userAgent != fmt.Sprintf("Anthropic/Go %s", internal.PackageVersion) {
 		t.Errorf("Expected User-Agent to be correct, but got: %#v", userAgent)
@@ -73,7 +73,7 @@ func TestRetryAfter(t *testing.T) {
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	})
 	if err == nil || res != nil {
 		t.Error("Expected there to be a cancel error and for the response to be nil")
@@ -114,7 +114,7 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	})
 	if err == nil || res != nil {
 		t.Error("Expected there to be a cancel error and for the response to be nil")
@@ -150,7 +150,7 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	})
 	if err == nil || res != nil {
 		t.Error("Expected there to be a cancel error and for the response to be nil")
@@ -185,7 +185,7 @@ func TestRetryAfterMs(t *testing.T) {
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	})
 	if err == nil || res != nil {
 		t.Error("Expected there to be a cancel error and for the response to be nil")
@@ -214,7 +214,7 @@ func TestContextCancel(t *testing.T) {
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	})
 	if err == nil || res != nil {
 		t.Error("Expected there to be a cancel error and for the response to be nil")
@@ -240,7 +240,7 @@ func TestContextCancelDelay(t *testing.T) {
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	})
 	if err == nil || res != nil {
 		t.Error("expected there to be a cancel error and for the response to be nil")
@@ -272,7 +272,7 @@ func TestContextDeadline(t *testing.T) {
 				Role:    anthropic.F(anthropic.MessageParamRoleUser),
 				Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 			}}),
-			Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+			Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 		})
 		if err == nil || res != nil {
 			t.Error("expected there to be a deadline error and for the response to be nil")

@@ -30,7 +30,7 @@ func TestUsage(t *testing.T) {
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	})
 	if err != nil {
 		t.Error(err)

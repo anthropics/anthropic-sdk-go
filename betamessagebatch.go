@@ -39,10 +39,11 @@ func NewBetaMessageBatchService(opts ...option.RequestOption) (r *BetaMessageBat
 	return
 }
 
-// Send a batch of requests to create Messages.
+// Send a batch of Message creation requests.
 //
-// The Messages Batch API can be used to process multiple Messages API requests at
-// once. Once a Message Batch is created, it begins processing immediately.
+// The Message Batches API can be used to process multiple Messages API requests at
+// once. Once a Message Batch is created, it begins processing immediately. Batches
+// can take up to 24 hours to complete.
 func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBatchNewParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
@@ -52,8 +53,8 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 }
 
 // This endpoint is idempotent and can be used to poll for Message Batch
-// completion. To access the results of a Message Batch, use the `responses_url`
-// field in the response.
+// completion. To access the results of a Message Batch, make a request to the
+// `results_url` field in the response.
 func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string, query BetaMessageBatchGetParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
@@ -66,7 +67,8 @@ func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string
 	return
 }
 
-// List all Message Batches within a Workspace.
+// List all Message Batches within a Workspace. Most recently created batches are
+// returned first.
 func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBatchListParams, opts ...option.RequestOption) (res *pagination.Page[BetaMessageBatch], err error) {
 	var raw *http.Response
 	opts = append(r.Options[:], opts...)
@@ -84,13 +86,21 @@ func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBa
 	return res, nil
 }
 
-// List all Message Batches within a Workspace.
+// List all Message Batches within a Workspace. Most recently created batches are
+// returned first.
 func (r *BetaMessageBatchService) ListAutoPaging(ctx context.Context, params BetaMessageBatchListParams, opts ...option.RequestOption) *pagination.PageAutoPager[BetaMessageBatch] {
 	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }
 
-// Batches may be canceled any time before processing ends. The system may complete
-// any in-progress, non-interruptible operations before finalizing cancellation.
+// Batches may be canceled any time before processing ends. Once cancellation is
+// initiated, the batch enters a `canceling` state, at which time the system may
+// complete any in-progress, non-interruptible requests before finalizing
+// cancellation.
+//
+// The number of canceled requests is specified in `request_counts`. To determine
+// which requests were canceled, check the individual results within the batch.
+// Note that cancellation may not result in any canceled requests if they were
+// non-interruptible.
 func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID string, body BetaMessageBatchCancelParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
@@ -125,6 +135,9 @@ type BetaMessageBatch struct {
 	//
 	// The format and length of IDs may change over time.
 	ID string `json:"id,required"`
+	// RFC 3339 datetime string representing the time at which the Message Batch was
+	// archived and its results became unavailable.
+	ArchivedAt time.Time `json:"archived_at,required,nullable" format:"date-time"`
 	// RFC 3339 datetime string representing the time at which cancellation was
 	// initiated for the Message Batch. Specified only if cancellation was initiated.
 	CancelInitiatedAt time.Time `json:"cancel_initiated_at,required,nullable" format:"date-time"`
@@ -141,13 +154,12 @@ type BetaMessageBatch struct {
 	// expire and end processing, which is 24 hours after creation.
 	ExpiresAt time.Time `json:"expires_at,required" format:"date-time"`
 	// Processing status of the Message Batch.
-	//
-	// This is one of: `in_progress`, `canceling`, or `ended`.
 	ProcessingStatus BetaMessageBatchProcessingStatus `json:"processing_status,required"`
-	// Overview of the number of requests within the Message Batch and their statuses.
+	// Tallies requests within the Message Batch, categorized by their status.
 	//
 	// Requests start as `processing` and move to one of the other statuses only once
-	// processing of entire batch ends.
+	// processing of the entire batch ends. The sum of all values always matches the
+	// total number of requests in the batch.
 	RequestCounts BetaMessageBatchRequestCounts `json:"request_counts,required"`
 	// URL to a `.jsonl` file containing the results of the Message Batch requests.
 	// Specified only once processing ends.
@@ -166,6 +178,7 @@ type BetaMessageBatch struct {
 // [BetaMessageBatch]
 type betaMessageBatchJSON struct {
 	ID                apijson.Field
+	ArchivedAt        apijson.Field
 	CancelInitiatedAt apijson.Field
 	CreatedAt         apijson.Field
 	EndedAt           apijson.Field
@@ -187,8 +200,6 @@ func (r betaMessageBatchJSON) RawJSON() string {
 }
 
 // Processing status of the Message Batch.
-//
-// This is one of: `in_progress`, `canceling`, or `ended`.
 type BetaMessageBatchProcessingStatus string
 
 const (
@@ -337,7 +348,7 @@ func (r BetaMessageBatchExpiredResultType) IsKnown() bool {
 
 type BetaMessageBatchIndividualResponse struct {
 	// Developer-provided ID created for each request in a Message Batch. Useful for
-	// matching results to requests.
+	// matching results to requests, as results may be given out of request order.
 	//
 	// Must be unique for each request within the Message Batch.
 	CustomID string `json:"custom_id,required"`
@@ -565,7 +576,7 @@ func (r BetaMessageBatchNewParams) MarshalJSON() (data []byte, err error) {
 
 type BetaMessageBatchNewParamsRequest struct {
 	// Developer-provided ID created for each request in a Message Batch. Useful for
-	// matching results to requests.
+	// matching results to requests, as results may be given out of request order.
 	//
 	// Must be unique for each request within the Message Batch.
 	CustomID param.Field[string] `json:"custom_id,required"`
@@ -598,11 +609,12 @@ type BetaMessageBatchNewParamsRequestsParams struct {
 	// Our models are trained to operate on alternating `user` and `assistant`
 	// conversational turns. When creating a new `Message`, you specify the prior
 	// conversational turns with the `messages` parameter, and the model then generates
-	// the next `Message` in the conversation.
+	// the next `Message` in the conversation. Consecutive `user` or `assistant` turns
+	// in your request will be combined into a single turn.
 	//
 	// Each input message must be an object with a `role` and `content`. You can
 	// specify a single `user`-role message, or you can include multiple `user` and
-	// `assistant` messages. The first message must always use the `user` role.
+	// `assistant` messages.
 	//
 	// If the final message uses the `assistant` role, the response content will
 	// continue immediately from the content in that message. This can be used to
@@ -798,7 +810,7 @@ type BetaMessageBatchNewParamsRequestsParams struct {
 	// JSON structure of output.
 	//
 	// See our [guide](https://docs.anthropic.com/en/docs/tool-use) for more details.
-	Tools param.Field[[]BetaToolParam] `json:"tools"`
+	Tools param.Field[[]BetaToolUnionUnionParam] `json:"tools"`
 	// Only sample from the top K options for each subsequent token.
 	//
 	// Used to remove "long tail" low probability responses.

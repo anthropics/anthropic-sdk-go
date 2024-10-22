@@ -1244,12 +1244,15 @@ type BetaToolParam struct {
 	// the model has about what the tool is and how to use it, the better it will
 	// perform. You can use natural language descriptions to reinforce important
 	// aspects of the tool input JSON schema.
-	Description param.Field[string] `json:"description"`
+	Description param.Field[string]       `json:"description"`
+	Type        param.Field[BetaToolType] `json:"type"`
 }
 
 func (r BetaToolParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
+
+func (r BetaToolParam) implementsBetaToolUnionUnionParam() {}
 
 // [JSON schema](https://json-schema.org/) for this tool's input.
 //
@@ -1274,6 +1277,60 @@ const (
 func (r BetaToolInputSchemaType) IsKnown() bool {
 	switch r {
 	case BetaToolInputSchemaTypeObject:
+		return true
+	}
+	return false
+}
+
+type BetaToolType string
+
+const (
+	BetaToolTypeCustom BetaToolType = "custom"
+)
+
+func (r BetaToolType) IsKnown() bool {
+	switch r {
+	case BetaToolTypeCustom:
+		return true
+	}
+	return false
+}
+
+type BetaToolBash20241022Param struct {
+	Name         param.Field[BetaToolBash20241022Name]       `json:"name,required"`
+	Type         param.Field[BetaToolBash20241022Type]       `json:"type,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+}
+
+func (r BetaToolBash20241022Param) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaToolBash20241022Param) implementsBetaToolUnionUnionParam() {}
+
+type BetaToolBash20241022Name string
+
+const (
+	BetaToolBash20241022NameBash BetaToolBash20241022Name = "bash"
+)
+
+func (r BetaToolBash20241022Name) IsKnown() bool {
+	switch r {
+	case BetaToolBash20241022NameBash:
+		return true
+	}
+	return false
+}
+
+type BetaToolBash20241022Type string
+
+const (
+	BetaToolBash20241022TypeBash20241022 BetaToolBash20241022Type = "bash_20241022"
+)
+
+func (r BetaToolBash20241022Type) IsKnown() bool {
+	switch r {
+	case BetaToolBash20241022TypeBash20241022:
 		return true
 	}
 	return false
@@ -1415,6 +1472,49 @@ func (r BetaToolChoiceToolType) IsKnown() bool {
 	return false
 }
 
+type BetaToolComputerUse20241022Param struct {
+	DisplayHeightPx param.Field[int64]                           `json:"display_height_px,required"`
+	DisplayWidthPx  param.Field[int64]                           `json:"display_width_px,required"`
+	Name            param.Field[BetaToolComputerUse20241022Name] `json:"name,required"`
+	Type            param.Field[BetaToolComputerUse20241022Type] `json:"type,required"`
+	CacheControl    param.Field[BetaCacheControlEphemeralParam]  `json:"cache_control"`
+	DisplayNumber   param.Field[int64]                           `json:"display_number"`
+}
+
+func (r BetaToolComputerUse20241022Param) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaToolComputerUse20241022Param) implementsBetaToolUnionUnionParam() {}
+
+type BetaToolComputerUse20241022Name string
+
+const (
+	BetaToolComputerUse20241022NameComputer BetaToolComputerUse20241022Name = "computer"
+)
+
+func (r BetaToolComputerUse20241022Name) IsKnown() bool {
+	switch r {
+	case BetaToolComputerUse20241022NameComputer:
+		return true
+	}
+	return false
+}
+
+type BetaToolComputerUse20241022Type string
+
+const (
+	BetaToolComputerUse20241022TypeComputer20241022 BetaToolComputerUse20241022Type = "computer_20241022"
+)
+
+func (r BetaToolComputerUse20241022Type) IsKnown() bool {
+	switch r {
+	case BetaToolComputerUse20241022TypeComputer20241022:
+		return true
+	}
+	return false
+}
+
 type BetaToolResultBlockParam struct {
 	ToolUseID    param.Field[string]                                 `json:"tool_use_id,required"`
 	Type         param.Field[BetaToolResultBlockParamType]           `json:"type,required"`
@@ -1472,6 +1572,93 @@ const (
 func (r BetaToolResultBlockParamContentType) IsKnown() bool {
 	switch r {
 	case BetaToolResultBlockParamContentTypeText, BetaToolResultBlockParamContentTypeImage:
+		return true
+	}
+	return false
+}
+
+type BetaToolTextEditor20241022Param struct {
+	Name         param.Field[BetaToolTextEditor20241022Name] `json:"name,required"`
+	Type         param.Field[BetaToolTextEditor20241022Type] `json:"type,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+}
+
+func (r BetaToolTextEditor20241022Param) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaToolTextEditor20241022Param) implementsBetaToolUnionUnionParam() {}
+
+type BetaToolTextEditor20241022Name string
+
+const (
+	BetaToolTextEditor20241022NameStrReplaceEditor BetaToolTextEditor20241022Name = "str_replace_editor"
+)
+
+func (r BetaToolTextEditor20241022Name) IsKnown() bool {
+	switch r {
+	case BetaToolTextEditor20241022NameStrReplaceEditor:
+		return true
+	}
+	return false
+}
+
+type BetaToolTextEditor20241022Type string
+
+const (
+	BetaToolTextEditor20241022TypeTextEditor20241022 BetaToolTextEditor20241022Type = "text_editor_20241022"
+)
+
+func (r BetaToolTextEditor20241022Type) IsKnown() bool {
+	switch r {
+	case BetaToolTextEditor20241022TypeTextEditor20241022:
+		return true
+	}
+	return false
+}
+
+type BetaToolUnionParam struct {
+	Type param.Field[BetaToolUnionType] `json:"type"`
+	// Description of what this tool does.
+	//
+	// Tool descriptions should be as detailed as possible. The more information that
+	// the model has about what the tool is and how to use it, the better it will
+	// perform. You can use natural language descriptions to reinforce important
+	// aspects of the tool input JSON schema.
+	Description     param.Field[string]                         `json:"description"`
+	Name            param.Field[string]                         `json:"name,required"`
+	InputSchema     param.Field[interface{}]                    `json:"input_schema,required"`
+	CacheControl    param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+	DisplayHeightPx param.Field[int64]                          `json:"display_height_px"`
+	DisplayWidthPx  param.Field[int64]                          `json:"display_width_px"`
+	DisplayNumber   param.Field[int64]                          `json:"display_number"`
+}
+
+func (r BetaToolUnionParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaToolUnionParam) implementsBetaToolUnionUnionParam() {}
+
+// Satisfied by [BetaToolParam], [BetaToolComputerUse20241022Param],
+// [BetaToolBash20241022Param], [BetaToolTextEditor20241022Param],
+// [BetaToolUnionParam].
+type BetaToolUnionUnionParam interface {
+	implementsBetaToolUnionUnionParam()
+}
+
+type BetaToolUnionType string
+
+const (
+	BetaToolUnionTypeCustom             BetaToolUnionType = "custom"
+	BetaToolUnionTypeComputer20241022   BetaToolUnionType = "computer_20241022"
+	BetaToolUnionTypeBash20241022       BetaToolUnionType = "bash_20241022"
+	BetaToolUnionTypeTextEditor20241022 BetaToolUnionType = "text_editor_20241022"
+)
+
+func (r BetaToolUnionType) IsKnown() bool {
+	switch r {
+	case BetaToolUnionTypeCustom, BetaToolUnionTypeComputer20241022, BetaToolUnionTypeBash20241022, BetaToolUnionTypeTextEditor20241022:
 		return true
 	}
 	return false
@@ -1594,11 +1781,12 @@ type BetaMessageNewParams struct {
 	// Our models are trained to operate on alternating `user` and `assistant`
 	// conversational turns. When creating a new `Message`, you specify the prior
 	// conversational turns with the `messages` parameter, and the model then generates
-	// the next `Message` in the conversation.
+	// the next `Message` in the conversation. Consecutive `user` or `assistant` turns
+	// in your request will be combined into a single turn.
 	//
 	// Each input message must be an object with a `role` and `content`. You can
 	// specify a single `user`-role message, or you can include multiple `user` and
-	// `assistant` messages. The first message must always use the `user` role.
+	// `assistant` messages.
 	//
 	// If the final message uses the `assistant` role, the response content will
 	// continue immediately from the content in that message. This can be used to
@@ -1789,7 +1977,7 @@ type BetaMessageNewParams struct {
 	// JSON structure of output.
 	//
 	// See our [guide](https://docs.anthropic.com/en/docs/tool-use) for more details.
-	Tools param.Field[[]BetaToolParam] `json:"tools"`
+	Tools param.Field[[]BetaToolUnionUnionParam] `json:"tools"`
 	// Only sample from the top K options for each subsequent token.
 	//
 	// Used to remove "long tail" low probability responses.

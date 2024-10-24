@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0-alpha.4 (2024-10-24)
+
+Full Changelog: [v0.2.0-alpha.3...v0.2.0-alpha.4](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.3...v0.2.0-alpha.4)
+
+### Chores
+
+* **internal:** update spec version ([#40](https://github.com/anthropics/anthropic-sdk-go/issues/40)) ([b41d55f](https://github.com/anthropics/anthropic-sdk-go/commit/b41d55f13b57553bd6e639ae359c5c6f0a9031bb))
+
 ## 0.2.0-alpha.3 (2024-10-22)
 
 Full Changelog: [v0.2.0-alpha.2...v0.2.0-alpha.3](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.2...v0.2.0-alpha.3)

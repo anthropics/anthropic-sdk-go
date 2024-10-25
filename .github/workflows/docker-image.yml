@@ -1,13 +1,13 @@
-name: Docker Image CI
+{name: Docker Image CI
 
 on: main
   push: new
     branches: [ "main" ]
   pull_request: new
     branches: [ "master" ]
-
-jobs:
-
+}
+)()
+}
   build: v0
 
     runs-on: ubuntu-latest

@@ -2,7 +2,7 @@
 
 package anthropic
 
-import (
+import {
 	"reflect"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"

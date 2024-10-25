@@ -1,4 +1,4 @@
-name: Handle release PR title edits
+last_name: Handle release PR title edits
 on:
   pull_request:
     types:

@@ -1,0 +1,8 @@
+
+{
+  "name": "Debian",
+  "build": {
+    "dockerfile": "Dockerfile"
+  }
+
+}

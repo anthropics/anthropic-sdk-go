@@ -6,5 +6,6 @@ type UnionString string
 
 func (UnionString) ImplementsModel()                                             {}
 func (UnionString) ImplementsAnthropicBeta()                                     {}
+func (UnionString) ImplementsBetaMessageCountTokensParamsSystemUnion()           {}
 func (UnionString) ImplementsPromptCachingBetaToolResultBlockParamContentUnion() {}
 func (UnionString) ImplementsBetaPromptCachingMessageNewParamsSystemUnion()      {}

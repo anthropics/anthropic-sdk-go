@@ -40,6 +40,7 @@ const (
 	AnthropicBetaPromptCaching2024_07_31  AnthropicBeta = "prompt-caching-2024-07-31"
 	AnthropicBetaComputerUse2024_10_22    AnthropicBeta = "computer-use-2024-10-22"
 	AnthropicBetaPDFs2024_09_25           AnthropicBeta = "pdfs-2024-09-25"
+	AnthropicBetaTokenCounting2024_11_01  AnthropicBeta = "token-counting-2024-11-01"
 )
 
 type BetaAPIError struct {

@@ -1236,7 +1236,10 @@ type ToolParam struct {
 	// This defines the shape of the `input` that your tool accepts and that the model
 	// will produce.
 	InputSchema param.Field[ToolInputSchemaParam] `json:"input_schema,required"`
-	Name        param.Field[string]               `json:"name,required"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name param.Field[string] `json:"name,required"`
 	// Description of what this tool does.
 	//
 	// Tool descriptions should be as detailed as possible. The more information that

@@ -115,3 +115,110 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
 }
+
+func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Beta.Messages.CountTokens(context.TODO(), anthropic.BetaMessageCountTokensParams{
+		Messages: anthropic.F([]anthropic.BetaMessageParam{{
+			Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
+			Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
+		}, {
+			Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
+			Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
+		}, {
+			Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
+			Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
+		}}),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
+		System: anthropic.F[anthropic.BetaMessageCountTokensParamsSystemUnion](anthropic.BetaMessageCountTokensParamsSystemArray([]anthropic.BetaTextBlockParam{{
+			Text: anthropic.F("Today's date is 2024-06-01."),
+			Type: anthropic.F(anthropic.BetaTextBlockParamTypeText),
+			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
+				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
+			}),
+		}})),
+		ToolChoice: anthropic.F[anthropic.BetaToolChoiceUnionParam](anthropic.BetaToolChoiceAutoParam{
+			Type:                   anthropic.F(anthropic.BetaToolChoiceAutoTypeAuto),
+			DisableParallelToolUse: anthropic.F(true),
+		}),
+		Tools: anthropic.F([]anthropic.BetaMessageCountTokensParamsToolUnion{anthropic.BetaToolParam{
+			InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
+				Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
+				Properties: anthropic.F[any](map[string]interface{}{
+					"location": map[string]interface{}{
+						"description": "The city and state, e.g. San Francisco, CA",
+						"type":        "string",
+					},
+					"unit": map[string]interface{}{
+						"description": "Unit for the output - one of (celsius, fahrenheit)",
+						"type":        "string",
+					},
+				}),
+			}),
+			Name: anthropic.F("x"),
+			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
+				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
+			}),
+			Description: anthropic.F("Get the current weather in a given location"),
+			Type:        anthropic.F(anthropic.BetaToolTypeCustom),
+		}, anthropic.BetaToolParam{
+			InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
+				Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
+				Properties: anthropic.F[any](map[string]interface{}{
+					"location": map[string]interface{}{
+						"description": "The city and state, e.g. San Francisco, CA",
+						"type":        "string",
+					},
+					"unit": map[string]interface{}{
+						"description": "Unit for the output - one of (celsius, fahrenheit)",
+						"type":        "string",
+					},
+				}),
+			}),
+			Name: anthropic.F("x"),
+			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
+				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
+			}),
+			Description: anthropic.F("Get the current weather in a given location"),
+			Type:        anthropic.F(anthropic.BetaToolTypeCustom),
+		}, anthropic.BetaToolParam{
+			InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
+				Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
+				Properties: anthropic.F[any](map[string]interface{}{
+					"location": map[string]interface{}{
+						"description": "The city and state, e.g. San Francisco, CA",
+						"type":        "string",
+					},
+					"unit": map[string]interface{}{
+						"description": "Unit for the output - one of (celsius, fahrenheit)",
+						"type":        "string",
+					},
+				}),
+			}),
+			Name: anthropic.F("x"),
+			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
+				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
+			}),
+			Description: anthropic.F("Get the current weather in a given location"),
+			Type:        anthropic.F(anthropic.BetaToolTypeCustom),
+		}}),
+		Betas: anthropic.F([]anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24, anthropic.AnthropicBetaMessageBatches2024_09_24, anthropic.AnthropicBetaMessageBatches2024_09_24}),
+	})
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}

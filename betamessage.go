@@ -69,6 +69,81 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 	return ssestream.NewStream[BetaRawMessageStreamEvent](ssestream.NewDecoder(raw), err)
 }
 
+// Count the number of tokens in a Message.
+//
+// The Token Count API can be used to count the number of tokens in a Message,
+// including tools, images, and documents, without creating it.
+func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessageCountTokensParams, opts ...option.RequestOption) (res *BetaMessageTokensCount, err error) {
+	opts = append(r.Options[:], opts...)
+	path := "v1/messages/count_tokens?beta=true"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
+	return
+}
+
+type BetaBase64PDFBlockParam struct {
+	Source       param.Field[BetaBase64PDFSourceParam]       `json:"source,required"`
+	Type         param.Field[BetaBase64PDFBlockType]         `json:"type,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+}
+
+func (r BetaBase64PDFBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaBase64PDFBlockParam) implementsBetaContentBlockParamUnion() {}
+
+type BetaBase64PDFBlockType string
+
+const (
+	BetaBase64PDFBlockTypeDocument BetaBase64PDFBlockType = "document"
+)
+
+func (r BetaBase64PDFBlockType) IsKnown() bool {
+	switch r {
+	case BetaBase64PDFBlockTypeDocument:
+		return true
+	}
+	return false
+}
+
+type BetaBase64PDFSourceParam struct {
+	Data      param.Field[string]                       `json:"data,required" format:"byte"`
+	MediaType param.Field[BetaBase64PDFSourceMediaType] `json:"media_type,required"`
+	Type      param.Field[BetaBase64PDFSourceType]      `json:"type,required"`
+}
+
+func (r BetaBase64PDFSourceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type BetaBase64PDFSourceMediaType string
+
+const (
+	BetaBase64PDFSourceMediaTypeApplicationPDF BetaBase64PDFSourceMediaType = "application/pdf"
+)
+
+func (r BetaBase64PDFSourceMediaType) IsKnown() bool {
+	switch r {
+	case BetaBase64PDFSourceMediaTypeApplicationPDF:
+		return true
+	}
+	return false
+}
+
+type BetaBase64PDFSourceType string
+
+const (
+	BetaBase64PDFSourceTypeBase64 BetaBase64PDFSourceType = "base64"
+)
+
+func (r BetaBase64PDFSourceType) IsKnown() bool {
+	switch r {
+	case BetaBase64PDFSourceTypeBase64:
+		return true
+	}
+	return false
+}
+
 type BetaCacheControlEphemeralParam struct {
 	Type param.Field[BetaCacheControlEphemeralType] `json:"type,required"`
 }
@@ -192,7 +267,8 @@ func (r BetaContentBlockParam) MarshalJSON() (data []byte, err error) {
 func (r BetaContentBlockParam) implementsBetaContentBlockParamUnion() {}
 
 // Satisfied by [BetaTextBlockParam], [BetaImageBlockParam],
-// [BetaToolUseBlockParam], [BetaToolResultBlockParam], [BetaContentBlockParam].
+// [BetaToolUseBlockParam], [BetaToolResultBlockParam], [BetaBase64PDFBlockParam],
+// [BetaContentBlockParam].
 type BetaContentBlockParamUnion interface {
 	implementsBetaContentBlockParamUnion()
 }
@@ -204,11 +280,12 @@ const (
 	BetaContentBlockParamTypeImage      BetaContentBlockParamType = "image"
 	BetaContentBlockParamTypeToolUse    BetaContentBlockParamType = "tool_use"
 	BetaContentBlockParamTypeToolResult BetaContentBlockParamType = "tool_result"
+	BetaContentBlockParamTypeDocument   BetaContentBlockParamType = "document"
 )
 
 func (r BetaContentBlockParamType) IsKnown() bool {
 	switch r {
-	case BetaContentBlockParamTypeText, BetaContentBlockParamTypeImage, BetaContentBlockParamTypeToolUse, BetaContentBlockParamTypeToolResult:
+	case BetaContentBlockParamTypeText, BetaContentBlockParamTypeImage, BetaContentBlockParamTypeToolUse, BetaContentBlockParamTypeToolResult, BetaContentBlockParamTypeDocument:
 		return true
 	}
 	return false
@@ -535,6 +612,29 @@ func (r BetaMessageParamRole) IsKnown() bool {
 		return true
 	}
 	return false
+}
+
+type BetaMessageTokensCount struct {
+	// The total number of tokens across the provided list of messages, system prompt,
+	// and tools.
+	InputTokens int64                      `json:"input_tokens,required"`
+	JSON        betaMessageTokensCountJSON `json:"-"`
+}
+
+// betaMessageTokensCountJSON contains the JSON metadata for the struct
+// [BetaMessageTokensCount]
+type betaMessageTokensCountJSON struct {
+	InputTokens apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *BetaMessageTokensCount) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaMessageTokensCountJSON) RawJSON() string {
+	return r.raw
 }
 
 type BetaMetadataParam struct {
@@ -1235,7 +1335,10 @@ type BetaToolParam struct {
 	//
 	// This defines the shape of the `input` that your tool accepts and that the model
 	// will produce.
-	InputSchema  param.Field[BetaToolInputSchemaParam]       `json:"input_schema,required"`
+	InputSchema param.Field[BetaToolInputSchemaParam] `json:"input_schema,required"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
 	Name         param.Field[string]                         `json:"name,required"`
 	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
 	// Description of what this tool does.
@@ -1253,6 +1356,8 @@ func (r BetaToolParam) MarshalJSON() (data []byte, err error) {
 }
 
 func (r BetaToolParam) implementsBetaToolUnionUnionParam() {}
+
+func (r BetaToolParam) implementsBetaMessageCountTokensParamsToolUnion() {}
 
 // [JSON schema](https://json-schema.org/) for this tool's input.
 //
@@ -1297,6 +1402,9 @@ func (r BetaToolType) IsKnown() bool {
 }
 
 type BetaToolBash20241022Param struct {
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
 	Name         param.Field[BetaToolBash20241022Name]       `json:"name,required"`
 	Type         param.Field[BetaToolBash20241022Type]       `json:"type,required"`
 	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
@@ -1308,6 +1416,11 @@ func (r BetaToolBash20241022Param) MarshalJSON() (data []byte, err error) {
 
 func (r BetaToolBash20241022Param) implementsBetaToolUnionUnionParam() {}
 
+func (r BetaToolBash20241022Param) implementsBetaMessageCountTokensParamsToolUnion() {}
+
+// Name of the tool.
+//
+// This is how the tool will be called by the model and in tool_use blocks.
 type BetaToolBash20241022Name string
 
 const (
@@ -1473,12 +1586,18 @@ func (r BetaToolChoiceToolType) IsKnown() bool {
 }
 
 type BetaToolComputerUse20241022Param struct {
-	DisplayHeightPx param.Field[int64]                           `json:"display_height_px,required"`
-	DisplayWidthPx  param.Field[int64]                           `json:"display_width_px,required"`
-	Name            param.Field[BetaToolComputerUse20241022Name] `json:"name,required"`
-	Type            param.Field[BetaToolComputerUse20241022Type] `json:"type,required"`
-	CacheControl    param.Field[BetaCacheControlEphemeralParam]  `json:"cache_control"`
-	DisplayNumber   param.Field[int64]                           `json:"display_number"`
+	// The height of the display in pixels.
+	DisplayHeightPx param.Field[int64] `json:"display_height_px,required"`
+	// The width of the display in pixels.
+	DisplayWidthPx param.Field[int64] `json:"display_width_px,required"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[BetaToolComputerUse20241022Name] `json:"name,required"`
+	Type         param.Field[BetaToolComputerUse20241022Type] `json:"type,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam]  `json:"cache_control"`
+	// The X11 display number (e.g. 0, 1) for the display.
+	DisplayNumber param.Field[int64] `json:"display_number"`
 }
 
 func (r BetaToolComputerUse20241022Param) MarshalJSON() (data []byte, err error) {
@@ -1487,6 +1606,11 @@ func (r BetaToolComputerUse20241022Param) MarshalJSON() (data []byte, err error)
 
 func (r BetaToolComputerUse20241022Param) implementsBetaToolUnionUnionParam() {}
 
+func (r BetaToolComputerUse20241022Param) implementsBetaMessageCountTokensParamsToolUnion() {}
+
+// Name of the tool.
+//
+// This is how the tool will be called by the model and in tool_use blocks.
 type BetaToolComputerUse20241022Name string
 
 const (
@@ -1578,6 +1702,9 @@ func (r BetaToolResultBlockParamContentType) IsKnown() bool {
 }
 
 type BetaToolTextEditor20241022Param struct {
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
 	Name         param.Field[BetaToolTextEditor20241022Name] `json:"name,required"`
 	Type         param.Field[BetaToolTextEditor20241022Type] `json:"type,required"`
 	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
@@ -1589,6 +1716,11 @@ func (r BetaToolTextEditor20241022Param) MarshalJSON() (data []byte, err error) 
 
 func (r BetaToolTextEditor20241022Param) implementsBetaToolUnionUnionParam() {}
 
+func (r BetaToolTextEditor20241022Param) implementsBetaMessageCountTokensParamsToolUnion() {}
+
+// Name of the tool.
+//
+// This is how the tool will be called by the model and in tool_use blocks.
 type BetaToolTextEditor20241022Name string
 
 const (
@@ -1625,13 +1757,19 @@ type BetaToolUnionParam struct {
 	// the model has about what the tool is and how to use it, the better it will
 	// perform. You can use natural language descriptions to reinforce important
 	// aspects of the tool input JSON schema.
-	Description     param.Field[string]                         `json:"description"`
-	Name            param.Field[string]                         `json:"name,required"`
-	InputSchema     param.Field[interface{}]                    `json:"input_schema,required"`
-	CacheControl    param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
-	DisplayHeightPx param.Field[int64]                          `json:"display_height_px"`
-	DisplayWidthPx  param.Field[int64]                          `json:"display_width_px"`
-	DisplayNumber   param.Field[int64]                          `json:"display_number"`
+	Description param.Field[string] `json:"description"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[string]                         `json:"name,required"`
+	InputSchema  param.Field[interface{}]                    `json:"input_schema,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+	// The height of the display in pixels.
+	DisplayHeightPx param.Field[int64] `json:"display_height_px"`
+	// The width of the display in pixels.
+	DisplayWidthPx param.Field[int64] `json:"display_width_px"`
+	// The X11 display number (e.g. 0, 1) for the display.
+	DisplayNumber param.Field[int64] `json:"display_number"`
 }
 
 func (r BetaToolUnionParam) MarshalJSON() (data []byte, err error) {
@@ -2002,4 +2140,263 @@ type BetaMessageNewParams struct {
 
 func (r BetaMessageNewParams) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
+}
+
+type BetaMessageCountTokensParams struct {
+	// Input messages.
+	//
+	// Our models are trained to operate on alternating `user` and `assistant`
+	// conversational turns. When creating a new `Message`, you specify the prior
+	// conversational turns with the `messages` parameter, and the model then generates
+	// the next `Message` in the conversation. Consecutive `user` or `assistant` turns
+	// in your request will be combined into a single turn.
+	//
+	// Each input message must be an object with a `role` and `content`. You can
+	// specify a single `user`-role message, or you can include multiple `user` and
+	// `assistant` messages.
+	//
+	// If the final message uses the `assistant` role, the response content will
+	// continue immediately from the content in that message. This can be used to
+	// constrain part of the model's response.
+	//
+	// Example with a single `user` message:
+	//
+	// ```json
+	// [{ "role": "user", "content": "Hello, Claude" }]
+	// ```
+	//
+	// Example with multiple conversational turns:
+	//
+	// ```json
+	// [
+	//
+	//	{ "role": "user", "content": "Hello there." },
+	//	{ "role": "assistant", "content": "Hi, I'm Claude. How can I help you?" },
+	//	{ "role": "user", "content": "Can you explain LLMs in plain English?" }
+	//
+	// ]
+	// ```
+	//
+	// Example with a partially-filled response from Claude:
+	//
+	// ```json
+	// [
+	//
+	//	{
+	//	  "role": "user",
+	//	  "content": "What's the Greek name for Sun? (A) Sol (B) Helios (C) Sun"
+	//	},
+	//	{ "role": "assistant", "content": "The best answer is (" }
+	//
+	// ]
+	// ```
+	//
+	// Each input message `content` may be either a single `string` or an array of
+	// content blocks, where each block has a specific `type`. Using a `string` for
+	// `content` is shorthand for an array of one content block of type `"text"`. The
+	// following input messages are equivalent:
+	//
+	// ```json
+	// { "role": "user", "content": "Hello, Claude" }
+	// ```
+	//
+	// ```json
+	// { "role": "user", "content": [{ "type": "text", "text": "Hello, Claude" }] }
+	// ```
+	//
+	// Starting with Claude 3 models, you can also send image content blocks:
+	//
+	// ```json
+	//
+	//	{
+	//	  "role": "user",
+	//	  "content": [
+	//	    {
+	//	      "type": "image",
+	//	      "source": {
+	//	        "type": "base64",
+	//	        "media_type": "image/jpeg",
+	//	        "data": "/9j/4AAQSkZJRg..."
+	//	      }
+	//	    },
+	//	    { "type": "text", "text": "What is in this image?" }
+	//	  ]
+	//	}
+	//
+	// ```
+	//
+	// We currently support the `base64` source type for images, and the `image/jpeg`,
+	// `image/png`, `image/gif`, and `image/webp` media types.
+	//
+	// See [examples](https://docs.anthropic.com/en/api/messages-examples#vision) for
+	// more input examples.
+	//
+	// Note that if you want to include a
+	// [system prompt](https://docs.anthropic.com/en/docs/system-prompts), you can use
+	// the top-level `system` parameter — there is no `"system"` role for input
+	// messages in the Messages API.
+	Messages param.Field[[]BetaMessageParam] `json:"messages,required"`
+	// The model that will complete your prompt.\n\nSee
+	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
+	// details and options.
+	Model param.Field[Model] `json:"model,required"`
+	// System prompt.
+	//
+	// A system prompt is a way of providing context and instructions to Claude, such
+	// as specifying a particular goal or role. See our
+	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
+	System param.Field[BetaMessageCountTokensParamsSystemUnion] `json:"system"`
+	// How the model should use the provided tools. The model can use a specific tool,
+	// any available tool, or decide by itself.
+	ToolChoice param.Field[BetaToolChoiceUnionParam] `json:"tool_choice"`
+	// Definitions of tools that the model may use.
+	//
+	// If you include `tools` in your API request, the model may return `tool_use`
+	// content blocks that represent the model's use of those tools. You can then run
+	// those tools using the tool input generated by the model and then optionally
+	// return results back to the model using `tool_result` content blocks.
+	//
+	// Each tool definition includes:
+	//
+	//   - `name`: Name of the tool.
+	//   - `description`: Optional, but strongly-recommended description of the tool.
+	//   - `input_schema`: [JSON schema](https://json-schema.org/) for the tool `input`
+	//     shape that the model will produce in `tool_use` output content blocks.
+	//
+	// For example, if you defined `tools` as:
+	//
+	// ```json
+	// [
+	//
+	//	{
+	//	  "name": "get_stock_price",
+	//	  "description": "Get the current stock price for a given ticker symbol.",
+	//	  "input_schema": {
+	//	    "type": "object",
+	//	    "properties": {
+	//	      "ticker": {
+	//	        "type": "string",
+	//	        "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+	//	      }
+	//	    },
+	//	    "required": ["ticker"]
+	//	  }
+	//	}
+	//
+	// ]
+	// ```
+	//
+	// And then asked the model "What's the S&P 500 at today?", the model might produce
+	// `tool_use` content blocks in the response like this:
+	//
+	// ```json
+	// [
+	//
+	//	{
+	//	  "type": "tool_use",
+	//	  "id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
+	//	  "name": "get_stock_price",
+	//	  "input": { "ticker": "^GSPC" }
+	//	}
+	//
+	// ]
+	// ```
+	//
+	// You might then run your `get_stock_price` tool with `{"ticker": "^GSPC"}` as an
+	// input, and return the following back to the model in a subsequent `user`
+	// message:
+	//
+	// ```json
+	// [
+	//
+	//	{
+	//	  "type": "tool_result",
+	//	  "tool_use_id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
+	//	  "content": "259.75 USD"
+	//	}
+	//
+	// ]
+	// ```
+	//
+	// Tools can be used for workflows that include running client-side tools and
+	// functions, or more generally whenever you want the model to produce a particular
+	// JSON structure of output.
+	//
+	// See our [guide](https://docs.anthropic.com/en/docs/tool-use) for more details.
+	Tools param.Field[[]BetaMessageCountTokensParamsToolUnion] `json:"tools"`
+	// Optional header to specify the beta version(s) you want to use.
+	Betas param.Field[[]AnthropicBeta] `header:"anthropic-beta"`
+}
+
+func (r BetaMessageCountTokensParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// System prompt.
+//
+// A system prompt is a way of providing context and instructions to Claude, such
+// as specifying a particular goal or role. See our
+// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
+//
+// Satisfied by [shared.UnionString], [BetaMessageCountTokensParamsSystemArray].
+type BetaMessageCountTokensParamsSystemUnion interface {
+	ImplementsBetaMessageCountTokensParamsSystemUnion()
+}
+
+type BetaMessageCountTokensParamsSystemArray []BetaTextBlockParam
+
+func (r BetaMessageCountTokensParamsSystemArray) ImplementsBetaMessageCountTokensParamsSystemUnion() {
+}
+
+type BetaMessageCountTokensParamsTool struct {
+	Type param.Field[BetaMessageCountTokensParamsToolsType] `json:"type"`
+	// Description of what this tool does.
+	//
+	// Tool descriptions should be as detailed as possible. The more information that
+	// the model has about what the tool is and how to use it, the better it will
+	// perform. You can use natural language descriptions to reinforce important
+	// aspects of the tool input JSON schema.
+	Description param.Field[string] `json:"description"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[string]                         `json:"name,required"`
+	InputSchema  param.Field[interface{}]                    `json:"input_schema,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+	// The height of the display in pixels.
+	DisplayHeightPx param.Field[int64] `json:"display_height_px"`
+	// The width of the display in pixels.
+	DisplayWidthPx param.Field[int64] `json:"display_width_px"`
+	// The X11 display number (e.g. 0, 1) for the display.
+	DisplayNumber param.Field[int64] `json:"display_number"`
+}
+
+func (r BetaMessageCountTokensParamsTool) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaMessageCountTokensParamsTool) implementsBetaMessageCountTokensParamsToolUnion() {}
+
+// Satisfied by [BetaToolParam], [BetaToolComputerUse20241022Param],
+// [BetaToolBash20241022Param], [BetaToolTextEditor20241022Param],
+// [BetaMessageCountTokensParamsTool].
+type BetaMessageCountTokensParamsToolUnion interface {
+	implementsBetaMessageCountTokensParamsToolUnion()
+}
+
+type BetaMessageCountTokensParamsToolsType string
+
+const (
+	BetaMessageCountTokensParamsToolsTypeCustom             BetaMessageCountTokensParamsToolsType = "custom"
+	BetaMessageCountTokensParamsToolsTypeComputer20241022   BetaMessageCountTokensParamsToolsType = "computer_20241022"
+	BetaMessageCountTokensParamsToolsTypeBash20241022       BetaMessageCountTokensParamsToolsType = "bash_20241022"
+	BetaMessageCountTokensParamsToolsTypeTextEditor20241022 BetaMessageCountTokensParamsToolsType = "text_editor_20241022"
+)
+
+func (r BetaMessageCountTokensParamsToolsType) IsKnown() bool {
+	switch r {
+	case BetaMessageCountTokensParamsToolsTypeCustom, BetaMessageCountTokensParamsToolsTypeComputer20241022, BetaMessageCountTokensParamsToolsTypeBash20241022, BetaMessageCountTokensParamsToolsTypeTextEditor20241022:
+		return true
+	}
+	return false
 }

@@ -431,7 +431,10 @@ type PromptCachingBetaToolParam struct {
 	//
 	// This defines the shape of the `input` that your tool accepts and that the model
 	// will produce.
-	InputSchema  param.Field[PromptCachingBetaToolInputSchemaParam]       `json:"input_schema,required"`
+	InputSchema param.Field[PromptCachingBetaToolInputSchemaParam] `json:"input_schema,required"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
 	Name         param.Field[string]                                      `json:"name,required"`
 	CacheControl param.Field[PromptCachingBetaCacheControlEphemeralParam] `json:"cache_control"`
 	// Description of what this tool does.

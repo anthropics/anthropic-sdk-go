@@ -681,7 +681,7 @@ const (
 	// Fast and cost-effective model
 	ModelClaude3_5HaikuLatest Model = "claude-3-5-haiku-latest"
 	// Fast and cost-effective model
-	ModelClaude3Haiku20241022 Model = "claude-3-haiku-20241022"
+	ModelClaude3_5Haiku20241022 Model = "claude-3-5-haiku-20241022"
 	// Our most intelligent model
 	ModelClaude3_5SonnetLatest Model = "claude-3-5-sonnet-latest"
 	// Our most intelligent model

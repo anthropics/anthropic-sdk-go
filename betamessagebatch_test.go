@@ -38,7 +38,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
 					Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 				}}),
-				Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
+				Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
 				Metadata: anthropic.F(anthropic.BetaMetadataParam{
 					UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				}),
@@ -122,7 +122,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
 					Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 				}}),
-				Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
+				Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
 				Metadata: anthropic.F(anthropic.BetaMetadataParam{
 					UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				}),
@@ -206,7 +206,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
 					Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 				}}),
-				Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
+				Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
 				Metadata: anthropic.F(anthropic.BetaMetadataParam{
 					UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				}),

@@ -678,6 +678,10 @@ func (r MetadataParam) MarshalJSON() (data []byte, err error) {
 type Model = string
 
 const (
+	// Fast and cost-effective model
+	ModelClaude3_5HaikuLatest Model = "claude-3-5-haiku-latest"
+	// Fast and cost-effective model
+	ModelClaude3Haiku20241022 Model = "claude-3-haiku-20241022"
 	// Our most intelligent model
 	ModelClaude3_5SonnetLatest Model = "claude-3-5-sonnet-latest"
 	// Our most intelligent model
@@ -690,7 +694,7 @@ const (
 	ModelClaude_3_Opus_20240229 Model = "claude-3-opus-20240229"
 	// Balance of speed and intelligence
 	ModelClaude_3_Sonnet_20240229 Model = "claude-3-sonnet-20240229"
-	// Fast and cost-effective
+	// Our previous fast and cost-effective
 	ModelClaude_3_Haiku_20240307 Model = "claude-3-haiku-20240307"
 	ModelClaude_2_1              Model = "claude-2.1"
 	ModelClaude_2_0              Model = "claude-2.0"

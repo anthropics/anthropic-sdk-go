@@ -31,7 +31,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
+		Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
 		Metadata: anthropic.F(anthropic.MetadataParam{
 			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		}),

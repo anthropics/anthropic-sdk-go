@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.0-alpha.4 (2024-11-04)
+
+Full Changelog: [v0.2.0-alpha.3...v0.2.0-alpha.4](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.3...v0.2.0-alpha.4)
+
+### Features
+
+* **api:** add message token counting & PDFs support ([#45](https://github.com/anthropics/anthropic-sdk-go/issues/45)) ([775de6d](https://github.com/anthropics/anthropic-sdk-go/commit/775de6d75c61cd3a6b3d63fdf129b1564b1f147c))
+* **api:** add new haiku model ([#48](https://github.com/anthropics/anthropic-sdk-go/issues/48)) ([8cb9d59](https://github.com/anthropics/anthropic-sdk-go/commit/8cb9d59b13d12a70866a579dca8cc965e33eeba5))
+
+
+### Bug Fixes
+
+* **types:** add missing token-counting-2024-11-01 ([#47](https://github.com/anthropics/anthropic-sdk-go/issues/47)) ([bc46a6e](https://github.com/anthropics/anthropic-sdk-go/commit/bc46a6e648f9ad804b119eff977e050843efb7f6))
+* **types:** correct claude-3-5-haiku-20241022 name ([#50](https://github.com/anthropics/anthropic-sdk-go/issues/50)) ([f0016bb](https://github.com/anthropics/anthropic-sdk-go/commit/f0016bbb272fd65fcc42f0b664e3ab45a665e673))
+
+
+### Chores
+
+* **internal:** update spec version ([#40](https://github.com/anthropics/anthropic-sdk-go/issues/40)) ([b41d55f](https://github.com/anthropics/anthropic-sdk-go/commit/b41d55f13b57553bd6e639ae359c5c6f0a9031bb))
+
 ## 0.2.0-alpha.3 (2024-10-22)
 
 Full Changelog: [v0.2.0-alpha.2...v0.2.0-alpha.3](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.2...v0.2.0-alpha.3)

@@ -167,12 +167,12 @@ func (r BetaCacheControlEphemeralType) IsKnown() bool {
 }
 
 type BetaContentBlock struct {
-	Type BetaContentBlockType `json:"type,required"`
-	Text string               `json:"text"`
-	ID   string               `json:"id"`
-	Name string               `json:"name"`
 	// This field can have the runtime type of [interface{}].
 	Input interface{}          `json:"input,required"`
+	Type  BetaContentBlockType `json:"type,required"`
+	ID    string               `json:"id"`
+	Name  string               `json:"name"`
+	Text  string               `json:"text"`
 	JSON  betaContentBlockJSON `json:"-"`
 	union BetaContentBlockUnion
 }
@@ -180,11 +180,11 @@ type BetaContentBlock struct {
 // betaContentBlockJSON contains the JSON metadata for the struct
 // [BetaContentBlock]
 type betaContentBlockJSON struct {
+	Input       apijson.Field
 	Type        apijson.Field
-	Text        apijson.Field
 	ID          apijson.Field
 	Name        apijson.Field
-	Input       apijson.Field
+	Text        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -248,16 +248,16 @@ func (r BetaContentBlockType) IsKnown() bool {
 }
 
 type BetaContentBlockParam struct {
-	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
-	Type         param.Field[BetaContentBlockParamType]      `json:"type,required"`
-	Text         param.Field[string]                         `json:"text"`
-	Source       param.Field[interface{}]                    `json:"source,required"`
-	ID           param.Field[string]                         `json:"id"`
-	Name         param.Field[string]                         `json:"name"`
-	Input        param.Field[interface{}]                    `json:"input,required"`
-	ToolUseID    param.Field[string]                         `json:"tool_use_id"`
-	IsError      param.Field[bool]                           `json:"is_error"`
 	Content      param.Field[interface{}]                    `json:"content,required"`
+	Input        param.Field[interface{}]                    `json:"input,required"`
+	Source       param.Field[interface{}]                    `json:"source,required"`
+	Type         param.Field[BetaContentBlockParamType]      `json:"type,required"`
+	ID           param.Field[string]                         `json:"id"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+	IsError      param.Field[bool]                           `json:"is_error"`
+	Name         param.Field[string]                         `json:"name"`
+	Text         param.Field[string]                         `json:"text"`
+	ToolUseID    param.Field[string]                         `json:"tool_use_id"`
 }
 
 func (r BetaContentBlockParam) MarshalJSON() (data []byte, err error) {
@@ -679,8 +679,8 @@ func (r BetaRawContentBlockDeltaEvent) implementsBetaRawMessageStreamEvent() {}
 
 type BetaRawContentBlockDeltaEventDelta struct {
 	Type        BetaRawContentBlockDeltaEventDeltaType `json:"type,required"`
-	Text        string                                 `json:"text"`
 	PartialJSON string                                 `json:"partial_json"`
+	Text        string                                 `json:"text"`
 	JSON        betaRawContentBlockDeltaEventDeltaJSON `json:"-"`
 	union       BetaRawContentBlockDeltaEventDeltaUnion
 }
@@ -689,8 +689,8 @@ type BetaRawContentBlockDeltaEventDelta struct {
 // [BetaRawContentBlockDeltaEventDelta]
 type betaRawContentBlockDeltaEventDeltaJSON struct {
 	Type        apijson.Field
-	Text        apijson.Field
 	PartialJSON apijson.Field
+	Text        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -795,12 +795,12 @@ func (r betaRawContentBlockStartEventJSON) RawJSON() string {
 func (r BetaRawContentBlockStartEvent) implementsBetaRawMessageStreamEvent() {}
 
 type BetaRawContentBlockStartEventContentBlock struct {
-	Type BetaRawContentBlockStartEventContentBlockType `json:"type,required"`
-	Text string                                        `json:"text"`
-	ID   string                                        `json:"id"`
-	Name string                                        `json:"name"`
 	// This field can have the runtime type of [interface{}].
 	Input interface{}                                   `json:"input,required"`
+	Type  BetaRawContentBlockStartEventContentBlockType `json:"type,required"`
+	ID    string                                        `json:"id"`
+	Name  string                                        `json:"name"`
+	Text  string                                        `json:"text"`
 	JSON  betaRawContentBlockStartEventContentBlockJSON `json:"-"`
 	union BetaRawContentBlockStartEventContentBlockUnion
 }
@@ -808,11 +808,11 @@ type BetaRawContentBlockStartEventContentBlock struct {
 // betaRawContentBlockStartEventContentBlockJSON contains the JSON metadata for the
 // struct [BetaRawContentBlockStartEventContentBlock]
 type betaRawContentBlockStartEventContentBlockJSON struct {
+	Input       apijson.Field
 	Type        apijson.Field
-	Text        apijson.Field
 	ID          apijson.Field
 	Name        apijson.Field
-	Input       apijson.Field
+	Text        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -1098,11 +1098,15 @@ func (r BetaRawMessageStopEventType) IsKnown() bool {
 }
 
 type BetaRawMessageStreamEvent struct {
-	Type    BetaRawMessageStreamEventType `json:"type,required"`
-	Message BetaMessage                   `json:"message"`
+	// This field can have the runtime type of
+	// [BetaRawContentBlockStartEventContentBlock].
+	ContentBlock interface{} `json:"content_block,required"`
 	// This field can have the runtime type of [BetaRawMessageDeltaEventDelta],
 	// [BetaRawContentBlockDeltaEventDelta].
-	Delta interface{} `json:"delta,required"`
+	Delta   interface{}                   `json:"delta,required"`
+	Type    BetaRawMessageStreamEventType `json:"type,required"`
+	Index   int64                         `json:"index"`
+	Message BetaMessage                   `json:"message"`
 	// Billing and rate-limit usage.
 	//
 	// Anthropic's API bills and rate-limits by token counts, as tokens represent the
@@ -1115,24 +1119,20 @@ type BetaRawMessageStreamEvent struct {
 	//
 	// For example, `output_tokens` will be non-zero, even for an empty string response
 	// from Claude.
-	Usage BetaMessageDeltaUsage `json:"usage"`
-	Index int64                 `json:"index"`
-	// This field can have the runtime type of
-	// [BetaRawContentBlockStartEventContentBlock].
-	ContentBlock interface{}                   `json:"content_block,required"`
-	JSON         betaRawMessageStreamEventJSON `json:"-"`
-	union        BetaRawMessageStreamEventUnion
+	Usage BetaMessageDeltaUsage         `json:"usage"`
+	JSON  betaRawMessageStreamEventJSON `json:"-"`
+	union BetaRawMessageStreamEventUnion
 }
 
 // betaRawMessageStreamEventJSON contains the JSON metadata for the struct
 // [BetaRawMessageStreamEvent]
 type betaRawMessageStreamEventJSON struct {
-	Type         apijson.Field
-	Message      apijson.Field
-	Delta        apijson.Field
-	Usage        apijson.Field
-	Index        apijson.Field
 	ContentBlock apijson.Field
+	Delta        apijson.Field
+	Type         apijson.Field
+	Index        apijson.Field
+	Message      apijson.Field
+	Usage        apijson.Field
 	raw          string
 	ExtraFields  map[string]apijson.Field
 }
@@ -1668,10 +1668,10 @@ func (r BetaToolResultBlockParamType) IsKnown() bool {
 }
 
 type BetaToolResultBlockParamContent struct {
-	CacheControl param.Field[BetaCacheControlEphemeralParam]      `json:"cache_control"`
-	Type         param.Field[BetaToolResultBlockParamContentType] `json:"type,required"`
-	Text         param.Field[string]                              `json:"text"`
 	Source       param.Field[interface{}]                         `json:"source,required"`
+	Type         param.Field[BetaToolResultBlockParamContentType] `json:"type,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam]      `json:"cache_control"`
+	Text         param.Field[string]                              `json:"text"`
 }
 
 func (r BetaToolResultBlockParamContent) MarshalJSON() (data []byte, err error) {
@@ -1750,7 +1750,12 @@ func (r BetaToolTextEditor20241022Type) IsKnown() bool {
 }
 
 type BetaToolUnionParam struct {
-	Type param.Field[BetaToolUnionType] `json:"type"`
+	InputSchema param.Field[interface{}] `json:"input_schema,required"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[string]                         `json:"name,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
 	// Description of what this tool does.
 	//
 	// Tool descriptions should be as detailed as possible. The more information that
@@ -1758,18 +1763,13 @@ type BetaToolUnionParam struct {
 	// perform. You can use natural language descriptions to reinforce important
 	// aspects of the tool input JSON schema.
 	Description param.Field[string] `json:"description"`
-	// Name of the tool.
-	//
-	// This is how the tool will be called by the model and in tool_use blocks.
-	Name         param.Field[string]                         `json:"name,required"`
-	InputSchema  param.Field[interface{}]                    `json:"input_schema,required"`
-	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
 	// The height of the display in pixels.
 	DisplayHeightPx param.Field[int64] `json:"display_height_px"`
-	// The width of the display in pixels.
-	DisplayWidthPx param.Field[int64] `json:"display_width_px"`
 	// The X11 display number (e.g. 0, 1) for the display.
 	DisplayNumber param.Field[int64] `json:"display_number"`
+	// The width of the display in pixels.
+	DisplayWidthPx param.Field[int64]             `json:"display_width_px"`
+	Type           param.Field[BetaToolUnionType] `json:"type"`
 }
 
 func (r BetaToolUnionParam) MarshalJSON() (data []byte, err error) {
@@ -2349,7 +2349,12 @@ func (r BetaMessageCountTokensParamsSystemArray) ImplementsBetaMessageCountToken
 }
 
 type BetaMessageCountTokensParamsTool struct {
-	Type param.Field[BetaMessageCountTokensParamsToolsType] `json:"type"`
+	InputSchema param.Field[interface{}] `json:"input_schema,required"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[string]                         `json:"name,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
 	// Description of what this tool does.
 	//
 	// Tool descriptions should be as detailed as possible. The more information that
@@ -2357,18 +2362,13 @@ type BetaMessageCountTokensParamsTool struct {
 	// perform. You can use natural language descriptions to reinforce important
 	// aspects of the tool input JSON schema.
 	Description param.Field[string] `json:"description"`
-	// Name of the tool.
-	//
-	// This is how the tool will be called by the model and in tool_use blocks.
-	Name         param.Field[string]                         `json:"name,required"`
-	InputSchema  param.Field[interface{}]                    `json:"input_schema,required"`
-	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
 	// The height of the display in pixels.
 	DisplayHeightPx param.Field[int64] `json:"display_height_px"`
-	// The width of the display in pixels.
-	DisplayWidthPx param.Field[int64] `json:"display_width_px"`
 	// The X11 display number (e.g. 0, 1) for the display.
 	DisplayNumber param.Field[int64] `json:"display_number"`
+	// The width of the display in pixels.
+	DisplayWidthPx param.Field[int64]                                 `json:"display_width_px"`
+	Type           param.Field[BetaMessageCountTokensParamsToolsType] `json:"type"`
 }
 
 func (r BetaMessageCountTokensParamsTool) MarshalJSON() (data []byte, err error) {

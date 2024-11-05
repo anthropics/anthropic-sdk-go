@@ -340,16 +340,16 @@ func (r PromptCachingBetaMessageParam) MarshalJSON() (data []byte, err error) {
 }
 
 type PromptCachingBetaMessageParamContent struct {
-	CacheControl param.Field[PromptCachingBetaCacheControlEphemeralParam] `json:"cache_control"`
-	Type         param.Field[PromptCachingBetaMessageParamContentType]    `json:"type,required"`
-	Text         param.Field[string]                                      `json:"text"`
-	Source       param.Field[interface{}]                                 `json:"source,required"`
-	ID           param.Field[string]                                      `json:"id"`
-	Name         param.Field[string]                                      `json:"name"`
-	Input        param.Field[interface{}]                                 `json:"input,required"`
-	ToolUseID    param.Field[string]                                      `json:"tool_use_id"`
-	IsError      param.Field[bool]                                        `json:"is_error"`
 	Content      param.Field[interface{}]                                 `json:"content,required"`
+	Input        param.Field[interface{}]                                 `json:"input,required"`
+	Source       param.Field[interface{}]                                 `json:"source,required"`
+	Type         param.Field[PromptCachingBetaMessageParamContentType]    `json:"type,required"`
+	ID           param.Field[string]                                      `json:"id"`
+	CacheControl param.Field[PromptCachingBetaCacheControlEphemeralParam] `json:"cache_control"`
+	IsError      param.Field[bool]                                        `json:"is_error"`
+	Name         param.Field[string]                                      `json:"name"`
+	Text         param.Field[string]                                      `json:"text"`
+	ToolUseID    param.Field[string]                                      `json:"tool_use_id"`
 }
 
 func (r PromptCachingBetaMessageParamContent) MarshalJSON() (data []byte, err error) {
@@ -519,10 +519,10 @@ func (r PromptCachingBetaToolResultBlockParamContentArray) ImplementsPromptCachi
 }
 
 type PromptCachingBetaToolResultBlockParamContentArrayItem struct {
-	CacheControl param.Field[PromptCachingBetaCacheControlEphemeralParam]           `json:"cache_control"`
-	Type         param.Field[PromptCachingBetaToolResultBlockParamContentArrayType] `json:"type,required"`
-	Text         param.Field[string]                                                `json:"text"`
 	Source       param.Field[interface{}]                                           `json:"source,required"`
+	Type         param.Field[PromptCachingBetaToolResultBlockParamContentArrayType] `json:"type,required"`
+	CacheControl param.Field[PromptCachingBetaCacheControlEphemeralParam]           `json:"cache_control"`
+	Text         param.Field[string]                                                `json:"text"`
 }
 
 func (r PromptCachingBetaToolResultBlockParamContentArrayItem) MarshalJSON() (data []byte, err error) {
@@ -653,11 +653,14 @@ func (r RawPromptCachingBetaMessageStartEventType) IsKnown() bool {
 }
 
 type RawPromptCachingBetaMessageStreamEvent struct {
-	Type    RawPromptCachingBetaMessageStreamEventType `json:"type,required"`
-	Message PromptCachingBetaMessage                   `json:"message"`
+	// This field can have the runtime type of [ContentBlockStartEventContentBlock].
+	ContentBlock interface{} `json:"content_block,required"`
 	// This field can have the runtime type of [MessageDeltaEventDelta],
 	// [ContentBlockDeltaEventDelta].
-	Delta interface{} `json:"delta,required"`
+	Delta   interface{}                                `json:"delta,required"`
+	Type    RawPromptCachingBetaMessageStreamEventType `json:"type,required"`
+	Index   int64                                      `json:"index"`
+	Message PromptCachingBetaMessage                   `json:"message"`
 	// Billing and rate-limit usage.
 	//
 	// Anthropic's API bills and rate-limits by token counts, as tokens represent the
@@ -670,23 +673,20 @@ type RawPromptCachingBetaMessageStreamEvent struct {
 	//
 	// For example, `output_tokens` will be non-zero, even for an empty string response
 	// from Claude.
-	Usage MessageDeltaUsage `json:"usage"`
-	Index int64             `json:"index"`
-	// This field can have the runtime type of [ContentBlockStartEventContentBlock].
-	ContentBlock interface{}                                `json:"content_block,required"`
-	JSON         rawPromptCachingBetaMessageStreamEventJSON `json:"-"`
-	union        RawPromptCachingBetaMessageStreamEventUnion
+	Usage MessageDeltaUsage                          `json:"usage"`
+	JSON  rawPromptCachingBetaMessageStreamEventJSON `json:"-"`
+	union RawPromptCachingBetaMessageStreamEventUnion
 }
 
 // rawPromptCachingBetaMessageStreamEventJSON contains the JSON metadata for the
 // struct [RawPromptCachingBetaMessageStreamEvent]
 type rawPromptCachingBetaMessageStreamEventJSON struct {
-	Type         apijson.Field
-	Message      apijson.Field
-	Delta        apijson.Field
-	Usage        apijson.Field
-	Index        apijson.Field
 	ContentBlock apijson.Field
+	Delta        apijson.Field
+	Type         apijson.Field
+	Index        apijson.Field
+	Message      apijson.Field
+	Usage        apijson.Field
 	raw          string
 	ExtraFields  map[string]apijson.Field
 }

@@ -68,23 +68,23 @@ func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams
 }
 
 type ContentBlock struct {
-	Type ContentBlockType `json:"type,required"`
-	Text string           `json:"text"`
-	ID   string           `json:"id"`
-	Name string           `json:"name"`
 	// This field can have the runtime type of [interface{}].
 	Input interface{}      `json:"input,required"`
+	Type  ContentBlockType `json:"type,required"`
+	ID    string           `json:"id"`
+	Name  string           `json:"name"`
+	Text  string           `json:"text"`
 	JSON  contentBlockJSON `json:"-"`
 	union ContentBlockUnion
 }
 
 // contentBlockJSON contains the JSON metadata for the struct [ContentBlock]
 type contentBlockJSON struct {
+	Input       apijson.Field
 	Type        apijson.Field
-	Text        apijson.Field
 	ID          apijson.Field
 	Name        apijson.Field
-	Input       apijson.Field
+	Text        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -454,15 +454,15 @@ func (r MessageParam) MarshalJSON() (data []byte, err error) {
 }
 
 type MessageParamContent struct {
-	Type      param.Field[MessageParamContentType] `json:"type,required"`
-	Text      param.Field[string]                  `json:"text"`
-	Source    param.Field[interface{}]             `json:"source,required"`
-	ID        param.Field[string]                  `json:"id"`
-	Name      param.Field[string]                  `json:"name"`
-	Input     param.Field[interface{}]             `json:"input,required"`
-	ToolUseID param.Field[string]                  `json:"tool_use_id"`
-	IsError   param.Field[bool]                    `json:"is_error"`
 	Content   param.Field[interface{}]             `json:"content,required"`
+	Input     param.Field[interface{}]             `json:"input,required"`
+	Source    param.Field[interface{}]             `json:"source,required"`
+	Type      param.Field[MessageParamContentType] `json:"type,required"`
+	ID        param.Field[string]                  `json:"id"`
+	IsError   param.Field[bool]                    `json:"is_error"`
+	Name      param.Field[string]                  `json:"name"`
+	Text      param.Field[string]                  `json:"text"`
+	ToolUseID param.Field[string]                  `json:"tool_use_id"`
 }
 
 func (r MessageParamContent) MarshalJSON() (data []byte, err error) {
@@ -579,8 +579,8 @@ func (r ContentBlockDeltaEvent) implementsRawPromptCachingBetaMessageStreamEvent
 
 type ContentBlockDeltaEventDelta struct {
 	Type        ContentBlockDeltaEventDeltaType `json:"type,required"`
-	Text        string                          `json:"text"`
 	PartialJSON string                          `json:"partial_json"`
+	Text        string                          `json:"text"`
 	JSON        contentBlockDeltaEventDeltaJSON `json:"-"`
 	union       ContentBlockDeltaEventDeltaUnion
 }
@@ -589,8 +589,8 @@ type ContentBlockDeltaEventDelta struct {
 // [ContentBlockDeltaEventDelta]
 type contentBlockDeltaEventDeltaJSON struct {
 	Type        apijson.Field
-	Text        apijson.Field
 	PartialJSON apijson.Field
+	Text        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -697,12 +697,12 @@ func (r ContentBlockStartEvent) implementsMessageStreamEvent() {}
 func (r ContentBlockStartEvent) implementsRawPromptCachingBetaMessageStreamEvent() {}
 
 type ContentBlockStartEventContentBlock struct {
-	Type ContentBlockStartEventContentBlockType `json:"type,required"`
-	Text string                                 `json:"text"`
-	ID   string                                 `json:"id"`
-	Name string                                 `json:"name"`
 	// This field can have the runtime type of [interface{}].
 	Input interface{}                            `json:"input,required"`
+	Type  ContentBlockStartEventContentBlockType `json:"type,required"`
+	ID    string                                 `json:"id"`
+	Name  string                                 `json:"name"`
+	Text  string                                 `json:"text"`
 	JSON  contentBlockStartEventContentBlockJSON `json:"-"`
 	union ContentBlockStartEventContentBlockUnion
 }
@@ -710,11 +710,11 @@ type ContentBlockStartEventContentBlock struct {
 // contentBlockStartEventContentBlockJSON contains the JSON metadata for the struct
 // [ContentBlockStartEventContentBlock]
 type contentBlockStartEventContentBlockJSON struct {
+	Input       apijson.Field
 	Type        apijson.Field
-	Text        apijson.Field
 	ID          apijson.Field
 	Name        apijson.Field
-	Input       apijson.Field
+	Text        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -1006,11 +1006,14 @@ func (r MessageStopEventType) IsKnown() bool {
 }
 
 type MessageStreamEvent struct {
-	Type    MessageStreamEventType `json:"type,required"`
-	Message Message                `json:"message"`
+	// This field can have the runtime type of [ContentBlockStartEventContentBlock].
+	ContentBlock interface{} `json:"content_block,required"`
 	// This field can have the runtime type of [MessageDeltaEventDelta],
 	// [ContentBlockDeltaEventDelta].
-	Delta interface{} `json:"delta,required"`
+	Delta   interface{}            `json:"delta,required"`
+	Type    MessageStreamEventType `json:"type,required"`
+	Index   int64                  `json:"index"`
+	Message Message                `json:"message"`
 	// Billing and rate-limit usage.
 	//
 	// Anthropic's API bills and rate-limits by token counts, as tokens represent the
@@ -1023,23 +1026,20 @@ type MessageStreamEvent struct {
 	//
 	// For example, `output_tokens` will be non-zero, even for an empty string response
 	// from Claude.
-	Usage MessageDeltaUsage `json:"usage"`
-	Index int64             `json:"index"`
-	// This field can have the runtime type of [ContentBlockStartEventContentBlock].
-	ContentBlock interface{}            `json:"content_block,required"`
-	JSON         messageStreamEventJSON `json:"-"`
-	union        MessageStreamEventUnion
+	Usage MessageDeltaUsage      `json:"usage"`
+	JSON  messageStreamEventJSON `json:"-"`
+	union MessageStreamEventUnion
 }
 
 // messageStreamEventJSON contains the JSON metadata for the struct
 // [MessageStreamEvent]
 type messageStreamEventJSON struct {
-	Type         apijson.Field
-	Message      apijson.Field
-	Delta        apijson.Field
-	Usage        apijson.Field
-	Index        apijson.Field
 	ContentBlock apijson.Field
+	Delta        apijson.Field
+	Type         apijson.Field
+	Index        apijson.Field
+	Message      apijson.Field
+	Usage        apijson.Field
 	raw          string
 	ExtraFields  map[string]apijson.Field
 }
@@ -1449,9 +1449,9 @@ func (r ToolResultBlockParamType) IsKnown() bool {
 }
 
 type ToolResultBlockParamContent struct {
+	Source param.Field[interface{}]                     `json:"source,required"`
 	Type   param.Field[ToolResultBlockParamContentType] `json:"type,required"`
 	Text   param.Field[string]                          `json:"text"`
-	Source param.Field[interface{}]                     `json:"source,required"`
 }
 
 func (r ToolResultBlockParamContent) MarshalJSON() (data []byte, err error) {

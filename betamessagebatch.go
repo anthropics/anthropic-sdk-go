@@ -427,8 +427,8 @@ func (r betaMessageBatchRequestCountsJSON) RawJSON() string {
 // cancellation or expiration.
 type BetaMessageBatchResult struct {
 	Type    BetaMessageBatchResultType `json:"type,required"`
-	Message BetaMessage                `json:"message"`
 	Error   BetaErrorResponse          `json:"error"`
+	Message BetaMessage                `json:"message"`
 	JSON    betaMessageBatchResultJSON `json:"-"`
 	union   BetaMessageBatchResultUnion
 }
@@ -437,8 +437,8 @@ type BetaMessageBatchResult struct {
 // [BetaMessageBatchResult]
 type betaMessageBatchResultJSON struct {
 	Type        apijson.Field
-	Message     apijson.Field
 	Error       apijson.Field
+	Message     apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }

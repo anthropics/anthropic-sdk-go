@@ -121,16 +121,16 @@ func (r BetaAuthenticationErrorType) IsKnown() bool {
 }
 
 type BetaError struct {
-	Type    BetaErrorType `json:"type,required"`
 	Message string        `json:"message,required"`
+	Type    BetaErrorType `json:"type,required"`
 	JSON    betaErrorJSON `json:"-"`
 	union   BetaErrorUnion
 }
 
 // betaErrorJSON contains the JSON metadata for the struct [BetaError]
 type betaErrorJSON struct {
-	Type        apijson.Field
 	Message     apijson.Field
+	Type        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }

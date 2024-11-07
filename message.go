@@ -522,6 +522,9 @@ func (r MetadataParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
+// The model that will complete your prompt.\n\nSee
+// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
+// details and options.
 type Model = string
 
 const (

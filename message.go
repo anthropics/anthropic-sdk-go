@@ -548,7 +548,6 @@ const (
 	ModelClaude_3_Haiku_20240307 Model = "claude-3-haiku-20240307"
 	ModelClaude_2_1              Model = "claude-2.1"
 	ModelClaude_2_0              Model = "claude-2.0"
-	ModelClaude_Instant_1_2      Model = "claude-instant-1.2"
 )
 
 type ContentBlockDeltaEvent struct {

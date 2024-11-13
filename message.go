@@ -147,6 +147,47 @@ func (r ContentBlockType) IsKnown() bool {
 	return false
 }
 
+type ContentBlockParam struct {
+	Type      param.Field[ContentBlockParamType] `json:"type,required"`
+	ID        param.Field[string]                `json:"id"`
+	Content   param.Field[interface{}]           `json:"content"`
+	Input     param.Field[interface{}]           `json:"input"`
+	IsError   param.Field[bool]                  `json:"is_error"`
+	Name      param.Field[string]                `json:"name"`
+	Source    param.Field[interface{}]           `json:"source"`
+	Text      param.Field[string]                `json:"text"`
+	ToolUseID param.Field[string]                `json:"tool_use_id"`
+}
+
+func (r ContentBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ContentBlockParam) implementsContentBlockParamUnion() {}
+
+// Satisfied by [TextBlockParam], [ImageBlockParam], [ToolUseBlockParam],
+// [ToolResultBlockParam], [ContentBlockParam].
+type ContentBlockParamUnion interface {
+	implementsContentBlockParamUnion()
+}
+
+type ContentBlockParamType string
+
+const (
+	ContentBlockParamTypeText       ContentBlockParamType = "text"
+	ContentBlockParamTypeImage      ContentBlockParamType = "image"
+	ContentBlockParamTypeToolUse    ContentBlockParamType = "tool_use"
+	ContentBlockParamTypeToolResult ContentBlockParamType = "tool_result"
+)
+
+func (r ContentBlockParamType) IsKnown() bool {
+	switch r {
+	case ContentBlockParamTypeText, ContentBlockParamTypeImage, ContentBlockParamTypeToolUse, ContentBlockParamTypeToolResult:
+		return true
+	}
+	return false
+}
+
 type ImageBlockParam struct {
 	Source param.Field[ImageBlockParamSource] `json:"source,required"`
 	Type   param.Field[ImageBlockParamType]   `json:"type,required"`
@@ -156,7 +197,7 @@ func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-func (r ImageBlockParam) implementsMessageParamContentUnion() {}
+func (r ImageBlockParam) implementsContentBlockParamUnion() {}
 
 func (r ImageBlockParam) implementsToolResultBlockParamContentUnion() {}
 
@@ -445,53 +486,12 @@ func (r messageDeltaUsageJSON) RawJSON() string {
 }
 
 type MessageParam struct {
-	Content param.Field[[]MessageParamContentUnion] `json:"content,required"`
-	Role    param.Field[MessageParamRole]           `json:"role,required"`
+	Content param.Field[[]ContentBlockParamUnion] `json:"content,required"`
+	Role    param.Field[MessageParamRole]         `json:"role,required"`
 }
 
 func (r MessageParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
-}
-
-type MessageParamContent struct {
-	Type      param.Field[MessageParamContentType] `json:"type,required"`
-	ID        param.Field[string]                  `json:"id"`
-	Content   param.Field[interface{}]             `json:"content"`
-	Input     param.Field[interface{}]             `json:"input"`
-	IsError   param.Field[bool]                    `json:"is_error"`
-	Name      param.Field[string]                  `json:"name"`
-	Source    param.Field[interface{}]             `json:"source"`
-	Text      param.Field[string]                  `json:"text"`
-	ToolUseID param.Field[string]                  `json:"tool_use_id"`
-}
-
-func (r MessageParamContent) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-func (r MessageParamContent) implementsMessageParamContentUnion() {}
-
-// Satisfied by [TextBlockParam], [ImageBlockParam], [ToolUseBlockParam],
-// [ToolResultBlockParam], [MessageParamContent].
-type MessageParamContentUnion interface {
-	implementsMessageParamContentUnion()
-}
-
-type MessageParamContentType string
-
-const (
-	MessageParamContentTypeText       MessageParamContentType = "text"
-	MessageParamContentTypeImage      MessageParamContentType = "image"
-	MessageParamContentTypeToolUse    MessageParamContentType = "tool_use"
-	MessageParamContentTypeToolResult MessageParamContentType = "tool_result"
-)
-
-func (r MessageParamContentType) IsKnown() bool {
-	switch r {
-	case MessageParamContentTypeText, MessageParamContentTypeImage, MessageParamContentTypeToolUse, MessageParamContentTypeToolResult:
-		return true
-	}
-	return false
 }
 
 type MessageParamRole string
@@ -1180,7 +1180,7 @@ func (r TextBlockParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-func (r TextBlockParam) implementsMessageParamContentUnion() {}
+func (r TextBlockParam) implementsContentBlockParamUnion() {}
 
 func (r TextBlockParam) implementsToolResultBlockParamContentUnion() {}
 
@@ -1434,7 +1434,7 @@ func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-func (r ToolResultBlockParam) implementsMessageParamContentUnion() {}
+func (r ToolResultBlockParam) implementsContentBlockParamUnion() {}
 
 type ToolResultBlockParamType string
 
@@ -1537,7 +1537,7 @@ func (r ToolUseBlockParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-func (r ToolUseBlockParam) implementsMessageParamContentUnion() {}
+func (r ToolUseBlockParam) implementsContentBlockParamUnion() {}
 
 type ToolUseBlockParamType string
 

@@ -54,7 +54,7 @@ func main() {
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{{
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
+			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
 	})
@@ -212,7 +212,7 @@ _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 	MaxTokens: anthropic.F(int64(1024)),
 	Messages: anthropic.F([]anthropic.MessageParam{{
 		Role:    anthropic.F(anthropic.MessageParamRoleUser),
-		Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
+		Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 	}}),
 	Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
 })
@@ -246,7 +246,7 @@ client.Messages.New(
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{{
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
+			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
 	},
@@ -289,7 +289,7 @@ client.Messages.New(
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{{
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
+			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
 	},

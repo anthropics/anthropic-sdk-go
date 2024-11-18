@@ -35,7 +35,7 @@ func TestBetaPromptCachingMessageNewWithOptionalParams(t *testing.T) {
 		Metadata: anthropic.F(anthropic.MetadataParam{
 			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		}),
-		StopSequences: anthropic.F([]string{"string", "string", "string"}),
+		StopSequences: anthropic.F([]string{"string"}),
 		System: anthropic.F[anthropic.BetaPromptCachingMessageNewParamsSystemUnion](anthropic.BetaPromptCachingMessageNewParamsSystemArray([]anthropic.PromptCachingBetaTextBlockParam{{
 			Text: anthropic.F("Today's date is 2024-06-01."),
 			Type: anthropic.F(anthropic.PromptCachingBetaTextBlockParamTypeText),
@@ -67,48 +67,10 @@ func TestBetaPromptCachingMessageNewWithOptionalParams(t *testing.T) {
 				Type: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralTypeEphemeral),
 			}),
 			Description: anthropic.F("Get the current weather in a given location"),
-		}, {
-			InputSchema: anthropic.F(anthropic.PromptCachingBetaToolInputSchemaParam{
-				Type: anthropic.F(anthropic.PromptCachingBetaToolInputSchemaTypeObject),
-				Properties: anthropic.F[any](map[string]interface{}{
-					"location": map[string]interface{}{
-						"description": "The city and state, e.g. San Francisco, CA",
-						"type":        "string",
-					},
-					"unit": map[string]interface{}{
-						"description": "Unit for the output - one of (celsius, fahrenheit)",
-						"type":        "string",
-					},
-				}),
-			}),
-			Name: anthropic.F("x"),
-			CacheControl: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralParam{
-				Type: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralTypeEphemeral),
-			}),
-			Description: anthropic.F("Get the current weather in a given location"),
-		}, {
-			InputSchema: anthropic.F(anthropic.PromptCachingBetaToolInputSchemaParam{
-				Type: anthropic.F(anthropic.PromptCachingBetaToolInputSchemaTypeObject),
-				Properties: anthropic.F[any](map[string]interface{}{
-					"location": map[string]interface{}{
-						"description": "The city and state, e.g. San Francisco, CA",
-						"type":        "string",
-					},
-					"unit": map[string]interface{}{
-						"description": "Unit for the output - one of (celsius, fahrenheit)",
-						"type":        "string",
-					},
-				}),
-			}),
-			Name: anthropic.F("x"),
-			CacheControl: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralParam{
-				Type: anthropic.F(anthropic.PromptCachingBetaCacheControlEphemeralTypeEphemeral),
-			}),
-			Description: anthropic.F("Get the current weather in a given location"),
 		}}),
 		TopK:  anthropic.F(int64(5)),
 		TopP:  anthropic.F(0.700000),
-		Betas: anthropic.F([]anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24, anthropic.AnthropicBetaMessageBatches2024_09_24, anthropic.AnthropicBetaMessageBatches2024_09_24}),
+		Betas: anthropic.F([]anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24}),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

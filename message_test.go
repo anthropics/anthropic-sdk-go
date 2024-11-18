@@ -35,46 +35,14 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		Metadata: anthropic.F(anthropic.MetadataParam{
 			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		}),
-		StopSequences: anthropic.F([]string{"string", "string", "string"}),
-		System:        anthropic.F([]anthropic.TextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}, {Text: anthropic.F("x"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}, {Text: anthropic.F("x"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
+		StopSequences: anthropic.F([]string{"string"}),
+		System:        anthropic.F([]anthropic.TextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 		Temperature:   anthropic.F(1.000000),
 		ToolChoice: anthropic.F[anthropic.ToolChoiceUnionParam](anthropic.ToolChoiceAutoParam{
 			Type:                   anthropic.F(anthropic.ToolChoiceAutoTypeAuto),
 			DisableParallelToolUse: anthropic.F(true),
 		}),
 		Tools: anthropic.F([]anthropic.ToolParam{{
-			InputSchema: anthropic.F(anthropic.ToolInputSchemaParam{
-				Type: anthropic.F(anthropic.ToolInputSchemaTypeObject),
-				Properties: anthropic.F[any](map[string]interface{}{
-					"location": map[string]interface{}{
-						"description": "The city and state, e.g. San Francisco, CA",
-						"type":        "string",
-					},
-					"unit": map[string]interface{}{
-						"description": "Unit for the output - one of (celsius, fahrenheit)",
-						"type":        "string",
-					},
-				}),
-			}),
-			Name:        anthropic.F("x"),
-			Description: anthropic.F("Get the current weather in a given location"),
-		}, {
-			InputSchema: anthropic.F(anthropic.ToolInputSchemaParam{
-				Type: anthropic.F(anthropic.ToolInputSchemaTypeObject),
-				Properties: anthropic.F[any](map[string]interface{}{
-					"location": map[string]interface{}{
-						"description": "The city and state, e.g. San Francisco, CA",
-						"type":        "string",
-					},
-					"unit": map[string]interface{}{
-						"description": "Unit for the output - one of (celsius, fahrenheit)",
-						"type":        "string",
-					},
-				}),
-			}),
-			Name:        anthropic.F("x"),
-			Description: anthropic.F("Get the current weather in a given location"),
-		}, {
 			InputSchema: anthropic.F(anthropic.ToolInputSchemaParam{
 				Type: anthropic.F(anthropic.ToolInputSchemaTypeObject),
 				Properties: anthropic.F[any](map[string]interface{}{

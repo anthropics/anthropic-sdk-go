@@ -500,11 +500,11 @@ type messageJSON struct {
 //		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
 //	})
 func (r *Message) ToParam() MessageParam {
-	content := []MessageParamContentUnion{}
+	content := []ContentBlockParamUnion{}
 
 	for _, block := range r.Content {
-		content = append(content, MessageParamContent{
-			Type: F(MessageParamContentType(block.Type)),
+		content = append(content, ContentBlockParam{
+			Type: F(ContentBlockParamType(block.Type)),
 			ID: param.Field[string]{
 				Value:   block.ID,
 				Present: !block.JSON.ID.IsNull(),
@@ -629,14 +629,14 @@ type MessageParam struct {
 	Role    param.Field[MessageParamRole]         `json:"role,required"`
 }
 
-func NewUserMessage(blocks ...MessageParamContentUnion) MessageParam {
+func NewUserMessage(blocks ...ContentBlockParamUnion) MessageParam {
 	return MessageParam{
 		Role:    F(MessageParamRoleUser),
 		Content: F(blocks),
 	}
 }
 
-func NewAssistantMessage(blocks ...MessageParamContentUnion) MessageParam {
+func NewAssistantMessage(blocks ...ContentBlockParamUnion) MessageParam {
 	return MessageParam{
 		Role:    F(MessageParamRoleAssistant),
 		Content: F(blocks),

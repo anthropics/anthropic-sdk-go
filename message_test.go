@@ -28,7 +28,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 	_, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{{
-			Content: anthropic.F([]anthropic.MessageParamContentUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
+			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText)}}),
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),

@@ -35,8 +35,8 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		Metadata: anthropic.F(anthropic.BetaMetadataParam{
 			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		}),
-		StopSequences: anthropic.F([]string{"string", "string", "string"}),
-		System:        anthropic.F([]anthropic.BetaTextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}, {Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}, {Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
+		StopSequences: anthropic.F([]string{"string"}),
+		System:        anthropic.F([]anthropic.BetaTextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
 		Temperature:   anthropic.F(1.000000),
 		ToolChoice: anthropic.F[anthropic.BetaToolChoiceUnionParam](anthropic.BetaToolChoiceAutoParam{
 			Type:                   anthropic.F(anthropic.BetaToolChoiceAutoTypeAuto),
@@ -62,50 +62,10 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 			}),
 			Description: anthropic.F("Get the current weather in a given location"),
 			Type:        anthropic.F(anthropic.BetaToolTypeCustom),
-		}, anthropic.BetaToolParam{
-			InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
-				Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
-				Properties: anthropic.F[any](map[string]interface{}{
-					"location": map[string]interface{}{
-						"description": "The city and state, e.g. San Francisco, CA",
-						"type":        "string",
-					},
-					"unit": map[string]interface{}{
-						"description": "Unit for the output - one of (celsius, fahrenheit)",
-						"type":        "string",
-					},
-				}),
-			}),
-			Name: anthropic.F("x"),
-			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
-				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
-			}),
-			Description: anthropic.F("Get the current weather in a given location"),
-			Type:        anthropic.F(anthropic.BetaToolTypeCustom),
-		}, anthropic.BetaToolParam{
-			InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
-				Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
-				Properties: anthropic.F[any](map[string]interface{}{
-					"location": map[string]interface{}{
-						"description": "The city and state, e.g. San Francisco, CA",
-						"type":        "string",
-					},
-					"unit": map[string]interface{}{
-						"description": "Unit for the output - one of (celsius, fahrenheit)",
-						"type":        "string",
-					},
-				}),
-			}),
-			Name: anthropic.F("x"),
-			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
-				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
-			}),
-			Description: anthropic.F("Get the current weather in a given location"),
-			Type:        anthropic.F(anthropic.BetaToolTypeCustom),
 		}}),
 		TopK:  anthropic.F(int64(5)),
 		TopP:  anthropic.F(0.700000),
-		Betas: anthropic.F([]anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24, anthropic.AnthropicBetaMessageBatches2024_09_24, anthropic.AnthropicBetaMessageBatches2024_09_24}),
+		Betas: anthropic.F([]anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24}),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -130,12 +90,6 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Messages.CountTokens(context.TODO(), anthropic.BetaMessageCountTokensParams{
 		Messages: anthropic.F([]anthropic.BetaMessageParam{{
-			Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
-			Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
-		}, {
-			Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
-			Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
-		}, {
 			Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
 			Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 		}}),
@@ -171,48 +125,8 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 			}),
 			Description: anthropic.F("Get the current weather in a given location"),
 			Type:        anthropic.F(anthropic.BetaToolTypeCustom),
-		}, anthropic.BetaToolParam{
-			InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
-				Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
-				Properties: anthropic.F[any](map[string]interface{}{
-					"location": map[string]interface{}{
-						"description": "The city and state, e.g. San Francisco, CA",
-						"type":        "string",
-					},
-					"unit": map[string]interface{}{
-						"description": "Unit for the output - one of (celsius, fahrenheit)",
-						"type":        "string",
-					},
-				}),
-			}),
-			Name: anthropic.F("x"),
-			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
-				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
-			}),
-			Description: anthropic.F("Get the current weather in a given location"),
-			Type:        anthropic.F(anthropic.BetaToolTypeCustom),
-		}, anthropic.BetaToolParam{
-			InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
-				Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
-				Properties: anthropic.F[any](map[string]interface{}{
-					"location": map[string]interface{}{
-						"description": "The city and state, e.g. San Francisco, CA",
-						"type":        "string",
-					},
-					"unit": map[string]interface{}{
-						"description": "Unit for the output - one of (celsius, fahrenheit)",
-						"type":        "string",
-					},
-				}),
-			}),
-			Name: anthropic.F("x"),
-			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
-				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
-			}),
-			Description: anthropic.F("Get the current weather in a given location"),
-			Type:        anthropic.F(anthropic.BetaToolTypeCustom),
 		}}),
-		Betas: anthropic.F([]anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24, anthropic.AnthropicBetaMessageBatches2024_09_24, anthropic.AnthropicBetaMessageBatches2024_09_24}),
+		Betas: anthropic.F([]anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24}),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

@@ -32,7 +32,7 @@ func TestCompletionNewWithOptionalParams(t *testing.T) {
 		Metadata: anthropic.F(anthropic.MetadataParam{
 			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		}),
-		StopSequences: anthropic.F([]string{"string", "string", "string"}),
+		StopSequences: anthropic.F([]string{"string"}),
 		Temperature:   anthropic.F(1.000000),
 		TopK:          anthropic.F(int64(5)),
 		TopP:          anthropic.F(0.700000),

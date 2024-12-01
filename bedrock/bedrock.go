@@ -46,11 +46,11 @@ type eventstreamDecoder struct {
 }
 
 func (e *eventstreamDecoder) Close() error {
-	return nil
+	return e.rc.Close()
 }
 
 func (e *eventstreamDecoder) Err() error {
-	return nil
+	return e.err
 }
 
 func (e *eventstreamDecoder) Next() bool {

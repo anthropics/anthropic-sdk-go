@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.2.0-alpha.5 (2024-12-01)
+
+Full Changelog: [v0.2.0-alpha.4...v0.2.0-alpha.5](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.4...v0.2.0-alpha.5)
+
+### Bug Fixes
+
+* **api:** escape key values when encoding maps ([#56](https://github.com/anthropics/anthropic-sdk-go/issues/56)) ([fa49eb8](https://github.com/anthropics/anthropic-sdk-go/commit/fa49eb8c4f8d6fa7e45ec4e7eb457a87218349c4))
+* **client:** no panic on missing BaseURL ([#61](https://github.com/anthropics/anthropic-sdk-go/issues/61)) ([7438b15](https://github.com/anthropics/anthropic-sdk-go/commit/7438b15855bd6b5902d62fdbf02f143544eee986))
+* correct required fields for flattened unions ([#59](https://github.com/anthropics/anthropic-sdk-go/issues/59)) ([735c07c](https://github.com/anthropics/anthropic-sdk-go/commit/735c07c66a3bbf54bff97db7fe5290d7635c0774))
+* forward error and close for bedrock decoder ([#66](https://github.com/anthropics/anthropic-sdk-go/issues/66)) ([5f6f6fd](https://github.com/anthropics/anthropic-sdk-go/commit/5f6f6fd822b029dffd90aa49b06add0661251de0))
+* **types:** remove anthropic-instant-1.2 model ([#57](https://github.com/anthropics/anthropic-sdk-go/issues/57)) ([23fbc37](https://github.com/anthropics/anthropic-sdk-go/commit/23fbc3752122462a1e29e15327b1736072032ba3))
+
+
+### Chores
+
+* **api:** update spec version ([#62](https://github.com/anthropics/anthropic-sdk-go/issues/62)) ([1526051](https://github.com/anthropics/anthropic-sdk-go/commit/1526051561d4e1fe7792d90f0c2299036fedbc21))
+* **ci:** remove unneeded workflow ([#55](https://github.com/anthropics/anthropic-sdk-go/issues/55)) ([0181fc2](https://github.com/anthropics/anthropic-sdk-go/commit/0181fc2796bc5fea1a21e2744257900caef8ee72))
+* fix references to content block param types ([dea6478](https://github.com/anthropics/anthropic-sdk-go/commit/dea647890542036c1ed4cc55409002fd2e00adb6))
+* **tests:** limit array example length ([#64](https://github.com/anthropics/anthropic-sdk-go/issues/64)) ([9fb231b](https://github.com/anthropics/anthropic-sdk-go/commit/9fb231b806af753b6c9aae82c023e087c2ecaefb))
+
+
+### Documentation
+
+* add missing docs for some enums ([#54](https://github.com/anthropics/anthropic-sdk-go/issues/54)) ([56db6b8](https://github.com/anthropics/anthropic-sdk-go/commit/56db6b832d0e0454895b6d4ab43d32bd6b7418b4))
+
+
+### Refactors
+
+* sort fields for squashed union structs ([#51](https://github.com/anthropics/anthropic-sdk-go/issues/51)) ([a9874d1](https://github.com/anthropics/anthropic-sdk-go/commit/a9874d193998572a28475781dd8de296d4021bf2))
+
 ## 0.2.0-alpha.4 (2024-11-04)
 
 Full Changelog: [v0.2.0-alpha.3...v0.2.0-alpha.4](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.3...v0.2.0-alpha.4)

@@ -96,7 +96,7 @@ func main() {
 		println()
 
 		messages = append(messages, message.ToParam())
-		toolResults := []anthropic.MessageParamContentUnion{}
+		toolResults := []anthropic.ContentBlockParamUnion{}
 
 		for _, block := range message.Content {
 			if block.Type == anthropic.ContentBlockTypeToolUse {

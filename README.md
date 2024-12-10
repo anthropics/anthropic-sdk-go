@@ -51,7 +51,7 @@ func main() {
 		option.WithAPIKey("my-anthropic-api-key"), // defaults to os.LookupEnv("ANTHROPIC_API_KEY")
 	)
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-		Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
@@ -74,7 +74,7 @@ messages := []anthropic.MessageParam{
 }
 
 message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-	Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+	Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	Messages:  anthropic.F(messages),
 	MaxTokens: anthropic.F(int64(1024)),
 })
@@ -85,7 +85,7 @@ messages = append(messages, anthropic.NewUserMessage(
 ))
 
 message, err = client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-	Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+	Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	Messages:  anthropic.F(messages),
 	MaxTokens: anthropic.F(int64(1024)),
 })
@@ -102,7 +102,7 @@ messages := []anthropic.MessageParam{
 }
 
 message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-	Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+	Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	MaxTokens: anthropic.Int(1024),
 	System: anthropic.F([]anthropic.TextBlockParam{
 		anthropic.NewTextBlock("Be very serious at all times."),
@@ -118,7 +118,7 @@ message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 
 ```go
 stream := client.Messages.NewStreaming(context.TODO(), anthropic.MessageNewParams{
-	Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+	Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	MaxTokens: anthropic.Int(1024),
 	Messages: anthropic.F([]anthropic.MessageParam{
 		anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
@@ -181,7 +181,7 @@ func main() {
 
 	for {
 		message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-			Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+			Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 			MaxTokens: anthropic.Int(1024),
 			Messages:  anthropic.F(messages),
 			Tools:     anthropic.F(tools),
@@ -408,7 +408,7 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 ```go
 _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 	MaxTokens: anthropic.F(int64(1024)),
-	Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+	Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 })
 if err != nil {
 	var apierr *anthropic.Error
@@ -441,7 +441,7 @@ client.Messages.New(
 		Messages: anthropic.F([]anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
 		}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	},
 	// This sets the per-retry timeout
 	option.WithRequestTimeout(20*time.Second),
@@ -483,7 +483,7 @@ client.Messages.New(
 		Messages: anthropic.F([]anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
 		}),
-		Model: anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 	},
 	option.WithMaxRetries(5),
 )

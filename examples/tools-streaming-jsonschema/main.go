@@ -39,7 +39,7 @@ func main() {
 
 	for {
 		stream := client.Messages.NewStreaming(context.TODO(), anthropic.MessageNewParams{
-			Model:     anthropic.F(anthropic.ModelClaude_3_5_Sonnet_20240620),
+			Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
 			MaxTokens: anthropic.Int(1024),
 			Messages:  anthropic.F(messages),
 			Tools:     anthropic.F(tools),
@@ -76,7 +76,7 @@ func main() {
 		}
 
 		messages = append(messages, message.ToParam())
-		toolResults := []anthropic.MessageParamContentUnion{}
+		toolResults := []anthropic.ContentBlockParamUnion{}
 
 		for _, block := range message.Content {
 			if block.Type == anthropic.ContentBlockTypeToolUse {

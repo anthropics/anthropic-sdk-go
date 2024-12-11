@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0-alpha.6 (2024-12-11)
+
+Full Changelog: [v0.2.0-alpha.5...v0.2.0-alpha.6](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.5...v0.2.0-alpha.6)
+
+### Bug Fixes
+
+* replace `MessageParamContentUnion` with `ContentBlockParamUnion` to fix go script ([#70](https://github.com/anthropics/anthropic-sdk-go/issues/70)) ([5d32a5f](https://github.com/anthropics/anthropic-sdk-go/commit/5d32a5f2be05c31932451d8033e954cd71c9fbc8))
+
+
+### Documentation
+
+* **examples:** use claude 3 sonnet more ([c02fdac](https://github.com/anthropics/anthropic-sdk-go/commit/c02fdac54687c966a8641be10035c0f389bddfe0))
+
 ## 0.2.0-alpha.5 (2024-12-01)
 
 Full Changelog: [v0.2.0-alpha.4...v0.2.0-alpha.5](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.4...v0.2.0-alpha.5)

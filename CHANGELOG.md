@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.2.0-alpha.6 (2024-12-17)
+
+Full Changelog: [v0.2.0-alpha.5...v0.2.0-alpha.6](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.5...v0.2.0-alpha.6)
+
+### Features
+
+* **api:** general availability updates ([#74](https://github.com/anthropics/anthropic-sdk-go/issues/74)) ([0c19b86](https://github.com/anthropics/anthropic-sdk-go/commit/0c19b86f4d0f8496d551f3b707bfb8834b98b315))
+* **vertex:** add support for token counting ([86e085b](https://github.com/anthropics/anthropic-sdk-go/commit/86e085b0452926491ec11b2c77abec4c0a733d3b))
+
+
+### Bug Fixes
+
+* **messages:** correct batch params type ([2a39e4b](https://github.com/anthropics/anthropic-sdk-go/commit/2a39e4b9af65f0318374f88c2aef150b69df7107))
+* replace `MessageParamContentUnion` with `ContentBlockParamUnion` to fix go script ([#70](https://github.com/anthropics/anthropic-sdk-go/issues/70)) ([5d32a5f](https://github.com/anthropics/anthropic-sdk-go/commit/5d32a5f2be05c31932451d8033e954cd71c9fbc8))
+* **tests:** correct input schema type ([6514952](https://github.com/anthropics/anthropic-sdk-go/commit/6514952ac492f3f7ceed1c5726dfbc7b5b3f72db))
+
+
+### Chores
+
+* **api:** update spec version ([#72](https://github.com/anthropics/anthropic-sdk-go/issues/72)) ([854416b](https://github.com/anthropics/anthropic-sdk-go/commit/854416b61b37fff95bca34d7c91035fb11aef921))
+* **internal:** update spec ([#73](https://github.com/anthropics/anthropic-sdk-go/issues/73)) ([6da0443](https://github.com/anthropics/anthropic-sdk-go/commit/6da04433a0cdf00600080f45d41cfd92064e7471))
+
+
+### Documentation
+
+* **examples:** use claude 3 sonnet more ([c02fdac](https://github.com/anthropics/anthropic-sdk-go/commit/c02fdac54687c966a8641be10035c0f389bddfe0))
+
 ## 0.2.0-alpha.5 (2024-12-01)
 
 Full Changelog: [v0.2.0-alpha.4...v0.2.0-alpha.5](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.4...v0.2.0-alpha.5)

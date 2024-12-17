@@ -32,7 +32,7 @@ func TestMessageBatchNew(t *testing.T) {
 	_, err := client.Messages.Batches.New(context.TODO(), anthropic.MessageBatchNewParams{
 		Requests: anthropic.F([]anthropic.MessageBatchNewParamsRequest{{
 			CustomID: anthropic.F("my-custom-id-1"),
-			Params: anthropic.F(anthropic.MessageBatchNewParamsRequestsParams{
+			Params: anthropic.F(anthropic.MessageNewParams{
 				MaxTokens: anthropic.F(int64(1024)),
 				Messages: anthropic.F([]anthropic.MessageParam{{
 					Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)})}}),
@@ -43,7 +43,6 @@ func TestMessageBatchNew(t *testing.T) {
 					UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				}),
 				StopSequences: anthropic.F([]string{"string"}),
-				Stream:        anthropic.F(true),
 				System:        anthropic.F([]anthropic.TextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)})}}),
 				Temperature:   anthropic.F(1.000000),
 				ToolChoice: anthropic.F[anthropic.ToolChoiceUnionParam](anthropic.ToolChoiceAutoParam{
@@ -51,9 +50,9 @@ func TestMessageBatchNew(t *testing.T) {
 					DisableParallelToolUse: anthropic.F(true),
 				}),
 				Tools: anthropic.F([]anthropic.ToolParam{{
-					InputSchema: anthropic.F(anthropic.ToolInputSchemaParam{
-						Type: anthropic.F(anthropic.ToolInputSchemaTypeObject),
-						Properties: anthropic.F[any](map[string]interface{}{
+					InputSchema: anthropic.F[interface{}](map[string]interface{}{
+						"type": "object",
+						"properties": map[string]interface{}{
 							"location": map[string]interface{}{
 								"description": "The city and state, e.g. San Francisco, CA",
 								"type":        "string",
@@ -62,8 +61,7 @@ func TestMessageBatchNew(t *testing.T) {
 								"description": "Unit for the output - one of (celsius, fahrenheit)",
 								"type":        "string",
 							},
-						}),
-					}),
+						}}),
 					Name: anthropic.F("x"),
 					CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{
 						Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral),

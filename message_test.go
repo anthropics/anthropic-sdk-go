@@ -101,9 +101,9 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 			DisableParallelToolUse: anthropic.F(true),
 		}),
 		Tools: anthropic.F([]anthropic.ToolParam{{
-			InputSchema: anthropic.F(anthropic.ToolInputSchemaParam{
-				Type: anthropic.F(anthropic.ToolInputSchemaTypeObject),
-				Properties: anthropic.F[any](map[string]interface{}{
+			InputSchema: anthropic.F[interface{}](map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
 					"location": map[string]interface{}{
 						"description": "The city and state, e.g. San Francisco, CA",
 						"type":        "string",
@@ -112,7 +112,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 						"description": "Unit for the output - one of (celsius, fahrenheit)",
 						"type":        "string",
 					},
-				}),
+				},
 			}),
 			Name: anthropic.F("x"),
 			CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{

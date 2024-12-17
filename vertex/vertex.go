@@ -90,8 +90,6 @@ func vertexMiddleware(region, projectID string) sdkoption.Middleware {
 					return nil, fmt.Errorf("no projectId was given and it could not be resolved from credentials")
 				}
 
-				body, _ = sjson.DeleteBytes(body, "anthropic_version")
-
 				r.URL.Path = fmt.Sprintf("/v1/projects/%s/locations/%s/publishers/anthropic/models/count-tokens:rawPredict", projectID, region)
 			}
 

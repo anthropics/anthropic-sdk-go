@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0-alpha.7 (2024-12-17)
+
+Full Changelog: [v0.2.0-alpha.6...v0.2.0-alpha.7](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.6...v0.2.0-alpha.7)
+
+### Bug Fixes
+
+* **vertex:** remove `anthropic_version` deletion for token counting ([15987ac](https://github.com/anthropics/anthropic-sdk-go/commit/15987ac82378e0e0d28878f91e2ddca8f6fb5ab9))
+
 ## 0.2.0-alpha.6 (2024-12-17)
 
 Full Changelog: [v0.2.0-alpha.5...v0.2.0-alpha.6](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.5...v0.2.0-alpha.6)

@@ -17,24 +17,25 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/shared"
 	"github.com/tidwall/gjson"
 )
 
-// BetaMessageBatchService contains methods and other services that help with
+// MessageBatchService contains methods and other services that help with
 // interacting with the anthropic API.
 //
 // Note, unlike clients, this service does not read variables from the environment
 // automatically. You should not instantiate this service directly, and instead use
-// the [NewBetaMessageBatchService] method instead.
-type BetaMessageBatchService struct {
+// the [NewMessageBatchService] method instead.
+type MessageBatchService struct {
 	Options []option.RequestOption
 }
 
-// NewBetaMessageBatchService generates a new service that applies the given
-// options to each request. These options are applied after the parent client's
-// options (if there is one), and before any request-specific options.
-func NewBetaMessageBatchService(opts ...option.RequestOption) (r *BetaMessageBatchService) {
-	r = &BetaMessageBatchService{}
+// NewMessageBatchService generates a new service that applies the given options to
+// each request. These options are applied after the parent client's options (if
+// there is one), and before any request-specific options.
+func NewMessageBatchService(opts ...option.RequestOption) (r *MessageBatchService) {
+	r = &MessageBatchService{}
 	r.Options = opts
 	return
 }
@@ -44,37 +45,35 @@ func NewBetaMessageBatchService(opts ...option.RequestOption) (r *BetaMessageBat
 // The Message Batches API can be used to process multiple Messages API requests at
 // once. Once a Message Batch is created, it begins processing immediately. Batches
 // can take up to 24 hours to complete.
-func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBatchNewParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
+func (r *MessageBatchService) New(ctx context.Context, body MessageBatchNewParams, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	opts = append(r.Options[:], opts...)
-	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
-	path := "v1/messages/batches?beta=true"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
+	path := "v1/messages/batches"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
 }
 
 // This endpoint is idempotent and can be used to poll for Message Batch
 // completion. To access the results of a Message Batch, make a request to the
 // `results_url` field in the response.
-func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string, query BetaMessageBatchGetParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
+func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	opts = append(r.Options[:], opts...)
-	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
 		return
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", messageBatchID)
+	path := fmt.Sprintf("v1/messages/batches/%s", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return
 }
 
 // List all Message Batches within a Workspace. Most recently created batches are
 // returned first.
-func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBatchListParams, opts ...option.RequestOption) (res *pagination.Page[BetaMessageBatch], err error) {
+func (r *MessageBatchService) List(ctx context.Context, query MessageBatchListParams, opts ...option.RequestOption) (res *pagination.Page[MessageBatch], err error) {
 	var raw *http.Response
 	opts = append(r.Options[:], opts...)
-	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/messages/batches?beta=true"
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
+	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	path := "v1/messages/batches"
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +87,8 @@ func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBa
 
 // List all Message Batches within a Workspace. Most recently created batches are
 // returned first.
-func (r *BetaMessageBatchService) ListAutoPaging(ctx context.Context, params BetaMessageBatchListParams, opts ...option.RequestOption) *pagination.PageAutoPager[BetaMessageBatch] {
-	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
+func (r *MessageBatchService) ListAutoPaging(ctx context.Context, query MessageBatchListParams, opts ...option.RequestOption) *pagination.PageAutoPager[MessageBatch] {
+	return pagination.NewPageAutoPager(r.List(ctx, query, opts...))
 }
 
 // Batches may be canceled any time before processing ends. Once cancellation is
@@ -101,14 +100,13 @@ func (r *BetaMessageBatchService) ListAutoPaging(ctx context.Context, params Bet
 // which requests were canceled, check the individual results within the batch.
 // Note that cancellation may not result in any canceled requests if they were
 // non-interruptible.
-func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID string, body BetaMessageBatchCancelParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
+func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	opts = append(r.Options[:], opts...)
-	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
 		return
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s/cancel?beta=true", messageBatchID)
+	path := fmt.Sprintf("v1/messages/batches/%s/cancel", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return
 }
@@ -118,19 +116,19 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 // Each line in the file is a JSON object containing the result of a single request
 // in the Message Batch. Results are not guaranteed to be in the same order as
 // requests. Use the `custom_id` field to match results to requests.
-func (r *BetaMessageBatchService) Results(ctx context.Context, messageBatchID string, query BetaMessageBatchResultsParams, opts ...option.RequestOption) (res *http.Response, err error) {
+func (r *MessageBatchService) Results(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *http.Response, err error) {
 	opts = append(r.Options[:], opts...)
-	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithHeader("Accept", "application/binary")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "application/binary")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
 		return
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s/results?beta=true", messageBatchID)
+	path := fmt.Sprintf("v1/messages/batches/%s/results", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return
 }
 
-type BetaMessageBatch struct {
+type MessageBatch struct {
 	// Unique object identifier.
 	//
 	// The format and length of IDs may change over time.
@@ -154,13 +152,13 @@ type BetaMessageBatch struct {
 	// expire and end processing, which is 24 hours after creation.
 	ExpiresAt time.Time `json:"expires_at,required" format:"date-time"`
 	// Processing status of the Message Batch.
-	ProcessingStatus BetaMessageBatchProcessingStatus `json:"processing_status,required"`
+	ProcessingStatus MessageBatchProcessingStatus `json:"processing_status,required"`
 	// Tallies requests within the Message Batch, categorized by their status.
 	//
 	// Requests start as `processing` and move to one of the other statuses only once
 	// processing of the entire batch ends. The sum of all values always matches the
 	// total number of requests in the batch.
-	RequestCounts BetaMessageBatchRequestCounts `json:"request_counts,required"`
+	RequestCounts MessageBatchRequestCounts `json:"request_counts,required"`
 	// URL to a `.jsonl` file containing the results of the Message Batch requests.
 	// Specified only once processing ends.
 	//
@@ -170,13 +168,12 @@ type BetaMessageBatch struct {
 	// Object type.
 	//
 	// For Message Batches, this is always `"message_batch"`.
-	Type BetaMessageBatchType `json:"type,required"`
-	JSON betaMessageBatchJSON `json:"-"`
+	Type MessageBatchType `json:"type,required"`
+	JSON messageBatchJSON `json:"-"`
 }
 
-// betaMessageBatchJSON contains the JSON metadata for the struct
-// [BetaMessageBatch]
-type betaMessageBatchJSON struct {
+// messageBatchJSON contains the JSON metadata for the struct [MessageBatch]
+type messageBatchJSON struct {
 	ID                apijson.Field
 	ArchivedAt        apijson.Field
 	CancelInitiatedAt apijson.Field
@@ -191,26 +188,26 @@ type betaMessageBatchJSON struct {
 	ExtraFields       map[string]apijson.Field
 }
 
-func (r *BetaMessageBatch) UnmarshalJSON(data []byte) (err error) {
+func (r *MessageBatch) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r betaMessageBatchJSON) RawJSON() string {
+func (r messageBatchJSON) RawJSON() string {
 	return r.raw
 }
 
 // Processing status of the Message Batch.
-type BetaMessageBatchProcessingStatus string
+type MessageBatchProcessingStatus string
 
 const (
-	BetaMessageBatchProcessingStatusInProgress BetaMessageBatchProcessingStatus = "in_progress"
-	BetaMessageBatchProcessingStatusCanceling  BetaMessageBatchProcessingStatus = "canceling"
-	BetaMessageBatchProcessingStatusEnded      BetaMessageBatchProcessingStatus = "ended"
+	MessageBatchProcessingStatusInProgress MessageBatchProcessingStatus = "in_progress"
+	MessageBatchProcessingStatusCanceling  MessageBatchProcessingStatus = "canceling"
+	MessageBatchProcessingStatusEnded      MessageBatchProcessingStatus = "ended"
 )
 
-func (r BetaMessageBatchProcessingStatus) IsKnown() bool {
+func (r MessageBatchProcessingStatus) IsKnown() bool {
 	switch r {
-	case BetaMessageBatchProcessingStatusInProgress, BetaMessageBatchProcessingStatusCanceling, BetaMessageBatchProcessingStatusEnded:
+	case MessageBatchProcessingStatusInProgress, MessageBatchProcessingStatusCanceling, MessageBatchProcessingStatusEnded:
 		return true
 	}
 	return false
@@ -219,134 +216,134 @@ func (r BetaMessageBatchProcessingStatus) IsKnown() bool {
 // Object type.
 //
 // For Message Batches, this is always `"message_batch"`.
-type BetaMessageBatchType string
+type MessageBatchType string
 
 const (
-	BetaMessageBatchTypeMessageBatch BetaMessageBatchType = "message_batch"
+	MessageBatchTypeMessageBatch MessageBatchType = "message_batch"
 )
 
-func (r BetaMessageBatchType) IsKnown() bool {
+func (r MessageBatchType) IsKnown() bool {
 	switch r {
-	case BetaMessageBatchTypeMessageBatch:
+	case MessageBatchTypeMessageBatch:
 		return true
 	}
 	return false
 }
 
-type BetaMessageBatchCanceledResult struct {
-	Type BetaMessageBatchCanceledResultType `json:"type,required"`
-	JSON betaMessageBatchCanceledResultJSON `json:"-"`
+type MessageBatchCanceledResult struct {
+	Type MessageBatchCanceledResultType `json:"type,required"`
+	JSON messageBatchCanceledResultJSON `json:"-"`
 }
 
-// betaMessageBatchCanceledResultJSON contains the JSON metadata for the struct
-// [BetaMessageBatchCanceledResult]
-type betaMessageBatchCanceledResultJSON struct {
+// messageBatchCanceledResultJSON contains the JSON metadata for the struct
+// [MessageBatchCanceledResult]
+type messageBatchCanceledResultJSON struct {
 	Type        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *BetaMessageBatchCanceledResult) UnmarshalJSON(data []byte) (err error) {
+func (r *MessageBatchCanceledResult) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r betaMessageBatchCanceledResultJSON) RawJSON() string {
+func (r messageBatchCanceledResultJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r BetaMessageBatchCanceledResult) implementsBetaMessageBatchResult() {}
+func (r MessageBatchCanceledResult) implementsMessageBatchResult() {}
 
-type BetaMessageBatchCanceledResultType string
+type MessageBatchCanceledResultType string
 
 const (
-	BetaMessageBatchCanceledResultTypeCanceled BetaMessageBatchCanceledResultType = "canceled"
+	MessageBatchCanceledResultTypeCanceled MessageBatchCanceledResultType = "canceled"
 )
 
-func (r BetaMessageBatchCanceledResultType) IsKnown() bool {
+func (r MessageBatchCanceledResultType) IsKnown() bool {
 	switch r {
-	case BetaMessageBatchCanceledResultTypeCanceled:
+	case MessageBatchCanceledResultTypeCanceled:
 		return true
 	}
 	return false
 }
 
-type BetaMessageBatchErroredResult struct {
-	Error BetaErrorResponse                 `json:"error,required"`
-	Type  BetaMessageBatchErroredResultType `json:"type,required"`
-	JSON  betaMessageBatchErroredResultJSON `json:"-"`
+type MessageBatchErroredResult struct {
+	Error shared.ErrorResponse          `json:"error,required"`
+	Type  MessageBatchErroredResultType `json:"type,required"`
+	JSON  messageBatchErroredResultJSON `json:"-"`
 }
 
-// betaMessageBatchErroredResultJSON contains the JSON metadata for the struct
-// [BetaMessageBatchErroredResult]
-type betaMessageBatchErroredResultJSON struct {
+// messageBatchErroredResultJSON contains the JSON metadata for the struct
+// [MessageBatchErroredResult]
+type messageBatchErroredResultJSON struct {
 	Error       apijson.Field
 	Type        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *BetaMessageBatchErroredResult) UnmarshalJSON(data []byte) (err error) {
+func (r *MessageBatchErroredResult) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r betaMessageBatchErroredResultJSON) RawJSON() string {
+func (r messageBatchErroredResultJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r BetaMessageBatchErroredResult) implementsBetaMessageBatchResult() {}
+func (r MessageBatchErroredResult) implementsMessageBatchResult() {}
 
-type BetaMessageBatchErroredResultType string
+type MessageBatchErroredResultType string
 
 const (
-	BetaMessageBatchErroredResultTypeErrored BetaMessageBatchErroredResultType = "errored"
+	MessageBatchErroredResultTypeErrored MessageBatchErroredResultType = "errored"
 )
 
-func (r BetaMessageBatchErroredResultType) IsKnown() bool {
+func (r MessageBatchErroredResultType) IsKnown() bool {
 	switch r {
-	case BetaMessageBatchErroredResultTypeErrored:
+	case MessageBatchErroredResultTypeErrored:
 		return true
 	}
 	return false
 }
 
-type BetaMessageBatchExpiredResult struct {
-	Type BetaMessageBatchExpiredResultType `json:"type,required"`
-	JSON betaMessageBatchExpiredResultJSON `json:"-"`
+type MessageBatchExpiredResult struct {
+	Type MessageBatchExpiredResultType `json:"type,required"`
+	JSON messageBatchExpiredResultJSON `json:"-"`
 }
 
-// betaMessageBatchExpiredResultJSON contains the JSON metadata for the struct
-// [BetaMessageBatchExpiredResult]
-type betaMessageBatchExpiredResultJSON struct {
+// messageBatchExpiredResultJSON contains the JSON metadata for the struct
+// [MessageBatchExpiredResult]
+type messageBatchExpiredResultJSON struct {
 	Type        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *BetaMessageBatchExpiredResult) UnmarshalJSON(data []byte) (err error) {
+func (r *MessageBatchExpiredResult) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r betaMessageBatchExpiredResultJSON) RawJSON() string {
+func (r messageBatchExpiredResultJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r BetaMessageBatchExpiredResult) implementsBetaMessageBatchResult() {}
+func (r MessageBatchExpiredResult) implementsMessageBatchResult() {}
 
-type BetaMessageBatchExpiredResultType string
+type MessageBatchExpiredResultType string
 
 const (
-	BetaMessageBatchExpiredResultTypeExpired BetaMessageBatchExpiredResultType = "expired"
+	MessageBatchExpiredResultTypeExpired MessageBatchExpiredResultType = "expired"
 )
 
-func (r BetaMessageBatchExpiredResultType) IsKnown() bool {
+func (r MessageBatchExpiredResultType) IsKnown() bool {
 	switch r {
-	case BetaMessageBatchExpiredResultTypeExpired:
+	case MessageBatchExpiredResultTypeExpired:
 		return true
 	}
 	return false
 }
 
-type BetaMessageBatchIndividualResponse struct {
+type MessageBatchIndividualResponse struct {
 	// Developer-provided ID created for each request in a Message Batch. Useful for
 	// matching results to requests, as results may be given out of request order.
 	//
@@ -357,28 +354,28 @@ type BetaMessageBatchIndividualResponse struct {
 	// Contains a Message output if processing was successful, an error response if
 	// processing failed, or the reason why processing was not attempted, such as
 	// cancellation or expiration.
-	Result BetaMessageBatchResult                 `json:"result,required"`
-	JSON   betaMessageBatchIndividualResponseJSON `json:"-"`
+	Result MessageBatchResult                 `json:"result,required"`
+	JSON   messageBatchIndividualResponseJSON `json:"-"`
 }
 
-// betaMessageBatchIndividualResponseJSON contains the JSON metadata for the struct
-// [BetaMessageBatchIndividualResponse]
-type betaMessageBatchIndividualResponseJSON struct {
+// messageBatchIndividualResponseJSON contains the JSON metadata for the struct
+// [MessageBatchIndividualResponse]
+type messageBatchIndividualResponseJSON struct {
 	CustomID    apijson.Field
 	Result      apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *BetaMessageBatchIndividualResponse) UnmarshalJSON(data []byte) (err error) {
+func (r *MessageBatchIndividualResponse) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r betaMessageBatchIndividualResponseJSON) RawJSON() string {
+func (r messageBatchIndividualResponseJSON) RawJSON() string {
 	return r.raw
 }
 
-type BetaMessageBatchRequestCounts struct {
+type MessageBatchRequestCounts struct {
 	// Number of requests in the Message Batch that have been canceled.
 	//
 	// This is zero until processing of the entire Message Batch has ended.
@@ -396,13 +393,13 @@ type BetaMessageBatchRequestCounts struct {
 	// Number of requests in the Message Batch that have completed successfully.
 	//
 	// This is zero until processing of the entire Message Batch has ended.
-	Succeeded int64                             `json:"succeeded,required"`
-	JSON      betaMessageBatchRequestCountsJSON `json:"-"`
+	Succeeded int64                         `json:"succeeded,required"`
+	JSON      messageBatchRequestCountsJSON `json:"-"`
 }
 
-// betaMessageBatchRequestCountsJSON contains the JSON metadata for the struct
-// [BetaMessageBatchRequestCounts]
-type betaMessageBatchRequestCountsJSON struct {
+// messageBatchRequestCountsJSON contains the JSON metadata for the struct
+// [MessageBatchRequestCounts]
+type messageBatchRequestCountsJSON struct {
 	Canceled    apijson.Field
 	Errored     apijson.Field
 	Expired     apijson.Field
@@ -412,11 +409,11 @@ type betaMessageBatchRequestCountsJSON struct {
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *BetaMessageBatchRequestCounts) UnmarshalJSON(data []byte) (err error) {
+func (r *MessageBatchRequestCounts) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r betaMessageBatchRequestCountsJSON) RawJSON() string {
+func (r messageBatchRequestCountsJSON) RawJSON() string {
 	return r.raw
 }
 
@@ -425,17 +422,17 @@ func (r betaMessageBatchRequestCountsJSON) RawJSON() string {
 // Contains a Message output if processing was successful, an error response if
 // processing failed, or the reason why processing was not attempted, such as
 // cancellation or expiration.
-type BetaMessageBatchResult struct {
-	Type    BetaMessageBatchResultType `json:"type,required"`
-	Error   BetaErrorResponse          `json:"error"`
-	Message BetaMessage                `json:"message"`
-	JSON    betaMessageBatchResultJSON `json:"-"`
-	union   BetaMessageBatchResultUnion
+type MessageBatchResult struct {
+	Type    MessageBatchResultType `json:"type,required"`
+	Error   shared.ErrorResponse   `json:"error"`
+	Message Message                `json:"message"`
+	JSON    messageBatchResultJSON `json:"-"`
+	union   MessageBatchResultUnion
 }
 
-// betaMessageBatchResultJSON contains the JSON metadata for the struct
-// [BetaMessageBatchResult]
-type betaMessageBatchResultJSON struct {
+// messageBatchResultJSON contains the JSON metadata for the struct
+// [MessageBatchResult]
+type messageBatchResultJSON struct {
 	Type        apijson.Field
 	Error       apijson.Field
 	Message     apijson.Field
@@ -443,12 +440,12 @@ type betaMessageBatchResultJSON struct {
 	ExtraFields map[string]apijson.Field
 }
 
-func (r betaMessageBatchResultJSON) RawJSON() string {
+func (r messageBatchResultJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r *BetaMessageBatchResult) UnmarshalJSON(data []byte) (err error) {
-	*r = BetaMessageBatchResult{}
+func (r *MessageBatchResult) UnmarshalJSON(data []byte) (err error) {
+	*r = MessageBatchResult{}
 	err = apijson.UnmarshalRoot(data, &r.union)
 	if err != nil {
 		return err
@@ -456,13 +453,13 @@ func (r *BetaMessageBatchResult) UnmarshalJSON(data []byte) (err error) {
 	return apijson.Port(r.union, &r)
 }
 
-// AsUnion returns a [BetaMessageBatchResultUnion] interface which you can cast to
-// the specific types for more type safety.
+// AsUnion returns a [MessageBatchResultUnion] interface which you can cast to the
+// specific types for more type safety.
 //
-// Possible runtime types of the union are [BetaMessageBatchSucceededResult],
-// [BetaMessageBatchErroredResult], [BetaMessageBatchCanceledResult],
-// [BetaMessageBatchExpiredResult].
-func (r BetaMessageBatchResult) AsUnion() BetaMessageBatchResultUnion {
+// Possible runtime types of the union are [MessageBatchSucceededResult],
+// [MessageBatchErroredResult], [MessageBatchCanceledResult],
+// [MessageBatchExpiredResult].
+func (r MessageBatchResult) AsUnion() MessageBatchResultUnion {
 	return r.union
 }
 
@@ -472,109 +469,106 @@ func (r BetaMessageBatchResult) AsUnion() BetaMessageBatchResultUnion {
 // processing failed, or the reason why processing was not attempted, such as
 // cancellation or expiration.
 //
-// Union satisfied by [BetaMessageBatchSucceededResult],
-// [BetaMessageBatchErroredResult], [BetaMessageBatchCanceledResult] or
-// [BetaMessageBatchExpiredResult].
-type BetaMessageBatchResultUnion interface {
-	implementsBetaMessageBatchResult()
+// Union satisfied by [MessageBatchSucceededResult], [MessageBatchErroredResult],
+// [MessageBatchCanceledResult] or [MessageBatchExpiredResult].
+type MessageBatchResultUnion interface {
+	implementsMessageBatchResult()
 }
 
 func init() {
 	apijson.RegisterUnion(
-		reflect.TypeOf((*BetaMessageBatchResultUnion)(nil)).Elem(),
+		reflect.TypeOf((*MessageBatchResultUnion)(nil)).Elem(),
 		"type",
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaMessageBatchSucceededResult{}),
+			Type:               reflect.TypeOf(MessageBatchSucceededResult{}),
 			DiscriminatorValue: "succeeded",
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaMessageBatchErroredResult{}),
+			Type:               reflect.TypeOf(MessageBatchErroredResult{}),
 			DiscriminatorValue: "errored",
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaMessageBatchCanceledResult{}),
+			Type:               reflect.TypeOf(MessageBatchCanceledResult{}),
 			DiscriminatorValue: "canceled",
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaMessageBatchExpiredResult{}),
+			Type:               reflect.TypeOf(MessageBatchExpiredResult{}),
 			DiscriminatorValue: "expired",
 		},
 	)
 }
 
-type BetaMessageBatchResultType string
+type MessageBatchResultType string
 
 const (
-	BetaMessageBatchResultTypeSucceeded BetaMessageBatchResultType = "succeeded"
-	BetaMessageBatchResultTypeErrored   BetaMessageBatchResultType = "errored"
-	BetaMessageBatchResultTypeCanceled  BetaMessageBatchResultType = "canceled"
-	BetaMessageBatchResultTypeExpired   BetaMessageBatchResultType = "expired"
+	MessageBatchResultTypeSucceeded MessageBatchResultType = "succeeded"
+	MessageBatchResultTypeErrored   MessageBatchResultType = "errored"
+	MessageBatchResultTypeCanceled  MessageBatchResultType = "canceled"
+	MessageBatchResultTypeExpired   MessageBatchResultType = "expired"
 )
 
-func (r BetaMessageBatchResultType) IsKnown() bool {
+func (r MessageBatchResultType) IsKnown() bool {
 	switch r {
-	case BetaMessageBatchResultTypeSucceeded, BetaMessageBatchResultTypeErrored, BetaMessageBatchResultTypeCanceled, BetaMessageBatchResultTypeExpired:
+	case MessageBatchResultTypeSucceeded, MessageBatchResultTypeErrored, MessageBatchResultTypeCanceled, MessageBatchResultTypeExpired:
 		return true
 	}
 	return false
 }
 
-type BetaMessageBatchSucceededResult struct {
-	Message BetaMessage                         `json:"message,required"`
-	Type    BetaMessageBatchSucceededResultType `json:"type,required"`
-	JSON    betaMessageBatchSucceededResultJSON `json:"-"`
+type MessageBatchSucceededResult struct {
+	Message Message                         `json:"message,required"`
+	Type    MessageBatchSucceededResultType `json:"type,required"`
+	JSON    messageBatchSucceededResultJSON `json:"-"`
 }
 
-// betaMessageBatchSucceededResultJSON contains the JSON metadata for the struct
-// [BetaMessageBatchSucceededResult]
-type betaMessageBatchSucceededResultJSON struct {
+// messageBatchSucceededResultJSON contains the JSON metadata for the struct
+// [MessageBatchSucceededResult]
+type messageBatchSucceededResultJSON struct {
 	Message     apijson.Field
 	Type        apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
 
-func (r *BetaMessageBatchSucceededResult) UnmarshalJSON(data []byte) (err error) {
+func (r *MessageBatchSucceededResult) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r betaMessageBatchSucceededResultJSON) RawJSON() string {
+func (r messageBatchSucceededResultJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r BetaMessageBatchSucceededResult) implementsBetaMessageBatchResult() {}
+func (r MessageBatchSucceededResult) implementsMessageBatchResult() {}
 
-type BetaMessageBatchSucceededResultType string
+type MessageBatchSucceededResultType string
 
 const (
-	BetaMessageBatchSucceededResultTypeSucceeded BetaMessageBatchSucceededResultType = "succeeded"
+	MessageBatchSucceededResultTypeSucceeded MessageBatchSucceededResultType = "succeeded"
 )
 
-func (r BetaMessageBatchSucceededResultType) IsKnown() bool {
+func (r MessageBatchSucceededResultType) IsKnown() bool {
 	switch r {
-	case BetaMessageBatchSucceededResultTypeSucceeded:
+	case MessageBatchSucceededResultTypeSucceeded:
 		return true
 	}
 	return false
 }
 
-type BetaMessageBatchNewParams struct {
+type MessageBatchNewParams struct {
 	// List of requests for prompt completion. Each is an individual request to create
 	// a Message.
-	Requests param.Field[[]BetaMessageBatchNewParamsRequest] `json:"requests,required"`
-	// Optional header to specify the beta version(s) you want to use.
-	Betas param.Field[[]AnthropicBeta] `header:"anthropic-beta"`
+	Requests param.Field[[]MessageBatchNewParamsRequest] `json:"requests,required"`
 }
 
-func (r BetaMessageBatchNewParams) MarshalJSON() (data []byte, err error) {
+func (r MessageBatchNewParams) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-type BetaMessageBatchNewParamsRequest struct {
+type MessageBatchNewParamsRequest struct {
 	// Developer-provided ID created for each request in a Message Batch. Useful for
 	// matching results to requests, as results may be given out of request order.
 	//
@@ -584,10 +578,10 @@ type BetaMessageBatchNewParamsRequest struct {
 	//
 	// See the [Messages API reference](/en/api/messages) for full documentation on
 	// available parameters.
-	Params param.Field[BetaMessageBatchNewParamsRequestsParams] `json:"params,required"`
+	Params param.Field[MessageBatchNewParamsRequestsParams] `json:"params,required"`
 }
 
-func (r BetaMessageBatchNewParamsRequest) MarshalJSON() (data []byte, err error) {
+func (r MessageBatchNewParamsRequest) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
@@ -595,7 +589,7 @@ func (r BetaMessageBatchNewParamsRequest) MarshalJSON() (data []byte, err error)
 //
 // See the [Messages API reference](/en/api/messages) for full documentation on
 // available parameters.
-type BetaMessageBatchNewParamsRequestsParams struct {
+type MessageBatchNewParamsRequestsParams struct {
 	// The maximum number of tokens to generate before stopping.
 	//
 	// Note that our models may stop _before_ reaching this maximum. This parameter
@@ -696,13 +690,13 @@ type BetaMessageBatchNewParamsRequestsParams struct {
 	// [system prompt](https://docs.anthropic.com/en/docs/system-prompts), you can use
 	// the top-level `system` parameter — there is no `"system"` role for input
 	// messages in the Messages API.
-	Messages param.Field[[]BetaMessageParam] `json:"messages,required"`
+	Messages param.Field[[]MessageParam] `json:"messages,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model param.Field[Model] `json:"model,required"`
 	// An object describing metadata about the request.
-	Metadata param.Field[BetaMetadataParam] `json:"metadata"`
+	Metadata param.Field[MetadataParam] `json:"metadata"`
 	// Custom text sequences that will cause the model to stop generating.
 	//
 	// Our models will normally stop when they have naturally completed their turn,
@@ -723,7 +717,7 @@ type BetaMessageBatchNewParamsRequestsParams struct {
 	// A system prompt is a way of providing context and instructions to Claude, such
 	// as specifying a particular goal or role. See our
 	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
-	System param.Field[[]BetaTextBlockParam] `json:"system"`
+	System param.Field[[]TextBlockParam] `json:"system"`
 	// Amount of randomness injected into the response.
 	//
 	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`
@@ -735,7 +729,7 @@ type BetaMessageBatchNewParamsRequestsParams struct {
 	Temperature param.Field[float64] `json:"temperature"`
 	// How the model should use the provided tools. The model can use a specific tool,
 	// any available tool, or decide by itself.
-	ToolChoice param.Field[BetaToolChoiceUnionParam] `json:"tool_choice"`
+	ToolChoice param.Field[ToolChoiceUnionParam] `json:"tool_choice"`
 	// Definitions of tools that the model may use.
 	//
 	// If you include `tools` in your API request, the model may return `tool_use`
@@ -810,7 +804,7 @@ type BetaMessageBatchNewParamsRequestsParams struct {
 	// JSON structure of output.
 	//
 	// See our [guide](https://docs.anthropic.com/en/docs/tool-use) for more details.
-	Tools param.Field[[]BetaToolUnionUnionParam] `json:"tools"`
+	Tools param.Field[[]ToolParam] `json:"tools"`
 	// Only sample from the top K options for each subsequent token.
 	//
 	// Used to remove "long tail" low probability responses.
@@ -831,16 +825,11 @@ type BetaMessageBatchNewParamsRequestsParams struct {
 	TopP param.Field[float64] `json:"top_p"`
 }
 
-func (r BetaMessageBatchNewParamsRequestsParams) MarshalJSON() (data []byte, err error) {
+func (r MessageBatchNewParamsRequestsParams) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-type BetaMessageBatchGetParams struct {
-	// Optional header to specify the beta version(s) you want to use.
-	Betas param.Field[[]AnthropicBeta] `header:"anthropic-beta"`
-}
-
-type BetaMessageBatchListParams struct {
+type MessageBatchListParams struct {
 	// ID of the object to use as a cursor for pagination. When provided, returns the
 	// page of results immediately after this object.
 	AfterID param.Field[string] `query:"after_id"`
@@ -851,25 +840,12 @@ type BetaMessageBatchListParams struct {
 	//
 	// Defaults to `20`. Ranges from `1` to `1000`.
 	Limit param.Field[int64] `query:"limit"`
-	// Optional header to specify the beta version(s) you want to use.
-	Betas param.Field[[]AnthropicBeta] `header:"anthropic-beta"`
 }
 
-// URLQuery serializes [BetaMessageBatchListParams]'s query parameters as
-// `url.Values`.
-func (r BetaMessageBatchListParams) URLQuery() (v url.Values) {
+// URLQuery serializes [MessageBatchListParams]'s query parameters as `url.Values`.
+func (r MessageBatchListParams) URLQuery() (v url.Values) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
-}
-
-type BetaMessageBatchCancelParams struct {
-	// Optional header to specify the beta version(s) you want to use.
-	Betas param.Field[[]AnthropicBeta] `header:"anthropic-beta"`
-}
-
-type BetaMessageBatchResultsParams struct {
-	// Optional header to specify the beta version(s) you want to use.
-	Betas param.Field[[]AnthropicBeta] `header:"anthropic-beta"`
 }

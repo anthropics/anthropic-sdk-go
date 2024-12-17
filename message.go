@@ -23,6 +23,7 @@ import (
 // the [NewMessageService] method instead.
 type MessageService struct {
 	Options []option.RequestOption
+	Batches *MessageBatchService
 }
 
 // NewMessageService generates a new service that applies the given options to each
@@ -31,6 +32,7 @@ type MessageService struct {
 func NewMessageService(opts ...option.RequestOption) (r *MessageService) {
 	r = &MessageService{}
 	r.Options = opts
+	r.Batches = NewMessageBatchService(opts...)
 	return
 }
 
@@ -65,6 +67,77 @@ func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams
 	path := "v1/messages"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &raw, opts...)
 	return ssestream.NewStream[MessageStreamEvent](ssestream.NewDecoder(raw), err)
+}
+
+// Count the number of tokens in a Message.
+//
+// The Token Count API can be used to count the number of tokens in a Message,
+// including tools, images, and documents, without creating it.
+func (r *MessageService) CountTokens(ctx context.Context, body MessageCountTokensParams, opts ...option.RequestOption) (res *MessageTokensCount, err error) {
+	opts = append(r.Options[:], opts...)
+	path := "v1/messages/count_tokens"
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return
+}
+
+type Base64PDFSourceParam struct {
+	Data      param.Field[string]                   `json:"data,required" format:"byte"`
+	MediaType param.Field[Base64PDFSourceMediaType] `json:"media_type,required"`
+	Type      param.Field[Base64PDFSourceType]      `json:"type,required"`
+}
+
+func (r Base64PDFSourceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type Base64PDFSourceMediaType string
+
+const (
+	Base64PDFSourceMediaTypeApplicationPDF Base64PDFSourceMediaType = "application/pdf"
+)
+
+func (r Base64PDFSourceMediaType) IsKnown() bool {
+	switch r {
+	case Base64PDFSourceMediaTypeApplicationPDF:
+		return true
+	}
+	return false
+}
+
+type Base64PDFSourceType string
+
+const (
+	Base64PDFSourceTypeBase64 Base64PDFSourceType = "base64"
+)
+
+func (r Base64PDFSourceType) IsKnown() bool {
+	switch r {
+	case Base64PDFSourceTypeBase64:
+		return true
+	}
+	return false
+}
+
+type CacheControlEphemeralParam struct {
+	Type param.Field[CacheControlEphemeralType] `json:"type,required"`
+}
+
+func (r CacheControlEphemeralParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type CacheControlEphemeralType string
+
+const (
+	CacheControlEphemeralTypeEphemeral CacheControlEphemeralType = "ephemeral"
+)
+
+func (r CacheControlEphemeralType) IsKnown() bool {
+	switch r {
+	case CacheControlEphemeralTypeEphemeral:
+		return true
+	}
+	return false
 }
 
 type ContentBlock struct {
@@ -148,15 +221,16 @@ func (r ContentBlockType) IsKnown() bool {
 }
 
 type ContentBlockParam struct {
-	Type      param.Field[ContentBlockParamType] `json:"type,required"`
-	ID        param.Field[string]                `json:"id"`
-	Content   param.Field[interface{}]           `json:"content"`
-	Input     param.Field[interface{}]           `json:"input"`
-	IsError   param.Field[bool]                  `json:"is_error"`
-	Name      param.Field[string]                `json:"name"`
-	Source    param.Field[interface{}]           `json:"source"`
-	Text      param.Field[string]                `json:"text"`
-	ToolUseID param.Field[string]                `json:"tool_use_id"`
+	Type         param.Field[ContentBlockParamType]      `json:"type,required"`
+	ID           param.Field[string]                     `json:"id"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
+	Content      param.Field[interface{}]                `json:"content"`
+	Input        param.Field[interface{}]                `json:"input"`
+	IsError      param.Field[bool]                       `json:"is_error"`
+	Name         param.Field[string]                     `json:"name"`
+	Source       param.Field[interface{}]                `json:"source"`
+	Text         param.Field[string]                     `json:"text"`
+	ToolUseID    param.Field[string]                     `json:"tool_use_id"`
 }
 
 func (r ContentBlockParam) MarshalJSON() (data []byte, err error) {
@@ -166,7 +240,7 @@ func (r ContentBlockParam) MarshalJSON() (data []byte, err error) {
 func (r ContentBlockParam) implementsContentBlockParamUnion() {}
 
 // Satisfied by [TextBlockParam], [ImageBlockParam], [ToolUseBlockParam],
-// [ToolResultBlockParam], [ContentBlockParam].
+// [ToolResultBlockParam], [DocumentBlockParam], [ContentBlockParam].
 type ContentBlockParamUnion interface {
 	implementsContentBlockParamUnion()
 }
@@ -178,19 +252,47 @@ const (
 	ContentBlockParamTypeImage      ContentBlockParamType = "image"
 	ContentBlockParamTypeToolUse    ContentBlockParamType = "tool_use"
 	ContentBlockParamTypeToolResult ContentBlockParamType = "tool_result"
+	ContentBlockParamTypeDocument   ContentBlockParamType = "document"
 )
 
 func (r ContentBlockParamType) IsKnown() bool {
 	switch r {
-	case ContentBlockParamTypeText, ContentBlockParamTypeImage, ContentBlockParamTypeToolUse, ContentBlockParamTypeToolResult:
+	case ContentBlockParamTypeText, ContentBlockParamTypeImage, ContentBlockParamTypeToolUse, ContentBlockParamTypeToolResult, ContentBlockParamTypeDocument:
+		return true
+	}
+	return false
+}
+
+type DocumentBlockParam struct {
+	Source       param.Field[Base64PDFSourceParam]       `json:"source,required"`
+	Type         param.Field[DocumentBlockParamType]     `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
+}
+
+func (r DocumentBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r DocumentBlockParam) implementsContentBlockParamUnion() {}
+
+type DocumentBlockParamType string
+
+const (
+	DocumentBlockParamTypeDocument DocumentBlockParamType = "document"
+)
+
+func (r DocumentBlockParamType) IsKnown() bool {
+	switch r {
+	case DocumentBlockParamTypeDocument:
 		return true
 	}
 	return false
 }
 
 type ImageBlockParam struct {
-	Source param.Field[ImageBlockParamSource] `json:"source,required"`
-	Type   param.Field[ImageBlockParamType]   `json:"type,required"`
+	Source       param.Field[ImageBlockParamSource]      `json:"source,required"`
+	Type         param.Field[ImageBlockParamType]        `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
 }
 
 func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
@@ -509,6 +611,29 @@ func (r MessageParamRole) IsKnown() bool {
 	return false
 }
 
+type MessageTokensCount struct {
+	// The total number of tokens across the provided list of messages, system prompt,
+	// and tools.
+	InputTokens int64                  `json:"input_tokens,required"`
+	JSON        messageTokensCountJSON `json:"-"`
+}
+
+// messageTokensCountJSON contains the JSON metadata for the struct
+// [MessageTokensCount]
+type messageTokensCountJSON struct {
+	InputTokens apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *MessageTokensCount) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r messageTokensCountJSON) RawJSON() string {
+	return r.raw
+}
+
 type MetadataParam struct {
 	// An external identifier for the user who is associated with the request.
 	//
@@ -577,8 +702,6 @@ func (r contentBlockDeltaEventJSON) RawJSON() string {
 
 func (r ContentBlockDeltaEvent) implementsMessageStreamEvent() {}
 
-func (r ContentBlockDeltaEvent) implementsRawPromptCachingBetaMessageStreamEvent() {}
-
 type ContentBlockDeltaEventDelta struct {
 	Type        ContentBlockDeltaEventDeltaType `json:"type,required"`
 	PartialJSON string                          `json:"partial_json"`
@@ -626,16 +749,14 @@ type ContentBlockDeltaEventDeltaUnion interface {
 func init() {
 	apijson.RegisterUnion(
 		reflect.TypeOf((*ContentBlockDeltaEventDeltaUnion)(nil)).Elem(),
-		"type",
+		"",
 		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(TextDelta{}),
-			DiscriminatorValue: "text_delta",
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(TextDelta{}),
 		},
 		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(InputJSONDelta{}),
-			DiscriminatorValue: "input_json_delta",
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(InputJSONDelta{}),
 		},
 	)
 }
@@ -695,8 +816,6 @@ func (r contentBlockStartEventJSON) RawJSON() string {
 }
 
 func (r ContentBlockStartEvent) implementsMessageStreamEvent() {}
-
-func (r ContentBlockStartEvent) implementsRawPromptCachingBetaMessageStreamEvent() {}
 
 type ContentBlockStartEventContentBlock struct {
 	Type ContentBlockStartEventContentBlockType `json:"type,required"`
@@ -818,8 +937,6 @@ func (r contentBlockStopEventJSON) RawJSON() string {
 
 func (r ContentBlockStopEvent) implementsMessageStreamEvent() {}
 
-func (r ContentBlockStopEvent) implementsRawPromptCachingBetaMessageStreamEvent() {}
-
 type ContentBlockStopEventType string
 
 const (
@@ -872,8 +989,6 @@ func (r messageDeltaEventJSON) RawJSON() string {
 }
 
 func (r MessageDeltaEvent) implementsMessageStreamEvent() {}
-
-func (r MessageDeltaEvent) implementsRawPromptCachingBetaMessageStreamEvent() {}
 
 type MessageDeltaEventDelta struct {
 	StopReason   MessageDeltaEventDeltaStopReason `json:"stop_reason,required,nullable"`
@@ -990,8 +1105,6 @@ func (r messageStopEventJSON) RawJSON() string {
 }
 
 func (r MessageStopEvent) implementsMessageStreamEvent() {}
-
-func (r MessageStopEvent) implementsRawPromptCachingBetaMessageStreamEvent() {}
 
 type MessageStopEventType string
 
@@ -1172,8 +1285,9 @@ func (r TextBlockType) IsKnown() bool {
 }
 
 type TextBlockParam struct {
-	Text param.Field[string]             `json:"text,required"`
-	Type param.Field[TextBlockParamType] `json:"type,required"`
+	Text         param.Field[string]                     `json:"text,required"`
+	Type         param.Field[TextBlockParamType]         `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
 }
 
 func (r TextBlockParam) MarshalJSON() (data []byte, err error) {
@@ -1245,7 +1359,8 @@ type ToolParam struct {
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in tool_use blocks.
-	Name param.Field[string] `json:"name,required"`
+	Name         param.Field[string]                     `json:"name,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
 	// Description of what this tool does.
 	//
 	// Tool descriptions should be as detailed as possible. The more information that
@@ -1424,10 +1539,11 @@ func (r ToolChoiceToolType) IsKnown() bool {
 }
 
 type ToolResultBlockParam struct {
-	ToolUseID param.Field[string]                             `json:"tool_use_id,required"`
-	Type      param.Field[ToolResultBlockParamType]           `json:"type,required"`
-	Content   param.Field[[]ToolResultBlockParamContentUnion] `json:"content"`
-	IsError   param.Field[bool]                               `json:"is_error"`
+	ToolUseID    param.Field[string]                             `json:"tool_use_id,required"`
+	Type         param.Field[ToolResultBlockParamType]           `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam]         `json:"cache_control"`
+	Content      param.Field[[]ToolResultBlockParamContentUnion] `json:"content"`
+	IsError      param.Field[bool]                               `json:"is_error"`
 }
 
 func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
@@ -1451,9 +1567,10 @@ func (r ToolResultBlockParamType) IsKnown() bool {
 }
 
 type ToolResultBlockParamContent struct {
-	Type   param.Field[ToolResultBlockParamContentType] `json:"type,required"`
-	Source param.Field[interface{}]                     `json:"source"`
-	Text   param.Field[string]                          `json:"text"`
+	Type         param.Field[ToolResultBlockParamContentType] `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam]      `json:"cache_control"`
+	Source       param.Field[interface{}]                     `json:"source"`
+	Text         param.Field[string]                          `json:"text"`
 }
 
 func (r ToolResultBlockParamContent) MarshalJSON() (data []byte, err error) {
@@ -1527,10 +1644,11 @@ func (r ToolUseBlockType) IsKnown() bool {
 }
 
 type ToolUseBlockParam struct {
-	ID    param.Field[string]                `json:"id,required"`
-	Input param.Field[interface{}]           `json:"input,required"`
-	Name  param.Field[string]                `json:"name,required"`
-	Type  param.Field[ToolUseBlockParamType] `json:"type,required"`
+	ID           param.Field[string]                     `json:"id,required"`
+	Input        param.Field[interface{}]                `json:"input,required"`
+	Name         param.Field[string]                     `json:"name,required"`
+	Type         param.Field[ToolUseBlockParamType]      `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
 }
 
 func (r ToolUseBlockParam) MarshalJSON() (data []byte, err error) {
@@ -1554,6 +1672,10 @@ func (r ToolUseBlockParamType) IsKnown() bool {
 }
 
 type Usage struct {
+	// The number of input tokens used to create the cache entry.
+	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens,required,nullable"`
+	// The number of input tokens read from the cache.
+	CacheReadInputTokens int64 `json:"cache_read_input_tokens,required,nullable"`
 	// The number of input tokens which were used.
 	InputTokens int64 `json:"input_tokens,required"`
 	// The number of output tokens which were used.
@@ -1563,10 +1685,12 @@ type Usage struct {
 
 // usageJSON contains the JSON metadata for the struct [Usage]
 type usageJSON struct {
-	InputTokens  apijson.Field
-	OutputTokens apijson.Field
-	raw          string
-	ExtraFields  map[string]apijson.Field
+	CacheCreationInputTokens apijson.Field
+	CacheReadInputTokens     apijson.Field
+	InputTokens              apijson.Field
+	OutputTokens             apijson.Field
+	raw                      string
+	ExtraFields              map[string]apijson.Field
 }
 
 func (r *Usage) UnmarshalJSON(data []byte) (err error) {
@@ -1811,3 +1935,206 @@ type MessageNewParams struct {
 func (r MessageNewParams) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
+
+type MessageCountTokensParams struct {
+	// Input messages.
+	//
+	// Our models are trained to operate on alternating `user` and `assistant`
+	// conversational turns. When creating a new `Message`, you specify the prior
+	// conversational turns with the `messages` parameter, and the model then generates
+	// the next `Message` in the conversation. Consecutive `user` or `assistant` turns
+	// in your request will be combined into a single turn.
+	//
+	// Each input message must be an object with a `role` and `content`. You can
+	// specify a single `user`-role message, or you can include multiple `user` and
+	// `assistant` messages.
+	//
+	// If the final message uses the `assistant` role, the response content will
+	// continue immediately from the content in that message. This can be used to
+	// constrain part of the model's response.
+	//
+	// Example with a single `user` message:
+	//
+	// ```json
+	// [{ "role": "user", "content": "Hello, Claude" }]
+	// ```
+	//
+	// Example with multiple conversational turns:
+	//
+	// ```json
+	// [
+	//
+	//	{ "role": "user", "content": "Hello there." },
+	//	{ "role": "assistant", "content": "Hi, I'm Claude. How can I help you?" },
+	//	{ "role": "user", "content": "Can you explain LLMs in plain English?" }
+	//
+	// ]
+	// ```
+	//
+	// Example with a partially-filled response from Claude:
+	//
+	// ```json
+	// [
+	//
+	//	{
+	//	  "role": "user",
+	//	  "content": "What's the Greek name for Sun? (A) Sol (B) Helios (C) Sun"
+	//	},
+	//	{ "role": "assistant", "content": "The best answer is (" }
+	//
+	// ]
+	// ```
+	//
+	// Each input message `content` may be either a single `string` or an array of
+	// content blocks, where each block has a specific `type`. Using a `string` for
+	// `content` is shorthand for an array of one content block of type `"text"`. The
+	// following input messages are equivalent:
+	//
+	// ```json
+	// { "role": "user", "content": "Hello, Claude" }
+	// ```
+	//
+	// ```json
+	// { "role": "user", "content": [{ "type": "text", "text": "Hello, Claude" }] }
+	// ```
+	//
+	// Starting with Claude 3 models, you can also send image content blocks:
+	//
+	// ```json
+	//
+	//	{
+	//	  "role": "user",
+	//	  "content": [
+	//	    {
+	//	      "type": "image",
+	//	      "source": {
+	//	        "type": "base64",
+	//	        "media_type": "image/jpeg",
+	//	        "data": "/9j/4AAQSkZJRg..."
+	//	      }
+	//	    },
+	//	    { "type": "text", "text": "What is in this image?" }
+	//	  ]
+	//	}
+	//
+	// ```
+	//
+	// We currently support the `base64` source type for images, and the `image/jpeg`,
+	// `image/png`, `image/gif`, and `image/webp` media types.
+	//
+	// See [examples](https://docs.anthropic.com/en/api/messages-examples#vision) for
+	// more input examples.
+	//
+	// Note that if you want to include a
+	// [system prompt](https://docs.anthropic.com/en/docs/system-prompts), you can use
+	// the top-level `system` parameter — there is no `"system"` role for input
+	// messages in the Messages API.
+	Messages param.Field[[]MessageParam] `json:"messages,required"`
+	// The model that will complete your prompt.\n\nSee
+	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
+	// details and options.
+	Model param.Field[Model] `json:"model,required"`
+	// System prompt.
+	//
+	// A system prompt is a way of providing context and instructions to Claude, such
+	// as specifying a particular goal or role. See our
+	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
+	System param.Field[MessageCountTokensParamsSystemUnion] `json:"system"`
+	// How the model should use the provided tools. The model can use a specific tool,
+	// any available tool, or decide by itself.
+	ToolChoice param.Field[ToolChoiceUnionParam] `json:"tool_choice"`
+	// Definitions of tools that the model may use.
+	//
+	// If you include `tools` in your API request, the model may return `tool_use`
+	// content blocks that represent the model's use of those tools. You can then run
+	// those tools using the tool input generated by the model and then optionally
+	// return results back to the model using `tool_result` content blocks.
+	//
+	// Each tool definition includes:
+	//
+	//   - `name`: Name of the tool.
+	//   - `description`: Optional, but strongly-recommended description of the tool.
+	//   - `input_schema`: [JSON schema](https://json-schema.org/) for the tool `input`
+	//     shape that the model will produce in `tool_use` output content blocks.
+	//
+	// For example, if you defined `tools` as:
+	//
+	// ```json
+	// [
+	//
+	//	{
+	//	  "name": "get_stock_price",
+	//	  "description": "Get the current stock price for a given ticker symbol.",
+	//	  "input_schema": {
+	//	    "type": "object",
+	//	    "properties": {
+	//	      "ticker": {
+	//	        "type": "string",
+	//	        "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+	//	      }
+	//	    },
+	//	    "required": ["ticker"]
+	//	  }
+	//	}
+	//
+	// ]
+	// ```
+	//
+	// And then asked the model "What's the S&P 500 at today?", the model might produce
+	// `tool_use` content blocks in the response like this:
+	//
+	// ```json
+	// [
+	//
+	//	{
+	//	  "type": "tool_use",
+	//	  "id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
+	//	  "name": "get_stock_price",
+	//	  "input": { "ticker": "^GSPC" }
+	//	}
+	//
+	// ]
+	// ```
+	//
+	// You might then run your `get_stock_price` tool with `{"ticker": "^GSPC"}` as an
+	// input, and return the following back to the model in a subsequent `user`
+	// message:
+	//
+	// ```json
+	// [
+	//
+	//	{
+	//	  "type": "tool_result",
+	//	  "tool_use_id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
+	//	  "content": "259.75 USD"
+	//	}
+	//
+	// ]
+	// ```
+	//
+	// Tools can be used for workflows that include running client-side tools and
+	// functions, or more generally whenever you want the model to produce a particular
+	// JSON structure of output.
+	//
+	// See our [guide](https://docs.anthropic.com/en/docs/tool-use) for more details.
+	Tools param.Field[[]ToolParam] `json:"tools"`
+}
+
+func (r MessageCountTokensParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// System prompt.
+//
+// A system prompt is a way of providing context and instructions to Claude, such
+// as specifying a particular goal or role. See our
+// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
+//
+// Satisfied by [shared.UnionString], [MessageCountTokensParamsSystemArray].
+type MessageCountTokensParamsSystemUnion interface {
+	ImplementsMessageCountTokensParamsSystemUnion()
+}
+
+type MessageCountTokensParamsSystemArray []TextBlockParam
+
+func (r MessageCountTokensParamsSystemArray) ImplementsMessageCountTokensParamsSystemUnion() {}

@@ -724,16 +724,14 @@ type BetaRawContentBlockDeltaEventDeltaUnion interface {
 func init() {
 	apijson.RegisterUnion(
 		reflect.TypeOf((*BetaRawContentBlockDeltaEventDeltaUnion)(nil)).Elem(),
-		"type",
+		"",
 		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaTextDelta{}),
-			DiscriminatorValue: "text_delta",
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(BetaTextDelta{}),
 		},
 		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaInputJSONDelta{}),
-			DiscriminatorValue: "input_json_delta",
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(BetaInputJSONDelta{}),
 		},
 	)
 }

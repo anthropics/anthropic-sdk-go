@@ -17,9 +17,9 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewBetaService] method instead.
 type BetaService struct {
-	Options       []option.RequestOption
-	Messages      *BetaMessageService
-	PromptCaching *BetaPromptCachingService
+	Options  []option.RequestOption
+	Models   *BetaModelService
+	Messages *BetaMessageService
 }
 
 // NewBetaService generates a new service that applies the given options to each
@@ -28,8 +28,8 @@ type BetaService struct {
 func NewBetaService(opts ...option.RequestOption) (r *BetaService) {
 	r = &BetaService{}
 	r.Options = opts
+	r.Models = NewBetaModelService(opts...)
 	r.Messages = NewBetaMessageService(opts...)
-	r.PromptCaching = NewBetaPromptCachingService(opts...)
 	return
 }
 
@@ -120,6 +120,45 @@ func (r BetaAuthenticationErrorType) IsKnown() bool {
 	return false
 }
 
+type BetaBillingError struct {
+	Message string               `json:"message,required"`
+	Type    BetaBillingErrorType `json:"type,required"`
+	JSON    betaBillingErrorJSON `json:"-"`
+}
+
+// betaBillingErrorJSON contains the JSON metadata for the struct
+// [BetaBillingError]
+type betaBillingErrorJSON struct {
+	Message     apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *BetaBillingError) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaBillingErrorJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r BetaBillingError) implementsBetaError() {}
+
+type BetaBillingErrorType string
+
+const (
+	BetaBillingErrorTypeBillingError BetaBillingErrorType = "billing_error"
+)
+
+func (r BetaBillingErrorType) IsKnown() bool {
+	switch r {
+	case BetaBillingErrorTypeBillingError:
+		return true
+	}
+	return false
+}
+
 type BetaError struct {
 	Message string        `json:"message,required"`
 	Type    BetaErrorType `json:"type,required"`
@@ -152,15 +191,17 @@ func (r *BetaError) UnmarshalJSON(data []byte) (err error) {
 // types for more type safety.
 //
 // Possible runtime types of the union are [BetaInvalidRequestError],
-// [BetaAuthenticationError], [BetaPermissionError], [BetaNotFoundError],
-// [BetaRateLimitError], [BetaAPIError], [BetaOverloadedError].
+// [BetaAuthenticationError], [BetaBillingError], [BetaPermissionError],
+// [BetaNotFoundError], [BetaRateLimitError], [BetaGatewayTimeoutError],
+// [BetaAPIError], [BetaOverloadedError].
 func (r BetaError) AsUnion() BetaErrorUnion {
 	return r.union
 }
 
 // Union satisfied by [BetaInvalidRequestError], [BetaAuthenticationError],
-// [BetaPermissionError], [BetaNotFoundError], [BetaRateLimitError], [BetaAPIError]
-// or [BetaOverloadedError].
+// [BetaBillingError], [BetaPermissionError], [BetaNotFoundError],
+// [BetaRateLimitError], [BetaGatewayTimeoutError], [BetaAPIError] or
+// [BetaOverloadedError].
 type BetaErrorUnion interface {
 	implementsBetaError()
 }
@@ -181,6 +222,11 @@ func init() {
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaBillingError{}),
+			DiscriminatorValue: "billing_error",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
 			Type:               reflect.TypeOf(BetaPermissionError{}),
 			DiscriminatorValue: "permission_error",
 		},
@@ -193,6 +239,11 @@ func init() {
 			TypeFilter:         gjson.JSON,
 			Type:               reflect.TypeOf(BetaRateLimitError{}),
 			DiscriminatorValue: "rate_limit_error",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaGatewayTimeoutError{}),
+			DiscriminatorValue: "timeout_error",
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
@@ -212,16 +263,18 @@ type BetaErrorType string
 const (
 	BetaErrorTypeInvalidRequestError BetaErrorType = "invalid_request_error"
 	BetaErrorTypeAuthenticationError BetaErrorType = "authentication_error"
+	BetaErrorTypeBillingError        BetaErrorType = "billing_error"
 	BetaErrorTypePermissionError     BetaErrorType = "permission_error"
 	BetaErrorTypeNotFoundError       BetaErrorType = "not_found_error"
 	BetaErrorTypeRateLimitError      BetaErrorType = "rate_limit_error"
+	BetaErrorTypeTimeoutError        BetaErrorType = "timeout_error"
 	BetaErrorTypeAPIError            BetaErrorType = "api_error"
 	BetaErrorTypeOverloadedError     BetaErrorType = "overloaded_error"
 )
 
 func (r BetaErrorType) IsKnown() bool {
 	switch r {
-	case BetaErrorTypeInvalidRequestError, BetaErrorTypeAuthenticationError, BetaErrorTypePermissionError, BetaErrorTypeNotFoundError, BetaErrorTypeRateLimitError, BetaErrorTypeAPIError, BetaErrorTypeOverloadedError:
+	case BetaErrorTypeInvalidRequestError, BetaErrorTypeAuthenticationError, BetaErrorTypeBillingError, BetaErrorTypePermissionError, BetaErrorTypeNotFoundError, BetaErrorTypeRateLimitError, BetaErrorTypeTimeoutError, BetaErrorTypeAPIError, BetaErrorTypeOverloadedError:
 		return true
 	}
 	return false
@@ -259,6 +312,45 @@ const (
 func (r BetaErrorResponseType) IsKnown() bool {
 	switch r {
 	case BetaErrorResponseTypeError:
+		return true
+	}
+	return false
+}
+
+type BetaGatewayTimeoutError struct {
+	Message string                      `json:"message,required"`
+	Type    BetaGatewayTimeoutErrorType `json:"type,required"`
+	JSON    betaGatewayTimeoutErrorJSON `json:"-"`
+}
+
+// betaGatewayTimeoutErrorJSON contains the JSON metadata for the struct
+// [BetaGatewayTimeoutError]
+type betaGatewayTimeoutErrorJSON struct {
+	Message     apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *BetaGatewayTimeoutError) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaGatewayTimeoutErrorJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r BetaGatewayTimeoutError) implementsBetaError() {}
+
+type BetaGatewayTimeoutErrorType string
+
+const (
+	BetaGatewayTimeoutErrorTypeTimeoutError BetaGatewayTimeoutErrorType = "timeout_error"
+)
+
+func (r BetaGatewayTimeoutErrorType) IsKnown() bool {
+	switch r {
+	case BetaGatewayTimeoutErrorTypeTimeoutError:
 		return true
 	}
 	return false

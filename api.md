@@ -1,8 +1,25 @@
+# Shared Response Types
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#APIErrorObject">APIErrorObject</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#AuthenticationError">AuthenticationError</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#BillingError">BillingError</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#ErrorObject">ErrorObject</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#ErrorResponse">ErrorResponse</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#GatewayTimeoutError">GatewayTimeoutError</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#InvalidRequestError">InvalidRequestError</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#NotFoundError">NotFoundError</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#OverloadedError">OverloadedError</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#PermissionError">PermissionError</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#RateLimitError">RateLimitError</a>
+
 # Messages
 
 Params Types:
 
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#Base64PDFSourceParam">Base64PDFSourceParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#CacheControlEphemeralParam">CacheControlEphemeralParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ContentBlockParamUnion">ContentBlockParamUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#DocumentBlockParam">DocumentBlockParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ImageBlockParam">ImageBlockParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageParam">MessageParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MetadataParam">MetadataParam</a>
@@ -22,6 +39,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#InputJSONDelta">InputJSONDelta</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#Message">Message</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageDeltaUsage">MessageDeltaUsage</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageTokensCount">MessageTokensCount</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#Model">Model</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ContentBlockDeltaEvent">ContentBlockDeltaEvent</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ContentBlockStartEvent">ContentBlockStartEvent</a>
@@ -38,6 +56,39 @@ Response Types:
 Methods:
 
 - <code title="post /v1/messages">client.Messages.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageService.New">New</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageNewParams">MessageNewParams</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#Message">Message</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/messages/count_tokens">client.Messages.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageService.CountTokens">CountTokens</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageCountTokensParams">MessageCountTokensParams</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageTokensCount">MessageTokensCount</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+## Batches
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatch">MessageBatch</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchCanceledResult">MessageBatchCanceledResult</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchErroredResult">MessageBatchErroredResult</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchExpiredResult">MessageBatchExpiredResult</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchIndividualResponse">MessageBatchIndividualResponse</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchRequestCounts">MessageBatchRequestCounts</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchResult">MessageBatchResult</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchSucceededResult">MessageBatchSucceededResult</a>
+
+Methods:
+
+- <code title="post /v1/messages/batches">client.Messages.Batches.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchService.New">New</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchNewParams">MessageBatchNewParams</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatch">MessageBatch</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/messages/batches/{message_batch_id}">client.Messages.Batches.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, messageBatchID <a href="https://pkg.go.dev/builtin#string">string</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatch">MessageBatch</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/messages/batches">client.Messages.Batches.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchListParams">MessageBatchListParams</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination#Page">Page</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatch">MessageBatch</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/messages/batches/{message_batch_id}/cancel">client.Messages.Batches.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchService.Cancel">Cancel</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, messageBatchID <a href="https://pkg.go.dev/builtin#string">string</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatch">MessageBatch</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/messages/batches/{message_batch_id}/results">client.Messages.Batches.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#MessageBatchService.Results">Results</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, messageBatchID <a href="https://pkg.go.dev/builtin#string">string</a>) (http.Response, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+# Models
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ModelInfo">ModelInfo</a>
+
+Methods:
+
+- <code title="get /v1/models/{model_id}">client.Models.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ModelService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, modelID <a href="https://pkg.go.dev/builtin#string">string</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ModelInfo">ModelInfo</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/models">client.Models.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ModelService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ModelListParams">ModelListParams</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination#Page">Page</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ModelInfo">ModelInfo</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 # Beta
 
@@ -49,13 +100,26 @@ Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAPIError">BetaAPIError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAuthenticationError">BetaAuthenticationError</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaBillingError">BetaBillingError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaError">BetaError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaErrorResponse">BetaErrorResponse</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaGatewayTimeoutError">BetaGatewayTimeoutError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaInvalidRequestError">BetaInvalidRequestError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaNotFoundError">BetaNotFoundError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOverloadedError">BetaOverloadedError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaPermissionError">BetaPermissionError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaRateLimitError">BetaRateLimitError</a>
+
+## Models
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaModelInfo">BetaModelInfo</a>
+
+Methods:
+
+- <code title="get /v1/models/{model_id}?beta=true">client.Beta.Models.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaModelService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, modelID <a href="https://pkg.go.dev/builtin#string">string</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaModelInfo">BetaModelInfo</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/models?beta=true">client.Beta.Models.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaModelService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaModelListParams">BetaModelListParams</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination#Page">Page</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaModelInfo">BetaModelInfo</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 ## Messages
 
@@ -125,28 +189,3 @@ Methods:
 - <code title="get /v1/messages/batches?beta=true">client.Beta.Messages.Batches.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaMessageBatchService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaMessageBatchListParams">BetaMessageBatchListParams</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination#Page">Page</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaMessageBatch">BetaMessageBatch</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="post /v1/messages/batches/{message_batch_id}/cancel?beta=true">client.Beta.Messages.Batches.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaMessageBatchService.Cancel">Cancel</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, messageBatchID <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaMessageBatchCancelParams">BetaMessageBatchCancelParams</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaMessageBatch">BetaMessageBatch</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="get /v1/messages/batches/{message_batch_id}/results?beta=true">client.Beta.Messages.Batches.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaMessageBatchService.Results">Results</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, messageBatchID <a href="https://pkg.go.dev/builtin#string">string</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaMessageBatchResultsParams">BetaMessageBatchResultsParams</a>) (http.Response, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
-
-## PromptCaching
-
-### Messages
-
-Params Types:
-
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaCacheControlEphemeralParam">PromptCachingBetaCacheControlEphemeralParam</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaImageBlockParam">PromptCachingBetaImageBlockParam</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaMessageParam">PromptCachingBetaMessageParam</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaTextBlockParam">PromptCachingBetaTextBlockParam</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaToolParam">PromptCachingBetaToolParam</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaToolResultBlockParam">PromptCachingBetaToolResultBlockParam</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaToolUseBlockParam">PromptCachingBetaToolUseBlockParam</a>
-
-Response Types:
-
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaMessage">PromptCachingBetaMessage</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaUsage">PromptCachingBetaUsage</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#RawPromptCachingBetaMessageStartEvent">RawPromptCachingBetaMessageStartEvent</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#RawPromptCachingBetaMessageStreamEvent">RawPromptCachingBetaMessageStreamEvent</a>
-
-Methods:
-
-- <code title="post /v1/messages?beta=prompt_caching">client.Beta.PromptCaching.Messages.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaPromptCachingMessageService.New">New</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaPromptCachingMessageNewParams">BetaPromptCachingMessageNewParams</a>) (<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#PromptCachingBetaMessage">PromptCachingBetaMessage</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>

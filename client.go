@@ -18,6 +18,7 @@ type Client struct {
 	Options     []option.RequestOption
 	Completions *CompletionService
 	Messages    *MessageService
+	Models      *ModelService
 	Beta        *BetaService
 }
 
@@ -39,6 +40,7 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 
 	r.Completions = NewCompletionService(opts...)
 	r.Messages = NewMessageService(opts...)
+	r.Models = NewModelService(opts...)
 	r.Beta = NewBetaService(opts...)
 
 	return

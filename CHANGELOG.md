@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0-alpha.8 (2024-12-19)
+
+Full Changelog: [v0.2.0-alpha.7...v0.2.0-alpha.8](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.7...v0.2.0-alpha.8)
+
+### Bug Fixes
+
+* **bedrock:** handle exceptions messages in bedrock stream ([7786f8f](https://github.com/anthropics/anthropic-sdk-go/commit/7786f8f7f97d073b79f5e1faaec1a6de285001c2))
+
+
+### Chores
+
+* bump testing data uri ([#79](https://github.com/anthropics/anthropic-sdk-go/issues/79)) ([0dc9c88](https://github.com/anthropics/anthropic-sdk-go/commit/0dc9c8811f211cdd25eb5451aa88f258591fb9bd))
+
 ## 0.2.0-alpha.7 (2024-12-17)
 
 Full Changelog: [v0.2.0-alpha.6...v0.2.0-alpha.7](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.6...v0.2.0-alpha.7)

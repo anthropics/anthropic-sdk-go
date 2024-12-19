@@ -91,6 +91,20 @@ func (r *MessageBatchService) ListAutoPaging(ctx context.Context, query MessageB
 	return pagination.NewPageAutoPager(r.List(ctx, query, opts...))
 }
 
+// This endpoint is idempotent and can be used to poll for Message Batch
+// completion. To access the results of a Message Batch, make a request to the
+// `results_url` field in the response.
+func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *DeletedMessageBatch, err error) {
+	opts = append(r.Options[:], opts...)
+	if messageBatchID == "" {
+		err = errors.New("missing required message_batch_id parameter")
+		return
+	}
+	path := fmt.Sprintf("v1/messages/batches/%s", messageBatchID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
+	return
+}
+
 // Batches may be canceled any time before processing ends. Once cancellation is
 // initiated, the batch enters a `canceling` state, at which time the system may
 // complete any in-progress, non-interruptible requests before finalizing
@@ -126,6 +140,50 @@ func (r *MessageBatchService) Results(ctx context.Context, messageBatchID string
 	path := fmt.Sprintf("v1/messages/batches/%s/results", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return
+}
+
+type DeletedMessageBatch struct {
+	// ID of the Message Batch.
+	ID string `json:"id,required"`
+	// Deleted object type.
+	//
+	// For Message Batches, this is always `"message_batch_deleted"`.
+	Type DeletedMessageBatchType `json:"type,required"`
+	JSON deletedMessageBatchJSON `json:"-"`
+}
+
+// deletedMessageBatchJSON contains the JSON metadata for the struct
+// [DeletedMessageBatch]
+type deletedMessageBatchJSON struct {
+	ID          apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *DeletedMessageBatch) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r deletedMessageBatchJSON) RawJSON() string {
+	return r.raw
+}
+
+// Deleted object type.
+//
+// For Message Batches, this is always `"message_batch_deleted"`.
+type DeletedMessageBatchType string
+
+const (
+	DeletedMessageBatchTypeMessageBatchDeleted DeletedMessageBatchType = "message_batch_deleted"
+)
+
+func (r DeletedMessageBatchType) IsKnown() bool {
+	switch r {
+	case DeletedMessageBatchTypeMessageBatchDeleted:
+		return true
+	}
+	return false
 }
 
 type MessageBatch struct {

@@ -132,6 +132,28 @@ func TestMessageBatchListWithOptionalParams(t *testing.T) {
 	}
 }
 
+func TestMessageBatchDelete(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Messages.Batches.Delete(context.TODO(), "message_batch_id")
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
 func TestMessageBatchCancel(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {

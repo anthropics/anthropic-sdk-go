@@ -97,6 +97,41 @@ func (e *eventstreamDecoder) Next() bool {
 		}
 
 	case eventstreamapi.ExceptionMessageType:
+		// See https://github.com/aws/aws-sdk-go-v2/blob/885de40869f9bcee29ad11d60967aa0f1b571d46/service/iotsitewise/deserializers.go#L15511C1-L15567C2
+		exceptionType := msg.Headers.Get(eventstreamapi.ExceptionTypeHeader)
+		if exceptionType == nil {
+			e.err = fmt.Errorf("%s event header not present", eventstreamapi.ExceptionTypeHeader)
+			return false
+		}
+
+		// See https://github.com/aws/aws-sdk-go-v2/blob/885de40869f9bcee29ad11d60967aa0f1b571d46/aws/protocol/restjson/decoder_util.go#L15-L48k
+		var errInfo struct {
+			Code    string
+			Type    string `json:"__type"`
+			Message string
+		}
+		err = json.Unmarshal(msg.Payload, &errInfo)
+		if err != nil && err != io.EOF {
+			e.err = fmt.Errorf("received exception %s: parsing exception payload failed: %w", exceptionType.String(), err)
+			return false
+		}
+
+		errorCode := "UnknownError"
+		errorMessage := errorCode
+		if ev := exceptionType.String(); len(ev) > 0 {
+			errorCode = ev
+		} else if len(errInfo.Code) > 0 {
+			errorCode = errInfo.Code
+		} else if len(errInfo.Type) > 0 {
+			errorCode = errInfo.Type
+		}
+
+		if len(errInfo.Message) > 0 {
+			errorMessage = errInfo.Message
+		}
+		e.err = fmt.Errorf("received exception %s: %s", errorCode, errorMessage)
+		return false
+
 	case eventstreamapi.ErrorMessageType:
 		errorCode := "UnknownError"
 		errorMessage := errorCode
@@ -106,7 +141,7 @@ func (e *eventstreamDecoder) Next() bool {
 		if header := msg.Headers.Get(eventstreamapi.ErrorMessageHeader); header != nil {
 			errorMessage = header.String()
 		}
-		e.err = fmt.Errorf("received error or exception %s: %s", errorCode, errorMessage)
+		e.err = fmt.Errorf("received error %s: %s", errorCode, errorMessage)
 		return false
 	}
 

@@ -92,6 +92,21 @@ func (r *BetaMessageBatchService) ListAutoPaging(ctx context.Context, params Bet
 	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }
 
+// This endpoint is idempotent and can be used to poll for Message Batch
+// completion. To access the results of a Message Batch, make a request to the
+// `results_url` field in the response.
+func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID string, body BetaMessageBatchDeleteParams, opts ...option.RequestOption) (res *BetaDeletedMessageBatch, err error) {
+	opts = append(r.Options[:], opts...)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
+	if messageBatchID == "" {
+		err = errors.New("missing required message_batch_id parameter")
+		return
+	}
+	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", messageBatchID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
+	return
+}
+
 // Batches may be canceled any time before processing ends. Once cancellation is
 // initiated, the batch enters a `canceling` state, at which time the system may
 // complete any in-progress, non-interruptible requests before finalizing
@@ -128,6 +143,50 @@ func (r *BetaMessageBatchService) Results(ctx context.Context, messageBatchID st
 	path := fmt.Sprintf("v1/messages/batches/%s/results?beta=true", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return
+}
+
+type BetaDeletedMessageBatch struct {
+	// ID of the Message Batch.
+	ID string `json:"id,required"`
+	// Deleted object type.
+	//
+	// For Message Batches, this is always `"message_batch_deleted"`.
+	Type BetaDeletedMessageBatchType `json:"type,required"`
+	JSON betaDeletedMessageBatchJSON `json:"-"`
+}
+
+// betaDeletedMessageBatchJSON contains the JSON metadata for the struct
+// [BetaDeletedMessageBatch]
+type betaDeletedMessageBatchJSON struct {
+	ID          apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *BetaDeletedMessageBatch) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaDeletedMessageBatchJSON) RawJSON() string {
+	return r.raw
+}
+
+// Deleted object type.
+//
+// For Message Batches, this is always `"message_batch_deleted"`.
+type BetaDeletedMessageBatchType string
+
+const (
+	BetaDeletedMessageBatchTypeMessageBatchDeleted BetaDeletedMessageBatchType = "message_batch_deleted"
+)
+
+func (r BetaDeletedMessageBatchType) IsKnown() bool {
+	switch r {
+	case BetaDeletedMessageBatchTypeMessageBatchDeleted:
+		return true
+	}
+	return false
 }
 
 type BetaMessageBatch struct {
@@ -862,6 +921,11 @@ func (r BetaMessageBatchListParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type BetaMessageBatchDeleteParams struct {
+	// Optional header to specify the beta version(s) you want to use.
+	Betas param.Field[[]AnthropicBeta] `header:"anthropic-beta"`
 }
 
 type BetaMessageBatchCancelParams struct {

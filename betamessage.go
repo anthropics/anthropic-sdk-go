@@ -45,8 +45,8 @@ func NewBetaMessageService(opts ...option.RequestOption) (r *BetaMessageService)
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParams, opts ...option.RequestOption) (res *BetaMessage, err error) {
-	if params.Betas.Present {
-		opts = append(opts, option.WithHeader("betas", fmt.Sprintf("%s", params.Betas)))
+	for _, v := range params.Betas.Value {
+		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	path := "v1/messages?beta=true"
@@ -66,8 +66,8 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 		raw *http.Response
 		err error
 	)
-	if params.Betas.Present {
-		opts = append(opts, option.WithHeader("betas", fmt.Sprintf("%s", params.Betas)))
+	for _, v := range params.Betas.Value {
+		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithJSONSet("stream", true)}, opts...)
@@ -81,8 +81,8 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 // The Token Count API can be used to count the number of tokens in a Message,
 // including tools, images, and documents, without creating it.
 func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessageCountTokensParams, opts ...option.RequestOption) (res *BetaMessageTokensCount, err error) {
-	if params.Betas.Present {
-		opts = append(opts, option.WithHeader("betas", fmt.Sprintf("%s", params.Betas)))
+	for _, v := range params.Betas.Value {
+		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	path := "v1/messages/count_tokens?beta=true"

@@ -45,8 +45,8 @@ func NewBetaMessageBatchService(opts ...option.RequestOption) (r *BetaMessageBat
 // once. Once a Message Batch is created, it begins processing immediately. Batches
 // can take up to 24 hours to complete.
 func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBatchNewParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
-	if params.Betas.Present {
-		opts = append(opts, option.WithHeader("betas", fmt.Sprintf("%s", params.Betas)))
+	for _, v := range params.Betas.Value {
+		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
@@ -59,8 +59,8 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 // completion. To access the results of a Message Batch, make a request to the
 // `results_url` field in the response.
 func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string, query BetaMessageBatchGetParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
-	if query.Betas.Present {
-		opts = append(opts, option.WithHeader("betas", fmt.Sprintf("%s", query.Betas)))
+	for _, v := range query.Betas.Value {
+		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
@@ -77,8 +77,8 @@ func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string
 // returned first.
 func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBatchListParams, opts ...option.RequestOption) (res *pagination.Page[BetaMessageBatch], err error) {
 	var raw *http.Response
-	if params.Betas.Present {
-		opts = append(opts, option.WithHeader("betas", fmt.Sprintf("%s", params.Betas)))
+	for _, v := range params.Betas.Value {
+		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithResponseInto(&raw)}, opts...)
@@ -105,8 +105,8 @@ func (r *BetaMessageBatchService) ListAutoPaging(ctx context.Context, params Bet
 // completion. To access the results of a Message Batch, make a request to the
 // `results_url` field in the response.
 func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID string, body BetaMessageBatchDeleteParams, opts ...option.RequestOption) (res *BetaDeletedMessageBatch, err error) {
-	if body.Betas.Present {
-		opts = append(opts, option.WithHeader("betas", fmt.Sprintf("%s", body.Betas)))
+	for _, v := range body.Betas.Value {
+		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
@@ -129,8 +129,8 @@ func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID str
 // Note that cancellation may not result in any canceled requests if they were
 // non-interruptible.
 func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID string, body BetaMessageBatchCancelParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
-	if body.Betas.Present {
-		opts = append(opts, option.WithHeader("betas", fmt.Sprintf("%s", body.Betas)))
+	for _, v := range body.Betas.Value {
+		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
@@ -149,8 +149,8 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 // in the Message Batch. Results are not guaranteed to be in the same order as
 // requests. Use the `custom_id` field to match results to requests.
 func (r *BetaMessageBatchService) Results(ctx context.Context, messageBatchID string, query BetaMessageBatchResultsParams, opts ...option.RequestOption) (res *http.Response, err error) {
-	if query.Betas.Present {
-		opts = append(opts, option.WithHeader("betas", fmt.Sprintf("%s", query.Betas)))
+	for _, v := range query.Betas.Value {
+		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithHeader("Accept", "application/binary")}, opts...)

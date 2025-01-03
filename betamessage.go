@@ -46,7 +46,7 @@ func NewBetaMessageService(opts ...option.RequestOption) (r *BetaMessageService)
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParams, opts ...option.RequestOption) (res *BetaMessage, err error) {
 	for _, v := range params.Betas.Value {
-		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	path := "v1/messages?beta=true"
@@ -67,7 +67,7 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 		err error
 	)
 	for _, v := range params.Betas.Value {
-		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithJSONSet("stream", true)}, opts...)
@@ -82,7 +82,7 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 // including tools, images, and documents, without creating it.
 func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessageCountTokensParams, opts ...option.RequestOption) (res *BetaMessageTokensCount, err error) {
 	for _, v := range params.Betas.Value {
-		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	path := "v1/messages/count_tokens?beta=true"

@@ -46,7 +46,7 @@ func NewBetaMessageBatchService(opts ...option.RequestOption) (r *BetaMessageBat
 // can take up to 24 hours to complete.
 func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBatchNewParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	for _, v := range params.Betas.Value {
-		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
@@ -60,7 +60,7 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 // `results_url` field in the response.
 func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string, query BetaMessageBatchGetParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	for _, v := range query.Betas.Value {
-		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
@@ -78,7 +78,7 @@ func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string
 func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBatchListParams, opts ...option.RequestOption) (res *pagination.Page[BetaMessageBatch], err error) {
 	var raw *http.Response
 	for _, v := range params.Betas.Value {
-		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithResponseInto(&raw)}, opts...)
@@ -106,7 +106,7 @@ func (r *BetaMessageBatchService) ListAutoPaging(ctx context.Context, params Bet
 // `results_url` field in the response.
 func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID string, body BetaMessageBatchDeleteParams, opts ...option.RequestOption) (res *BetaDeletedMessageBatch, err error) {
 	for _, v := range body.Betas.Value {
-		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
@@ -130,7 +130,7 @@ func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID str
 // non-interruptible.
 func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID string, body BetaMessageBatchCancelParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	for _, v := range body.Betas.Value {
-		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
@@ -150,7 +150,7 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 // requests. Use the `custom_id` field to match results to requests.
 func (r *BetaMessageBatchService) Results(ctx context.Context, messageBatchID string, query BetaMessageBatchResultsParams, opts ...option.RequestOption) (res *http.Response, err error) {
 	for _, v := range query.Betas.Value {
-		opts = append(opts, option.WithHeaderAdd("betas", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithHeader("Accept", "application/binary")}, opts...)

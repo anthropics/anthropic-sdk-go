@@ -62,7 +62,7 @@ func TestMessageBatchNew(t *testing.T) {
 								"type":        "string",
 							},
 						}}),
-					Name: anthropic.F("x"),
+					Name: anthropic.F("name"),
 					CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{
 						Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral),
 					}),

@@ -64,7 +64,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 							},
 						}),
 					}),
-					Name: anthropic.F("x"),
+					Name: anthropic.F("name"),
 					CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
 						Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 					}),

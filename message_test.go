@@ -58,6 +58,9 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 					},
 				},
 			}),
+			CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{
+				Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral),
+			}),
 		}}),
 		TopK: anthropic.F(int64(5)),
 		TopP: anthropic.F(0.700000),
@@ -114,7 +117,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 					},
 				},
 			}),
-			Name: anthropic.F("x"),
+			Name: anthropic.F("name"),
 			CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{
 				Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral),
 			}),

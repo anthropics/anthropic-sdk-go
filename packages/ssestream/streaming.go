@@ -119,7 +119,6 @@ type Stream[T any] struct {
 	decoder Decoder
 	cur     T
 	err     error
-	done    bool
 }
 
 func NewStream[T any](decoder Decoder, err error) *Stream[T] {

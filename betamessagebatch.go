@@ -16,6 +16,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/internal/param"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/packages/jsonl"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
 	"github.com/tidwall/gjson"
 )
@@ -148,19 +149,23 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 // Each line in the file is a JSON object containing the result of a single request
 // in the Message Batch. Results are not guaranteed to be in the same order as
 // requests. Use the `custom_id` field to match results to requests.
-func (r *BetaMessageBatchService) Results(ctx context.Context, messageBatchID string, query BetaMessageBatchResultsParams, opts ...option.RequestOption) (res *http.Response, err error) {
+func (r *BetaMessageBatchService) ResultsStreaming(ctx context.Context, messageBatchID string, query BetaMessageBatchResultsParams, opts ...option.RequestOption) (stream *jsonl.Stream[BetaMessageBatchIndividualResponse]) {
+	var (
+		raw *http.Response
+		err error
+	)
 	for _, v := range query.Betas.Value {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
 	opts = append(r.Options[:], opts...)
-	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithHeader("Accept", "application/binary")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithHeader("Accept", "application/x-jsonl")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
 		return
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/results?beta=true", messageBatchID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
+	return jsonl.NewStream[BetaMessageBatchIndividualResponse](raw, err)
 }
 
 type BetaDeletedMessageBatch struct {

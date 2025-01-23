@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.2.0-alpha.9 (2025-01-23)
+
+Full Changelog: [v0.2.0-alpha.8...v0.2.0-alpha.9](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.8...v0.2.0-alpha.9)
+
+### Features
+
+* **api:** add citations ([#101](https://github.com/anthropics/anthropic-sdk-go/issues/101)) ([59fd065](https://github.com/anthropics/anthropic-sdk-go/commit/59fd065fe106db20527f37e4ecdc6cc771c10418))
+* **api:** add message batch delete endpoint ([#81](https://github.com/anthropics/anthropic-sdk-go/issues/81)) ([b3a63e7](https://github.com/anthropics/anthropic-sdk-go/commit/b3a63e7cbf73d06141750cf126af25412b12061d))
+* **client:** support results endpoint ([#98](https://github.com/anthropics/anthropic-sdk-go/issues/98)) ([380054f](https://github.com/anthropics/anthropic-sdk-go/commit/380054fc5608380cdc054a181d83558ee7c5b946))
+
+
+### Bug Fixes
+
+* fix apijson.Port for embedded structs ([#95](https://github.com/anthropics/anthropic-sdk-go/issues/95)) ([5c3a7f7](https://github.com/anthropics/anthropic-sdk-go/commit/5c3a7f7f4d2694b8b52a0c4a36701a489a58dcf0))
+* fix apijson.Port for embedded structs ([#97](https://github.com/anthropics/anthropic-sdk-go/issues/97)) ([55a3365](https://github.com/anthropics/anthropic-sdk-go/commit/55a3365c873b6b385d27f2315e370fa40736778e))
+* fix header parameter value ([#90](https://github.com/anthropics/anthropic-sdk-go/issues/90)) ([d52699a](https://github.com/anthropics/anthropic-sdk-go/commit/d52699aa2036162f6842a3115eb754b6870260e1))
+* prevent niche naming conflicts for string enums with different casing ([#100](https://github.com/anthropics/anthropic-sdk-go/issues/100)) ([3af5fe8](https://github.com/anthropics/anthropic-sdk-go/commit/3af5fe8993928a6985022cdbea6bfe220a6d6be5))
+* support array query parameters ([#89](https://github.com/anthropics/anthropic-sdk-go/issues/89)) ([d728bcc](https://github.com/anthropics/anthropic-sdk-go/commit/d728bcc9d69414bb3ba577e504e1285f0eb22bc5))
+
+
+### Chores
+
+* bump license year ([#88](https://github.com/anthropics/anthropic-sdk-go/issues/88)) ([c8ddc6b](https://github.com/anthropics/anthropic-sdk-go/commit/c8ddc6b1364485e299e050423e459023e2d65b46))
+* **internal:** remove unused field ([#94](https://github.com/anthropics/anthropic-sdk-go/issues/94)) ([b98d12a](https://github.com/anthropics/anthropic-sdk-go/commit/b98d12a3991ae2f1d714833a71ec90dedc552661))
+* **internal:** rename `streaming.go` ([#96](https://github.com/anthropics/anthropic-sdk-go/issues/96)) ([ce8ac0f](https://github.com/anthropics/anthropic-sdk-go/commit/ce8ac0fe762132d230241f021eeb0cd4215f271b))
+* **internal:** update examples ([#91](https://github.com/anthropics/anthropic-sdk-go/issues/91)) ([9717662](https://github.com/anthropics/anthropic-sdk-go/commit/97176628489158be07baf1747ba39f15429d3a39))
+
+
+### Documentation
+
+* **readme:** fix misplaced period ([#93](https://github.com/anthropics/anthropic-sdk-go/issues/93)) ([953d510](https://github.com/anthropics/anthropic-sdk-go/commit/953d5104b1460b749b776a6ba4df90d2604c06cd))
+
 ## 0.2.0-alpha.8 (2024-12-19)
 
 Full Changelog: [v0.2.0-alpha.7...v0.2.0-alpha.8](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.7...v0.2.0-alpha.8)

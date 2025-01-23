@@ -102,9 +102,10 @@ func (r *BetaMessageBatchService) ListAutoPaging(ctx context.Context, params Bet
 	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }
 
-// This endpoint is idempotent and can be used to poll for Message Batch
-// completion. To access the results of a Message Batch, make a request to the
-// `results_url` field in the response.
+// Delete a Message Batch.
+//
+// Message Batches can only be deleted once they've finished processing. If you'd
+// like to delete an in-progress batch, you must first cancel it.
 func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID string, body BetaMessageBatchDeleteParams, opts ...option.RequestOption) (res *BetaDeletedMessageBatch, err error) {
 	for _, v := range body.Betas.Value {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))

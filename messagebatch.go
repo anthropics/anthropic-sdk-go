@@ -92,9 +92,10 @@ func (r *MessageBatchService) ListAutoPaging(ctx context.Context, query MessageB
 	return pagination.NewPageAutoPager(r.List(ctx, query, opts...))
 }
 
-// This endpoint is idempotent and can be used to poll for Message Batch
-// completion. To access the results of a Message Batch, make a request to the
-// `results_url` field in the response.
+// Delete a Message Batch.
+//
+// Message Batches can only be deleted once they've finished processing. If you'd
+// like to delete an in-progress batch, you must first cancel it.
 func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *DeletedMessageBatch, err error) {
 	opts = append(r.Options[:], opts...)
 	if messageBatchID == "" {

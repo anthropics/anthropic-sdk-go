@@ -31,7 +31,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 			Params: anthropic.F(anthropic.BetaMessageBatchNewParamsRequestsParams{
 				MaxTokens: anthropic.F(int64(1024)),
 				Messages: anthropic.F([]anthropic.BetaMessageParam{{
-					Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
+					Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.BetaTextCitationParamUnion{anthropic.BetaCitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.BetaCitationCharLocationParamTypeCharLocation)}})}}),
 					Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 				}}),
 				Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
@@ -40,7 +40,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				}),
 				StopSequences: anthropic.F([]string{"string"}),
 				Stream:        anthropic.F(true),
-				System:        anthropic.F([]anthropic.BetaTextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
+				System:        anthropic.F([]anthropic.BetaTextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.BetaTextCitationParamUnion{anthropic.BetaCitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.BetaCitationCharLocationParamTypeCharLocation)}})}}),
 				Temperature:   anthropic.F(1.000000),
 				ToolChoice: anthropic.F[anthropic.BetaToolChoiceUnionParam](anthropic.BetaToolChoiceAutoParam{
 					Type:                   anthropic.F(anthropic.BetaToolChoiceAutoTypeAuto),

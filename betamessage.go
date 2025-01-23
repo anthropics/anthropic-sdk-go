@@ -91,9 +91,12 @@ func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessage
 }
 
 type BetaBase64PDFBlockParam struct {
-	Source       param.Field[BetaBase64PDFSourceParam]       `json:"source,required"`
-	Type         param.Field[BetaBase64PDFBlockType]         `json:"type,required"`
-	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+	Source       param.Field[BetaBase64PDFBlockSourceUnionParam] `json:"source,required"`
+	Type         param.Field[BetaBase64PDFBlockType]             `json:"type,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam]     `json:"cache_control"`
+	Citations    param.Field[BetaCitationsConfigParam]           `json:"citations"`
+	Context      param.Field[string]                             `json:"context"`
+	Title        param.Field[string]                             `json:"title"`
 }
 
 func (r BetaBase64PDFBlockParam) MarshalJSON() (data []byte, err error) {
@@ -101,6 +104,56 @@ func (r BetaBase64PDFBlockParam) MarshalJSON() (data []byte, err error) {
 }
 
 func (r BetaBase64PDFBlockParam) implementsBetaContentBlockParamUnion() {}
+
+type BetaBase64PDFBlockSourceParam struct {
+	Type      param.Field[BetaBase64PDFBlockSourceType]      `json:"type,required"`
+	Content   param.Field[interface{}]                       `json:"content"`
+	Data      param.Field[string]                            `json:"data" format:"byte"`
+	MediaType param.Field[BetaBase64PDFBlockSourceMediaType] `json:"media_type"`
+}
+
+func (r BetaBase64PDFBlockSourceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaBase64PDFBlockSourceParam) implementsBetaBase64PDFBlockSourceUnionParam() {}
+
+// Satisfied by [BetaBase64PDFSourceParam], [BetaPlainTextSourceParam],
+// [BetaContentBlockSourceParam], [BetaBase64PDFBlockSourceParam].
+type BetaBase64PDFBlockSourceUnionParam interface {
+	implementsBetaBase64PDFBlockSourceUnionParam()
+}
+
+type BetaBase64PDFBlockSourceType string
+
+const (
+	BetaBase64PDFBlockSourceTypeBase64  BetaBase64PDFBlockSourceType = "base64"
+	BetaBase64PDFBlockSourceTypeText    BetaBase64PDFBlockSourceType = "text"
+	BetaBase64PDFBlockSourceTypeContent BetaBase64PDFBlockSourceType = "content"
+)
+
+func (r BetaBase64PDFBlockSourceType) IsKnown() bool {
+	switch r {
+	case BetaBase64PDFBlockSourceTypeBase64, BetaBase64PDFBlockSourceTypeText, BetaBase64PDFBlockSourceTypeContent:
+		return true
+	}
+	return false
+}
+
+type BetaBase64PDFBlockSourceMediaType string
+
+const (
+	BetaBase64PDFBlockSourceMediaTypeApplicationPDF BetaBase64PDFBlockSourceMediaType = "application/pdf"
+	BetaBase64PDFBlockSourceMediaTypeTextPlain      BetaBase64PDFBlockSourceMediaType = "text/plain"
+)
+
+func (r BetaBase64PDFBlockSourceMediaType) IsKnown() bool {
+	switch r {
+	case BetaBase64PDFBlockSourceMediaTypeApplicationPDF, BetaBase64PDFBlockSourceMediaTypeTextPlain:
+		return true
+	}
+	return false
+}
 
 type BetaBase64PDFBlockType string
 
@@ -125,6 +178,8 @@ type BetaBase64PDFSourceParam struct {
 func (r BetaBase64PDFSourceParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
+
+func (r BetaBase64PDFSourceParam) implementsBetaBase64PDFBlockSourceUnionParam() {}
 
 type BetaBase64PDFSourceMediaType string
 
@@ -176,9 +231,390 @@ func (r BetaCacheControlEphemeralType) IsKnown() bool {
 	return false
 }
 
+type BetaCitationCharLocation struct {
+	CitedText      string                       `json:"cited_text,required"`
+	DocumentIndex  int64                        `json:"document_index,required"`
+	DocumentTitle  string                       `json:"document_title,required,nullable"`
+	EndCharIndex   int64                        `json:"end_char_index,required"`
+	StartCharIndex int64                        `json:"start_char_index,required"`
+	Type           BetaCitationCharLocationType `json:"type,required"`
+	JSON           betaCitationCharLocationJSON `json:"-"`
+}
+
+// betaCitationCharLocationJSON contains the JSON metadata for the struct
+// [BetaCitationCharLocation]
+type betaCitationCharLocationJSON struct {
+	CitedText      apijson.Field
+	DocumentIndex  apijson.Field
+	DocumentTitle  apijson.Field
+	EndCharIndex   apijson.Field
+	StartCharIndex apijson.Field
+	Type           apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
+}
+
+func (r *BetaCitationCharLocation) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaCitationCharLocationJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r BetaCitationCharLocation) implementsBetaCitationsDeltaCitation() {}
+
+func (r BetaCitationCharLocation) implementsBetaTextCitation() {}
+
+type BetaCitationCharLocationType string
+
+const (
+	BetaCitationCharLocationTypeCharLocation BetaCitationCharLocationType = "char_location"
+)
+
+func (r BetaCitationCharLocationType) IsKnown() bool {
+	switch r {
+	case BetaCitationCharLocationTypeCharLocation:
+		return true
+	}
+	return false
+}
+
+type BetaCitationCharLocationParam struct {
+	CitedText      param.Field[string]                            `json:"cited_text,required"`
+	DocumentIndex  param.Field[int64]                             `json:"document_index,required"`
+	DocumentTitle  param.Field[string]                            `json:"document_title,required"`
+	EndCharIndex   param.Field[int64]                             `json:"end_char_index,required"`
+	StartCharIndex param.Field[int64]                             `json:"start_char_index,required"`
+	Type           param.Field[BetaCitationCharLocationParamType] `json:"type,required"`
+}
+
+func (r BetaCitationCharLocationParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaCitationCharLocationParam) implementsBetaTextCitationParamUnion() {}
+
+type BetaCitationCharLocationParamType string
+
+const (
+	BetaCitationCharLocationParamTypeCharLocation BetaCitationCharLocationParamType = "char_location"
+)
+
+func (r BetaCitationCharLocationParamType) IsKnown() bool {
+	switch r {
+	case BetaCitationCharLocationParamTypeCharLocation:
+		return true
+	}
+	return false
+}
+
+type BetaCitationContentBlockLocation struct {
+	CitedText       string                               `json:"cited_text,required"`
+	DocumentIndex   int64                                `json:"document_index,required"`
+	DocumentTitle   string                               `json:"document_title,required,nullable"`
+	EndBlockIndex   int64                                `json:"end_block_index,required"`
+	StartBlockIndex int64                                `json:"start_block_index,required"`
+	Type            BetaCitationContentBlockLocationType `json:"type,required"`
+	JSON            betaCitationContentBlockLocationJSON `json:"-"`
+}
+
+// betaCitationContentBlockLocationJSON contains the JSON metadata for the struct
+// [BetaCitationContentBlockLocation]
+type betaCitationContentBlockLocationJSON struct {
+	CitedText       apijson.Field
+	DocumentIndex   apijson.Field
+	DocumentTitle   apijson.Field
+	EndBlockIndex   apijson.Field
+	StartBlockIndex apijson.Field
+	Type            apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *BetaCitationContentBlockLocation) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaCitationContentBlockLocationJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r BetaCitationContentBlockLocation) implementsBetaCitationsDeltaCitation() {}
+
+func (r BetaCitationContentBlockLocation) implementsBetaTextCitation() {}
+
+type BetaCitationContentBlockLocationType string
+
+const (
+	BetaCitationContentBlockLocationTypeContentBlockLocation BetaCitationContentBlockLocationType = "content_block_location"
+)
+
+func (r BetaCitationContentBlockLocationType) IsKnown() bool {
+	switch r {
+	case BetaCitationContentBlockLocationTypeContentBlockLocation:
+		return true
+	}
+	return false
+}
+
+type BetaCitationContentBlockLocationParam struct {
+	CitedText       param.Field[string]                                    `json:"cited_text,required"`
+	DocumentIndex   param.Field[int64]                                     `json:"document_index,required"`
+	DocumentTitle   param.Field[string]                                    `json:"document_title,required"`
+	EndBlockIndex   param.Field[int64]                                     `json:"end_block_index,required"`
+	StartBlockIndex param.Field[int64]                                     `json:"start_block_index,required"`
+	Type            param.Field[BetaCitationContentBlockLocationParamType] `json:"type,required"`
+}
+
+func (r BetaCitationContentBlockLocationParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaCitationContentBlockLocationParam) implementsBetaTextCitationParamUnion() {}
+
+type BetaCitationContentBlockLocationParamType string
+
+const (
+	BetaCitationContentBlockLocationParamTypeContentBlockLocation BetaCitationContentBlockLocationParamType = "content_block_location"
+)
+
+func (r BetaCitationContentBlockLocationParamType) IsKnown() bool {
+	switch r {
+	case BetaCitationContentBlockLocationParamTypeContentBlockLocation:
+		return true
+	}
+	return false
+}
+
+type BetaCitationPageLocation struct {
+	CitedText       string                       `json:"cited_text,required"`
+	DocumentIndex   int64                        `json:"document_index,required"`
+	DocumentTitle   string                       `json:"document_title,required,nullable"`
+	EndPageNumber   int64                        `json:"end_page_number,required"`
+	StartPageNumber int64                        `json:"start_page_number,required"`
+	Type            BetaCitationPageLocationType `json:"type,required"`
+	JSON            betaCitationPageLocationJSON `json:"-"`
+}
+
+// betaCitationPageLocationJSON contains the JSON metadata for the struct
+// [BetaCitationPageLocation]
+type betaCitationPageLocationJSON struct {
+	CitedText       apijson.Field
+	DocumentIndex   apijson.Field
+	DocumentTitle   apijson.Field
+	EndPageNumber   apijson.Field
+	StartPageNumber apijson.Field
+	Type            apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *BetaCitationPageLocation) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaCitationPageLocationJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r BetaCitationPageLocation) implementsBetaCitationsDeltaCitation() {}
+
+func (r BetaCitationPageLocation) implementsBetaTextCitation() {}
+
+type BetaCitationPageLocationType string
+
+const (
+	BetaCitationPageLocationTypePageLocation BetaCitationPageLocationType = "page_location"
+)
+
+func (r BetaCitationPageLocationType) IsKnown() bool {
+	switch r {
+	case BetaCitationPageLocationTypePageLocation:
+		return true
+	}
+	return false
+}
+
+type BetaCitationPageLocationParam struct {
+	CitedText       param.Field[string]                            `json:"cited_text,required"`
+	DocumentIndex   param.Field[int64]                             `json:"document_index,required"`
+	DocumentTitle   param.Field[string]                            `json:"document_title,required"`
+	EndPageNumber   param.Field[int64]                             `json:"end_page_number,required"`
+	StartPageNumber param.Field[int64]                             `json:"start_page_number,required"`
+	Type            param.Field[BetaCitationPageLocationParamType] `json:"type,required"`
+}
+
+func (r BetaCitationPageLocationParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaCitationPageLocationParam) implementsBetaTextCitationParamUnion() {}
+
+type BetaCitationPageLocationParamType string
+
+const (
+	BetaCitationPageLocationParamTypePageLocation BetaCitationPageLocationParamType = "page_location"
+)
+
+func (r BetaCitationPageLocationParamType) IsKnown() bool {
+	switch r {
+	case BetaCitationPageLocationParamTypePageLocation:
+		return true
+	}
+	return false
+}
+
+type BetaCitationsConfigParam struct {
+	Enabled param.Field[bool] `json:"enabled"`
+}
+
+func (r BetaCitationsConfigParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type BetaCitationsDelta struct {
+	Citation BetaCitationsDeltaCitation `json:"citation,required"`
+	Type     BetaCitationsDeltaType     `json:"type,required"`
+	JSON     betaCitationsDeltaJSON     `json:"-"`
+}
+
+// betaCitationsDeltaJSON contains the JSON metadata for the struct
+// [BetaCitationsDelta]
+type betaCitationsDeltaJSON struct {
+	Citation    apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *BetaCitationsDelta) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaCitationsDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r BetaCitationsDelta) implementsBetaRawContentBlockDeltaEventDelta() {}
+
+type BetaCitationsDeltaCitation struct {
+	CitedText       string                         `json:"cited_text,required"`
+	DocumentIndex   int64                          `json:"document_index,required"`
+	DocumentTitle   string                         `json:"document_title,required,nullable"`
+	Type            BetaCitationsDeltaCitationType `json:"type,required"`
+	EndBlockIndex   int64                          `json:"end_block_index"`
+	EndCharIndex    int64                          `json:"end_char_index"`
+	EndPageNumber   int64                          `json:"end_page_number"`
+	StartBlockIndex int64                          `json:"start_block_index"`
+	StartCharIndex  int64                          `json:"start_char_index"`
+	StartPageNumber int64                          `json:"start_page_number"`
+	JSON            betaCitationsDeltaCitationJSON `json:"-"`
+	union           BetaCitationsDeltaCitationUnion
+}
+
+// betaCitationsDeltaCitationJSON contains the JSON metadata for the struct
+// [BetaCitationsDeltaCitation]
+type betaCitationsDeltaCitationJSON struct {
+	CitedText       apijson.Field
+	DocumentIndex   apijson.Field
+	DocumentTitle   apijson.Field
+	Type            apijson.Field
+	EndBlockIndex   apijson.Field
+	EndCharIndex    apijson.Field
+	EndPageNumber   apijson.Field
+	StartBlockIndex apijson.Field
+	StartCharIndex  apijson.Field
+	StartPageNumber apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r betaCitationsDeltaCitationJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *BetaCitationsDeltaCitation) UnmarshalJSON(data []byte) (err error) {
+	*r = BetaCitationsDeltaCitation{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [BetaCitationsDeltaCitationUnion] interface which you can cast
+// to the specific types for more type safety.
+//
+// Possible runtime types of the union are [BetaCitationCharLocation],
+// [BetaCitationPageLocation], [BetaCitationContentBlockLocation].
+func (r BetaCitationsDeltaCitation) AsUnion() BetaCitationsDeltaCitationUnion {
+	return r.union
+}
+
+// Union satisfied by [BetaCitationCharLocation], [BetaCitationPageLocation] or
+// [BetaCitationContentBlockLocation].
+type BetaCitationsDeltaCitationUnion interface {
+	implementsBetaCitationsDeltaCitation()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*BetaCitationsDeltaCitationUnion)(nil)).Elem(),
+		"type",
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaCitationCharLocation{}),
+			DiscriminatorValue: "char_location",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaCitationPageLocation{}),
+			DiscriminatorValue: "page_location",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaCitationContentBlockLocation{}),
+			DiscriminatorValue: "content_block_location",
+		},
+	)
+}
+
+type BetaCitationsDeltaCitationType string
+
+const (
+	BetaCitationsDeltaCitationTypeCharLocation         BetaCitationsDeltaCitationType = "char_location"
+	BetaCitationsDeltaCitationTypePageLocation         BetaCitationsDeltaCitationType = "page_location"
+	BetaCitationsDeltaCitationTypeContentBlockLocation BetaCitationsDeltaCitationType = "content_block_location"
+)
+
+func (r BetaCitationsDeltaCitationType) IsKnown() bool {
+	switch r {
+	case BetaCitationsDeltaCitationTypeCharLocation, BetaCitationsDeltaCitationTypePageLocation, BetaCitationsDeltaCitationTypeContentBlockLocation:
+		return true
+	}
+	return false
+}
+
+type BetaCitationsDeltaType string
+
+const (
+	BetaCitationsDeltaTypeCitationsDelta BetaCitationsDeltaType = "citations_delta"
+)
+
+func (r BetaCitationsDeltaType) IsKnown() bool {
+	switch r {
+	case BetaCitationsDeltaTypeCitationsDelta:
+		return true
+	}
+	return false
+}
+
 type BetaContentBlock struct {
 	Type BetaContentBlockType `json:"type,required"`
 	ID   string               `json:"id"`
+	// This field can have the runtime type of [[]BetaTextCitation].
+	Citations interface{} `json:"citations"`
 	// This field can have the runtime type of [interface{}].
 	Input interface{}          `json:"input"`
 	Name  string               `json:"name"`
@@ -192,6 +628,7 @@ type BetaContentBlock struct {
 type betaContentBlockJSON struct {
 	Type        apijson.Field
 	ID          apijson.Field
+	Citations   apijson.Field
 	Input       apijson.Field
 	Name        apijson.Field
 	Text        apijson.Field
@@ -261,12 +698,15 @@ type BetaContentBlockParam struct {
 	Type         param.Field[BetaContentBlockParamType]      `json:"type,required"`
 	ID           param.Field[string]                         `json:"id"`
 	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+	Citations    param.Field[interface{}]                    `json:"citations"`
 	Content      param.Field[interface{}]                    `json:"content"`
+	Context      param.Field[string]                         `json:"context"`
 	Input        param.Field[interface{}]                    `json:"input"`
 	IsError      param.Field[bool]                           `json:"is_error"`
 	Name         param.Field[string]                         `json:"name"`
 	Source       param.Field[interface{}]                    `json:"source"`
 	Text         param.Field[string]                         `json:"text"`
+	Title        param.Field[string]                         `json:"title"`
 	ToolUseID    param.Field[string]                         `json:"tool_use_id"`
 }
 
@@ -301,6 +741,42 @@ func (r BetaContentBlockParamType) IsKnown() bool {
 	return false
 }
 
+type BetaContentBlockSourceParam struct {
+	Content param.Field[BetaContentBlockSourceContentUnionParam] `json:"content,required"`
+	Type    param.Field[BetaContentBlockSourceType]              `json:"type,required"`
+}
+
+func (r BetaContentBlockSourceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaContentBlockSourceParam) implementsBetaBase64PDFBlockSourceUnionParam() {}
+
+// Satisfied by [shared.UnionString],
+// [BetaContentBlockSourceContentBetaContentBlockSourceContentParam].
+type BetaContentBlockSourceContentUnionParam interface {
+	ImplementsBetaContentBlockSourceContentUnionParam()
+}
+
+type BetaContentBlockSourceContentBetaContentBlockSourceContentParam []BetaContentBlockSourceContentUnionParam
+
+func (r BetaContentBlockSourceContentBetaContentBlockSourceContentParam) ImplementsBetaContentBlockSourceContentUnionParam() {
+}
+
+type BetaContentBlockSourceType string
+
+const (
+	BetaContentBlockSourceTypeContent BetaContentBlockSourceType = "content"
+)
+
+func (r BetaContentBlockSourceType) IsKnown() bool {
+	switch r {
+	case BetaContentBlockSourceTypeContent:
+		return true
+	}
+	return false
+}
+
 type BetaImageBlockParam struct {
 	Source       param.Field[BetaImageBlockParamSource]      `json:"source,required"`
 	Type         param.Field[BetaImageBlockParamType]        `json:"type,required"`
@@ -312,6 +788,8 @@ func (r BetaImageBlockParam) MarshalJSON() (data []byte, err error) {
 }
 
 func (r BetaImageBlockParam) implementsBetaContentBlockParamUnion() {}
+
+func (r BetaImageBlockParam) implementsBetaContentBlockSourceContentUnionParam() {}
 
 func (r BetaImageBlockParam) implementsBetaToolResultBlockParamContentUnion() {}
 
@@ -660,6 +1138,46 @@ func (r BetaMetadataParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
+type BetaPlainTextSourceParam struct {
+	Data      param.Field[string]                       `json:"data,required"`
+	MediaType param.Field[BetaPlainTextSourceMediaType] `json:"media_type,required"`
+	Type      param.Field[BetaPlainTextSourceType]      `json:"type,required"`
+}
+
+func (r BetaPlainTextSourceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaPlainTextSourceParam) implementsBetaBase64PDFBlockSourceUnionParam() {}
+
+type BetaPlainTextSourceMediaType string
+
+const (
+	BetaPlainTextSourceMediaTypeTextPlain BetaPlainTextSourceMediaType = "text/plain"
+)
+
+func (r BetaPlainTextSourceMediaType) IsKnown() bool {
+	switch r {
+	case BetaPlainTextSourceMediaTypeTextPlain:
+		return true
+	}
+	return false
+}
+
+type BetaPlainTextSourceType string
+
+const (
+	BetaPlainTextSourceTypeText BetaPlainTextSourceType = "text"
+)
+
+func (r BetaPlainTextSourceType) IsKnown() bool {
+	switch r {
+	case BetaPlainTextSourceTypeText:
+		return true
+	}
+	return false
+}
+
 type BetaRawContentBlockDeltaEvent struct {
 	Delta BetaRawContentBlockDeltaEventDelta `json:"delta,required"`
 	Index int64                              `json:"index,required"`
@@ -688,7 +1206,9 @@ func (r betaRawContentBlockDeltaEventJSON) RawJSON() string {
 func (r BetaRawContentBlockDeltaEvent) implementsBetaRawMessageStreamEvent() {}
 
 type BetaRawContentBlockDeltaEventDelta struct {
-	Type        BetaRawContentBlockDeltaEventDeltaType `json:"type,required"`
+	Type BetaRawContentBlockDeltaEventDeltaType `json:"type,required"`
+	// This field can have the runtime type of [BetaCitationsDeltaCitation].
+	Citation    interface{}                            `json:"citation"`
 	PartialJSON string                                 `json:"partial_json"`
 	Text        string                                 `json:"text"`
 	JSON        betaRawContentBlockDeltaEventDeltaJSON `json:"-"`
@@ -699,6 +1219,7 @@ type BetaRawContentBlockDeltaEventDelta struct {
 // [BetaRawContentBlockDeltaEventDelta]
 type betaRawContentBlockDeltaEventDeltaJSON struct {
 	Type        apijson.Field
+	Citation    apijson.Field
 	PartialJSON apijson.Field
 	Text        apijson.Field
 	raw         string
@@ -721,12 +1242,14 @@ func (r *BetaRawContentBlockDeltaEventDelta) UnmarshalJSON(data []byte) (err err
 // AsUnion returns a [BetaRawContentBlockDeltaEventDeltaUnion] interface which you
 // can cast to the specific types for more type safety.
 //
-// Possible runtime types of the union are [BetaTextDelta], [BetaInputJSONDelta].
+// Possible runtime types of the union are [BetaTextDelta], [BetaInputJSONDelta],
+// [BetaCitationsDelta].
 func (r BetaRawContentBlockDeltaEventDelta) AsUnion() BetaRawContentBlockDeltaEventDeltaUnion {
 	return r.union
 }
 
-// Union satisfied by [BetaTextDelta] or [BetaInputJSONDelta].
+// Union satisfied by [BetaTextDelta], [BetaInputJSONDelta] or
+// [BetaCitationsDelta].
 type BetaRawContentBlockDeltaEventDeltaUnion interface {
 	implementsBetaRawContentBlockDeltaEventDelta()
 }
@@ -734,14 +1257,21 @@ type BetaRawContentBlockDeltaEventDeltaUnion interface {
 func init() {
 	apijson.RegisterUnion(
 		reflect.TypeOf((*BetaRawContentBlockDeltaEventDeltaUnion)(nil)).Elem(),
-		"",
+		"type",
 		apijson.UnionVariant{
-			TypeFilter: gjson.JSON,
-			Type:       reflect.TypeOf(BetaTextDelta{}),
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaTextDelta{}),
+			DiscriminatorValue: "text_delta",
 		},
 		apijson.UnionVariant{
-			TypeFilter: gjson.JSON,
-			Type:       reflect.TypeOf(BetaInputJSONDelta{}),
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaInputJSONDelta{}),
+			DiscriminatorValue: "input_json_delta",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaCitationsDelta{}),
+			DiscriminatorValue: "citations_delta",
 		},
 	)
 }
@@ -751,11 +1281,12 @@ type BetaRawContentBlockDeltaEventDeltaType string
 const (
 	BetaRawContentBlockDeltaEventDeltaTypeTextDelta      BetaRawContentBlockDeltaEventDeltaType = "text_delta"
 	BetaRawContentBlockDeltaEventDeltaTypeInputJSONDelta BetaRawContentBlockDeltaEventDeltaType = "input_json_delta"
+	BetaRawContentBlockDeltaEventDeltaTypeCitationsDelta BetaRawContentBlockDeltaEventDeltaType = "citations_delta"
 )
 
 func (r BetaRawContentBlockDeltaEventDeltaType) IsKnown() bool {
 	switch r {
-	case BetaRawContentBlockDeltaEventDeltaTypeTextDelta, BetaRawContentBlockDeltaEventDeltaTypeInputJSONDelta:
+	case BetaRawContentBlockDeltaEventDeltaTypeTextDelta, BetaRawContentBlockDeltaEventDeltaTypeInputJSONDelta, BetaRawContentBlockDeltaEventDeltaTypeCitationsDelta:
 		return true
 	}
 	return false
@@ -805,6 +1336,8 @@ func (r BetaRawContentBlockStartEvent) implementsBetaRawMessageStreamEvent() {}
 type BetaRawContentBlockStartEventContentBlock struct {
 	Type BetaRawContentBlockStartEventContentBlockType `json:"type,required"`
 	ID   string                                        `json:"id"`
+	// This field can have the runtime type of [[]BetaTextCitation].
+	Citations interface{} `json:"citations"`
 	// This field can have the runtime type of [interface{}].
 	Input interface{}                                   `json:"input"`
 	Name  string                                        `json:"name"`
@@ -818,6 +1351,7 @@ type BetaRawContentBlockStartEventContentBlock struct {
 type betaRawContentBlockStartEventContentBlockJSON struct {
 	Type        apijson.Field
 	ID          apijson.Field
+	Citations   apijson.Field
 	Input       apijson.Field
 	Name        apijson.Field
 	Text        apijson.Field
@@ -1233,13 +1767,20 @@ func (r BetaRawMessageStreamEventType) IsKnown() bool {
 }
 
 type BetaTextBlock struct {
-	Text string            `json:"text,required"`
-	Type BetaTextBlockType `json:"type,required"`
-	JSON betaTextBlockJSON `json:"-"`
+	// Citations supporting the text block.
+	//
+	// The type of citation returned will depend on the type of document being cited.
+	// Citing a PDF results in `page_location`, plain text results in `char_location`,
+	// and content document results in `content_block_location`.
+	Citations []BetaTextCitation `json:"citations,required,nullable"`
+	Text      string             `json:"text,required"`
+	Type      BetaTextBlockType  `json:"type,required"`
+	JSON      betaTextBlockJSON  `json:"-"`
 }
 
 // betaTextBlockJSON contains the JSON metadata for the struct [BetaTextBlock]
 type betaTextBlockJSON struct {
+	Citations   apijson.Field
 	Text        apijson.Field
 	Type        apijson.Field
 	raw         string
@@ -1276,6 +1817,7 @@ type BetaTextBlockParam struct {
 	Text         param.Field[string]                         `json:"text,required"`
 	Type         param.Field[BetaTextBlockParamType]         `json:"type,required"`
 	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+	Citations    param.Field[[]BetaTextCitationParamUnion]   `json:"citations"`
 }
 
 func (r BetaTextBlockParam) MarshalJSON() (data []byte, err error) {
@@ -1283,6 +1825,8 @@ func (r BetaTextBlockParam) MarshalJSON() (data []byte, err error) {
 }
 
 func (r BetaTextBlockParam) implementsBetaContentBlockParamUnion() {}
+
+func (r BetaTextBlockParam) implementsBetaContentBlockSourceContentUnionParam() {}
 
 func (r BetaTextBlockParam) implementsBetaToolResultBlockParamContentUnion() {}
 
@@ -1295,6 +1839,145 @@ const (
 func (r BetaTextBlockParamType) IsKnown() bool {
 	switch r {
 	case BetaTextBlockParamTypeText:
+		return true
+	}
+	return false
+}
+
+type BetaTextCitation struct {
+	CitedText       string               `json:"cited_text,required"`
+	DocumentIndex   int64                `json:"document_index,required"`
+	DocumentTitle   string               `json:"document_title,required,nullable"`
+	Type            BetaTextCitationType `json:"type,required"`
+	EndBlockIndex   int64                `json:"end_block_index"`
+	EndCharIndex    int64                `json:"end_char_index"`
+	EndPageNumber   int64                `json:"end_page_number"`
+	StartBlockIndex int64                `json:"start_block_index"`
+	StartCharIndex  int64                `json:"start_char_index"`
+	StartPageNumber int64                `json:"start_page_number"`
+	JSON            betaTextCitationJSON `json:"-"`
+	union           BetaTextCitationUnion
+}
+
+// betaTextCitationJSON contains the JSON metadata for the struct
+// [BetaTextCitation]
+type betaTextCitationJSON struct {
+	CitedText       apijson.Field
+	DocumentIndex   apijson.Field
+	DocumentTitle   apijson.Field
+	Type            apijson.Field
+	EndBlockIndex   apijson.Field
+	EndCharIndex    apijson.Field
+	EndPageNumber   apijson.Field
+	StartBlockIndex apijson.Field
+	StartCharIndex  apijson.Field
+	StartPageNumber apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r betaTextCitationJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *BetaTextCitation) UnmarshalJSON(data []byte) (err error) {
+	*r = BetaTextCitation{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [BetaTextCitationUnion] interface which you can cast to the
+// specific types for more type safety.
+//
+// Possible runtime types of the union are [BetaCitationCharLocation],
+// [BetaCitationPageLocation], [BetaCitationContentBlockLocation].
+func (r BetaTextCitation) AsUnion() BetaTextCitationUnion {
+	return r.union
+}
+
+// Union satisfied by [BetaCitationCharLocation], [BetaCitationPageLocation] or
+// [BetaCitationContentBlockLocation].
+type BetaTextCitationUnion interface {
+	implementsBetaTextCitation()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*BetaTextCitationUnion)(nil)).Elem(),
+		"type",
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaCitationCharLocation{}),
+			DiscriminatorValue: "char_location",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaCitationPageLocation{}),
+			DiscriminatorValue: "page_location",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaCitationContentBlockLocation{}),
+			DiscriminatorValue: "content_block_location",
+		},
+	)
+}
+
+type BetaTextCitationType string
+
+const (
+	BetaTextCitationTypeCharLocation         BetaTextCitationType = "char_location"
+	BetaTextCitationTypePageLocation         BetaTextCitationType = "page_location"
+	BetaTextCitationTypeContentBlockLocation BetaTextCitationType = "content_block_location"
+)
+
+func (r BetaTextCitationType) IsKnown() bool {
+	switch r {
+	case BetaTextCitationTypeCharLocation, BetaTextCitationTypePageLocation, BetaTextCitationTypeContentBlockLocation:
+		return true
+	}
+	return false
+}
+
+type BetaTextCitationParam struct {
+	CitedText       param.Field[string]                    `json:"cited_text,required"`
+	DocumentIndex   param.Field[int64]                     `json:"document_index,required"`
+	DocumentTitle   param.Field[string]                    `json:"document_title,required"`
+	Type            param.Field[BetaTextCitationParamType] `json:"type,required"`
+	EndBlockIndex   param.Field[int64]                     `json:"end_block_index"`
+	EndCharIndex    param.Field[int64]                     `json:"end_char_index"`
+	EndPageNumber   param.Field[int64]                     `json:"end_page_number"`
+	StartBlockIndex param.Field[int64]                     `json:"start_block_index"`
+	StartCharIndex  param.Field[int64]                     `json:"start_char_index"`
+	StartPageNumber param.Field[int64]                     `json:"start_page_number"`
+}
+
+func (r BetaTextCitationParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaTextCitationParam) implementsBetaTextCitationParamUnion() {}
+
+// Satisfied by [BetaCitationCharLocationParam], [BetaCitationPageLocationParam],
+// [BetaCitationContentBlockLocationParam], [BetaTextCitationParam].
+type BetaTextCitationParamUnion interface {
+	implementsBetaTextCitationParamUnion()
+}
+
+type BetaTextCitationParamType string
+
+const (
+	BetaTextCitationParamTypeCharLocation         BetaTextCitationParamType = "char_location"
+	BetaTextCitationParamTypePageLocation         BetaTextCitationParamType = "page_location"
+	BetaTextCitationParamTypeContentBlockLocation BetaTextCitationParamType = "content_block_location"
+)
+
+func (r BetaTextCitationParamType) IsKnown() bool {
+	switch r {
+	case BetaTextCitationParamTypeCharLocation, BetaTextCitationParamTypePageLocation, BetaTextCitationParamTypeContentBlockLocation:
 		return true
 	}
 	return false
@@ -1678,6 +2361,7 @@ func (r BetaToolResultBlockParamType) IsKnown() bool {
 type BetaToolResultBlockParamContent struct {
 	Type         param.Field[BetaToolResultBlockParamContentType] `json:"type,required"`
 	CacheControl param.Field[BetaCacheControlEphemeralParam]      `json:"cache_control"`
+	Citations    param.Field[interface{}]                         `json:"citations"`
 	Source       param.Field[interface{}]                         `json:"source"`
 	Text         param.Field[string]                              `json:"text"`
 }

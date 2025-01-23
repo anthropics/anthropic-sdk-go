@@ -28,7 +28,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 	_, err := client.Beta.Messages.New(context.TODO(), anthropic.BetaMessageNewParams{
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.BetaMessageParam{{
-			Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
+			Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.BetaTextCitationParamUnion{anthropic.BetaCitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.BetaCitationCharLocationParamTypeCharLocation)}})}}),
 			Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
@@ -36,7 +36,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		}),
 		StopSequences: anthropic.F([]string{"string"}),
-		System:        anthropic.F([]anthropic.BetaTextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
+		System:        anthropic.F([]anthropic.BetaTextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.BetaTextCitationParamUnion{anthropic.BetaCitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.BetaCitationCharLocationParamTypeCharLocation)}})}}),
 		Temperature:   anthropic.F(1.000000),
 		ToolChoice: anthropic.F[anthropic.BetaToolChoiceUnionParam](anthropic.BetaToolChoiceAutoParam{
 			Type:                   anthropic.F(anthropic.BetaToolChoiceAutoTypeAuto),
@@ -90,7 +90,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Messages.CountTokens(context.TODO(), anthropic.BetaMessageCountTokensParams{
 		Messages: anthropic.F([]anthropic.BetaMessageParam{{
-			Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)})}}),
+			Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.BetaTextCitationParamUnion{anthropic.BetaCitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.BetaCitationCharLocationParamTypeCharLocation)}})}}),
 			Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
@@ -100,6 +100,14 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 			CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
 				Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 			}),
+			Citations: anthropic.F([]anthropic.BetaTextCitationParamUnion{anthropic.BetaCitationCharLocationParam{
+				CitedText:      anthropic.F("cited_text"),
+				DocumentIndex:  anthropic.F(int64(0)),
+				DocumentTitle:  anthropic.F("x"),
+				EndCharIndex:   anthropic.F(int64(0)),
+				StartCharIndex: anthropic.F(int64(0)),
+				Type:           anthropic.F(anthropic.BetaCitationCharLocationParamTypeCharLocation),
+			}}),
 		}})),
 		ToolChoice: anthropic.F[anthropic.BetaToolChoiceUnionParam](anthropic.BetaToolChoiceAutoParam{
 			Type:                   anthropic.F(anthropic.BetaToolChoiceAutoTypeAuto),

@@ -28,7 +28,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 	_, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{{
-			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)})}}),
+			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
@@ -36,7 +36,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		}),
 		StopSequences: anthropic.F([]string{"string"}),
-		System:        anthropic.F([]anthropic.TextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)})}}),
+		System:        anthropic.F([]anthropic.TextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
 		Temperature:   anthropic.F(1.000000),
 		ToolChoice: anthropic.F[anthropic.ToolChoiceUnionParam](anthropic.ToolChoiceAutoParam{
 			Type:                   anthropic.F(anthropic.ToolChoiceAutoTypeAuto),
@@ -88,7 +88,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Messages.CountTokens(context.TODO(), anthropic.MessageCountTokensParams{
 		Messages: anthropic.F([]anthropic.MessageParam{{
-			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)})}}),
+			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 		}}),
 		Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
@@ -98,6 +98,14 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 			CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{
 				Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral),
 			}),
+			Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{
+				CitedText:      anthropic.F("cited_text"),
+				DocumentIndex:  anthropic.F(int64(0)),
+				DocumentTitle:  anthropic.F("x"),
+				EndCharIndex:   anthropic.F(int64(0)),
+				StartCharIndex: anthropic.F(int64(0)),
+				Type:           anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation),
+			}}),
 		}})),
 		ToolChoice: anthropic.F[anthropic.ToolChoiceUnionParam](anthropic.ToolChoiceAutoParam{
 			Type:                   anthropic.F(anthropic.ToolChoiceAutoTypeAuto),

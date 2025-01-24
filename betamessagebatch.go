@@ -429,6 +429,8 @@ func (r BetaMessageBatchExpiredResultType) IsKnown() bool {
 	return false
 }
 
+// This is a single line in the response `.jsonl` file and does not represent the
+// response as a whole.
 type BetaMessageBatchIndividualResponse struct {
 	// Developer-provided ID created for each request in a Message Batch. Useful for
 	// matching results to requests, as results may be given out of request order.

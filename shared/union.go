@@ -4,9 +4,10 @@ package shared
 
 type UnionString string
 
+func (UnionString) ImplementsModelParam()                              {}
 func (UnionString) ImplementsModel()                                   {}
 func (UnionString) ImplementsContentBlockSourceContentUnionParam()     {}
 func (UnionString) ImplementsMessageCountTokensParamsSystemUnion()     {}
-func (UnionString) ImplementsAnthropicBeta()                           {}
+func (UnionString) ImplementsAnthropicBetaParam()                      {}
 func (UnionString) ImplementsBetaContentBlockSourceContentUnionParam() {}
 func (UnionString) ImplementsBetaMessageCountTokensParamsSystemUnion() {}

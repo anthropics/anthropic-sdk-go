@@ -31,7 +31,7 @@ func (r apiErrorObjectJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r APIErrorObject) ImplementsSharedErrorObject() {}
+func (r APIErrorObject) ImplementsErrorObject() {}
 
 type APIErrorObjectType string
 
@@ -70,7 +70,7 @@ func (r authenticationErrorJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r AuthenticationError) ImplementsSharedErrorObject() {}
+func (r AuthenticationError) ImplementsErrorObject() {}
 
 type AuthenticationErrorType string
 
@@ -108,7 +108,7 @@ func (r billingErrorJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r BillingError) ImplementsSharedErrorObject() {}
+func (r BillingError) ImplementsErrorObject() {}
 
 type BillingErrorType string
 
@@ -168,7 +168,7 @@ func (r ErrorObject) AsUnion() ErrorObjectUnion {
 // [shared.RateLimitError], [shared.GatewayTimeoutError], [shared.APIErrorObject]
 // or [shared.OverloadedError].
 type ErrorObjectUnion interface {
-	ImplementsSharedErrorObject()
+	ImplementsErrorObject()
 }
 
 func init() {
@@ -304,7 +304,7 @@ func (r gatewayTimeoutErrorJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r GatewayTimeoutError) ImplementsSharedErrorObject() {}
+func (r GatewayTimeoutError) ImplementsErrorObject() {}
 
 type GatewayTimeoutErrorType string
 
@@ -343,7 +343,7 @@ func (r invalidRequestErrorJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r InvalidRequestError) ImplementsSharedErrorObject() {}
+func (r InvalidRequestError) ImplementsErrorObject() {}
 
 type InvalidRequestErrorType string
 
@@ -381,7 +381,7 @@ func (r notFoundErrorJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r NotFoundError) ImplementsSharedErrorObject() {}
+func (r NotFoundError) ImplementsErrorObject() {}
 
 type NotFoundErrorType string
 
@@ -419,7 +419,7 @@ func (r overloadedErrorJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r OverloadedError) ImplementsSharedErrorObject() {}
+func (r OverloadedError) ImplementsErrorObject() {}
 
 type OverloadedErrorType string
 
@@ -457,7 +457,7 @@ func (r permissionErrorJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r PermissionError) ImplementsSharedErrorObject() {}
+func (r PermissionError) ImplementsErrorObject() {}
 
 type PermissionErrorType string
 
@@ -495,7 +495,7 @@ func (r rateLimitErrorJSON) RawJSON() string {
 	return r.raw
 }
 
-func (r RateLimitError) ImplementsSharedErrorObject() {}
+func (r RateLimitError) ImplementsErrorObject() {}
 
 type RateLimitErrorType string
 

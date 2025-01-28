@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0-alpha.10 (2025-01-28)
+
+Full Changelog: [v0.2.0-alpha.9...v0.2.0-alpha.10](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.9...v0.2.0-alpha.10)
+
+### Bug Fixes
+
+* fix interface implementation stub names for unions ([#106](https://github.com/anthropics/anthropic-sdk-go/issues/106)) ([0ac5655](https://github.com/anthropics/anthropic-sdk-go/commit/0ac5655d4033ec3d6448ecf89216b048bccbbd85))
+
+
+### Chores
+
+* **api:** deprecate some models ([#105](https://github.com/anthropics/anthropic-sdk-go/issues/105)) ([f1e30cc](https://github.com/anthropics/anthropic-sdk-go/commit/f1e30ccd3ace4165bf0653cf5251b1fc06a1e78a))
+* **docs:** updates ([#103](https://github.com/anthropics/anthropic-sdk-go/issues/103)) ([c264f59](https://github.com/anthropics/anthropic-sdk-go/commit/c264f59fc3f58a0233f8c801436cccc0f4eeef6c))
+* refactor client tests ([#107](https://github.com/anthropics/anthropic-sdk-go/issues/107)) ([f02b038](https://github.com/anthropics/anthropic-sdk-go/commit/f02b038063ab0095cc3497cbe1c3f585cb471817))
+
 ## 0.2.0-alpha.9 (2025-01-23)
 
 Full Changelog: [v0.2.0-alpha.8...v0.2.0-alpha.9](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.8...v0.2.0-alpha.9)

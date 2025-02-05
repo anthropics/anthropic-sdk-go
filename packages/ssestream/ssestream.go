@@ -166,6 +166,9 @@ func (s *Stream[T]) Next() bool {
 		}
 	}
 
+	// decoder.Next() may be false because of an error
+	s.err = s.decoder.Err()
+
 	return false
 }
 

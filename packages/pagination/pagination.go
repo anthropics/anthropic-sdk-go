@@ -42,6 +42,9 @@ func (r pageJSON) RawJSON() string {
 // there is no next page, this function will return a 'nil' for the page value, but
 // will not return an error
 func (r *Page[T]) GetNextPage() (res *Page[T], err error) {
+	if !r.JSON.HasMore.IsMissing() && r.HasMore == false {
+		return nil, nil
+	}
 	cfg := r.cfg.Clone(r.cfg.Context)
 	if r.cfg.Request.URL.Query().Has("before_id") {
 		next := r.FirstID

@@ -100,6 +100,10 @@ func (s *eventStreamDecoder) Next() bool {
 		}
 	}
 
+	if s.scn.Err() != nil {
+		s.err = s.scn.Err()
+	}
+
 	return false
 }
 

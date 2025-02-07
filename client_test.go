@@ -5,6 +5,7 @@ package anthropic_test
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"reflect"
 	"testing"
@@ -289,3 +290,117 @@ func TestContextDeadline(t *testing.T) {
 		}
 	}
 }
+
+func TestContextDeadlineStreaming(t *testing.T) {
+	testTimeout := time.After(3 * time.Second)
+	testDone := make(chan struct{})
+
+	deadline := time.Now().Add(100 * time.Millisecond)
+	deadlineCtx, cancel := context.WithDeadline(context.Background(), deadline)
+	defer cancel()
+
+	go func() {
+		client := anthropic.NewClient(
+			option.WithHTTPClient(&http.Client{
+				Transport: &closureTransport{
+					fn: func(req *http.Request) (*http.Response, error) {
+						return &http.Response{
+							StatusCode: 200,
+							Status:     "200 OK",
+							Body: io.NopCloser(
+								io.Reader(readerFunc(func([]byte) (int, error) {
+									<-req.Context().Done()
+									return 0, req.Context().Err()
+								})),
+							),
+						}, nil
+					},
+				},
+			}),
+		)
+		stream := client.Messages.NewStreaming(deadlineCtx, anthropic.MessageNewParams{
+			MaxTokens: anthropic.F(int64(1024)),
+			Messages: anthropic.F([]anthropic.MessageParam{{
+				Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
+				Role:    anthropic.F(anthropic.MessageParamRoleUser),
+			}}),
+			Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
+		})
+		for stream.Next() {
+			_ = stream.Current()
+		}
+		if stream.Err() == nil {
+			t.Error("expected there to be a deadline error")
+		}
+		close(testDone)
+	}()
+
+	select {
+	case <-testTimeout:
+		t.Fatal("client didn't finish in time")
+	case <-testDone:
+		if diff := time.Since(deadline); diff < -30*time.Millisecond || 30*time.Millisecond < diff {
+			t.Fatalf("client did not return within 30ms of context deadline, got %s", diff)
+		}
+	}
+}
+
+func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
+	testTimeout := time.After(3 * time.Second)
+	testDone := make(chan struct{})
+	deadline := time.Now().Add(100 * time.Millisecond)
+
+	go func() {
+		client := anthropic.NewClient(
+			option.WithHTTPClient(&http.Client{
+				Transport: &closureTransport{
+					fn: func(req *http.Request) (*http.Response, error) {
+						return &http.Response{
+							StatusCode: 200,
+							Status:     "200 OK",
+							Body: io.NopCloser(
+								io.Reader(readerFunc(func([]byte) (int, error) {
+									<-req.Context().Done()
+									return 0, req.Context().Err()
+								})),
+							),
+						}, nil
+					},
+				},
+			}),
+		)
+		stream := client.Messages.NewStreaming(
+			context.Background(),
+			anthropic.MessageNewParams{
+				MaxTokens: anthropic.F(int64(1024)),
+				Messages: anthropic.F([]anthropic.MessageParam{{
+					Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
+					Role:    anthropic.F(anthropic.MessageParamRoleUser),
+				}}),
+				Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
+			},
+			option.WithRequestTimeout((100 * time.Millisecond)),
+		)
+		for stream.Next() {
+			_ = stream.Current()
+		}
+		if stream.Err() == nil {
+			t.Error("expected there to be a deadline error")
+		}
+		close(testDone)
+	}()
+
+	select {
+	case <-testTimeout:
+		t.Fatal("client didn't finish in time")
+	case <-testDone:
+		if diff := time.Since(deadline); diff < -30*time.Millisecond || 30*time.Millisecond < diff {
+			t.Fatalf("client did not return within 30ms of context deadline, got %s", diff)
+		}
+	}
+}
+
+type readerFunc func([]byte) (int, error)
+
+func (f readerFunc) Read(p []byte) (int, error) { return f(p) }
+func (f readerFunc) Close() error               { return nil }

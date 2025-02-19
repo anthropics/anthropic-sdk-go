@@ -315,11 +315,13 @@ func (e *encoder) newReaderTypeEncoder() encoderFunc {
 		reader := value.Convert(reflect.TypeOf((*io.Reader)(nil)).Elem()).Interface().(io.Reader)
 		filename := "anonymous_file"
 		contentType := "application/octet-stream"
-		if named, ok := reader.(interface{ Name() string }); ok {
+		if named, ok := reader.(interface{ Filename() string }); ok {
+			filename = named.Filename()
+		} else if named, ok := reader.(interface{ Name() string }); ok {
 			filename = path.Base(named.Name())
 		}
 		if typed, ok := reader.(interface{ ContentType() string }); ok {
-			contentType = path.Base(typed.ContentType())
+			contentType = typed.ContentType()
 		}
 
 		// Below is taken almost 1-for-1 from [multipart.CreateFormFile]

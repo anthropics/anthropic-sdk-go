@@ -34,7 +34,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					Content: anthropic.F([]anthropic.BetaContentBlockParamUnion{anthropic.BetaTextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.BetaTextCitationParamUnion{anthropic.BetaCitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.BetaCitationCharLocationParamTypeCharLocation)}})}}),
 					Role:    anthropic.F(anthropic.BetaMessageParamRoleUser),
 				}}),
-				Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
+				Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
 				Metadata: anthropic.F(anthropic.BetaMetadataParam{
 					UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				}),
@@ -42,30 +42,23 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				Stream:        anthropic.F(true),
 				System:        anthropic.F([]anthropic.BetaTextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.BetaTextBlockParamTypeText), CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.BetaTextCitationParamUnion{anthropic.BetaCitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.BetaCitationCharLocationParamTypeCharLocation)}})}}),
 				Temperature:   anthropic.F(1.000000),
+				Thinking: anthropic.F[anthropic.BetaThinkingConfigParamUnion](anthropic.BetaThinkingConfigEnabledParam{
+					BudgetTokens: anthropic.F(int64(1024)),
+					Type:         anthropic.F(anthropic.BetaThinkingConfigEnabledTypeEnabled),
+				}),
 				ToolChoice: anthropic.F[anthropic.BetaToolChoiceUnionParam](anthropic.BetaToolChoiceAutoParam{
 					Type:                   anthropic.F(anthropic.BetaToolChoiceAutoTypeAuto),
 					DisableParallelToolUse: anthropic.F(true),
 				}),
-				Tools: anthropic.F([]anthropic.BetaToolUnionUnionParam{anthropic.BetaToolParam{
-					InputSchema: anthropic.F(anthropic.BetaToolInputSchemaParam{
-						Type: anthropic.F(anthropic.BetaToolInputSchemaTypeObject),
-						Properties: anthropic.F[any](map[string]interface{}{
-							"location": map[string]interface{}{
-								"description": "The city and state, e.g. San Francisco, CA",
-								"type":        "string",
-							},
-							"unit": map[string]interface{}{
-								"description": "Unit for the output - one of (celsius, fahrenheit)",
-								"type":        "string",
-							},
-						}),
-					}),
-					Name: anthropic.F("name"),
+				Tools: anthropic.F([]anthropic.BetaToolUnionUnionParam{anthropic.BetaToolComputerUse20241022Param{
+					DisplayHeightPx: anthropic.F(int64(1)),
+					DisplayWidthPx:  anthropic.F(int64(1)),
+					Name:            anthropic.F(anthropic.BetaToolComputerUse20241022NameComputer),
+					Type:            anthropic.F(anthropic.BetaToolComputerUse20241022TypeComputer20241022),
 					CacheControl: anthropic.F(anthropic.BetaCacheControlEphemeralParam{
 						Type: anthropic.F(anthropic.BetaCacheControlEphemeralTypeEphemeral),
 					}),
-					Description: anthropic.F("Get the current weather in a given location"),
-					Type:        anthropic.F(anthropic.BetaToolTypeCustom),
+					DisplayNumber: anthropic.F(int64(0)),
 				}}),
 				TopK: anthropic.F(int64(5)),
 				TopP: anthropic.F(0.700000),

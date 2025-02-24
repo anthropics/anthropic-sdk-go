@@ -43,6 +43,8 @@ func NewBetaMessageService(opts ...option.RequestOption) (r *BetaMessageService)
 // The Messages API can be used for either single queries or stateless multi-turn
 // conversations.
 //
+// Learn more about the Messages API in our [user guide](/en/docs/initial-setup)
+//
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParams, opts ...option.RequestOption) (res *BetaMessage, err error) {
 	for _, v := range params.Betas.Value {
@@ -50,7 +52,18 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 	}
 	opts = append(r.Options[:], opts...)
 	path := "v1/messages?beta=true"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
+
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodPost, path, params, &res, opts...)
+	if err != nil {
+		return
+	}
+
+	err = checkLongRequest(ctx, cfg, int(params.MaxTokens.Value))
+	if err != nil {
+		return
+	}
+
+	err = cfg.Execute()
 	return
 }
 
@@ -59,6 +72,8 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 //
 // The Messages API can be used for either single queries or stateless multi-turn
 // conversations.
+//
+// Learn more about the Messages API in our [user guide](/en/docs/initial-setup)
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[BetaRawMessageStreamEvent]) {
@@ -80,6 +95,9 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 //
 // The Token Count API can be used to count the number of tokens in a Message,
 // including tools, images, and documents, without creating it.
+//
+// Learn more about token counting in our
+// [user guide](/en/docs/build-with-claude/token-counting)
 func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessageCountTokensParams, opts ...option.RequestOption) (res *BetaMessageTokensCount, err error) {
 	for _, v := range params.Betas.Value {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
@@ -615,12 +633,15 @@ type BetaContentBlock struct {
 	ID   string               `json:"id"`
 	// This field can have the runtime type of [[]BetaTextCitation].
 	Citations interface{} `json:"citations"`
+	Data      string      `json:"data"`
 	// This field can have the runtime type of [interface{}].
-	Input interface{}          `json:"input"`
-	Name  string               `json:"name"`
-	Text  string               `json:"text"`
-	JSON  betaContentBlockJSON `json:"-"`
-	union BetaContentBlockUnion
+	Input     interface{}          `json:"input"`
+	Name      string               `json:"name"`
+	Signature string               `json:"signature"`
+	Text      string               `json:"text"`
+	Thinking  string               `json:"thinking"`
+	JSON      betaContentBlockJSON `json:"-"`
+	union     BetaContentBlockUnion
 }
 
 // betaContentBlockJSON contains the JSON metadata for the struct
@@ -629,9 +650,12 @@ type betaContentBlockJSON struct {
 	Type        apijson.Field
 	ID          apijson.Field
 	Citations   apijson.Field
+	Data        apijson.Field
 	Input       apijson.Field
 	Name        apijson.Field
+	Signature   apijson.Field
 	Text        apijson.Field
+	Thinking    apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -652,12 +676,14 @@ func (r *BetaContentBlock) UnmarshalJSON(data []byte) (err error) {
 // AsUnion returns a [BetaContentBlockUnion] interface which you can cast to the
 // specific types for more type safety.
 //
-// Possible runtime types of the union are [BetaTextBlock], [BetaToolUseBlock].
+// Possible runtime types of the union are [BetaTextBlock], [BetaToolUseBlock],
+// [BetaThinkingBlock], [BetaRedactedThinkingBlock].
 func (r BetaContentBlock) AsUnion() BetaContentBlockUnion {
 	return r.union
 }
 
-// Union satisfied by [BetaTextBlock] or [BetaToolUseBlock].
+// Union satisfied by [BetaTextBlock], [BetaToolUseBlock], [BetaThinkingBlock] or
+// [BetaRedactedThinkingBlock].
 type BetaContentBlockUnion interface {
 	implementsBetaContentBlock()
 }
@@ -676,19 +702,31 @@ func init() {
 			Type:               reflect.TypeOf(BetaToolUseBlock{}),
 			DiscriminatorValue: "tool_use",
 		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaThinkingBlock{}),
+			DiscriminatorValue: "thinking",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaRedactedThinkingBlock{}),
+			DiscriminatorValue: "redacted_thinking",
+		},
 	)
 }
 
 type BetaContentBlockType string
 
 const (
-	BetaContentBlockTypeText    BetaContentBlockType = "text"
-	BetaContentBlockTypeToolUse BetaContentBlockType = "tool_use"
+	BetaContentBlockTypeText             BetaContentBlockType = "text"
+	BetaContentBlockTypeToolUse          BetaContentBlockType = "tool_use"
+	BetaContentBlockTypeThinking         BetaContentBlockType = "thinking"
+	BetaContentBlockTypeRedactedThinking BetaContentBlockType = "redacted_thinking"
 )
 
 func (r BetaContentBlockType) IsKnown() bool {
 	switch r {
-	case BetaContentBlockTypeText, BetaContentBlockTypeToolUse:
+	case BetaContentBlockTypeText, BetaContentBlockTypeToolUse, BetaContentBlockTypeThinking, BetaContentBlockTypeRedactedThinking:
 		return true
 	}
 	return false
@@ -701,11 +739,14 @@ type BetaContentBlockParam struct {
 	Citations    param.Field[interface{}]                    `json:"citations"`
 	Content      param.Field[interface{}]                    `json:"content"`
 	Context      param.Field[string]                         `json:"context"`
+	Data         param.Field[string]                         `json:"data"`
 	Input        param.Field[interface{}]                    `json:"input"`
 	IsError      param.Field[bool]                           `json:"is_error"`
 	Name         param.Field[string]                         `json:"name"`
+	Signature    param.Field[string]                         `json:"signature"`
 	Source       param.Field[interface{}]                    `json:"source"`
 	Text         param.Field[string]                         `json:"text"`
+	Thinking     param.Field[string]                         `json:"thinking"`
 	Title        param.Field[string]                         `json:"title"`
 	ToolUseID    param.Field[string]                         `json:"tool_use_id"`
 }
@@ -718,6 +759,7 @@ func (r BetaContentBlockParam) implementsBetaContentBlockParamUnion() {}
 
 // Satisfied by [BetaTextBlockParam], [BetaImageBlockParam],
 // [BetaToolUseBlockParam], [BetaToolResultBlockParam], [BetaBase64PDFBlockParam],
+// [BetaThinkingBlockParam], [BetaRedactedThinkingBlockParam],
 // [BetaContentBlockParam].
 type BetaContentBlockParamUnion interface {
 	implementsBetaContentBlockParamUnion()
@@ -726,16 +768,18 @@ type BetaContentBlockParamUnion interface {
 type BetaContentBlockParamType string
 
 const (
-	BetaContentBlockParamTypeText       BetaContentBlockParamType = "text"
-	BetaContentBlockParamTypeImage      BetaContentBlockParamType = "image"
-	BetaContentBlockParamTypeToolUse    BetaContentBlockParamType = "tool_use"
-	BetaContentBlockParamTypeToolResult BetaContentBlockParamType = "tool_result"
-	BetaContentBlockParamTypeDocument   BetaContentBlockParamType = "document"
+	BetaContentBlockParamTypeText             BetaContentBlockParamType = "text"
+	BetaContentBlockParamTypeImage            BetaContentBlockParamType = "image"
+	BetaContentBlockParamTypeToolUse          BetaContentBlockParamType = "tool_use"
+	BetaContentBlockParamTypeToolResult       BetaContentBlockParamType = "tool_result"
+	BetaContentBlockParamTypeDocument         BetaContentBlockParamType = "document"
+	BetaContentBlockParamTypeThinking         BetaContentBlockParamType = "thinking"
+	BetaContentBlockParamTypeRedactedThinking BetaContentBlockParamType = "redacted_thinking"
 )
 
 func (r BetaContentBlockParamType) IsKnown() bool {
 	switch r {
-	case BetaContentBlockParamTypeText, BetaContentBlockParamTypeImage, BetaContentBlockParamTypeToolUse, BetaContentBlockParamTypeToolResult, BetaContentBlockParamTypeDocument:
+	case BetaContentBlockParamTypeText, BetaContentBlockParamTypeImage, BetaContentBlockParamTypeToolUse, BetaContentBlockParamTypeToolResult, BetaContentBlockParamTypeDocument, BetaContentBlockParamTypeThinking, BetaContentBlockParamTypeRedactedThinking:
 		return true
 	}
 	return false
@@ -968,6 +1012,9 @@ type BetaMessage struct {
 	//
 	// For example, `output_tokens` will be non-zero, even for an empty string response
 	// from Claude.
+	//
+	// Total input tokens in a request is the summation of `input_tokens`,
+	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage BetaUsage       `json:"usage,required"`
 	JSON  betaMessageJSON `json:"-"`
 }
@@ -1210,7 +1257,9 @@ type BetaRawContentBlockDeltaEventDelta struct {
 	// This field can have the runtime type of [BetaCitationsDeltaCitation].
 	Citation    interface{}                            `json:"citation"`
 	PartialJSON string                                 `json:"partial_json"`
+	Signature   string                                 `json:"signature"`
 	Text        string                                 `json:"text"`
+	Thinking    string                                 `json:"thinking"`
 	JSON        betaRawContentBlockDeltaEventDeltaJSON `json:"-"`
 	union       BetaRawContentBlockDeltaEventDeltaUnion
 }
@@ -1221,7 +1270,9 @@ type betaRawContentBlockDeltaEventDeltaJSON struct {
 	Type        apijson.Field
 	Citation    apijson.Field
 	PartialJSON apijson.Field
+	Signature   apijson.Field
 	Text        apijson.Field
+	Thinking    apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -1243,13 +1294,13 @@ func (r *BetaRawContentBlockDeltaEventDelta) UnmarshalJSON(data []byte) (err err
 // can cast to the specific types for more type safety.
 //
 // Possible runtime types of the union are [BetaTextDelta], [BetaInputJSONDelta],
-// [BetaCitationsDelta].
+// [BetaCitationsDelta], [BetaThinkingDelta], [BetaSignatureDelta].
 func (r BetaRawContentBlockDeltaEventDelta) AsUnion() BetaRawContentBlockDeltaEventDeltaUnion {
 	return r.union
 }
 
-// Union satisfied by [BetaTextDelta], [BetaInputJSONDelta] or
-// [BetaCitationsDelta].
+// Union satisfied by [BetaTextDelta], [BetaInputJSONDelta], [BetaCitationsDelta],
+// [BetaThinkingDelta] or [BetaSignatureDelta].
 type BetaRawContentBlockDeltaEventDeltaUnion interface {
 	implementsBetaRawContentBlockDeltaEventDelta()
 }
@@ -1273,6 +1324,16 @@ func init() {
 			Type:               reflect.TypeOf(BetaCitationsDelta{}),
 			DiscriminatorValue: "citations_delta",
 		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaThinkingDelta{}),
+			DiscriminatorValue: "thinking_delta",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaSignatureDelta{}),
+			DiscriminatorValue: "signature_delta",
+		},
 	)
 }
 
@@ -1282,11 +1343,13 @@ const (
 	BetaRawContentBlockDeltaEventDeltaTypeTextDelta      BetaRawContentBlockDeltaEventDeltaType = "text_delta"
 	BetaRawContentBlockDeltaEventDeltaTypeInputJSONDelta BetaRawContentBlockDeltaEventDeltaType = "input_json_delta"
 	BetaRawContentBlockDeltaEventDeltaTypeCitationsDelta BetaRawContentBlockDeltaEventDeltaType = "citations_delta"
+	BetaRawContentBlockDeltaEventDeltaTypeThinkingDelta  BetaRawContentBlockDeltaEventDeltaType = "thinking_delta"
+	BetaRawContentBlockDeltaEventDeltaTypeSignatureDelta BetaRawContentBlockDeltaEventDeltaType = "signature_delta"
 )
 
 func (r BetaRawContentBlockDeltaEventDeltaType) IsKnown() bool {
 	switch r {
-	case BetaRawContentBlockDeltaEventDeltaTypeTextDelta, BetaRawContentBlockDeltaEventDeltaTypeInputJSONDelta, BetaRawContentBlockDeltaEventDeltaTypeCitationsDelta:
+	case BetaRawContentBlockDeltaEventDeltaTypeTextDelta, BetaRawContentBlockDeltaEventDeltaTypeInputJSONDelta, BetaRawContentBlockDeltaEventDeltaTypeCitationsDelta, BetaRawContentBlockDeltaEventDeltaTypeThinkingDelta, BetaRawContentBlockDeltaEventDeltaTypeSignatureDelta:
 		return true
 	}
 	return false
@@ -1338,12 +1401,15 @@ type BetaRawContentBlockStartEventContentBlock struct {
 	ID   string                                        `json:"id"`
 	// This field can have the runtime type of [[]BetaTextCitation].
 	Citations interface{} `json:"citations"`
+	Data      string      `json:"data"`
 	// This field can have the runtime type of [interface{}].
-	Input interface{}                                   `json:"input"`
-	Name  string                                        `json:"name"`
-	Text  string                                        `json:"text"`
-	JSON  betaRawContentBlockStartEventContentBlockJSON `json:"-"`
-	union BetaRawContentBlockStartEventContentBlockUnion
+	Input     interface{}                                   `json:"input"`
+	Name      string                                        `json:"name"`
+	Signature string                                        `json:"signature"`
+	Text      string                                        `json:"text"`
+	Thinking  string                                        `json:"thinking"`
+	JSON      betaRawContentBlockStartEventContentBlockJSON `json:"-"`
+	union     BetaRawContentBlockStartEventContentBlockUnion
 }
 
 // betaRawContentBlockStartEventContentBlockJSON contains the JSON metadata for the
@@ -1352,9 +1418,12 @@ type betaRawContentBlockStartEventContentBlockJSON struct {
 	Type        apijson.Field
 	ID          apijson.Field
 	Citations   apijson.Field
+	Data        apijson.Field
 	Input       apijson.Field
 	Name        apijson.Field
+	Signature   apijson.Field
 	Text        apijson.Field
+	Thinking    apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -1375,12 +1444,14 @@ func (r *BetaRawContentBlockStartEventContentBlock) UnmarshalJSON(data []byte) (
 // AsUnion returns a [BetaRawContentBlockStartEventContentBlockUnion] interface
 // which you can cast to the specific types for more type safety.
 //
-// Possible runtime types of the union are [BetaTextBlock], [BetaToolUseBlock].
+// Possible runtime types of the union are [BetaTextBlock], [BetaToolUseBlock],
+// [BetaThinkingBlock], [BetaRedactedThinkingBlock].
 func (r BetaRawContentBlockStartEventContentBlock) AsUnion() BetaRawContentBlockStartEventContentBlockUnion {
 	return r.union
 }
 
-// Union satisfied by [BetaTextBlock] or [BetaToolUseBlock].
+// Union satisfied by [BetaTextBlock], [BetaToolUseBlock], [BetaThinkingBlock] or
+// [BetaRedactedThinkingBlock].
 type BetaRawContentBlockStartEventContentBlockUnion interface {
 	implementsBetaRawContentBlockStartEventContentBlock()
 }
@@ -1399,19 +1470,31 @@ func init() {
 			Type:               reflect.TypeOf(BetaToolUseBlock{}),
 			DiscriminatorValue: "tool_use",
 		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaThinkingBlock{}),
+			DiscriminatorValue: "thinking",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(BetaRedactedThinkingBlock{}),
+			DiscriminatorValue: "redacted_thinking",
+		},
 	)
 }
 
 type BetaRawContentBlockStartEventContentBlockType string
 
 const (
-	BetaRawContentBlockStartEventContentBlockTypeText    BetaRawContentBlockStartEventContentBlockType = "text"
-	BetaRawContentBlockStartEventContentBlockTypeToolUse BetaRawContentBlockStartEventContentBlockType = "tool_use"
+	BetaRawContentBlockStartEventContentBlockTypeText             BetaRawContentBlockStartEventContentBlockType = "text"
+	BetaRawContentBlockStartEventContentBlockTypeToolUse          BetaRawContentBlockStartEventContentBlockType = "tool_use"
+	BetaRawContentBlockStartEventContentBlockTypeThinking         BetaRawContentBlockStartEventContentBlockType = "thinking"
+	BetaRawContentBlockStartEventContentBlockTypeRedactedThinking BetaRawContentBlockStartEventContentBlockType = "redacted_thinking"
 )
 
 func (r BetaRawContentBlockStartEventContentBlockType) IsKnown() bool {
 	switch r {
-	case BetaRawContentBlockStartEventContentBlockTypeText, BetaRawContentBlockStartEventContentBlockTypeToolUse:
+	case BetaRawContentBlockStartEventContentBlockTypeText, BetaRawContentBlockStartEventContentBlockTypeToolUse, BetaRawContentBlockStartEventContentBlockTypeThinking, BetaRawContentBlockStartEventContentBlockTypeRedactedThinking:
 		return true
 	}
 	return false
@@ -1485,6 +1568,9 @@ type BetaRawMessageDeltaEvent struct {
 	//
 	// For example, `output_tokens` will be non-zero, even for an empty string response
 	// from Claude.
+	//
+	// Total input tokens in a request is the summation of `input_tokens`,
+	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage BetaMessageDeltaUsage        `json:"usage,required"`
 	JSON  betaRawMessageDeltaEventJSON `json:"-"`
 }
@@ -1661,6 +1747,9 @@ type BetaRawMessageStreamEvent struct {
 	//
 	// For example, `output_tokens` will be non-zero, even for an empty string response
 	// from Claude.
+	//
+	// Total input tokens in a request is the summation of `input_tokens`,
+	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage BetaMessageDeltaUsage         `json:"usage"`
 	JSON  betaRawMessageStreamEventJSON `json:"-"`
 	union BetaRawMessageStreamEventUnion
@@ -1761,6 +1850,111 @@ const (
 func (r BetaRawMessageStreamEventType) IsKnown() bool {
 	switch r {
 	case BetaRawMessageStreamEventTypeMessageStart, BetaRawMessageStreamEventTypeMessageDelta, BetaRawMessageStreamEventTypeMessageStop, BetaRawMessageStreamEventTypeContentBlockStart, BetaRawMessageStreamEventTypeContentBlockDelta, BetaRawMessageStreamEventTypeContentBlockStop:
+		return true
+	}
+	return false
+}
+
+type BetaRedactedThinkingBlock struct {
+	Data string                        `json:"data,required"`
+	Type BetaRedactedThinkingBlockType `json:"type,required"`
+	JSON betaRedactedThinkingBlockJSON `json:"-"`
+}
+
+// betaRedactedThinkingBlockJSON contains the JSON metadata for the struct
+// [BetaRedactedThinkingBlock]
+type betaRedactedThinkingBlockJSON struct {
+	Data        apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *BetaRedactedThinkingBlock) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaRedactedThinkingBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r BetaRedactedThinkingBlock) implementsBetaContentBlock() {}
+
+func (r BetaRedactedThinkingBlock) implementsBetaRawContentBlockStartEventContentBlock() {}
+
+type BetaRedactedThinkingBlockType string
+
+const (
+	BetaRedactedThinkingBlockTypeRedactedThinking BetaRedactedThinkingBlockType = "redacted_thinking"
+)
+
+func (r BetaRedactedThinkingBlockType) IsKnown() bool {
+	switch r {
+	case BetaRedactedThinkingBlockTypeRedactedThinking:
+		return true
+	}
+	return false
+}
+
+type BetaRedactedThinkingBlockParam struct {
+	Data param.Field[string]                             `json:"data,required"`
+	Type param.Field[BetaRedactedThinkingBlockParamType] `json:"type,required"`
+}
+
+func (r BetaRedactedThinkingBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaRedactedThinkingBlockParam) implementsBetaContentBlockParamUnion() {}
+
+type BetaRedactedThinkingBlockParamType string
+
+const (
+	BetaRedactedThinkingBlockParamTypeRedactedThinking BetaRedactedThinkingBlockParamType = "redacted_thinking"
+)
+
+func (r BetaRedactedThinkingBlockParamType) IsKnown() bool {
+	switch r {
+	case BetaRedactedThinkingBlockParamTypeRedactedThinking:
+		return true
+	}
+	return false
+}
+
+type BetaSignatureDelta struct {
+	Signature string                 `json:"signature,required"`
+	Type      BetaSignatureDeltaType `json:"type,required"`
+	JSON      betaSignatureDeltaJSON `json:"-"`
+}
+
+// betaSignatureDeltaJSON contains the JSON metadata for the struct
+// [BetaSignatureDelta]
+type betaSignatureDeltaJSON struct {
+	Signature   apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *BetaSignatureDelta) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaSignatureDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r BetaSignatureDelta) implementsBetaRawContentBlockDeltaEventDelta() {}
+
+type BetaSignatureDeltaType string
+
+const (
+	BetaSignatureDeltaTypeSignatureDelta BetaSignatureDeltaType = "signature_delta"
+)
+
+func (r BetaSignatureDeltaType) IsKnown() bool {
+	switch r {
+	case BetaSignatureDeltaTypeSignatureDelta:
 		return true
 	}
 	return false
@@ -2021,8 +2215,234 @@ func (r BetaTextDeltaType) IsKnown() bool {
 	return false
 }
 
+type BetaThinkingBlock struct {
+	Signature string                `json:"signature,required"`
+	Thinking  string                `json:"thinking,required"`
+	Type      BetaThinkingBlockType `json:"type,required"`
+	JSON      betaThinkingBlockJSON `json:"-"`
+}
+
+// betaThinkingBlockJSON contains the JSON metadata for the struct
+// [BetaThinkingBlock]
+type betaThinkingBlockJSON struct {
+	Signature   apijson.Field
+	Thinking    apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *BetaThinkingBlock) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaThinkingBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r BetaThinkingBlock) implementsBetaContentBlock() {}
+
+func (r BetaThinkingBlock) implementsBetaRawContentBlockStartEventContentBlock() {}
+
+type BetaThinkingBlockType string
+
+const (
+	BetaThinkingBlockTypeThinking BetaThinkingBlockType = "thinking"
+)
+
+func (r BetaThinkingBlockType) IsKnown() bool {
+	switch r {
+	case BetaThinkingBlockTypeThinking:
+		return true
+	}
+	return false
+}
+
+type BetaThinkingBlockParam struct {
+	Signature param.Field[string]                     `json:"signature,required"`
+	Thinking  param.Field[string]                     `json:"thinking,required"`
+	Type      param.Field[BetaThinkingBlockParamType] `json:"type,required"`
+}
+
+func (r BetaThinkingBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaThinkingBlockParam) implementsBetaContentBlockParamUnion() {}
+
+type BetaThinkingBlockParamType string
+
+const (
+	BetaThinkingBlockParamTypeThinking BetaThinkingBlockParamType = "thinking"
+)
+
+func (r BetaThinkingBlockParamType) IsKnown() bool {
+	switch r {
+	case BetaThinkingBlockParamTypeThinking:
+		return true
+	}
+	return false
+}
+
+type BetaThinkingConfigDisabledParam struct {
+	Type param.Field[BetaThinkingConfigDisabledType] `json:"type,required"`
+}
+
+func (r BetaThinkingConfigDisabledParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaThinkingConfigDisabledParam) implementsBetaThinkingConfigParamUnion() {}
+
+type BetaThinkingConfigDisabledType string
+
+const (
+	BetaThinkingConfigDisabledTypeDisabled BetaThinkingConfigDisabledType = "disabled"
+)
+
+func (r BetaThinkingConfigDisabledType) IsKnown() bool {
+	switch r {
+	case BetaThinkingConfigDisabledTypeDisabled:
+		return true
+	}
+	return false
+}
+
+type BetaThinkingConfigEnabledParam struct {
+	// Determines how many tokens Claude can use for its internal reasoning process.
+	// Larger budgets can enable more thorough analysis for complex problems, improving
+	// response quality.
+	//
+	// Must be ≥1024 and less than `max_tokens`.
+	//
+	// See
+	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// for details.
+	BudgetTokens param.Field[int64]                         `json:"budget_tokens,required"`
+	Type         param.Field[BetaThinkingConfigEnabledType] `json:"type,required"`
+}
+
+func (r BetaThinkingConfigEnabledParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaThinkingConfigEnabledParam) implementsBetaThinkingConfigParamUnion() {}
+
+type BetaThinkingConfigEnabledType string
+
+const (
+	BetaThinkingConfigEnabledTypeEnabled BetaThinkingConfigEnabledType = "enabled"
+)
+
+func (r BetaThinkingConfigEnabledType) IsKnown() bool {
+	switch r {
+	case BetaThinkingConfigEnabledTypeEnabled:
+		return true
+	}
+	return false
+}
+
+// Configuration for enabling Claude's extended thinking.
+//
+// When enabled, responses include `thinking` content blocks showing Claude's
+// thinking process before the final answer. Requires a minimum budget of 1,024
+// tokens and counts towards your `max_tokens` limit.
+//
+// See
+// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+// for details.
+type BetaThinkingConfigParam struct {
+	Type param.Field[BetaThinkingConfigParamType] `json:"type,required"`
+	// Determines how many tokens Claude can use for its internal reasoning process.
+	// Larger budgets can enable more thorough analysis for complex problems, improving
+	// response quality.
+	//
+	// Must be ≥1024 and less than `max_tokens`.
+	//
+	// See
+	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// for details.
+	BudgetTokens param.Field[int64] `json:"budget_tokens"`
+}
+
+func (r BetaThinkingConfigParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaThinkingConfigParam) implementsBetaThinkingConfigParamUnion() {}
+
+// Configuration for enabling Claude's extended thinking.
+//
+// When enabled, responses include `thinking` content blocks showing Claude's
+// thinking process before the final answer. Requires a minimum budget of 1,024
+// tokens and counts towards your `max_tokens` limit.
+//
+// See
+// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+// for details.
+//
+// Satisfied by [BetaThinkingConfigEnabledParam],
+// [BetaThinkingConfigDisabledParam], [BetaThinkingConfigParam].
+type BetaThinkingConfigParamUnion interface {
+	implementsBetaThinkingConfigParamUnion()
+}
+
+type BetaThinkingConfigParamType string
+
+const (
+	BetaThinkingConfigParamTypeEnabled  BetaThinkingConfigParamType = "enabled"
+	BetaThinkingConfigParamTypeDisabled BetaThinkingConfigParamType = "disabled"
+)
+
+func (r BetaThinkingConfigParamType) IsKnown() bool {
+	switch r {
+	case BetaThinkingConfigParamTypeEnabled, BetaThinkingConfigParamTypeDisabled:
+		return true
+	}
+	return false
+}
+
+type BetaThinkingDelta struct {
+	Thinking string                `json:"thinking,required"`
+	Type     BetaThinkingDeltaType `json:"type,required"`
+	JSON     betaThinkingDeltaJSON `json:"-"`
+}
+
+// betaThinkingDeltaJSON contains the JSON metadata for the struct
+// [BetaThinkingDelta]
+type betaThinkingDeltaJSON struct {
+	Thinking    apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *BetaThinkingDelta) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r betaThinkingDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r BetaThinkingDelta) implementsBetaRawContentBlockDeltaEventDelta() {}
+
+type BetaThinkingDeltaType string
+
+const (
+	BetaThinkingDeltaTypeThinkingDelta BetaThinkingDeltaType = "thinking_delta"
+)
+
+func (r BetaThinkingDeltaType) IsKnown() bool {
+	switch r {
+	case BetaThinkingDeltaTypeThinkingDelta:
+		return true
+	}
+	return false
+}
+
 type BetaToolParam struct {
-	// [JSON schema](https://json-schema.org/) for this tool's input.
+	// [JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.
 	//
 	// This defines the shape of the `input` that your tool accepts and that the model
 	// will produce.
@@ -2050,7 +2470,7 @@ func (r BetaToolParam) implementsBetaToolUnionUnionParam() {}
 
 func (r BetaToolParam) implementsBetaMessageCountTokensParamsToolUnion() {}
 
-// [JSON schema](https://json-schema.org/) for this tool's input.
+// [JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.
 //
 // This defines the shape of the `input` that your tool accepts and that the model
 // will produce.
@@ -2135,6 +2555,54 @@ const (
 func (r BetaToolBash20241022Type) IsKnown() bool {
 	switch r {
 	case BetaToolBash20241022TypeBash20241022:
+		return true
+	}
+	return false
+}
+
+type BetaToolBash20250124Param struct {
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[BetaToolBash20250124Name]       `json:"name,required"`
+	Type         param.Field[BetaToolBash20250124Type]       `json:"type,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+}
+
+func (r BetaToolBash20250124Param) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaToolBash20250124Param) implementsBetaToolUnionUnionParam() {}
+
+func (r BetaToolBash20250124Param) implementsBetaMessageCountTokensParamsToolUnion() {}
+
+// Name of the tool.
+//
+// This is how the tool will be called by the model and in tool_use blocks.
+type BetaToolBash20250124Name string
+
+const (
+	BetaToolBash20250124NameBash BetaToolBash20250124Name = "bash"
+)
+
+func (r BetaToolBash20250124Name) IsKnown() bool {
+	switch r {
+	case BetaToolBash20250124NameBash:
+		return true
+	}
+	return false
+}
+
+type BetaToolBash20250124Type string
+
+const (
+	BetaToolBash20250124TypeBash20250124 BetaToolBash20250124Type = "bash_20250124"
+)
+
+func (r BetaToolBash20250124Type) IsKnown() bool {
+	switch r {
+	case BetaToolBash20250124TypeBash20250124:
 		return true
 	}
 	return false
@@ -2330,6 +2798,60 @@ func (r BetaToolComputerUse20241022Type) IsKnown() bool {
 	return false
 }
 
+type BetaToolComputerUse20250124Param struct {
+	// The height of the display in pixels.
+	DisplayHeightPx param.Field[int64] `json:"display_height_px,required"`
+	// The width of the display in pixels.
+	DisplayWidthPx param.Field[int64] `json:"display_width_px,required"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[BetaToolComputerUse20250124Name] `json:"name,required"`
+	Type         param.Field[BetaToolComputerUse20250124Type] `json:"type,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam]  `json:"cache_control"`
+	// The X11 display number (e.g. 0, 1) for the display.
+	DisplayNumber param.Field[int64] `json:"display_number"`
+}
+
+func (r BetaToolComputerUse20250124Param) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaToolComputerUse20250124Param) implementsBetaToolUnionUnionParam() {}
+
+func (r BetaToolComputerUse20250124Param) implementsBetaMessageCountTokensParamsToolUnion() {}
+
+// Name of the tool.
+//
+// This is how the tool will be called by the model and in tool_use blocks.
+type BetaToolComputerUse20250124Name string
+
+const (
+	BetaToolComputerUse20250124NameComputer BetaToolComputerUse20250124Name = "computer"
+)
+
+func (r BetaToolComputerUse20250124Name) IsKnown() bool {
+	switch r {
+	case BetaToolComputerUse20250124NameComputer:
+		return true
+	}
+	return false
+}
+
+type BetaToolComputerUse20250124Type string
+
+const (
+	BetaToolComputerUse20250124TypeComputer20250124 BetaToolComputerUse20250124Type = "computer_20250124"
+)
+
+func (r BetaToolComputerUse20250124Type) IsKnown() bool {
+	switch r {
+	case BetaToolComputerUse20250124TypeComputer20250124:
+		return true
+	}
+	return false
+}
+
 type BetaToolResultBlockParam struct {
 	ToolUseID    param.Field[string]                                 `json:"tool_use_id,required"`
 	Type         param.Field[BetaToolResultBlockParamType]           `json:"type,required"`
@@ -2441,6 +2963,54 @@ func (r BetaToolTextEditor20241022Type) IsKnown() bool {
 	return false
 }
 
+type BetaToolTextEditor20250124Param struct {
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[BetaToolTextEditor20250124Name] `json:"name,required"`
+	Type         param.Field[BetaToolTextEditor20250124Type] `json:"type,required"`
+	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
+}
+
+func (r BetaToolTextEditor20250124Param) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaToolTextEditor20250124Param) implementsBetaToolUnionUnionParam() {}
+
+func (r BetaToolTextEditor20250124Param) implementsBetaMessageCountTokensParamsToolUnion() {}
+
+// Name of the tool.
+//
+// This is how the tool will be called by the model and in tool_use blocks.
+type BetaToolTextEditor20250124Name string
+
+const (
+	BetaToolTextEditor20250124NameStrReplaceEditor BetaToolTextEditor20250124Name = "str_replace_editor"
+)
+
+func (r BetaToolTextEditor20250124Name) IsKnown() bool {
+	switch r {
+	case BetaToolTextEditor20250124NameStrReplaceEditor:
+		return true
+	}
+	return false
+}
+
+type BetaToolTextEditor20250124Type string
+
+const (
+	BetaToolTextEditor20250124TypeTextEditor20250124 BetaToolTextEditor20250124Type = "text_editor_20250124"
+)
+
+func (r BetaToolTextEditor20250124Type) IsKnown() bool {
+	switch r {
+	case BetaToolTextEditor20250124TypeTextEditor20250124:
+		return true
+	}
+	return false
+}
+
 type BetaToolUnionParam struct {
 	// Name of the tool.
 	//
@@ -2470,8 +3040,9 @@ func (r BetaToolUnionParam) MarshalJSON() (data []byte, err error) {
 
 func (r BetaToolUnionParam) implementsBetaToolUnionUnionParam() {}
 
-// Satisfied by [BetaToolParam], [BetaToolComputerUse20241022Param],
-// [BetaToolBash20241022Param], [BetaToolTextEditor20241022Param],
+// Satisfied by [BetaToolComputerUse20241022Param], [BetaToolBash20241022Param],
+// [BetaToolTextEditor20241022Param], [BetaToolComputerUse20250124Param],
+// [BetaToolBash20250124Param], [BetaToolTextEditor20250124Param], [BetaToolParam],
 // [BetaToolUnionParam].
 type BetaToolUnionUnionParam interface {
 	implementsBetaToolUnionUnionParam()
@@ -2480,15 +3051,18 @@ type BetaToolUnionUnionParam interface {
 type BetaToolUnionType string
 
 const (
-	BetaToolUnionTypeCustom             BetaToolUnionType = "custom"
 	BetaToolUnionTypeComputer20241022   BetaToolUnionType = "computer_20241022"
 	BetaToolUnionTypeBash20241022       BetaToolUnionType = "bash_20241022"
 	BetaToolUnionTypeTextEditor20241022 BetaToolUnionType = "text_editor_20241022"
+	BetaToolUnionTypeComputer20250124   BetaToolUnionType = "computer_20250124"
+	BetaToolUnionTypeBash20250124       BetaToolUnionType = "bash_20250124"
+	BetaToolUnionTypeTextEditor20250124 BetaToolUnionType = "text_editor_20250124"
+	BetaToolUnionTypeCustom             BetaToolUnionType = "custom"
 )
 
 func (r BetaToolUnionType) IsKnown() bool {
 	switch r {
-	case BetaToolUnionTypeCustom, BetaToolUnionTypeComputer20241022, BetaToolUnionTypeBash20241022, BetaToolUnionTypeTextEditor20241022:
+	case BetaToolUnionTypeComputer20241022, BetaToolUnionTypeBash20241022, BetaToolUnionTypeTextEditor20241022, BetaToolUnionTypeComputer20250124, BetaToolUnionTypeBash20250124, BetaToolUnionTypeTextEditor20250124, BetaToolUnionTypeCustom:
 		return true
 	}
 	return false
@@ -2730,6 +3304,16 @@ type BetaMessageNewParams struct {
 	// Note that even with `temperature` of `0.0`, the results will not be fully
 	// deterministic.
 	Temperature param.Field[float64] `json:"temperature"`
+	// Configuration for enabling Claude's extended thinking.
+	//
+	// When enabled, responses include `thinking` content blocks showing Claude's
+	// thinking process before the final answer. Requires a minimum budget of 1,024
+	// tokens and counts towards your `max_tokens` limit.
+	//
+	// See
+	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// for details.
+	Thinking param.Field[BetaThinkingConfigParamUnion] `json:"thinking"`
 	// How the model should use the provided tools. The model can use a specific tool,
 	// any available tool, or decide by itself.
 	ToolChoice param.Field[BetaToolChoiceUnionParam] `json:"tool_choice"`
@@ -2744,8 +3328,9 @@ type BetaMessageNewParams struct {
 	//
 	//   - `name`: Name of the tool.
 	//   - `description`: Optional, but strongly-recommended description of the tool.
-	//   - `input_schema`: [JSON schema](https://json-schema.org/) for the tool `input`
-	//     shape that the model will produce in `tool_use` output content blocks.
+	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//     tool `input` shape that the model will produce in `tool_use` output content
+	//     blocks.
 	//
 	// For example, if you defined `tools` as:
 	//
@@ -2938,6 +3523,16 @@ type BetaMessageCountTokensParams struct {
 	// as specifying a particular goal or role. See our
 	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
 	System param.Field[BetaMessageCountTokensParamsSystemUnion] `json:"system"`
+	// Configuration for enabling Claude's extended thinking.
+	//
+	// When enabled, responses include `thinking` content blocks showing Claude's
+	// thinking process before the final answer. Requires a minimum budget of 1,024
+	// tokens and counts towards your `max_tokens` limit.
+	//
+	// See
+	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// for details.
+	Thinking param.Field[BetaThinkingConfigParamUnion] `json:"thinking"`
 	// How the model should use the provided tools. The model can use a specific tool,
 	// any available tool, or decide by itself.
 	ToolChoice param.Field[BetaToolChoiceUnionParam] `json:"tool_choice"`
@@ -2952,8 +3547,9 @@ type BetaMessageCountTokensParams struct {
 	//
 	//   - `name`: Name of the tool.
 	//   - `description`: Optional, but strongly-recommended description of the tool.
-	//   - `input_schema`: [JSON schema](https://json-schema.org/) for the tool `input`
-	//     shape that the model will produce in `tool_use` output content blocks.
+	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//     tool `input` shape that the model will produce in `tool_use` output content
+	//     blocks.
 	//
 	// For example, if you defined `tools` as:
 	//
@@ -3069,8 +3665,9 @@ func (r BetaMessageCountTokensParamsTool) MarshalJSON() (data []byte, err error)
 
 func (r BetaMessageCountTokensParamsTool) implementsBetaMessageCountTokensParamsToolUnion() {}
 
-// Satisfied by [BetaToolParam], [BetaToolComputerUse20241022Param],
-// [BetaToolBash20241022Param], [BetaToolTextEditor20241022Param],
+// Satisfied by [BetaToolComputerUse20241022Param], [BetaToolBash20241022Param],
+// [BetaToolTextEditor20241022Param], [BetaToolComputerUse20250124Param],
+// [BetaToolBash20250124Param], [BetaToolTextEditor20250124Param], [BetaToolParam],
 // [BetaMessageCountTokensParamsTool].
 type BetaMessageCountTokensParamsToolUnion interface {
 	implementsBetaMessageCountTokensParamsToolUnion()
@@ -3079,15 +3676,18 @@ type BetaMessageCountTokensParamsToolUnion interface {
 type BetaMessageCountTokensParamsToolsType string
 
 const (
-	BetaMessageCountTokensParamsToolsTypeCustom             BetaMessageCountTokensParamsToolsType = "custom"
 	BetaMessageCountTokensParamsToolsTypeComputer20241022   BetaMessageCountTokensParamsToolsType = "computer_20241022"
 	BetaMessageCountTokensParamsToolsTypeBash20241022       BetaMessageCountTokensParamsToolsType = "bash_20241022"
 	BetaMessageCountTokensParamsToolsTypeTextEditor20241022 BetaMessageCountTokensParamsToolsType = "text_editor_20241022"
+	BetaMessageCountTokensParamsToolsTypeComputer20250124   BetaMessageCountTokensParamsToolsType = "computer_20250124"
+	BetaMessageCountTokensParamsToolsTypeBash20250124       BetaMessageCountTokensParamsToolsType = "bash_20250124"
+	BetaMessageCountTokensParamsToolsTypeTextEditor20250124 BetaMessageCountTokensParamsToolsType = "text_editor_20250124"
+	BetaMessageCountTokensParamsToolsTypeCustom             BetaMessageCountTokensParamsToolsType = "custom"
 )
 
 func (r BetaMessageCountTokensParamsToolsType) IsKnown() bool {
 	switch r {
-	case BetaMessageCountTokensParamsToolsTypeCustom, BetaMessageCountTokensParamsToolsTypeComputer20241022, BetaMessageCountTokensParamsToolsTypeBash20241022, BetaMessageCountTokensParamsToolsTypeTextEditor20241022:
+	case BetaMessageCountTokensParamsToolsTypeComputer20241022, BetaMessageCountTokensParamsToolsTypeBash20241022, BetaMessageCountTokensParamsToolsTypeTextEditor20241022, BetaMessageCountTokensParamsToolsTypeComputer20250124, BetaMessageCountTokensParamsToolsTypeBash20250124, BetaMessageCountTokensParamsToolsTypeTextEditor20250124, BetaMessageCountTokensParamsToolsTypeCustom:
 		return true
 	}
 	return false

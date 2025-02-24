@@ -46,6 +46,9 @@ func NewMessageBatchService(opts ...option.RequestOption) (r *MessageBatchServic
 // The Message Batches API can be used to process multiple Messages API requests at
 // once. Once a Message Batch is created, it begins processing immediately. Batches
 // can take up to 24 hours to complete.
+//
+// Learn more about the Message Batches API in our
+// [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) New(ctx context.Context, body MessageBatchNewParams, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	opts = append(r.Options[:], opts...)
 	path := "v1/messages/batches"
@@ -56,6 +59,9 @@ func (r *MessageBatchService) New(ctx context.Context, body MessageBatchNewParam
 // This endpoint is idempotent and can be used to poll for Message Batch
 // completion. To access the results of a Message Batch, make a request to the
 // `results_url` field in the response.
+//
+// Learn more about the Message Batches API in our
+// [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	opts = append(r.Options[:], opts...)
 	if messageBatchID == "" {
@@ -69,6 +75,9 @@ func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, op
 
 // List all Message Batches within a Workspace. Most recently created batches are
 // returned first.
+//
+// Learn more about the Message Batches API in our
+// [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) List(ctx context.Context, query MessageBatchListParams, opts ...option.RequestOption) (res *pagination.Page[MessageBatch], err error) {
 	var raw *http.Response
 	opts = append(r.Options[:], opts...)
@@ -88,6 +97,9 @@ func (r *MessageBatchService) List(ctx context.Context, query MessageBatchListPa
 
 // List all Message Batches within a Workspace. Most recently created batches are
 // returned first.
+//
+// Learn more about the Message Batches API in our
+// [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) ListAutoPaging(ctx context.Context, query MessageBatchListParams, opts ...option.RequestOption) *pagination.PageAutoPager[MessageBatch] {
 	return pagination.NewPageAutoPager(r.List(ctx, query, opts...))
 }
@@ -96,6 +108,9 @@ func (r *MessageBatchService) ListAutoPaging(ctx context.Context, query MessageB
 //
 // Message Batches can only be deleted once they've finished processing. If you'd
 // like to delete an in-progress batch, you must first cancel it.
+//
+// Learn more about the Message Batches API in our
+// [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *DeletedMessageBatch, err error) {
 	opts = append(r.Options[:], opts...)
 	if messageBatchID == "" {
@@ -116,6 +131,9 @@ func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string,
 // which requests were canceled, check the individual results within the batch.
 // Note that cancellation may not result in any canceled requests if they were
 // non-interruptible.
+//
+// Learn more about the Message Batches API in our
+// [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	opts = append(r.Options[:], opts...)
 	if messageBatchID == "" {
@@ -132,6 +150,9 @@ func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string,
 // Each line in the file is a JSON object containing the result of a single request
 // in the Message Batch. Results are not guaranteed to be in the same order as
 // requests. Use the `custom_id` field to match results to requests.
+//
+// Learn more about the Message Batches API in our
+// [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) ResultsStreaming(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (stream *jsonl.Stream[MessageBatchIndividualResponse]) {
 	var (
 		raw *http.Response

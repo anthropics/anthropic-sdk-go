@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.2.0-alpha.11 (2025-02-24)
+
+Full Changelog: [v0.2.0-alpha.10...v0.2.0-alpha.11](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.10...v0.2.0-alpha.11)
+
+### Features
+
+* **api:** add claude-3.7 + support for thinking ([cc7ddcc](https://github.com/anthropics/anthropic-sdk-go/commit/cc7ddcc83a2aeabc17037035b42e94d59679d9e3))
+* **client:** send `X-Stainless-Timeout` header ([#114](https://github.com/anthropics/anthropic-sdk-go/issues/114)) ([66f2aec](https://github.com/anthropics/anthropic-sdk-go/commit/66f2aec50b2abf200eaca7fd6636c64059bc884b))
+* **pagination:** avoid fetching when has_more: false ([#118](https://github.com/anthropics/anthropic-sdk-go/issues/118)) ([6d90a30](https://github.com/anthropics/anthropic-sdk-go/commit/6d90a300dd0553b92b2f555cc11bc4a134593b90))
+
+
+### Bug Fixes
+
+* **client:** don't truncate manually specified filenames ([#121](https://github.com/anthropics/anthropic-sdk-go/issues/121)) ([ce64cf5](https://github.com/anthropics/anthropic-sdk-go/commit/ce64cf54d299d5d3d7b707024ea5ca65c4bd5b56))
+* do not call path.Base on ContentType ([#120](https://github.com/anthropics/anthropic-sdk-go/issues/120)) ([5f20f48](https://github.com/anthropics/anthropic-sdk-go/commit/5f20f48a882546e5e25492a543a7cc56be3eb7dc))
+* fix early cancel when RequestTimeout is provided for streaming requests ([#119](https://github.com/anthropics/anthropic-sdk-go/issues/119)) ([20af10e](https://github.com/anthropics/anthropic-sdk-go/commit/20af10e556caa9dd1691fee0c68aab528d61bc87))
+* fix unicode encoding for json ([#111](https://github.com/anthropics/anthropic-sdk-go/issues/111)) ([699e5cd](https://github.com/anthropics/anthropic-sdk-go/commit/699e5cd7a37a20b48824d0b1b978b28df1d8afbf))
+* **stream:** ensure .Close() doesn't panic ([#113](https://github.com/anthropics/anthropic-sdk-go/issues/113)) ([2125563](https://github.com/anthropics/anthropic-sdk-go/commit/2125563ac0bf773e0795ce51933e535854a30a0e))
+* update stream error handling ([#117](https://github.com/anthropics/anthropic-sdk-go/issues/117)) ([40d1ea2](https://github.com/anthropics/anthropic-sdk-go/commit/40d1ea2589b3df6111c8cf000f49ec46ede7a7a4))
+
+
+### Chores
+
+* add UnionUnmarshaler for responses that are interfaces ([#116](https://github.com/anthropics/anthropic-sdk-go/issues/116)) ([93f533c](https://github.com/anthropics/anthropic-sdk-go/commit/93f533c1c940b1dd6264886344902239a268634a))
+* **api:** update openapi spec url ([#108](https://github.com/anthropics/anthropic-sdk-go/issues/108)) ([8f291ed](https://github.com/anthropics/anthropic-sdk-go/commit/8f291ed434cd1cd0eb7f82a2e8b39b9e97744f6e))
+* **docs:** add docstring explaining streaming pattern ([#115](https://github.com/anthropics/anthropic-sdk-go/issues/115)) ([862c3d4](https://github.com/anthropics/anthropic-sdk-go/commit/862c3d41e8d19ad4b0e9d2d228719c930e6f7d18))
+* **internal:** fix devcontainers setup ([#123](https://github.com/anthropics/anthropic-sdk-go/issues/123)) ([6f9dcc1](https://github.com/anthropics/anthropic-sdk-go/commit/6f9dcc103ee4dfeeda6a5c78e3d461d0c3ddab0b))
+
+
+### Documentation
+
+* document raw responses ([#112](https://github.com/anthropics/anthropic-sdk-go/issues/112)) ([1cf3aee](https://github.com/anthropics/anthropic-sdk-go/commit/1cf3aee0a28edc06e0e19723f94290b80074d6ce))
+
 ## 0.2.0-alpha.10 (2025-01-28)
 
 Full Changelog: [v0.2.0-alpha.9...v0.2.0-alpha.10](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.9...v0.2.0-alpha.10)

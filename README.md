@@ -51,7 +51,7 @@ func main() {
 		option.WithAPIKey("my-anthropic-api-key"), // defaults to os.LookupEnv("ANTHROPIC_API_KEY")
 	)
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-		Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
+		Model:     anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
 		MaxTokens: anthropic.F(int64(1024)),
 		Messages: anthropic.F([]anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
@@ -408,7 +408,7 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 ```go
 _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 	MaxTokens: anthropic.F(int64(1024)),
-	Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
+	Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
 })
 if err != nil {
 	var apierr *anthropic.Error
@@ -441,12 +441,23 @@ client.Messages.New(
 		Messages: anthropic.F([]anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
 		}),
-		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
+		Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
 	},
 	// This sets the per-retry timeout
 	option.WithRequestTimeout(20*time.Second),
 )
 ```
+
+### Long Requests
+
+> [!IMPORTANT]
+> We highly encourage you use the streaming Messages API for longer running requests.
+
+We do not recommend setting a large `MaxTokens` value without using streaming as some networks may drop idle connections after a certain period of time, which
+can cause the request to fail or [timeout](#timeouts) without receiving a response from Anthropic.
+
+This SDK will also return an error if a non-streaming request is expected to be above roughly 10 minutes long.
+Calling `.Messages.NewStreaming()` or [setting a custom timeout](#timeouts) disables this error.
 
 ### File uploads
 
@@ -483,7 +494,7 @@ client.Messages.New(
 		Messages: anthropic.F([]anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
 		}),
-		Model: anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
+		Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
 	},
 	option.WithMaxRetries(5),
 )
@@ -505,7 +516,7 @@ message, err := client.Messages.New(
 			Role:    anthropic.F(anthropic.MessageParamRoleUser),
 			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
 		}}),
-		Model: anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
+		Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
 	},
 	option.WithResponseInto(&response),
 )

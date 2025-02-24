@@ -36,11 +36,14 @@ func NewBetaService(opts ...option.RequestOption) (r *BetaService) {
 type AnthropicBeta = string
 
 const (
-	AnthropicBetaMessageBatches2024_09_24 AnthropicBeta = "message-batches-2024-09-24"
-	AnthropicBetaPromptCaching2024_07_31  AnthropicBeta = "prompt-caching-2024-07-31"
-	AnthropicBetaComputerUse2024_10_22    AnthropicBeta = "computer-use-2024-10-22"
-	AnthropicBetaPDFs2024_09_25           AnthropicBeta = "pdfs-2024-09-25"
-	AnthropicBetaTokenCounting2024_11_01  AnthropicBeta = "token-counting-2024-11-01"
+	AnthropicBetaMessageBatches2024_09_24      AnthropicBeta = "message-batches-2024-09-24"
+	AnthropicBetaPromptCaching2024_07_31       AnthropicBeta = "prompt-caching-2024-07-31"
+	AnthropicBetaComputerUse2024_10_22         AnthropicBeta = "computer-use-2024-10-22"
+	AnthropicBetaComputerUse2025_01_24         AnthropicBeta = "computer-use-2025-01-24"
+	AnthropicBetaPDFs2024_09_25                AnthropicBeta = "pdfs-2024-09-25"
+	AnthropicBetaTokenCounting2024_11_01       AnthropicBeta = "token-counting-2024-11-01"
+	AnthropicBetaTokenEfficientTools2025_02_19 AnthropicBeta = "token-efficient-tools-2025-02-19"
+	AnthropicBetaOutput128k2025_02_19          AnthropicBeta = "output-128k-2025-02-19"
 )
 
 type BetaAPIError struct {

@@ -42,6 +42,8 @@ func NewMessageService(opts ...option.RequestOption) (r *MessageService) {
 // The Messages API can be used for either single queries or stateless multi-turn
 // conversations.
 //
+// Learn more about the Messages API in our [user guide](/en/docs/initial-setup)
+//
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *MessageService) New(ctx context.Context, body MessageNewParams, opts ...option.RequestOption) (res *Message, err error) {
 	opts = append(r.Options[:], opts...)
@@ -55,6 +57,8 @@ func (r *MessageService) New(ctx context.Context, body MessageNewParams, opts ..
 //
 // The Messages API can be used for either single queries or stateless multi-turn
 // conversations.
+//
+// Learn more about the Messages API in our [user guide](/en/docs/initial-setup)
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[MessageStreamEvent]) {
@@ -73,6 +77,9 @@ func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams
 //
 // The Token Count API can be used to count the number of tokens in a Message,
 // including tools, images, and documents, without creating it.
+//
+// Learn more about token counting in our
+// [user guide](/en/docs/build-with-claude/token-counting)
 func (r *MessageService) CountTokens(ctx context.Context, body MessageCountTokensParams, opts ...option.RequestOption) (res *MessageTokensCount, err error) {
 	opts = append(r.Options[:], opts...)
 	path := "v1/messages/count_tokens"
@@ -525,12 +532,15 @@ type ContentBlock struct {
 	ID   string           `json:"id"`
 	// This field can have the runtime type of [[]TextCitation].
 	Citations interface{} `json:"citations"`
+	Data      string      `json:"data"`
 	// This field can have the runtime type of [interface{}].
-	Input interface{}      `json:"input"`
-	Name  string           `json:"name"`
-	Text  string           `json:"text"`
-	JSON  contentBlockJSON `json:"-"`
-	union ContentBlockUnion
+	Input     interface{}      `json:"input"`
+	Name      string           `json:"name"`
+	Signature string           `json:"signature"`
+	Text      string           `json:"text"`
+	Thinking  string           `json:"thinking"`
+	JSON      contentBlockJSON `json:"-"`
+	union     ContentBlockUnion
 }
 
 // contentBlockJSON contains the JSON metadata for the struct [ContentBlock]
@@ -538,9 +548,12 @@ type contentBlockJSON struct {
 	Type        apijson.Field
 	ID          apijson.Field
 	Citations   apijson.Field
+	Data        apijson.Field
 	Input       apijson.Field
 	Name        apijson.Field
+	Signature   apijson.Field
 	Text        apijson.Field
+	Thinking    apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -561,12 +574,14 @@ func (r *ContentBlock) UnmarshalJSON(data []byte) (err error) {
 // AsUnion returns a [ContentBlockUnion] interface which you can cast to the
 // specific types for more type safety.
 //
-// Possible runtime types of the union are [TextBlock], [ToolUseBlock].
+// Possible runtime types of the union are [TextBlock], [ToolUseBlock],
+// [ThinkingBlock], [RedactedThinkingBlock].
 func (r ContentBlock) AsUnion() ContentBlockUnion {
 	return r.union
 }
 
-// Union satisfied by [TextBlock] or [ToolUseBlock].
+// Union satisfied by [TextBlock], [ToolUseBlock], [ThinkingBlock] or
+// [RedactedThinkingBlock].
 type ContentBlockUnion interface {
 	implementsContentBlock()
 }
@@ -585,19 +600,31 @@ func init() {
 			Type:               reflect.TypeOf(ToolUseBlock{}),
 			DiscriminatorValue: "tool_use",
 		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ThinkingBlock{}),
+			DiscriminatorValue: "thinking",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(RedactedThinkingBlock{}),
+			DiscriminatorValue: "redacted_thinking",
+		},
 	)
 }
 
 type ContentBlockType string
 
 const (
-	ContentBlockTypeText    ContentBlockType = "text"
-	ContentBlockTypeToolUse ContentBlockType = "tool_use"
+	ContentBlockTypeText             ContentBlockType = "text"
+	ContentBlockTypeToolUse          ContentBlockType = "tool_use"
+	ContentBlockTypeThinking         ContentBlockType = "thinking"
+	ContentBlockTypeRedactedThinking ContentBlockType = "redacted_thinking"
 )
 
 func (r ContentBlockType) IsKnown() bool {
 	switch r {
-	case ContentBlockTypeText, ContentBlockTypeToolUse:
+	case ContentBlockTypeText, ContentBlockTypeToolUse, ContentBlockTypeThinking, ContentBlockTypeRedactedThinking:
 		return true
 	}
 	return false
@@ -610,11 +637,14 @@ type ContentBlockParam struct {
 	Citations    param.Field[interface{}]                `json:"citations"`
 	Content      param.Field[interface{}]                `json:"content"`
 	Context      param.Field[string]                     `json:"context"`
+	Data         param.Field[string]                     `json:"data"`
 	Input        param.Field[interface{}]                `json:"input"`
 	IsError      param.Field[bool]                       `json:"is_error"`
 	Name         param.Field[string]                     `json:"name"`
+	Signature    param.Field[string]                     `json:"signature"`
 	Source       param.Field[interface{}]                `json:"source"`
 	Text         param.Field[string]                     `json:"text"`
+	Thinking     param.Field[string]                     `json:"thinking"`
 	Title        param.Field[string]                     `json:"title"`
 	ToolUseID    param.Field[string]                     `json:"tool_use_id"`
 }
@@ -626,7 +656,8 @@ func (r ContentBlockParam) MarshalJSON() (data []byte, err error) {
 func (r ContentBlockParam) implementsContentBlockParamUnion() {}
 
 // Satisfied by [TextBlockParam], [ImageBlockParam], [ToolUseBlockParam],
-// [ToolResultBlockParam], [DocumentBlockParam], [ContentBlockParam].
+// [ToolResultBlockParam], [DocumentBlockParam], [ThinkingBlockParam],
+// [RedactedThinkingBlockParam], [ContentBlockParam].
 type ContentBlockParamUnion interface {
 	implementsContentBlockParamUnion()
 }
@@ -634,16 +665,18 @@ type ContentBlockParamUnion interface {
 type ContentBlockParamType string
 
 const (
-	ContentBlockParamTypeText       ContentBlockParamType = "text"
-	ContentBlockParamTypeImage      ContentBlockParamType = "image"
-	ContentBlockParamTypeToolUse    ContentBlockParamType = "tool_use"
-	ContentBlockParamTypeToolResult ContentBlockParamType = "tool_result"
-	ContentBlockParamTypeDocument   ContentBlockParamType = "document"
+	ContentBlockParamTypeText             ContentBlockParamType = "text"
+	ContentBlockParamTypeImage            ContentBlockParamType = "image"
+	ContentBlockParamTypeToolUse          ContentBlockParamType = "tool_use"
+	ContentBlockParamTypeToolResult       ContentBlockParamType = "tool_result"
+	ContentBlockParamTypeDocument         ContentBlockParamType = "document"
+	ContentBlockParamTypeThinking         ContentBlockParamType = "thinking"
+	ContentBlockParamTypeRedactedThinking ContentBlockParamType = "redacted_thinking"
 )
 
 func (r ContentBlockParamType) IsKnown() bool {
 	switch r {
-	case ContentBlockParamTypeText, ContentBlockParamTypeImage, ContentBlockParamTypeToolUse, ContentBlockParamTypeToolResult, ContentBlockParamTypeDocument:
+	case ContentBlockParamTypeText, ContentBlockParamTypeImage, ContentBlockParamTypeToolUse, ContentBlockParamTypeToolResult, ContentBlockParamTypeDocument, ContentBlockParamTypeThinking, ContentBlockParamTypeRedactedThinking:
 		return true
 	}
 	return false
@@ -954,6 +987,9 @@ type Message struct {
 	//
 	// For example, `output_tokens` will be non-zero, even for an empty string response
 	// from Claude.
+	//
+	// Total input tokens in a request is the summation of `input_tokens`,
+	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage Usage       `json:"usage,required"`
 	JSON  messageJSON `json:"-"`
 }
@@ -1037,6 +1073,50 @@ const (
 func (r MessageType) IsKnown() bool {
 	switch r {
 	case MessageTypeMessage:
+		return true
+	}
+	return false
+}
+
+type MessageCountTokensToolParam struct {
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[string]                     `json:"name,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
+	// Description of what this tool does.
+	//
+	// Tool descriptions should be as detailed as possible. The more information that
+	// the model has about what the tool is and how to use it, the better it will
+	// perform. You can use natural language descriptions to reinforce important
+	// aspects of the tool input JSON schema.
+	Description param.Field[string]                     `json:"description"`
+	InputSchema param.Field[interface{}]                `json:"input_schema"`
+	Type        param.Field[MessageCountTokensToolType] `json:"type"`
+}
+
+func (r MessageCountTokensToolParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r MessageCountTokensToolParam) implementsMessageCountTokensToolUnionParam() {}
+
+// Satisfied by [ToolBash20250124Param], [ToolTextEditor20250124Param],
+// [ToolParam], [MessageCountTokensToolParam].
+type MessageCountTokensToolUnionParam interface {
+	implementsMessageCountTokensToolUnionParam()
+}
+
+type MessageCountTokensToolType string
+
+const (
+	MessageCountTokensToolTypeBash20250124       MessageCountTokensToolType = "bash_20250124"
+	MessageCountTokensToolTypeTextEditor20250124 MessageCountTokensToolType = "text_editor_20250124"
+)
+
+func (r MessageCountTokensToolType) IsKnown() bool {
+	switch r {
+	case MessageCountTokensToolTypeBash20250124, MessageCountTokensToolTypeTextEditor20250124:
 		return true
 	}
 	return false
@@ -1130,6 +1210,8 @@ func (r MetadataParam) MarshalJSON() (data []byte, err error) {
 type Model = string
 
 const (
+	ModelClaude3_7SonnetLatest      Model = "claude-3-7-sonnet-latest"
+	ModelClaude3_7Sonnet20250219    Model = "claude-3-7-sonnet-20250219"
 	ModelClaude3_5HaikuLatest       Model = "claude-3-5-haiku-latest"
 	ModelClaude3_5Haiku20241022     Model = "claude-3-5-haiku-20241022"
 	ModelClaude3_5SonnetLatest      Model = "claude-3-5-sonnet-latest"
@@ -1224,7 +1306,9 @@ type ContentBlockDeltaEventDelta struct {
 	// This field can have the runtime type of [CitationsDeltaCitation].
 	Citation    interface{}                     `json:"citation"`
 	PartialJSON string                          `json:"partial_json"`
+	Signature   string                          `json:"signature"`
 	Text        string                          `json:"text"`
+	Thinking    string                          `json:"thinking"`
 	JSON        contentBlockDeltaEventDeltaJSON `json:"-"`
 	union       ContentBlockDeltaEventDeltaUnion
 }
@@ -1235,7 +1319,9 @@ type contentBlockDeltaEventDeltaJSON struct {
 	Type        apijson.Field
 	Citation    apijson.Field
 	PartialJSON apijson.Field
+	Signature   apijson.Field
 	Text        apijson.Field
+	Thinking    apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -1257,12 +1343,13 @@ func (r *ContentBlockDeltaEventDelta) UnmarshalJSON(data []byte) (err error) {
 // cast to the specific types for more type safety.
 //
 // Possible runtime types of the union are [TextDelta], [InputJSONDelta],
-// [CitationsDelta].
+// [CitationsDelta], [ThinkingDelta], [SignatureDelta].
 func (r ContentBlockDeltaEventDelta) AsUnion() ContentBlockDeltaEventDeltaUnion {
 	return r.union
 }
 
-// Union satisfied by [TextDelta], [InputJSONDelta] or [CitationsDelta].
+// Union satisfied by [TextDelta], [InputJSONDelta], [CitationsDelta],
+// [ThinkingDelta] or [SignatureDelta].
 type ContentBlockDeltaEventDeltaUnion interface {
 	implementsContentBlockDeltaEventDelta()
 }
@@ -1286,6 +1373,16 @@ func init() {
 			Type:               reflect.TypeOf(CitationsDelta{}),
 			DiscriminatorValue: "citations_delta",
 		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ThinkingDelta{}),
+			DiscriminatorValue: "thinking_delta",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(SignatureDelta{}),
+			DiscriminatorValue: "signature_delta",
+		},
 	)
 }
 
@@ -1295,11 +1392,13 @@ const (
 	ContentBlockDeltaEventDeltaTypeTextDelta      ContentBlockDeltaEventDeltaType = "text_delta"
 	ContentBlockDeltaEventDeltaTypeInputJSONDelta ContentBlockDeltaEventDeltaType = "input_json_delta"
 	ContentBlockDeltaEventDeltaTypeCitationsDelta ContentBlockDeltaEventDeltaType = "citations_delta"
+	ContentBlockDeltaEventDeltaTypeThinkingDelta  ContentBlockDeltaEventDeltaType = "thinking_delta"
+	ContentBlockDeltaEventDeltaTypeSignatureDelta ContentBlockDeltaEventDeltaType = "signature_delta"
 )
 
 func (r ContentBlockDeltaEventDeltaType) IsKnown() bool {
 	switch r {
-	case ContentBlockDeltaEventDeltaTypeTextDelta, ContentBlockDeltaEventDeltaTypeInputJSONDelta, ContentBlockDeltaEventDeltaTypeCitationsDelta:
+	case ContentBlockDeltaEventDeltaTypeTextDelta, ContentBlockDeltaEventDeltaTypeInputJSONDelta, ContentBlockDeltaEventDeltaTypeCitationsDelta, ContentBlockDeltaEventDeltaTypeThinkingDelta, ContentBlockDeltaEventDeltaTypeSignatureDelta:
 		return true
 	}
 	return false
@@ -1351,12 +1450,15 @@ type ContentBlockStartEventContentBlock struct {
 	ID   string                                 `json:"id"`
 	// This field can have the runtime type of [[]TextCitation].
 	Citations interface{} `json:"citations"`
+	Data      string      `json:"data"`
 	// This field can have the runtime type of [interface{}].
-	Input interface{}                            `json:"input"`
-	Name  string                                 `json:"name"`
-	Text  string                                 `json:"text"`
-	JSON  contentBlockStartEventContentBlockJSON `json:"-"`
-	union ContentBlockStartEventContentBlockUnion
+	Input     interface{}                            `json:"input"`
+	Name      string                                 `json:"name"`
+	Signature string                                 `json:"signature"`
+	Text      string                                 `json:"text"`
+	Thinking  string                                 `json:"thinking"`
+	JSON      contentBlockStartEventContentBlockJSON `json:"-"`
+	union     ContentBlockStartEventContentBlockUnion
 }
 
 // contentBlockStartEventContentBlockJSON contains the JSON metadata for the struct
@@ -1365,9 +1467,12 @@ type contentBlockStartEventContentBlockJSON struct {
 	Type        apijson.Field
 	ID          apijson.Field
 	Citations   apijson.Field
+	Data        apijson.Field
 	Input       apijson.Field
 	Name        apijson.Field
+	Signature   apijson.Field
 	Text        apijson.Field
+	Thinking    apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
 }
@@ -1388,12 +1493,14 @@ func (r *ContentBlockStartEventContentBlock) UnmarshalJSON(data []byte) (err err
 // AsUnion returns a [ContentBlockStartEventContentBlockUnion] interface which you
 // can cast to the specific types for more type safety.
 //
-// Possible runtime types of the union are [TextBlock], [ToolUseBlock].
+// Possible runtime types of the union are [TextBlock], [ToolUseBlock],
+// [ThinkingBlock], [RedactedThinkingBlock].
 func (r ContentBlockStartEventContentBlock) AsUnion() ContentBlockStartEventContentBlockUnion {
 	return r.union
 }
 
-// Union satisfied by [TextBlock] or [ToolUseBlock].
+// Union satisfied by [TextBlock], [ToolUseBlock], [ThinkingBlock] or
+// [RedactedThinkingBlock].
 type ContentBlockStartEventContentBlockUnion interface {
 	implementsContentBlockStartEventContentBlock()
 }
@@ -1412,19 +1519,31 @@ func init() {
 			Type:               reflect.TypeOf(ToolUseBlock{}),
 			DiscriminatorValue: "tool_use",
 		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ThinkingBlock{}),
+			DiscriminatorValue: "thinking",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(RedactedThinkingBlock{}),
+			DiscriminatorValue: "redacted_thinking",
+		},
 	)
 }
 
 type ContentBlockStartEventContentBlockType string
 
 const (
-	ContentBlockStartEventContentBlockTypeText    ContentBlockStartEventContentBlockType = "text"
-	ContentBlockStartEventContentBlockTypeToolUse ContentBlockStartEventContentBlockType = "tool_use"
+	ContentBlockStartEventContentBlockTypeText             ContentBlockStartEventContentBlockType = "text"
+	ContentBlockStartEventContentBlockTypeToolUse          ContentBlockStartEventContentBlockType = "tool_use"
+	ContentBlockStartEventContentBlockTypeThinking         ContentBlockStartEventContentBlockType = "thinking"
+	ContentBlockStartEventContentBlockTypeRedactedThinking ContentBlockStartEventContentBlockType = "redacted_thinking"
 )
 
 func (r ContentBlockStartEventContentBlockType) IsKnown() bool {
 	switch r {
-	case ContentBlockStartEventContentBlockTypeText, ContentBlockStartEventContentBlockTypeToolUse:
+	case ContentBlockStartEventContentBlockTypeText, ContentBlockStartEventContentBlockTypeToolUse, ContentBlockStartEventContentBlockTypeThinking, ContentBlockStartEventContentBlockTypeRedactedThinking:
 		return true
 	}
 	return false
@@ -1498,6 +1617,9 @@ type MessageDeltaEvent struct {
 	//
 	// For example, `output_tokens` will be non-zero, even for an empty string response
 	// from Claude.
+	//
+	// Total input tokens in a request is the summation of `input_tokens`,
+	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage MessageDeltaUsage     `json:"usage,required"`
 	JSON  messageDeltaEventJSON `json:"-"`
 }
@@ -1673,6 +1795,9 @@ type MessageStreamEvent struct {
 	//
 	// For example, `output_tokens` will be non-zero, even for an empty string response
 	// from Claude.
+	//
+	// Total input tokens in a request is the summation of `input_tokens`,
+	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage MessageDeltaUsage      `json:"usage"`
 	JSON  messageStreamEventJSON `json:"-"`
 	union MessageStreamEventUnion
@@ -1771,6 +1896,110 @@ const (
 func (r MessageStreamEventType) IsKnown() bool {
 	switch r {
 	case MessageStreamEventTypeMessageStart, MessageStreamEventTypeMessageDelta, MessageStreamEventTypeMessageStop, MessageStreamEventTypeContentBlockStart, MessageStreamEventTypeContentBlockDelta, MessageStreamEventTypeContentBlockStop:
+		return true
+	}
+	return false
+}
+
+type RedactedThinkingBlock struct {
+	Data string                    `json:"data,required"`
+	Type RedactedThinkingBlockType `json:"type,required"`
+	JSON redactedThinkingBlockJSON `json:"-"`
+}
+
+// redactedThinkingBlockJSON contains the JSON metadata for the struct
+// [RedactedThinkingBlock]
+type redactedThinkingBlockJSON struct {
+	Data        apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *RedactedThinkingBlock) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r redactedThinkingBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r RedactedThinkingBlock) implementsContentBlock() {}
+
+func (r RedactedThinkingBlock) implementsContentBlockStartEventContentBlock() {}
+
+type RedactedThinkingBlockType string
+
+const (
+	RedactedThinkingBlockTypeRedactedThinking RedactedThinkingBlockType = "redacted_thinking"
+)
+
+func (r RedactedThinkingBlockType) IsKnown() bool {
+	switch r {
+	case RedactedThinkingBlockTypeRedactedThinking:
+		return true
+	}
+	return false
+}
+
+type RedactedThinkingBlockParam struct {
+	Data param.Field[string]                         `json:"data,required"`
+	Type param.Field[RedactedThinkingBlockParamType] `json:"type,required"`
+}
+
+func (r RedactedThinkingBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r RedactedThinkingBlockParam) implementsContentBlockParamUnion() {}
+
+type RedactedThinkingBlockParamType string
+
+const (
+	RedactedThinkingBlockParamTypeRedactedThinking RedactedThinkingBlockParamType = "redacted_thinking"
+)
+
+func (r RedactedThinkingBlockParamType) IsKnown() bool {
+	switch r {
+	case RedactedThinkingBlockParamTypeRedactedThinking:
+		return true
+	}
+	return false
+}
+
+type SignatureDelta struct {
+	Signature string             `json:"signature,required"`
+	Type      SignatureDeltaType `json:"type,required"`
+	JSON      signatureDeltaJSON `json:"-"`
+}
+
+// signatureDeltaJSON contains the JSON metadata for the struct [SignatureDelta]
+type signatureDeltaJSON struct {
+	Signature   apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *SignatureDelta) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r signatureDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r SignatureDelta) implementsContentBlockDeltaEventDelta() {}
+
+type SignatureDeltaType string
+
+const (
+	SignatureDeltaTypeSignatureDelta SignatureDeltaType = "signature_delta"
+)
+
+func (r SignatureDeltaType) IsKnown() bool {
+	switch r {
+	case SignatureDeltaTypeSignatureDelta:
 		return true
 	}
 	return false
@@ -2030,8 +2259,232 @@ func (r TextDeltaType) IsKnown() bool {
 	return false
 }
 
+type ThinkingBlock struct {
+	Signature string            `json:"signature,required"`
+	Thinking  string            `json:"thinking,required"`
+	Type      ThinkingBlockType `json:"type,required"`
+	JSON      thinkingBlockJSON `json:"-"`
+}
+
+// thinkingBlockJSON contains the JSON metadata for the struct [ThinkingBlock]
+type thinkingBlockJSON struct {
+	Signature   apijson.Field
+	Thinking    apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ThinkingBlock) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r thinkingBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ThinkingBlock) implementsContentBlock() {}
+
+func (r ThinkingBlock) implementsContentBlockStartEventContentBlock() {}
+
+type ThinkingBlockType string
+
+const (
+	ThinkingBlockTypeThinking ThinkingBlockType = "thinking"
+)
+
+func (r ThinkingBlockType) IsKnown() bool {
+	switch r {
+	case ThinkingBlockTypeThinking:
+		return true
+	}
+	return false
+}
+
+type ThinkingBlockParam struct {
+	Signature param.Field[string]                 `json:"signature,required"`
+	Thinking  param.Field[string]                 `json:"thinking,required"`
+	Type      param.Field[ThinkingBlockParamType] `json:"type,required"`
+}
+
+func (r ThinkingBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ThinkingBlockParam) implementsContentBlockParamUnion() {}
+
+type ThinkingBlockParamType string
+
+const (
+	ThinkingBlockParamTypeThinking ThinkingBlockParamType = "thinking"
+)
+
+func (r ThinkingBlockParamType) IsKnown() bool {
+	switch r {
+	case ThinkingBlockParamTypeThinking:
+		return true
+	}
+	return false
+}
+
+type ThinkingConfigDisabledParam struct {
+	Type param.Field[ThinkingConfigDisabledType] `json:"type,required"`
+}
+
+func (r ThinkingConfigDisabledParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ThinkingConfigDisabledParam) implementsThinkingConfigParamUnion() {}
+
+type ThinkingConfigDisabledType string
+
+const (
+	ThinkingConfigDisabledTypeDisabled ThinkingConfigDisabledType = "disabled"
+)
+
+func (r ThinkingConfigDisabledType) IsKnown() bool {
+	switch r {
+	case ThinkingConfigDisabledTypeDisabled:
+		return true
+	}
+	return false
+}
+
+type ThinkingConfigEnabledParam struct {
+	// Determines how many tokens Claude can use for its internal reasoning process.
+	// Larger budgets can enable more thorough analysis for complex problems, improving
+	// response quality.
+	//
+	// Must be ≥1024 and less than `max_tokens`.
+	//
+	// See
+	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// for details.
+	BudgetTokens param.Field[int64]                     `json:"budget_tokens,required"`
+	Type         param.Field[ThinkingConfigEnabledType] `json:"type,required"`
+}
+
+func (r ThinkingConfigEnabledParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ThinkingConfigEnabledParam) implementsThinkingConfigParamUnion() {}
+
+type ThinkingConfigEnabledType string
+
+const (
+	ThinkingConfigEnabledTypeEnabled ThinkingConfigEnabledType = "enabled"
+)
+
+func (r ThinkingConfigEnabledType) IsKnown() bool {
+	switch r {
+	case ThinkingConfigEnabledTypeEnabled:
+		return true
+	}
+	return false
+}
+
+// Configuration for enabling Claude's extended thinking.
+//
+// When enabled, responses include `thinking` content blocks showing Claude's
+// thinking process before the final answer. Requires a minimum budget of 1,024
+// tokens and counts towards your `max_tokens` limit.
+//
+// See
+// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+// for details.
+type ThinkingConfigParam struct {
+	Type param.Field[ThinkingConfigParamType] `json:"type,required"`
+	// Determines how many tokens Claude can use for its internal reasoning process.
+	// Larger budgets can enable more thorough analysis for complex problems, improving
+	// response quality.
+	//
+	// Must be ≥1024 and less than `max_tokens`.
+	//
+	// See
+	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// for details.
+	BudgetTokens param.Field[int64] `json:"budget_tokens"`
+}
+
+func (r ThinkingConfigParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ThinkingConfigParam) implementsThinkingConfigParamUnion() {}
+
+// Configuration for enabling Claude's extended thinking.
+//
+// When enabled, responses include `thinking` content blocks showing Claude's
+// thinking process before the final answer. Requires a minimum budget of 1,024
+// tokens and counts towards your `max_tokens` limit.
+//
+// See
+// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+// for details.
+//
+// Satisfied by [ThinkingConfigEnabledParam], [ThinkingConfigDisabledParam],
+// [ThinkingConfigParam].
+type ThinkingConfigParamUnion interface {
+	implementsThinkingConfigParamUnion()
+}
+
+type ThinkingConfigParamType string
+
+const (
+	ThinkingConfigParamTypeEnabled  ThinkingConfigParamType = "enabled"
+	ThinkingConfigParamTypeDisabled ThinkingConfigParamType = "disabled"
+)
+
+func (r ThinkingConfigParamType) IsKnown() bool {
+	switch r {
+	case ThinkingConfigParamTypeEnabled, ThinkingConfigParamTypeDisabled:
+		return true
+	}
+	return false
+}
+
+type ThinkingDelta struct {
+	Thinking string            `json:"thinking,required"`
+	Type     ThinkingDeltaType `json:"type,required"`
+	JSON     thinkingDeltaJSON `json:"-"`
+}
+
+// thinkingDeltaJSON contains the JSON metadata for the struct [ThinkingDelta]
+type thinkingDeltaJSON struct {
+	Thinking    apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ThinkingDelta) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r thinkingDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ThinkingDelta) implementsContentBlockDeltaEventDelta() {}
+
+type ThinkingDeltaType string
+
+const (
+	ThinkingDeltaTypeThinkingDelta ThinkingDeltaType = "thinking_delta"
+)
+
+func (r ThinkingDeltaType) IsKnown() bool {
+	switch r {
+	case ThinkingDeltaTypeThinkingDelta:
+		return true
+	}
+	return false
+}
+
 type ToolParam struct {
-	// [JSON schema](https://json-schema.org/) for this tool's input.
+	// [JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.
 	//
 	// This defines the shape of the `input` that your tool accepts and that the model
 	// will produce.
@@ -2054,7 +2507,11 @@ func (r ToolParam) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
 }
 
-// [JSON schema](https://json-schema.org/) for this tool's input.
+func (r ToolParam) implementsMessageCountTokensToolUnionParam() {}
+
+func (r ToolParam) implementsToolUnionUnionParam() {}
+
+// [JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.
 //
 // This defines the shape of the `input` that your tool accepts and that the model
 // will produce.
@@ -2077,6 +2534,54 @@ const (
 func (r ToolInputSchemaType) IsKnown() bool {
 	switch r {
 	case ToolInputSchemaTypeObject:
+		return true
+	}
+	return false
+}
+
+type ToolBash20250124Param struct {
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[ToolBash20250124Name]       `json:"name,required"`
+	Type         param.Field[ToolBash20250124Type]       `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
+}
+
+func (r ToolBash20250124Param) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolBash20250124Param) implementsMessageCountTokensToolUnionParam() {}
+
+func (r ToolBash20250124Param) implementsToolUnionUnionParam() {}
+
+// Name of the tool.
+//
+// This is how the tool will be called by the model and in tool_use blocks.
+type ToolBash20250124Name string
+
+const (
+	ToolBash20250124NameBash ToolBash20250124Name = "bash"
+)
+
+func (r ToolBash20250124Name) IsKnown() bool {
+	switch r {
+	case ToolBash20250124NameBash:
+		return true
+	}
+	return false
+}
+
+type ToolBash20250124Type string
+
+const (
+	ToolBash20250124TypeBash20250124 ToolBash20250124Type = "bash_20250124"
+)
+
+func (r ToolBash20250124Type) IsKnown() bool {
+	switch r {
+	case ToolBash20250124TypeBash20250124:
 		return true
 	}
 	return false
@@ -2275,6 +2780,98 @@ const (
 func (r ToolResultBlockParamContentType) IsKnown() bool {
 	switch r {
 	case ToolResultBlockParamContentTypeText, ToolResultBlockParamContentTypeImage:
+		return true
+	}
+	return false
+}
+
+type ToolTextEditor20250124Param struct {
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[ToolTextEditor20250124Name] `json:"name,required"`
+	Type         param.Field[ToolTextEditor20250124Type] `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
+}
+
+func (r ToolTextEditor20250124Param) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolTextEditor20250124Param) implementsMessageCountTokensToolUnionParam() {}
+
+func (r ToolTextEditor20250124Param) implementsToolUnionUnionParam() {}
+
+// Name of the tool.
+//
+// This is how the tool will be called by the model and in tool_use blocks.
+type ToolTextEditor20250124Name string
+
+const (
+	ToolTextEditor20250124NameStrReplaceEditor ToolTextEditor20250124Name = "str_replace_editor"
+)
+
+func (r ToolTextEditor20250124Name) IsKnown() bool {
+	switch r {
+	case ToolTextEditor20250124NameStrReplaceEditor:
+		return true
+	}
+	return false
+}
+
+type ToolTextEditor20250124Type string
+
+const (
+	ToolTextEditor20250124TypeTextEditor20250124 ToolTextEditor20250124Type = "text_editor_20250124"
+)
+
+func (r ToolTextEditor20250124Type) IsKnown() bool {
+	switch r {
+	case ToolTextEditor20250124TypeTextEditor20250124:
+		return true
+	}
+	return false
+}
+
+type ToolUnionParam struct {
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[string]                     `json:"name,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
+	// Description of what this tool does.
+	//
+	// Tool descriptions should be as detailed as possible. The more information that
+	// the model has about what the tool is and how to use it, the better it will
+	// perform. You can use natural language descriptions to reinforce important
+	// aspects of the tool input JSON schema.
+	Description param.Field[string]        `json:"description"`
+	InputSchema param.Field[interface{}]   `json:"input_schema"`
+	Type        param.Field[ToolUnionType] `json:"type"`
+}
+
+func (r ToolUnionParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolUnionParam) implementsToolUnionUnionParam() {}
+
+// Satisfied by [ToolBash20250124Param], [ToolTextEditor20250124Param],
+// [ToolParam], [ToolUnionParam].
+type ToolUnionUnionParam interface {
+	implementsToolUnionUnionParam()
+}
+
+type ToolUnionType string
+
+const (
+	ToolUnionTypeBash20250124       ToolUnionType = "bash_20250124"
+	ToolUnionTypeTextEditor20250124 ToolUnionType = "text_editor_20250124"
+)
+
+func (r ToolUnionType) IsKnown() bool {
+	switch r {
+	case ToolUnionTypeBash20250124, ToolUnionTypeTextEditor20250124:
 		return true
 	}
 	return false
@@ -2515,6 +3112,16 @@ type MessageNewParams struct {
 	// Note that even with `temperature` of `0.0`, the results will not be fully
 	// deterministic.
 	Temperature param.Field[float64] `json:"temperature"`
+	// Configuration for enabling Claude's extended thinking.
+	//
+	// When enabled, responses include `thinking` content blocks showing Claude's
+	// thinking process before the final answer. Requires a minimum budget of 1,024
+	// tokens and counts towards your `max_tokens` limit.
+	//
+	// See
+	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// for details.
+	Thinking param.Field[ThinkingConfigParamUnion] `json:"thinking"`
 	// How the model should use the provided tools. The model can use a specific tool,
 	// any available tool, or decide by itself.
 	ToolChoice param.Field[ToolChoiceUnionParam] `json:"tool_choice"`
@@ -2529,8 +3136,9 @@ type MessageNewParams struct {
 	//
 	//   - `name`: Name of the tool.
 	//   - `description`: Optional, but strongly-recommended description of the tool.
-	//   - `input_schema`: [JSON schema](https://json-schema.org/) for the tool `input`
-	//     shape that the model will produce in `tool_use` output content blocks.
+	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//     tool `input` shape that the model will produce in `tool_use` output content
+	//     blocks.
 	//
 	// For example, if you defined `tools` as:
 	//
@@ -2592,7 +3200,7 @@ type MessageNewParams struct {
 	// JSON structure of output.
 	//
 	// See our [guide](https://docs.anthropic.com/en/docs/tool-use) for more details.
-	Tools param.Field[[]ToolParam] `json:"tools"`
+	Tools param.Field[[]ToolUnionUnionParam] `json:"tools"`
 	// Only sample from the top K options for each subsequent token.
 	//
 	// Used to remove "long tail" low probability responses.
@@ -2721,6 +3329,16 @@ type MessageCountTokensParams struct {
 	// as specifying a particular goal or role. See our
 	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
 	System param.Field[MessageCountTokensParamsSystemUnion] `json:"system"`
+	// Configuration for enabling Claude's extended thinking.
+	//
+	// When enabled, responses include `thinking` content blocks showing Claude's
+	// thinking process before the final answer. Requires a minimum budget of 1,024
+	// tokens and counts towards your `max_tokens` limit.
+	//
+	// See
+	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// for details.
+	Thinking param.Field[ThinkingConfigParamUnion] `json:"thinking"`
 	// How the model should use the provided tools. The model can use a specific tool,
 	// any available tool, or decide by itself.
 	ToolChoice param.Field[ToolChoiceUnionParam] `json:"tool_choice"`
@@ -2735,8 +3353,9 @@ type MessageCountTokensParams struct {
 	//
 	//   - `name`: Name of the tool.
 	//   - `description`: Optional, but strongly-recommended description of the tool.
-	//   - `input_schema`: [JSON schema](https://json-schema.org/) for the tool `input`
-	//     shape that the model will produce in `tool_use` output content blocks.
+	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//     tool `input` shape that the model will produce in `tool_use` output content
+	//     blocks.
 	//
 	// For example, if you defined `tools` as:
 	//
@@ -2798,7 +3417,7 @@ type MessageCountTokensParams struct {
 	// JSON structure of output.
 	//
 	// See our [guide](https://docs.anthropic.com/en/docs/tool-use) for more details.
-	Tools param.Field[[]ToolParam] `json:"tools"`
+	Tools param.Field[[]MessageCountTokensToolUnionParam] `json:"tools"`
 }
 
 func (r MessageCountTokensParams) MarshalJSON() (data []byte, err error) {

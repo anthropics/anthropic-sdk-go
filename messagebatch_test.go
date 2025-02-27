@@ -50,12 +50,25 @@ func TestMessageBatchNew(t *testing.T) {
 					Type:                   anthropic.F(anthropic.ToolChoiceAutoTypeAuto),
 					DisableParallelToolUse: anthropic.F(true),
 				}),
-				Tools: anthropic.F([]anthropic.ToolUnionUnionParam{anthropic.ToolBash20250124Param{
-					Name: anthropic.F(anthropic.ToolBash20250124NameBash),
-					Type: anthropic.F(anthropic.ToolBash20250124TypeBash20250124),
+				Tools: anthropic.F([]anthropic.ToolUnionUnionParam{anthropic.ToolParam{
+					InputSchema: anthropic.F(anthropic.ToolInputSchemaParam{
+						Type: anthropic.F(anthropic.ToolInputSchemaTypeObject),
+						Properties: anthropic.F[any](map[string]interface{}{
+							"location": map[string]interface{}{
+								"description": "The city and state, e.g. San Francisco, CA",
+								"type":        "string",
+							},
+							"unit": map[string]interface{}{
+								"description": "Unit for the output - one of (celsius, fahrenheit)",
+								"type":        "string",
+							},
+						}),
+					}),
+					Name: anthropic.F("name"),
 					CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{
 						Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral),
 					}),
+					Description: anthropic.F("Get the current weather in a given location"),
 				}}),
 				TopK: anthropic.F(int64(5)),
 				TopP: anthropic.F(0.700000),

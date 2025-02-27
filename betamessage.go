@@ -97,6 +97,49 @@ func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessage
 	return
 }
 
+type BetaBase64ImageSourceParam struct {
+	Data      param.Field[string]                         `json:"data,required" format:"byte"`
+	MediaType param.Field[BetaBase64ImageSourceMediaType] `json:"media_type,required"`
+	Type      param.Field[BetaBase64ImageSourceType]      `json:"type,required"`
+}
+
+func (r BetaBase64ImageSourceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaBase64ImageSourceParam) implementsBetaImageBlockParamSourceUnion() {}
+
+type BetaBase64ImageSourceMediaType string
+
+const (
+	BetaBase64ImageSourceMediaTypeImageJPEG BetaBase64ImageSourceMediaType = "image/jpeg"
+	BetaBase64ImageSourceMediaTypeImagePNG  BetaBase64ImageSourceMediaType = "image/png"
+	BetaBase64ImageSourceMediaTypeImageGIF  BetaBase64ImageSourceMediaType = "image/gif"
+	BetaBase64ImageSourceMediaTypeImageWebP BetaBase64ImageSourceMediaType = "image/webp"
+)
+
+func (r BetaBase64ImageSourceMediaType) IsKnown() bool {
+	switch r {
+	case BetaBase64ImageSourceMediaTypeImageJPEG, BetaBase64ImageSourceMediaTypeImagePNG, BetaBase64ImageSourceMediaTypeImageGIF, BetaBase64ImageSourceMediaTypeImageWebP:
+		return true
+	}
+	return false
+}
+
+type BetaBase64ImageSourceType string
+
+const (
+	BetaBase64ImageSourceTypeBase64 BetaBase64ImageSourceType = "base64"
+)
+
+func (r BetaBase64ImageSourceType) IsKnown() bool {
+	switch r {
+	case BetaBase64ImageSourceTypeBase64:
+		return true
+	}
+	return false
+}
+
 type BetaBase64PDFBlockParam struct {
 	Source       param.Field[BetaBase64PDFBlockSourceUnionParam] `json:"source,required"`
 	Type         param.Field[BetaBase64PDFBlockType]             `json:"type,required"`
@@ -117,6 +160,7 @@ type BetaBase64PDFBlockSourceParam struct {
 	Content   param.Field[interface{}]                       `json:"content"`
 	Data      param.Field[string]                            `json:"data" format:"byte"`
 	MediaType param.Field[BetaBase64PDFBlockSourceMediaType] `json:"media_type"`
+	URL       param.Field[string]                            `json:"url"`
 }
 
 func (r BetaBase64PDFBlockSourceParam) MarshalJSON() (data []byte, err error) {
@@ -126,7 +170,8 @@ func (r BetaBase64PDFBlockSourceParam) MarshalJSON() (data []byte, err error) {
 func (r BetaBase64PDFBlockSourceParam) implementsBetaBase64PDFBlockSourceUnionParam() {}
 
 // Satisfied by [BetaBase64PDFSourceParam], [BetaPlainTextSourceParam],
-// [BetaContentBlockSourceParam], [BetaBase64PDFBlockSourceParam].
+// [BetaContentBlockSourceParam], [BetaURLPDFSourceParam],
+// [BetaBase64PDFBlockSourceParam].
 type BetaBase64PDFBlockSourceUnionParam interface {
 	implementsBetaBase64PDFBlockSourceUnionParam()
 }
@@ -137,11 +182,12 @@ const (
 	BetaBase64PDFBlockSourceTypeBase64  BetaBase64PDFBlockSourceType = "base64"
 	BetaBase64PDFBlockSourceTypeText    BetaBase64PDFBlockSourceType = "text"
 	BetaBase64PDFBlockSourceTypeContent BetaBase64PDFBlockSourceType = "content"
+	BetaBase64PDFBlockSourceTypeURL     BetaBase64PDFBlockSourceType = "url"
 )
 
 func (r BetaBase64PDFBlockSourceType) IsKnown() bool {
 	switch r {
-	case BetaBase64PDFBlockSourceTypeBase64, BetaBase64PDFBlockSourceTypeText, BetaBase64PDFBlockSourceTypeContent:
+	case BetaBase64PDFBlockSourceTypeBase64, BetaBase64PDFBlockSourceTypeText, BetaBase64PDFBlockSourceTypeContent, BetaBase64PDFBlockSourceTypeURL:
 		return true
 	}
 	return false
@@ -811,7 +857,7 @@ func (r BetaContentBlockSourceType) IsKnown() bool {
 }
 
 type BetaImageBlockParam struct {
-	Source       param.Field[BetaImageBlockParamSource]      `json:"source,required"`
+	Source       param.Field[BetaImageBlockParamSourceUnion] `json:"source,required"`
 	Type         param.Field[BetaImageBlockParamType]        `json:"type,required"`
 	CacheControl param.Field[BetaCacheControlEphemeralParam] `json:"cache_control"`
 }
@@ -827,13 +873,37 @@ func (r BetaImageBlockParam) implementsBetaContentBlockSourceContentUnionParam()
 func (r BetaImageBlockParam) implementsBetaToolResultBlockParamContentUnion() {}
 
 type BetaImageBlockParamSource struct {
-	Data      param.Field[string]                             `json:"data,required" format:"byte"`
-	MediaType param.Field[BetaImageBlockParamSourceMediaType] `json:"media_type,required"`
 	Type      param.Field[BetaImageBlockParamSourceType]      `json:"type,required"`
+	Data      param.Field[string]                             `json:"data" format:"byte"`
+	MediaType param.Field[BetaImageBlockParamSourceMediaType] `json:"media_type"`
+	URL       param.Field[string]                             `json:"url"`
 }
 
 func (r BetaImageBlockParamSource) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
+}
+
+func (r BetaImageBlockParamSource) implementsBetaImageBlockParamSourceUnion() {}
+
+// Satisfied by [BetaBase64ImageSourceParam], [BetaURLImageSourceParam],
+// [BetaImageBlockParamSource].
+type BetaImageBlockParamSourceUnion interface {
+	implementsBetaImageBlockParamSourceUnion()
+}
+
+type BetaImageBlockParamSourceType string
+
+const (
+	BetaImageBlockParamSourceTypeBase64 BetaImageBlockParamSourceType = "base64"
+	BetaImageBlockParamSourceTypeURL    BetaImageBlockParamSourceType = "url"
+)
+
+func (r BetaImageBlockParamSourceType) IsKnown() bool {
+	switch r {
+	case BetaImageBlockParamSourceTypeBase64, BetaImageBlockParamSourceTypeURL:
+		return true
+	}
+	return false
 }
 
 type BetaImageBlockParamSourceMediaType string
@@ -848,20 +918,6 @@ const (
 func (r BetaImageBlockParamSourceMediaType) IsKnown() bool {
 	switch r {
 	case BetaImageBlockParamSourceMediaTypeImageJPEG, BetaImageBlockParamSourceMediaTypeImagePNG, BetaImageBlockParamSourceMediaTypeImageGIF, BetaImageBlockParamSourceMediaTypeImageWebP:
-		return true
-	}
-	return false
-}
-
-type BetaImageBlockParamSourceType string
-
-const (
-	BetaImageBlockParamSourceTypeBase64 BetaImageBlockParamSourceType = "base64"
-)
-
-func (r BetaImageBlockParamSourceType) IsKnown() bool {
-	switch r {
-	case BetaImageBlockParamSourceTypeBase64:
 		return true
 	}
 	return false
@@ -3029,10 +3085,10 @@ func (r BetaToolUnionParam) MarshalJSON() (data []byte, err error) {
 
 func (r BetaToolUnionParam) implementsBetaToolUnionUnionParam() {}
 
-// Satisfied by [BetaToolComputerUse20241022Param], [BetaToolBash20241022Param],
-// [BetaToolTextEditor20241022Param], [BetaToolComputerUse20250124Param],
-// [BetaToolBash20250124Param], [BetaToolTextEditor20250124Param], [BetaToolParam],
-// [BetaToolUnionParam].
+// Satisfied by [BetaToolParam], [BetaToolComputerUse20241022Param],
+// [BetaToolBash20241022Param], [BetaToolTextEditor20241022Param],
+// [BetaToolComputerUse20250124Param], [BetaToolBash20250124Param],
+// [BetaToolTextEditor20250124Param], [BetaToolUnionParam].
 type BetaToolUnionUnionParam interface {
 	implementsBetaToolUnionUnionParam()
 }
@@ -3040,18 +3096,18 @@ type BetaToolUnionUnionParam interface {
 type BetaToolUnionType string
 
 const (
+	BetaToolUnionTypeCustom             BetaToolUnionType = "custom"
 	BetaToolUnionTypeComputer20241022   BetaToolUnionType = "computer_20241022"
 	BetaToolUnionTypeBash20241022       BetaToolUnionType = "bash_20241022"
 	BetaToolUnionTypeTextEditor20241022 BetaToolUnionType = "text_editor_20241022"
 	BetaToolUnionTypeComputer20250124   BetaToolUnionType = "computer_20250124"
 	BetaToolUnionTypeBash20250124       BetaToolUnionType = "bash_20250124"
 	BetaToolUnionTypeTextEditor20250124 BetaToolUnionType = "text_editor_20250124"
-	BetaToolUnionTypeCustom             BetaToolUnionType = "custom"
 )
 
 func (r BetaToolUnionType) IsKnown() bool {
 	switch r {
-	case BetaToolUnionTypeComputer20241022, BetaToolUnionTypeBash20241022, BetaToolUnionTypeTextEditor20241022, BetaToolUnionTypeComputer20250124, BetaToolUnionTypeBash20250124, BetaToolUnionTypeTextEditor20250124, BetaToolUnionTypeCustom:
+	case BetaToolUnionTypeCustom, BetaToolUnionTypeComputer20241022, BetaToolUnionTypeBash20241022, BetaToolUnionTypeTextEditor20241022, BetaToolUnionTypeComputer20250124, BetaToolUnionTypeBash20250124, BetaToolUnionTypeTextEditor20250124:
 		return true
 	}
 	return false
@@ -3125,6 +3181,56 @@ const (
 func (r BetaToolUseBlockParamType) IsKnown() bool {
 	switch r {
 	case BetaToolUseBlockParamTypeToolUse:
+		return true
+	}
+	return false
+}
+
+type BetaURLImageSourceParam struct {
+	Type param.Field[BetaURLImageSourceType] `json:"type,required"`
+	URL  param.Field[string]                 `json:"url,required"`
+}
+
+func (r BetaURLImageSourceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaURLImageSourceParam) implementsBetaImageBlockParamSourceUnion() {}
+
+type BetaURLImageSourceType string
+
+const (
+	BetaURLImageSourceTypeURL BetaURLImageSourceType = "url"
+)
+
+func (r BetaURLImageSourceType) IsKnown() bool {
+	switch r {
+	case BetaURLImageSourceTypeURL:
+		return true
+	}
+	return false
+}
+
+type BetaURLPDFSourceParam struct {
+	Type param.Field[BetaURLPDFSourceType] `json:"type,required"`
+	URL  param.Field[string]               `json:"url,required"`
+}
+
+func (r BetaURLPDFSourceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaURLPDFSourceParam) implementsBetaBase64PDFBlockSourceUnionParam() {}
+
+type BetaURLPDFSourceType string
+
+const (
+	BetaURLPDFSourceTypeURL BetaURLPDFSourceType = "url"
+)
+
+func (r BetaURLPDFSourceType) IsKnown() bool {
+	switch r {
+	case BetaURLPDFSourceTypeURL:
 		return true
 	}
 	return false
@@ -3654,10 +3760,10 @@ func (r BetaMessageCountTokensParamsTool) MarshalJSON() (data []byte, err error)
 
 func (r BetaMessageCountTokensParamsTool) implementsBetaMessageCountTokensParamsToolUnion() {}
 
-// Satisfied by [BetaToolComputerUse20241022Param], [BetaToolBash20241022Param],
-// [BetaToolTextEditor20241022Param], [BetaToolComputerUse20250124Param],
-// [BetaToolBash20250124Param], [BetaToolTextEditor20250124Param], [BetaToolParam],
-// [BetaMessageCountTokensParamsTool].
+// Satisfied by [BetaToolParam], [BetaToolComputerUse20241022Param],
+// [BetaToolBash20241022Param], [BetaToolTextEditor20241022Param],
+// [BetaToolComputerUse20250124Param], [BetaToolBash20250124Param],
+// [BetaToolTextEditor20250124Param], [BetaMessageCountTokensParamsTool].
 type BetaMessageCountTokensParamsToolUnion interface {
 	implementsBetaMessageCountTokensParamsToolUnion()
 }
@@ -3665,18 +3771,18 @@ type BetaMessageCountTokensParamsToolUnion interface {
 type BetaMessageCountTokensParamsToolsType string
 
 const (
+	BetaMessageCountTokensParamsToolsTypeCustom             BetaMessageCountTokensParamsToolsType = "custom"
 	BetaMessageCountTokensParamsToolsTypeComputer20241022   BetaMessageCountTokensParamsToolsType = "computer_20241022"
 	BetaMessageCountTokensParamsToolsTypeBash20241022       BetaMessageCountTokensParamsToolsType = "bash_20241022"
 	BetaMessageCountTokensParamsToolsTypeTextEditor20241022 BetaMessageCountTokensParamsToolsType = "text_editor_20241022"
 	BetaMessageCountTokensParamsToolsTypeComputer20250124   BetaMessageCountTokensParamsToolsType = "computer_20250124"
 	BetaMessageCountTokensParamsToolsTypeBash20250124       BetaMessageCountTokensParamsToolsType = "bash_20250124"
 	BetaMessageCountTokensParamsToolsTypeTextEditor20250124 BetaMessageCountTokensParamsToolsType = "text_editor_20250124"
-	BetaMessageCountTokensParamsToolsTypeCustom             BetaMessageCountTokensParamsToolsType = "custom"
 )
 
 func (r BetaMessageCountTokensParamsToolsType) IsKnown() bool {
 	switch r {
-	case BetaMessageCountTokensParamsToolsTypeComputer20241022, BetaMessageCountTokensParamsToolsTypeBash20241022, BetaMessageCountTokensParamsToolsTypeTextEditor20241022, BetaMessageCountTokensParamsToolsTypeComputer20250124, BetaMessageCountTokensParamsToolsTypeBash20250124, BetaMessageCountTokensParamsToolsTypeTextEditor20250124, BetaMessageCountTokensParamsToolsTypeCustom:
+	case BetaMessageCountTokensParamsToolsTypeCustom, BetaMessageCountTokensParamsToolsTypeComputer20241022, BetaMessageCountTokensParamsToolsTypeBash20241022, BetaMessageCountTokensParamsToolsTypeTextEditor20241022, BetaMessageCountTokensParamsToolsTypeComputer20250124, BetaMessageCountTokensParamsToolsTypeBash20250124, BetaMessageCountTokensParamsToolsTypeTextEditor20250124:
 		return true
 	}
 	return false

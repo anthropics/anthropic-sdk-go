@@ -121,12 +121,25 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 			Type:                   anthropic.F(anthropic.ToolChoiceAutoTypeAuto),
 			DisableParallelToolUse: anthropic.F(true),
 		}),
-		Tools: anthropic.F([]anthropic.MessageCountTokensToolUnionParam{anthropic.ToolBash20250124Param{
-			Name: anthropic.F(anthropic.ToolBash20250124NameBash),
-			Type: anthropic.F(anthropic.ToolBash20250124TypeBash20250124),
+		Tools: anthropic.F([]anthropic.MessageCountTokensToolUnionParam{anthropic.ToolParam{
+			InputSchema: anthropic.F[interface{}](map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"location": map[string]interface{}{
+						"description": "The city and state, e.g. San Francisco, CA",
+						"type":        "string",
+					},
+					"unit": map[string]interface{}{
+						"description": "Unit for the output - one of (celsius, fahrenheit)",
+						"type":        "string",
+					},
+				},
+			}),
+			Name: anthropic.F("name"),
 			CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{
 				Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral),
 			}),
+			Description: anthropic.F("Get the current weather in a given location"),
 		}}),
 	})
 	if err != nil {

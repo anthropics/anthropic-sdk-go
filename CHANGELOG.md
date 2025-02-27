@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.0-alpha.12 (2025-02-27)
+
+Full Changelog: [v0.2.0-alpha.11...v0.2.0-alpha.12](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.11...v0.2.0-alpha.12)
+
+### Features
+
+* **api:** add URL source blocks for images and PDFs ([#129](https://github.com/anthropics/anthropic-sdk-go/issues/129)) ([589f5dc](https://github.com/anthropics/anthropic-sdk-go/commit/589f5dc44bdcfbec7269dcd0ad94baf72c3876b3))
+
+
+### Bug Fixes
+
+* Preserve Thinking and Signature fields in Message.ToParam() method ([#128](https://github.com/anthropics/anthropic-sdk-go/issues/128)) ([b67c786](https://github.com/anthropics/anthropic-sdk-go/commit/b67c786b64d3a3903a0dcdc50ceac07fc4a6396a))
+
+
+### Chores
+
+* **internal:** update spec ([#124](https://github.com/anthropics/anthropic-sdk-go/issues/124)) ([3b3bdad](https://github.com/anthropics/anthropic-sdk-go/commit/3b3bdad4b5038278d26ed1c82e0a37259326c049))
+
 ## 0.2.0-alpha.11 (2025-02-24)
 
 Full Changelog: [v0.2.0-alpha.10...v0.2.0-alpha.11](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.10...v0.2.0-alpha.11)

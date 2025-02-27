@@ -1180,6 +1180,14 @@ func (r *Message) ToParam() MessageParam {
 				Value:   block.Input,
 				Present: len(block.Input) > 0 && !block.JSON.Input.IsNull(),
 			},
+			Thinking: param.Field[string]{
+				Value:   block.Thinking,
+				Present: !block.JSON.Thinking.IsNull(),
+			},
+			Signature: param.Field[string]{
+				Value:   block.Signature,
+				Present: !block.JSON.Signature.IsNull(),
+			},
 		})
 	}
 

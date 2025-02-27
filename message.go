@@ -87,6 +87,49 @@ func (r *MessageService) CountTokens(ctx context.Context, body MessageCountToken
 	return
 }
 
+type Base64ImageSourceParam struct {
+	Data      param.Field[string]                     `json:"data,required" format:"byte"`
+	MediaType param.Field[Base64ImageSourceMediaType] `json:"media_type,required"`
+	Type      param.Field[Base64ImageSourceType]      `json:"type,required"`
+}
+
+func (r Base64ImageSourceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r Base64ImageSourceParam) implementsImageBlockParamSourceUnion() {}
+
+type Base64ImageSourceMediaType string
+
+const (
+	Base64ImageSourceMediaTypeImageJPEG Base64ImageSourceMediaType = "image/jpeg"
+	Base64ImageSourceMediaTypeImagePNG  Base64ImageSourceMediaType = "image/png"
+	Base64ImageSourceMediaTypeImageGIF  Base64ImageSourceMediaType = "image/gif"
+	Base64ImageSourceMediaTypeImageWebP Base64ImageSourceMediaType = "image/webp"
+)
+
+func (r Base64ImageSourceMediaType) IsKnown() bool {
+	switch r {
+	case Base64ImageSourceMediaTypeImageJPEG, Base64ImageSourceMediaTypeImagePNG, Base64ImageSourceMediaTypeImageGIF, Base64ImageSourceMediaTypeImageWebP:
+		return true
+	}
+	return false
+}
+
+type Base64ImageSourceType string
+
+const (
+	Base64ImageSourceTypeBase64 Base64ImageSourceType = "base64"
+)
+
+func (r Base64ImageSourceType) IsKnown() bool {
+	switch r {
+	case Base64ImageSourceTypeBase64:
+		return true
+	}
+	return false
+}
+
 type Base64PDFSourceParam struct {
 	Data      param.Field[string]                   `json:"data,required" format:"byte"`
 	MediaType param.Field[Base64PDFSourceMediaType] `json:"media_type,required"`
@@ -738,6 +781,7 @@ type DocumentBlockParamSource struct {
 	Content   param.Field[interface{}]                       `json:"content"`
 	Data      param.Field[string]                            `json:"data" format:"byte"`
 	MediaType param.Field[DocumentBlockParamSourceMediaType] `json:"media_type"`
+	URL       param.Field[string]                            `json:"url"`
 }
 
 func (r DocumentBlockParamSource) MarshalJSON() (data []byte, err error) {
@@ -747,7 +791,7 @@ func (r DocumentBlockParamSource) MarshalJSON() (data []byte, err error) {
 func (r DocumentBlockParamSource) implementsDocumentBlockParamSourceUnion() {}
 
 // Satisfied by [Base64PDFSourceParam], [PlainTextSourceParam],
-// [ContentBlockSourceParam], [DocumentBlockParamSource].
+// [ContentBlockSourceParam], [URLPDFSourceParam], [DocumentBlockParamSource].
 type DocumentBlockParamSourceUnion interface {
 	implementsDocumentBlockParamSourceUnion()
 }
@@ -758,11 +802,12 @@ const (
 	DocumentBlockParamSourceTypeBase64  DocumentBlockParamSourceType = "base64"
 	DocumentBlockParamSourceTypeText    DocumentBlockParamSourceType = "text"
 	DocumentBlockParamSourceTypeContent DocumentBlockParamSourceType = "content"
+	DocumentBlockParamSourceTypeURL     DocumentBlockParamSourceType = "url"
 )
 
 func (r DocumentBlockParamSourceType) IsKnown() bool {
 	switch r {
-	case DocumentBlockParamSourceTypeBase64, DocumentBlockParamSourceTypeText, DocumentBlockParamSourceTypeContent:
+	case DocumentBlockParamSourceTypeBase64, DocumentBlockParamSourceTypeText, DocumentBlockParamSourceTypeContent, DocumentBlockParamSourceTypeURL:
 		return true
 	}
 	return false
@@ -798,7 +843,7 @@ func (r DocumentBlockParamType) IsKnown() bool {
 }
 
 type ImageBlockParam struct {
-	Source       param.Field[ImageBlockParamSource]      `json:"source,required"`
+	Source       param.Field[ImageBlockParamSourceUnion] `json:"source,required"`
 	Type         param.Field[ImageBlockParamType]        `json:"type,required"`
 	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
 }
@@ -814,13 +859,37 @@ func (r ImageBlockParam) implementsContentBlockSourceContentUnionParam() {}
 func (r ImageBlockParam) implementsToolResultBlockParamContentUnion() {}
 
 type ImageBlockParamSource struct {
-	Data      param.Field[string]                         `json:"data,required" format:"byte"`
-	MediaType param.Field[ImageBlockParamSourceMediaType] `json:"media_type,required"`
 	Type      param.Field[ImageBlockParamSourceType]      `json:"type,required"`
+	Data      param.Field[string]                         `json:"data" format:"byte"`
+	MediaType param.Field[ImageBlockParamSourceMediaType] `json:"media_type"`
+	URL       param.Field[string]                         `json:"url"`
 }
 
 func (r ImageBlockParamSource) MarshalJSON() (data []byte, err error) {
 	return apijson.MarshalRoot(r)
+}
+
+func (r ImageBlockParamSource) implementsImageBlockParamSourceUnion() {}
+
+// Satisfied by [Base64ImageSourceParam], [URLImageSourceParam],
+// [ImageBlockParamSource].
+type ImageBlockParamSourceUnion interface {
+	implementsImageBlockParamSourceUnion()
+}
+
+type ImageBlockParamSourceType string
+
+const (
+	ImageBlockParamSourceTypeBase64 ImageBlockParamSourceType = "base64"
+	ImageBlockParamSourceTypeURL    ImageBlockParamSourceType = "url"
+)
+
+func (r ImageBlockParamSourceType) IsKnown() bool {
+	switch r {
+	case ImageBlockParamSourceTypeBase64, ImageBlockParamSourceTypeURL:
+		return true
+	}
+	return false
 }
 
 type ImageBlockParamSourceMediaType string
@@ -835,20 +904,6 @@ const (
 func (r ImageBlockParamSourceMediaType) IsKnown() bool {
 	switch r {
 	case ImageBlockParamSourceMediaTypeImageJPEG, ImageBlockParamSourceMediaTypeImagePNG, ImageBlockParamSourceMediaTypeImageGIF, ImageBlockParamSourceMediaTypeImageWebP:
-		return true
-	}
-	return false
-}
-
-type ImageBlockParamSourceType string
-
-const (
-	ImageBlockParamSourceTypeBase64 ImageBlockParamSourceType = "base64"
-)
-
-func (r ImageBlockParamSourceType) IsKnown() bool {
-	switch r {
-	case ImageBlockParamSourceTypeBase64:
 		return true
 	}
 	return false
@@ -1101,8 +1156,8 @@ func (r MessageCountTokensToolParam) MarshalJSON() (data []byte, err error) {
 
 func (r MessageCountTokensToolParam) implementsMessageCountTokensToolUnionParam() {}
 
-// Satisfied by [ToolBash20250124Param], [ToolTextEditor20250124Param],
-// [ToolParam], [MessageCountTokensToolParam].
+// Satisfied by [ToolParam], [ToolBash20250124Param],
+// [ToolTextEditor20250124Param], [MessageCountTokensToolParam].
 type MessageCountTokensToolUnionParam interface {
 	implementsMessageCountTokensToolUnionParam()
 }
@@ -2856,8 +2911,8 @@ func (r ToolUnionParam) MarshalJSON() (data []byte, err error) {
 
 func (r ToolUnionParam) implementsToolUnionUnionParam() {}
 
-// Satisfied by [ToolBash20250124Param], [ToolTextEditor20250124Param],
-// [ToolParam], [ToolUnionParam].
+// Satisfied by [ToolParam], [ToolBash20250124Param],
+// [ToolTextEditor20250124Param], [ToolUnionParam].
 type ToolUnionUnionParam interface {
 	implementsToolUnionUnionParam()
 }
@@ -2944,6 +2999,56 @@ const (
 func (r ToolUseBlockParamType) IsKnown() bool {
 	switch r {
 	case ToolUseBlockParamTypeToolUse:
+		return true
+	}
+	return false
+}
+
+type URLImageSourceParam struct {
+	Type param.Field[URLImageSourceType] `json:"type,required"`
+	URL  param.Field[string]             `json:"url,required"`
+}
+
+func (r URLImageSourceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r URLImageSourceParam) implementsImageBlockParamSourceUnion() {}
+
+type URLImageSourceType string
+
+const (
+	URLImageSourceTypeURL URLImageSourceType = "url"
+)
+
+func (r URLImageSourceType) IsKnown() bool {
+	switch r {
+	case URLImageSourceTypeURL:
+		return true
+	}
+	return false
+}
+
+type URLPDFSourceParam struct {
+	Type param.Field[URLPDFSourceType] `json:"type,required"`
+	URL  param.Field[string]           `json:"url,required"`
+}
+
+func (r URLPDFSourceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r URLPDFSourceParam) implementsDocumentBlockParamSourceUnion() {}
+
+type URLPDFSourceType string
+
+const (
+	URLPDFSourceTypeURL URLPDFSourceType = "url"
+)
+
+func (r URLPDFSourceType) IsKnown() bool {
+	switch r {
+	case URLPDFSourceTypeURL:
 		return true
 	}
 	return false

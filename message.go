@@ -2643,7 +2643,7 @@ func (r ToolBash20250124Type) IsKnown() bool {
 }
 
 // How the model should use the provided tools. The model can use a specific tool,
-// any available tool, or decide by itself.
+// any available tool, decide by itself, or not use tools at all.
 type ToolChoiceParam struct {
 	Type param.Field[ToolChoiceType] `json:"type,required"`
 	// Whether to disable parallel tool use.
@@ -2662,10 +2662,10 @@ func (r ToolChoiceParam) MarshalJSON() (data []byte, err error) {
 func (r ToolChoiceParam) implementsToolChoiceUnionParam() {}
 
 // How the model should use the provided tools. The model can use a specific tool,
-// any available tool, or decide by itself.
+// any available tool, decide by itself, or not use tools at all.
 //
 // Satisfied by [ToolChoiceAutoParam], [ToolChoiceAnyParam], [ToolChoiceToolParam],
-// [ToolChoiceParam].
+// [ToolChoiceNoneParam], [ToolChoiceParam].
 type ToolChoiceUnionParam interface {
 	implementsToolChoiceUnionParam()
 }
@@ -2676,11 +2676,12 @@ const (
 	ToolChoiceTypeAuto ToolChoiceType = "auto"
 	ToolChoiceTypeAny  ToolChoiceType = "any"
 	ToolChoiceTypeTool ToolChoiceType = "tool"
+	ToolChoiceTypeNone ToolChoiceType = "none"
 )
 
 func (r ToolChoiceType) IsKnown() bool {
 	switch r {
-	case ToolChoiceTypeAuto, ToolChoiceTypeAny, ToolChoiceTypeTool:
+	case ToolChoiceTypeAuto, ToolChoiceTypeAny, ToolChoiceTypeTool, ToolChoiceTypeNone:
 		return true
 	}
 	return false
@@ -2741,6 +2742,31 @@ const (
 func (r ToolChoiceAutoType) IsKnown() bool {
 	switch r {
 	case ToolChoiceAutoTypeAuto:
+		return true
+	}
+	return false
+}
+
+// The model will not be allowed to use tools.
+type ToolChoiceNoneParam struct {
+	Type param.Field[ToolChoiceNoneType] `json:"type,required"`
+}
+
+func (r ToolChoiceNoneParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolChoiceNoneParam) implementsToolChoiceUnionParam() {}
+
+type ToolChoiceNoneType string
+
+const (
+	ToolChoiceNoneTypeNone ToolChoiceNoneType = "none"
+)
+
+func (r ToolChoiceNoneType) IsKnown() bool {
+	switch r {
+	case ToolChoiceNoneTypeNone:
 		return true
 	}
 	return false
@@ -3228,7 +3254,7 @@ type MessageNewParams struct {
 	// for details.
 	Thinking param.Field[ThinkingConfigParamUnion] `json:"thinking"`
 	// How the model should use the provided tools. The model can use a specific tool,
-	// any available tool, or decide by itself.
+	// any available tool, decide by itself, or not use tools at all.
 	ToolChoice param.Field[ToolChoiceUnionParam] `json:"tool_choice"`
 	// Definitions of tools that the model may use.
 	//
@@ -3445,7 +3471,7 @@ type MessageCountTokensParams struct {
 	// for details.
 	Thinking param.Field[ThinkingConfigParamUnion] `json:"thinking"`
 	// How the model should use the provided tools. The model can use a specific tool,
-	// any available tool, or decide by itself.
+	// any available tool, decide by itself, or not use tools at all.
 	ToolChoice param.Field[ToolChoiceUnionParam] `json:"tool_choice"`
 	// Definitions of tools that the model may use.
 	//

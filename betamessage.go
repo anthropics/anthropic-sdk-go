@@ -2654,7 +2654,7 @@ func (r BetaToolBash20250124Type) IsKnown() bool {
 }
 
 // How the model should use the provided tools. The model can use a specific tool,
-// any available tool, or decide by itself.
+// any available tool, decide by itself, or not use tools at all.
 type BetaToolChoiceParam struct {
 	Type param.Field[BetaToolChoiceType] `json:"type,required"`
 	// Whether to disable parallel tool use.
@@ -2673,10 +2673,10 @@ func (r BetaToolChoiceParam) MarshalJSON() (data []byte, err error) {
 func (r BetaToolChoiceParam) implementsBetaToolChoiceUnionParam() {}
 
 // How the model should use the provided tools. The model can use a specific tool,
-// any available tool, or decide by itself.
+// any available tool, decide by itself, or not use tools at all.
 //
 // Satisfied by [BetaToolChoiceAutoParam], [BetaToolChoiceAnyParam],
-// [BetaToolChoiceToolParam], [BetaToolChoiceParam].
+// [BetaToolChoiceToolParam], [BetaToolChoiceNoneParam], [BetaToolChoiceParam].
 type BetaToolChoiceUnionParam interface {
 	implementsBetaToolChoiceUnionParam()
 }
@@ -2687,11 +2687,12 @@ const (
 	BetaToolChoiceTypeAuto BetaToolChoiceType = "auto"
 	BetaToolChoiceTypeAny  BetaToolChoiceType = "any"
 	BetaToolChoiceTypeTool BetaToolChoiceType = "tool"
+	BetaToolChoiceTypeNone BetaToolChoiceType = "none"
 )
 
 func (r BetaToolChoiceType) IsKnown() bool {
 	switch r {
-	case BetaToolChoiceTypeAuto, BetaToolChoiceTypeAny, BetaToolChoiceTypeTool:
+	case BetaToolChoiceTypeAuto, BetaToolChoiceTypeAny, BetaToolChoiceTypeTool, BetaToolChoiceTypeNone:
 		return true
 	}
 	return false
@@ -2752,6 +2753,31 @@ const (
 func (r BetaToolChoiceAutoType) IsKnown() bool {
 	switch r {
 	case BetaToolChoiceAutoTypeAuto:
+		return true
+	}
+	return false
+}
+
+// The model will not be allowed to use tools.
+type BetaToolChoiceNoneParam struct {
+	Type param.Field[BetaToolChoiceNoneType] `json:"type,required"`
+}
+
+func (r BetaToolChoiceNoneParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r BetaToolChoiceNoneParam) implementsBetaToolChoiceUnionParam() {}
+
+type BetaToolChoiceNoneType string
+
+const (
+	BetaToolChoiceNoneTypeNone BetaToolChoiceNoneType = "none"
+)
+
+func (r BetaToolChoiceNoneType) IsKnown() bool {
+	switch r {
+	case BetaToolChoiceNoneTypeNone:
 		return true
 	}
 	return false
@@ -3410,7 +3436,7 @@ type BetaMessageNewParams struct {
 	// for details.
 	Thinking param.Field[BetaThinkingConfigParamUnion] `json:"thinking"`
 	// How the model should use the provided tools. The model can use a specific tool,
-	// any available tool, or decide by itself.
+	// any available tool, decide by itself, or not use tools at all.
 	ToolChoice param.Field[BetaToolChoiceUnionParam] `json:"tool_choice"`
 	// Definitions of tools that the model may use.
 	//
@@ -3629,7 +3655,7 @@ type BetaMessageCountTokensParams struct {
 	// for details.
 	Thinking param.Field[BetaThinkingConfigParamUnion] `json:"thinking"`
 	// How the model should use the provided tools. The model can use a specific tool,
-	// any available tool, or decide by itself.
+	// any available tool, decide by itself, or not use tools at all.
 	ToolChoice param.Field[BetaToolChoiceUnionParam] `json:"tool_choice"`
 	// Definitions of tools that the model may use.
 	//

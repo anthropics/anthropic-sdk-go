@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0-alpha.13 (2025-02-28)
+
+Full Changelog: [v0.2.0-alpha.12...v0.2.0-alpha.13](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.12...v0.2.0-alpha.13)
+
+### Features
+
+* **api:** add support for disabling tool calls ([#133](https://github.com/anthropics/anthropic-sdk-go/issues/133)) ([90f7490](https://github.com/anthropics/anthropic-sdk-go/commit/90f7490774321fdbcadea60c4390244afd5b4c3d))
+
+
+### Documentation
+
+* update URLs from stainlessapi.com to stainless.com ([#131](https://github.com/anthropics/anthropic-sdk-go/issues/131)) ([334be2b](https://github.com/anthropics/anthropic-sdk-go/commit/334be2b932571846203e0019ee3fe5b551d42c96))
+
 ## 0.2.0-alpha.12 (2025-02-27)
 
 Full Changelog: [v0.2.0-alpha.11...v0.2.0-alpha.12](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.11...v0.2.0-alpha.12)

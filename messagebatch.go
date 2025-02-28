@@ -825,7 +825,7 @@ type MessageBatchNewParamsRequestsParams struct {
 	// for details.
 	Thinking param.Field[ThinkingConfigParamUnion] `json:"thinking"`
 	// How the model should use the provided tools. The model can use a specific tool,
-	// any available tool, or decide by itself.
+	// any available tool, decide by itself, or not use tools at all.
 	ToolChoice param.Field[ToolChoiceUnionParam] `json:"tool_choice"`
 	// Definitions of tools that the model may use.
 	//

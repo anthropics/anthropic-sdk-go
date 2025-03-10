@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0-alpha.14 (2025-03-10)
+
+Full Changelog: [v0.2.0-alpha.13...v0.2.0-alpha.14](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.13...v0.2.0-alpha.14)
+
+### Features
+
+* add SKIP_BREW env var to ./scripts/bootstrap ([#137](https://github.com/anthropics/anthropic-sdk-go/issues/137)) ([4057111](https://github.com/anthropics/anthropic-sdk-go/commit/40571110129d5c66f171ead36f5d725663262bc4))
+* **client:** accept RFC6838 JSON content types ([#139](https://github.com/anthropics/anthropic-sdk-go/issues/139)) ([78d17cd](https://github.com/anthropics/anthropic-sdk-go/commit/78d17cd4122893ba62b1e14714a1da004c128344))
+* **client:** allow custom baseurls without trailing slash ([#135](https://github.com/anthropics/anthropic-sdk-go/issues/135)) ([9b30fce](https://github.com/anthropics/anthropic-sdk-go/commit/9b30fce0a71a35910315e02cd3a2f2afc1fd7962))
+
 ## 0.2.0-alpha.13 (2025-02-28)
 
 Full Changelog: [v0.2.0-alpha.12...v0.2.0-alpha.13](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.12...v0.2.0-alpha.13)

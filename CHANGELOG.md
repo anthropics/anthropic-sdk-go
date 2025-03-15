@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.2.0-alpha.14 (2025-03-15)
+
+Full Changelog: [v0.2.0-alpha.13...v0.2.0-alpha.14](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.13...v0.2.0-alpha.14)
+
+### Features
+
+* add SKIP_BREW env var to ./scripts/bootstrap ([#137](https://github.com/anthropics/anthropic-sdk-go/issues/137)) ([4057111](https://github.com/anthropics/anthropic-sdk-go/commit/40571110129d5c66f171ead36f5d725663262bc4))
+* **client:** accept RFC6838 JSON content types ([#139](https://github.com/anthropics/anthropic-sdk-go/issues/139)) ([78d17cd](https://github.com/anthropics/anthropic-sdk-go/commit/78d17cd4122893ba62b1e14714a1da004c128344))
+* **client:** allow custom baseurls without trailing slash ([#135](https://github.com/anthropics/anthropic-sdk-go/issues/135)) ([9b30fce](https://github.com/anthropics/anthropic-sdk-go/commit/9b30fce0a71a35910315e02cd3a2f2afc1fd7962))
+* **client:** improve default client options support ([07f82a6](https://github.com/anthropics/anthropic-sdk-go/commit/07f82a6f9e07bf9aadf4ca150287887cb9e75bc4))
+* **client:** improve default client options support ([#142](https://github.com/anthropics/anthropic-sdk-go/issues/142)) ([f261355](https://github.com/anthropics/anthropic-sdk-go/commit/f261355e497748bcb112eecb67a95d7c7c5075c0))
+
+
+### Chores
+
+* **internal:** remove extra empty newlines ([#143](https://github.com/anthropics/anthropic-sdk-go/issues/143)) ([2ed1584](https://github.com/anthropics/anthropic-sdk-go/commit/2ed1584c7d80fddf2ef5143eabbd33b8f1a4603d))
+
+
+### Refactors
+
+* tidy up dependencies ([#140](https://github.com/anthropics/anthropic-sdk-go/issues/140)) ([289cc1b](https://github.com/anthropics/anthropic-sdk-go/commit/289cc1b007094421305dfc4ef01ae68bb2d50ee5))
+
 ## 0.2.0-alpha.13 (2025-02-28)
 
 Full Changelog: [v0.2.0-alpha.12...v0.2.0-alpha.13](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.12...v0.2.0-alpha.13)

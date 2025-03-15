@@ -45,13 +45,13 @@ func WithCredentials(ctx context.Context, region string, projectID string, creds
 	}
 	middleware := vertexMiddleware(region, projectID)
 
-	return func(rc *requestconfig.RequestConfig) error {
+	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		return rc.Apply(
 			sdkoption.WithBaseURL(fmt.Sprintf("https://%s-aiplatform.googleapis.com/v1", region)),
 			sdkoption.WithMiddleware(middleware),
 			sdkoption.WithHTTPClient(client),
 		)
-	}
+	})
 }
 
 func vertexMiddleware(region, projectID string) sdkoption.Middleware {

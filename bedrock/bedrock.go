@@ -180,12 +180,12 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 	signer := v4.NewSigner()
 	middleware := bedrockMiddleware(signer, cfg)
 
-	return func(rc *requestconfig.RequestConfig) error {
+	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		return rc.Apply(
 			option.WithBaseURL(fmt.Sprintf("https://bedrock-runtime.%s.amazonaws.com", cfg.Region)),
 			option.WithMiddleware(middleware),
 		)
-	}
+	})
 }
 
 func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {

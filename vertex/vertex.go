@@ -47,7 +47,7 @@ func WithCredentials(ctx context.Context, region string, projectID string, creds
 
 	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		return rc.Apply(
-			sdkoption.WithBaseURL(fmt.Sprintf("https://%s-aiplatform.googleapis.com/v1", region)),
+			sdkoption.WithBaseURL(fmt.Sprintf("https://%s-aiplatform.googleapis.com/", region)),
 			sdkoption.WithMiddleware(middleware),
 			sdkoption.WithHTTPClient(client),
 		)

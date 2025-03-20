@@ -3,11 +3,12 @@
 package anthropic
 
 import (
-	"reflect"
+	"encoding/json"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/tidwall/gjson"
+	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 // BetaService contains methods and other services that help with interacting with
@@ -18,15 +19,15 @@ import (
 // the [NewBetaService] method instead.
 type BetaService struct {
 	Options  []option.RequestOption
-	Models   *BetaModelService
-	Messages *BetaMessageService
+	Models   BetaModelService
+	Messages BetaMessageService
 }
 
 // NewBetaService generates a new service that applies the given options to each
 // request. These options are applied after the parent client's options (if there
 // is one), and before any request-specific options.
-func NewBetaService(opts ...option.RequestOption) (r *BetaService) {
-	r = &BetaService{}
+func NewBetaService(opts ...option.RequestOption) (r BetaService) {
+	r = BetaService{}
 	r.Options = opts
 	r.Models = NewBetaModelService(opts...)
 	r.Messages = NewBetaMessageService(opts...)
@@ -47,509 +48,303 @@ const (
 )
 
 type BetaAPIError struct {
-	Message string           `json:"message,required"`
-	Type    BetaAPIErrorType `json:"type,required"`
-	JSON    betaAPIErrorJSON `json:"-"`
+	Message string            `json:"message,required"`
+	Type    constant.APIError `json:"type,required"`
+	// Metadata for the response, check the presence of optional fields with the
+	// [resp.Field.IsPresent] method.
+	JSON struct {
+		Message     resp.Field
+		Type        resp.Field
+		ExtraFields map[string]resp.Field
+		raw         string
+	} `json:"-"`
 }
 
-// betaAPIErrorJSON contains the JSON metadata for the struct [BetaAPIError]
-type betaAPIErrorJSON struct {
-	Message     apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *BetaAPIError) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r BetaAPIError) RawJSON() string { return r.JSON.raw }
+func (r *BetaAPIError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r betaAPIErrorJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r BetaAPIError) implementsBetaError() {}
-
-type BetaAPIErrorType string
-
-const (
-	BetaAPIErrorTypeAPIError BetaAPIErrorType = "api_error"
-)
-
-func (r BetaAPIErrorType) IsKnown() bool {
-	switch r {
-	case BetaAPIErrorTypeAPIError:
-		return true
-	}
-	return false
 }
 
 type BetaAuthenticationError struct {
-	Message string                      `json:"message,required"`
-	Type    BetaAuthenticationErrorType `json:"type,required"`
-	JSON    betaAuthenticationErrorJSON `json:"-"`
+	Message string                       `json:"message,required"`
+	Type    constant.AuthenticationError `json:"type,required"`
+	// Metadata for the response, check the presence of optional fields with the
+	// [resp.Field.IsPresent] method.
+	JSON struct {
+		Message     resp.Field
+		Type        resp.Field
+		ExtraFields map[string]resp.Field
+		raw         string
+	} `json:"-"`
 }
 
-// betaAuthenticationErrorJSON contains the JSON metadata for the struct
-// [BetaAuthenticationError]
-type betaAuthenticationErrorJSON struct {
-	Message     apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *BetaAuthenticationError) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r BetaAuthenticationError) RawJSON() string { return r.JSON.raw }
+func (r *BetaAuthenticationError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r betaAuthenticationErrorJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r BetaAuthenticationError) implementsBetaError() {}
-
-type BetaAuthenticationErrorType string
-
-const (
-	BetaAuthenticationErrorTypeAuthenticationError BetaAuthenticationErrorType = "authentication_error"
-)
-
-func (r BetaAuthenticationErrorType) IsKnown() bool {
-	switch r {
-	case BetaAuthenticationErrorTypeAuthenticationError:
-		return true
-	}
-	return false
 }
 
 type BetaBillingError struct {
-	Message string               `json:"message,required"`
-	Type    BetaBillingErrorType `json:"type,required"`
-	JSON    betaBillingErrorJSON `json:"-"`
+	Message string                `json:"message,required"`
+	Type    constant.BillingError `json:"type,required"`
+	// Metadata for the response, check the presence of optional fields with the
+	// [resp.Field.IsPresent] method.
+	JSON struct {
+		Message     resp.Field
+		Type        resp.Field
+		ExtraFields map[string]resp.Field
+		raw         string
+	} `json:"-"`
 }
 
-// betaBillingErrorJSON contains the JSON metadata for the struct
-// [BetaBillingError]
-type betaBillingErrorJSON struct {
-	Message     apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *BetaBillingError) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r BetaBillingError) RawJSON() string { return r.JSON.raw }
+func (r *BetaBillingError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r betaBillingErrorJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r BetaBillingError) implementsBetaError() {}
-
-type BetaBillingErrorType string
-
-const (
-	BetaBillingErrorTypeBillingError BetaBillingErrorType = "billing_error"
-)
-
-func (r BetaBillingErrorType) IsKnown() bool {
-	switch r {
-	case BetaBillingErrorTypeBillingError:
-		return true
-	}
-	return false
-}
-
-type BetaError struct {
-	Message string        `json:"message,required"`
-	Type    BetaErrorType `json:"type,required"`
-	JSON    betaErrorJSON `json:"-"`
-	union   BetaErrorUnion
-}
-
-// betaErrorJSON contains the JSON metadata for the struct [BetaError]
-type betaErrorJSON struct {
-	Message     apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r betaErrorJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r *BetaError) UnmarshalJSON(data []byte) (err error) {
-	*r = BetaError{}
-	err = apijson.UnmarshalRoot(data, &r.union)
-	if err != nil {
-		return err
-	}
-	return apijson.Port(r.union, &r)
-}
-
-// AsUnion returns a [BetaErrorUnion] interface which you can cast to the specific
-// types for more type safety.
+// BetaErrorUnion contains all possible properties and values from
+// [BetaInvalidRequestError], [BetaAuthenticationError], [BetaBillingError],
+// [BetaPermissionError], [BetaNotFoundError], [BetaRateLimitError],
+// [BetaGatewayTimeoutError], [BetaAPIError], [BetaOverloadedError].
 //
-// Possible runtime types of the union are [BetaInvalidRequestError],
-// [BetaAuthenticationError], [BetaBillingError], [BetaPermissionError],
-// [BetaNotFoundError], [BetaRateLimitError], [BetaGatewayTimeoutError],
-// [BetaAPIError], [BetaOverloadedError].
-func (r BetaError) AsUnion() BetaErrorUnion {
-	return r.union
+// Use the [BetaErrorUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaErrorUnion struct {
+	Message string `json:"message"`
+	// Any of "invalid_request_error", "authentication_error", "billing_error",
+	// "permission_error", "not_found_error", "rate_limit_error", "timeout_error",
+	// "api_error", "overloaded_error".
+	Type string `json:"type"`
+	JSON struct {
+		Message resp.Field
+		Type    resp.Field
+		raw     string
+	} `json:"-"`
 }
 
-// Union satisfied by [BetaInvalidRequestError], [BetaAuthenticationError],
-// [BetaBillingError], [BetaPermissionError], [BetaNotFoundError],
-// [BetaRateLimitError], [BetaGatewayTimeoutError], [BetaAPIError] or
-// [BetaOverloadedError].
-type BetaErrorUnion interface {
-	implementsBetaError()
-}
-
-func init() {
-	apijson.RegisterUnion(
-		reflect.TypeOf((*BetaErrorUnion)(nil)).Elem(),
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaInvalidRequestError{}),
-			DiscriminatorValue: "invalid_request_error",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaAuthenticationError{}),
-			DiscriminatorValue: "authentication_error",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaBillingError{}),
-			DiscriminatorValue: "billing_error",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaPermissionError{}),
-			DiscriminatorValue: "permission_error",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaNotFoundError{}),
-			DiscriminatorValue: "not_found_error",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaRateLimitError{}),
-			DiscriminatorValue: "rate_limit_error",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaGatewayTimeoutError{}),
-			DiscriminatorValue: "timeout_error",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaAPIError{}),
-			DiscriminatorValue: "api_error",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(BetaOverloadedError{}),
-			DiscriminatorValue: "overloaded_error",
-		},
-	)
-}
-
-type BetaErrorType string
-
-const (
-	BetaErrorTypeInvalidRequestError BetaErrorType = "invalid_request_error"
-	BetaErrorTypeAuthenticationError BetaErrorType = "authentication_error"
-	BetaErrorTypeBillingError        BetaErrorType = "billing_error"
-	BetaErrorTypePermissionError     BetaErrorType = "permission_error"
-	BetaErrorTypeNotFoundError       BetaErrorType = "not_found_error"
-	BetaErrorTypeRateLimitError      BetaErrorType = "rate_limit_error"
-	BetaErrorTypeTimeoutError        BetaErrorType = "timeout_error"
-	BetaErrorTypeAPIError            BetaErrorType = "api_error"
-	BetaErrorTypeOverloadedError     BetaErrorType = "overloaded_error"
-)
-
-func (r BetaErrorType) IsKnown() bool {
-	switch r {
-	case BetaErrorTypeInvalidRequestError, BetaErrorTypeAuthenticationError, BetaErrorTypeBillingError, BetaErrorTypePermissionError, BetaErrorTypeNotFoundError, BetaErrorTypeRateLimitError, BetaErrorTypeTimeoutError, BetaErrorTypeAPIError, BetaErrorTypeOverloadedError:
-		return true
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaErrorUnion.AsAny().(type) {
+//	case BetaInvalidRequestError:
+//	case BetaAuthenticationError:
+//	case BetaBillingError:
+//	case BetaPermissionError:
+//	case BetaNotFoundError:
+//	case BetaRateLimitError:
+//	case BetaGatewayTimeoutError:
+//	case BetaAPIError:
+//	case BetaOverloadedError:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaErrorUnion) AsAny() any {
+	switch u.Type {
+	case "invalid_request_error":
+		return u.AsInvalidRequestError()
+	case "authentication_error":
+		return u.AsAuthenticationError()
+	case "billing_error":
+		return u.AsBillingError()
+	case "permission_error":
+		return u.AsPermissionError()
+	case "not_found_error":
+		return u.AsNotFoundError()
+	case "rate_limit_error":
+		return u.AsRateLimitError()
+	case "timeout_error":
+		return u.AsGatewayTimeoutError()
+	case "api_error":
+		return u.AsAPIError()
+	case "overloaded_error":
+		return u.AsOverloadedError()
 	}
-	return false
+	return nil
+}
+
+func (u BetaErrorUnion) AsInvalidRequestError() (v BetaInvalidRequestError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaErrorUnion) AsAuthenticationError() (v BetaAuthenticationError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaErrorUnion) AsBillingError() (v BetaBillingError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaErrorUnion) AsPermissionError() (v BetaPermissionError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaErrorUnion) AsNotFoundError() (v BetaNotFoundError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaErrorUnion) AsRateLimitError() (v BetaRateLimitError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaErrorUnion) AsGatewayTimeoutError() (v BetaGatewayTimeoutError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaErrorUnion) AsAPIError() (v BetaAPIError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaErrorUnion) AsOverloadedError() (v BetaOverloadedError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaErrorUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaErrorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type BetaErrorResponse struct {
-	Error BetaError             `json:"error,required"`
-	Type  BetaErrorResponseType `json:"type,required"`
-	JSON  betaErrorResponseJSON `json:"-"`
+	Error BetaErrorUnion `json:"error,required"`
+	Type  constant.Error `json:"type,required"`
+	// Metadata for the response, check the presence of optional fields with the
+	// [resp.Field.IsPresent] method.
+	JSON struct {
+		Error       resp.Field
+		Type        resp.Field
+		ExtraFields map[string]resp.Field
+		raw         string
+	} `json:"-"`
 }
 
-// betaErrorResponseJSON contains the JSON metadata for the struct
-// [BetaErrorResponse]
-type betaErrorResponseJSON struct {
-	Error       apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *BetaErrorResponse) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r BetaErrorResponse) RawJSON() string { return r.JSON.raw }
+func (r *BetaErrorResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r betaErrorResponseJSON) RawJSON() string {
-	return r.raw
-}
-
-type BetaErrorResponseType string
-
-const (
-	BetaErrorResponseTypeError BetaErrorResponseType = "error"
-)
-
-func (r BetaErrorResponseType) IsKnown() bool {
-	switch r {
-	case BetaErrorResponseTypeError:
-		return true
-	}
-	return false
 }
 
 type BetaGatewayTimeoutError struct {
-	Message string                      `json:"message,required"`
-	Type    BetaGatewayTimeoutErrorType `json:"type,required"`
-	JSON    betaGatewayTimeoutErrorJSON `json:"-"`
+	Message string                `json:"message,required"`
+	Type    constant.TimeoutError `json:"type,required"`
+	// Metadata for the response, check the presence of optional fields with the
+	// [resp.Field.IsPresent] method.
+	JSON struct {
+		Message     resp.Field
+		Type        resp.Field
+		ExtraFields map[string]resp.Field
+		raw         string
+	} `json:"-"`
 }
 
-// betaGatewayTimeoutErrorJSON contains the JSON metadata for the struct
-// [BetaGatewayTimeoutError]
-type betaGatewayTimeoutErrorJSON struct {
-	Message     apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *BetaGatewayTimeoutError) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r BetaGatewayTimeoutError) RawJSON() string { return r.JSON.raw }
+func (r *BetaGatewayTimeoutError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r betaGatewayTimeoutErrorJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r BetaGatewayTimeoutError) implementsBetaError() {}
-
-type BetaGatewayTimeoutErrorType string
-
-const (
-	BetaGatewayTimeoutErrorTypeTimeoutError BetaGatewayTimeoutErrorType = "timeout_error"
-)
-
-func (r BetaGatewayTimeoutErrorType) IsKnown() bool {
-	switch r {
-	case BetaGatewayTimeoutErrorTypeTimeoutError:
-		return true
-	}
-	return false
 }
 
 type BetaInvalidRequestError struct {
-	Message string                      `json:"message,required"`
-	Type    BetaInvalidRequestErrorType `json:"type,required"`
-	JSON    betaInvalidRequestErrorJSON `json:"-"`
+	Message string                       `json:"message,required"`
+	Type    constant.InvalidRequestError `json:"type,required"`
+	// Metadata for the response, check the presence of optional fields with the
+	// [resp.Field.IsPresent] method.
+	JSON struct {
+		Message     resp.Field
+		Type        resp.Field
+		ExtraFields map[string]resp.Field
+		raw         string
+	} `json:"-"`
 }
 
-// betaInvalidRequestErrorJSON contains the JSON metadata for the struct
-// [BetaInvalidRequestError]
-type betaInvalidRequestErrorJSON struct {
-	Message     apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *BetaInvalidRequestError) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r BetaInvalidRequestError) RawJSON() string { return r.JSON.raw }
+func (r *BetaInvalidRequestError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r betaInvalidRequestErrorJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r BetaInvalidRequestError) implementsBetaError() {}
-
-type BetaInvalidRequestErrorType string
-
-const (
-	BetaInvalidRequestErrorTypeInvalidRequestError BetaInvalidRequestErrorType = "invalid_request_error"
-)
-
-func (r BetaInvalidRequestErrorType) IsKnown() bool {
-	switch r {
-	case BetaInvalidRequestErrorTypeInvalidRequestError:
-		return true
-	}
-	return false
 }
 
 type BetaNotFoundError struct {
-	Message string                `json:"message,required"`
-	Type    BetaNotFoundErrorType `json:"type,required"`
-	JSON    betaNotFoundErrorJSON `json:"-"`
+	Message string                 `json:"message,required"`
+	Type    constant.NotFoundError `json:"type,required"`
+	// Metadata for the response, check the presence of optional fields with the
+	// [resp.Field.IsPresent] method.
+	JSON struct {
+		Message     resp.Field
+		Type        resp.Field
+		ExtraFields map[string]resp.Field
+		raw         string
+	} `json:"-"`
 }
 
-// betaNotFoundErrorJSON contains the JSON metadata for the struct
-// [BetaNotFoundError]
-type betaNotFoundErrorJSON struct {
-	Message     apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *BetaNotFoundError) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r BetaNotFoundError) RawJSON() string { return r.JSON.raw }
+func (r *BetaNotFoundError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r betaNotFoundErrorJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r BetaNotFoundError) implementsBetaError() {}
-
-type BetaNotFoundErrorType string
-
-const (
-	BetaNotFoundErrorTypeNotFoundError BetaNotFoundErrorType = "not_found_error"
-)
-
-func (r BetaNotFoundErrorType) IsKnown() bool {
-	switch r {
-	case BetaNotFoundErrorTypeNotFoundError:
-		return true
-	}
-	return false
 }
 
 type BetaOverloadedError struct {
-	Message string                  `json:"message,required"`
-	Type    BetaOverloadedErrorType `json:"type,required"`
-	JSON    betaOverloadedErrorJSON `json:"-"`
+	Message string                   `json:"message,required"`
+	Type    constant.OverloadedError `json:"type,required"`
+	// Metadata for the response, check the presence of optional fields with the
+	// [resp.Field.IsPresent] method.
+	JSON struct {
+		Message     resp.Field
+		Type        resp.Field
+		ExtraFields map[string]resp.Field
+		raw         string
+	} `json:"-"`
 }
 
-// betaOverloadedErrorJSON contains the JSON metadata for the struct
-// [BetaOverloadedError]
-type betaOverloadedErrorJSON struct {
-	Message     apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *BetaOverloadedError) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r BetaOverloadedError) RawJSON() string { return r.JSON.raw }
+func (r *BetaOverloadedError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r betaOverloadedErrorJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r BetaOverloadedError) implementsBetaError() {}
-
-type BetaOverloadedErrorType string
-
-const (
-	BetaOverloadedErrorTypeOverloadedError BetaOverloadedErrorType = "overloaded_error"
-)
-
-func (r BetaOverloadedErrorType) IsKnown() bool {
-	switch r {
-	case BetaOverloadedErrorTypeOverloadedError:
-		return true
-	}
-	return false
 }
 
 type BetaPermissionError struct {
-	Message string                  `json:"message,required"`
-	Type    BetaPermissionErrorType `json:"type,required"`
-	JSON    betaPermissionErrorJSON `json:"-"`
+	Message string                   `json:"message,required"`
+	Type    constant.PermissionError `json:"type,required"`
+	// Metadata for the response, check the presence of optional fields with the
+	// [resp.Field.IsPresent] method.
+	JSON struct {
+		Message     resp.Field
+		Type        resp.Field
+		ExtraFields map[string]resp.Field
+		raw         string
+	} `json:"-"`
 }
 
-// betaPermissionErrorJSON contains the JSON metadata for the struct
-// [BetaPermissionError]
-type betaPermissionErrorJSON struct {
-	Message     apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *BetaPermissionError) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r BetaPermissionError) RawJSON() string { return r.JSON.raw }
+func (r *BetaPermissionError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r betaPermissionErrorJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r BetaPermissionError) implementsBetaError() {}
-
-type BetaPermissionErrorType string
-
-const (
-	BetaPermissionErrorTypePermissionError BetaPermissionErrorType = "permission_error"
-)
-
-func (r BetaPermissionErrorType) IsKnown() bool {
-	switch r {
-	case BetaPermissionErrorTypePermissionError:
-		return true
-	}
-	return false
 }
 
 type BetaRateLimitError struct {
-	Message string                 `json:"message,required"`
-	Type    BetaRateLimitErrorType `json:"type,required"`
-	JSON    betaRateLimitErrorJSON `json:"-"`
+	Message string                  `json:"message,required"`
+	Type    constant.RateLimitError `json:"type,required"`
+	// Metadata for the response, check the presence of optional fields with the
+	// [resp.Field.IsPresent] method.
+	JSON struct {
+		Message     resp.Field
+		Type        resp.Field
+		ExtraFields map[string]resp.Field
+		raw         string
+	} `json:"-"`
 }
 
-// betaRateLimitErrorJSON contains the JSON metadata for the struct
-// [BetaRateLimitError]
-type betaRateLimitErrorJSON struct {
-	Message     apijson.Field
-	Type        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *BetaRateLimitError) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r BetaRateLimitError) RawJSON() string { return r.JSON.raw }
+func (r *BetaRateLimitError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r betaRateLimitErrorJSON) RawJSON() string {
-	return r.raw
-}
-
-func (r BetaRateLimitError) implementsBetaError() {}
-
-type BetaRateLimitErrorType string
-
-const (
-	BetaRateLimitErrorTypeRateLimitError BetaRateLimitErrorType = "rate_limit_error"
-)
-
-func (r BetaRateLimitErrorType) IsKnown() bool {
-	switch r {
-	case BetaRateLimitErrorTypeRateLimitError:
-		return true
-	}
-	return false
 }

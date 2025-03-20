@@ -2,14 +2,13 @@ package main
 
 import (
 	"context"
-
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/vertex"
 )
 
 func main() {
 	client := anthropic.NewClient(
-		vertex.WithGoogleAuth(context.Background(), "us-central1", "stainless-399616"),
+		vertex.WithGoogleAuth(context.Background(), "us-central1", "id-xxx"),
 	)
 
 	content := "Write me a function to call the Anthropic message API in Node.js using the Anthropic Typescript SDK."
@@ -17,12 +16,12 @@ func main() {
 	println("[user]: " + content)
 
 	stream := client.Messages.NewStreaming(context.TODO(), anthropic.MessageNewParams{
-		MaxTokens: anthropic.Int(1024),
-		Messages: anthropic.F([]anthropic.MessageParam{
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
-		}),
-		Model:         anthropic.F("claude-3-sonnet@20240229"),
-		StopSequences: anthropic.F([]string{"```\n"}),
+		},
+		Model:         "claude-3-5-sonnet-v2@20241022",
+		StopSequences: []string{"```\n"},
 	})
 
 	print("[assistant]: ")
@@ -30,16 +29,17 @@ func main() {
 	for stream.Next() {
 		event := stream.Current()
 
-		switch delta := event.Delta.(type) {
-		case anthropic.ContentBlockDeltaEventDelta:
-			if delta.Text != "" {
-				print(delta.Text)
+		switch variant := event.AsAny().(type) {
+		case anthropic.ContentBlockDeltaEvent:
+			if variant.Delta.Text != "" {
+				print(variant.Delta.Text)
 			}
-		case anthropic.MessageDeltaEventDelta:
-			if delta.StopSequence != "" {
-				print(delta.StopSequence)
+		case anthropic.MessageDeltaEvent:
+			if variant.Delta.StopSequence != "" {
+				print(variant.Delta.StopSequence)
 			}
 		}
+
 	}
 
 	println()

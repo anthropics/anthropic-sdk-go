@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/bedrock"
 )
@@ -17,12 +16,12 @@ func main() {
 	println("[user]: " + content)
 
 	stream := client.Messages.NewStreaming(context.TODO(), anthropic.MessageNewParams{
-		MaxTokens: anthropic.Int(1024),
-		Messages: anthropic.F([]anthropic.MessageParam{
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
-		}),
-		Model:         anthropic.F("anthropic.claude-3-sonnet-20240229-v1:0"),
-		StopSequences: anthropic.F([]string{"```\n"}),
+		},
+		Model:         "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+		StopSequences: []string{"```\n"},
 	})
 
 	print("[assistant]: ")
@@ -30,14 +29,13 @@ func main() {
 	for stream.Next() {
 		event := stream.Current()
 
-		switch delta := event.Delta.(type) {
-		case anthropic.ContentBlockDeltaEventDelta:
-			if delta.Text != "" {
-				print(delta.Text)
-			}
-		case anthropic.MessageDeltaEventDelta:
-			if delta.StopSequence != "" {
-				print(delta.StopSequence)
+		switch eventVariant := event.AsAny().(type) {
+		case anthropic.MessageDeltaEvent:
+			print(eventVariant.Delta.StopSequence)
+		case anthropic.ContentBlockDeltaEvent:
+			switch deltaVariant := eventVariant.Delta.AsAny().(type) {
+			case anthropic.TextDelta:
+				print(deltaVariant.Text)
 			}
 		}
 	}

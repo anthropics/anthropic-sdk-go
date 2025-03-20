@@ -22,7 +22,6 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiform"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/param"
 )
 
 func getDefaultHeaders() map[string]string {
@@ -183,13 +182,6 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 	}
 
 	return &cfg, nil
-}
-
-func UseDefaultParam[T any](dst *param.Field[T], src *T) {
-	if !dst.Present && src != nil {
-		dst.Value = *src
-		dst.Present = true
-	}
 }
 
 // RequestConfig represents all the state related to one request.
@@ -407,7 +399,6 @@ func (cfg *RequestConfig) Execute() (err error) {
 	// Don't send the current retry count in the headers if the caller modified the header defaults.
 	shouldSendRetryCount := cfg.Request.Header.Get("X-Stainless-Retry-Count") == "0"
 
-	var req *http.Request
 	var res *http.Response
 	var cancel context.CancelFunc
 	for retryCount := 0; retryCount <= cfg.MaxRetries; retryCount += 1 {
@@ -422,7 +413,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 			}()
 		}
 
-		req = cfg.Request.Clone(ctx)
+		req := cfg.Request.Clone(ctx)
 		if shouldSendRetryCount {
 			req.Header.Set("X-Stainless-Retry-Count", strconv.Itoa(retryCount))
 		}
@@ -479,7 +470,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 		res.Body = io.NopCloser(bytes.NewBuffer(contents))
 
 		// Load the contents into the error format if it is provided.
-		aerr := apierror.Error{Request: req, Response: res, StatusCode: res.StatusCode}
+		aerr := apierror.Error{Request: cfg.Request, Response: res, StatusCode: res.StatusCode}
 		err = aerr.UnmarshalJSON(contents)
 		if err != nil {
 			return err
@@ -531,7 +522,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 
 	err = json.NewDecoder(bytes.NewReader(contents)).Decode(cfg.ResponseBodyInto)
 	if err != nil {
-		err = fmt.Errorf("error parsing response json: %w", err)
+		return fmt.Errorf("error parsing response json: %w", err)
 	}
 
 	return nil

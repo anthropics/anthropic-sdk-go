@@ -19,38 +19,35 @@ func main() {
 		anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
 	}
 
-	tools := []anthropic.ToolParam{
+	toolParams := []anthropic.ToolParam{
 		{
-			Name:        anthropic.F("get_coordinates"),
-			Description: anthropic.F("Accepts a place as an address, then returns the latitude and longitude coordinates."),
-			InputSchema: anthropic.F[interface{}](map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
+			Name:        "get_coordinates",
+			Description: anthropic.String("Accepts a place as an address, then returns the latitude and longitude coordinates."),
+			InputSchema: anthropic.ToolInputSchemaParam{
+				Properties: map[string]interface{}{
 					"location": map[string]interface{}{
 						"type":        "string",
 						"description": "The location to look up.",
 					},
 				},
-			}),
+			},
 		},
 		{
-			Name: anthropic.F("get_temperature_unit"),
-			InputSchema: anthropic.F[interface{}](map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
+			Name: "get_temperature_unit",
+			InputSchema: anthropic.ToolInputSchemaParam{
+				Properties: map[string]interface{}{
 					"country": map[string]interface{}{
 						"type":        "string",
 						"description": "The country",
 					},
 				},
-			}),
+			},
 		},
 		{
-			Name:        anthropic.F("get_weather"),
-			Description: anthropic.F("Get the weather at a specific location"),
-			InputSchema: anthropic.F[interface{}](map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
+			Name:        "get_weather",
+			Description: anthropic.String("Get the weather at a specific location"),
+			InputSchema: anthropic.ToolInputSchemaParam{
+				Properties: map[string]interface{}{
 					"lat": map[string]interface{}{
 						"type":        "number",
 						"description": "The lattitude of the location to check weather.",
@@ -65,16 +62,20 @@ func main() {
 						"description": "Unit for the output",
 					},
 				},
-			}),
+			},
 		},
+	}
+	tools := make([]anthropic.ToolUnionParam, len(toolParams))
+	for i, toolParam := range toolParams {
+		tools[i] = anthropic.ToolUnionParam{OfTool: &toolParam}
 	}
 
 	for {
 		message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-			Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
-			MaxTokens: anthropic.Int(1024),
-			Messages:  anthropic.F(messages),
-			Tools:     anthropic.F(tools),
+			Model:     anthropic.ModelClaude_3_5_Sonnet_20240620,
+			MaxTokens: 1024,
+			Messages:  messages,
+			Tools:     tools,
 		})
 
 		if err != nil {
@@ -84,12 +85,13 @@ func main() {
 		print(color("[assistant]: "))
 
 		for _, block := range message.Content {
-			switch block := block.AsUnion().(type) {
+			switch block := block.AsAny().(type) {
 			case anthropic.TextBlock:
 				println(block.Text)
 				println()
 			case anthropic.ToolUseBlock:
-				println(block.Name + ": " + string(block.Input))
+				inputJSON, _ := json.Marshal(block.Input)
+				println(block.Name + ": " + string(inputJSON))
 				println()
 			}
 		}
@@ -99,7 +101,8 @@ func main() {
 		toolResults := []anthropic.ContentBlockParamUnion{}
 
 		for _, block := range message.Content {
-			if block.Type == anthropic.ContentBlockTypeToolUse {
+			switch variant := block.AsAny().(type) {
+			case anthropic.ToolUseBlock:
 				print(color("[user (" + block.Name + ")]: "))
 
 				var response interface{}
@@ -108,16 +111,18 @@ func main() {
 					var input struct {
 						Location string `json:"location"`
 					}
-					err := json.Unmarshal(block.Input, &input)
+
+					err := json.Unmarshal([]byte(variant.JSON.Input.Raw()), &input)
 					if err != nil {
 						panic(err)
 					}
+
 					response = GetCoordinates(input.Location)
 				case "get_temperature_unit":
 					var input struct {
 						Country string `json:"country"`
 					}
-					err := json.Unmarshal(block.Input, &input)
+					err := json.Unmarshal([]byte(variant.JSON.Input.Raw()), &input)
 					if err != nil {
 						panic(err)
 					}
@@ -128,7 +133,7 @@ func main() {
 						Long float64 `json:"long"`
 						Unit string  `json:"unit"`
 					}
-					err := json.Unmarshal(block.Input, &input)
+					err := json.Unmarshal([]byte(variant.JSON.Input.Raw()), &input)
 					if err != nil {
 						panic(err)
 					}

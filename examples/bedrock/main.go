@@ -17,12 +17,12 @@ func main() {
 	println("[user]: " + content)
 
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-		MaxTokens: anthropic.Int(1024),
-		Messages: anthropic.F([]anthropic.MessageParam{
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
-		}),
-		Model:         anthropic.F("anthropic.claude-3-sonnet-20240229-v1:0"),
-		StopSequences: anthropic.F([]string{"```\n"}),
+		},
+		Model:         "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+		StopSequences: []string{"```\n"},
 	})
 	if err != nil {
 		panic(err)

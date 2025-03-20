@@ -26,54 +26,61 @@ func TestMessageBatchNew(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Messages.Batches.New(context.TODO(), anthropic.MessageBatchNewParams{
-		Requests: anthropic.F([]anthropic.MessageBatchNewParamsRequest{{
-			CustomID: anthropic.F("my-custom-id-1"),
-			Params: anthropic.F(anthropic.MessageBatchNewParamsRequestsParams{
-				MaxTokens: anthropic.F(int64(1024)),
-				Messages: anthropic.F([]anthropic.MessageParam{{
-					Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
-					Role:    anthropic.F(anthropic.MessageParamRoleUser),
-				}}),
-				Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
-				Metadata: anthropic.F(anthropic.MetadataParam{
-					UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
-				}),
-				StopSequences: anthropic.F([]string{"string"}),
-				Stream:        anthropic.F(true),
-				System:        anthropic.F([]anthropic.TextBlockParam{{Text: anthropic.F("x"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
-				Temperature:   anthropic.F(1.000000),
-				Thinking: anthropic.F[anthropic.ThinkingConfigParamUnion](anthropic.ThinkingConfigEnabledParam{
-					BudgetTokens: anthropic.F(int64(1024)),
-					Type:         anthropic.F(anthropic.ThinkingConfigEnabledTypeEnabled),
-				}),
-				ToolChoice: anthropic.F[anthropic.ToolChoiceUnionParam](anthropic.ToolChoiceAutoParam{
-					Type:                   anthropic.F(anthropic.ToolChoiceAutoTypeAuto),
-					DisableParallelToolUse: anthropic.F(true),
-				}),
-				Tools: anthropic.F([]anthropic.ToolUnionUnionParam{anthropic.ToolParam{
-					InputSchema: anthropic.F(anthropic.ToolInputSchemaParam{
-						Type: anthropic.F(anthropic.ToolInputSchemaTypeObject),
-						Properties: anthropic.F[any](map[string]interface{}{
-							"location": map[string]interface{}{
-								"description": "The city and state, e.g. San Francisco, CA",
-								"type":        "string",
+		Requests: []anthropic.MessageBatchNewParamsRequest{{
+			CustomID: "my-custom-id-1",
+			Params: anthropic.MessageBatchNewParamsRequestParams{
+				MaxTokens: 1024,
+				Messages: []anthropic.MessageParam{{
+					Content: []anthropic.ContentBlockParamUnion{{
+						OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
+							OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+						}}},
+					}},
+					Role: anthropic.MessageParamRoleUser,
+				}},
+				Model: anthropic.ModelClaude3_7SonnetLatest,
+				Metadata: anthropic.MetadataParam{
+					UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
+				},
+				StopSequences: []string{"string"},
+				Stream:        anthropic.Bool(true),
+				System: []anthropic.TextBlockParam{{Text: "x", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
+					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				}}}},
+				Temperature: anthropic.Float(1),
+				Thinking: anthropic.ThinkingConfigParamUnion{
+					OfThinkingConfigEnabled: &anthropic.ThinkingConfigEnabledParam{
+						BudgetTokens: 1024,
+					},
+				},
+				ToolChoice: anthropic.ToolChoiceUnionParam{
+					OfToolChoiceAuto: &anthropic.ToolChoiceAutoParam{
+						DisableParallelToolUse: anthropic.Bool(true),
+					},
+				},
+				Tools: []anthropic.ToolUnionParam{{
+					OfTool: &anthropic.ToolParam{
+						InputSchema: anthropic.ToolInputSchemaParam{
+							Properties: map[string]interface{}{
+								"location": map[string]interface{}{
+									"description": "The city and state, e.g. San Francisco, CA",
+									"type":        "string",
+								},
+								"unit": map[string]interface{}{
+									"description": "Unit for the output - one of (celsius, fahrenheit)",
+									"type":        "string",
+								},
 							},
-							"unit": map[string]interface{}{
-								"description": "Unit for the output - one of (celsius, fahrenheit)",
-								"type":        "string",
-							},
-						}),
-					}),
-					Name: anthropic.F("name"),
-					CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{
-						Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral),
-					}),
-					Description: anthropic.F("Get the current weather in a given location"),
-				}}),
-				TopK: anthropic.F(int64(5)),
-				TopP: anthropic.F(0.700000),
-			}),
-		}}),
+						},
+						Name:         "name",
+						CacheControl: anthropic.CacheControlEphemeralParam{},
+						Description:  anthropic.String("Get the current weather in a given location"),
+					},
+				}},
+				TopK: anthropic.Int(5),
+				TopP: anthropic.Float(0.7),
+			},
+		}},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -119,9 +126,9 @@ func TestMessageBatchListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Messages.Batches.List(context.TODO(), anthropic.MessageBatchListParams{
-		AfterID:  anthropic.F("after_id"),
-		BeforeID: anthropic.F("before_id"),
-		Limit:    anthropic.F(int64(1)),
+		AfterID:  anthropic.String("after_id"),
+		BeforeID: anthropic.String("before_id"),
+		Limit:    anthropic.Int(1),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

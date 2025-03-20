@@ -51,12 +51,16 @@ func main() {
 		option.WithAPIKey("my-anthropic-api-key"), // defaults to os.LookupEnv("ANTHROPIC_API_KEY")
 	)
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-		MaxTokens: anthropic.F(int64(1024)),
-		Messages: anthropic.F([]anthropic.MessageParam{{
-			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
-		}}),
-		Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{{
+			Role: anthropic.MessageParamRoleUser,
+			Content: []anthropic.ContentBlockParamUnion{{
+				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
+					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				}}},
+			}},
+		}},
+		Model: anthropic.ModelClaude3_7SonnetLatest,
 	})
 	if err != nil {
 		panic(err.Error())
@@ -68,31 +72,82 @@ func main() {
 
 ### Request fields
 
-All request parameters are wrapped in a generic `Field` type,
-which we use to distinguish zero values from null or omitted fields.
+The anthropic library uses the [`omitzero`](https://tip.golang.org/doc/go1.24#encodingjsonpkgencodingjson)
+semantics from the Go 1.24+ `encoding/json` release for request fields.
 
-This prevents accidentally sending a zero value if you forget a required parameter,
-and enables explicitly sending `null`, `false`, `''`, or `0` on optional parameters.
-Any field not specified is not sent.
+Required primitive fields (`int64`, `string`, etc.) feature the tag <code>\`json:...,required\`</code>. These
+fields are always serialized, even their zero values.
 
-To construct fields with values, use the helpers `String()`, `Int()`, `Float()`, or most commonly, the generic `F[T]()`.
-To send a null, use `Null[T]()`, and to send a nonconforming value, use `Raw[T](any)`. For example:
+Optional primitive types are wrapped in a `param.Opt[T]`. Use the provided constructors set `param.Opt[T]` fields such as `anthropic.String(string)`, `anthropic.Int(int64)`, etc.
+
+Optional primitives, maps, slices and structs and string enums (represented as `string`) always feature the
+tag <code>\`json:"...,omitzero"\`</code>. Their zero values are considered omitted.
+
+Any non-nil slice of length zero will serialize as an empty JSON array, `"[]"`. Similarly, any non-nil map with length zero with serialize as an empty JSON object, `"{}"`.
+
+To send `null` instead of an `param.Opt[T]`, use `param.NullOpt[T]()`.
+To send `null` instead of a struct, use `param.NullObj[T]()`, where `T` is a struct.
+To send a custom value instead of a struct, use `param.OverrideObj[T](value)`.
+
+To override request structs contain a `.WithExtraFields(map[string]any)` method which can be used to
+send non-conforming fields in the request body. Extra fields take higher precedence than normal
+fields.
 
 ```go
 params := FooParams{
-	Name: anthropic.F("hello"),
+	ID: "id_xxx",                          // required property
+	Name: anthropic.String("hello"), // optional property
+	Description: param.NullOpt[string](),  // explicit null property
 
-	// Explicitly send `"description": null`
-	Description: anthropic.Null[string](),
-
-	Point: anthropic.F(anthropic.Point{
-		X: anthropic.Int(0),
-		Y: anthropic.Int(1),
-
-		// In cases where the API specifies a given type,
-		// but you want to send something else, use `Raw`:
-		Z: anthropic.Raw[int64](0.01), // sends a float
+	Point: anthropic.Point{
+		X: 0, // required field will serialize as 0
+		Y: anthropic.Int(1), // optional field will serialize as 1
+	  // ... omitted non-required fields will not be serialized
 	}),
+
+	Origin: anthropic.Origin{}, // the zero value of [Origin] is considered omitted
+}
+
+// In cases where the API specifies a given type,
+// but you want to send something else, use [WithExtraFields]:
+params.WithExtraFields(map[string]any{
+	"x": 0.01, // send "x" as a float instead of int
+})
+
+// Send a number instead of an object
+custom := param.OverrideObj[anthropic.FooParams](12)
+```
+
+When available, use the `.IsPresent()` method to check if an optional parameter is not omitted or `null`.
+Otherwise, the `param.IsOmitted(any)` function can confirm the presence of any `omitzero` field.
+
+### Request unions
+
+Unions are represented as a struct with fields prefixed by "Of" for each of it's variants,
+only one field can be non-zero. The non-zero field will be serialized.
+
+Properties can be accessed via getters on the union struct. These getters return a mutable
+pointer to the underlying data, if present.
+
+```go
+// Only one field can be non-zero, use param.IsOmitted() to check if a field is set
+type AnimalUnionParam struct {
+	OfCat 	 *Cat              `json:",omitzero,inline`
+	OfDog    *Dog              `json:",omitzero,inline`
+}
+
+animal := AnimalUnionParam{
+	OfCat: &Cat{
+		Name: "Whiskers",
+		Owner: PersonParam{
+			Address: AddressParam{Street: "3333 Coyote Hill Rd", Zip: 0},
+		},
+	},
+}
+
+// Mutating a field
+if address := animal.GetOwner().GetAddress(); address != nil {
+	address.ZipCode = 94304
 }
 ```
 
@@ -108,14 +163,14 @@ information about each property, which you can use like so:
 
 ```go
 if res.Name == "" {
-	// true if `"name"` is either not present or explicitly null
-	res.JSON.Name.IsNull()
+	// true if `"name"` was unmarshalled successfully
+	res.JSON.Name.IsPresent()
 
-	// true if the `"name"` key was not present in the response JSON at all
-	res.JSON.Name.IsMissing()
+	res.JSON.Name.IsExplicitNull() // true if `"name"` is explicitly null
+	res.JSON.Name.Raw() == ""          // true if `"name"` field does not exist
 
 	// When the API returns data that cannot be coerced to the expected type:
-	if res.JSON.Name.IsInvalid() {
+	if !res.JSON.Name.IsPresent() && res.JSON.Name.Raw() != "" {
 		raw := res.JSON.Name.Raw()
 
 		legacyName := struct{
@@ -128,13 +183,56 @@ if res.Name == "" {
 }
 ```
 
-These `.JSON` structs also include an `Extras` map containing
+These `.JSON` structs also include an `ExtraFields` map containing
 any properties in the json response that were not specified
 in the struct. This can be useful for API features not yet
 present in the SDK.
 
 ```go
 body := res.JSON.ExtraFields["my_unexpected_field"].Raw()
+```
+
+### Response Unions
+
+In responses, unions are represented by a flattened struct containing all possible fields from each of the
+object variants.
+To convert it to a variant use the `.AsFooVariant()` method or the `.AsAny()` method if present.
+
+If a response value union contains primitive values, primitive fields will be alongside
+the properties but prefixed with `Of` and feature the tag `json:"...,inline"`.
+
+```go
+type AnimalUnion struct {
+	OfString string `json:",inline"`
+	Name     string `json:"name"`
+	Owner    Person `json:"owner"`
+	// ...
+	JSON struct {
+		OfString resp.Field
+		Name     resp.Field
+		Owner    resp.Field
+		// ...
+	}
+}
+
+// If animal variant
+if animal.Owner.Address.JSON.ZipCode == "" {
+	panic("missing zip code")
+}
+
+// If string variant
+if !animal.OfString == "" {
+	panic("expected a name")
+}
+
+// Switch on the variant
+switch variant := animalOrName.AsAny().(type) {
+case string:
+case Dog:
+case Cat:
+default:
+	panic("unexpected type")
+}
 ```
 
 ### RequestOptions
@@ -168,7 +266,7 @@ You can use `.ListAutoPaging()` methods to iterate through items across all page
 
 ```go
 iter := client.Beta.Messages.Batches.ListAutoPaging(context.TODO(), anthropic.BetaMessageBatchListParams{
-	Limit: anthropic.F(int64(20)),
+	Limit: anthropic.Int(20),
 })
 // Automatically fetches more pages as needed.
 for iter.Next() {
@@ -185,7 +283,7 @@ with additional helper methods like `.GetNextPage()`, e.g.:
 
 ```go
 page, err := client.Beta.Messages.Batches.List(context.TODO(), anthropic.BetaMessageBatchListParams{
-	Limit: anthropic.F(int64(20)),
+	Limit: anthropic.Int(20),
 })
 for page != nil {
 	for _, batch := range page.Data {
@@ -209,12 +307,16 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 
 ```go
 _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-	MaxTokens: anthropic.F(int64(1024)),
-	Messages: anthropic.F([]anthropic.MessageParam{{
-		Role:    anthropic.F(anthropic.MessageParamRoleUser),
-		Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
-	}}),
-	Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
+	MaxTokens: 1024,
+	Messages: []anthropic.MessageParam{{
+		Role: anthropic.MessageParamRoleUser,
+		Content: []anthropic.ContentBlockParamUnion{{
+			OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
+				OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+			}}},
+		}},
+	}},
+	Model: anthropic.ModelClaude3_7SonnetLatest,
 })
 if err != nil {
 	var apierr *anthropic.Error
@@ -243,12 +345,16 @@ defer cancel()
 client.Messages.New(
 	ctx,
 	anthropic.MessageNewParams{
-		MaxTokens: anthropic.F(int64(1024)),
-		Messages: anthropic.F([]anthropic.MessageParam{{
-			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
-		}}),
-		Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{{
+			Role: anthropic.MessageParamRoleUser,
+			Content: []anthropic.ContentBlockParamUnion{{
+				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
+					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				}}},
+			}},
+		}},
+		Model: anthropic.ModelClaude3_7SonnetLatest,
 	},
 	// This sets the per-retry timeout
 	option.WithRequestTimeout(20*time.Second),
@@ -258,7 +364,7 @@ client.Messages.New(
 ### File uploads
 
 Request parameters that correspond to file uploads in multipart requests are typed as
-`param.Field[io.Reader]`. The contents of the `io.Reader` will by default be sent as a multipart form
+`io.Reader`. The contents of the `io.Reader` will by default be sent as a multipart form
 part with the file name of "anonymous_file" and content-type of "application/octet-stream".
 
 The file name and content-type can be customized by implementing `Name() string` or `ContentType()
@@ -286,12 +392,16 @@ client := anthropic.NewClient(
 client.Messages.New(
 	context.TODO(),
 	anthropic.MessageNewParams{
-		MaxTokens: anthropic.F(int64(1024)),
-		Messages: anthropic.F([]anthropic.MessageParam{{
-			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
-		}}),
-		Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{{
+			Role: anthropic.MessageParamRoleUser,
+			Content: []anthropic.ContentBlockParamUnion{{
+				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
+					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				}}},
+			}},
+		}},
+		Model: anthropic.ModelClaude3_7SonnetLatest,
 	},
 	option.WithMaxRetries(5),
 )
@@ -308,12 +418,16 @@ var response *http.Response
 message, err := client.Messages.New(
 	context.TODO(),
 	anthropic.MessageNewParams{
-		MaxTokens: anthropic.F(int64(1024)),
-		Messages: anthropic.F([]anthropic.MessageParam{{
-			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
-		}}),
-		Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{{
+			Role: anthropic.MessageParamRoleUser,
+			Content: []anthropic.ContentBlockParamUnion{{
+				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
+					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				}}},
+			}},
+		}},
+		Model: anthropic.ModelClaude3_7SonnetLatest,
 	},
 	option.WithResponseInto(&response),
 )
@@ -359,10 +473,10 @@ or the `option.WithJSONSet()` methods.
 
 ```go
 params := FooNewParams{
-    ID:   anthropic.F("id_xxxx"),
-    Data: anthropic.F(FooNewParamsData{
-        FirstName: anthropic.F("John"),
-    }),
+    ID:   "id_xxxx",
+    Data: FooNewParamsData{
+        FirstName: anthropic.String("John"),
+    },
 }
 client.Foo.New(context.Background(), params, option.WithJSONSet("data.last_name", "Doe"))
 ```

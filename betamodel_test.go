@@ -48,9 +48,9 @@ func TestBetaModelListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.Models.List(context.TODO(), anthropic.BetaModelListParams{
-		AfterID:  anthropic.F("after_id"),
-		BeforeID: anthropic.F("before_id"),
-		Limit:    anthropic.F(int64(1)),
+		AfterID:  anthropic.String("after_id"),
+		BeforeID: anthropic.String("before_id"),
+		Limit:    anthropic.Int(1),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

@@ -19,38 +19,35 @@ func main() {
 		anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
 	}
 
-	tools := []anthropic.ToolParam{
+	toolParams := []anthropic.ToolParam{
 		{
-			Name:        anthropic.F("get_coordinates"),
-			Description: anthropic.F("Accepts a place as an address, then returns the latitude and longitude coordinates."),
-			InputSchema: anthropic.F[interface{}](map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
+			Name:        "get_coordinates",
+			Description: anthropic.String("Accepts a place as an address, then returns the latitude and longitude coordinates."),
+			InputSchema: anthropic.ToolInputSchemaParam{
+				Properties: map[string]interface{}{
 					"location": map[string]interface{}{
 						"type":        "string",
 						"description": "The location to look up.",
 					},
 				},
-			}),
+			},
 		},
 		{
-			Name: anthropic.F("get_temperature_unit"),
-			InputSchema: anthropic.F[interface{}](map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
+			Name: "get_temperature_unit",
+			InputSchema: anthropic.ToolInputSchemaParam{
+				Properties: map[string]interface{}{
 					"country": map[string]interface{}{
 						"type":        "string",
 						"description": "The country",
 					},
 				},
-			}),
+			},
 		},
 		{
-			Name:        anthropic.F("get_weather"),
-			Description: anthropic.F("Get the weather at a specific location"),
-			InputSchema: anthropic.F[interface{}](map[string]interface{}{
-				"type": "object",
-				"properties": map[string]interface{}{
+			Name:        "get_weather",
+			Description: anthropic.String("Get the weather at a specific location"),
+			InputSchema: anthropic.ToolInputSchemaParam{
+				Properties: map[string]interface{}{
 					"lat": map[string]interface{}{
 						"type":        "number",
 						"description": "The lattitude of the location to check weather.",
@@ -65,16 +62,20 @@ func main() {
 						"description": "Unit for the output",
 					},
 				},
-			}),
+			},
 		},
+	}
+	tools := make([]anthropic.ToolUnionParam, len(toolParams))
+	for i, toolParam := range toolParams {
+		tools[i] = anthropic.ToolUnionParam{OfTool: &toolParam}
 	}
 
 	for {
 		stream := client.Messages.NewStreaming(context.TODO(), anthropic.MessageNewParams{
-			Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
-			MaxTokens: anthropic.Int(1024),
-			Messages:  anthropic.F(messages),
-			Tools:     anthropic.F(tools),
+			Model:     anthropic.ModelClaude3_7Sonnet20250219,
+			MaxTokens: 1024,
+			Messages:  messages,
+			Tools:     tools,
 		})
 
 		print(color("[assistant]: "))
@@ -87,7 +88,7 @@ func main() {
 				panic(err)
 			}
 
-			switch event := event.AsUnion().(type) {
+			switch event := event.AsAny().(type) {
 			case anthropic.ContentBlockStartEvent:
 				if event.ContentBlock.Name != "" {
 					print(event.ContentBlock.Name + ": ")
@@ -111,7 +112,8 @@ func main() {
 		toolResults := []anthropic.ContentBlockParamUnion{}
 
 		for _, block := range message.Content {
-			if block.Type == anthropic.ContentBlockTypeToolUse {
+			switch variant := block.AsAny().(type) {
+			case anthropic.ToolUseBlock:
 				print(color("[user (" + block.Name + ")]: "))
 
 				var response interface{}
@@ -120,7 +122,7 @@ func main() {
 					var input struct {
 						Location string `json:"location"`
 					}
-					err := json.Unmarshal(block.Input, &input)
+					err := json.Unmarshal([]byte(variant.JSON.Input.Raw()), &input)
 					if err != nil {
 						panic(err)
 					}
@@ -129,7 +131,7 @@ func main() {
 					var input struct {
 						Country string `json:"country"`
 					}
-					err := json.Unmarshal(block.Input, &input)
+					err := json.Unmarshal([]byte(variant.JSON.Input.Raw()), &input)
 					if err != nil {
 						panic(err)
 					}
@@ -140,7 +142,7 @@ func main() {
 						Long float64 `json:"long"`
 						Unit string  `json:"unit"`
 					}
-					err := json.Unmarshal(block.Input, &input)
+					err := json.Unmarshal([]byte(variant.JSON.Input.Raw()), &input)
 					if err != nil {
 						panic(err)
 					}
@@ -162,10 +164,7 @@ func main() {
 			break
 		}
 
-		messages = append(messages, anthropic.MessageParam{
-			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F(toolResults),
-		})
+		messages = append(messages, anthropic.NewUserMessage(toolResults...))
 	}
 }
 

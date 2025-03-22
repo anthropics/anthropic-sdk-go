@@ -25,15 +25,19 @@ func TestUsage(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-		MaxTokens: anthropic.F(int64(1024)),
-		Messages: anthropic.F([]anthropic.MessageParam{{
-			Role:    anthropic.F(anthropic.MessageParamRoleUser),
-			Content: anthropic.F([]anthropic.ContentBlockParamUnion{anthropic.TextBlockParam{Text: anthropic.F("What is a quaternion?"), Type: anthropic.F(anthropic.TextBlockParamTypeText), CacheControl: anthropic.F(anthropic.CacheControlEphemeralParam{Type: anthropic.F(anthropic.CacheControlEphemeralTypeEphemeral)}), Citations: anthropic.F([]anthropic.TextCitationParamUnion{anthropic.CitationCharLocationParam{CitedText: anthropic.F("cited_text"), DocumentIndex: anthropic.F(int64(0)), DocumentTitle: anthropic.F("x"), EndCharIndex: anthropic.F(int64(0)), StartCharIndex: anthropic.F(int64(0)), Type: anthropic.F(anthropic.CitationCharLocationParamTypeCharLocation)}})}}),
-		}}),
-		Model: anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{{
+			Role: anthropic.MessageParamRoleUser,
+			Content: []anthropic.ContentBlockParamUnion{{
+				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
+					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				}}},
+			}},
+		}},
+		Model: anthropic.ModelClaude3_7SonnetLatest,
 	})
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("err should be nil: %s", err.Error())
 	}
 	t.Logf("%+v\n", message.Content)
 }

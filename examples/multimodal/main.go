@@ -28,15 +28,15 @@ func main() {
 	fileEncoded := base64.StdEncoding.EncodeToString(fileBytes)
 
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-		MaxTokens: anthropic.Int(1024),
-		Messages: anthropic.F([]anthropic.MessageParam{
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(
 				anthropic.NewTextBlock(content),
 				anthropic.NewImageBlockBase64("image/png", fileEncoded),
 			),
-		}),
-		Model:         anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
-		StopSequences: anthropic.F([]string{"```\n"}),
+		},
+		Model:         anthropic.ModelClaude_3_5_Sonnet_20240620,
+		StopSequences: []string{"```\n"},
 	})
 	if err != nil {
 		panic(err)

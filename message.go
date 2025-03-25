@@ -428,7 +428,7 @@ type ContentBlockUnion struct {
 	// This field is from variant [ToolUseBlock].
 	ID string `json:"id"`
 	// This field is from variant [ToolUseBlock].
-	Input interface{} `json:"input"`
+	Input json.RawMessage `json:"input"`
 	// This field is from variant [ToolUseBlock].
 	Name string `json:"name"`
 	// This field is from variant [ThinkingBlock].
@@ -2125,13 +2125,10 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 		case TextDelta:
 			cb.Text += delta.Text
 		case InputJSONDelta:
-			if _, ok := cb.Input.(map[string]interface{}); ok {
+			if string(cb.Input) == "{}" {
 				cb.Input = json.RawMessage{}
 			}
-			input, ok := cb.Input.(json.RawMessage)
-			if ok {
-				cb.Input = append(input, []byte(delta.PartialJSON)...)
-			}
+			cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
 		case ThinkingDelta:
 			cb.Thinking += delta.Thinking
 		case SignatureDelta:
@@ -3202,7 +3199,7 @@ func (u ToolUnionParam) GetCacheControl() *CacheControlEphemeralParam {
 
 type ToolUseBlock struct {
 	ID    string           `json:"id,required"`
-	Input interface{}      `json:"input,required"`
+	Input json.RawMessage  `json:"input,required"`
 	Name  string           `json:"name,required"`
 	Type  constant.ToolUse `json:"type,required"`
 	// Metadata for the response, check the presence of optional fields with the

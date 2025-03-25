@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0-beta.2 (2025-03-25)
+
+Full Changelog: [v0.2.0-beta.1...v0.2.0-beta.2](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-beta.1...v0.2.0-beta.2)
+
+### Bug Fixes
+
+* **client:** use raw json for tool input ([1013c2b](https://github.com/anthropics/anthropic-sdk-go/commit/1013c2bdb87a27d2420dbe0dcadc57d1fe3589f2))
+
+
+### Chores
+
+* add request options to client tests ([#150](https://github.com/anthropics/anthropic-sdk-go/issues/150)) ([7c70ae1](https://github.com/anthropics/anthropic-sdk-go/commit/7c70ae134a345aff775694abcad255c76e7dfcba))
+
 ## 0.2.0-beta.1 (2025-03-25)
 
 Full Changelog: [v0.2.0-alpha.13...v0.2.0-beta.1](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-alpha.13...v0.2.0-beta.1)

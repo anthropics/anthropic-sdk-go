@@ -1285,7 +1285,7 @@ type BetaMessage struct {
 	// null in the `message_start` event and non-null otherwise.
 	//
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason BetaMessageStopReason `json:"stop_reason,required"`
+	StopReason BetaStopReason `json:"stop_reason,required"`
 	// Which custom stop sequence was generated, if any.
 	//
 	// This value will be a non-null string if one of your custom stop sequences was
@@ -1332,26 +1332,6 @@ func (r BetaMessage) RawJSON() string { return r.JSON.raw }
 func (r *BetaMessage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// The reason that we stopped.
-//
-// This may be one the following values:
-//
-// - `"end_turn"`: the model reached a natural stopping point
-// - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
-// - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
-// - `"tool_use"`: the model invoked one or more tools
-//
-// In non-streaming mode this value is always non-null. In streaming mode, it is
-// null in the `message_start` event and non-null otherwise.
-type BetaMessageStopReason string
-
-const (
-	BetaMessageStopReasonEndTurn      BetaMessageStopReason = "end_turn"
-	BetaMessageStopReasonMaxTokens    BetaMessageStopReason = "max_tokens"
-	BetaMessageStopReasonStopSequence BetaMessageStopReason = "stop_sequence"
-	BetaMessageStopReasonToolUse      BetaMessageStopReason = "tool_use"
-)
 
 type BetaMessageDeltaUsage struct {
 	// The cumulative number of output tokens which were used.
@@ -1732,8 +1712,8 @@ func (r *BetaRawMessageDeltaEvent) UnmarshalJSON(data []byte) error {
 
 type BetaRawMessageDeltaEventDelta struct {
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason   string `json:"stop_reason,required"`
-	StopSequence string `json:"stop_sequence,required"`
+	StopReason   BetaStopReason `json:"stop_reason,required"`
+	StopSequence string         `json:"stop_sequence,required"`
 	// Metadata for the response, check the presence of optional fields with the
 	// [resp.Field.IsPresent] method.
 	JSON struct {
@@ -1894,7 +1874,7 @@ func (r *BetaRawMessageStreamEventUnion) UnmarshalJSON(data []byte) error {
 // [BetaRawMessageStreamEventUnion].
 type BetaRawMessageStreamEventUnionDelta struct {
 	// This field is from variant [BetaRawMessageDeltaEventDelta].
-	StopReason string `json:"stop_reason"`
+	StopReason BetaStopReason `json:"stop_reason"`
 	// This field is from variant [BetaRawMessageDeltaEventDelta].
 	StopSequence string `json:"stop_sequence"`
 	// This field is from variant [BetaRawContentBlockDeltaEventDeltaUnion].
@@ -1979,6 +1959,15 @@ func (r BetaSignatureDelta) RawJSON() string { return r.JSON.raw }
 func (r *BetaSignatureDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type BetaStopReason string
+
+const (
+	BetaStopReasonEndTurn      BetaStopReason = "end_turn"
+	BetaStopReasonMaxTokens    BetaStopReason = "max_tokens"
+	BetaStopReasonStopSequence BetaStopReason = "stop_sequence"
+	BetaStopReasonToolUse      BetaStopReason = "tool_use"
+)
 
 type BetaTextBlock struct {
 	// Citations supporting the text block.

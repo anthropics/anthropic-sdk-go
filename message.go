@@ -1269,7 +1269,7 @@ type Message struct {
 	// null in the `message_start` event and non-null otherwise.
 	//
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason MessageStopReason `json:"stop_reason,required"`
+	StopReason StopReason `json:"stop_reason,required"`
 	// Which custom stop sequence was generated, if any.
 	//
 	// This value will be a non-null string if one of your custom stop sequences was
@@ -1316,26 +1316,6 @@ func (r Message) RawJSON() string { return r.JSON.raw }
 func (r *Message) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// The reason that we stopped.
-//
-// This may be one the following values:
-//
-// - `"end_turn"`: the model reached a natural stopping point
-// - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
-// - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
-// - `"tool_use"`: the model invoked one or more tools
-//
-// In non-streaming mode this value is always non-null. In streaming mode, it is
-// null in the `message_start` event and non-null otherwise.
-type MessageStopReason string
-
-const (
-	MessageStopReasonEndTurn      MessageStopReason = "end_turn"
-	MessageStopReasonMaxTokens    MessageStopReason = "max_tokens"
-	MessageStopReasonStopSequence MessageStopReason = "stop_sequence"
-	MessageStopReasonToolUse      MessageStopReason = "tool_use"
-)
 
 func MessageCountTokensToolParamOfTool(inputSchema ToolInputSchemaParam, name string) MessageCountTokensToolUnionParam {
 	var variant ToolParam
@@ -1831,8 +1811,8 @@ func (r *MessageDeltaEvent) UnmarshalJSON(data []byte) error {
 
 type MessageDeltaEventDelta struct {
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason   string `json:"stop_reason,required"`
-	StopSequence string `json:"stop_sequence,required"`
+	StopReason   StopReason `json:"stop_reason,required"`
+	StopSequence string     `json:"stop_sequence,required"`
 	// Metadata for the response, check the presence of optional fields with the
 	// [resp.Field.IsPresent] method.
 	JSON struct {
@@ -1992,7 +1972,7 @@ func (r *MessageStreamEventUnion) UnmarshalJSON(data []byte) error {
 // [MessageStreamEventUnion].
 type MessageStreamEventUnionDelta struct {
 	// This field is from variant [MessageDeltaEventDelta].
-	StopReason string `json:"stop_reason"`
+	StopReason StopReason `json:"stop_reason"`
 	// This field is from variant [MessageDeltaEventDelta].
 	StopSequence string `json:"stop_sequence"`
 	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
@@ -2077,6 +2057,15 @@ func (r SignatureDelta) RawJSON() string { return r.JSON.raw }
 func (r *SignatureDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type StopReason string
+
+const (
+	StopReasonEndTurn      StopReason = "end_turn"
+	StopReasonMaxTokens    StopReason = "max_tokens"
+	StopReasonStopSequence StopReason = "stop_sequence"
+	StopReasonToolUse      StopReason = "tool_use"
+)
 
 type TextBlock struct {
 	// Citations supporting the text block.

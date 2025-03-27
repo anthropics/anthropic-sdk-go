@@ -25,7 +25,7 @@ func TestManualPagination(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	page, err := client.Beta.Messages.Batches.List(context.TODO(), anthropic.BetaMessageBatchListParams{
-		Limit: anthropic.Int(20),
+		Limit: anthropic.F(int64(20)),
 	})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())

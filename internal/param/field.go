@@ -1,6 +1,8 @@
 package param
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type FieldLike interface{ field() }
 

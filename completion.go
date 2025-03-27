@@ -7,12 +7,10 @@ import (
 	"net/http"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/internal/param"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
 	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 // CompletionService contains methods and other services that help with interacting
@@ -28,8 +26,8 @@ type CompletionService struct {
 // NewCompletionService generates a new service that applies the given options to
 // each request. These options are applied after the parent client's options (if
 // there is one), and before any request-specific options.
-func NewCompletionService(opts ...option.RequestOption) (r CompletionService) {
-	r = CompletionService{}
+func NewCompletionService(opts ...option.RequestOption) (r *CompletionService) {
+	r = &CompletionService{}
 	r.Options = opts
 	return
 }
@@ -91,28 +89,48 @@ type Completion struct {
 	//   - `"stop_sequence"`: we reached a stop sequence — either provided by you via the
 	//     `stop_sequences` parameter, or a stop sequence built into the model
 	//   - `"max_tokens"`: we exceeded `max_tokens_to_sample` or the model's maximum
-	StopReason string `json:"stop_reason,required"`
+	StopReason string `json:"stop_reason,required,nullable"`
 	// Object type.
 	//
 	// For Text Completions, this is always `"completion"`.
-	Type constant.Completion `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		ID          resp.Field
-		Completion  resp.Field
-		Model       resp.Field
-		StopReason  resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Type CompletionType `json:"type,required"`
+	JSON completionJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r Completion) RawJSON() string { return r.JSON.raw }
-func (r *Completion) UnmarshalJSON(data []byte) error {
+// completionJSON contains the JSON metadata for the struct [Completion]
+type completionJSON struct {
+	ID          apijson.Field
+	Completion  apijson.Field
+	Model       apijson.Field
+	StopReason  apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *Completion) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r completionJSON) RawJSON() string {
+	return r.raw
+}
+
+// Object type.
+//
+// For Text Completions, this is always `"completion"`.
+type CompletionType string
+
+const (
+	CompletionTypeCompletion CompletionType = "completion"
+)
+
+func (r CompletionType) IsKnown() bool {
+	switch r {
+	case CompletionTypeCompletion:
+		return true
+	}
+	return false
 }
 
 type CompletionNewParams struct {
@@ -120,11 +138,11 @@ type CompletionNewParams struct {
 	//
 	// Note that our models may stop _before_ reaching this maximum. This parameter
 	// only specifies the absolute maximum number of tokens to generate.
-	MaxTokensToSample int64 `json:"max_tokens_to_sample,required"`
+	MaxTokensToSample param.Field[int64] `json:"max_tokens_to_sample,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
-	Model Model `json:"model,omitzero,required"`
+	Model param.Field[Model] `json:"model,required"`
 	// The prompt that you want Claude to complete.
 	//
 	// For proper response generation you will need to format your prompt using
@@ -138,7 +156,15 @@ type CompletionNewParams struct {
 	// our guide to
 	// [prompt design](https://docs.anthropic.com/en/docs/intro-to-prompting) for more
 	// details.
-	Prompt string `json:"prompt,required"`
+	Prompt param.Field[string] `json:"prompt,required"`
+	// An object describing metadata about the request.
+	Metadata param.Field[MetadataParam] `json:"metadata"`
+	// Sequences that will cause the model to stop generating.
+	//
+	// Our models stop on `"\n\nHuman:"`, and may include additional built-in stop
+	// sequences in the future. By providing the stop_sequences parameter, you may
+	// include additional strings that will cause the model to stop generating.
+	StopSequences param.Field[[]string] `json:"stop_sequences"`
 	// Amount of randomness injected into the response.
 	//
 	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`
@@ -147,7 +173,7 @@ type CompletionNewParams struct {
 	//
 	// Note that even with `temperature` of `0.0`, the results will not be fully
 	// deterministic.
-	Temperature param.Opt[float64] `json:"temperature,omitzero"`
+	Temperature param.Field[float64] `json:"temperature"`
 	// Only sample from the top K options for each subsequent token.
 	//
 	// Used to remove "long tail" low probability responses.
@@ -155,7 +181,7 @@ type CompletionNewParams struct {
 	//
 	// Recommended for advanced use cases only. You usually only need to use
 	// `temperature`.
-	TopK param.Opt[int64] `json:"top_k,omitzero"`
+	TopK param.Field[int64] `json:"top_k"`
 	// Use nucleus sampling.
 	//
 	// In nucleus sampling, we compute the cumulative distribution over all the options
@@ -165,23 +191,9 @@ type CompletionNewParams struct {
 	//
 	// Recommended for advanced use cases only. You usually only need to use
 	// `temperature`.
-	TopP param.Opt[float64] `json:"top_p,omitzero"`
-	// An object describing metadata about the request.
-	Metadata MetadataParam `json:"metadata,omitzero"`
-	// Sequences that will cause the model to stop generating.
-	//
-	// Our models stop on `"\n\nHuman:"`, and may include additional built-in stop
-	// sequences in the future. By providing the stop_sequences parameter, you may
-	// include additional strings that will cause the model to stop generating.
-	StopSequences []string `json:"stop_sequences,omitzero"`
-	paramObj
+	TopP param.Field[float64] `json:"top_p"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CompletionNewParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-
 func (r CompletionNewParams) MarshalJSON() (data []byte, err error) {
-	type shadow CompletionNewParams
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }

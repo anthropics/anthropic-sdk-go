@@ -173,9 +173,6 @@ func (d *decoderBuilder) newTypeDecoder(t reflect.Type) decoderFunc {
 			return nil
 		}
 	case reflect.Struct:
-		if isEmbeddedUnion(t) {
-			return d.newEmbeddedUnionDecoder(t)
-		}
 		return d.newStructTypeDecoder(t)
 	case reflect.Array:
 		fallthrough
@@ -346,7 +343,7 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 	decoderFields := map[string]decoderField{}
 	anonymousDecoders := []decoderField{}
 	extraDecoder := (*decoderField)(nil)
-	var inlineDecoders []decoderField
+	inlineDecoder := (*decoderField)(nil)
 
 	for i := 0; i < t.NumField(); i++ {
 		idx := []int{i}
@@ -376,8 +373,7 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 			continue
 		}
 		if ptag.inline {
-			df := decoderField{ptag, d.typeDecoder(field.Type), idx, field.Name}
-			inlineDecoders = append(inlineDecoders, df)
+			inlineDecoder = &decoderField{ptag, d.typeDecoder(field.Type), idx, field.Name}
 			continue
 		}
 		if ptag.metadata {
@@ -410,13 +406,12 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 			decoder.fn(node, value.FieldByIndex(decoder.idx), state)
 		}
 
-		for _, inlineDecoder := range inlineDecoders {
+		if inlineDecoder != nil {
 			var meta Field
 			dest := value.FieldByIndex(inlineDecoder.idx)
 			isValid := false
 			if dest.IsValid() && node.Type != gjson.Null {
-				inlineState := decoderState{exactness: state.exactness, strict: true}
-				err = inlineDecoder.fn(node, dest, &inlineState)
+				err = inlineDecoder.fn(node, dest, state)
 				if err == nil {
 					isValid = true
 				}
@@ -428,18 +423,20 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 					status: null,
 				}
 			} else if !isValid {
-				// If an inline decoder fails, unset the field and move on.
-				if dest.IsValid() {
-					dest.SetZero()
+				meta = Field{
+					raw:    node.Raw,
+					status: invalid,
 				}
-				continue
 			} else if isValid {
 				meta = Field{
 					raw:    node.Raw,
 					status: valid,
 				}
 			}
-			setMetadataSubField(value, inlineDecoder.idx, inlineDecoder.goname, meta)
+			if metadata := getSubField(value, inlineDecoder.idx, inlineDecoder.goname); metadata.IsValid() {
+				metadata.Set(reflect.ValueOf(meta))
+			}
+			return err
 		}
 
 		typedExtraType := reflect.Type(nil)
@@ -492,7 +489,9 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 			}
 
 			if explicit {
-				setMetadataSubField(value, df.idx, df.goname, meta)
+				if metadata := getSubField(value, df.idx, df.goname); metadata.IsValid() {
+					metadata.Set(reflect.ValueOf(meta))
+				}
 			}
 			if !explicit {
 				untypedExtraFields[fieldName] = meta
@@ -511,8 +510,8 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 			state.exactness = extras
 		}
 
-		if len(untypedExtraFields) > 0 {
-			setMetadataExtraFields(value, []int{-1}, "ExtraFields", untypedExtraFields)
+		if metadata := getSubField(value, []int{-1}, "ExtraFields"); metadata.IsValid() && len(untypedExtraFields) > 0 {
+			metadata.Set(reflect.ValueOf(untypedExtraFields))
 		}
 		return nil
 	}
@@ -663,16 +662,8 @@ func canParseAsNumber(str string) bool {
 	return err == nil
 }
 
-var stringType = reflect.TypeOf(string(""))
-
 func guardUnknown(state *decoderState, v reflect.Value) bool {
 	if have, ok := v.Interface().(interface{ IsKnown() bool }); guardStrict(state, ok && !have.IsKnown()) {
-		return true
-	}
-
-	constantString, ok := v.Interface().(interface{ Default() string })
-	named := v.Type() != stringType
-	if guardStrict(state, ok && named && v.Equal(reflect.ValueOf(constantString.Default()))) {
 		return true
 	}
 	return false

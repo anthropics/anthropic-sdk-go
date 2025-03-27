@@ -12,12 +12,10 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/internal/param"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 // ModelService contains methods and other services that help with interacting with
@@ -33,8 +31,8 @@ type ModelService struct {
 // NewModelService generates a new service that applies the given options to each
 // request. These options are applied after the parent client's options (if there
 // is one), and before any request-specific options.
-func NewModelService(opts ...option.RequestOption) (r ModelService) {
-	r = ModelService{}
+func NewModelService(opts ...option.RequestOption) (r *ModelService) {
+	r = &ModelService{}
 	r.Options = opts
 	return
 }
@@ -94,42 +92,57 @@ type ModelInfo struct {
 	// Object type.
 	//
 	// For Models, this is always `"model"`.
-	Type constant.Model `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		ID          resp.Field
-		CreatedAt   resp.Field
-		DisplayName resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Type ModelInfoType `json:"type,required"`
+	JSON modelInfoJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r ModelInfo) RawJSON() string { return r.JSON.raw }
-func (r *ModelInfo) UnmarshalJSON(data []byte) error {
+// modelInfoJSON contains the JSON metadata for the struct [ModelInfo]
+type modelInfoJSON struct {
+	ID          apijson.Field
+	CreatedAt   apijson.Field
+	DisplayName apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ModelInfo) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r modelInfoJSON) RawJSON() string {
+	return r.raw
+}
+
+// Object type.
+//
+// For Models, this is always `"model"`.
+type ModelInfoType string
+
+const (
+	ModelInfoTypeModel ModelInfoType = "model"
+)
+
+func (r ModelInfoType) IsKnown() bool {
+	switch r {
+	case ModelInfoTypeModel:
+		return true
+	}
+	return false
 }
 
 type ModelListParams struct {
 	// ID of the object to use as a cursor for pagination. When provided, returns the
 	// page of results immediately after this object.
-	AfterID param.Opt[string] `query:"after_id,omitzero" json:"-"`
+	AfterID param.Field[string] `query:"after_id"`
 	// ID of the object to use as a cursor for pagination. When provided, returns the
 	// page of results immediately before this object.
-	BeforeID param.Opt[string] `query:"before_id,omitzero" json:"-"`
+	BeforeID param.Field[string] `query:"before_id"`
 	// Number of items to return per page.
 	//
 	// Defaults to `20`. Ranges from `1` to `1000`.
-	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	paramObj
+	Limit param.Field[int64] `query:"limit"`
 }
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ModelListParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 
 // URLQuery serializes [ModelListParams]'s query parameters as `url.Values`.
 func (r ModelListParams) URLQuery() (v url.Values) {

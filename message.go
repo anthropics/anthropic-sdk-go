@@ -4,17 +4,14 @@ package anthropic
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"reflect"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/internal/param"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
 	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 	"github.com/tidwall/gjson"
 )
 
@@ -26,14 +23,14 @@ import (
 // the [NewMessageService] method instead.
 type MessageService struct {
 	Options []option.RequestOption
-	Batches MessageBatchService
+	Batches *MessageBatchService
 }
 
 // NewMessageService generates a new service that applies the given options to each
 // request. These options are applied after the parent client's options (if there
 // is one), and before any request-specific options.
-func NewMessageService(opts ...option.RequestOption) (r MessageService) {
-	r = MessageService{}
+func NewMessageService(opts ...option.RequestOption) (r *MessageService) {
+	r = &MessageService{}
 	r.Options = opts
 	r.Batches = NewMessageBatchService(opts...)
 	return
@@ -64,7 +61,7 @@ func (r *MessageService) New(ctx context.Context, body MessageNewParams, opts ..
 // Learn more about the Messages API in our [user guide](/en/docs/initial-setup)
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
-func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[MessageStreamEventUnion]) {
+func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[MessageStreamEvent]) {
 	var (
 		raw *http.Response
 		err error
@@ -73,7 +70,7 @@ func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams
 	opts = append([]option.RequestOption{option.WithJSONSet("stream", true)}, opts...)
 	path := "v1/messages"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &raw, opts...)
-	return ssestream.NewStream[MessageStreamEventUnion](ssestream.NewDecoder(raw), err)
+	return ssestream.NewStream[MessageStreamEvent](ssestream.NewDecoder(raw), err)
 }
 
 // Count the number of tokens in a Message.
@@ -90,23 +87,17 @@ func (r *MessageService) CountTokens(ctx context.Context, body MessageCountToken
 	return
 }
 
-// The properties Data, MediaType, Type are required.
 type Base64ImageSourceParam struct {
-	Data string `json:"data,required" format:"byte"`
-	// Any of "image/jpeg", "image/png", "image/gif", "image/webp".
-	MediaType Base64ImageSourceMediaType `json:"media_type,omitzero,required"`
-	// This field can be elided, and will marshal its zero value as "base64".
-	Type constant.Base64 `json:"type,required"`
-	paramObj
+	Data      param.Field[string]                     `json:"data,required" format:"byte"`
+	MediaType param.Field[Base64ImageSourceMediaType] `json:"media_type,required"`
+	Type      param.Field[Base64ImageSourceType]      `json:"type,required"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f Base64ImageSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r Base64ImageSourceParam) MarshalJSON() (data []byte, err error) {
-	type shadow Base64ImageSourceParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
+
+func (r Base64ImageSourceParam) implementsImageBlockParamSourceUnion() {}
 
 type Base64ImageSourceMediaType string
 
@@ -117,1095 +108,857 @@ const (
 	Base64ImageSourceMediaTypeImageWebP Base64ImageSourceMediaType = "image/webp"
 )
 
-// The properties Data, MediaType, Type are required.
+func (r Base64ImageSourceMediaType) IsKnown() bool {
+	switch r {
+	case Base64ImageSourceMediaTypeImageJPEG, Base64ImageSourceMediaTypeImagePNG, Base64ImageSourceMediaTypeImageGIF, Base64ImageSourceMediaTypeImageWebP:
+		return true
+	}
+	return false
+}
+
+type Base64ImageSourceType string
+
+const (
+	Base64ImageSourceTypeBase64 Base64ImageSourceType = "base64"
+)
+
+func (r Base64ImageSourceType) IsKnown() bool {
+	switch r {
+	case Base64ImageSourceTypeBase64:
+		return true
+	}
+	return false
+}
+
 type Base64PDFSourceParam struct {
-	Data string `json:"data,required" format:"byte"`
-	// This field can be elided, and will marshal its zero value as "application/pdf".
-	MediaType constant.ApplicationPDF `json:"media_type,required"`
-	// This field can be elided, and will marshal its zero value as "base64".
-	Type constant.Base64 `json:"type,required"`
-	paramObj
+	Data      param.Field[string]                   `json:"data,required" format:"byte"`
+	MediaType param.Field[Base64PDFSourceMediaType] `json:"media_type,required"`
+	Type      param.Field[Base64PDFSourceType]      `json:"type,required"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f Base64PDFSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r Base64PDFSourceParam) MarshalJSON() (data []byte, err error) {
-	type shadow Base64PDFSourceParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// The property Type is required.
+func (r Base64PDFSourceParam) implementsDocumentBlockParamSourceUnion() {}
+
+type Base64PDFSourceMediaType string
+
+const (
+	Base64PDFSourceMediaTypeApplicationPDF Base64PDFSourceMediaType = "application/pdf"
+)
+
+func (r Base64PDFSourceMediaType) IsKnown() bool {
+	switch r {
+	case Base64PDFSourceMediaTypeApplicationPDF:
+		return true
+	}
+	return false
+}
+
+type Base64PDFSourceType string
+
+const (
+	Base64PDFSourceTypeBase64 Base64PDFSourceType = "base64"
+)
+
+func (r Base64PDFSourceType) IsKnown() bool {
+	switch r {
+	case Base64PDFSourceTypeBase64:
+		return true
+	}
+	return false
+}
+
 type CacheControlEphemeralParam struct {
-	// This field can be elided, and will marshal its zero value as "ephemeral".
-	Type constant.Ephemeral `json:"type,required"`
-	paramObj
+	Type param.Field[CacheControlEphemeralType] `json:"type,required"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CacheControlEphemeralParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r CacheControlEphemeralParam) MarshalJSON() (data []byte, err error) {
-	type shadow CacheControlEphemeralParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
+}
+
+type CacheControlEphemeralType string
+
+const (
+	CacheControlEphemeralTypeEphemeral CacheControlEphemeralType = "ephemeral"
+)
+
+func (r CacheControlEphemeralType) IsKnown() bool {
+	switch r {
+	case CacheControlEphemeralTypeEphemeral:
+		return true
+	}
+	return false
 }
 
 type CitationCharLocation struct {
-	CitedText      string                `json:"cited_text,required"`
-	DocumentIndex  int64                 `json:"document_index,required"`
-	DocumentTitle  string                `json:"document_title,required"`
-	EndCharIndex   int64                 `json:"end_char_index,required"`
-	StartCharIndex int64                 `json:"start_char_index,required"`
-	Type           constant.CharLocation `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		CitedText      resp.Field
-		DocumentIndex  resp.Field
-		DocumentTitle  resp.Field
-		EndCharIndex   resp.Field
-		StartCharIndex resp.Field
-		Type           resp.Field
-		ExtraFields    map[string]resp.Field
-		raw            string
-	} `json:"-"`
+	CitedText      string                   `json:"cited_text,required"`
+	DocumentIndex  int64                    `json:"document_index,required"`
+	DocumentTitle  string                   `json:"document_title,required,nullable"`
+	EndCharIndex   int64                    `json:"end_char_index,required"`
+	StartCharIndex int64                    `json:"start_char_index,required"`
+	Type           CitationCharLocationType `json:"type,required"`
+	JSON           citationCharLocationJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r CitationCharLocation) RawJSON() string { return r.JSON.raw }
-func (r *CitationCharLocation) UnmarshalJSON(data []byte) error {
+// citationCharLocationJSON contains the JSON metadata for the struct
+// [CitationCharLocation]
+type citationCharLocationJSON struct {
+	CitedText      apijson.Field
+	DocumentIndex  apijson.Field
+	DocumentTitle  apijson.Field
+	EndCharIndex   apijson.Field
+	StartCharIndex apijson.Field
+	Type           apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
+}
+
+func (r *CitationCharLocation) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties CitedText, DocumentIndex, DocumentTitle, EndCharIndex,
-// StartCharIndex, Type are required.
-type CitationCharLocationParam struct {
-	DocumentTitle  param.Opt[string] `json:"document_title,omitzero,required"`
-	CitedText      string            `json:"cited_text,required"`
-	DocumentIndex  int64             `json:"document_index,required"`
-	EndCharIndex   int64             `json:"end_char_index,required"`
-	StartCharIndex int64             `json:"start_char_index,required"`
-	// This field can be elided, and will marshal its zero value as "char_location".
-	Type constant.CharLocation `json:"type,required"`
-	paramObj
+func (r citationCharLocationJSON) RawJSON() string {
+	return r.raw
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CitationCharLocationParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (r CitationCharLocation) implementsCitationsDeltaCitation() {}
+
+func (r CitationCharLocation) implementsTextCitation() {}
+
+type CitationCharLocationType string
+
+const (
+	CitationCharLocationTypeCharLocation CitationCharLocationType = "char_location"
+)
+
+func (r CitationCharLocationType) IsKnown() bool {
+	switch r {
+	case CitationCharLocationTypeCharLocation:
+		return true
+	}
+	return false
+}
+
+type CitationCharLocationParam struct {
+	CitedText      param.Field[string]                        `json:"cited_text,required"`
+	DocumentIndex  param.Field[int64]                         `json:"document_index,required"`
+	DocumentTitle  param.Field[string]                        `json:"document_title,required"`
+	EndCharIndex   param.Field[int64]                         `json:"end_char_index,required"`
+	StartCharIndex param.Field[int64]                         `json:"start_char_index,required"`
+	Type           param.Field[CitationCharLocationParamType] `json:"type,required"`
+}
+
 func (r CitationCharLocationParam) MarshalJSON() (data []byte, err error) {
-	type shadow CitationCharLocationParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
+}
+
+func (r CitationCharLocationParam) implementsTextCitationParamUnion() {}
+
+type CitationCharLocationParamType string
+
+const (
+	CitationCharLocationParamTypeCharLocation CitationCharLocationParamType = "char_location"
+)
+
+func (r CitationCharLocationParamType) IsKnown() bool {
+	switch r {
+	case CitationCharLocationParamTypeCharLocation:
+		return true
+	}
+	return false
 }
 
 type CitationContentBlockLocation struct {
-	CitedText       string                        `json:"cited_text,required"`
-	DocumentIndex   int64                         `json:"document_index,required"`
-	DocumentTitle   string                        `json:"document_title,required"`
-	EndBlockIndex   int64                         `json:"end_block_index,required"`
-	StartBlockIndex int64                         `json:"start_block_index,required"`
-	Type            constant.ContentBlockLocation `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndBlockIndex   resp.Field
-		StartBlockIndex resp.Field
-		Type            resp.Field
-		ExtraFields     map[string]resp.Field
-		raw             string
-	} `json:"-"`
+	CitedText       string                           `json:"cited_text,required"`
+	DocumentIndex   int64                            `json:"document_index,required"`
+	DocumentTitle   string                           `json:"document_title,required,nullable"`
+	EndBlockIndex   int64                            `json:"end_block_index,required"`
+	StartBlockIndex int64                            `json:"start_block_index,required"`
+	Type            CitationContentBlockLocationType `json:"type,required"`
+	JSON            citationContentBlockLocationJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r CitationContentBlockLocation) RawJSON() string { return r.JSON.raw }
-func (r *CitationContentBlockLocation) UnmarshalJSON(data []byte) error {
+// citationContentBlockLocationJSON contains the JSON metadata for the struct
+// [CitationContentBlockLocation]
+type citationContentBlockLocationJSON struct {
+	CitedText       apijson.Field
+	DocumentIndex   apijson.Field
+	DocumentTitle   apijson.Field
+	EndBlockIndex   apijson.Field
+	StartBlockIndex apijson.Field
+	Type            apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *CitationContentBlockLocation) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties CitedText, DocumentIndex, DocumentTitle, EndBlockIndex,
-// StartBlockIndex, Type are required.
-type CitationContentBlockLocationParam struct {
-	DocumentTitle   param.Opt[string] `json:"document_title,omitzero,required"`
-	CitedText       string            `json:"cited_text,required"`
-	DocumentIndex   int64             `json:"document_index,required"`
-	EndBlockIndex   int64             `json:"end_block_index,required"`
-	StartBlockIndex int64             `json:"start_block_index,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "content_block_location".
-	Type constant.ContentBlockLocation `json:"type,required"`
-	paramObj
+func (r citationContentBlockLocationJSON) RawJSON() string {
+	return r.raw
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CitationContentBlockLocationParam) IsPresent() bool {
-	return !param.IsOmitted(f) && !f.IsNull()
+func (r CitationContentBlockLocation) implementsCitationsDeltaCitation() {}
+
+func (r CitationContentBlockLocation) implementsTextCitation() {}
+
+type CitationContentBlockLocationType string
+
+const (
+	CitationContentBlockLocationTypeContentBlockLocation CitationContentBlockLocationType = "content_block_location"
+)
+
+func (r CitationContentBlockLocationType) IsKnown() bool {
+	switch r {
+	case CitationContentBlockLocationTypeContentBlockLocation:
+		return true
+	}
+	return false
 }
+
+type CitationContentBlockLocationParam struct {
+	CitedText       param.Field[string]                                `json:"cited_text,required"`
+	DocumentIndex   param.Field[int64]                                 `json:"document_index,required"`
+	DocumentTitle   param.Field[string]                                `json:"document_title,required"`
+	EndBlockIndex   param.Field[int64]                                 `json:"end_block_index,required"`
+	StartBlockIndex param.Field[int64]                                 `json:"start_block_index,required"`
+	Type            param.Field[CitationContentBlockLocationParamType] `json:"type,required"`
+}
+
 func (r CitationContentBlockLocationParam) MarshalJSON() (data []byte, err error) {
-	type shadow CitationContentBlockLocationParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
+}
+
+func (r CitationContentBlockLocationParam) implementsTextCitationParamUnion() {}
+
+type CitationContentBlockLocationParamType string
+
+const (
+	CitationContentBlockLocationParamTypeContentBlockLocation CitationContentBlockLocationParamType = "content_block_location"
+)
+
+func (r CitationContentBlockLocationParamType) IsKnown() bool {
+	switch r {
+	case CitationContentBlockLocationParamTypeContentBlockLocation:
+		return true
+	}
+	return false
 }
 
 type CitationPageLocation struct {
-	CitedText       string                `json:"cited_text,required"`
-	DocumentIndex   int64                 `json:"document_index,required"`
-	DocumentTitle   string                `json:"document_title,required"`
-	EndPageNumber   int64                 `json:"end_page_number,required"`
-	StartPageNumber int64                 `json:"start_page_number,required"`
-	Type            constant.PageLocation `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndPageNumber   resp.Field
-		StartPageNumber resp.Field
-		Type            resp.Field
-		ExtraFields     map[string]resp.Field
-		raw             string
-	} `json:"-"`
+	CitedText       string                   `json:"cited_text,required"`
+	DocumentIndex   int64                    `json:"document_index,required"`
+	DocumentTitle   string                   `json:"document_title,required,nullable"`
+	EndPageNumber   int64                    `json:"end_page_number,required"`
+	StartPageNumber int64                    `json:"start_page_number,required"`
+	Type            CitationPageLocationType `json:"type,required"`
+	JSON            citationPageLocationJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r CitationPageLocation) RawJSON() string { return r.JSON.raw }
-func (r *CitationPageLocation) UnmarshalJSON(data []byte) error {
+// citationPageLocationJSON contains the JSON metadata for the struct
+// [CitationPageLocation]
+type citationPageLocationJSON struct {
+	CitedText       apijson.Field
+	DocumentIndex   apijson.Field
+	DocumentTitle   apijson.Field
+	EndPageNumber   apijson.Field
+	StartPageNumber apijson.Field
+	Type            apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *CitationPageLocation) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties CitedText, DocumentIndex, DocumentTitle, EndPageNumber,
-// StartPageNumber, Type are required.
-type CitationPageLocationParam struct {
-	DocumentTitle   param.Opt[string] `json:"document_title,omitzero,required"`
-	CitedText       string            `json:"cited_text,required"`
-	DocumentIndex   int64             `json:"document_index,required"`
-	EndPageNumber   int64             `json:"end_page_number,required"`
-	StartPageNumber int64             `json:"start_page_number,required"`
-	// This field can be elided, and will marshal its zero value as "page_location".
-	Type constant.PageLocation `json:"type,required"`
-	paramObj
+func (r citationPageLocationJSON) RawJSON() string {
+	return r.raw
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CitationPageLocationParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (r CitationPageLocation) implementsCitationsDeltaCitation() {}
+
+func (r CitationPageLocation) implementsTextCitation() {}
+
+type CitationPageLocationType string
+
+const (
+	CitationPageLocationTypePageLocation CitationPageLocationType = "page_location"
+)
+
+func (r CitationPageLocationType) IsKnown() bool {
+	switch r {
+	case CitationPageLocationTypePageLocation:
+		return true
+	}
+	return false
+}
+
+type CitationPageLocationParam struct {
+	CitedText       param.Field[string]                        `json:"cited_text,required"`
+	DocumentIndex   param.Field[int64]                         `json:"document_index,required"`
+	DocumentTitle   param.Field[string]                        `json:"document_title,required"`
+	EndPageNumber   param.Field[int64]                         `json:"end_page_number,required"`
+	StartPageNumber param.Field[int64]                         `json:"start_page_number,required"`
+	Type            param.Field[CitationPageLocationParamType] `json:"type,required"`
+}
+
 func (r CitationPageLocationParam) MarshalJSON() (data []byte, err error) {
-	type shadow CitationPageLocationParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
+}
+
+func (r CitationPageLocationParam) implementsTextCitationParamUnion() {}
+
+type CitationPageLocationParamType string
+
+const (
+	CitationPageLocationParamTypePageLocation CitationPageLocationParamType = "page_location"
+)
+
+func (r CitationPageLocationParamType) IsKnown() bool {
+	switch r {
+	case CitationPageLocationParamTypePageLocation:
+		return true
+	}
+	return false
 }
 
 type CitationsConfigParam struct {
-	Enabled param.Opt[bool] `json:"enabled,omitzero"`
-	paramObj
+	Enabled param.Field[bool] `json:"enabled"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CitationsConfigParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r CitationsConfigParam) MarshalJSON() (data []byte, err error) {
-	type shadow CitationsConfigParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
 type CitationsDelta struct {
-	Citation CitationsDeltaCitationUnion `json:"citation,required"`
-	Type     constant.CitationsDelta     `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Citation    resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Citation CitationsDeltaCitation `json:"citation,required"`
+	Type     CitationsDeltaType     `json:"type,required"`
+	JSON     citationsDeltaJSON     `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r CitationsDelta) RawJSON() string { return r.JSON.raw }
-func (r *CitationsDelta) UnmarshalJSON(data []byte) error {
+// citationsDeltaJSON contains the JSON metadata for the struct [CitationsDelta]
+type citationsDeltaJSON struct {
+	Citation    apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *CitationsDelta) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// CitationsDeltaCitationUnion contains all possible properties and values from
-// [CitationCharLocation], [CitationPageLocation], [CitationContentBlockLocation].
+func (r citationsDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r CitationsDelta) implementsContentBlockDeltaEventDelta() {}
+
+type CitationsDeltaCitation struct {
+	CitedText       string                     `json:"cited_text,required"`
+	DocumentIndex   int64                      `json:"document_index,required"`
+	DocumentTitle   string                     `json:"document_title,required,nullable"`
+	Type            CitationsDeltaCitationType `json:"type,required"`
+	EndBlockIndex   int64                      `json:"end_block_index"`
+	EndCharIndex    int64                      `json:"end_char_index"`
+	EndPageNumber   int64                      `json:"end_page_number"`
+	StartBlockIndex int64                      `json:"start_block_index"`
+	StartCharIndex  int64                      `json:"start_char_index"`
+	StartPageNumber int64                      `json:"start_page_number"`
+	JSON            citationsDeltaCitationJSON `json:"-"`
+	union           CitationsDeltaCitationUnion
+}
+
+// citationsDeltaCitationJSON contains the JSON metadata for the struct
+// [CitationsDeltaCitation]
+type citationsDeltaCitationJSON struct {
+	CitedText       apijson.Field
+	DocumentIndex   apijson.Field
+	DocumentTitle   apijson.Field
+	Type            apijson.Field
+	EndBlockIndex   apijson.Field
+	EndCharIndex    apijson.Field
+	EndPageNumber   apijson.Field
+	StartBlockIndex apijson.Field
+	StartCharIndex  apijson.Field
+	StartPageNumber apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r citationsDeltaCitationJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *CitationsDeltaCitation) UnmarshalJSON(data []byte) (err error) {
+	*r = CitationsDeltaCitation{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [CitationsDeltaCitationUnion] interface which you can cast to
+// the specific types for more type safety.
 //
-// Use the [CitationsDeltaCitationUnion.AsAny] method to switch on the variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type CitationsDeltaCitationUnion struct {
-	CitedText     string `json:"cited_text"`
-	DocumentIndex int64  `json:"document_index"`
-	DocumentTitle string `json:"document_title"`
-	// This field is from variant [CitationCharLocation].
-	EndCharIndex int64 `json:"end_char_index"`
-	// This field is from variant [CitationCharLocation].
-	StartCharIndex int64 `json:"start_char_index"`
-	// Any of "char_location", "page_location", "content_block_location".
-	Type string `json:"type"`
-	// This field is from variant [CitationPageLocation].
-	EndPageNumber int64 `json:"end_page_number"`
-	// This field is from variant [CitationPageLocation].
-	StartPageNumber int64 `json:"start_page_number"`
-	// This field is from variant [CitationContentBlockLocation].
-	EndBlockIndex int64 `json:"end_block_index"`
-	// This field is from variant [CitationContentBlockLocation].
-	StartBlockIndex int64 `json:"start_block_index"`
-	JSON            struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndCharIndex    resp.Field
-		StartCharIndex  resp.Field
-		Type            resp.Field
-		EndPageNumber   resp.Field
-		StartPageNumber resp.Field
-		EndBlockIndex   resp.Field
-		StartBlockIndex resp.Field
-		raw             string
-	} `json:"-"`
+// Possible runtime types of the union are [CitationCharLocation],
+// [CitationPageLocation], [CitationContentBlockLocation].
+func (r CitationsDeltaCitation) AsUnion() CitationsDeltaCitationUnion {
+	return r.union
 }
 
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := CitationsDeltaCitationUnion.AsAny().(type) {
-//	case CitationCharLocation:
-//	case CitationPageLocation:
-//	case CitationContentBlockLocation:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u CitationsDeltaCitationUnion) AsAny() any {
-	switch u.Type {
-	case "char_location":
-		return u.AsResponseCharLocationCitation()
-	case "page_location":
-		return u.AsResponsePageLocationCitation()
-	case "content_block_location":
-		return u.AsResponseContentBlockLocationCitation()
-	}
-	return nil
-}
-
-func (u CitationsDeltaCitationUnion) AsResponseCharLocationCitation() (v CitationCharLocation) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u CitationsDeltaCitationUnion) AsResponsePageLocationCitation() (v CitationPageLocation) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u CitationsDeltaCitationUnion) AsResponseContentBlockLocationCitation() (v CitationContentBlockLocation) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u CitationsDeltaCitationUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *CitationsDeltaCitationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// ContentBlockUnion contains all possible properties and values from [TextBlock],
-// [ToolUseBlock], [ThinkingBlock], [RedactedThinkingBlock].
-//
-// Use the [ContentBlockUnion.AsAny] method to switch on the variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ContentBlockUnion struct {
-	// This field is from variant [TextBlock].
-	Citations []TextCitationUnion `json:"citations"`
-	// This field is from variant [TextBlock].
-	Text string `json:"text"`
-	// Any of "text", "tool_use", "thinking", "redacted_thinking".
-	Type string `json:"type"`
-	// This field is from variant [ToolUseBlock].
-	ID string `json:"id"`
-	// This field is from variant [ToolUseBlock].
-	Input interface{} `json:"input"`
-	// This field is from variant [ToolUseBlock].
-	Name string `json:"name"`
-	// This field is from variant [ThinkingBlock].
-	Signature string `json:"signature"`
-	// This field is from variant [ThinkingBlock].
-	Thinking string `json:"thinking"`
-	// This field is from variant [RedactedThinkingBlock].
-	Data string `json:"data"`
-	JSON struct {
-		Citations resp.Field
-		Text      resp.Field
-		Type      resp.Field
-		ID        resp.Field
-		Input     resp.Field
-		Name      resp.Field
-		Signature resp.Field
-		Thinking  resp.Field
-		Data      resp.Field
-		raw       string
-	} `json:"-"`
-}
-
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := ContentBlockUnion.AsAny().(type) {
-//	case TextBlock:
-//	case ToolUseBlock:
-//	case ThinkingBlock:
-//	case RedactedThinkingBlock:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u ContentBlockUnion) AsAny() any {
-	switch u.Type {
-	case "text":
-		return u.AsResponseTextBlock()
-	case "tool_use":
-		return u.AsResponseToolUseBlock()
-	case "thinking":
-		return u.AsResponseThinkingBlock()
-	case "redacted_thinking":
-		return u.AsResponseRedactedThinkingBlock()
-	}
-	return nil
-}
-
-func (u ContentBlockUnion) AsResponseTextBlock() (v TextBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ContentBlockUnion) AsResponseToolUseBlock() (v ToolUseBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ContentBlockUnion) AsResponseThinkingBlock() (v ThinkingBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ContentBlockUnion) AsResponseRedactedThinkingBlock() (v RedactedThinkingBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u ContentBlockUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *ContentBlockUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func ContentBlockParamOfRequestTextBlock(text string) ContentBlockParamUnion {
-	var variant TextBlockParam
-	variant.Text = text
-	return ContentBlockParamUnion{OfRequestTextBlock: &variant}
-}
-
-func ContentBlockParamOfRequestImageBlock[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockParamUnion {
-	var variant ImageBlockParam
-	switch v := any(source).(type) {
-	case Base64ImageSourceParam:
-		variant.Source.OfBase64ImageSource = &v
-	case URLImageSourceParam:
-		variant.Source.OfURLImageSource = &v
-	}
-	return ContentBlockParamUnion{OfRequestImageBlock: &variant}
-}
-
-func ContentBlockParamOfRequestToolUseBlock(id string, input interface{}, name string) ContentBlockParamUnion {
-	var variant ToolUseBlockParam
-	variant.ID = id
-	variant.Input = input
-	variant.Name = name
-	return ContentBlockParamUnion{OfRequestToolUseBlock: &variant}
-}
-
-func ContentBlockParamOfRequestToolResultBlock(toolUseID string) ContentBlockParamUnion {
-	var variant ToolResultBlockParam
-	variant.ToolUseID = toolUseID
-	return ContentBlockParamUnion{OfRequestToolResultBlock: &variant}
-}
-
-func ContentBlockParamOfRequestDocumentBlock[
-	T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
-](source T) ContentBlockParamUnion {
-	var variant DocumentBlockParam
-	switch v := any(source).(type) {
-	case Base64PDFSourceParam:
-		variant.Source.OfBase64PDFSource = &v
-	case PlainTextSourceParam:
-		variant.Source.OfPlainTextSource = &v
-	case ContentBlockSourceParam:
-		variant.Source.OfContentBlockSource = &v
-	case URLPDFSourceParam:
-		variant.Source.OfUrlpdfSource = &v
-	}
-	return ContentBlockParamUnion{OfRequestDocumentBlock: &variant}
-}
-
-func ContentBlockParamOfRequestThinkingBlock(signature string, thinking string) ContentBlockParamUnion {
-	var variant ThinkingBlockParam
-	variant.Signature = signature
-	variant.Thinking = thinking
-	return ContentBlockParamUnion{OfRequestThinkingBlock: &variant}
-}
-
-func ContentBlockParamOfRequestRedactedThinkingBlock(data string) ContentBlockParamUnion {
-	var variant RedactedThinkingBlockParam
-	variant.Data = data
-	return ContentBlockParamUnion{OfRequestRedactedThinkingBlock: &variant}
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ContentBlockParamUnion struct {
-	OfRequestTextBlock             *TextBlockParam             `json:",omitzero,inline"`
-	OfRequestImageBlock            *ImageBlockParam            `json:",omitzero,inline"`
-	OfRequestToolUseBlock          *ToolUseBlockParam          `json:",omitzero,inline"`
-	OfRequestToolResultBlock       *ToolResultBlockParam       `json:",omitzero,inline"`
-	OfRequestDocumentBlock         *DocumentBlockParam         `json:",omitzero,inline"`
-	OfRequestThinkingBlock         *ThinkingBlockParam         `json:",omitzero,inline"`
-	OfRequestRedactedThinkingBlock *RedactedThinkingBlockParam `json:",omitzero,inline"`
-	paramUnion
-}
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ContentBlockParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
-func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ContentBlockParamUnion](u.OfRequestTextBlock,
-		u.OfRequestImageBlock,
-		u.OfRequestToolUseBlock,
-		u.OfRequestToolResultBlock,
-		u.OfRequestDocumentBlock,
-		u.OfRequestThinkingBlock,
-		u.OfRequestRedactedThinkingBlock)
-}
-
-func (u *ContentBlockParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestTextBlock) {
-		return u.OfRequestTextBlock
-	} else if !param.IsOmitted(u.OfRequestImageBlock) {
-		return u.OfRequestImageBlock
-	} else if !param.IsOmitted(u.OfRequestToolUseBlock) {
-		return u.OfRequestToolUseBlock
-	} else if !param.IsOmitted(u.OfRequestToolResultBlock) {
-		return u.OfRequestToolResultBlock
-	} else if !param.IsOmitted(u.OfRequestDocumentBlock) {
-		return u.OfRequestDocumentBlock
-	} else if !param.IsOmitted(u.OfRequestThinkingBlock) {
-		return u.OfRequestThinkingBlock
-	} else if !param.IsOmitted(u.OfRequestRedactedThinkingBlock) {
-		return u.OfRequestRedactedThinkingBlock
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetText() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
-		return &vt.Text
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetID() *string {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
-		return &vt.ID
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetInput() *interface{} {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
-		return &vt.Input
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetName() *string {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
-		return &vt.Name
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetToolUseID() *string {
-	if vt := u.OfRequestToolResultBlock; vt != nil {
-		return &vt.ToolUseID
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetContent() *[]ToolResultBlockParamContentUnion {
-	if vt := u.OfRequestToolResultBlock; vt != nil {
-		return &vt.Content
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetIsError() *bool {
-	if vt := u.OfRequestToolResultBlock; vt != nil && vt.IsError.IsPresent() {
-		return &vt.IsError.Value
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetContext() *string {
-	if vt := u.OfRequestDocumentBlock; vt != nil && vt.Context.IsPresent() {
-		return &vt.Context.Value
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetTitle() *string {
-	if vt := u.OfRequestDocumentBlock; vt != nil && vt.Title.IsPresent() {
-		return &vt.Title.Value
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetSignature() *string {
-	if vt := u.OfRequestThinkingBlock; vt != nil {
-		return &vt.Signature
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetThinking() *string {
-	if vt := u.OfRequestThinkingBlock; vt != nil {
-		return &vt.Thinking
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetData() *string {
-	if vt := u.OfRequestRedactedThinkingBlock; vt != nil {
-		return &vt.Data
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetType() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestImageBlock; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestToolUseBlock; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestToolResultBlock; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestThinkingBlock; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestRedactedThinkingBlock; vt != nil {
-		return (*string)(&vt.Type)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's CacheControl property, if present.
-func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
-	if vt := u.OfRequestTextBlock; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfRequestImageBlock; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfRequestToolUseBlock; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfRequestToolResultBlock; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
-		return &vt.CacheControl
-	}
-	return nil
-}
-
-// Returns a subunion which exports methods to access subproperties
-//
-// Or use AsAny() to get the underlying value
-func (u ContentBlockParamUnion) GetCitations() (res contentBlockParamUnionCitations) {
-	if vt := u.OfRequestTextBlock; vt != nil {
-		res.ofTextBlockCitations = &vt.Citations
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
-		res.ofCitationsConfig = &vt.Citations
-	}
-	return
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type contentBlockParamUnionCitations struct {
-	ofTextBlockCitations *[]TextCitationParamUnion
-	ofCitationsConfig    *CitationsConfigParam
-}
-
-// Use the following switch statement to get the type of the union:
-//
-//	switch u.AsAny().(type) {
-//	case *[]anthropic.TextCitationParamUnion:
-//	case *anthropic.CitationsConfigParam:
-//	default:
-//	    fmt.Errorf("not present")
-//	}
-func (u contentBlockParamUnionCitations) AsAny() any {
-	if !param.IsOmitted(u.ofTextBlockCitations) {
-		return u.ofTextBlockCitations
-	} else if !param.IsOmitted(u.ofCitationsConfig) {
-		return u.ofCitationsConfig
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u contentBlockParamUnionCitations) GetEnabled() *bool {
-	if vt := u.ofCitationsConfig; vt != nil && vt.Enabled.IsPresent() {
-		return &vt.Enabled.Value
-	}
-	return nil
-}
-
-// Returns a subunion which exports methods to access subproperties
-//
-// Or use AsAny() to get the underlying value
-func (u ContentBlockParamUnion) GetSource() (res contentBlockParamUnionSource) {
-	if vt := u.OfRequestImageBlock; vt != nil {
-		res.ofImageBlockSource = &vt.Source
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
-		res.ofDocumentBlockSource = &vt.Source
-	}
-	return
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type contentBlockParamUnionSource struct {
-	ofImageBlockSource    *ImageBlockParamSourceUnion
-	ofDocumentBlockSource *DocumentBlockParamSourceUnion
-}
-
-// Use the following switch statement to get the type of the union:
-//
-//	switch u.AsAny().(type) {
-//	case *anthropic.Base64ImageSourceParam:
-//	case *anthropic.URLImageSourceParam:
-//	case *anthropic.Base64PDFSourceParam:
-//	case *anthropic.PlainTextSourceParam:
-//	case *anthropic.ContentBlockSourceParam:
-//	case *anthropic.URLPDFSourceParam:
-//	default:
-//	    fmt.Errorf("not present")
-//	}
-func (u contentBlockParamUnionSource) AsAny() any {
-	if !param.IsOmitted(u.ofImageBlockSource) {
-		return u.ofImageBlockSource.asAny()
-	} else if !param.IsOmitted(u.ofDocumentBlockSource) {
-		return u.ofDocumentBlockSource.asAny()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u contentBlockParamUnionSource) GetContent() *ContentBlockSourceContentUnionParam {
-	if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetContent()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u contentBlockParamUnionSource) GetData() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetData()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetData()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetData()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u contentBlockParamUnionSource) GetMediaType() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetMediaType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetMediaType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetMediaType()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u contentBlockParamUnionSource) GetType() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetType()
-	} else if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u contentBlockParamUnionSource) GetURL() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetURL()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetURL()
-	}
-	return nil
+// Union satisfied by [CitationCharLocation], [CitationPageLocation] or
+// [CitationContentBlockLocation].
+type CitationsDeltaCitationUnion interface {
+	implementsCitationsDeltaCitation()
 }
 
 func init() {
-	apijson.RegisterUnion[ContentBlockParamUnion](
+	apijson.RegisterUnion(
+		reflect.TypeOf((*CitationsDeltaCitationUnion)(nil)).Elem(),
 		"type",
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(TextBlockParam{}),
+			Type:               reflect.TypeOf(CitationCharLocation{}),
+			DiscriminatorValue: "char_location",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(CitationPageLocation{}),
+			DiscriminatorValue: "page_location",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(CitationContentBlockLocation{}),
+			DiscriminatorValue: "content_block_location",
+		},
+	)
+}
+
+type CitationsDeltaCitationType string
+
+const (
+	CitationsDeltaCitationTypeCharLocation         CitationsDeltaCitationType = "char_location"
+	CitationsDeltaCitationTypePageLocation         CitationsDeltaCitationType = "page_location"
+	CitationsDeltaCitationTypeContentBlockLocation CitationsDeltaCitationType = "content_block_location"
+)
+
+func (r CitationsDeltaCitationType) IsKnown() bool {
+	switch r {
+	case CitationsDeltaCitationTypeCharLocation, CitationsDeltaCitationTypePageLocation, CitationsDeltaCitationTypeContentBlockLocation:
+		return true
+	}
+	return false
+}
+
+type CitationsDeltaType string
+
+const (
+	CitationsDeltaTypeCitationsDelta CitationsDeltaType = "citations_delta"
+)
+
+func (r CitationsDeltaType) IsKnown() bool {
+	switch r {
+	case CitationsDeltaTypeCitationsDelta:
+		return true
+	}
+	return false
+}
+
+type ContentBlock struct {
+	Type ContentBlockType `json:"type,required"`
+	ID   string           `json:"id"`
+	// This field can have the runtime type of [[]TextCitation].
+	Citations interface{} `json:"citations"`
+	Data      string      `json:"data"`
+	// This field can have the runtime type of [interface{}].
+	Input     interface{}      `json:"input"`
+	Name      string           `json:"name"`
+	Signature string           `json:"signature"`
+	Text      string           `json:"text"`
+	Thinking  string           `json:"thinking"`
+	JSON      contentBlockJSON `json:"-"`
+	union     ContentBlockUnion
+}
+
+// contentBlockJSON contains the JSON metadata for the struct [ContentBlock]
+type contentBlockJSON struct {
+	Type        apijson.Field
+	ID          apijson.Field
+	Citations   apijson.Field
+	Data        apijson.Field
+	Input       apijson.Field
+	Name        apijson.Field
+	Signature   apijson.Field
+	Text        apijson.Field
+	Thinking    apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r contentBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *ContentBlock) UnmarshalJSON(data []byte) (err error) {
+	*r = ContentBlock{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [ContentBlockUnion] interface which you can cast to the
+// specific types for more type safety.
+//
+// Possible runtime types of the union are [TextBlock], [ToolUseBlock],
+// [ThinkingBlock], [RedactedThinkingBlock].
+func (r ContentBlock) AsUnion() ContentBlockUnion {
+	return r.union
+}
+
+// Union satisfied by [TextBlock], [ToolUseBlock], [ThinkingBlock] or
+// [RedactedThinkingBlock].
+type ContentBlockUnion interface {
+	implementsContentBlock()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*ContentBlockUnion)(nil)).Elem(),
+		"type",
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(TextBlock{}),
 			DiscriminatorValue: "text",
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ImageBlockParam{}),
-			DiscriminatorValue: "image",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolUseBlockParam{}),
+			Type:               reflect.TypeOf(ToolUseBlock{}),
 			DiscriminatorValue: "tool_use",
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolResultBlockParam{}),
-			DiscriminatorValue: "tool_result",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(DocumentBlockParam{}),
-			DiscriminatorValue: "document",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ThinkingBlockParam{}),
+			Type:               reflect.TypeOf(ThinkingBlock{}),
 			DiscriminatorValue: "thinking",
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(RedactedThinkingBlockParam{}),
+			Type:               reflect.TypeOf(RedactedThinkingBlock{}),
 			DiscriminatorValue: "redacted_thinking",
 		},
 	)
 }
 
-// The properties Content, Type are required.
+type ContentBlockType string
+
+const (
+	ContentBlockTypeText             ContentBlockType = "text"
+	ContentBlockTypeToolUse          ContentBlockType = "tool_use"
+	ContentBlockTypeThinking         ContentBlockType = "thinking"
+	ContentBlockTypeRedactedThinking ContentBlockType = "redacted_thinking"
+)
+
+func (r ContentBlockType) IsKnown() bool {
+	switch r {
+	case ContentBlockTypeText, ContentBlockTypeToolUse, ContentBlockTypeThinking, ContentBlockTypeRedactedThinking:
+		return true
+	}
+	return false
+}
+
+type ContentBlockParam struct {
+	Type         param.Field[ContentBlockParamType]      `json:"type,required"`
+	ID           param.Field[string]                     `json:"id"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
+	Citations    param.Field[interface{}]                `json:"citations"`
+	Content      param.Field[interface{}]                `json:"content"`
+	Context      param.Field[string]                     `json:"context"`
+	Data         param.Field[string]                     `json:"data"`
+	Input        param.Field[interface{}]                `json:"input"`
+	IsError      param.Field[bool]                       `json:"is_error"`
+	Name         param.Field[string]                     `json:"name"`
+	Signature    param.Field[string]                     `json:"signature"`
+	Source       param.Field[interface{}]                `json:"source"`
+	Text         param.Field[string]                     `json:"text"`
+	Thinking     param.Field[string]                     `json:"thinking"`
+	Title        param.Field[string]                     `json:"title"`
+	ToolUseID    param.Field[string]                     `json:"tool_use_id"`
+}
+
+func (r ContentBlockParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ContentBlockParam) implementsContentBlockParamUnion() {}
+
+// Satisfied by [TextBlockParam], [ImageBlockParam], [ToolUseBlockParam],
+// [ToolResultBlockParam], [DocumentBlockParam], [ThinkingBlockParam],
+// [RedactedThinkingBlockParam], [ContentBlockParam].
+type ContentBlockParamUnion interface {
+	implementsContentBlockParamUnion()
+}
+
+type ContentBlockParamType string
+
+const (
+	ContentBlockParamTypeText             ContentBlockParamType = "text"
+	ContentBlockParamTypeImage            ContentBlockParamType = "image"
+	ContentBlockParamTypeToolUse          ContentBlockParamType = "tool_use"
+	ContentBlockParamTypeToolResult       ContentBlockParamType = "tool_result"
+	ContentBlockParamTypeDocument         ContentBlockParamType = "document"
+	ContentBlockParamTypeThinking         ContentBlockParamType = "thinking"
+	ContentBlockParamTypeRedactedThinking ContentBlockParamType = "redacted_thinking"
+)
+
+func (r ContentBlockParamType) IsKnown() bool {
+	switch r {
+	case ContentBlockParamTypeText, ContentBlockParamTypeImage, ContentBlockParamTypeToolUse, ContentBlockParamTypeToolResult, ContentBlockParamTypeDocument, ContentBlockParamTypeThinking, ContentBlockParamTypeRedactedThinking:
+		return true
+	}
+	return false
+}
+
 type ContentBlockSourceParam struct {
-	Content ContentBlockSourceContentUnionParam `json:"content,omitzero,required"`
-	// This field can be elided, and will marshal its zero value as "content".
-	Type constant.Content `json:"type,required"`
-	paramObj
+	Content param.Field[ContentBlockSourceContentUnionParam] `json:"content,required"`
+	Type    param.Field[ContentBlockSourceType]              `json:"type,required"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ContentBlockSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ContentBlockSourceParam) MarshalJSON() (data []byte, err error) {
-	type shadow ContentBlockSourceParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ContentBlockSourceContentUnionParam struct {
-	OfString                    param.Opt[string]                     `json:",omitzero,inline"`
-	OfContentBlockSourceContent []ContentBlockSourceContentUnionParam `json:",omitzero,inline"`
-	paramUnion
+func (r ContentBlockSourceParam) implementsDocumentBlockParamSourceUnion() {}
+
+// Satisfied by [shared.UnionString],
+// [ContentBlockSourceContentContentBlockSourceContentParam].
+type ContentBlockSourceContentUnionParam interface {
+	ImplementsContentBlockSourceContentUnionParam()
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ContentBlockSourceContentUnionParam) IsPresent() bool {
-	return !param.IsOmitted(u) && !u.IsNull()
-}
-func (u ContentBlockSourceContentUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ContentBlockSourceContentUnionParam](u.OfString, u.OfContentBlockSourceContent)
+type ContentBlockSourceContentContentBlockSourceContentParam []ContentBlockSourceContentUnionParam
+
+func (r ContentBlockSourceContentContentBlockSourceContentParam) ImplementsContentBlockSourceContentUnionParam() {
 }
 
-func (u *ContentBlockSourceContentUnionParam) asAny() any {
-	if !param.IsOmitted(u.OfString) {
-		return &u.OfString.Value
-	} else if !param.IsOmitted(u.OfContentBlockSourceContent) {
-		return &u.OfContentBlockSourceContent
+type ContentBlockSourceType string
+
+const (
+	ContentBlockSourceTypeContent ContentBlockSourceType = "content"
+)
+
+func (r ContentBlockSourceType) IsKnown() bool {
+	switch r {
+	case ContentBlockSourceTypeContent:
+		return true
 	}
-	return nil
+	return false
 }
 
-// The properties Source, Type are required.
 type DocumentBlockParam struct {
-	Source       DocumentBlockParamSourceUnion `json:"source,omitzero,required"`
-	Context      param.Opt[string]             `json:"context,omitzero"`
-	Title        param.Opt[string]             `json:"title,omitzero"`
-	CacheControl CacheControlEphemeralParam    `json:"cache_control,omitzero"`
-	Citations    CitationsConfigParam          `json:"citations,omitzero"`
-	// This field can be elided, and will marshal its zero value as "document".
-	Type constant.Document `json:"type,required"`
-	paramObj
+	Source       param.Field[DocumentBlockParamSourceUnion] `json:"source,required"`
+	Type         param.Field[DocumentBlockParamType]        `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam]    `json:"cache_control"`
+	Citations    param.Field[CitationsConfigParam]          `json:"citations"`
+	Context      param.Field[string]                        `json:"context"`
+	Title        param.Field[string]                        `json:"title"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f DocumentBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r DocumentBlockParam) MarshalJSON() (data []byte, err error) {
-	type shadow DocumentBlockParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type DocumentBlockParamSourceUnion struct {
-	OfBase64PDFSource    *Base64PDFSourceParam    `json:",omitzero,inline"`
-	OfPlainTextSource    *PlainTextSourceParam    `json:",omitzero,inline"`
-	OfContentBlockSource *ContentBlockSourceParam `json:",omitzero,inline"`
-	OfUrlpdfSource       *URLPDFSourceParam       `json:",omitzero,inline"`
-	paramUnion
+func (r DocumentBlockParam) implementsContentBlockParamUnion() {}
+
+type DocumentBlockParamSource struct {
+	Type      param.Field[DocumentBlockParamSourceType]      `json:"type,required"`
+	Content   param.Field[interface{}]                       `json:"content"`
+	Data      param.Field[string]                            `json:"data" format:"byte"`
+	MediaType param.Field[DocumentBlockParamSourceMediaType] `json:"media_type"`
+	URL       param.Field[string]                            `json:"url"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u DocumentBlockParamSourceUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
-func (u DocumentBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[DocumentBlockParamSourceUnion](u.OfBase64PDFSource, u.OfPlainTextSource, u.OfContentBlockSource, u.OfUrlpdfSource)
+func (r DocumentBlockParamSource) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
-func (u *DocumentBlockParamSourceUnion) asAny() any {
-	if !param.IsOmitted(u.OfBase64PDFSource) {
-		return u.OfBase64PDFSource
-	} else if !param.IsOmitted(u.OfPlainTextSource) {
-		return u.OfPlainTextSource
-	} else if !param.IsOmitted(u.OfContentBlockSource) {
-		return u.OfContentBlockSource
-	} else if !param.IsOmitted(u.OfUrlpdfSource) {
-		return u.OfUrlpdfSource
+func (r DocumentBlockParamSource) implementsDocumentBlockParamSourceUnion() {}
+
+// Satisfied by [Base64PDFSourceParam], [PlainTextSourceParam],
+// [ContentBlockSourceParam], [URLPDFSourceParam], [DocumentBlockParamSource].
+type DocumentBlockParamSourceUnion interface {
+	implementsDocumentBlockParamSourceUnion()
+}
+
+type DocumentBlockParamSourceType string
+
+const (
+	DocumentBlockParamSourceTypeBase64  DocumentBlockParamSourceType = "base64"
+	DocumentBlockParamSourceTypeText    DocumentBlockParamSourceType = "text"
+	DocumentBlockParamSourceTypeContent DocumentBlockParamSourceType = "content"
+	DocumentBlockParamSourceTypeURL     DocumentBlockParamSourceType = "url"
+)
+
+func (r DocumentBlockParamSourceType) IsKnown() bool {
+	switch r {
+	case DocumentBlockParamSourceTypeBase64, DocumentBlockParamSourceTypeText, DocumentBlockParamSourceTypeContent, DocumentBlockParamSourceTypeURL:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u DocumentBlockParamSourceUnion) GetContent() *ContentBlockSourceContentUnionParam {
-	if vt := u.OfContentBlockSource; vt != nil {
-		return &vt.Content
+type DocumentBlockParamSourceMediaType string
+
+const (
+	DocumentBlockParamSourceMediaTypeApplicationPDF DocumentBlockParamSourceMediaType = "application/pdf"
+	DocumentBlockParamSourceMediaTypeTextPlain      DocumentBlockParamSourceMediaType = "text/plain"
+)
+
+func (r DocumentBlockParamSourceMediaType) IsKnown() bool {
+	switch r {
+	case DocumentBlockParamSourceMediaTypeApplicationPDF, DocumentBlockParamSourceMediaTypeTextPlain:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u DocumentBlockParamSourceUnion) GetURL() *string {
-	if vt := u.OfUrlpdfSource; vt != nil {
-		return &vt.URL
+type DocumentBlockParamType string
+
+const (
+	DocumentBlockParamTypeDocument DocumentBlockParamType = "document"
+)
+
+func (r DocumentBlockParamType) IsKnown() bool {
+	switch r {
+	case DocumentBlockParamTypeDocument:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u DocumentBlockParamSourceUnion) GetData() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
-		return (*string)(&vt.Data)
-	} else if vt := u.OfPlainTextSource; vt != nil {
-		return (*string)(&vt.Data)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u DocumentBlockParamSourceUnion) GetMediaType() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
-		return (*string)(&vt.MediaType)
-	} else if vt := u.OfPlainTextSource; vt != nil {
-		return (*string)(&vt.MediaType)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u DocumentBlockParamSourceUnion) GetType() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfPlainTextSource; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfContentBlockSource; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfUrlpdfSource; vt != nil {
-		return (*string)(&vt.Type)
-	}
-	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[DocumentBlockParamSourceUnion](
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(Base64PDFSourceParam{}),
-			DiscriminatorValue: "base64",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(PlainTextSourceParam{}),
-			DiscriminatorValue: "text",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ContentBlockSourceParam{}),
-			DiscriminatorValue: "content",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(URLPDFSourceParam{}),
-			DiscriminatorValue: "url",
-		},
-	)
-}
-
-// The properties Source, Type are required.
 type ImageBlockParam struct {
-	Source       ImageBlockParamSourceUnion `json:"source,omitzero,required"`
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// This field can be elided, and will marshal its zero value as "image".
-	Type constant.Image `json:"type,required"`
-	paramObj
+	Source       param.Field[ImageBlockParamSourceUnion] `json:"source,required"`
+	Type         param.Field[ImageBlockParamType]        `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ImageBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
-	type shadow ImageBlockParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ImageBlockParamSourceUnion struct {
-	OfBase64ImageSource *Base64ImageSourceParam `json:",omitzero,inline"`
-	OfURLImageSource    *URLImageSourceParam    `json:",omitzero,inline"`
-	paramUnion
+func (r ImageBlockParam) implementsContentBlockParamUnion() {}
+
+func (r ImageBlockParam) implementsContentBlockSourceContentUnionParam() {}
+
+func (r ImageBlockParam) implementsToolResultBlockParamContentUnion() {}
+
+type ImageBlockParamSource struct {
+	Type      param.Field[ImageBlockParamSourceType]      `json:"type,required"`
+	Data      param.Field[string]                         `json:"data" format:"byte"`
+	MediaType param.Field[ImageBlockParamSourceMediaType] `json:"media_type"`
+	URL       param.Field[string]                         `json:"url"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ImageBlockParamSourceUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
-func (u ImageBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ImageBlockParamSourceUnion](u.OfBase64ImageSource, u.OfURLImageSource)
+func (r ImageBlockParamSource) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
-func (u *ImageBlockParamSourceUnion) asAny() any {
-	if !param.IsOmitted(u.OfBase64ImageSource) {
-		return u.OfBase64ImageSource
-	} else if !param.IsOmitted(u.OfURLImageSource) {
-		return u.OfURLImageSource
+func (r ImageBlockParamSource) implementsImageBlockParamSourceUnion() {}
+
+// Satisfied by [Base64ImageSourceParam], [URLImageSourceParam],
+// [ImageBlockParamSource].
+type ImageBlockParamSourceUnion interface {
+	implementsImageBlockParamSourceUnion()
+}
+
+type ImageBlockParamSourceType string
+
+const (
+	ImageBlockParamSourceTypeBase64 ImageBlockParamSourceType = "base64"
+	ImageBlockParamSourceTypeURL    ImageBlockParamSourceType = "url"
+)
+
+func (r ImageBlockParamSourceType) IsKnown() bool {
+	switch r {
+	case ImageBlockParamSourceTypeBase64, ImageBlockParamSourceTypeURL:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u ImageBlockParamSourceUnion) GetData() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
-		return &vt.Data
+type ImageBlockParamSourceMediaType string
+
+const (
+	ImageBlockParamSourceMediaTypeImageJPEG ImageBlockParamSourceMediaType = "image/jpeg"
+	ImageBlockParamSourceMediaTypeImagePNG  ImageBlockParamSourceMediaType = "image/png"
+	ImageBlockParamSourceMediaTypeImageGIF  ImageBlockParamSourceMediaType = "image/gif"
+	ImageBlockParamSourceMediaTypeImageWebP ImageBlockParamSourceMediaType = "image/webp"
+)
+
+func (r ImageBlockParamSourceMediaType) IsKnown() bool {
+	switch r {
+	case ImageBlockParamSourceMediaTypeImageJPEG, ImageBlockParamSourceMediaTypeImagePNG, ImageBlockParamSourceMediaTypeImageGIF, ImageBlockParamSourceMediaTypeImageWebP:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u ImageBlockParamSourceUnion) GetMediaType() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
-		return (*string)(&vt.MediaType)
+type ImageBlockParamType string
+
+const (
+	ImageBlockParamTypeImage ImageBlockParamType = "image"
+)
+
+func (r ImageBlockParamType) IsKnown() bool {
+	switch r {
+	case ImageBlockParamTypeImage:
+		return true
 	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ImageBlockParamSourceUnion) GetURL() *string {
-	if vt := u.OfURLImageSource; vt != nil {
-		return &vt.URL
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ImageBlockParamSourceUnion) GetType() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfURLImageSource; vt != nil {
-		return (*string)(&vt.Type)
-	}
-	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[ImageBlockParamSourceUnion](
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(Base64ImageSourceParam{}),
-			DiscriminatorValue: "base64",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(URLImageSourceParam{}),
-			DiscriminatorValue: "url",
-		},
-	)
+	return false
 }
 
 type InputJSONDelta struct {
-	PartialJSON string                  `json:"partial_json,required"`
-	Type        constant.InputJSONDelta `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		PartialJSON resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	PartialJSON string             `json:"partial_json,required"`
+	Type        InputJSONDeltaType `json:"type,required"`
+	JSON        inputJSONDeltaJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r InputJSONDelta) RawJSON() string { return r.JSON.raw }
-func (r *InputJSONDelta) UnmarshalJSON(data []byte) error {
+// inputJSONDeltaJSON contains the JSON metadata for the struct [InputJSONDelta]
+type inputJSONDeltaJSON struct {
+	PartialJSON apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *InputJSONDelta) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r inputJSONDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r InputJSONDelta) implementsContentBlockDeltaEventDelta() {}
+
+type InputJSONDeltaType string
+
+const (
+	InputJSONDeltaTypeInputJSONDelta InputJSONDeltaType = "input_json_delta"
+)
+
+func (r InputJSONDeltaType) IsKnown() bool {
+	switch r {
+	case InputJSONDeltaTypeInputJSONDelta:
+		return true
+	}
+	return false
 }
 
 type Message struct {
@@ -1247,7 +1000,7 @@ type Message struct {
 	// ```json
 	// [{ "type": "text", "text": "B)" }]
 	// ```
-	Content []ContentBlockUnion `json:"content,required"`
+	Content []ContentBlock `json:"content,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
@@ -1255,7 +1008,7 @@ type Message struct {
 	// Conversational role of the generated message.
 	//
 	// This will always be `"assistant"`.
-	Role constant.Assistant `json:"role,required"`
+	Role MessageRole `json:"role,required"`
 	// The reason that we stopped.
 	//
 	// This may be one the following values:
@@ -1267,18 +1020,16 @@ type Message struct {
 	//
 	// In non-streaming mode this value is always non-null. In streaming mode, it is
 	// null in the `message_start` event and non-null otherwise.
-	//
-	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason StopReason `json:"stop_reason,required"`
+	StopReason MessageStopReason `json:"stop_reason,required,nullable"`
 	// Which custom stop sequence was generated, if any.
 	//
 	// This value will be a non-null string if one of your custom stop sequences was
 	// generated.
-	StopSequence string `json:"stop_sequence,required"`
+	StopSequence string `json:"stop_sequence,required,nullable"`
 	// Object type.
 	//
 	// For Messages, this is always `"message"`.
-	Type constant.Message `json:"type,required"`
+	Type MessageType `json:"type,required"`
 	// Billing and rate-limit usage.
 	//
 	// Anthropic's API bills and rate-limits by token counts, as tokens represent the
@@ -1294,146 +1045,167 @@ type Message struct {
 	//
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
-	Usage Usage `json:"usage,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		ID           resp.Field
-		Content      resp.Field
-		Model        resp.Field
-		Role         resp.Field
-		StopReason   resp.Field
-		StopSequence resp.Field
-		Type         resp.Field
-		Usage        resp.Field
-		ExtraFields  map[string]resp.Field
-		raw          string
-	} `json:"-"`
+	Usage Usage       `json:"usage,required"`
+	JSON  messageJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r Message) RawJSON() string { return r.JSON.raw }
-func (r *Message) UnmarshalJSON(data []byte) error {
+// messageJSON contains the JSON metadata for the struct [Message]
+type messageJSON struct {
+	ID           apijson.Field
+	Content      apijson.Field
+	Model        apijson.Field
+	Role         apijson.Field
+	StopReason   apijson.Field
+	StopSequence apijson.Field
+	Type         apijson.Field
+	Usage        apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r *Message) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func MessageCountTokensToolParamOfTool(inputSchema ToolInputSchemaParam, name string) MessageCountTokensToolUnionParam {
-	var variant ToolParam
-	variant.InputSchema = inputSchema
-	variant.Name = name
-	return MessageCountTokensToolUnionParam{OfTool: &variant}
+func (r messageJSON) RawJSON() string {
+	return r.raw
 }
 
-// Only one field can be non-zero.
+// Conversational role of the generated message.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type MessageCountTokensToolUnionParam struct {
-	OfTool               *ToolParam                   `json:",omitzero,inline"`
-	OfBashTool20250124   *ToolBash20250124Param       `json:",omitzero,inline"`
-	OfTextEditor20250124 *ToolTextEditor20250124Param `json:",omitzero,inline"`
-	paramUnion
-}
+// This will always be `"assistant"`.
+type MessageRole string
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u MessageCountTokensToolUnionParam) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
-func (u MessageCountTokensToolUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[MessageCountTokensToolUnionParam](u.OfTool, u.OfBashTool20250124, u.OfTextEditor20250124)
-}
+const (
+	MessageRoleAssistant MessageRole = "assistant"
+)
 
-func (u *MessageCountTokensToolUnionParam) asAny() any {
-	if !param.IsOmitted(u.OfTool) {
-		return u.OfTool
-	} else if !param.IsOmitted(u.OfBashTool20250124) {
-		return u.OfBashTool20250124
-	} else if !param.IsOmitted(u.OfTextEditor20250124) {
-		return u.OfTextEditor20250124
+func (r MessageRole) IsKnown() bool {
+	switch r {
+	case MessageRoleAssistant:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u MessageCountTokensToolUnionParam) GetInputSchema() *ToolInputSchemaParam {
-	if vt := u.OfTool; vt != nil {
-		return &vt.InputSchema
+// The reason that we stopped.
+//
+// This may be one the following values:
+//
+// - `"end_turn"`: the model reached a natural stopping point
+// - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
+// - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
+// - `"tool_use"`: the model invoked one or more tools
+//
+// In non-streaming mode this value is always non-null. In streaming mode, it is
+// null in the `message_start` event and non-null otherwise.
+type MessageStopReason string
+
+const (
+	MessageStopReasonEndTurn      MessageStopReason = "end_turn"
+	MessageStopReasonMaxTokens    MessageStopReason = "max_tokens"
+	MessageStopReasonStopSequence MessageStopReason = "stop_sequence"
+	MessageStopReasonToolUse      MessageStopReason = "tool_use"
+)
+
+func (r MessageStopReason) IsKnown() bool {
+	switch r {
+	case MessageStopReasonEndTurn, MessageStopReasonMaxTokens, MessageStopReasonStopSequence, MessageStopReasonToolUse:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u MessageCountTokensToolUnionParam) GetDescription() *string {
-	if vt := u.OfTool; vt != nil && vt.Description.IsPresent() {
-		return &vt.Description.Value
+// Object type.
+//
+// For Messages, this is always `"message"`.
+type MessageType string
+
+const (
+	MessageTypeMessage MessageType = "message"
+)
+
+func (r MessageType) IsKnown() bool {
+	switch r {
+	case MessageTypeMessage:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u MessageCountTokensToolUnionParam) GetName() *string {
-	if vt := u.OfTool; vt != nil {
-		return (*string)(&vt.Name)
-	} else if vt := u.OfBashTool20250124; vt != nil {
-		return (*string)(&vt.Name)
-	} else if vt := u.OfTextEditor20250124; vt != nil {
-		return (*string)(&vt.Name)
-	}
-	return nil
+type MessageCountTokensToolParam struct {
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[string]                     `json:"name,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
+	// Description of what this tool does.
+	//
+	// Tool descriptions should be as detailed as possible. The more information that
+	// the model has about what the tool is and how to use it, the better it will
+	// perform. You can use natural language descriptions to reinforce important
+	// aspects of the tool input JSON schema.
+	Description param.Field[string]                     `json:"description"`
+	InputSchema param.Field[interface{}]                `json:"input_schema"`
+	Type        param.Field[MessageCountTokensToolType] `json:"type"`
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u MessageCountTokensToolUnionParam) GetType() *string {
-	if vt := u.OfBashTool20250124; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfTextEditor20250124; vt != nil {
-		return (*string)(&vt.Type)
-	}
-	return nil
+func (r MessageCountTokensToolParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
-// Returns a pointer to the underlying variant's CacheControl property, if present.
-func (u MessageCountTokensToolUnionParam) GetCacheControl() *CacheControlEphemeralParam {
-	if vt := u.OfTool; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfBashTool20250124; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfTextEditor20250124; vt != nil {
-		return &vt.CacheControl
+func (r MessageCountTokensToolParam) implementsMessageCountTokensToolUnionParam() {}
+
+// Satisfied by [ToolParam], [ToolBash20250124Param],
+// [ToolTextEditor20250124Param], [MessageCountTokensToolParam].
+type MessageCountTokensToolUnionParam interface {
+	implementsMessageCountTokensToolUnionParam()
+}
+
+type MessageCountTokensToolType string
+
+const (
+	MessageCountTokensToolTypeBash20250124       MessageCountTokensToolType = "bash_20250124"
+	MessageCountTokensToolTypeTextEditor20250124 MessageCountTokensToolType = "text_editor_20250124"
+)
+
+func (r MessageCountTokensToolType) IsKnown() bool {
+	switch r {
+	case MessageCountTokensToolTypeBash20250124, MessageCountTokensToolTypeTextEditor20250124:
+		return true
 	}
-	return nil
+	return false
 }
 
 type MessageDeltaUsage struct {
 	// The cumulative number of output tokens which were used.
-	OutputTokens int64 `json:"output_tokens,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		OutputTokens resp.Field
-		ExtraFields  map[string]resp.Field
-		raw          string
-	} `json:"-"`
+	OutputTokens int64                 `json:"output_tokens,required"`
+	JSON         messageDeltaUsageJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r MessageDeltaUsage) RawJSON() string { return r.JSON.raw }
-func (r *MessageDeltaUsage) UnmarshalJSON(data []byte) error {
+// messageDeltaUsageJSON contains the JSON metadata for the struct
+// [MessageDeltaUsage]
+type messageDeltaUsageJSON struct {
+	OutputTokens apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r *MessageDeltaUsage) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties Content, Role are required.
-type MessageParam struct {
-	Content []ContentBlockParamUnion `json:"content,omitzero,required"`
-	// Any of "user", "assistant".
-	Role MessageParamRole `json:"role,omitzero,required"`
-	paramObj
+func (r messageDeltaUsageJSON) RawJSON() string {
+	return r.raw
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+type MessageParam struct {
+	Content param.Field[[]ContentBlockParamUnion] `json:"content,required"`
+	Role    param.Field[MessageParamRole]         `json:"role,required"`
+}
+
 func (r MessageParam) MarshalJSON() (data []byte, err error) {
-	type shadow MessageParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
 type MessageParamRole string
@@ -1443,23 +1215,35 @@ const (
 	MessageParamRoleAssistant MessageParamRole = "assistant"
 )
 
+func (r MessageParamRole) IsKnown() bool {
+	switch r {
+	case MessageParamRoleUser, MessageParamRoleAssistant:
+		return true
+	}
+	return false
+}
+
 type MessageTokensCount struct {
 	// The total number of tokens across the provided list of messages, system prompt,
 	// and tools.
-	InputTokens int64 `json:"input_tokens,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		InputTokens resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	InputTokens int64                  `json:"input_tokens,required"`
+	JSON        messageTokensCountJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r MessageTokensCount) RawJSON() string { return r.JSON.raw }
-func (r *MessageTokensCount) UnmarshalJSON(data []byte) error {
+// messageTokensCountJSON contains the JSON metadata for the struct
+// [MessageTokensCount]
+type messageTokensCountJSON struct {
+	InputTokens apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *MessageTokensCount) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r messageTokensCountJSON) RawJSON() string {
+	return r.raw
 }
 
 type MetadataParam struct {
@@ -1468,16 +1252,11 @@ type MetadataParam struct {
 	// This should be a uuid, hash value, or other opaque identifier. Anthropic may use
 	// this id to help detect abuse. Do not include any identifying information such as
 	// name, email address, or phone number.
-	UserID param.Opt[string] `json:"user_id,omitzero"`
-	paramObj
+	UserID param.Field[string] `json:"user_id"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MetadataParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r MetadataParam) MarshalJSON() (data []byte, err error) {
-	type shadow MetadataParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
 // The model that will complete your prompt.\n\nSee
@@ -1510,272 +1289,377 @@ const (
 	ModelClaude_2_0 Model = "claude-2.0"
 )
 
-// The properties Data, MediaType, Type are required.
 type PlainTextSourceParam struct {
-	Data string `json:"data,required"`
-	// This field can be elided, and will marshal its zero value as "text/plain".
-	MediaType constant.TextPlain `json:"media_type,required"`
-	// This field can be elided, and will marshal its zero value as "text".
-	Type constant.Text `json:"type,required"`
-	paramObj
+	Data      param.Field[string]                   `json:"data,required"`
+	MediaType param.Field[PlainTextSourceMediaType] `json:"media_type,required"`
+	Type      param.Field[PlainTextSourceType]      `json:"type,required"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f PlainTextSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r PlainTextSourceParam) MarshalJSON() (data []byte, err error) {
-	type shadow PlainTextSourceParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
+}
+
+func (r PlainTextSourceParam) implementsDocumentBlockParamSourceUnion() {}
+
+type PlainTextSourceMediaType string
+
+const (
+	PlainTextSourceMediaTypeTextPlain PlainTextSourceMediaType = "text/plain"
+)
+
+func (r PlainTextSourceMediaType) IsKnown() bool {
+	switch r {
+	case PlainTextSourceMediaTypeTextPlain:
+		return true
+	}
+	return false
+}
+
+type PlainTextSourceType string
+
+const (
+	PlainTextSourceTypeText PlainTextSourceType = "text"
+)
+
+func (r PlainTextSourceType) IsKnown() bool {
+	switch r {
+	case PlainTextSourceTypeText:
+		return true
+	}
+	return false
 }
 
 type ContentBlockDeltaEvent struct {
-	Delta ContentBlockDeltaEventDeltaUnion `json:"delta,required"`
-	Index int64                            `json:"index,required"`
-	Type  constant.ContentBlockDelta       `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Delta       resp.Field
-		Index       resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Delta ContentBlockDeltaEventDelta `json:"delta,required"`
+	Index int64                       `json:"index,required"`
+	Type  ContentBlockDeltaEventType  `json:"type,required"`
+	JSON  contentBlockDeltaEventJSON  `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r ContentBlockDeltaEvent) RawJSON() string { return r.JSON.raw }
-func (r *ContentBlockDeltaEvent) UnmarshalJSON(data []byte) error {
+// contentBlockDeltaEventJSON contains the JSON metadata for the struct
+// [ContentBlockDeltaEvent]
+type contentBlockDeltaEventJSON struct {
+	Delta       apijson.Field
+	Index       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ContentBlockDeltaEvent) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ContentBlockDeltaEventDeltaUnion contains all possible properties and values
-// from [TextDelta], [InputJSONDelta], [CitationsDelta], [ThinkingDelta],
-// [SignatureDelta].
-//
-// Use the [ContentBlockDeltaEventDeltaUnion.AsAny] method to switch on the
-// variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ContentBlockDeltaEventDeltaUnion struct {
-	// This field is from variant [TextDelta].
-	Text string `json:"text"`
-	// Any of "text_delta", "input_json_delta", "citations_delta", "thinking_delta",
-	// "signature_delta".
-	Type string `json:"type"`
-	// This field is from variant [InputJSONDelta].
-	PartialJSON string `json:"partial_json"`
-	// This field is from variant [CitationsDelta].
-	Citation CitationsDeltaCitationUnion `json:"citation"`
-	// This field is from variant [ThinkingDelta].
-	Thinking string `json:"thinking"`
-	// This field is from variant [SignatureDelta].
-	Signature string `json:"signature"`
-	JSON      struct {
-		Text        resp.Field
-		Type        resp.Field
-		PartialJSON resp.Field
-		Citation    resp.Field
-		Thinking    resp.Field
-		Signature   resp.Field
-		raw         string
-	} `json:"-"`
+func (r contentBlockDeltaEventJSON) RawJSON() string {
+	return r.raw
 }
 
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := ContentBlockDeltaEventDeltaUnion.AsAny().(type) {
-//	case TextDelta:
-//	case InputJSONDelta:
-//	case CitationsDelta:
-//	case ThinkingDelta:
-//	case SignatureDelta:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u ContentBlockDeltaEventDeltaUnion) AsAny() any {
-	switch u.Type {
-	case "text_delta":
-		return u.AsTextContentBlockDelta()
-	case "input_json_delta":
-		return u.AsInputJSONContentBlockDelta()
-	case "citations_delta":
-		return u.AsCitationsDelta()
-	case "thinking_delta":
-		return u.AsThinkingContentBlockDelta()
-	case "signature_delta":
-		return u.AsSignatureContentBlockDelta()
+func (r ContentBlockDeltaEvent) implementsMessageStreamEvent() {}
+
+type ContentBlockDeltaEventDelta struct {
+	Type ContentBlockDeltaEventDeltaType `json:"type,required"`
+	// This field can have the runtime type of [CitationsDeltaCitation].
+	Citation    interface{}                     `json:"citation"`
+	PartialJSON string                          `json:"partial_json"`
+	Signature   string                          `json:"signature"`
+	Text        string                          `json:"text"`
+	Thinking    string                          `json:"thinking"`
+	JSON        contentBlockDeltaEventDeltaJSON `json:"-"`
+	union       ContentBlockDeltaEventDeltaUnion
+}
+
+// contentBlockDeltaEventDeltaJSON contains the JSON metadata for the struct
+// [ContentBlockDeltaEventDelta]
+type contentBlockDeltaEventDeltaJSON struct {
+	Type        apijson.Field
+	Citation    apijson.Field
+	PartialJSON apijson.Field
+	Signature   apijson.Field
+	Text        apijson.Field
+	Thinking    apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r contentBlockDeltaEventDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *ContentBlockDeltaEventDelta) UnmarshalJSON(data []byte) (err error) {
+	*r = ContentBlockDeltaEventDelta{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
 	}
-	return nil
+	return apijson.Port(r.union, &r)
 }
 
-func (u ContentBlockDeltaEventDeltaUnion) AsTextContentBlockDelta() (v TextDelta) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+// AsUnion returns a [ContentBlockDeltaEventDeltaUnion] interface which you can
+// cast to the specific types for more type safety.
+//
+// Possible runtime types of the union are [TextDelta], [InputJSONDelta],
+// [CitationsDelta], [ThinkingDelta], [SignatureDelta].
+func (r ContentBlockDeltaEventDelta) AsUnion() ContentBlockDeltaEventDeltaUnion {
+	return r.union
 }
 
-func (u ContentBlockDeltaEventDeltaUnion) AsInputJSONContentBlockDelta() (v InputJSONDelta) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+// Union satisfied by [TextDelta], [InputJSONDelta], [CitationsDelta],
+// [ThinkingDelta] or [SignatureDelta].
+type ContentBlockDeltaEventDeltaUnion interface {
+	implementsContentBlockDeltaEventDelta()
 }
 
-func (u ContentBlockDeltaEventDeltaUnion) AsCitationsDelta() (v CitationsDelta) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*ContentBlockDeltaEventDeltaUnion)(nil)).Elem(),
+		"type",
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(TextDelta{}),
+			DiscriminatorValue: "text_delta",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(InputJSONDelta{}),
+			DiscriminatorValue: "input_json_delta",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(CitationsDelta{}),
+			DiscriminatorValue: "citations_delta",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ThinkingDelta{}),
+			DiscriminatorValue: "thinking_delta",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(SignatureDelta{}),
+			DiscriminatorValue: "signature_delta",
+		},
+	)
 }
 
-func (u ContentBlockDeltaEventDeltaUnion) AsThinkingContentBlockDelta() (v ThinkingDelta) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+type ContentBlockDeltaEventDeltaType string
+
+const (
+	ContentBlockDeltaEventDeltaTypeTextDelta      ContentBlockDeltaEventDeltaType = "text_delta"
+	ContentBlockDeltaEventDeltaTypeInputJSONDelta ContentBlockDeltaEventDeltaType = "input_json_delta"
+	ContentBlockDeltaEventDeltaTypeCitationsDelta ContentBlockDeltaEventDeltaType = "citations_delta"
+	ContentBlockDeltaEventDeltaTypeThinkingDelta  ContentBlockDeltaEventDeltaType = "thinking_delta"
+	ContentBlockDeltaEventDeltaTypeSignatureDelta ContentBlockDeltaEventDeltaType = "signature_delta"
+)
+
+func (r ContentBlockDeltaEventDeltaType) IsKnown() bool {
+	switch r {
+	case ContentBlockDeltaEventDeltaTypeTextDelta, ContentBlockDeltaEventDeltaTypeInputJSONDelta, ContentBlockDeltaEventDeltaTypeCitationsDelta, ContentBlockDeltaEventDeltaTypeThinkingDelta, ContentBlockDeltaEventDeltaTypeSignatureDelta:
+		return true
+	}
+	return false
 }
 
-func (u ContentBlockDeltaEventDeltaUnion) AsSignatureContentBlockDelta() (v SignatureDelta) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
+type ContentBlockDeltaEventType string
 
-// Returns the unmodified JSON received from the API
-func (u ContentBlockDeltaEventDeltaUnion) RawJSON() string { return u.JSON.raw }
+const (
+	ContentBlockDeltaEventTypeContentBlockDelta ContentBlockDeltaEventType = "content_block_delta"
+)
 
-func (r *ContentBlockDeltaEventDeltaUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
+func (r ContentBlockDeltaEventType) IsKnown() bool {
+	switch r {
+	case ContentBlockDeltaEventTypeContentBlockDelta:
+		return true
+	}
+	return false
 }
 
 type ContentBlockStartEvent struct {
-	ContentBlock ContentBlockStartEventContentBlockUnion `json:"content_block,required"`
-	Index        int64                                   `json:"index,required"`
-	Type         constant.ContentBlockStart              `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		ContentBlock resp.Field
-		Index        resp.Field
-		Type         resp.Field
-		ExtraFields  map[string]resp.Field
-		raw          string
-	} `json:"-"`
+	ContentBlock ContentBlockStartEventContentBlock `json:"content_block,required"`
+	Index        int64                              `json:"index,required"`
+	Type         ContentBlockStartEventType         `json:"type,required"`
+	JSON         contentBlockStartEventJSON         `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r ContentBlockStartEvent) RawJSON() string { return r.JSON.raw }
-func (r *ContentBlockStartEvent) UnmarshalJSON(data []byte) error {
+// contentBlockStartEventJSON contains the JSON metadata for the struct
+// [ContentBlockStartEvent]
+type contentBlockStartEventJSON struct {
+	ContentBlock apijson.Field
+	Index        apijson.Field
+	Type         apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r *ContentBlockStartEvent) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ContentBlockStartEventContentBlockUnion contains all possible properties and
-// values from [TextBlock], [ToolUseBlock], [ThinkingBlock],
-// [RedactedThinkingBlock].
-//
-// Use the [ContentBlockStartEventContentBlockUnion.AsAny] method to switch on the
-// variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type ContentBlockStartEventContentBlockUnion struct {
-	// This field is from variant [TextBlock].
-	Citations []TextCitationUnion `json:"citations"`
-	// This field is from variant [TextBlock].
-	Text string `json:"text"`
-	// Any of "text", "tool_use", "thinking", "redacted_thinking".
-	Type string `json:"type"`
-	// This field is from variant [ToolUseBlock].
-	ID string `json:"id"`
-	// This field is from variant [ToolUseBlock].
-	Input interface{} `json:"input"`
-	// This field is from variant [ToolUseBlock].
-	Name string `json:"name"`
-	// This field is from variant [ThinkingBlock].
-	Signature string `json:"signature"`
-	// This field is from variant [ThinkingBlock].
-	Thinking string `json:"thinking"`
-	// This field is from variant [RedactedThinkingBlock].
-	Data string `json:"data"`
-	JSON struct {
-		Citations resp.Field
-		Text      resp.Field
-		Type      resp.Field
-		ID        resp.Field
-		Input     resp.Field
-		Name      resp.Field
-		Signature resp.Field
-		Thinking  resp.Field
-		Data      resp.Field
-		raw       string
-	} `json:"-"`
+func (r contentBlockStartEventJSON) RawJSON() string {
+	return r.raw
 }
 
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := ContentBlockStartEventContentBlockUnion.AsAny().(type) {
-//	case TextBlock:
-//	case ToolUseBlock:
-//	case ThinkingBlock:
-//	case RedactedThinkingBlock:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u ContentBlockStartEventContentBlockUnion) AsAny() any {
-	switch u.Type {
-	case "text":
-		return u.AsResponseTextBlock()
-	case "tool_use":
-		return u.AsResponseToolUseBlock()
-	case "thinking":
-		return u.AsResponseThinkingBlock()
-	case "redacted_thinking":
-		return u.AsResponseRedactedThinkingBlock()
+func (r ContentBlockStartEvent) implementsMessageStreamEvent() {}
+
+type ContentBlockStartEventContentBlock struct {
+	Type ContentBlockStartEventContentBlockType `json:"type,required"`
+	ID   string                                 `json:"id"`
+	// This field can have the runtime type of [[]TextCitation].
+	Citations interface{} `json:"citations"`
+	Data      string      `json:"data"`
+	// This field can have the runtime type of [interface{}].
+	Input     interface{}                            `json:"input"`
+	Name      string                                 `json:"name"`
+	Signature string                                 `json:"signature"`
+	Text      string                                 `json:"text"`
+	Thinking  string                                 `json:"thinking"`
+	JSON      contentBlockStartEventContentBlockJSON `json:"-"`
+	union     ContentBlockStartEventContentBlockUnion
+}
+
+// contentBlockStartEventContentBlockJSON contains the JSON metadata for the struct
+// [ContentBlockStartEventContentBlock]
+type contentBlockStartEventContentBlockJSON struct {
+	Type        apijson.Field
+	ID          apijson.Field
+	Citations   apijson.Field
+	Data        apijson.Field
+	Input       apijson.Field
+	Name        apijson.Field
+	Signature   apijson.Field
+	Text        apijson.Field
+	Thinking    apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r contentBlockStartEventContentBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *ContentBlockStartEventContentBlock) UnmarshalJSON(data []byte) (err error) {
+	*r = ContentBlockStartEventContentBlock{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
 	}
-	return nil
+	return apijson.Port(r.union, &r)
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseTextBlock() (v TextBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+// AsUnion returns a [ContentBlockStartEventContentBlockUnion] interface which you
+// can cast to the specific types for more type safety.
+//
+// Possible runtime types of the union are [TextBlock], [ToolUseBlock],
+// [ThinkingBlock], [RedactedThinkingBlock].
+func (r ContentBlockStartEventContentBlock) AsUnion() ContentBlockStartEventContentBlockUnion {
+	return r.union
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseToolUseBlock() (v ToolUseBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+// Union satisfied by [TextBlock], [ToolUseBlock], [ThinkingBlock] or
+// [RedactedThinkingBlock].
+type ContentBlockStartEventContentBlockUnion interface {
+	implementsContentBlockStartEventContentBlock()
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseThinkingBlock() (v ThinkingBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*ContentBlockStartEventContentBlockUnion)(nil)).Elem(),
+		"type",
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(TextBlock{}),
+			DiscriminatorValue: "text",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ToolUseBlock{}),
+			DiscriminatorValue: "tool_use",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ThinkingBlock{}),
+			DiscriminatorValue: "thinking",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(RedactedThinkingBlock{}),
+			DiscriminatorValue: "redacted_thinking",
+		},
+	)
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseRedactedThinkingBlock() (v RedactedThinkingBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+type ContentBlockStartEventContentBlockType string
+
+const (
+	ContentBlockStartEventContentBlockTypeText             ContentBlockStartEventContentBlockType = "text"
+	ContentBlockStartEventContentBlockTypeToolUse          ContentBlockStartEventContentBlockType = "tool_use"
+	ContentBlockStartEventContentBlockTypeThinking         ContentBlockStartEventContentBlockType = "thinking"
+	ContentBlockStartEventContentBlockTypeRedactedThinking ContentBlockStartEventContentBlockType = "redacted_thinking"
+)
+
+func (r ContentBlockStartEventContentBlockType) IsKnown() bool {
+	switch r {
+	case ContentBlockStartEventContentBlockTypeText, ContentBlockStartEventContentBlockTypeToolUse, ContentBlockStartEventContentBlockTypeThinking, ContentBlockStartEventContentBlockTypeRedactedThinking:
+		return true
+	}
+	return false
 }
 
-// Returns the unmodified JSON received from the API
-func (u ContentBlockStartEventContentBlockUnion) RawJSON() string { return u.JSON.raw }
+type ContentBlockStartEventType string
 
-func (r *ContentBlockStartEventContentBlockUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
+const (
+	ContentBlockStartEventTypeContentBlockStart ContentBlockStartEventType = "content_block_start"
+)
+
+func (r ContentBlockStartEventType) IsKnown() bool {
+	switch r {
+	case ContentBlockStartEventTypeContentBlockStart:
+		return true
+	}
+	return false
 }
 
 type ContentBlockStopEvent struct {
 	Index int64                     `json:"index,required"`
-	Type  constant.ContentBlockStop `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Index       resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Type  ContentBlockStopEventType `json:"type,required"`
+	JSON  contentBlockStopEventJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r ContentBlockStopEvent) RawJSON() string { return r.JSON.raw }
-func (r *ContentBlockStopEvent) UnmarshalJSON(data []byte) error {
+// contentBlockStopEventJSON contains the JSON metadata for the struct
+// [ContentBlockStopEvent]
+type contentBlockStopEventJSON struct {
+	Index       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ContentBlockStopEvent) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r contentBlockStopEventJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ContentBlockStopEvent) implementsMessageStreamEvent() {}
+
+type ContentBlockStopEventType string
+
+const (
+	ContentBlockStopEventTypeContentBlockStop ContentBlockStopEventType = "content_block_stop"
+)
+
+func (r ContentBlockStopEventType) IsKnown() bool {
+	switch r {
+	case ContentBlockStopEventTypeContentBlockStop:
+		return true
+	}
+	return false
 }
 
 type MessageDeltaEvent struct {
 	Delta MessageDeltaEventDelta `json:"delta,required"`
-	Type  constant.MessageDelta  `json:"type,required"`
+	Type  MessageDeltaEventType  `json:"type,required"`
 	// Billing and rate-limit usage.
 	//
 	// Anthropic's API bills and rate-limits by token counts, as tokens represent the
@@ -1791,281 +1675,390 @@ type MessageDeltaEvent struct {
 	//
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
-	Usage MessageDeltaUsage `json:"usage,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Delta       resp.Field
-		Type        resp.Field
-		Usage       resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Usage MessageDeltaUsage     `json:"usage,required"`
+	JSON  messageDeltaEventJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r MessageDeltaEvent) RawJSON() string { return r.JSON.raw }
-func (r *MessageDeltaEvent) UnmarshalJSON(data []byte) error {
+// messageDeltaEventJSON contains the JSON metadata for the struct
+// [MessageDeltaEvent]
+type messageDeltaEventJSON struct {
+	Delta       apijson.Field
+	Type        apijson.Field
+	Usage       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *MessageDeltaEvent) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+func (r messageDeltaEventJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r MessageDeltaEvent) implementsMessageStreamEvent() {}
 
 type MessageDeltaEventDelta struct {
-	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason   StopReason `json:"stop_reason,required"`
-	StopSequence string     `json:"stop_sequence,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		StopReason   resp.Field
-		StopSequence resp.Field
-		ExtraFields  map[string]resp.Field
-		raw          string
-	} `json:"-"`
+	StopReason   MessageDeltaEventDeltaStopReason `json:"stop_reason,required,nullable"`
+	StopSequence string                           `json:"stop_sequence,required,nullable"`
+	JSON         messageDeltaEventDeltaJSON       `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r MessageDeltaEventDelta) RawJSON() string { return r.JSON.raw }
-func (r *MessageDeltaEventDelta) UnmarshalJSON(data []byte) error {
+// messageDeltaEventDeltaJSON contains the JSON metadata for the struct
+// [MessageDeltaEventDelta]
+type messageDeltaEventDeltaJSON struct {
+	StopReason   apijson.Field
+	StopSequence apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r *MessageDeltaEventDelta) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r messageDeltaEventDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+type MessageDeltaEventDeltaStopReason string
+
+const (
+	MessageDeltaEventDeltaStopReasonEndTurn      MessageDeltaEventDeltaStopReason = "end_turn"
+	MessageDeltaEventDeltaStopReasonMaxTokens    MessageDeltaEventDeltaStopReason = "max_tokens"
+	MessageDeltaEventDeltaStopReasonStopSequence MessageDeltaEventDeltaStopReason = "stop_sequence"
+	MessageDeltaEventDeltaStopReasonToolUse      MessageDeltaEventDeltaStopReason = "tool_use"
+)
+
+func (r MessageDeltaEventDeltaStopReason) IsKnown() bool {
+	switch r {
+	case MessageDeltaEventDeltaStopReasonEndTurn, MessageDeltaEventDeltaStopReasonMaxTokens, MessageDeltaEventDeltaStopReasonStopSequence, MessageDeltaEventDeltaStopReasonToolUse:
+		return true
+	}
+	return false
+}
+
+type MessageDeltaEventType string
+
+const (
+	MessageDeltaEventTypeMessageDelta MessageDeltaEventType = "message_delta"
+)
+
+func (r MessageDeltaEventType) IsKnown() bool {
+	switch r {
+	case MessageDeltaEventTypeMessageDelta:
+		return true
+	}
+	return false
 }
 
 type MessageStartEvent struct {
 	Message Message               `json:"message,required"`
-	Type    constant.MessageStart `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Type    MessageStartEventType `json:"type,required"`
+	JSON    messageStartEventJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r MessageStartEvent) RawJSON() string { return r.JSON.raw }
-func (r *MessageStartEvent) UnmarshalJSON(data []byte) error {
+// messageStartEventJSON contains the JSON metadata for the struct
+// [MessageStartEvent]
+type messageStartEventJSON struct {
+	Message     apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *MessageStartEvent) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r messageStartEventJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r MessageStartEvent) implementsMessageStreamEvent() {}
+
+type MessageStartEventType string
+
+const (
+	MessageStartEventTypeMessageStart MessageStartEventType = "message_start"
+)
+
+func (r MessageStartEventType) IsKnown() bool {
+	switch r {
+	case MessageStartEventTypeMessageStart:
+		return true
+	}
+	return false
 }
 
 type MessageStopEvent struct {
-	Type constant.MessageStop `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Type MessageStopEventType `json:"type,required"`
+	JSON messageStopEventJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r MessageStopEvent) RawJSON() string { return r.JSON.raw }
-func (r *MessageStopEvent) UnmarshalJSON(data []byte) error {
+// messageStopEventJSON contains the JSON metadata for the struct
+// [MessageStopEvent]
+type messageStopEventJSON struct {
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *MessageStopEvent) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// MessageStreamEventUnion contains all possible properties and values from
-// [MessageStartEvent], [MessageDeltaEvent], [MessageStopEvent],
-// [ContentBlockStartEvent], [ContentBlockDeltaEvent], [ContentBlockStopEvent].
-//
-// Use the [MessageStreamEventUnion.AsAny] method to switch on the variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type MessageStreamEventUnion struct {
-	// This field is from variant [MessageStartEvent].
-	Message Message `json:"message"`
-	// Any of "message_start", "message_delta", "message_stop", "content_block_start",
-	// "content_block_delta", "content_block_stop".
-	Type string `json:"type"`
-	// This field is a union of [MessageDeltaEventDelta],
-	// [ContentBlockDeltaEventDeltaUnion]
-	Delta MessageStreamEventUnionDelta `json:"delta"`
-	// This field is from variant [MessageDeltaEvent].
-	Usage MessageDeltaUsage `json:"usage"`
-	// This field is from variant [ContentBlockStartEvent].
-	ContentBlock ContentBlockStartEventContentBlockUnion `json:"content_block"`
-	Index        int64                                   `json:"index"`
-	JSON         struct {
-		Message      resp.Field
-		Type         resp.Field
-		Delta        resp.Field
-		Usage        resp.Field
-		ContentBlock resp.Field
-		Index        resp.Field
-		raw          string
-	} `json:"-"`
+func (r messageStopEventJSON) RawJSON() string {
+	return r.raw
 }
 
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := MessageStreamEventUnion.AsAny().(type) {
-//	case MessageStartEvent:
-//	case MessageDeltaEvent:
-//	case MessageStopEvent:
-//	case ContentBlockStartEvent:
-//	case ContentBlockDeltaEvent:
-//	case ContentBlockStopEvent:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u MessageStreamEventUnion) AsAny() any {
-	switch u.Type {
-	case "message_start":
-		return u.AsMessageStartEvent()
-	case "message_delta":
-		return u.AsMessageDeltaEvent()
-	case "message_stop":
-		return u.AsMessageStopEvent()
-	case "content_block_start":
-		return u.AsContentBlockStartEvent()
-	case "content_block_delta":
-		return u.AsContentBlockDeltaEvent()
-	case "content_block_stop":
-		return u.AsContentBlockStopEvent()
+func (r MessageStopEvent) implementsMessageStreamEvent() {}
+
+type MessageStopEventType string
+
+const (
+	MessageStopEventTypeMessageStop MessageStopEventType = "message_stop"
+)
+
+func (r MessageStopEventType) IsKnown() bool {
+	switch r {
+	case MessageStopEventTypeMessageStop:
+		return true
 	}
-	return nil
+	return false
 }
 
-func (u MessageStreamEventUnion) AsMessageStartEvent() (v MessageStartEvent) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+type MessageStreamEvent struct {
+	Type MessageStreamEventType `json:"type,required"`
+	// This field can have the runtime type of [ContentBlockStartEventContentBlock].
+	ContentBlock interface{} `json:"content_block"`
+	// This field can have the runtime type of [MessageDeltaEventDelta],
+	// [ContentBlockDeltaEventDelta].
+	Delta   interface{} `json:"delta"`
+	Index   int64       `json:"index"`
+	Message Message     `json:"message"`
+	// Billing and rate-limit usage.
+	//
+	// Anthropic's API bills and rate-limits by token counts, as tokens represent the
+	// underlying cost to our systems.
+	//
+	// Under the hood, the API transforms requests into a format suitable for the
+	// model. The model's output then goes through a parsing stage before becoming an
+	// API response. As a result, the token counts in `usage` will not match one-to-one
+	// with the exact visible content of an API request or response.
+	//
+	// For example, `output_tokens` will be non-zero, even for an empty string response
+	// from Claude.
+	//
+	// Total input tokens in a request is the summation of `input_tokens`,
+	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
+	Usage MessageDeltaUsage      `json:"usage"`
+	JSON  messageStreamEventJSON `json:"-"`
+	union MessageStreamEventUnion
 }
 
-func (u MessageStreamEventUnion) AsMessageDeltaEvent() (v MessageDeltaEvent) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+// messageStreamEventJSON contains the JSON metadata for the struct
+// [MessageStreamEvent]
+type messageStreamEventJSON struct {
+	Type         apijson.Field
+	ContentBlock apijson.Field
+	Delta        apijson.Field
+	Index        apijson.Field
+	Message      apijson.Field
+	Usage        apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
 }
 
-func (u MessageStreamEventUnion) AsMessageStopEvent() (v MessageStopEvent) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+func (r messageStreamEventJSON) RawJSON() string {
+	return r.raw
 }
 
-func (u MessageStreamEventUnion) AsContentBlockStartEvent() (v ContentBlockStartEvent) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+func (r *MessageStreamEvent) UnmarshalJSON(data []byte) (err error) {
+	*r = MessageStreamEvent{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
 }
 
-func (u MessageStreamEventUnion) AsContentBlockDeltaEvent() (v ContentBlockDeltaEvent) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u MessageStreamEventUnion) AsContentBlockStopEvent() (v ContentBlockStopEvent) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u MessageStreamEventUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *MessageStreamEventUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// MessageStreamEventUnionDelta is an implicit subunion of
-// [MessageStreamEventUnion]. MessageStreamEventUnionDelta provides convenient
-// access to the sub-properties of the union.
+// AsUnion returns a [MessageStreamEventUnion] interface which you can cast to the
+// specific types for more type safety.
 //
-// For type safety it is recommended to directly use a variant of the
-// [MessageStreamEventUnion].
-type MessageStreamEventUnionDelta struct {
-	// This field is from variant [MessageDeltaEventDelta].
-	StopReason StopReason `json:"stop_reason"`
-	// This field is from variant [MessageDeltaEventDelta].
-	StopSequence string `json:"stop_sequence"`
-	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
-	Text string `json:"text"`
-	Type string `json:"type"`
-	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
-	PartialJSON string `json:"partial_json"`
-	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
-	Citation CitationsDeltaCitationUnion `json:"citation"`
-	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
-	Thinking string `json:"thinking"`
-	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
-	Signature string `json:"signature"`
-	JSON      struct {
-		StopReason   resp.Field
-		StopSequence resp.Field
-		Text         resp.Field
-		Type         resp.Field
-		PartialJSON  resp.Field
-		Citation     resp.Field
-		Thinking     resp.Field
-		Signature    resp.Field
-		raw          string
-	} `json:"-"`
+// Possible runtime types of the union are [MessageStartEvent],
+// [MessageDeltaEvent], [MessageStopEvent], [ContentBlockStartEvent],
+// [ContentBlockDeltaEvent], [ContentBlockStopEvent].
+func (r MessageStreamEvent) AsUnion() MessageStreamEventUnion {
+	return r.union
 }
 
-func (r *MessageStreamEventUnionDelta) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
+// Union satisfied by [MessageStartEvent], [MessageDeltaEvent], [MessageStopEvent],
+// [ContentBlockStartEvent], [ContentBlockDeltaEvent] or [ContentBlockStopEvent].
+type MessageStreamEventUnion interface {
+	implementsMessageStreamEvent()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*MessageStreamEventUnion)(nil)).Elem(),
+		"type",
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(MessageStartEvent{}),
+			DiscriminatorValue: "message_start",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(MessageDeltaEvent{}),
+			DiscriminatorValue: "message_delta",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(MessageStopEvent{}),
+			DiscriminatorValue: "message_stop",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ContentBlockStartEvent{}),
+			DiscriminatorValue: "content_block_start",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ContentBlockDeltaEvent{}),
+			DiscriminatorValue: "content_block_delta",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ContentBlockStopEvent{}),
+			DiscriminatorValue: "content_block_stop",
+		},
+	)
+}
+
+type MessageStreamEventType string
+
+const (
+	MessageStreamEventTypeMessageStart      MessageStreamEventType = "message_start"
+	MessageStreamEventTypeMessageDelta      MessageStreamEventType = "message_delta"
+	MessageStreamEventTypeMessageStop       MessageStreamEventType = "message_stop"
+	MessageStreamEventTypeContentBlockStart MessageStreamEventType = "content_block_start"
+	MessageStreamEventTypeContentBlockDelta MessageStreamEventType = "content_block_delta"
+	MessageStreamEventTypeContentBlockStop  MessageStreamEventType = "content_block_stop"
+)
+
+func (r MessageStreamEventType) IsKnown() bool {
+	switch r {
+	case MessageStreamEventTypeMessageStart, MessageStreamEventTypeMessageDelta, MessageStreamEventTypeMessageStop, MessageStreamEventTypeContentBlockStart, MessageStreamEventTypeContentBlockDelta, MessageStreamEventTypeContentBlockStop:
+		return true
+	}
+	return false
 }
 
 type RedactedThinkingBlock struct {
 	Data string                    `json:"data,required"`
-	Type constant.RedactedThinking `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Data        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Type RedactedThinkingBlockType `json:"type,required"`
+	JSON redactedThinkingBlockJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r RedactedThinkingBlock) RawJSON() string { return r.JSON.raw }
-func (r *RedactedThinkingBlock) UnmarshalJSON(data []byte) error {
+// redactedThinkingBlockJSON contains the JSON metadata for the struct
+// [RedactedThinkingBlock]
+type redactedThinkingBlockJSON struct {
+	Data        apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *RedactedThinkingBlock) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties Data, Type are required.
-type RedactedThinkingBlockParam struct {
-	Data string `json:"data,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "redacted_thinking".
-	Type constant.RedactedThinking `json:"type,required"`
-	paramObj
+func (r redactedThinkingBlockJSON) RawJSON() string {
+	return r.raw
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f RedactedThinkingBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (r RedactedThinkingBlock) implementsContentBlock() {}
+
+func (r RedactedThinkingBlock) implementsContentBlockStartEventContentBlock() {}
+
+type RedactedThinkingBlockType string
+
+const (
+	RedactedThinkingBlockTypeRedactedThinking RedactedThinkingBlockType = "redacted_thinking"
+)
+
+func (r RedactedThinkingBlockType) IsKnown() bool {
+	switch r {
+	case RedactedThinkingBlockTypeRedactedThinking:
+		return true
+	}
+	return false
+}
+
+type RedactedThinkingBlockParam struct {
+	Data param.Field[string]                         `json:"data,required"`
+	Type param.Field[RedactedThinkingBlockParamType] `json:"type,required"`
+}
+
 func (r RedactedThinkingBlockParam) MarshalJSON() (data []byte, err error) {
-	type shadow RedactedThinkingBlockParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
+}
+
+func (r RedactedThinkingBlockParam) implementsContentBlockParamUnion() {}
+
+type RedactedThinkingBlockParamType string
+
+const (
+	RedactedThinkingBlockParamTypeRedactedThinking RedactedThinkingBlockParamType = "redacted_thinking"
+)
+
+func (r RedactedThinkingBlockParamType) IsKnown() bool {
+	switch r {
+	case RedactedThinkingBlockParamTypeRedactedThinking:
+		return true
+	}
+	return false
 }
 
 type SignatureDelta struct {
-	Signature string                  `json:"signature,required"`
-	Type      constant.SignatureDelta `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Signature   resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Signature string             `json:"signature,required"`
+	Type      SignatureDeltaType `json:"type,required"`
+	JSON      signatureDeltaJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r SignatureDelta) RawJSON() string { return r.JSON.raw }
-func (r *SignatureDelta) UnmarshalJSON(data []byte) error {
+// signatureDeltaJSON contains the JSON metadata for the struct [SignatureDelta]
+type signatureDeltaJSON struct {
+	Signature   apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *SignatureDelta) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type StopReason string
+func (r signatureDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r SignatureDelta) implementsContentBlockDeltaEventDelta() {}
+
+type SignatureDeltaType string
 
 const (
-	StopReasonEndTurn      StopReason = "end_turn"
-	StopReasonMaxTokens    StopReason = "max_tokens"
-	StopReasonStopSequence StopReason = "stop_sequence"
-	StopReasonToolUse      StopReason = "tool_use"
+	SignatureDeltaTypeSignatureDelta SignatureDeltaType = "signature_delta"
 )
+
+func (r SignatureDeltaType) IsKnown() bool {
+	switch r {
+	case SignatureDeltaTypeSignatureDelta:
+		return true
+	}
+	return false
+}
 
 type TextBlock struct {
 	// Citations supporting the text block.
@@ -2073,344 +2066,346 @@ type TextBlock struct {
 	// The type of citation returned will depend on the type of document being cited.
 	// Citing a PDF results in `page_location`, plain text results in `char_location`,
 	// and content document results in `content_block_location`.
-	Citations []TextCitationUnion `json:"citations,required"`
-	Text      string              `json:"text,required"`
-	Type      constant.Text       `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Citations   resp.Field
-		Text        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Citations []TextCitation `json:"citations,required,nullable"`
+	Text      string         `json:"text,required"`
+	Type      TextBlockType  `json:"type,required"`
+	JSON      textBlockJSON  `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r TextBlock) RawJSON() string { return r.JSON.raw }
-func (r *TextBlock) UnmarshalJSON(data []byte) error {
+// textBlockJSON contains the JSON metadata for the struct [TextBlock]
+type textBlockJSON struct {
+	Citations   apijson.Field
+	Text        apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *TextBlock) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties Text, Type are required.
+func (r textBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r TextBlock) implementsContentBlock() {}
+
+func (r TextBlock) implementsContentBlockStartEventContentBlock() {}
+
+type TextBlockType string
+
+const (
+	TextBlockTypeText TextBlockType = "text"
+)
+
+func (r TextBlockType) IsKnown() bool {
+	switch r {
+	case TextBlockTypeText:
+		return true
+	}
+	return false
+}
+
 type TextBlockParam struct {
-	Text         string                     `json:"text,required"`
-	Citations    []TextCitationParamUnion   `json:"citations,omitzero"`
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// This field can be elided, and will marshal its zero value as "text".
-	Type constant.Text `json:"type,required"`
-	paramObj
+	Text         param.Field[string]                     `json:"text,required"`
+	Type         param.Field[TextBlockParamType]         `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
+	Citations    param.Field[[]TextCitationParamUnion]   `json:"citations"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f TextBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r TextBlockParam) MarshalJSON() (data []byte, err error) {
-	type shadow TextBlockParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// TextCitationUnion contains all possible properties and values from
-// [CitationCharLocation], [CitationPageLocation], [CitationContentBlockLocation].
+func (r TextBlockParam) implementsContentBlockParamUnion() {}
+
+func (r TextBlockParam) implementsContentBlockSourceContentUnionParam() {}
+
+func (r TextBlockParam) implementsToolResultBlockParamContentUnion() {}
+
+type TextBlockParamType string
+
+const (
+	TextBlockParamTypeText TextBlockParamType = "text"
+)
+
+func (r TextBlockParamType) IsKnown() bool {
+	switch r {
+	case TextBlockParamTypeText:
+		return true
+	}
+	return false
+}
+
+type TextCitation struct {
+	CitedText       string           `json:"cited_text,required"`
+	DocumentIndex   int64            `json:"document_index,required"`
+	DocumentTitle   string           `json:"document_title,required,nullable"`
+	Type            TextCitationType `json:"type,required"`
+	EndBlockIndex   int64            `json:"end_block_index"`
+	EndCharIndex    int64            `json:"end_char_index"`
+	EndPageNumber   int64            `json:"end_page_number"`
+	StartBlockIndex int64            `json:"start_block_index"`
+	StartCharIndex  int64            `json:"start_char_index"`
+	StartPageNumber int64            `json:"start_page_number"`
+	JSON            textCitationJSON `json:"-"`
+	union           TextCitationUnion
+}
+
+// textCitationJSON contains the JSON metadata for the struct [TextCitation]
+type textCitationJSON struct {
+	CitedText       apijson.Field
+	DocumentIndex   apijson.Field
+	DocumentTitle   apijson.Field
+	Type            apijson.Field
+	EndBlockIndex   apijson.Field
+	EndCharIndex    apijson.Field
+	EndPageNumber   apijson.Field
+	StartBlockIndex apijson.Field
+	StartCharIndex  apijson.Field
+	StartPageNumber apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r textCitationJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *TextCitation) UnmarshalJSON(data []byte) (err error) {
+	*r = TextCitation{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [TextCitationUnion] interface which you can cast to the
+// specific types for more type safety.
 //
-// Use the [TextCitationUnion.AsAny] method to switch on the variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type TextCitationUnion struct {
-	CitedText     string `json:"cited_text"`
-	DocumentIndex int64  `json:"document_index"`
-	DocumentTitle string `json:"document_title"`
-	// This field is from variant [CitationCharLocation].
-	EndCharIndex int64 `json:"end_char_index"`
-	// This field is from variant [CitationCharLocation].
-	StartCharIndex int64 `json:"start_char_index"`
-	// Any of "char_location", "page_location", "content_block_location".
-	Type string `json:"type"`
-	// This field is from variant [CitationPageLocation].
-	EndPageNumber int64 `json:"end_page_number"`
-	// This field is from variant [CitationPageLocation].
-	StartPageNumber int64 `json:"start_page_number"`
-	// This field is from variant [CitationContentBlockLocation].
-	EndBlockIndex int64 `json:"end_block_index"`
-	// This field is from variant [CitationContentBlockLocation].
-	StartBlockIndex int64 `json:"start_block_index"`
-	JSON            struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndCharIndex    resp.Field
-		StartCharIndex  resp.Field
-		Type            resp.Field
-		EndPageNumber   resp.Field
-		StartPageNumber resp.Field
-		EndBlockIndex   resp.Field
-		StartBlockIndex resp.Field
-		raw             string
-	} `json:"-"`
+// Possible runtime types of the union are [CitationCharLocation],
+// [CitationPageLocation], [CitationContentBlockLocation].
+func (r TextCitation) AsUnion() TextCitationUnion {
+	return r.union
 }
 
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := TextCitationUnion.AsAny().(type) {
-//	case CitationCharLocation:
-//	case CitationPageLocation:
-//	case CitationContentBlockLocation:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u TextCitationUnion) AsAny() any {
-	switch u.Type {
-	case "char_location":
-		return u.AsResponseCharLocationCitation()
-	case "page_location":
-		return u.AsResponsePageLocationCitation()
-	case "content_block_location":
-		return u.AsResponseContentBlockLocationCitation()
-	}
-	return nil
-}
-
-func (u TextCitationUnion) AsResponseCharLocationCitation() (v CitationCharLocation) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u TextCitationUnion) AsResponsePageLocationCitation() (v CitationPageLocation) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u TextCitationUnion) AsResponseContentBlockLocationCitation() (v CitationContentBlockLocation) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u TextCitationUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *TextCitationUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type TextCitationParamUnion struct {
-	OfRequestCharLocationCitation         *CitationCharLocationParam         `json:",omitzero,inline"`
-	OfRequestPageLocationCitation         *CitationPageLocationParam         `json:",omitzero,inline"`
-	OfRequestContentBlockLocationCitation *CitationContentBlockLocationParam `json:",omitzero,inline"`
-	paramUnion
-}
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u TextCitationParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
-func (u TextCitationParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[TextCitationParamUnion](u.OfRequestCharLocationCitation, u.OfRequestPageLocationCitation, u.OfRequestContentBlockLocationCitation)
-}
-
-func (u *TextCitationParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestCharLocationCitation) {
-		return u.OfRequestCharLocationCitation
-	} else if !param.IsOmitted(u.OfRequestPageLocationCitation) {
-		return u.OfRequestPageLocationCitation
-	} else if !param.IsOmitted(u.OfRequestContentBlockLocationCitation) {
-		return u.OfRequestContentBlockLocationCitation
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetEndCharIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
-		return &vt.EndCharIndex
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetStartCharIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
-		return &vt.StartCharIndex
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetEndPageNumber() *int64 {
-	if vt := u.OfRequestPageLocationCitation; vt != nil {
-		return &vt.EndPageNumber
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetStartPageNumber() *int64 {
-	if vt := u.OfRequestPageLocationCitation; vt != nil {
-		return &vt.StartPageNumber
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetEndBlockIndex() *int64 {
-	if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
-		return &vt.EndBlockIndex
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetStartBlockIndex() *int64 {
-	if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
-		return &vt.StartBlockIndex
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetCitedText() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
-		return (*string)(&vt.CitedText)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
-		return (*string)(&vt.CitedText)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
-		return (*string)(&vt.CitedText)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetDocumentIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
-		return (*int64)(&vt.DocumentIndex)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
-		return (*int64)(&vt.DocumentIndex)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
-		return (*int64)(&vt.DocumentIndex)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetDocumentTitle() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
-		return &vt.DocumentTitle.Value
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
-		return &vt.DocumentTitle.Value
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
-		return &vt.DocumentTitle.Value
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetType() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
-		return (*string)(&vt.Type)
-	}
-	return nil
+// Union satisfied by [CitationCharLocation], [CitationPageLocation] or
+// [CitationContentBlockLocation].
+type TextCitationUnion interface {
+	implementsTextCitation()
 }
 
 func init() {
-	apijson.RegisterUnion[TextCitationParamUnion](
+	apijson.RegisterUnion(
+		reflect.TypeOf((*TextCitationUnion)(nil)).Elem(),
 		"type",
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(CitationCharLocationParam{}),
+			Type:               reflect.TypeOf(CitationCharLocation{}),
 			DiscriminatorValue: "char_location",
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(CitationPageLocationParam{}),
+			Type:               reflect.TypeOf(CitationPageLocation{}),
 			DiscriminatorValue: "page_location",
 		},
 		apijson.UnionVariant{
 			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(CitationContentBlockLocationParam{}),
+			Type:               reflect.TypeOf(CitationContentBlockLocation{}),
 			DiscriminatorValue: "content_block_location",
 		},
 	)
 }
 
-type TextDelta struct {
-	Text string             `json:"text,required"`
-	Type constant.TextDelta `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Text        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+type TextCitationType string
+
+const (
+	TextCitationTypeCharLocation         TextCitationType = "char_location"
+	TextCitationTypePageLocation         TextCitationType = "page_location"
+	TextCitationTypeContentBlockLocation TextCitationType = "content_block_location"
+)
+
+func (r TextCitationType) IsKnown() bool {
+	switch r {
+	case TextCitationTypeCharLocation, TextCitationTypePageLocation, TextCitationTypeContentBlockLocation:
+		return true
+	}
+	return false
 }
 
-// Returns the unmodified JSON received from the API
-func (r TextDelta) RawJSON() string { return r.JSON.raw }
-func (r *TextDelta) UnmarshalJSON(data []byte) error {
+type TextCitationParam struct {
+	CitedText       param.Field[string]                `json:"cited_text,required"`
+	DocumentIndex   param.Field[int64]                 `json:"document_index,required"`
+	DocumentTitle   param.Field[string]                `json:"document_title,required"`
+	Type            param.Field[TextCitationParamType] `json:"type,required"`
+	EndBlockIndex   param.Field[int64]                 `json:"end_block_index"`
+	EndCharIndex    param.Field[int64]                 `json:"end_char_index"`
+	EndPageNumber   param.Field[int64]                 `json:"end_page_number"`
+	StartBlockIndex param.Field[int64]                 `json:"start_block_index"`
+	StartCharIndex  param.Field[int64]                 `json:"start_char_index"`
+	StartPageNumber param.Field[int64]                 `json:"start_page_number"`
+}
+
+func (r TextCitationParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r TextCitationParam) implementsTextCitationParamUnion() {}
+
+// Satisfied by [CitationCharLocationParam], [CitationPageLocationParam],
+// [CitationContentBlockLocationParam], [TextCitationParam].
+type TextCitationParamUnion interface {
+	implementsTextCitationParamUnion()
+}
+
+type TextCitationParamType string
+
+const (
+	TextCitationParamTypeCharLocation         TextCitationParamType = "char_location"
+	TextCitationParamTypePageLocation         TextCitationParamType = "page_location"
+	TextCitationParamTypeContentBlockLocation TextCitationParamType = "content_block_location"
+)
+
+func (r TextCitationParamType) IsKnown() bool {
+	switch r {
+	case TextCitationParamTypeCharLocation, TextCitationParamTypePageLocation, TextCitationParamTypeContentBlockLocation:
+		return true
+	}
+	return false
+}
+
+type TextDelta struct {
+	Text string        `json:"text,required"`
+	Type TextDeltaType `json:"type,required"`
+	JSON textDeltaJSON `json:"-"`
+}
+
+// textDeltaJSON contains the JSON metadata for the struct [TextDelta]
+type textDeltaJSON struct {
+	Text        apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *TextDelta) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r textDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r TextDelta) implementsContentBlockDeltaEventDelta() {}
+
+type TextDeltaType string
+
+const (
+	TextDeltaTypeTextDelta TextDeltaType = "text_delta"
+)
+
+func (r TextDeltaType) IsKnown() bool {
+	switch r {
+	case TextDeltaTypeTextDelta:
+		return true
+	}
+	return false
 }
 
 type ThinkingBlock struct {
 	Signature string            `json:"signature,required"`
 	Thinking  string            `json:"thinking,required"`
-	Type      constant.Thinking `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Signature   resp.Field
-		Thinking    resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Type      ThinkingBlockType `json:"type,required"`
+	JSON      thinkingBlockJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r ThinkingBlock) RawJSON() string { return r.JSON.raw }
-func (r *ThinkingBlock) UnmarshalJSON(data []byte) error {
+// thinkingBlockJSON contains the JSON metadata for the struct [ThinkingBlock]
+type thinkingBlockJSON struct {
+	Signature   apijson.Field
+	Thinking    apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ThinkingBlock) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties Signature, Thinking, Type are required.
+func (r thinkingBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ThinkingBlock) implementsContentBlock() {}
+
+func (r ThinkingBlock) implementsContentBlockStartEventContentBlock() {}
+
+type ThinkingBlockType string
+
+const (
+	ThinkingBlockTypeThinking ThinkingBlockType = "thinking"
+)
+
+func (r ThinkingBlockType) IsKnown() bool {
+	switch r {
+	case ThinkingBlockTypeThinking:
+		return true
+	}
+	return false
+}
+
 type ThinkingBlockParam struct {
-	Signature string `json:"signature,required"`
-	Thinking  string `json:"thinking,required"`
-	// This field can be elided, and will marshal its zero value as "thinking".
-	Type constant.Thinking `json:"type,required"`
-	paramObj
+	Signature param.Field[string]                 `json:"signature,required"`
+	Thinking  param.Field[string]                 `json:"thinking,required"`
+	Type      param.Field[ThinkingBlockParamType] `json:"type,required"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ThinkingBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ThinkingBlockParam) MarshalJSON() (data []byte, err error) {
-	type shadow ThinkingBlockParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// The property Type is required.
+func (r ThinkingBlockParam) implementsContentBlockParamUnion() {}
+
+type ThinkingBlockParamType string
+
+const (
+	ThinkingBlockParamTypeThinking ThinkingBlockParamType = "thinking"
+)
+
+func (r ThinkingBlockParamType) IsKnown() bool {
+	switch r {
+	case ThinkingBlockParamTypeThinking:
+		return true
+	}
+	return false
+}
+
 type ThinkingConfigDisabledParam struct {
-	// This field can be elided, and will marshal its zero value as "disabled".
-	Type constant.Disabled `json:"type,required"`
-	paramObj
+	Type param.Field[ThinkingConfigDisabledType] `json:"type,required"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ThinkingConfigDisabledParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ThinkingConfigDisabledParam) MarshalJSON() (data []byte, err error) {
-	type shadow ThinkingConfigDisabledParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// The properties BudgetTokens, Type are required.
+func (r ThinkingConfigDisabledParam) implementsThinkingConfigParamUnion() {}
+
+type ThinkingConfigDisabledType string
+
+const (
+	ThinkingConfigDisabledTypeDisabled ThinkingConfigDisabledType = "disabled"
+)
+
+func (r ThinkingConfigDisabledType) IsKnown() bool {
+	switch r {
+	case ThinkingConfigDisabledTypeDisabled:
+		return true
+	}
+	return false
+}
+
 type ThinkingConfigEnabledParam struct {
 	// Determines how many tokens Claude can use for its internal reasoning process.
 	// Larger budgets can enable more thorough analysis for complex problems, improving
@@ -2421,672 +2416,698 @@ type ThinkingConfigEnabledParam struct {
 	// See
 	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
 	// for details.
-	BudgetTokens int64 `json:"budget_tokens,required"`
-	// This field can be elided, and will marshal its zero value as "enabled".
-	Type constant.Enabled `json:"type,required"`
-	paramObj
+	BudgetTokens param.Field[int64]                     `json:"budget_tokens,required"`
+	Type         param.Field[ThinkingConfigEnabledType] `json:"type,required"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ThinkingConfigEnabledParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ThinkingConfigEnabledParam) MarshalJSON() (data []byte, err error) {
-	type shadow ThinkingConfigEnabledParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-func ThinkingConfigParamOfThinkingConfigEnabled(budgetTokens int64) ThinkingConfigParamUnion {
-	var variant ThinkingConfigEnabledParam
-	variant.BudgetTokens = budgetTokens
-	return ThinkingConfigParamUnion{OfThinkingConfigEnabled: &variant}
+func (r ThinkingConfigEnabledParam) implementsThinkingConfigParamUnion() {}
+
+type ThinkingConfigEnabledType string
+
+const (
+	ThinkingConfigEnabledTypeEnabled ThinkingConfigEnabledType = "enabled"
+)
+
+func (r ThinkingConfigEnabledType) IsKnown() bool {
+	switch r {
+	case ThinkingConfigEnabledTypeEnabled:
+		return true
+	}
+	return false
 }
 
-// Only one field can be non-zero.
+// Configuration for enabling Claude's extended thinking.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type ThinkingConfigParamUnion struct {
-	OfThinkingConfigEnabled  *ThinkingConfigEnabledParam  `json:",omitzero,inline"`
-	OfThinkingConfigDisabled *ThinkingConfigDisabledParam `json:",omitzero,inline"`
-	paramUnion
+// When enabled, responses include `thinking` content blocks showing Claude's
+// thinking process before the final answer. Requires a minimum budget of 1,024
+// tokens and counts towards your `max_tokens` limit.
+//
+// See
+// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+// for details.
+type ThinkingConfigParam struct {
+	Type param.Field[ThinkingConfigParamType] `json:"type,required"`
+	// Determines how many tokens Claude can use for its internal reasoning process.
+	// Larger budgets can enable more thorough analysis for complex problems, improving
+	// response quality.
+	//
+	// Must be ≥1024 and less than `max_tokens`.
+	//
+	// See
+	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// for details.
+	BudgetTokens param.Field[int64] `json:"budget_tokens"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ThinkingConfigParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
-func (u ThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ThinkingConfigParamUnion](u.OfThinkingConfigEnabled, u.OfThinkingConfigDisabled)
+func (r ThinkingConfigParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
-func (u *ThinkingConfigParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfThinkingConfigEnabled) {
-		return u.OfThinkingConfigEnabled
-	} else if !param.IsOmitted(u.OfThinkingConfigDisabled) {
-		return u.OfThinkingConfigDisabled
+func (r ThinkingConfigParam) implementsThinkingConfigParamUnion() {}
+
+// Configuration for enabling Claude's extended thinking.
+//
+// When enabled, responses include `thinking` content blocks showing Claude's
+// thinking process before the final answer. Requires a minimum budget of 1,024
+// tokens and counts towards your `max_tokens` limit.
+//
+// See
+// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+// for details.
+//
+// Satisfied by [ThinkingConfigEnabledParam], [ThinkingConfigDisabledParam],
+// [ThinkingConfigParam].
+type ThinkingConfigParamUnion interface {
+	implementsThinkingConfigParamUnion()
+}
+
+type ThinkingConfigParamType string
+
+const (
+	ThinkingConfigParamTypeEnabled  ThinkingConfigParamType = "enabled"
+	ThinkingConfigParamTypeDisabled ThinkingConfigParamType = "disabled"
+)
+
+func (r ThinkingConfigParamType) IsKnown() bool {
+	switch r {
+	case ThinkingConfigParamTypeEnabled, ThinkingConfigParamTypeDisabled:
+		return true
 	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ThinkingConfigParamUnion) GetBudgetTokens() *int64 {
-	if vt := u.OfThinkingConfigEnabled; vt != nil {
-		return &vt.BudgetTokens
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ThinkingConfigParamUnion) GetType() *string {
-	if vt := u.OfThinkingConfigEnabled; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfThinkingConfigDisabled; vt != nil {
-		return (*string)(&vt.Type)
-	}
-	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[ThinkingConfigParamUnion](
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ThinkingConfigEnabledParam{}),
-			DiscriminatorValue: "enabled",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ThinkingConfigDisabledParam{}),
-			DiscriminatorValue: "disabled",
-		},
-	)
+	return false
 }
 
 type ThinkingDelta struct {
-	Thinking string                 `json:"thinking,required"`
-	Type     constant.ThinkingDelta `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Thinking    resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Thinking string            `json:"thinking,required"`
+	Type     ThinkingDeltaType `json:"type,required"`
+	JSON     thinkingDeltaJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r ThinkingDelta) RawJSON() string { return r.JSON.raw }
-func (r *ThinkingDelta) UnmarshalJSON(data []byte) error {
+// thinkingDeltaJSON contains the JSON metadata for the struct [ThinkingDelta]
+type thinkingDeltaJSON struct {
+	Thinking    apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ThinkingDelta) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties InputSchema, Name are required.
+func (r thinkingDeltaJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ThinkingDelta) implementsContentBlockDeltaEventDelta() {}
+
+type ThinkingDeltaType string
+
+const (
+	ThinkingDeltaTypeThinkingDelta ThinkingDeltaType = "thinking_delta"
+)
+
+func (r ThinkingDeltaType) IsKnown() bool {
+	switch r {
+	case ThinkingDeltaTypeThinkingDelta:
+		return true
+	}
+	return false
+}
+
 type ToolParam struct {
 	// [JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.
 	//
 	// This defines the shape of the `input` that your tool accepts and that the model
 	// will produce.
-	InputSchema ToolInputSchemaParam `json:"input_schema,omitzero,required"`
+	InputSchema param.Field[ToolInputSchemaParam] `json:"input_schema,required"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in tool_use blocks.
-	Name string `json:"name,required"`
+	Name         param.Field[string]                     `json:"name,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
 	// Description of what this tool does.
 	//
 	// Tool descriptions should be as detailed as possible. The more information that
 	// the model has about what the tool is and how to use it, the better it will
 	// perform. You can use natural language descriptions to reinforce important
 	// aspects of the tool input JSON schema.
-	Description  param.Opt[string]          `json:"description,omitzero"`
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	paramObj
+	Description param.Field[string] `json:"description"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
+
+func (r ToolParam) implementsMessageCountTokensToolUnionParam() {}
+
+func (r ToolParam) implementsToolUnionUnionParam() {}
 
 // [JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.
 //
 // This defines the shape of the `input` that your tool accepts and that the model
 // will produce.
-//
-// The property Type is required.
 type ToolInputSchemaParam struct {
-	Properties interface{} `json:"properties,omitzero"`
-	// This field can be elided, and will marshal its zero value as "object".
-	Type        constant.Object        `json:"type,required"`
-	ExtraFields map[string]interface{} `json:"-,extras"`
-	paramObj
+	Type        param.Field[ToolInputSchemaType] `json:"type,required"`
+	Properties  param.Field[interface{}]         `json:"properties"`
+	ExtraFields map[string]interface{}           `json:"-,extras"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolInputSchemaParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolInputSchemaParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolInputSchemaParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// The properties Name, Type are required.
+type ToolInputSchemaType string
+
+const (
+	ToolInputSchemaTypeObject ToolInputSchemaType = "object"
+)
+
+func (r ToolInputSchemaType) IsKnown() bool {
+	switch r {
+	case ToolInputSchemaTypeObject:
+		return true
+	}
+	return false
+}
+
 type ToolBash20250124Param struct {
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in tool_use blocks.
-	//
-	// This field can be elided, and will marshal its zero value as "bash".
-	Name constant.Bash `json:"name,required"`
-	// This field can be elided, and will marshal its zero value as "bash_20250124".
-	Type constant.Bash20250124 `json:"type,required"`
-	paramObj
+	Name         param.Field[ToolBash20250124Name]       `json:"name,required"`
+	Type         param.Field[ToolBash20250124Type]       `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolBash20250124Param) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolBash20250124Param) MarshalJSON() (data []byte, err error) {
-	type shadow ToolBash20250124Param
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-func ToolChoiceParamOfToolChoiceTool(name string) ToolChoiceUnionParam {
-	var variant ToolChoiceToolParam
-	variant.Name = name
-	return ToolChoiceUnionParam{OfToolChoiceTool: &variant}
-}
+func (r ToolBash20250124Param) implementsMessageCountTokensToolUnionParam() {}
 
-// Only one field can be non-zero.
+func (r ToolBash20250124Param) implementsToolUnionUnionParam() {}
+
+// Name of the tool.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type ToolChoiceUnionParam struct {
-	OfToolChoiceAuto *ToolChoiceAutoParam `json:",omitzero,inline"`
-	OfToolChoiceAny  *ToolChoiceAnyParam  `json:",omitzero,inline"`
-	OfToolChoiceTool *ToolChoiceToolParam `json:",omitzero,inline"`
-	OfToolChoiceNone *ToolChoiceNoneParam `json:",omitzero,inline"`
-	paramUnion
-}
+// This is how the tool will be called by the model and in tool_use blocks.
+type ToolBash20250124Name string
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ToolChoiceUnionParam) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
-func (u ToolChoiceUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolChoiceUnionParam](u.OfToolChoiceAuto, u.OfToolChoiceAny, u.OfToolChoiceTool, u.OfToolChoiceNone)
-}
+const (
+	ToolBash20250124NameBash ToolBash20250124Name = "bash"
+)
 
-func (u *ToolChoiceUnionParam) asAny() any {
-	if !param.IsOmitted(u.OfToolChoiceAuto) {
-		return u.OfToolChoiceAuto
-	} else if !param.IsOmitted(u.OfToolChoiceAny) {
-		return u.OfToolChoiceAny
-	} else if !param.IsOmitted(u.OfToolChoiceTool) {
-		return u.OfToolChoiceTool
-	} else if !param.IsOmitted(u.OfToolChoiceNone) {
-		return u.OfToolChoiceNone
+func (r ToolBash20250124Name) IsKnown() bool {
+	switch r {
+	case ToolBash20250124NameBash:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u ToolChoiceUnionParam) GetName() *string {
-	if vt := u.OfToolChoiceTool; vt != nil {
-		return &vt.Name
+type ToolBash20250124Type string
+
+const (
+	ToolBash20250124TypeBash20250124 ToolBash20250124Type = "bash_20250124"
+)
+
+func (r ToolBash20250124Type) IsKnown() bool {
+	switch r {
+	case ToolBash20250124TypeBash20250124:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u ToolChoiceUnionParam) GetType() *string {
-	if vt := u.OfToolChoiceAuto; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceAny; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceTool; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceNone; vt != nil {
-		return (*string)(&vt.Type)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ToolChoiceUnionParam) GetDisableParallelToolUse() *bool {
-	if vt := u.OfToolChoiceAuto; vt != nil && vt.DisableParallelToolUse.IsPresent() {
-		return &vt.DisableParallelToolUse.Value
-	} else if vt := u.OfToolChoiceAny; vt != nil && vt.DisableParallelToolUse.IsPresent() {
-		return &vt.DisableParallelToolUse.Value
-	} else if vt := u.OfToolChoiceTool; vt != nil && vt.DisableParallelToolUse.IsPresent() {
-		return &vt.DisableParallelToolUse.Value
-	}
-	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[ToolChoiceUnionParam](
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceAutoParam{}),
-			DiscriminatorValue: "auto",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceAnyParam{}),
-			DiscriminatorValue: "any",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceToolParam{}),
-			DiscriminatorValue: "tool",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceNoneParam{}),
-			DiscriminatorValue: "none",
-		},
-	)
-}
-
-// The model will use any available tools.
-//
-// The property Type is required.
-type ToolChoiceAnyParam struct {
-	// Whether to disable parallel tool use.
-	//
-	// Defaults to `false`. If set to `true`, the model will output exactly one tool
-	// use.
-	DisableParallelToolUse param.Opt[bool] `json:"disable_parallel_tool_use,omitzero"`
-	// This field can be elided, and will marshal its zero value as "any".
-	Type constant.Any `json:"type,required"`
-	paramObj
-}
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolChoiceAnyParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-func (r ToolChoiceAnyParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolChoiceAnyParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-
-// The model will automatically decide whether to use tools.
-//
-// The property Type is required.
-type ToolChoiceAutoParam struct {
+// How the model should use the provided tools. The model can use a specific tool,
+// any available tool, decide by itself, or not use tools at all.
+type ToolChoiceParam struct {
+	Type param.Field[ToolChoiceType] `json:"type,required"`
 	// Whether to disable parallel tool use.
 	//
 	// Defaults to `false`. If set to `true`, the model will output at most one tool
 	// use.
-	DisableParallelToolUse param.Opt[bool] `json:"disable_parallel_tool_use,omitzero"`
-	// This field can be elided, and will marshal its zero value as "auto".
-	Type constant.Auto `json:"type,required"`
-	paramObj
-}
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolChoiceAutoParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-func (r ToolChoiceAutoParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolChoiceAutoParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-
-// The model will not be allowed to use tools.
-//
-// The property Type is required.
-type ToolChoiceNoneParam struct {
-	// This field can be elided, and will marshal its zero value as "none".
-	Type constant.None `json:"type,required"`
-	paramObj
-}
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolChoiceNoneParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-func (r ToolChoiceNoneParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolChoiceNoneParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-
-// The model will use the specified tool with `tool_choice.name`.
-//
-// The properties Name, Type are required.
-type ToolChoiceToolParam struct {
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
 	// The name of the tool to use.
-	Name string `json:"name,required"`
+	Name param.Field[string] `json:"name"`
+}
+
+func (r ToolChoiceParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolChoiceParam) implementsToolChoiceUnionParam() {}
+
+// How the model should use the provided tools. The model can use a specific tool,
+// any available tool, decide by itself, or not use tools at all.
+//
+// Satisfied by [ToolChoiceAutoParam], [ToolChoiceAnyParam], [ToolChoiceToolParam],
+// [ToolChoiceNoneParam], [ToolChoiceParam].
+type ToolChoiceUnionParam interface {
+	implementsToolChoiceUnionParam()
+}
+
+type ToolChoiceType string
+
+const (
+	ToolChoiceTypeAuto ToolChoiceType = "auto"
+	ToolChoiceTypeAny  ToolChoiceType = "any"
+	ToolChoiceTypeTool ToolChoiceType = "tool"
+	ToolChoiceTypeNone ToolChoiceType = "none"
+)
+
+func (r ToolChoiceType) IsKnown() bool {
+	switch r {
+	case ToolChoiceTypeAuto, ToolChoiceTypeAny, ToolChoiceTypeTool, ToolChoiceTypeNone:
+		return true
+	}
+	return false
+}
+
+// The model will use any available tools.
+type ToolChoiceAnyParam struct {
+	Type param.Field[ToolChoiceAnyType] `json:"type,required"`
 	// Whether to disable parallel tool use.
 	//
 	// Defaults to `false`. If set to `true`, the model will output exactly one tool
 	// use.
-	DisableParallelToolUse param.Opt[bool] `json:"disable_parallel_tool_use,omitzero"`
-	// This field can be elided, and will marshal its zero value as "tool".
-	Type constant.Tool `json:"type,required"`
-	paramObj
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolChoiceToolParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (r ToolChoiceAnyParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolChoiceAnyParam) implementsToolChoiceUnionParam() {}
+
+type ToolChoiceAnyType string
+
+const (
+	ToolChoiceAnyTypeAny ToolChoiceAnyType = "any"
+)
+
+func (r ToolChoiceAnyType) IsKnown() bool {
+	switch r {
+	case ToolChoiceAnyTypeAny:
+		return true
+	}
+	return false
+}
+
+// The model will automatically decide whether to use tools.
+type ToolChoiceAutoParam struct {
+	Type param.Field[ToolChoiceAutoType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output at most one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
+}
+
+func (r ToolChoiceAutoParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolChoiceAutoParam) implementsToolChoiceUnionParam() {}
+
+type ToolChoiceAutoType string
+
+const (
+	ToolChoiceAutoTypeAuto ToolChoiceAutoType = "auto"
+)
+
+func (r ToolChoiceAutoType) IsKnown() bool {
+	switch r {
+	case ToolChoiceAutoTypeAuto:
+		return true
+	}
+	return false
+}
+
+// The model will not be allowed to use tools.
+type ToolChoiceNoneParam struct {
+	Type param.Field[ToolChoiceNoneType] `json:"type,required"`
+}
+
+func (r ToolChoiceNoneParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolChoiceNoneParam) implementsToolChoiceUnionParam() {}
+
+type ToolChoiceNoneType string
+
+const (
+	ToolChoiceNoneTypeNone ToolChoiceNoneType = "none"
+)
+
+func (r ToolChoiceNoneType) IsKnown() bool {
+	switch r {
+	case ToolChoiceNoneTypeNone:
+		return true
+	}
+	return false
+}
+
+// The model will use the specified tool with `tool_choice.name`.
+type ToolChoiceToolParam struct {
+	// The name of the tool to use.
+	Name param.Field[string]             `json:"name,required"`
+	Type param.Field[ToolChoiceToolType] `json:"type,required"`
+	// Whether to disable parallel tool use.
+	//
+	// Defaults to `false`. If set to `true`, the model will output exactly one tool
+	// use.
+	DisableParallelToolUse param.Field[bool] `json:"disable_parallel_tool_use"`
+}
+
 func (r ToolChoiceToolParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolChoiceToolParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// The properties ToolUseID, Type are required.
+func (r ToolChoiceToolParam) implementsToolChoiceUnionParam() {}
+
+type ToolChoiceToolType string
+
+const (
+	ToolChoiceToolTypeTool ToolChoiceToolType = "tool"
+)
+
+func (r ToolChoiceToolType) IsKnown() bool {
+	switch r {
+	case ToolChoiceToolTypeTool:
+		return true
+	}
+	return false
+}
+
 type ToolResultBlockParam struct {
-	ToolUseID    string                             `json:"tool_use_id,required"`
-	IsError      param.Opt[bool]                    `json:"is_error,omitzero"`
-	CacheControl CacheControlEphemeralParam         `json:"cache_control,omitzero"`
-	Content      []ToolResultBlockParamContentUnion `json:"content,omitzero"`
-	// This field can be elided, and will marshal its zero value as "tool_result".
-	Type constant.ToolResult `json:"type,required"`
-	paramObj
+	ToolUseID    param.Field[string]                             `json:"tool_use_id,required"`
+	Type         param.Field[ToolResultBlockParamType]           `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam]         `json:"cache_control"`
+	Content      param.Field[[]ToolResultBlockParamContentUnion] `json:"content"`
+	IsError      param.Field[bool]                               `json:"is_error"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolResultBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolResultBlockParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type ToolResultBlockParamContentUnion struct {
-	OfRequestTextBlock  *TextBlockParam  `json:",omitzero,inline"`
-	OfRequestImageBlock *ImageBlockParam `json:",omitzero,inline"`
-	paramUnion
-}
+func (r ToolResultBlockParam) implementsContentBlockParamUnion() {}
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ToolResultBlockParamContentUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
-func (u ToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolResultBlockParamContentUnion](u.OfRequestTextBlock, u.OfRequestImageBlock)
-}
+type ToolResultBlockParamType string
 
-func (u *ToolResultBlockParamContentUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestTextBlock) {
-		return u.OfRequestTextBlock
-	} else if !param.IsOmitted(u.OfRequestImageBlock) {
-		return u.OfRequestImageBlock
+const (
+	ToolResultBlockParamTypeToolResult ToolResultBlockParamType = "tool_result"
+)
+
+func (r ToolResultBlockParamType) IsKnown() bool {
+	switch r {
+	case ToolResultBlockParamTypeToolResult:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u ToolResultBlockParamContentUnion) GetText() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
-		return &vt.Text
+type ToolResultBlockParamContent struct {
+	Type         param.Field[ToolResultBlockParamContentType] `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam]      `json:"cache_control"`
+	Citations    param.Field[interface{}]                     `json:"citations"`
+	Source       param.Field[interface{}]                     `json:"source"`
+	Text         param.Field[string]                          `json:"text"`
+}
+
+func (r ToolResultBlockParamContent) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ToolResultBlockParamContent) implementsToolResultBlockParamContentUnion() {}
+
+// Satisfied by [TextBlockParam], [ImageBlockParam], [ToolResultBlockParamContent].
+type ToolResultBlockParamContentUnion interface {
+	implementsToolResultBlockParamContentUnion()
+}
+
+type ToolResultBlockParamContentType string
+
+const (
+	ToolResultBlockParamContentTypeText  ToolResultBlockParamContentType = "text"
+	ToolResultBlockParamContentTypeImage ToolResultBlockParamContentType = "image"
+)
+
+func (r ToolResultBlockParamContentType) IsKnown() bool {
+	switch r {
+	case ToolResultBlockParamContentTypeText, ToolResultBlockParamContentTypeImage:
+		return true
 	}
-	return nil
+	return false
 }
 
-// Returns a pointer to the underlying variant's property, if present.
-func (u ToolResultBlockParamContentUnion) GetCitations() []TextCitationParamUnion {
-	if vt := u.OfRequestTextBlock; vt != nil {
-		return vt.Citations
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ToolResultBlockParamContentUnion) GetSource() *ImageBlockParamSourceUnion {
-	if vt := u.OfRequestImageBlock; vt != nil {
-		return &vt.Source
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ToolResultBlockParamContentUnion) GetType() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestImageBlock; vt != nil {
-		return (*string)(&vt.Type)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's CacheControl property, if present.
-func (u ToolResultBlockParamContentUnion) GetCacheControl() *CacheControlEphemeralParam {
-	if vt := u.OfRequestTextBlock; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfRequestImageBlock; vt != nil {
-		return &vt.CacheControl
-	}
-	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[ToolResultBlockParamContentUnion](
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(TextBlockParam{}),
-			DiscriminatorValue: "text",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ImageBlockParam{}),
-			DiscriminatorValue: "image",
-		},
-	)
-}
-
-// The properties Name, Type are required.
 type ToolTextEditor20250124Param struct {
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in tool_use blocks.
-	//
-	// This field can be elided, and will marshal its zero value as
-	// "str_replace_editor".
-	Name constant.StrReplaceEditor `json:"name,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "text_editor_20250124".
-	Type constant.TextEditor20250124 `json:"type,required"`
-	paramObj
+	Name         param.Field[ToolTextEditor20250124Name] `json:"name,required"`
+	Type         param.Field[ToolTextEditor20250124Type] `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolTextEditor20250124Param) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolTextEditor20250124Param) MarshalJSON() (data []byte, err error) {
-	type shadow ToolTextEditor20250124Param
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-func ToolUnionParamOfTool(inputSchema ToolInputSchemaParam, name string) ToolUnionParam {
-	var variant ToolParam
-	variant.InputSchema = inputSchema
-	variant.Name = name
-	return ToolUnionParam{OfTool: &variant}
-}
+func (r ToolTextEditor20250124Param) implementsMessageCountTokensToolUnionParam() {}
 
-// Only one field can be non-zero.
+func (r ToolTextEditor20250124Param) implementsToolUnionUnionParam() {}
+
+// Name of the tool.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
+// This is how the tool will be called by the model and in tool_use blocks.
+type ToolTextEditor20250124Name string
+
+const (
+	ToolTextEditor20250124NameStrReplaceEditor ToolTextEditor20250124Name = "str_replace_editor"
+)
+
+func (r ToolTextEditor20250124Name) IsKnown() bool {
+	switch r {
+	case ToolTextEditor20250124NameStrReplaceEditor:
+		return true
+	}
+	return false
+}
+
+type ToolTextEditor20250124Type string
+
+const (
+	ToolTextEditor20250124TypeTextEditor20250124 ToolTextEditor20250124Type = "text_editor_20250124"
+)
+
+func (r ToolTextEditor20250124Type) IsKnown() bool {
+	switch r {
+	case ToolTextEditor20250124TypeTextEditor20250124:
+		return true
+	}
+	return false
+}
+
 type ToolUnionParam struct {
-	OfTool               *ToolParam                   `json:",omitzero,inline"`
-	OfBashTool20250124   *ToolBash20250124Param       `json:",omitzero,inline"`
-	OfTextEditor20250124 *ToolTextEditor20250124Param `json:",omitzero,inline"`
-	paramUnion
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in tool_use blocks.
+	Name         param.Field[string]                     `json:"name,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
+	// Description of what this tool does.
+	//
+	// Tool descriptions should be as detailed as possible. The more information that
+	// the model has about what the tool is and how to use it, the better it will
+	// perform. You can use natural language descriptions to reinforce important
+	// aspects of the tool input JSON schema.
+	Description param.Field[string]        `json:"description"`
+	InputSchema param.Field[interface{}]   `json:"input_schema"`
+	Type        param.Field[ToolUnionType] `json:"type"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ToolUnionParam) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
-func (u ToolUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolUnionParam](u.OfTool, u.OfBashTool20250124, u.OfTextEditor20250124)
+func (r ToolUnionParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
 }
 
-func (u *ToolUnionParam) asAny() any {
-	if !param.IsOmitted(u.OfTool) {
-		return u.OfTool
-	} else if !param.IsOmitted(u.OfBashTool20250124) {
-		return u.OfBashTool20250124
-	} else if !param.IsOmitted(u.OfTextEditor20250124) {
-		return u.OfTextEditor20250124
+func (r ToolUnionParam) implementsToolUnionUnionParam() {}
+
+// Satisfied by [ToolParam], [ToolBash20250124Param],
+// [ToolTextEditor20250124Param], [ToolUnionParam].
+type ToolUnionUnionParam interface {
+	implementsToolUnionUnionParam()
+}
+
+type ToolUnionType string
+
+const (
+	ToolUnionTypeBash20250124       ToolUnionType = "bash_20250124"
+	ToolUnionTypeTextEditor20250124 ToolUnionType = "text_editor_20250124"
+)
+
+func (r ToolUnionType) IsKnown() bool {
+	switch r {
+	case ToolUnionTypeBash20250124, ToolUnionTypeTextEditor20250124:
+		return true
 	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ToolUnionParam) GetInputSchema() *ToolInputSchemaParam {
-	if vt := u.OfTool; vt != nil {
-		return &vt.InputSchema
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ToolUnionParam) GetDescription() *string {
-	if vt := u.OfTool; vt != nil && vt.Description.IsPresent() {
-		return &vt.Description.Value
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ToolUnionParam) GetName() *string {
-	if vt := u.OfTool; vt != nil {
-		return (*string)(&vt.Name)
-	} else if vt := u.OfBashTool20250124; vt != nil {
-		return (*string)(&vt.Name)
-	} else if vt := u.OfTextEditor20250124; vt != nil {
-		return (*string)(&vt.Name)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ToolUnionParam) GetType() *string {
-	if vt := u.OfBashTool20250124; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfTextEditor20250124; vt != nil {
-		return (*string)(&vt.Type)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's CacheControl property, if present.
-func (u ToolUnionParam) GetCacheControl() *CacheControlEphemeralParam {
-	if vt := u.OfTool; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfBashTool20250124; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfTextEditor20250124; vt != nil {
-		return &vt.CacheControl
-	}
-	return nil
+	return false
 }
 
 type ToolUseBlock struct {
 	ID    string           `json:"id,required"`
 	Input interface{}      `json:"input,required"`
 	Name  string           `json:"name,required"`
-	Type  constant.ToolUse `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		ID          resp.Field
-		Input       resp.Field
-		Name        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
+	Type  ToolUseBlockType `json:"type,required"`
+	JSON  toolUseBlockJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r ToolUseBlock) RawJSON() string { return r.JSON.raw }
-func (r *ToolUseBlock) UnmarshalJSON(data []byte) error {
+// toolUseBlockJSON contains the JSON metadata for the struct [ToolUseBlock]
+type toolUseBlockJSON struct {
+	ID          apijson.Field
+	Input       apijson.Field
+	Name        apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ToolUseBlock) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties ID, Input, Name, Type are required.
+func (r toolUseBlockJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ToolUseBlock) implementsContentBlock() {}
+
+func (r ToolUseBlock) implementsContentBlockStartEventContentBlock() {}
+
+type ToolUseBlockType string
+
+const (
+	ToolUseBlockTypeToolUse ToolUseBlockType = "tool_use"
+)
+
+func (r ToolUseBlockType) IsKnown() bool {
+	switch r {
+	case ToolUseBlockTypeToolUse:
+		return true
+	}
+	return false
+}
+
 type ToolUseBlockParam struct {
-	ID           string                     `json:"id,required"`
-	Input        interface{}                `json:"input,omitzero,required"`
-	Name         string                     `json:"name,required"`
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// This field can be elided, and will marshal its zero value as "tool_use".
-	Type constant.ToolUse `json:"type,required"`
-	paramObj
+	ID           param.Field[string]                     `json:"id,required"`
+	Input        param.Field[interface{}]                `json:"input,required"`
+	Name         param.Field[string]                     `json:"name,required"`
+	Type         param.Field[ToolUseBlockParamType]      `json:"type,required"`
+	CacheControl param.Field[CacheControlEphemeralParam] `json:"cache_control"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolUseBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolUseBlockParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolUseBlockParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// The properties Type, URL are required.
+func (r ToolUseBlockParam) implementsContentBlockParamUnion() {}
+
+type ToolUseBlockParamType string
+
+const (
+	ToolUseBlockParamTypeToolUse ToolUseBlockParamType = "tool_use"
+)
+
+func (r ToolUseBlockParamType) IsKnown() bool {
+	switch r {
+	case ToolUseBlockParamTypeToolUse:
+		return true
+	}
+	return false
+}
+
 type URLImageSourceParam struct {
-	URL string `json:"url,required"`
-	// This field can be elided, and will marshal its zero value as "url".
-	Type constant.URL `json:"type,required"`
-	paramObj
+	Type param.Field[URLImageSourceType] `json:"type,required"`
+	URL  param.Field[string]             `json:"url,required"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f URLImageSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r URLImageSourceParam) MarshalJSON() (data []byte, err error) {
-	type shadow URLImageSourceParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// The properties Type, URL are required.
+func (r URLImageSourceParam) implementsImageBlockParamSourceUnion() {}
+
+type URLImageSourceType string
+
+const (
+	URLImageSourceTypeURL URLImageSourceType = "url"
+)
+
+func (r URLImageSourceType) IsKnown() bool {
+	switch r {
+	case URLImageSourceTypeURL:
+		return true
+	}
+	return false
+}
+
 type URLPDFSourceParam struct {
-	URL string `json:"url,required"`
-	// This field can be elided, and will marshal its zero value as "url".
-	Type constant.URL `json:"type,required"`
-	paramObj
+	Type param.Field[URLPDFSourceType] `json:"type,required"`
+	URL  param.Field[string]           `json:"url,required"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f URLPDFSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r URLPDFSourceParam) MarshalJSON() (data []byte, err error) {
-	type shadow URLPDFSourceParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
+}
+
+func (r URLPDFSourceParam) implementsDocumentBlockParamSourceUnion() {}
+
+type URLPDFSourceType string
+
+const (
+	URLPDFSourceTypeURL URLPDFSourceType = "url"
+)
+
+func (r URLPDFSourceType) IsKnown() bool {
+	switch r {
+	case URLPDFSourceTypeURL:
+		return true
+	}
+	return false
 }
 
 type Usage struct {
 	// The number of input tokens used to create the cache entry.
-	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens,required"`
+	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens,required,nullable"`
 	// The number of input tokens read from the cache.
-	CacheReadInputTokens int64 `json:"cache_read_input_tokens,required"`
+	CacheReadInputTokens int64 `json:"cache_read_input_tokens,required,nullable"`
 	// The number of input tokens which were used.
 	InputTokens int64 `json:"input_tokens,required"`
 	// The number of output tokens which were used.
-	OutputTokens int64 `json:"output_tokens,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		CacheCreationInputTokens resp.Field
-		CacheReadInputTokens     resp.Field
-		InputTokens              resp.Field
-		OutputTokens             resp.Field
-		ExtraFields              map[string]resp.Field
-		raw                      string
-	} `json:"-"`
+	OutputTokens int64     `json:"output_tokens,required"`
+	JSON         usageJSON `json:"-"`
 }
 
-// Returns the unmodified JSON received from the API
-func (r Usage) RawJSON() string { return r.JSON.raw }
-func (r *Usage) UnmarshalJSON(data []byte) error {
+// usageJSON contains the JSON metadata for the struct [Usage]
+type usageJSON struct {
+	CacheCreationInputTokens apijson.Field
+	CacheReadInputTokens     apijson.Field
+	InputTokens              apijson.Field
+	OutputTokens             apijson.Field
+	raw                      string
+	ExtraFields              map[string]apijson.Field
+}
+
+func (r *Usage) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r usageJSON) RawJSON() string {
+	return r.raw
 }
 
 type MessageNewParams struct {
@@ -3097,7 +3118,7 @@ type MessageNewParams struct {
 	//
 	// Different models have different maximum values for this parameter. See
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for details.
-	MaxTokens int64 `json:"max_tokens,required"`
+	MaxTokens param.Field[int64] `json:"max_tokens,required"`
 	// Input messages.
 	//
 	// Our models are trained to operate on alternating `user` and `assistant`
@@ -3190,40 +3211,13 @@ type MessageNewParams struct {
 	// [system prompt](https://docs.anthropic.com/en/docs/system-prompts), you can use
 	// the top-level `system` parameter — there is no `"system"` role for input
 	// messages in the Messages API.
-	Messages []MessageParam `json:"messages,omitzero,required"`
+	Messages param.Field[[]MessageParam] `json:"messages,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
-	Model Model `json:"model,omitzero,required"`
-	// Amount of randomness injected into the response.
-	//
-	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`
-	// for analytical / multiple choice, and closer to `1.0` for creative and
-	// generative tasks.
-	//
-	// Note that even with `temperature` of `0.0`, the results will not be fully
-	// deterministic.
-	Temperature param.Opt[float64] `json:"temperature,omitzero"`
-	// Only sample from the top K options for each subsequent token.
-	//
-	// Used to remove "long tail" low probability responses.
-	// [Learn more technical details here](https://towardsdatascience.com/how-to-sample-from-language-models-682bceb97277).
-	//
-	// Recommended for advanced use cases only. You usually only need to use
-	// `temperature`.
-	TopK param.Opt[int64] `json:"top_k,omitzero"`
-	// Use nucleus sampling.
-	//
-	// In nucleus sampling, we compute the cumulative distribution over all the options
-	// for each subsequent token in decreasing probability order and cut it off once it
-	// reaches a particular probability specified by `top_p`. You should either alter
-	// `temperature` or `top_p`, but not both.
-	//
-	// Recommended for advanced use cases only. You usually only need to use
-	// `temperature`.
-	TopP param.Opt[float64] `json:"top_p,omitzero"`
+	Model param.Field[Model] `json:"model,required"`
 	// An object describing metadata about the request.
-	Metadata MetadataParam `json:"metadata,omitzero"`
+	Metadata param.Field[MetadataParam] `json:"metadata"`
 	// Custom text sequences that will cause the model to stop generating.
 	//
 	// Our models will normally stop when they have naturally completed their turn,
@@ -3233,13 +3227,22 @@ type MessageNewParams struct {
 	// text, you can use the `stop_sequences` parameter. If the model encounters one of
 	// the custom sequences, the response `stop_reason` value will be `"stop_sequence"`
 	// and the response `stop_sequence` value will contain the matched stop sequence.
-	StopSequences []string `json:"stop_sequences,omitzero"`
+	StopSequences param.Field[[]string] `json:"stop_sequences"`
 	// System prompt.
 	//
 	// A system prompt is a way of providing context and instructions to Claude, such
 	// as specifying a particular goal or role. See our
 	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
-	System []TextBlockParam `json:"system,omitzero"`
+	System param.Field[[]TextBlockParam] `json:"system"`
+	// Amount of randomness injected into the response.
+	//
+	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`
+	// for analytical / multiple choice, and closer to `1.0` for creative and
+	// generative tasks.
+	//
+	// Note that even with `temperature` of `0.0`, the results will not be fully
+	// deterministic.
+	Temperature param.Field[float64] `json:"temperature"`
 	// Configuration for enabling Claude's extended thinking.
 	//
 	// When enabled, responses include `thinking` content blocks showing Claude's
@@ -3249,10 +3252,10 @@ type MessageNewParams struct {
 	// See
 	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
 	// for details.
-	Thinking ThinkingConfigParamUnion `json:"thinking,omitzero"`
+	Thinking param.Field[ThinkingConfigParamUnion] `json:"thinking"`
 	// How the model should use the provided tools. The model can use a specific tool,
 	// any available tool, decide by itself, or not use tools at all.
-	ToolChoice ToolChoiceUnionParam `json:"tool_choice,omitzero"`
+	ToolChoice param.Field[ToolChoiceUnionParam] `json:"tool_choice"`
 	// Definitions of tools that the model may use.
 	//
 	// If you include `tools` in your API request, the model may return `tool_use`
@@ -3328,17 +3331,29 @@ type MessageNewParams struct {
 	// JSON structure of output.
 	//
 	// See our [guide](https://docs.anthropic.com/en/docs/tool-use) for more details.
-	Tools []ToolUnionParam `json:"tools,omitzero"`
-	paramObj
+	Tools param.Field[[]ToolUnionUnionParam] `json:"tools"`
+	// Only sample from the top K options for each subsequent token.
+	//
+	// Used to remove "long tail" low probability responses.
+	// [Learn more technical details here](https://towardsdatascience.com/how-to-sample-from-language-models-682bceb97277).
+	//
+	// Recommended for advanced use cases only. You usually only need to use
+	// `temperature`.
+	TopK param.Field[int64] `json:"top_k"`
+	// Use nucleus sampling.
+	//
+	// In nucleus sampling, we compute the cumulative distribution over all the options
+	// for each subsequent token in decreasing probability order and cut it off once it
+	// reaches a particular probability specified by `top_p`. You should either alter
+	// `temperature` or `top_p`, but not both.
+	//
+	// Recommended for advanced use cases only. You usually only need to use
+	// `temperature`.
+	TopP param.Field[float64] `json:"top_p"`
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageNewParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-
 func (r MessageNewParams) MarshalJSON() (data []byte, err error) {
-	type shadow MessageNewParams
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
 type MessageCountTokensParams struct {
@@ -3434,17 +3449,17 @@ type MessageCountTokensParams struct {
 	// [system prompt](https://docs.anthropic.com/en/docs/system-prompts), you can use
 	// the top-level `system` parameter — there is no `"system"` role for input
 	// messages in the Messages API.
-	Messages []MessageParam `json:"messages,omitzero,required"`
+	Messages param.Field[[]MessageParam] `json:"messages,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
-	Model Model `json:"model,omitzero,required"`
+	Model param.Field[Model] `json:"model,required"`
 	// System prompt.
 	//
 	// A system prompt is a way of providing context and instructions to Claude, such
 	// as specifying a particular goal or role. See our
 	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
-	System MessageCountTokensParamsSystemUnion `json:"system,omitzero"`
+	System param.Field[MessageCountTokensParamsSystemUnion] `json:"system"`
 	// Configuration for enabling Claude's extended thinking.
 	//
 	// When enabled, responses include `thinking` content blocks showing Claude's
@@ -3454,10 +3469,10 @@ type MessageCountTokensParams struct {
 	// See
 	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
 	// for details.
-	Thinking ThinkingConfigParamUnion `json:"thinking,omitzero"`
+	Thinking param.Field[ThinkingConfigParamUnion] `json:"thinking"`
 	// How the model should use the provided tools. The model can use a specific tool,
 	// any available tool, decide by itself, or not use tools at all.
-	ToolChoice ToolChoiceUnionParam `json:"tool_choice,omitzero"`
+	ToolChoice param.Field[ToolChoiceUnionParam] `json:"tool_choice"`
 	// Definitions of tools that the model may use.
 	//
 	// If you include `tools` in your API request, the model may return `tool_use`
@@ -3533,42 +3548,24 @@ type MessageCountTokensParams struct {
 	// JSON structure of output.
 	//
 	// See our [guide](https://docs.anthropic.com/en/docs/tool-use) for more details.
-	Tools []MessageCountTokensToolUnionParam `json:"tools,omitzero"`
-	paramObj
+	Tools param.Field[[]MessageCountTokensToolUnionParam] `json:"tools"`
 }
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageCountTokensParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 
 func (r MessageCountTokensParams) MarshalJSON() (data []byte, err error) {
-	type shadow MessageCountTokensParams
-	return param.MarshalObject(r, (*shadow)(&r))
+	return apijson.MarshalRoot(r)
 }
 
-// Only one field can be non-zero.
+// System prompt.
 //
-// Use [param.IsOmitted] to confirm if a field is set.
-type MessageCountTokensParamsSystemUnion struct {
-	OfString                         param.Opt[string] `json:",omitzero,inline"`
-	OfMessageCountTokenssSystemArray []TextBlockParam  `json:",omitzero,inline"`
-	paramUnion
+// A system prompt is a way of providing context and instructions to Claude, such
+// as specifying a particular goal or role. See our
+// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
+//
+// Satisfied by [shared.UnionString], [MessageCountTokensParamsSystemArray].
+type MessageCountTokensParamsSystemUnion interface {
+	ImplementsMessageCountTokensParamsSystemUnion()
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u MessageCountTokensParamsSystemUnion) IsPresent() bool {
-	return !param.IsOmitted(u) && !u.IsNull()
-}
-func (u MessageCountTokensParamsSystemUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[MessageCountTokensParamsSystemUnion](u.OfString, u.OfMessageCountTokenssSystemArray)
-}
+type MessageCountTokensParamsSystemArray []TextBlockParam
 
-func (u *MessageCountTokensParamsSystemUnion) asAny() any {
-	if !param.IsOmitted(u.OfString) {
-		return &u.OfString.Value
-	} else if !param.IsOmitted(u.OfMessageCountTokenssSystemArray) {
-		return &u.OfMessageCountTokenssSystemArray
-	}
-	return nil
-}
+func (r MessageCountTokensParamsSystemArray) ImplementsMessageCountTokensParamsSystemUnion() {}

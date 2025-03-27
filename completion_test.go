@@ -26,16 +26,16 @@ func TestCompletionNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Completions.New(context.TODO(), anthropic.CompletionNewParams{
-		MaxTokensToSample: 256,
-		Model:             anthropic.ModelClaude3_7SonnetLatest,
-		Prompt:            "\n\nHuman: Hello, world!\n\nAssistant:",
-		Metadata: anthropic.MetadataParam{
-			UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
-		},
-		StopSequences: []string{"string"},
-		Temperature:   anthropic.Float(1),
-		TopK:          anthropic.Int(5),
-		TopP:          anthropic.Float(0.7),
+		MaxTokensToSample: anthropic.F(int64(256)),
+		Model:             anthropic.F(anthropic.ModelClaude3_7SonnetLatest),
+		Prompt:            anthropic.F("\n\nHuman: Hello, world!\n\nAssistant:"),
+		Metadata: anthropic.F(anthropic.MetadataParam{
+			UserID: anthropic.F("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
+		}),
+		StopSequences: anthropic.F([]string{"string"}),
+		Temperature:   anthropic.F(1.000000),
+		TopK:          anthropic.F(int64(5)),
+		TopP:          anthropic.F(0.700000),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

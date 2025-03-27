@@ -14,7 +14,6 @@ type parsedStructTag struct {
 	required bool
 	extras   bool
 	metadata bool
-	omitzero bool
 }
 
 func parseFormStructTag(field reflect.StructField) (tag parsedStructTag, ok bool) {
@@ -38,8 +37,6 @@ func parseFormStructTag(field reflect.StructField) (tag parsedStructTag, ok bool
 			tag.extras = true
 		case "metadata":
 			tag.metadata = true
-		case "omitzero":
-			tag.omitzero = true
 		}
 	}
 	return

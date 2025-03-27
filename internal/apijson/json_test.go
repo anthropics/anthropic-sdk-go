@@ -86,8 +86,8 @@ type JSONFieldStruct struct {
 	B           int64               `json:"b"`
 	C           string              `json:"c"`
 	D           string              `json:"d"`
-	ExtraFields map[string]int64    `json:",extras"`
-	JSON        JSONFieldStructJSON `json:",metadata"`
+	ExtraFields map[string]int64    `json:"-,extras"`
+	JSON        JSONFieldStructJSON `json:"-,metadata"`
 }
 
 type JSONFieldStructJSON struct {
@@ -112,13 +112,13 @@ type Union interface {
 }
 
 type Inline struct {
-	InlineField Primitives `json:",inline"`
-	JSON        InlineJSON `json:",metadata"`
+	InlineField Primitives `json:"-,inline"`
+	JSON        InlineJSON `json:"-,metadata"`
 }
 
 type InlineArray struct {
-	InlineField []string   `json:",inline"`
-	JSON        InlineJSON `json:",metadata"`
+	InlineField []string   `json:"-,inline"`
+	JSON        InlineJSON `json:"-,metadata"`
 }
 
 type InlineJSON struct {
@@ -150,7 +150,7 @@ type UnionTime time.Time
 func (UnionTime) union() {}
 
 func init() {
-	RegisterUnion[Union]("type",
+	RegisterUnion(reflect.TypeOf((*Union)(nil)).Elem(), "type",
 		UnionVariant{
 			TypeFilter: gjson.String,
 			Type:       reflect.TypeOf(UnionTime{}),
@@ -237,7 +237,7 @@ func (r *UnmarshalStruct) UnmarshalJSON(json []byte) error {
 func (ComplexUnionTypeB) complexUnion() {}
 
 func init() {
-	RegisterUnion[ComplexUnion]("",
+	RegisterUnion(reflect.TypeOf((*ComplexUnion)(nil)).Elem(), "",
 		UnionVariant{
 			TypeFilter: gjson.JSON,
 			Type:       reflect.TypeOf(ComplexUnionA{}),
@@ -300,7 +300,8 @@ func (r *MarshallingUnionB) UnmarshalJSON(data []byte) (err error) {
 }
 
 func init() {
-	RegisterUnion[MarshallingUnion](
+	RegisterUnion(
+		reflect.TypeOf((*MarshallingUnion)(nil)).Elem(),
 		"",
 		UnionVariant{
 			TypeFilter: gjson.JSON,

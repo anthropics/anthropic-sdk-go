@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0-beta.3 (2025-03-27)
+
+Full Changelog: [v0.2.0-beta.2...v0.2.0-beta.3](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-beta.2...v0.2.0-beta.3)
+
+### Chores
+
+* add hash of OpenAPI spec/config inputs to .stats.yml ([#154](https://github.com/anthropics/anthropic-sdk-go/issues/154)) ([76b91b5](https://github.com/anthropics/anthropic-sdk-go/commit/76b91b56fbf42fe8982e7b861885db179b1bdcc5))
+* fix typos ([#152](https://github.com/anthropics/anthropic-sdk-go/issues/152)) ([1cf6a6a](https://github.com/anthropics/anthropic-sdk-go/commit/1cf6a6ae25231b88d2eedbe0758f1281cbe439d8))
+
 ## 0.2.0-beta.2 (2025-03-25)
 
 Full Changelog: [v0.2.0-beta.1...v0.2.0-beta.2](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-beta.1...v0.2.0-beta.2)

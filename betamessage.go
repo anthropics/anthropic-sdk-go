@@ -1303,7 +1303,7 @@ type BetaMessage struct {
 	// null in the `message_start` event and non-null otherwise.
 	//
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason BetaMessageStopReason `json:"stop_reason,required"`
+	StopReason BetaStopReason `json:"stop_reason,required"`
 	// Which custom stop sequence was generated, if any.
 	//
 	// This value will be a non-null string if one of your custom stop sequences was
@@ -1761,8 +1761,8 @@ func (r *BetaRawMessageDeltaEvent) UnmarshalJSON(data []byte) error {
 
 type BetaRawMessageDeltaEventDelta struct {
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason   string `json:"stop_reason,required"`
-	StopSequence string `json:"stop_sequence,required"`
+	StopReason   BetaStopReason `json:"stop_reason,required"`
+	StopSequence string         `json:"stop_sequence,required"`
 	// Metadata for the response, check the presence of optional fields with the
 	// [resp.Field.IsPresent] method.
 	JSON struct {
@@ -1923,7 +1923,7 @@ func (r *BetaRawMessageStreamEventUnion) UnmarshalJSON(data []byte) error {
 // [BetaRawMessageStreamEventUnion].
 type BetaRawMessageStreamEventUnionDelta struct {
 	// This field is from variant [BetaRawMessageDeltaEventDelta].
-	StopReason string `json:"stop_reason"`
+	StopReason BetaStopReason `json:"stop_reason"`
 	// This field is from variant [BetaRawMessageDeltaEventDelta].
 	StopSequence string `json:"stop_sequence"`
 	// This field is from variant [BetaRawContentBlockDeltaEventDeltaUnion].
@@ -2015,6 +2015,15 @@ func (r BetaSignatureDelta) RawJSON() string { return r.JSON.raw }
 func (r *BetaSignatureDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type BetaStopReason string
+
+const (
+	BetaStopReasonEndTurn      BetaStopReason = "end_turn"
+	BetaStopReasonMaxTokens    BetaStopReason = "max_tokens"
+	BetaStopReasonStopSequence BetaStopReason = "stop_sequence"
+	BetaStopReasonToolUse      BetaStopReason = "tool_use"
+)
 
 type BetaTextBlock struct {
 	// Citations supporting the text block.

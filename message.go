@@ -1301,7 +1301,7 @@ type Message struct {
 	// null in the `message_start` event and non-null otherwise.
 	//
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason MessageStopReason `json:"stop_reason,required"`
+	StopReason StopReason `json:"stop_reason,required"`
 	// Which custom stop sequence was generated, if any.
 	//
 	// This value will be a non-null string if one of your custom stop sequences was
@@ -1887,8 +1887,8 @@ func (r *MessageDeltaEvent) UnmarshalJSON(data []byte) error {
 
 type MessageDeltaEventDelta struct {
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason   string `json:"stop_reason,required"`
-	StopSequence string `json:"stop_sequence,required"`
+	StopReason   StopReason `json:"stop_reason,required"`
+	StopSequence string     `json:"stop_sequence,required"`
 	// Metadata for the response, check the presence of optional fields with the
 	// [resp.Field.IsPresent] method.
 	JSON struct {
@@ -2048,7 +2048,7 @@ func (r *MessageStreamEventUnion) UnmarshalJSON(data []byte) error {
 // [MessageStreamEventUnion].
 type MessageStreamEventUnionDelta struct {
 	// This field is from variant [MessageDeltaEventDelta].
-	StopReason string `json:"stop_reason"`
+	StopReason StopReason `json:"stop_reason"`
 	// This field is from variant [MessageDeltaEventDelta].
 	StopSequence string `json:"stop_sequence"`
 	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
@@ -2097,13 +2097,9 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 	case MessageStartEvent:
 		*acc = event.Message
 	case MessageDeltaEvent:
-		acc.StopReason = MessageStopReason(event.Delta.StopReason)
+		acc.StopReason = event.Delta.StopReason
 		acc.StopSequence = event.Delta.StopSequence
 		acc.Usage.OutputTokens = event.Usage.OutputTokens
-
-		// acc.JSON.StopReason = event.Delta.JSON.StopReason
-		// acc.JSON.StopSequence = event.Delta.JSON.StopSequence
-		// acc.Usage.JSON.OutputTokens = event.Usage.JSON.OutputTokens
 	case MessageStopEvent:
 		accJson, err := json.Marshal(acc)
 		if err != nil {
@@ -2210,6 +2206,15 @@ func (r SignatureDelta) RawJSON() string { return r.JSON.raw }
 func (r *SignatureDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type StopReason string
+
+const (
+	StopReasonEndTurn      StopReason = "end_turn"
+	StopReasonMaxTokens    StopReason = "max_tokens"
+	StopReasonStopSequence StopReason = "stop_sequence"
+	StopReasonToolUse      StopReason = "tool_use"
+)
 
 type TextBlock struct {
 	// Citations supporting the text block.

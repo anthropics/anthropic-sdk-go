@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.0-beta.4 (2025-03-29)
+
+Full Changelog: [v0.2.0-beta.3...v0.2.0-beta.4](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-beta.3...v0.2.0-beta.4)
+
+### Bug Fixes
+
+* **client:** deduplicate stop reason type ([#155](https://github.com/anthropics/anthropic-sdk-go/issues/155)) ([0f985ad](https://github.com/anthropics/anthropic-sdk-go/commit/0f985ad54ef47849d7d478c84d34c7350a4349b5))
+
+
+### Chores
+
+* **internal:** remove CI condition ([#160](https://github.com/anthropics/anthropic-sdk-go/issues/160)) ([adfa1e2](https://github.com/anthropics/anthropic-sdk-go/commit/adfa1e2e349842aa88262af70b209d1a59dbb419))
+* **internal:** update config ([#157](https://github.com/anthropics/anthropic-sdk-go/issues/157)) ([46f0194](https://github.com/anthropics/anthropic-sdk-go/commit/46f019497bd9533390c4b9f0ebee6863263ce009))
+
 ## 0.2.0-beta.3 (2025-03-27)
 
 Full Changelog: [v0.2.0-beta.2...v0.2.0-beta.3](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-beta.2...v0.2.0-beta.3)

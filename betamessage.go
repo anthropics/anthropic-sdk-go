@@ -1478,36 +1478,14 @@ func (r BetaPlainTextSourceParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
-type BetaRawContentBlockDeltaEvent struct {
-	Delta BetaRawContentBlockDeltaEventDeltaUnion `json:"delta,required"`
-	Index int64                                   `json:"index,required"`
-	Type  constant.ContentBlockDelta              `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Delta       resp.Field
-		Index       resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaRawContentBlockDeltaEvent) RawJSON() string { return r.JSON.raw }
-func (r *BetaRawContentBlockDeltaEvent) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// BetaRawContentBlockDeltaEventDeltaUnion contains all possible properties and
-// values from [BetaTextDelta], [BetaInputJSONDelta], [BetaCitationsDelta],
+// BetaRawContentBlockDeltaUnion contains all possible properties and values from
+// [BetaTextDelta], [BetaInputJSONDelta], [BetaCitationsDelta],
 // [BetaThinkingDelta], [BetaSignatureDelta].
 //
-// Use the [BetaRawContentBlockDeltaEventDeltaUnion.AsAny] method to switch on the
-// variant.
+// Use the [BetaRawContentBlockDeltaUnion.AsAny] method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaRawContentBlockDeltaEventDeltaUnion struct {
+type BetaRawContentBlockDeltaUnion struct {
 	// This field is from variant [BetaTextDelta].
 	Text string `json:"text"`
 	// Any of "text_delta", "input_json_delta", "citations_delta", "thinking_delta",
@@ -1534,7 +1512,7 @@ type BetaRawContentBlockDeltaEventDeltaUnion struct {
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaRawContentBlockDeltaEventDeltaUnion.AsAny().(type) {
+//	switch variant := BetaRawContentBlockDeltaUnion.AsAny().(type) {
 //	case BetaTextDelta:
 //	case BetaInputJSONDelta:
 //	case BetaCitationsDelta:
@@ -1543,7 +1521,7 @@ type BetaRawContentBlockDeltaEventDeltaUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaRawContentBlockDeltaEventDeltaUnion) AsAny() any {
+func (u BetaRawContentBlockDeltaUnion) AsAny() any {
 	switch u.Type {
 	case "text_delta":
 		return u.AsTextContentBlockDelta()
@@ -1559,35 +1537,56 @@ func (u BetaRawContentBlockDeltaEventDeltaUnion) AsAny() any {
 	return nil
 }
 
-func (u BetaRawContentBlockDeltaEventDeltaUnion) AsTextContentBlockDelta() (v BetaTextDelta) {
+func (u BetaRawContentBlockDeltaUnion) AsTextContentBlockDelta() (v BetaTextDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawContentBlockDeltaEventDeltaUnion) AsInputJSONContentBlockDelta() (v BetaInputJSONDelta) {
+func (u BetaRawContentBlockDeltaUnion) AsInputJSONContentBlockDelta() (v BetaInputJSONDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawContentBlockDeltaEventDeltaUnion) AsCitationsDelta() (v BetaCitationsDelta) {
+func (u BetaRawContentBlockDeltaUnion) AsCitationsDelta() (v BetaCitationsDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawContentBlockDeltaEventDeltaUnion) AsThinkingContentBlockDelta() (v BetaThinkingDelta) {
+func (u BetaRawContentBlockDeltaUnion) AsThinkingContentBlockDelta() (v BetaThinkingDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawContentBlockDeltaEventDeltaUnion) AsSignatureContentBlockDelta() (v BetaSignatureDelta) {
+func (u BetaRawContentBlockDeltaUnion) AsSignatureContentBlockDelta() (v BetaSignatureDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaRawContentBlockDeltaEventDeltaUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaRawContentBlockDeltaUnion) RawJSON() string { return u.JSON.raw }
 
-func (r *BetaRawContentBlockDeltaEventDeltaUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaRawContentBlockDeltaUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaRawContentBlockDeltaEvent struct {
+	Delta BetaRawContentBlockDeltaUnion `json:"delta,required"`
+	Index int64                         `json:"index,required"`
+	Type  constant.ContentBlockDelta    `json:"type,required"`
+	// Metadata for the response, check the presence of optional fields with the
+	// [resp.Field.IsPresent] method.
+	JSON struct {
+		Delta       resp.Field
+		Index       resp.Field
+		Type        resp.Field
+		ExtraFields map[string]resp.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaRawContentBlockDeltaEvent) RawJSON() string { return r.JSON.raw }
+func (r *BetaRawContentBlockDeltaEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1830,7 +1829,7 @@ type BetaRawMessageStreamEventUnion struct {
 	// "content_block_delta", "content_block_stop".
 	Type string `json:"type"`
 	// This field is a union of [BetaRawMessageDeltaEventDelta],
-	// [BetaRawContentBlockDeltaEventDeltaUnion]
+	// [BetaRawContentBlockDeltaUnion]
 	Delta BetaRawMessageStreamEventUnionDelta `json:"delta"`
 	// This field is from variant [BetaRawMessageDeltaEvent].
 	Usage BetaMessageDeltaUsage `json:"usage"`
@@ -1926,16 +1925,16 @@ type BetaRawMessageStreamEventUnionDelta struct {
 	StopReason BetaStopReason `json:"stop_reason"`
 	// This field is from variant [BetaRawMessageDeltaEventDelta].
 	StopSequence string `json:"stop_sequence"`
-	// This field is from variant [BetaRawContentBlockDeltaEventDeltaUnion].
+	// This field is from variant [BetaRawContentBlockDeltaUnion].
 	Text string `json:"text"`
 	Type string `json:"type"`
-	// This field is from variant [BetaRawContentBlockDeltaEventDeltaUnion].
+	// This field is from variant [BetaRawContentBlockDeltaUnion].
 	PartialJSON string `json:"partial_json"`
-	// This field is from variant [BetaRawContentBlockDeltaEventDeltaUnion].
+	// This field is from variant [BetaRawContentBlockDeltaUnion].
 	Citation BetaCitationsDeltaCitationUnion `json:"citation"`
-	// This field is from variant [BetaRawContentBlockDeltaEventDeltaUnion].
+	// This field is from variant [BetaRawContentBlockDeltaUnion].
 	Thinking string `json:"thinking"`
-	// This field is from variant [BetaRawContentBlockDeltaEventDeltaUnion].
+	// This field is from variant [BetaRawContentBlockDeltaUnion].
 	Signature string `json:"signature"`
 	JSON      struct {
 		StopReason   resp.Field

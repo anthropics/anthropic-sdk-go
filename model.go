@@ -132,7 +132,7 @@ type ModelListParams struct {
 func (f ModelListParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 
 // URLQuery serializes [ModelListParams]'s query parameters as `url.Values`.
-func (r ModelListParams) URLQuery() (v url.Values) {
+func (r ModelListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,

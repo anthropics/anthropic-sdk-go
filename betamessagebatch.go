@@ -840,7 +840,7 @@ func (f BetaMessageBatchListParams) IsPresent() bool { return !param.IsOmitted(f
 
 // URLQuery serializes [BetaMessageBatchListParams]'s query parameters as
 // `url.Values`.
-func (r BetaMessageBatchListParams) URLQuery() (v url.Values) {
+func (r BetaMessageBatchListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,

@@ -804,7 +804,7 @@ type MessageBatchListParams struct {
 func (f MessageBatchListParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 
 // URLQuery serializes [MessageBatchListParams]'s query parameters as `url.Values`.
-func (r MessageBatchListParams) URLQuery() (v url.Values) {
+func (r MessageBatchListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,

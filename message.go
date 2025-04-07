@@ -368,6 +368,17 @@ type CitationsDeltaCitationUnion struct {
 	} `json:"-"`
 }
 
+// anyCitationsDeltaCitation is implemented by each variant of
+// [CitationsDeltaCitationUnion] to add type safety for the return type of
+// [CitationsDeltaCitationUnion.AsAny]
+type anyCitationsDeltaCitation interface {
+	implCitationsDeltaCitationUnion()
+}
+
+func (CitationCharLocation) implCitationsDeltaCitationUnion()         {}
+func (CitationPageLocation) implCitationsDeltaCitationUnion()         {}
+func (CitationContentBlockLocation) implCitationsDeltaCitationUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := CitationsDeltaCitationUnion.AsAny().(type) {
@@ -377,7 +388,7 @@ type CitationsDeltaCitationUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u CitationsDeltaCitationUnion) AsAny() any {
+func (u CitationsDeltaCitationUnion) AsAny() anyCitationsDeltaCitation {
 	switch u.Type {
 	case "char_location":
 		return u.AsResponseCharLocationCitation()
@@ -450,6 +461,17 @@ type ContentBlockUnion struct {
 	} `json:"-"`
 }
 
+// anyContentBlock is implemented by each variant of [ContentBlockUnion] to add
+// type safety for the return type of [ContentBlockUnion.AsAny]
+type anyContentBlock interface {
+	implContentBlockUnion()
+}
+
+func (TextBlock) implContentBlockUnion()             {}
+func (ToolUseBlock) implContentBlockUnion()          {}
+func (ThinkingBlock) implContentBlockUnion()         {}
+func (RedactedThinkingBlock) implContentBlockUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ContentBlockUnion.AsAny().(type) {
@@ -460,7 +482,7 @@ type ContentBlockUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u ContentBlockUnion) AsAny() any {
+func (u ContentBlockUnion) AsAny() anyContentBlock {
 	switch u.Type {
 	case "text":
 		return u.AsResponseTextBlock()
@@ -1560,6 +1582,19 @@ type RawContentBlockDeltaUnion struct {
 	} `json:"-"`
 }
 
+// anyRawContentBlockDelta is implemented by each variant of
+// [RawContentBlockDeltaUnion] to add type safety for the return type of
+// [RawContentBlockDeltaUnion.AsAny]
+type anyRawContentBlockDelta interface {
+	implRawContentBlockDeltaUnion()
+}
+
+func (TextDelta) implRawContentBlockDeltaUnion()      {}
+func (InputJSONDelta) implRawContentBlockDeltaUnion() {}
+func (CitationsDelta) implRawContentBlockDeltaUnion() {}
+func (ThinkingDelta) implRawContentBlockDeltaUnion()  {}
+func (SignatureDelta) implRawContentBlockDeltaUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := RawContentBlockDeltaUnion.AsAny().(type) {
@@ -1571,7 +1606,7 @@ type RawContentBlockDeltaUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u RawContentBlockDeltaUnion) AsAny() any {
+func (u RawContentBlockDeltaUnion) AsAny() anyRawContentBlockDelta {
 	switch u.Type {
 	case "text_delta":
 		return u.AsTextContentBlockDelta()
@@ -1702,6 +1737,18 @@ type ContentBlockStartEventContentBlockUnion struct {
 	} `json:"-"`
 }
 
+// anyContentBlockStartEventContentBlock is implemented by each variant of
+// [ContentBlockStartEventContentBlockUnion] to add type safety for the return type
+// of [ContentBlockStartEventContentBlockUnion.AsAny]
+type anyContentBlockStartEventContentBlock interface {
+	implContentBlockStartEventContentBlockUnion()
+}
+
+func (TextBlock) implContentBlockStartEventContentBlockUnion()             {}
+func (ToolUseBlock) implContentBlockStartEventContentBlockUnion()          {}
+func (ThinkingBlock) implContentBlockStartEventContentBlockUnion()         {}
+func (RedactedThinkingBlock) implContentBlockStartEventContentBlockUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ContentBlockStartEventContentBlockUnion.AsAny().(type) {
@@ -1712,7 +1759,7 @@ type ContentBlockStartEventContentBlockUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u ContentBlockStartEventContentBlockUnion) AsAny() any {
+func (u ContentBlockStartEventContentBlockUnion) AsAny() anyContentBlockStartEventContentBlock {
 	switch u.Type {
 	case "text":
 		return u.AsResponseTextBlock()
@@ -1895,6 +1942,20 @@ type MessageStreamEventUnion struct {
 	} `json:"-"`
 }
 
+// anyMessageStreamEvent is implemented by each variant of
+// [MessageStreamEventUnion] to add type safety for the return type of
+// [MessageStreamEventUnion.AsAny]
+type anyMessageStreamEvent interface {
+	implMessageStreamEventUnion()
+}
+
+func (MessageStartEvent) implMessageStreamEventUnion()      {}
+func (MessageDeltaEvent) implMessageStreamEventUnion()      {}
+func (MessageStopEvent) implMessageStreamEventUnion()       {}
+func (ContentBlockStartEvent) implMessageStreamEventUnion() {}
+func (ContentBlockDeltaEvent) implMessageStreamEventUnion() {}
+func (ContentBlockStopEvent) implMessageStreamEventUnion()  {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := MessageStreamEventUnion.AsAny().(type) {
@@ -1907,7 +1968,7 @@ type MessageStreamEventUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u MessageStreamEventUnion) AsAny() any {
+func (u MessageStreamEventUnion) AsAny() anyMessageStreamEvent {
 	switch u.Type {
 	case "message_start":
 		return u.AsMessageStartEvent()
@@ -2148,6 +2209,16 @@ type TextCitationUnion struct {
 	} `json:"-"`
 }
 
+// anyTextCitation is implemented by each variant of [TextCitationUnion] to add
+// type safety for the return type of [TextCitationUnion.AsAny]
+type anyTextCitation interface {
+	implTextCitationUnion()
+}
+
+func (CitationCharLocation) implTextCitationUnion()         {}
+func (CitationPageLocation) implTextCitationUnion()         {}
+func (CitationContentBlockLocation) implTextCitationUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := TextCitationUnion.AsAny().(type) {
@@ -2157,7 +2228,7 @@ type TextCitationUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u TextCitationUnion) AsAny() any {
+func (u TextCitationUnion) AsAny() anyTextCitation {
 	switch u.Type {
 	case "char_location":
 		return u.AsResponseCharLocationCitation()

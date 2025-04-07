@@ -95,6 +95,22 @@ type ErrorObjectUnion struct {
 	} `json:"-"`
 }
 
+// anyErrorObject is implemented by each variant of [ErrorObjectUnion] to add type
+// safety for the return type of [ErrorObjectUnion.AsAny]
+type anyErrorObject interface {
+	ImplErrorObjectUnion()
+}
+
+func (InvalidRequestError) ImplErrorObjectUnion() {}
+func (AuthenticationError) ImplErrorObjectUnion() {}
+func (BillingError) ImplErrorObjectUnion()        {}
+func (PermissionError) ImplErrorObjectUnion()     {}
+func (NotFoundError) ImplErrorObjectUnion()       {}
+func (RateLimitError) ImplErrorObjectUnion()      {}
+func (GatewayTimeoutError) ImplErrorObjectUnion() {}
+func (APIErrorObject) ImplErrorObjectUnion()      {}
+func (OverloadedError) ImplErrorObjectUnion()     {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ErrorObjectUnion.AsAny().(type) {
@@ -110,7 +126,7 @@ type ErrorObjectUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u ErrorObjectUnion) AsAny() any {
+func (u ErrorObjectUnion) AsAny() anyErrorObject {
 	switch u.Type {
 	case "invalid_request_error":
 		return u.AsInvalidRequestError()

@@ -412,6 +412,18 @@ type MessageBatchResultUnion struct {
 	} `json:"-"`
 }
 
+// anyMessageBatchResult is implemented by each variant of
+// [MessageBatchResultUnion] to add type safety for the return type of
+// [MessageBatchResultUnion.AsAny]
+type anyMessageBatchResult interface {
+	implMessageBatchResultUnion()
+}
+
+func (MessageBatchSucceededResult) implMessageBatchResultUnion() {}
+func (MessageBatchErroredResult) implMessageBatchResultUnion()   {}
+func (MessageBatchCanceledResult) implMessageBatchResultUnion()  {}
+func (MessageBatchExpiredResult) implMessageBatchResultUnion()   {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := MessageBatchResultUnion.AsAny().(type) {
@@ -422,7 +434,7 @@ type MessageBatchResultUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u MessageBatchResultUnion) AsAny() any {
+func (u MessageBatchResultUnion) AsAny() anyMessageBatchResult {
 	switch u.Type {
 	case "succeeded":
 		return u.AsSucceededResult()

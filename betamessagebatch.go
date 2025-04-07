@@ -433,6 +433,18 @@ type BetaMessageBatchResultUnion struct {
 	} `json:"-"`
 }
 
+// anyBetaMessageBatchResult is implemented by each variant of
+// [BetaMessageBatchResultUnion] to add type safety for the return type of
+// [BetaMessageBatchResultUnion.AsAny]
+type anyBetaMessageBatchResult interface {
+	implBetaMessageBatchResultUnion()
+}
+
+func (BetaMessageBatchSucceededResult) implBetaMessageBatchResultUnion() {}
+func (BetaMessageBatchErroredResult) implBetaMessageBatchResultUnion()   {}
+func (BetaMessageBatchCanceledResult) implBetaMessageBatchResultUnion()  {}
+func (BetaMessageBatchExpiredResult) implBetaMessageBatchResultUnion()   {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaMessageBatchResultUnion.AsAny().(type) {
@@ -443,7 +455,7 @@ type BetaMessageBatchResultUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaMessageBatchResultUnion) AsAny() any {
+func (u BetaMessageBatchResultUnion) AsAny() anyBetaMessageBatchResult {
 	switch u.Type {
 	case "succeeded":
 		return u.AsSucceededResult()

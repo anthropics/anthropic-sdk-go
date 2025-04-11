@@ -132,7 +132,7 @@ type BetaModelListParams struct {
 func (f BetaModelListParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 
 // URLQuery serializes [BetaModelListParams]'s query parameters as `url.Values`.
-func (r BetaModelListParams) URLQuery() (v url.Values) {
+func (r BetaModelListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,

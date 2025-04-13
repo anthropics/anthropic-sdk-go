@@ -4,6 +4,7 @@ package anthropic_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"testing"
@@ -12,6 +13,55 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
+
+func TestMessageParamMarshalUnmarshal(t *testing.T) {
+	original := anthropic.MessageParam{
+		Role: anthropic.MessageParamRoleUser,
+		Content: []anthropic.ContentBlockParamUnion{
+			anthropic.ContentBlockParamOfRequestTextBlock("Hello, world!"),
+			anthropic.ContentBlockParamOfRequestTextBlock("This is a second message"),
+		},
+	}
+
+	// Marshal the original to JSON
+	jsonData, err := json.Marshal(original)
+	if err != nil {
+		t.Fatalf("Failed to marshal MessageParam: %v", err)
+	}
+
+	// Unmarshal back to a new struct
+	var unmarshaled anthropic.MessageParam
+	if err := json.Unmarshal(jsonData, &unmarshaled); err != nil {
+		t.Fatalf("Failed to unmarshal MessageParam: %v", err)
+	}
+
+	// Verify that the content was properly preserved
+	if len(unmarshaled.Content) != len(original.Content) {
+		t.Errorf("Content length mismatch. Original: %d, Unmarshaled: %d",
+			len(original.Content), len(unmarshaled.Content))
+	}
+
+	// Check text content of each block
+	for i, originalBlock := range original.Content {
+		if i >= len(unmarshaled.Content) {
+			t.Fatalf("Missing content block at index %d", i)
+		}
+
+		originalText := originalBlock.GetText()
+		unmarshaledText := unmarshaled.Content[i].GetText()
+
+		if originalText == nil || unmarshaledText == nil {
+			t.Errorf("Text is nil at index %d. Original: %v, Unmarshaled: %v",
+				i, originalText, unmarshaledText)
+			continue
+		}
+
+		if *originalText != *unmarshaledText {
+			t.Errorf("Content mismatch at index %d. Expected: %q, Got: %q",
+				i, *originalText, *unmarshaledText)
+		}
+	}
+}
 
 func TestMessageNewWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"

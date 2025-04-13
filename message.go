@@ -1512,6 +1512,96 @@ func (r MessageParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
+// UnmarshalJSON implements json.Unmarshaler interface to properly unmarshal
+// the content array when deserializing from JSON.
+func (r *MessageParam) UnmarshalJSON(data []byte) error {
+	type shadow MessageParam
+	var s shadow
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+
+	*r = MessageParam(s)
+
+	// Get the content array from the raw JSON
+	var rawObj map[string]json.RawMessage
+	if err := json.Unmarshal(data, &rawObj); err != nil {
+		return err
+	}
+
+	if contentRaw, ok := rawObj["content"]; ok {
+		var rawContentArray []json.RawMessage
+		if err := json.Unmarshal(contentRaw, &rawContentArray); err != nil {
+			return err
+		}
+
+		r.Content = make([]ContentBlockParamUnion, len(rawContentArray))
+		for i, rawBlock := range rawContentArray {
+			var blockMap map[string]json.RawMessage
+			if err := json.Unmarshal(rawBlock, &blockMap); err != nil {
+				return err
+			}
+
+			// Determine the type
+			var blockType struct {
+				Type string `json:"type"`
+			}
+			if err := json.Unmarshal(rawBlock, &blockType); err != nil {
+				return err
+			}
+
+			switch blockType.Type {
+			case "text":
+				var textBlock TextBlockParam
+				if err := json.Unmarshal(rawBlock, &textBlock); err != nil {
+					return err
+				}
+				r.Content[i].OfRequestTextBlock = &textBlock
+			case "image":
+				var imageBlock ImageBlockParam
+				if err := json.Unmarshal(rawBlock, &imageBlock); err != nil {
+					return err
+				}
+				r.Content[i].OfRequestImageBlock = &imageBlock
+			case "tool_use":
+				var toolUseBlock ToolUseBlockParam
+				if err := json.Unmarshal(rawBlock, &toolUseBlock); err != nil {
+					return err
+				}
+				r.Content[i].OfRequestToolUseBlock = &toolUseBlock
+			case "tool_result":
+				var toolResultBlock ToolResultBlockParam
+				if err := json.Unmarshal(rawBlock, &toolResultBlock); err != nil {
+					return err
+				}
+				r.Content[i].OfRequestToolResultBlock = &toolResultBlock
+			case "document":
+				var documentBlock DocumentBlockParam
+				if err := json.Unmarshal(rawBlock, &documentBlock); err != nil {
+					return err
+				}
+				r.Content[i].OfRequestDocumentBlock = &documentBlock
+			case "thinking":
+				var thinkingBlock ThinkingBlockParam
+				if err := json.Unmarshal(rawBlock, &thinkingBlock); err != nil {
+					return err
+				}
+				r.Content[i].OfRequestThinkingBlock = &thinkingBlock
+			case "redacted_thinking":
+				var redactedThinkingBlock RedactedThinkingBlockParam
+				if err := json.Unmarshal(rawBlock, &redactedThinkingBlock); err != nil {
+					return err
+				}
+				r.Content[i].OfRequestRedactedThinkingBlock = &redactedThinkingBlock
+			default:
+				return fmt.Errorf("unknown content block type: %s", blockType.Type)
+			}
+		}
+	}
+
+	return nil
+}
+
 type MessageParamRole string
 
 const (

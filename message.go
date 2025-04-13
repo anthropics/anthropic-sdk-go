@@ -608,6 +608,66 @@ func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
 		u.OfRequestRedactedThinkingBlock)
 }
 
+// UnmarshalJSON implements json.Unmarshaler interface to properly unmarshal
+// based on the "type" field discriminator.
+func (u *ContentBlockParamUnion) UnmarshalJSON(data []byte) error {
+	var typeCheck struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &typeCheck); err != nil {
+		return err
+	}
+
+	switch typeCheck.Type {
+	case "text":
+		var block TextBlockParam
+		if err := json.Unmarshal(data, &block); err != nil {
+			return err
+		}
+		u.OfRequestTextBlock = &block
+	case "image":
+		var block ImageBlockParam
+		if err := json.Unmarshal(data, &block); err != nil {
+			return err
+		}
+		u.OfRequestImageBlock = &block
+	case "tool_use":
+		var block ToolUseBlockParam
+		if err := json.Unmarshal(data, &block); err != nil {
+			return err
+		}
+		u.OfRequestToolUseBlock = &block
+	case "tool_result":
+		var block ToolResultBlockParam
+		if err := json.Unmarshal(data, &block); err != nil {
+			return err
+		}
+		u.OfRequestToolResultBlock = &block
+	case "document":
+		var block DocumentBlockParam
+		if err := json.Unmarshal(data, &block); err != nil {
+			return err
+		}
+		u.OfRequestDocumentBlock = &block
+	case "thinking":
+		var block ThinkingBlockParam
+		if err := json.Unmarshal(data, &block); err != nil {
+			return err
+		}
+		u.OfRequestThinkingBlock = &block
+	case "redacted_thinking":
+		var block RedactedThinkingBlockParam
+		if err := json.Unmarshal(data, &block); err != nil {
+			return err
+		}
+		u.OfRequestRedactedThinkingBlock = &block
+	default:
+		return fmt.Errorf("unknown content block type: %s", typeCheck.Type)
+	}
+
+	return nil
+}
+
 func (u *ContentBlockParamUnion) asAny() any {
 	if !param.IsOmitted(u.OfRequestTextBlock) {
 		return u.OfRequestTextBlock
@@ -1027,6 +1087,48 @@ func (u DocumentBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[DocumentBlockParamSourceUnion](u.OfBase64PDFSource, u.OfPlainTextSource, u.OfContentBlockSource, u.OfUrlpdfSource)
 }
 
+// UnmarshalJSON implements json.Unmarshaler interface to properly unmarshal
+// based on the "type" field discriminator.
+func (u *DocumentBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
+	var typeCheck struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &typeCheck); err != nil {
+		return err
+	}
+
+	switch typeCheck.Type {
+	case "base64":
+		var source Base64PDFSourceParam
+		if err := json.Unmarshal(data, &source); err != nil {
+			return err
+		}
+		u.OfBase64PDFSource = &source
+	case "text":
+		var source PlainTextSourceParam
+		if err := json.Unmarshal(data, &source); err != nil {
+			return err
+		}
+		u.OfPlainTextSource = &source
+	case "content":
+		var source ContentBlockSourceParam
+		if err := json.Unmarshal(data, &source); err != nil {
+			return err
+		}
+		u.OfContentBlockSource = &source
+	case "url":
+		var source URLPDFSourceParam
+		if err := json.Unmarshal(data, &source); err != nil {
+			return err
+		}
+		u.OfUrlpdfSource = &source
+	default:
+		return fmt.Errorf("unknown document source type: %s", typeCheck.Type)
+	}
+
+	return nil
+}
+
 func (u *DocumentBlockParamSourceUnion) asAny() any {
 	if !param.IsOmitted(u.OfBase64PDFSource) {
 		return u.OfBase64PDFSource
@@ -1160,6 +1262,36 @@ type ImageBlockParamSourceUnion struct {
 func (u ImageBlockParamSourceUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ImageBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[ImageBlockParamSourceUnion](u.OfBase64ImageSource, u.OfURLImageSource)
+}
+
+// UnmarshalJSON implements json.Unmarshaler interface to properly unmarshal
+// based on the "type" field discriminator.
+func (u *ImageBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
+	var typeCheck struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &typeCheck); err != nil {
+		return err
+	}
+
+	switch typeCheck.Type {
+	case "base64":
+		var source Base64ImageSourceParam
+		if err := json.Unmarshal(data, &source); err != nil {
+			return err
+		}
+		u.OfBase64ImageSource = &source
+	case "url":
+		var source URLImageSourceParam
+		if err := json.Unmarshal(data, &source); err != nil {
+			return err
+		}
+		u.OfURLImageSource = &source
+	default:
+		return fmt.Errorf("unknown image source type: %s", typeCheck.Type)
+	}
+
+	return nil
 }
 
 func (u *ImageBlockParamSourceUnion) asAny() any {
@@ -1512,93 +1644,13 @@ func (r MessageParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
-// UnmarshalJSON implements json.Unmarshaler interface to properly unmarshal
-// the content array when deserializing from JSON.
 func (r *MessageParam) UnmarshalJSON(data []byte) error {
 	type shadow MessageParam
 	var s shadow
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
 	}
-
 	*r = MessageParam(s)
-
-	// Get the content array from the raw JSON
-	var rawObj map[string]json.RawMessage
-	if err := json.Unmarshal(data, &rawObj); err != nil {
-		return err
-	}
-
-	if contentRaw, ok := rawObj["content"]; ok {
-		var rawContentArray []json.RawMessage
-		if err := json.Unmarshal(contentRaw, &rawContentArray); err != nil {
-			return err
-		}
-
-		r.Content = make([]ContentBlockParamUnion, len(rawContentArray))
-		for i, rawBlock := range rawContentArray {
-			var blockMap map[string]json.RawMessage
-			if err := json.Unmarshal(rawBlock, &blockMap); err != nil {
-				return err
-			}
-
-			// Determine the type
-			var blockType struct {
-				Type string `json:"type"`
-			}
-			if err := json.Unmarshal(rawBlock, &blockType); err != nil {
-				return err
-			}
-
-			switch blockType.Type {
-			case "text":
-				var textBlock TextBlockParam
-				if err := json.Unmarshal(rawBlock, &textBlock); err != nil {
-					return err
-				}
-				r.Content[i].OfRequestTextBlock = &textBlock
-			case "image":
-				var imageBlock ImageBlockParam
-				if err := json.Unmarshal(rawBlock, &imageBlock); err != nil {
-					return err
-				}
-				r.Content[i].OfRequestImageBlock = &imageBlock
-			case "tool_use":
-				var toolUseBlock ToolUseBlockParam
-				if err := json.Unmarshal(rawBlock, &toolUseBlock); err != nil {
-					return err
-				}
-				r.Content[i].OfRequestToolUseBlock = &toolUseBlock
-			case "tool_result":
-				var toolResultBlock ToolResultBlockParam
-				if err := json.Unmarshal(rawBlock, &toolResultBlock); err != nil {
-					return err
-				}
-				r.Content[i].OfRequestToolResultBlock = &toolResultBlock
-			case "document":
-				var documentBlock DocumentBlockParam
-				if err := json.Unmarshal(rawBlock, &documentBlock); err != nil {
-					return err
-				}
-				r.Content[i].OfRequestDocumentBlock = &documentBlock
-			case "thinking":
-				var thinkingBlock ThinkingBlockParam
-				if err := json.Unmarshal(rawBlock, &thinkingBlock); err != nil {
-					return err
-				}
-				r.Content[i].OfRequestThinkingBlock = &thinkingBlock
-			case "redacted_thinking":
-				var redactedThinkingBlock RedactedThinkingBlockParam
-				if err := json.Unmarshal(rawBlock, &redactedThinkingBlock); err != nil {
-					return err
-				}
-				r.Content[i].OfRequestRedactedThinkingBlock = &redactedThinkingBlock
-			default:
-				return fmt.Errorf("unknown content block type: %s", blockType.Type)
-			}
-		}
-	}
-
 	return nil
 }
 
@@ -2490,6 +2542,42 @@ func (u TextCitationParamUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[TextCitationParamUnion](u.OfRequestCharLocationCitation, u.OfRequestPageLocationCitation, u.OfRequestContentBlockLocationCitation)
 }
 
+// UnmarshalJSON implements json.Unmarshaler interface to properly unmarshal
+// based on the "type" field discriminator.
+func (u *TextCitationParamUnion) UnmarshalJSON(data []byte) error {
+	var typeCheck struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &typeCheck); err != nil {
+		return err
+	}
+
+	switch typeCheck.Type {
+	case "char_location":
+		var citation CitationCharLocationParam
+		if err := json.Unmarshal(data, &citation); err != nil {
+			return err
+		}
+		u.OfRequestCharLocationCitation = &citation
+	case "page_location":
+		var citation CitationPageLocationParam
+		if err := json.Unmarshal(data, &citation); err != nil {
+			return err
+		}
+		u.OfRequestPageLocationCitation = &citation
+	case "content_block_location":
+		var citation CitationContentBlockLocationParam
+		if err := json.Unmarshal(data, &citation); err != nil {
+			return err
+		}
+		u.OfRequestContentBlockLocationCitation = &citation
+	default:
+		return fmt.Errorf("unknown citation type: %s", typeCheck.Type)
+	}
+
+	return nil
+}
+
 func (u *TextCitationParamUnion) asAny() any {
 	if !param.IsOmitted(u.OfRequestCharLocationCitation) {
 		return u.OfRequestCharLocationCitation
@@ -3107,6 +3195,36 @@ type ToolResultBlockParamContentUnion struct {
 func (u ToolResultBlockParamContentUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[ToolResultBlockParamContentUnion](u.OfRequestTextBlock, u.OfRequestImageBlock)
+}
+
+// UnmarshalJSON implements json.Unmarshaler interface to properly unmarshal
+// based on the "type" field discriminator.
+func (u *ToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
+	var typeCheck struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &typeCheck); err != nil {
+		return err
+	}
+
+	switch typeCheck.Type {
+	case "text":
+		var block TextBlockParam
+		if err := json.Unmarshal(data, &block); err != nil {
+			return err
+		}
+		u.OfRequestTextBlock = &block
+	case "image":
+		var block ImageBlockParam
+		if err := json.Unmarshal(data, &block); err != nil {
+			return err
+		}
+		u.OfRequestImageBlock = &block
+	default:
+		return fmt.Errorf("unknown tool result content type: %s", typeCheck.Type)
+	}
+
+	return nil
 }
 
 func (u *ToolResultBlockParamContentUnion) asAny() any {

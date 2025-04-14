@@ -2,8 +2,8 @@
 
 <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go"><img src="https://pkg.go.dev/badge/github.com/anthropics/anthropic-sdk-go.svg" alt="Go Reference"></a>
 
-The Anthropic Go library provides convenient access to [the Anthropic REST
-API](https://docs.anthropic.com/claude/reference/) from applications written in Go. The full API of this library can be found in [api.md](api.md).
+The Anthropic Go library provides convenient access to the [Anthropic REST API](https://docs.anthropic.com/claude/reference/)
+from applications written in Go.
 
 > [!WARNING]
 > The latest version of this package uses a new design with significant breaking changes.

@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.2.0-beta.4 (2025-04-15)
+
+Full Changelog: [v0.2.0-beta.3...v0.2.0-beta.4](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-beta.3...v0.2.0-beta.4)
+
+### Features
+
+* **api:** extract ContentBlockDelta events into their own schemas ([#165](https://github.com/anthropics/anthropic-sdk-go/issues/165)) ([6d75486](https://github.com/anthropics/anthropic-sdk-go/commit/6d75486e9f524f5511f787181106a679e3414498))
+* **api:** manual updates ([a92a382](https://github.com/anthropics/anthropic-sdk-go/commit/a92a382976d595dd32208109b480bf26dbbdc00f))
+* **api:** manual updates ([59bd507](https://github.com/anthropics/anthropic-sdk-go/commit/59bd5071282403373ddca9333fafc9efc90a16d6))
+* **client:** support param struct overrides ([#167](https://github.com/anthropics/anthropic-sdk-go/issues/167)) ([e0d5eb0](https://github.com/anthropics/anthropic-sdk-go/commit/e0d5eb098c6441e99d53c6d997c7bcca460a238b))
+* **client:** support unions in query and forms ([#171](https://github.com/anthropics/anthropic-sdk-go/issues/171)) ([6bf1ce3](https://github.com/anthropics/anthropic-sdk-go/commit/6bf1ce36f0155dba20afd4b63bf96c4527e2baa5))
+
+
+### Bug Fixes
+
+* **client:** deduplicate stop reason type ([#155](https://github.com/anthropics/anthropic-sdk-go/issues/155)) ([0f985ad](https://github.com/anthropics/anthropic-sdk-go/commit/0f985ad54ef47849d7d478c84d34c7350a4349b5))
+* **client:** return error on bad custom url instead of panic ([#169](https://github.com/anthropics/anthropic-sdk-go/issues/169)) ([b086b55](https://github.com/anthropics/anthropic-sdk-go/commit/b086b55f4886474282d4e2ea9ee3495cbf25ec6b))
+* **client:** support multipart encoding array formats ([#170](https://github.com/anthropics/anthropic-sdk-go/issues/170)) ([611a25a](https://github.com/anthropics/anthropic-sdk-go/commit/611a25a427fc5303bb311fa4a2fec836d55b0933))
+* **client:** unmarshal stream events into fresh memory ([#168](https://github.com/anthropics/anthropic-sdk-go/issues/168)) ([9cc1257](https://github.com/anthropics/anthropic-sdk-go/commit/9cc1257a67340e446ac415ec9ddddded24bb1f9a))
+
+
+### Chores
+
+* **docs:** doc improvements ([#173](https://github.com/anthropics/anthropic-sdk-go/issues/173)) ([aebe8f6](https://github.com/anthropics/anthropic-sdk-go/commit/aebe8f68afa3de4460cda6e4032c7859e13cda81))
+* **docs:** update file uploads in README ([#166](https://github.com/anthropics/anthropic-sdk-go/issues/166)) ([a4a36bf](https://github.com/anthropics/anthropic-sdk-go/commit/a4a36bfbefa5a166774c23d8c5428fb55c1b4abe))
+* **internal:** remove CI condition ([#160](https://github.com/anthropics/anthropic-sdk-go/issues/160)) ([adfa1e2](https://github.com/anthropics/anthropic-sdk-go/commit/adfa1e2e349842aa88262af70b209d1a59dbb419))
+* **internal:** update config ([#157](https://github.com/anthropics/anthropic-sdk-go/issues/157)) ([46f0194](https://github.com/anthropics/anthropic-sdk-go/commit/46f019497bd9533390c4b9f0ebee6863263ce009))
+
 ## 0.2.0-beta.3 (2025-03-27)
 
 Full Changelog: [v0.2.0-beta.2...v0.2.0-beta.3](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-beta.2...v0.2.0-beta.3)

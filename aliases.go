@@ -5,7 +5,6 @@ package anthropic
 import (
 	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
 	"github.com/anthropics/anthropic-sdk-go/shared"
 )
 
@@ -28,13 +27,3 @@ type ErrorResponse = shared.ErrorResponse
 
 // This is an alias to an internal type.
 type GatewayTimeoutError = shared.GatewayTimeoutError
-
-func toParam[T comparable](value T, meta resp.Field) param.Opt[T] {
-	if meta.IsPresent() {
-		return param.NewOpt(value)
-	}
-	if meta.IsExplicitNull() {
-		return param.NullOpt[T]()
-	}
-	return param.Opt[T]{}
-}

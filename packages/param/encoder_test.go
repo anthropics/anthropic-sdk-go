@@ -157,3 +157,58 @@ func TestUnionDateMarshal(t *testing.T) {
 		})
 	}
 }
+
+func TestOverride(t *testing.T) {
+	tests := map[string]struct {
+		value    param.OverridableObject
+		expected string
+	}{
+		"param_struct": {
+			param.OverrideObj[FieldStruct](map[string]any{
+				"a": "hello",
+				"b": 12,
+				"c": nil,
+			}),
+			`{"a":"hello","b":12,"c":null}`,
+		},
+		"param_struct_primitive": {
+			param.OverrideObj[FieldStruct](12),
+			`12`,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			b, err := json.Marshal(test.value)
+			if err != nil {
+				t.Fatalf("didn't expect error %v, expected %s", err, test.expected)
+			}
+			if string(b) != test.expected {
+				t.Fatalf("expected %s, received %s", test.expected, string(b))
+			}
+			if _, ok := test.value.IsOverridden(); !ok {
+				t.Fatalf("expected to be overridden")
+			}
+		})
+	}
+}
+
+// Despite implementing the interface, this struct is not an param.Optional
+// since it was defined in a different package.
+type almostOpt struct{}
+
+func (almostOpt) IsPresent() bool { return true }
+func (almostOpt) IsNull() bool    { return false }
+func (almostOpt) IsOmitted() bool { return false }
+func (almostOpt) implOpt()        {}
+
+func TestOptionalInterfaceAssignability(t *testing.T) {
+	optInt := param.Opt[int]{}
+	if _, ok := any(optInt).(param.Optional); !ok {
+		t.Fatalf("failed to assign")
+	}
+
+	notOpt := almostOpt{}
+	if _, ok := any(notOpt).(param.Optional); ok {
+		t.Fatalf("unexpected successful assignment")
+	}
+}

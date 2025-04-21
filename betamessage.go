@@ -10,6 +10,7 @@ import (
 	"reflect"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
@@ -689,7 +690,7 @@ func BetaContentBlockParamOfRequestTextBlock(text string) BetaContentBlockParamU
 }
 
 func BetaContentBlockParamOfRequestImageBlock[
-T BetaBase64ImageSourceParam | BetaURLImageSourceParam,
+	T BetaBase64ImageSourceParam | BetaURLImageSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var variant BetaImageBlockParam
 	switch v := any(source).(type) {
@@ -716,7 +717,7 @@ func BetaContentBlockParamOfRequestToolResultBlock(toolUseID string) BetaContent
 }
 
 func BetaContentBlockParamOfRequestDocumentBlock[
-T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam,
+	T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var variant BetaBase64PDFBlockParam
 	switch v := any(source).(type) {
@@ -2086,7 +2087,7 @@ func (r BetaTextBlock) ToParam() BetaTextBlockParam {
 		case BetaCitationCharLocation:
 			var citationParam BetaCitationCharLocationParam
 			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = toParam(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
 			citationParam.CitedText = citationVariant.CitedText
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndCharIndex = citationVariant.EndCharIndex
@@ -2095,7 +2096,7 @@ func (r BetaTextBlock) ToParam() BetaTextBlockParam {
 		case BetaCitationPageLocation:
 			var citationParam BetaCitationPageLocationParam
 			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = toParam(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndPageNumber = citationVariant.EndPageNumber
 			citationParam.StartPageNumber = citationVariant.StartPageNumber
@@ -2103,7 +2104,7 @@ func (r BetaTextBlock) ToParam() BetaTextBlockParam {
 		case BetaCitationContentBlockLocation:
 			var citationParam BetaCitationContentBlockLocationParam
 			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = toParam(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
 			citationParam.CitedText = citationVariant.CitedText
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndBlockIndex = citationVariant.EndBlockIndex

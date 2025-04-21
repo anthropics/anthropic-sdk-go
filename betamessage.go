@@ -579,7 +579,7 @@ type BetaContentBlockUnion struct {
 	// This field is from variant [BetaToolUseBlock].
 	ID string `json:"id"`
 	// This field is from variant [BetaToolUseBlock].
-	Input interface{} `json:"input"`
+	Input any `json:"input"`
 	// This field is from variant [BetaToolUseBlock].
 	Name string `json:"name"`
 	// This field is from variant [BetaThinkingBlock].
@@ -701,7 +701,7 @@ T BetaBase64ImageSourceParam | BetaURLImageSourceParam,
 	return BetaContentBlockParamUnion{OfRequestImageBlock: &variant}
 }
 
-func BetaContentBlockParamOfRequestToolUseBlock(id string, input interface{}, name string) BetaContentBlockParamUnion {
+func BetaContentBlockParamOfRequestToolUseBlock(id string, input any, name string) BetaContentBlockParamUnion {
 	var variant BetaToolUseBlockParam
 	variant.ID = id
 	variant.Input = input
@@ -808,7 +808,7 @@ func (u BetaContentBlockParamUnion) GetID() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaContentBlockParamUnion) GetInput() *interface{} {
+func (u BetaContentBlockParamUnion) GetInput() *any {
 	if vt := u.OfRequestToolUseBlock; vt != nil {
 		return &vt.Input
 	}
@@ -928,20 +928,16 @@ func (u BetaContentBlockParamUnion) GetCacheControl() *BetaCacheControlEphemeral
 // Or use AsAny() to get the underlying value
 func (u BetaContentBlockParamUnion) GetCitations() (res betaContentBlockParamUnionCitations) {
 	if vt := u.OfRequestTextBlock; vt != nil {
-		res.ofBetaTextBlockCitations = &vt.Citations
+		res.any = &vt.Citations
 	} else if vt := u.OfRequestDocumentBlock; vt != nil {
-		res.ofBetaCitationsConfig = &vt.Citations
+		res.any = &vt.Citations
 	}
 	return
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type betaContentBlockParamUnionCitations struct {
-	ofBetaTextBlockCitations *[]BetaTextCitationParamUnion
-	ofBetaCitationsConfig    *BetaCitationsConfigParam
-}
+// Can have the runtime types [*[]BetaTextCitationParamUnion],
+// [*BetaCitationsConfigParam]
+type betaContentBlockParamUnionCitations struct{ any }
 
 // Use the following switch statement to get the type of the union:
 //
@@ -951,42 +947,25 @@ type betaContentBlockParamUnionCitations struct {
 //	default:
 //	    fmt.Errorf("not present")
 //	}
-func (u betaContentBlockParamUnionCitations) AsAny() any {
-	if !param.IsOmitted(u.ofBetaTextBlockCitations) {
-		return u.ofBetaTextBlockCitations
-	} else if !param.IsOmitted(u.ofBetaCitationsConfig) {
-		return u.ofBetaCitationsConfig
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u betaContentBlockParamUnionCitations) GetEnabled() *bool {
-	if vt := u.ofBetaCitationsConfig; vt != nil && vt.Enabled.IsPresent() {
-		return &vt.Enabled.Value
-	}
-	return nil
-}
+func (u betaContentBlockParamUnionCitations) AsAny() any { return u.any }
 
 // Returns a subunion which exports methods to access subproperties
 //
 // Or use AsAny() to get the underlying value
 func (u BetaContentBlockParamUnion) GetSource() (res betaContentBlockParamUnionSource) {
 	if vt := u.OfRequestImageBlock; vt != nil {
-		res.ofBetaImageBlockSource = &vt.Source
+		res.any = vt.Source.asAny()
 	} else if vt := u.OfRequestDocumentBlock; vt != nil {
-		res.ofBetaBase64PDFBlockSourceUnion = &vt.Source
+		res.any = vt.Source.asAny()
 	}
 	return
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type betaContentBlockParamUnionSource struct {
-	ofBetaImageBlockSource          *BetaImageBlockParamSourceUnion
-	ofBetaBase64PDFBlockSourceUnion *BetaBase64PDFBlockSourceUnionParam
-}
+// Can have the runtime types [*BetaBase64ImageSourceParam],
+// [*BetaURLImageSourceParam], [*BetaBase64PDFSourceParam],
+// [*BetaPlainTextSourceParam], [*BetaContentBlockSourceParam],
+// [*BetaURLPDFSourceParam]
+type betaContentBlockParamUnionSource struct{ any }
 
 // Use the following switch statement to get the type of the union:
 //
@@ -1000,71 +979,57 @@ type betaContentBlockParamUnionSource struct {
 //	default:
 //	    fmt.Errorf("not present")
 //	}
-func (u betaContentBlockParamUnionSource) AsAny() any {
-	if !param.IsOmitted(u.ofBetaImageBlockSource) {
-		return u.ofBetaImageBlockSource.asAny()
-	} else if !param.IsOmitted(u.ofBetaBase64PDFBlockSourceUnion) {
-		return u.ofBetaBase64PDFBlockSourceUnion.asAny()
-	}
-	return nil
-}
+func (u betaContentBlockParamUnionSource) AsAny() any { return u.any }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u betaContentBlockParamUnionSource) GetContent() *BetaContentBlockSourceContentUnionParam {
-	if u.ofBetaBase64PDFBlockSourceUnion != nil {
-		return u.ofBetaBase64PDFBlockSourceUnion.GetContent()
+	switch vt := u.any.(type) {
+	case *BetaBase64PDFBlockSourceUnionParam:
+		return vt.GetContent()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u betaContentBlockParamUnionSource) GetData() *string {
-	if u.ofBetaImageBlockSource != nil {
-		return u.ofBetaImageBlockSource.GetData()
-	} else if u.ofBetaBase64PDFBlockSourceUnion != nil {
-		return u.ofBetaBase64PDFBlockSourceUnion.GetData()
-	} else if u.ofBetaBase64PDFBlockSourceUnion != nil {
-		return u.ofBetaBase64PDFBlockSourceUnion.GetData()
+	switch vt := u.any.(type) {
+	case *BetaImageBlockParamSourceUnion:
+		return vt.GetData()
+	case *BetaBase64PDFBlockSourceUnionParam:
+		return vt.GetData()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u betaContentBlockParamUnionSource) GetMediaType() *string {
-	if u.ofBetaImageBlockSource != nil {
-		return u.ofBetaImageBlockSource.GetMediaType()
-	} else if u.ofBetaBase64PDFBlockSourceUnion != nil {
-		return u.ofBetaBase64PDFBlockSourceUnion.GetMediaType()
-	} else if u.ofBetaBase64PDFBlockSourceUnion != nil {
-		return u.ofBetaBase64PDFBlockSourceUnion.GetMediaType()
+	switch vt := u.any.(type) {
+	case *BetaImageBlockParamSourceUnion:
+		return vt.GetMediaType()
+	case *BetaBase64PDFBlockSourceUnionParam:
+		return vt.GetMediaType()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u betaContentBlockParamUnionSource) GetType() *string {
-	if u.ofBetaImageBlockSource != nil {
-		return u.ofBetaImageBlockSource.GetType()
-	} else if u.ofBetaImageBlockSource != nil {
-		return u.ofBetaImageBlockSource.GetType()
-	} else if u.ofBetaBase64PDFBlockSourceUnion != nil {
-		return u.ofBetaBase64PDFBlockSourceUnion.GetType()
-	} else if u.ofBetaBase64PDFBlockSourceUnion != nil {
-		return u.ofBetaBase64PDFBlockSourceUnion.GetType()
-	} else if u.ofBetaBase64PDFBlockSourceUnion != nil {
-		return u.ofBetaBase64PDFBlockSourceUnion.GetType()
-	} else if u.ofBetaBase64PDFBlockSourceUnion != nil {
-		return u.ofBetaBase64PDFBlockSourceUnion.GetType()
+	switch vt := u.any.(type) {
+	case *BetaImageBlockParamSourceUnion:
+		return vt.GetType()
+	case *BetaBase64PDFBlockSourceUnionParam:
+		return vt.GetType()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u betaContentBlockParamUnionSource) GetURL() *string {
-	if u.ofBetaImageBlockSource != nil {
-		return u.ofBetaImageBlockSource.GetURL()
-	} else if u.ofBetaBase64PDFBlockSourceUnion != nil {
-		return u.ofBetaBase64PDFBlockSourceUnion.GetURL()
+	switch vt := u.any.(type) {
+	case *BetaImageBlockParamSourceUnion:
+		return vt.GetURL()
+	case *BetaBase64PDFBlockSourceUnionParam:
+		return vt.GetURL()
 	}
 	return nil
 }
@@ -1664,7 +1629,7 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	// This field is from variant [BetaToolUseBlock].
 	ID string `json:"id"`
 	// This field is from variant [BetaToolUseBlock].
-	Input interface{} `json:"input"`
+	Input any `json:"input"`
 	// This field is from variant [BetaToolUseBlock].
 	Name string `json:"name"`
 	// This field is from variant [BetaThinkingBlock].
@@ -2633,10 +2598,10 @@ func (r BetaToolParam) MarshalJSON() (data []byte, err error) {
 //
 // The property Type is required.
 type BetaToolInputSchemaParam struct {
-	Properties interface{} `json:"properties,omitzero"`
+	Properties any `json:"properties,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
-	Type        constant.Object        `json:"type,required"`
-	ExtraFields map[string]interface{} `json:"-,extras"`
+	Type        constant.Object `json:"type,required"`
+	ExtraFields map[string]any  `json:"-,extras"`
 	paramObj
 }
 
@@ -3267,7 +3232,7 @@ func (u BetaToolUnionParam) GetCacheControl() *BetaCacheControlEphemeralParam {
 
 type BetaToolUseBlock struct {
 	ID    string           `json:"id,required"`
-	Input interface{}      `json:"input,required"`
+	Input any              `json:"input,required"`
 	Name  string           `json:"name,required"`
 	Type  constant.ToolUse `json:"type,required"`
 	// Metadata for the response, check the presence of optional fields with the
@@ -3300,7 +3265,7 @@ func (r BetaToolUseBlock) ToParam() BetaToolUseBlockParam {
 // The properties ID, Input, Name, Type are required.
 type BetaToolUseBlockParam struct {
 	ID           string                         `json:"id,required"`
-	Input        interface{}                    `json:"input,omitzero,required"`
+	Input        any                            `json:"input,omitzero,required"`
 	Name         string                         `json:"name,required"`
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_use".

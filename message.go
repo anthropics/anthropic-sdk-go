@@ -559,7 +559,7 @@ func ContentBlockParamOfRequestImageBlock[T Base64ImageSourceParam | URLImageSou
 	return ContentBlockParamUnion{OfRequestImageBlock: &variant}
 }
 
-func ContentBlockParamOfRequestToolUseBlock(id string, input interface{}, name string) ContentBlockParamUnion {
+func ContentBlockParamOfRequestToolUseBlock(id string, input any, name string) ContentBlockParamUnion {
 	var variant ToolUseBlockParam
 	variant.ID = id
 	variant.Input = input
@@ -666,7 +666,7 @@ func (u ContentBlockParamUnion) GetID() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetInput() *interface{} {
+func (u ContentBlockParamUnion) GetInput() *any {
 	if vt := u.OfRequestToolUseBlock; vt != nil {
 		return &vt.Input
 	}
@@ -786,20 +786,15 @@ func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
 // Or use AsAny() to get the underlying value
 func (u ContentBlockParamUnion) GetCitations() (res contentBlockParamUnionCitations) {
 	if vt := u.OfRequestTextBlock; vt != nil {
-		res.ofTextBlockCitations = &vt.Citations
+		res.any = &vt.Citations
 	} else if vt := u.OfRequestDocumentBlock; vt != nil {
-		res.ofCitationsConfig = &vt.Citations
+		res.any = &vt.Citations
 	}
 	return
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type contentBlockParamUnionCitations struct {
-	ofTextBlockCitations *[]TextCitationParamUnion
-	ofCitationsConfig    *CitationsConfigParam
-}
+// Can have the runtime types [*[]TextCitationParamUnion], [*CitationsConfigParam]
+type contentBlockParamUnionCitations struct{ any }
 
 // Use the following switch statement to get the type of the union:
 //
@@ -809,42 +804,24 @@ type contentBlockParamUnionCitations struct {
 //	default:
 //	    fmt.Errorf("not present")
 //	}
-func (u contentBlockParamUnionCitations) AsAny() any {
-	if !param.IsOmitted(u.ofTextBlockCitations) {
-		return u.ofTextBlockCitations
-	} else if !param.IsOmitted(u.ofCitationsConfig) {
-		return u.ofCitationsConfig
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u contentBlockParamUnionCitations) GetEnabled() *bool {
-	if vt := u.ofCitationsConfig; vt != nil && vt.Enabled.IsPresent() {
-		return &vt.Enabled.Value
-	}
-	return nil
-}
+func (u contentBlockParamUnionCitations) AsAny() any { return u.any }
 
 // Returns a subunion which exports methods to access subproperties
 //
 // Or use AsAny() to get the underlying value
 func (u ContentBlockParamUnion) GetSource() (res contentBlockParamUnionSource) {
 	if vt := u.OfRequestImageBlock; vt != nil {
-		res.ofImageBlockSource = &vt.Source
+		res.any = vt.Source.asAny()
 	} else if vt := u.OfRequestDocumentBlock; vt != nil {
-		res.ofDocumentBlockSource = &vt.Source
+		res.any = vt.Source.asAny()
 	}
 	return
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type contentBlockParamUnionSource struct {
-	ofImageBlockSource    *ImageBlockParamSourceUnion
-	ofDocumentBlockSource *DocumentBlockParamSourceUnion
-}
+// Can have the runtime types [*Base64ImageSourceParam], [*URLImageSourceParam],
+// [*Base64PDFSourceParam], [*PlainTextSourceParam], [*ContentBlockSourceParam],
+// [*URLPDFSourceParam]
+type contentBlockParamUnionSource struct{ any }
 
 // Use the following switch statement to get the type of the union:
 //
@@ -858,71 +835,57 @@ type contentBlockParamUnionSource struct {
 //	default:
 //	    fmt.Errorf("not present")
 //	}
-func (u contentBlockParamUnionSource) AsAny() any {
-	if !param.IsOmitted(u.ofImageBlockSource) {
-		return u.ofImageBlockSource.asAny()
-	} else if !param.IsOmitted(u.ofDocumentBlockSource) {
-		return u.ofDocumentBlockSource.asAny()
-	}
-	return nil
-}
+func (u contentBlockParamUnionSource) AsAny() any { return u.any }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u contentBlockParamUnionSource) GetContent() *ContentBlockSourceContentUnionParam {
-	if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetContent()
+	switch vt := u.any.(type) {
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetContent()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u contentBlockParamUnionSource) GetData() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetData()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetData()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetData()
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetData()
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetData()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u contentBlockParamUnionSource) GetMediaType() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetMediaType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetMediaType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetMediaType()
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetMediaType()
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetMediaType()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u contentBlockParamUnionSource) GetType() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetType()
-	} else if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetType()
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetType()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u contentBlockParamUnionSource) GetURL() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetURL()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetURL()
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetURL()
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetURL()
 	}
 	return nil
 }
@@ -1790,7 +1753,7 @@ type ContentBlockStartEventContentBlockUnion struct {
 	// This field is from variant [ToolUseBlock].
 	ID string `json:"id"`
 	// This field is from variant [ToolUseBlock].
-	Input interface{} `json:"input"`
+	Input any `json:"input"`
 	// This field is from variant [ToolUseBlock].
 	Name string `json:"name"`
 	// This field is from variant [ThinkingBlock].
@@ -2828,10 +2791,10 @@ func (r ToolParam) MarshalJSON() (data []byte, err error) {
 //
 // The property Type is required.
 type ToolInputSchemaParam struct {
-	Properties interface{} `json:"properties,omitzero"`
+	Properties any `json:"properties,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
-	Type        constant.Object        `json:"type,required"`
-	ExtraFields map[string]interface{} `json:"-,extras"`
+	Type        constant.Object `json:"type,required"`
+	ExtraFields map[string]any  `json:"-,extras"`
 	paramObj
 }
 
@@ -3306,7 +3269,7 @@ func (r ToolUseBlock) ToParam() ToolUseBlockParam {
 // The properties ID, Input, Name, Type are required.
 type ToolUseBlockParam struct {
 	ID           string                     `json:"id,required"`
-	Input        interface{}                `json:"input,omitzero,required"`
+	Input        any                        `json:"input,omitzero,required"`
 	Name         string                     `json:"name,required"`
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_use".

@@ -508,6 +508,17 @@ type BetaCitationsDeltaCitationUnion struct {
 	} `json:"-"`
 }
 
+// anyBetaCitationsDeltaCitation is implemented by each variant of
+// [BetaCitationsDeltaCitationUnion] to add type safety for the return type of
+// [BetaCitationsDeltaCitationUnion.AsAny]
+type anyBetaCitationsDeltaCitation interface {
+	implBetaCitationsDeltaCitationUnion()
+}
+
+func (BetaCitationCharLocation) implBetaCitationsDeltaCitationUnion()         {}
+func (BetaCitationPageLocation) implBetaCitationsDeltaCitationUnion()         {}
+func (BetaCitationContentBlockLocation) implBetaCitationsDeltaCitationUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaCitationsDeltaCitationUnion.AsAny().(type) {
@@ -517,7 +528,7 @@ type BetaCitationsDeltaCitationUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaCitationsDeltaCitationUnion) AsAny() any {
+func (u BetaCitationsDeltaCitationUnion) AsAny() anyBetaCitationsDeltaCitation {
 	switch u.Type {
 	case "char_location":
 		return u.AsResponseCharLocationCitation()
@@ -609,6 +620,17 @@ func (r BetaContentBlockUnion) ToParam() BetaContentBlockParamUnion {
 	return BetaContentBlockParamUnion{}
 }
 
+// anyBetaContentBlock is implemented by each variant of [BetaContentBlockUnion] to
+// add type safety for the return type of [BetaContentBlockUnion.AsAny]
+type anyBetaContentBlock interface {
+	implBetaContentBlockUnion()
+}
+
+func (BetaTextBlock) implBetaContentBlockUnion()             {}
+func (BetaToolUseBlock) implBetaContentBlockUnion()          {}
+func (BetaThinkingBlock) implBetaContentBlockUnion()         {}
+func (BetaRedactedThinkingBlock) implBetaContentBlockUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaContentBlockUnion.AsAny().(type) {
@@ -619,7 +641,7 @@ func (r BetaContentBlockUnion) ToParam() BetaContentBlockParamUnion {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaContentBlockUnion) AsAny() any {
+func (u BetaContentBlockUnion) AsAny() anyBetaContentBlock {
 	switch u.Type {
 	case "text":
 		return u.AsResponseTextBlock()
@@ -667,7 +689,7 @@ func BetaContentBlockParamOfRequestTextBlock(text string) BetaContentBlockParamU
 }
 
 func BetaContentBlockParamOfRequestImageBlock[
-	T BetaBase64ImageSourceParam | BetaURLImageSourceParam,
+T BetaBase64ImageSourceParam | BetaURLImageSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var variant BetaImageBlockParam
 	switch v := any(source).(type) {
@@ -694,7 +716,7 @@ func BetaContentBlockParamOfRequestToolResultBlock(toolUseID string) BetaContent
 }
 
 func BetaContentBlockParamOfRequestDocumentBlock[
-	T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam,
+T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var variant BetaBase64PDFBlockParam
 	switch v := any(source).(type) {
@@ -1510,6 +1532,19 @@ type BetaRawContentBlockDeltaUnion struct {
 	} `json:"-"`
 }
 
+// anyBetaRawContentBlockDelta is implemented by each variant of
+// [BetaRawContentBlockDeltaUnion] to add type safety for the return type of
+// [BetaRawContentBlockDeltaUnion.AsAny]
+type anyBetaRawContentBlockDelta interface {
+	implBetaRawContentBlockDeltaUnion()
+}
+
+func (BetaTextDelta) implBetaRawContentBlockDeltaUnion()      {}
+func (BetaInputJSONDelta) implBetaRawContentBlockDeltaUnion() {}
+func (BetaCitationsDelta) implBetaRawContentBlockDeltaUnion() {}
+func (BetaThinkingDelta) implBetaRawContentBlockDeltaUnion()  {}
+func (BetaSignatureDelta) implBetaRawContentBlockDeltaUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaRawContentBlockDeltaUnion.AsAny().(type) {
@@ -1521,7 +1556,7 @@ type BetaRawContentBlockDeltaUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaRawContentBlockDeltaUnion) AsAny() any {
+func (u BetaRawContentBlockDeltaUnion) AsAny() anyBetaRawContentBlockDelta {
 	switch u.Type {
 	case "text_delta":
 		return u.AsTextContentBlockDelta()
@@ -1652,6 +1687,18 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	} `json:"-"`
 }
 
+// anyBetaRawContentBlockStartEventContentBlock is implemented by each variant of
+// [BetaRawContentBlockStartEventContentBlockUnion] to add type safety for the
+// return type of [BetaRawContentBlockStartEventContentBlockUnion.AsAny]
+type anyBetaRawContentBlockStartEventContentBlock interface {
+	implBetaRawContentBlockStartEventContentBlockUnion()
+}
+
+func (BetaTextBlock) implBetaRawContentBlockStartEventContentBlockUnion()             {}
+func (BetaToolUseBlock) implBetaRawContentBlockStartEventContentBlockUnion()          {}
+func (BetaThinkingBlock) implBetaRawContentBlockStartEventContentBlockUnion()         {}
+func (BetaRedactedThinkingBlock) implBetaRawContentBlockStartEventContentBlockUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaRawContentBlockStartEventContentBlockUnion.AsAny().(type) {
@@ -1662,7 +1709,7 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaRawContentBlockStartEventContentBlockUnion) AsAny() any {
+func (u BetaRawContentBlockStartEventContentBlockUnion) AsAny() anyBetaRawContentBlockStartEventContentBlock {
 	switch u.Type {
 	case "text":
 		return u.AsResponseTextBlock()
@@ -1847,6 +1894,20 @@ type BetaRawMessageStreamEventUnion struct {
 	} `json:"-"`
 }
 
+// anyBetaRawMessageStreamEvent is implemented by each variant of
+// [BetaRawMessageStreamEventUnion] to add type safety for the return type of
+// [BetaRawMessageStreamEventUnion.AsAny]
+type anyBetaRawMessageStreamEvent interface {
+	implBetaRawMessageStreamEventUnion()
+}
+
+func (BetaRawMessageStartEvent) implBetaRawMessageStreamEventUnion()      {}
+func (BetaRawMessageDeltaEvent) implBetaRawMessageStreamEventUnion()      {}
+func (BetaRawMessageStopEvent) implBetaRawMessageStreamEventUnion()       {}
+func (BetaRawContentBlockStartEvent) implBetaRawMessageStreamEventUnion() {}
+func (BetaRawContentBlockDeltaEvent) implBetaRawMessageStreamEventUnion() {}
+func (BetaRawContentBlockStopEvent) implBetaRawMessageStreamEventUnion()  {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaRawMessageStreamEventUnion.AsAny().(type) {
@@ -1859,7 +1920,7 @@ type BetaRawMessageStreamEventUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaRawMessageStreamEventUnion) AsAny() any {
+func (u BetaRawMessageStreamEventUnion) AsAny() anyBetaRawMessageStreamEvent {
 	switch u.Type {
 	case "message_start":
 		return u.AsMessageStartEvent()
@@ -2146,6 +2207,16 @@ type BetaTextCitationUnion struct {
 	} `json:"-"`
 }
 
+// anyBetaTextCitation is implemented by each variant of [BetaTextCitationUnion] to
+// add type safety for the return type of [BetaTextCitationUnion.AsAny]
+type anyBetaTextCitation interface {
+	implBetaTextCitationUnion()
+}
+
+func (BetaCitationCharLocation) implBetaTextCitationUnion()         {}
+func (BetaCitationPageLocation) implBetaTextCitationUnion()         {}
+func (BetaCitationContentBlockLocation) implBetaTextCitationUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaTextCitationUnion.AsAny().(type) {
@@ -2155,7 +2226,7 @@ type BetaTextCitationUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaTextCitationUnion) AsAny() any {
+func (u BetaTextCitationUnion) AsAny() anyBetaTextCitation {
 	switch u.Type {
 	case "char_location":
 		return u.AsResponseCharLocationCitation()

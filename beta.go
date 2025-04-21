@@ -125,6 +125,22 @@ type BetaErrorUnion struct {
 	} `json:"-"`
 }
 
+// anyBetaError is implemented by each variant of [BetaErrorUnion] to add type
+// safety for the return type of [BetaErrorUnion.AsAny]
+type anyBetaError interface {
+	implBetaErrorUnion()
+}
+
+func (BetaInvalidRequestError) implBetaErrorUnion() {}
+func (BetaAuthenticationError) implBetaErrorUnion() {}
+func (BetaBillingError) implBetaErrorUnion()        {}
+func (BetaPermissionError) implBetaErrorUnion()     {}
+func (BetaNotFoundError) implBetaErrorUnion()       {}
+func (BetaRateLimitError) implBetaErrorUnion()      {}
+func (BetaGatewayTimeoutError) implBetaErrorUnion() {}
+func (BetaAPIError) implBetaErrorUnion()            {}
+func (BetaOverloadedError) implBetaErrorUnion()     {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaErrorUnion.AsAny().(type) {
@@ -140,7 +156,7 @@ type BetaErrorUnion struct {
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaErrorUnion) AsAny() any {
+func (u BetaErrorUnion) AsAny() anyBetaError {
 	switch u.Type {
 	case "invalid_request_error":
 		return u.AsInvalidRequestError()

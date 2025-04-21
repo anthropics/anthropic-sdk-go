@@ -10,6 +10,7 @@ import (
 	"reflect"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
@@ -574,7 +575,7 @@ func ContentBlockParamOfRequestToolResultBlock(toolUseID string) ContentBlockPar
 }
 
 func ContentBlockParamOfRequestDocumentBlock[
-T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
+	T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
 ](source T) ContentBlockParamUnion {
 	var variant DocumentBlockParam
 	switch v := any(source).(type) {
@@ -2274,7 +2275,7 @@ func (r TextBlock) ToParam() TextBlockParam {
 		case CitationCharLocation:
 			var citationParam CitationCharLocationParam
 			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = toParam(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
 			citationParam.CitedText = citationVariant.CitedText
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndCharIndex = citationVariant.EndCharIndex
@@ -2283,7 +2284,7 @@ func (r TextBlock) ToParam() TextBlockParam {
 		case CitationPageLocation:
 			var citationParam CitationPageLocationParam
 			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = toParam(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndPageNumber = citationVariant.EndPageNumber
 			citationParam.StartPageNumber = citationVariant.StartPageNumber
@@ -2291,7 +2292,7 @@ func (r TextBlock) ToParam() TextBlockParam {
 		case CitationContentBlockLocation:
 			var citationParam CitationContentBlockLocationParam
 			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = toParam(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
 			citationParam.CitedText = citationVariant.CitedText
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndBlockIndex = citationVariant.EndBlockIndex

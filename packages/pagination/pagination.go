@@ -56,13 +56,19 @@ func (r *Page[T]) GetNextPage() (res *Page[T], err error) {
 		if next == "" {
 			return nil, nil
 		}
-		cfg.Apply(option.WithQuery("before_id", next))
+		err = cfg.Apply(option.WithQuery("before_id", next))
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		next := r.LastID
 		if next == "" {
 			return nil, nil
 		}
-		cfg.Apply(option.WithQuery("after_id", next))
+		err = cfg.Apply(option.WithQuery("after_id", next))
+		if err != nil {
+			return nil, err
+		}
 	}
 	var raw *http.Response
 	cfg.ResponseInto = &raw

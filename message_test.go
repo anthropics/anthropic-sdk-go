@@ -29,7 +29,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
+				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
 					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
@@ -40,7 +40,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 			UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		},
 		StopSequences: []string{"string"},
-		System: []anthropic.TextBlockParam{{Text: "x", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
+		System: []anthropic.TextBlockParam{{Text: "x", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
 			OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 		}}}},
 		Temperature: anthropic.Float(1),
@@ -69,7 +69,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 					},
 				},
 				Name:         "name",
-				CacheControl: anthropic.CacheControlEphemeralParam{},
+				CacheControl: anthropic.NewCacheControlEphemeralParam(),
 				Description:  anthropic.String("Get the current weather in a given location"),
 			},
 		}},
@@ -100,7 +100,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 	_, err := client.Messages.CountTokens(context.TODO(), anthropic.MessageCountTokensParams{
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
+				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
 					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
@@ -110,7 +110,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 		System: anthropic.MessageCountTokensParamsSystemUnion{
 			OfMessageCountTokenssSystemArray: []anthropic.TextBlockParam{{
 				Text:         "Today's date is 2024-06-01.",
-				CacheControl: anthropic.CacheControlEphemeralParam{},
+				CacheControl: anthropic.NewCacheControlEphemeralParam(),
 				Citations: []anthropic.TextCitationParamUnion{{
 					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{
 						CitedText:      "cited_text",
@@ -147,7 +147,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 					},
 				},
 				Name:         "name",
-				CacheControl: anthropic.CacheControlEphemeralParam{},
+				CacheControl: anthropic.NewCacheControlEphemeralParam(),
 				Description:  anthropic.String("Get the current weather in a given location"),
 			},
 		}},

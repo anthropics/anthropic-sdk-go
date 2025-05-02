@@ -171,7 +171,7 @@ func (u BetaErrorUnion) AsAny() anyBetaError {
 	case "rate_limit_error":
 		return u.AsRateLimitError()
 	case "timeout_error":
-		return u.AsGatewayTimeoutError()
+		return u.AsTimeoutError()
 	case "api_error":
 		return u.AsAPIError()
 	case "overloaded_error":
@@ -210,7 +210,7 @@ func (u BetaErrorUnion) AsRateLimitError() (v BetaRateLimitError) {
 	return
 }
 
-func (u BetaErrorUnion) AsGatewayTimeoutError() (v BetaGatewayTimeoutError) {
+func (u BetaErrorUnion) AsTimeoutError() (v BetaGatewayTimeoutError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }

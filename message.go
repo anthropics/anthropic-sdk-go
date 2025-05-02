@@ -397,26 +397,26 @@ func (CitationContentBlockLocation) implCitationsDeltaCitationUnion() {}
 func (u CitationsDeltaCitationUnion) AsAny() anyCitationsDeltaCitation {
 	switch u.Type {
 	case "char_location":
-		return u.AsResponseCharLocationCitation()
+		return u.AsCharLocation()
 	case "page_location":
-		return u.AsResponsePageLocationCitation()
+		return u.AsPageLocation()
 	case "content_block_location":
-		return u.AsResponseContentBlockLocationCitation()
+		return u.AsContentBlockLocation()
 	}
 	return nil
 }
 
-func (u CitationsDeltaCitationUnion) AsResponseCharLocationCitation() (v CitationCharLocation) {
+func (u CitationsDeltaCitationUnion) AsCharLocation() (v CitationCharLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u CitationsDeltaCitationUnion) AsResponsePageLocationCitation() (v CitationPageLocation) {
+func (u CitationsDeltaCitationUnion) AsPageLocation() (v CitationPageLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u CitationsDeltaCitationUnion) AsResponseContentBlockLocationCitation() (v CitationContentBlockLocation) {
+func (u CitationsDeltaCitationUnion) AsContentBlockLocation() (v CitationContentBlockLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -491,33 +491,33 @@ func (RedactedThinkingBlock) implContentBlockUnion() {}
 func (u ContentBlockUnion) AsAny() anyContentBlock {
 	switch u.Type {
 	case "text":
-		return u.AsResponseTextBlock()
+		return u.AsText()
 	case "tool_use":
-		return u.AsResponseToolUseBlock()
+		return u.AsToolUse()
 	case "thinking":
-		return u.AsResponseThinkingBlock()
+		return u.AsThinking()
 	case "redacted_thinking":
-		return u.AsResponseRedactedThinkingBlock()
+		return u.AsRedactedThinking()
 	}
 	return nil
 }
 
-func (u ContentBlockUnion) AsResponseTextBlock() (v TextBlock) {
+func (u ContentBlockUnion) AsText() (v TextBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockUnion) AsResponseToolUseBlock() (v ToolUseBlock) {
+func (u ContentBlockUnion) AsToolUse() (v ToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockUnion) AsResponseThinkingBlock() (v ThinkingBlock) {
+func (u ContentBlockUnion) AsThinking() (v ThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockUnion) AsResponseRedactedThinkingBlock() (v RedactedThinkingBlock) {
+func (u ContentBlockUnion) AsRedactedThinking() (v RedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -529,78 +529,78 @@ func (r *ContentBlockUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func ContentBlockParamOfRequestTextBlock(text string) ContentBlockParamUnion {
+func ContentBlockParamOfText(text string) ContentBlockParamUnion {
 	var variant TextBlockParam
 	variant.Text = text
-	return ContentBlockParamUnion{OfRequestTextBlock: &variant}
+	return ContentBlockParamUnion{OfText: &variant}
 }
 
-func ContentBlockParamOfRequestImageBlock[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockParamUnion {
-	var variant ImageBlockParam
+func ContentBlockParamOfImage[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockParamUnion {
+	var image ImageBlockParam
 	switch v := any(source).(type) {
 	case Base64ImageSourceParam:
-		variant.Source.OfBase64ImageSource = &v
+		image.Source.OfBase64 = &v
 	case URLImageSourceParam:
-		variant.Source.OfURLImageSource = &v
+		image.Source.OfURL = &v
 	}
-	return ContentBlockParamUnion{OfRequestImageBlock: &variant}
+	return ContentBlockParamUnion{OfImage: &image}
 }
 
-func ContentBlockParamOfRequestToolUseBlock(id string, input any, name string) ContentBlockParamUnion {
-	var variant ToolUseBlockParam
-	variant.ID = id
-	variant.Input = input
-	variant.Name = name
-	return ContentBlockParamUnion{OfRequestToolUseBlock: &variant}
+func ContentBlockParamOfToolUse(id string, input any, name string) ContentBlockParamUnion {
+	var toolUse ToolUseBlockParam
+	toolUse.ID = id
+	toolUse.Input = input
+	toolUse.Name = name
+	return ContentBlockParamUnion{OfToolUse: &toolUse}
 }
 
-func ContentBlockParamOfRequestToolResultBlock(toolUseID string) ContentBlockParamUnion {
-	var variant ToolResultBlockParam
-	variant.ToolUseID = toolUseID
-	return ContentBlockParamUnion{OfRequestToolResultBlock: &variant}
+func ContentBlockParamOfToolResult(toolUseID string) ContentBlockParamUnion {
+	var toolResult ToolResultBlockParam
+	toolResult.ToolUseID = toolUseID
+	return ContentBlockParamUnion{OfToolResult: &toolResult}
 }
 
-func ContentBlockParamOfRequestDocumentBlock[
+func ContentBlockParamOfDocument[
 	T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
 ](source T) ContentBlockParamUnion {
-	var variant DocumentBlockParam
+	var document DocumentBlockParam
 	switch v := any(source).(type) {
 	case Base64PDFSourceParam:
-		variant.Source.OfBase64PDFSource = &v
+		document.Source.OfBase64 = &v
 	case PlainTextSourceParam:
-		variant.Source.OfPlainTextSource = &v
+		document.Source.OfText = &v
 	case ContentBlockSourceParam:
-		variant.Source.OfContentBlockSource = &v
+		document.Source.OfContent = &v
 	case URLPDFSourceParam:
-		variant.Source.OfUrlpdfSource = &v
+		document.Source.OfURL = &v
 	}
-	return ContentBlockParamUnion{OfRequestDocumentBlock: &variant}
+	return ContentBlockParamUnion{OfDocument: &document}
 }
 
-func ContentBlockParamOfRequestThinkingBlock(signature string, thinking string) ContentBlockParamUnion {
+func ContentBlockParamOfThinking(signature string, thinking string) ContentBlockParamUnion {
 	var variant ThinkingBlockParam
 	variant.Signature = signature
 	variant.Thinking = thinking
-	return ContentBlockParamUnion{OfRequestThinkingBlock: &variant}
+	return ContentBlockParamUnion{OfThinking: &variant}
 }
 
-func ContentBlockParamOfRequestRedactedThinkingBlock(data string) ContentBlockParamUnion {
-	var variant RedactedThinkingBlockParam
-	variant.Data = data
-	return ContentBlockParamUnion{OfRequestRedactedThinkingBlock: &variant}
+func ContentBlockParamOfRedactedThinking(data string) ContentBlockParamUnion {
+	var redactedThinking RedactedThinkingBlockParam
+	redactedThinking.Data = data
+	return ContentBlockParamUnion{OfRedactedThinking: &redactedThinking}
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ContentBlockParamUnion struct {
-	OfRequestTextBlock             *TextBlockParam             `json:",omitzero,inline"`
-	OfRequestImageBlock            *ImageBlockParam            `json:",omitzero,inline"`
-	OfRequestToolUseBlock          *ToolUseBlockParam          `json:",omitzero,inline"`
-	OfRequestToolResultBlock       *ToolResultBlockParam       `json:",omitzero,inline"`
-	OfRequestDocumentBlock         *DocumentBlockParam         `json:",omitzero,inline"`
-	OfRequestThinkingBlock         *ThinkingBlockParam         `json:",omitzero,inline"`
-	OfRequestRedactedThinkingBlock *RedactedThinkingBlockParam `json:",omitzero,inline"`
+	OfText             *TextBlockParam             `json:",omitzero,inline"`
+	OfImage            *ImageBlockParam            `json:",omitzero,inline"`
+	OfToolUse          *ToolUseBlockParam          `json:",omitzero,inline"`
+	OfToolResult       *ToolResultBlockParam       `json:",omitzero,inline"`
+	OfDocument         *DocumentBlockParam         `json:",omitzero,inline"`
+	OfThinking         *ThinkingBlockParam         `json:",omitzero,inline"`
+	OfRedactedThinking *RedactedThinkingBlockParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -608,37 +608,37 @@ type ContentBlockParamUnion struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u ContentBlockParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ContentBlockParamUnion](u.OfRequestTextBlock,
-		u.OfRequestImageBlock,
-		u.OfRequestToolUseBlock,
-		u.OfRequestToolResultBlock,
-		u.OfRequestDocumentBlock,
-		u.OfRequestThinkingBlock,
-		u.OfRequestRedactedThinkingBlock)
+	return param.MarshalUnion[ContentBlockParamUnion](u.OfText,
+		u.OfImage,
+		u.OfToolUse,
+		u.OfToolResult,
+		u.OfDocument,
+		u.OfThinking,
+		u.OfRedactedThinking)
 }
 
 func (u *ContentBlockParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestTextBlock) {
-		return u.OfRequestTextBlock
-	} else if !param.IsOmitted(u.OfRequestImageBlock) {
-		return u.OfRequestImageBlock
-	} else if !param.IsOmitted(u.OfRequestToolUseBlock) {
-		return u.OfRequestToolUseBlock
-	} else if !param.IsOmitted(u.OfRequestToolResultBlock) {
-		return u.OfRequestToolResultBlock
-	} else if !param.IsOmitted(u.OfRequestDocumentBlock) {
-		return u.OfRequestDocumentBlock
-	} else if !param.IsOmitted(u.OfRequestThinkingBlock) {
-		return u.OfRequestThinkingBlock
-	} else if !param.IsOmitted(u.OfRequestRedactedThinkingBlock) {
-		return u.OfRequestRedactedThinkingBlock
+	if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfImage) {
+		return u.OfImage
+	} else if !param.IsOmitted(u.OfToolUse) {
+		return u.OfToolUse
+	} else if !param.IsOmitted(u.OfToolResult) {
+		return u.OfToolResult
+	} else if !param.IsOmitted(u.OfDocument) {
+		return u.OfDocument
+	} else if !param.IsOmitted(u.OfThinking) {
+		return u.OfThinking
+	} else if !param.IsOmitted(u.OfRedactedThinking) {
+		return u.OfRedactedThinking
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetText() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.Text
 	}
 	return nil
@@ -646,7 +646,7 @@ func (u ContentBlockParamUnion) GetText() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetID() *string {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
+	if vt := u.OfToolUse; vt != nil {
 		return &vt.ID
 	}
 	return nil
@@ -654,7 +654,7 @@ func (u ContentBlockParamUnion) GetID() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetInput() *any {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
+	if vt := u.OfToolUse; vt != nil {
 		return &vt.Input
 	}
 	return nil
@@ -662,7 +662,7 @@ func (u ContentBlockParamUnion) GetInput() *any {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetName() *string {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
+	if vt := u.OfToolUse; vt != nil {
 		return &vt.Name
 	}
 	return nil
@@ -670,7 +670,7 @@ func (u ContentBlockParamUnion) GetName() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetToolUseID() *string {
-	if vt := u.OfRequestToolResultBlock; vt != nil {
+	if vt := u.OfToolResult; vt != nil {
 		return &vt.ToolUseID
 	}
 	return nil
@@ -678,7 +678,7 @@ func (u ContentBlockParamUnion) GetToolUseID() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetContent() *[]ToolResultBlockParamContentUnion {
-	if vt := u.OfRequestToolResultBlock; vt != nil {
+	if vt := u.OfToolResult; vt != nil {
 		return &vt.Content
 	}
 	return nil
@@ -686,7 +686,7 @@ func (u ContentBlockParamUnion) GetContent() *[]ToolResultBlockParamContentUnion
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetIsError() *bool {
-	if vt := u.OfRequestToolResultBlock; vt != nil && vt.IsError.IsPresent() {
+	if vt := u.OfToolResult; vt != nil && vt.IsError.IsPresent() {
 		return &vt.IsError.Value
 	}
 	return nil
@@ -694,7 +694,7 @@ func (u ContentBlockParamUnion) GetIsError() *bool {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetContext() *string {
-	if vt := u.OfRequestDocumentBlock; vt != nil && vt.Context.IsPresent() {
+	if vt := u.OfDocument; vt != nil && vt.Context.IsPresent() {
 		return &vt.Context.Value
 	}
 	return nil
@@ -702,7 +702,7 @@ func (u ContentBlockParamUnion) GetContext() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetTitle() *string {
-	if vt := u.OfRequestDocumentBlock; vt != nil && vt.Title.IsPresent() {
+	if vt := u.OfDocument; vt != nil && vt.Title.IsPresent() {
 		return &vt.Title.Value
 	}
 	return nil
@@ -710,7 +710,7 @@ func (u ContentBlockParamUnion) GetTitle() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetSignature() *string {
-	if vt := u.OfRequestThinkingBlock; vt != nil {
+	if vt := u.OfThinking; vt != nil {
 		return &vt.Signature
 	}
 	return nil
@@ -718,7 +718,7 @@ func (u ContentBlockParamUnion) GetSignature() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetThinking() *string {
-	if vt := u.OfRequestThinkingBlock; vt != nil {
+	if vt := u.OfThinking; vt != nil {
 		return &vt.Thinking
 	}
 	return nil
@@ -726,7 +726,7 @@ func (u ContentBlockParamUnion) GetThinking() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetData() *string {
-	if vt := u.OfRequestRedactedThinkingBlock; vt != nil {
+	if vt := u.OfRedactedThinking; vt != nil {
 		return &vt.Data
 	}
 	return nil
@@ -734,19 +734,19 @@ func (u ContentBlockParamUnion) GetData() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetType() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestToolUseBlock; vt != nil {
+	} else if vt := u.OfToolUse; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestToolResultBlock; vt != nil {
+	} else if vt := u.OfToolResult; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
+	} else if vt := u.OfDocument; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestThinkingBlock; vt != nil {
+	} else if vt := u.OfThinking; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestRedactedThinkingBlock; vt != nil {
+	} else if vt := u.OfRedactedThinking; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -754,15 +754,15 @@ func (u ContentBlockParamUnion) GetType() *string {
 
 // Returns a pointer to the underlying variant's CacheControl property, if present.
 func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestToolUseBlock; vt != nil {
+	} else if vt := u.OfToolUse; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestToolResultBlock; vt != nil {
+	} else if vt := u.OfToolResult; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
+	} else if vt := u.OfDocument; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil
@@ -772,9 +772,9 @@ func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
 //
 // Or use AsAny() to get the underlying value
 func (u ContentBlockParamUnion) GetCitations() (res contentBlockParamUnionCitations) {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		res.any = &vt.Citations
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
+	} else if vt := u.OfDocument; vt != nil {
 		res.any = &vt.Citations
 	}
 	return
@@ -797,9 +797,9 @@ func (u contentBlockParamUnionCitations) AsAny() any { return u.any }
 //
 // Or use AsAny() to get the underlying value
 func (u ContentBlockParamUnion) GetSource() (res contentBlockParamUnionSource) {
-	if vt := u.OfRequestImageBlock; vt != nil {
+	if vt := u.OfImage; vt != nil {
 		res.any = vt.Source.asAny()
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
+	} else if vt := u.OfDocument; vt != nil {
 		res.any = vt.Source.asAny()
 	}
 	return
@@ -985,10 +985,10 @@ func (r DocumentBlockParam) MarshalJSON() (data []byte, err error) {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type DocumentBlockParamSourceUnion struct {
-	OfBase64PDFSource    *Base64PDFSourceParam    `json:",omitzero,inline"`
-	OfPlainTextSource    *PlainTextSourceParam    `json:",omitzero,inline"`
-	OfContentBlockSource *ContentBlockSourceParam `json:",omitzero,inline"`
-	OfUrlpdfSource       *URLPDFSourceParam       `json:",omitzero,inline"`
+	OfBase64  *Base64PDFSourceParam    `json:",omitzero,inline"`
+	OfText    *PlainTextSourceParam    `json:",omitzero,inline"`
+	OfContent *ContentBlockSourceParam `json:",omitzero,inline"`
+	OfURL     *URLPDFSourceParam       `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -996,25 +996,25 @@ type DocumentBlockParamSourceUnion struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u DocumentBlockParamSourceUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u DocumentBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[DocumentBlockParamSourceUnion](u.OfBase64PDFSource, u.OfPlainTextSource, u.OfContentBlockSource, u.OfUrlpdfSource)
+	return param.MarshalUnion[DocumentBlockParamSourceUnion](u.OfBase64, u.OfText, u.OfContent, u.OfURL)
 }
 
 func (u *DocumentBlockParamSourceUnion) asAny() any {
-	if !param.IsOmitted(u.OfBase64PDFSource) {
-		return u.OfBase64PDFSource
-	} else if !param.IsOmitted(u.OfPlainTextSource) {
-		return u.OfPlainTextSource
-	} else if !param.IsOmitted(u.OfContentBlockSource) {
-		return u.OfContentBlockSource
-	} else if !param.IsOmitted(u.OfUrlpdfSource) {
-		return u.OfUrlpdfSource
+	if !param.IsOmitted(u.OfBase64) {
+		return u.OfBase64
+	} else if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfContent) {
+		return u.OfContent
+	} else if !param.IsOmitted(u.OfURL) {
+		return u.OfURL
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetContent() *ContentBlockSourceContentUnionParam {
-	if vt := u.OfContentBlockSource; vt != nil {
+	if vt := u.OfContent; vt != nil {
 		return &vt.Content
 	}
 	return nil
@@ -1022,7 +1022,7 @@ func (u DocumentBlockParamSourceUnion) GetContent() *ContentBlockSourceContentUn
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetURL() *string {
-	if vt := u.OfUrlpdfSource; vt != nil {
+	if vt := u.OfURL; vt != nil {
 		return &vt.URL
 	}
 	return nil
@@ -1030,9 +1030,9 @@ func (u DocumentBlockParamSourceUnion) GetURL() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetData() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.Data)
-	} else if vt := u.OfPlainTextSource; vt != nil {
+	} else if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Data)
 	}
 	return nil
@@ -1040,9 +1040,9 @@ func (u DocumentBlockParamSourceUnion) GetData() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetMediaType() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.MediaType)
-	} else if vt := u.OfPlainTextSource; vt != nil {
+	} else if vt := u.OfText; vt != nil {
 		return (*string)(&vt.MediaType)
 	}
 	return nil
@@ -1050,13 +1050,13 @@ func (u DocumentBlockParamSourceUnion) GetMediaType() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetType() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfPlainTextSource; vt != nil {
+	} else if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfContentBlockSource; vt != nil {
+	} else if vt := u.OfContent; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfUrlpdfSource; vt != nil {
+	} else if vt := u.OfURL; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -1109,8 +1109,8 @@ func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ImageBlockParamSourceUnion struct {
-	OfBase64ImageSource *Base64ImageSourceParam `json:",omitzero,inline"`
-	OfURLImageSource    *URLImageSourceParam    `json:",omitzero,inline"`
+	OfBase64 *Base64ImageSourceParam `json:",omitzero,inline"`
+	OfURL    *URLImageSourceParam    `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -1118,21 +1118,21 @@ type ImageBlockParamSourceUnion struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u ImageBlockParamSourceUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ImageBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ImageBlockParamSourceUnion](u.OfBase64ImageSource, u.OfURLImageSource)
+	return param.MarshalUnion[ImageBlockParamSourceUnion](u.OfBase64, u.OfURL)
 }
 
 func (u *ImageBlockParamSourceUnion) asAny() any {
-	if !param.IsOmitted(u.OfBase64ImageSource) {
-		return u.OfBase64ImageSource
-	} else if !param.IsOmitted(u.OfURLImageSource) {
-		return u.OfURLImageSource
+	if !param.IsOmitted(u.OfBase64) {
+		return u.OfBase64
+	} else if !param.IsOmitted(u.OfURL) {
+		return u.OfURL
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ImageBlockParamSourceUnion) GetData() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return &vt.Data
 	}
 	return nil
@@ -1140,7 +1140,7 @@ func (u ImageBlockParamSourceUnion) GetData() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ImageBlockParamSourceUnion) GetMediaType() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.MediaType)
 	}
 	return nil
@@ -1148,7 +1148,7 @@ func (u ImageBlockParamSourceUnion) GetMediaType() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ImageBlockParamSourceUnion) GetURL() *string {
-	if vt := u.OfURLImageSource; vt != nil {
+	if vt := u.OfURL; vt != nil {
 		return &vt.URL
 	}
 	return nil
@@ -1156,9 +1156,9 @@ func (u ImageBlockParamSourceUnion) GetURL() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ImageBlockParamSourceUnion) GetType() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfURLImageSource; vt != nil {
+	} else if vt := u.OfURL; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -1578,25 +1578,25 @@ func (SignatureDelta) implRawContentBlockDeltaUnion() {}
 func (u RawContentBlockDeltaUnion) AsAny() anyRawContentBlockDelta {
 	switch u.Type {
 	case "text_delta":
-		return u.AsTextContentBlockDelta()
+		return u.AsTextDelta()
 	case "input_json_delta":
-		return u.AsInputJSONContentBlockDelta()
+		return u.AsInputJSONDelta()
 	case "citations_delta":
 		return u.AsCitationsDelta()
 	case "thinking_delta":
-		return u.AsThinkingContentBlockDelta()
+		return u.AsThinkingDelta()
 	case "signature_delta":
-		return u.AsSignatureContentBlockDelta()
+		return u.AsSignatureDelta()
 	}
 	return nil
 }
 
-func (u RawContentBlockDeltaUnion) AsTextContentBlockDelta() (v TextDelta) {
+func (u RawContentBlockDeltaUnion) AsTextDelta() (v TextDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u RawContentBlockDeltaUnion) AsInputJSONContentBlockDelta() (v InputJSONDelta) {
+func (u RawContentBlockDeltaUnion) AsInputJSONDelta() (v InputJSONDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1606,12 +1606,12 @@ func (u RawContentBlockDeltaUnion) AsCitationsDelta() (v CitationsDelta) {
 	return
 }
 
-func (u RawContentBlockDeltaUnion) AsThinkingContentBlockDelta() (v ThinkingDelta) {
+func (u RawContentBlockDeltaUnion) AsThinkingDelta() (v ThinkingDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u RawContentBlockDeltaUnion) AsSignatureContentBlockDelta() (v SignatureDelta) {
+func (u RawContentBlockDeltaUnion) AsSignatureDelta() (v SignatureDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1731,33 +1731,33 @@ func (RedactedThinkingBlock) implContentBlockStartEventContentBlockUnion() {}
 func (u ContentBlockStartEventContentBlockUnion) AsAny() anyContentBlockStartEventContentBlock {
 	switch u.Type {
 	case "text":
-		return u.AsResponseTextBlock()
+		return u.AsText()
 	case "tool_use":
-		return u.AsResponseToolUseBlock()
+		return u.AsToolUse()
 	case "thinking":
-		return u.AsResponseThinkingBlock()
+		return u.AsThinking()
 	case "redacted_thinking":
-		return u.AsResponseRedactedThinkingBlock()
+		return u.AsRedactedThinking()
 	}
 	return nil
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseTextBlock() (v TextBlock) {
+func (u ContentBlockStartEventContentBlockUnion) AsText() (v TextBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseToolUseBlock() (v ToolUseBlock) {
+func (u ContentBlockStartEventContentBlockUnion) AsToolUse() (v ToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseThinkingBlock() (v ThinkingBlock) {
+func (u ContentBlockStartEventContentBlockUnion) AsThinking() (v ThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseRedactedThinkingBlock() (v RedactedThinkingBlock) {
+func (u ContentBlockStartEventContentBlockUnion) AsRedactedThinking() (v RedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1940,47 +1940,47 @@ func (ContentBlockStopEvent) implMessageStreamEventUnion()  {}
 func (u MessageStreamEventUnion) AsAny() anyMessageStreamEvent {
 	switch u.Type {
 	case "message_start":
-		return u.AsMessageStartEvent()
+		return u.AsMessageStart()
 	case "message_delta":
-		return u.AsMessageDeltaEvent()
+		return u.AsMessageDelta()
 	case "message_stop":
-		return u.AsMessageStopEvent()
+		return u.AsMessageStop()
 	case "content_block_start":
-		return u.AsContentBlockStartEvent()
+		return u.AsContentBlockStart()
 	case "content_block_delta":
-		return u.AsContentBlockDeltaEvent()
+		return u.AsContentBlockDelta()
 	case "content_block_stop":
-		return u.AsContentBlockStopEvent()
+		return u.AsContentBlockStop()
 	}
 	return nil
 }
 
-func (u MessageStreamEventUnion) AsMessageStartEvent() (v MessageStartEvent) {
+func (u MessageStreamEventUnion) AsMessageStart() (v MessageStartEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageStreamEventUnion) AsMessageDeltaEvent() (v MessageDeltaEvent) {
+func (u MessageStreamEventUnion) AsMessageDelta() (v MessageDeltaEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageStreamEventUnion) AsMessageStopEvent() (v MessageStopEvent) {
+func (u MessageStreamEventUnion) AsMessageStop() (v MessageStopEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageStreamEventUnion) AsContentBlockStartEvent() (v ContentBlockStartEvent) {
+func (u MessageStreamEventUnion) AsContentBlockStart() (v ContentBlockStartEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageStreamEventUnion) AsContentBlockDeltaEvent() (v ContentBlockDeltaEvent) {
+func (u MessageStreamEventUnion) AsContentBlockDelta() (v ContentBlockDeltaEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageStreamEventUnion) AsContentBlockStopEvent() (v ContentBlockStopEvent) {
+func (u MessageStreamEventUnion) AsContentBlockStop() (v ContentBlockStopEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2200,26 +2200,26 @@ func (CitationContentBlockLocation) implTextCitationUnion() {}
 func (u TextCitationUnion) AsAny() anyTextCitation {
 	switch u.Type {
 	case "char_location":
-		return u.AsResponseCharLocationCitation()
+		return u.AsCharLocation()
 	case "page_location":
-		return u.AsResponsePageLocationCitation()
+		return u.AsPageLocation()
 	case "content_block_location":
-		return u.AsResponseContentBlockLocationCitation()
+		return u.AsContentBlockLocation()
 	}
 	return nil
 }
 
-func (u TextCitationUnion) AsResponseCharLocationCitation() (v CitationCharLocation) {
+func (u TextCitationUnion) AsCharLocation() (v CitationCharLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u TextCitationUnion) AsResponsePageLocationCitation() (v CitationPageLocation) {
+func (u TextCitationUnion) AsPageLocation() (v CitationPageLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u TextCitationUnion) AsResponseContentBlockLocationCitation() (v CitationContentBlockLocation) {
+func (u TextCitationUnion) AsContentBlockLocation() (v CitationContentBlockLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2235,9 +2235,9 @@ func (r *TextCitationUnion) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type TextCitationParamUnion struct {
-	OfRequestCharLocationCitation         *CitationCharLocationParam         `json:",omitzero,inline"`
-	OfRequestPageLocationCitation         *CitationPageLocationParam         `json:",omitzero,inline"`
-	OfRequestContentBlockLocationCitation *CitationContentBlockLocationParam `json:",omitzero,inline"`
+	OfCharLocation         *CitationCharLocationParam         `json:",omitzero,inline"`
+	OfPageLocation         *CitationPageLocationParam         `json:",omitzero,inline"`
+	OfContentBlockLocation *CitationContentBlockLocationParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -2245,23 +2245,23 @@ type TextCitationParamUnion struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u TextCitationParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u TextCitationParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[TextCitationParamUnion](u.OfRequestCharLocationCitation, u.OfRequestPageLocationCitation, u.OfRequestContentBlockLocationCitation)
+	return param.MarshalUnion[TextCitationParamUnion](u.OfCharLocation, u.OfPageLocation, u.OfContentBlockLocation)
 }
 
 func (u *TextCitationParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestCharLocationCitation) {
-		return u.OfRequestCharLocationCitation
-	} else if !param.IsOmitted(u.OfRequestPageLocationCitation) {
-		return u.OfRequestPageLocationCitation
-	} else if !param.IsOmitted(u.OfRequestContentBlockLocationCitation) {
-		return u.OfRequestContentBlockLocationCitation
+	if !param.IsOmitted(u.OfCharLocation) {
+		return u.OfCharLocation
+	} else if !param.IsOmitted(u.OfPageLocation) {
+		return u.OfPageLocation
+	} else if !param.IsOmitted(u.OfContentBlockLocation) {
+		return u.OfContentBlockLocation
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetEndCharIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return &vt.EndCharIndex
 	}
 	return nil
@@ -2269,7 +2269,7 @@ func (u TextCitationParamUnion) GetEndCharIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetStartCharIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return &vt.StartCharIndex
 	}
 	return nil
@@ -2277,7 +2277,7 @@ func (u TextCitationParamUnion) GetStartCharIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetEndPageNumber() *int64 {
-	if vt := u.OfRequestPageLocationCitation; vt != nil {
+	if vt := u.OfPageLocation; vt != nil {
 		return &vt.EndPageNumber
 	}
 	return nil
@@ -2285,7 +2285,7 @@ func (u TextCitationParamUnion) GetEndPageNumber() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetStartPageNumber() *int64 {
-	if vt := u.OfRequestPageLocationCitation; vt != nil {
+	if vt := u.OfPageLocation; vt != nil {
 		return &vt.StartPageNumber
 	}
 	return nil
@@ -2293,7 +2293,7 @@ func (u TextCitationParamUnion) GetStartPageNumber() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetEndBlockIndex() *int64 {
-	if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	if vt := u.OfContentBlockLocation; vt != nil {
 		return &vt.EndBlockIndex
 	}
 	return nil
@@ -2301,7 +2301,7 @@ func (u TextCitationParamUnion) GetEndBlockIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetStartBlockIndex() *int64 {
-	if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	if vt := u.OfContentBlockLocation; vt != nil {
 		return &vt.StartBlockIndex
 	}
 	return nil
@@ -2309,11 +2309,11 @@ func (u TextCitationParamUnion) GetStartBlockIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetCitedText() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return (*string)(&vt.CitedText)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
+	} else if vt := u.OfPageLocation; vt != nil {
 		return (*string)(&vt.CitedText)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	} else if vt := u.OfContentBlockLocation; vt != nil {
 		return (*string)(&vt.CitedText)
 	}
 	return nil
@@ -2321,11 +2321,11 @@ func (u TextCitationParamUnion) GetCitedText() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetDocumentIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return (*int64)(&vt.DocumentIndex)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
+	} else if vt := u.OfPageLocation; vt != nil {
 		return (*int64)(&vt.DocumentIndex)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	} else if vt := u.OfContentBlockLocation; vt != nil {
 		return (*int64)(&vt.DocumentIndex)
 	}
 	return nil
@@ -2333,11 +2333,11 @@ func (u TextCitationParamUnion) GetDocumentIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetDocumentTitle() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
+	if vt := u.OfCharLocation; vt != nil && vt.DocumentTitle.IsPresent() {
 		return &vt.DocumentTitle.Value
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
+	} else if vt := u.OfPageLocation; vt != nil && vt.DocumentTitle.IsPresent() {
 		return &vt.DocumentTitle.Value
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
+	} else if vt := u.OfContentBlockLocation; vt != nil && vt.DocumentTitle.IsPresent() {
 		return &vt.DocumentTitle.Value
 	}
 	return nil
@@ -2345,11 +2345,11 @@ func (u TextCitationParamUnion) GetDocumentTitle() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetType() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
+	} else if vt := u.OfPageLocation; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	} else if vt := u.OfContentBlockLocation; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -2479,18 +2479,18 @@ func (r ThinkingConfigEnabledParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
-func ThinkingConfigParamOfThinkingConfigEnabled(budgetTokens int64) ThinkingConfigParamUnion {
-	var variant ThinkingConfigEnabledParam
-	variant.BudgetTokens = budgetTokens
-	return ThinkingConfigParamUnion{OfThinkingConfigEnabled: &variant}
+func ThinkingConfigParamOfEnabled(budgetTokens int64) ThinkingConfigParamUnion {
+	var enabled ThinkingConfigEnabledParam
+	enabled.BudgetTokens = budgetTokens
+	return ThinkingConfigParamUnion{OfEnabled: &enabled}
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ThinkingConfigParamUnion struct {
-	OfThinkingConfigEnabled  *ThinkingConfigEnabledParam  `json:",omitzero,inline"`
-	OfThinkingConfigDisabled *ThinkingConfigDisabledParam `json:",omitzero,inline"`
+	OfEnabled  *ThinkingConfigEnabledParam  `json:",omitzero,inline"`
+	OfDisabled *ThinkingConfigDisabledParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -2498,21 +2498,21 @@ type ThinkingConfigParamUnion struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u ThinkingConfigParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ThinkingConfigParamUnion](u.OfThinkingConfigEnabled, u.OfThinkingConfigDisabled)
+	return param.MarshalUnion[ThinkingConfigParamUnion](u.OfEnabled, u.OfDisabled)
 }
 
 func (u *ThinkingConfigParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfThinkingConfigEnabled) {
-		return u.OfThinkingConfigEnabled
-	} else if !param.IsOmitted(u.OfThinkingConfigDisabled) {
-		return u.OfThinkingConfigDisabled
+	if !param.IsOmitted(u.OfEnabled) {
+		return u.OfEnabled
+	} else if !param.IsOmitted(u.OfDisabled) {
+		return u.OfDisabled
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ThinkingConfigParamUnion) GetBudgetTokens() *int64 {
-	if vt := u.OfThinkingConfigEnabled; vt != nil {
+	if vt := u.OfEnabled; vt != nil {
 		return &vt.BudgetTokens
 	}
 	return nil
@@ -2520,9 +2520,9 @@ func (u ThinkingConfigParamUnion) GetBudgetTokens() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ThinkingConfigParamUnion) GetType() *string {
-	if vt := u.OfThinkingConfigEnabled; vt != nil {
+	if vt := u.OfEnabled; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfThinkingConfigDisabled; vt != nil {
+	} else if vt := u.OfDisabled; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -2637,20 +2637,20 @@ func (r ToolBash20250124Param) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
-func ToolChoiceParamOfToolChoiceTool(name string) ToolChoiceUnionParam {
-	var variant ToolChoiceToolParam
-	variant.Name = name
-	return ToolChoiceUnionParam{OfToolChoiceTool: &variant}
+func ToolChoiceParamOfTool(name string) ToolChoiceUnionParam {
+	var tool ToolChoiceToolParam
+	tool.Name = name
+	return ToolChoiceUnionParam{OfTool: &tool}
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ToolChoiceUnionParam struct {
-	OfToolChoiceAuto *ToolChoiceAutoParam `json:",omitzero,inline"`
-	OfToolChoiceAny  *ToolChoiceAnyParam  `json:",omitzero,inline"`
-	OfToolChoiceTool *ToolChoiceToolParam `json:",omitzero,inline"`
-	OfToolChoiceNone *ToolChoiceNoneParam `json:",omitzero,inline"`
+	OfAuto *ToolChoiceAutoParam `json:",omitzero,inline"`
+	OfAny  *ToolChoiceAnyParam  `json:",omitzero,inline"`
+	OfTool *ToolChoiceToolParam `json:",omitzero,inline"`
+	OfNone *ToolChoiceNoneParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -2658,25 +2658,25 @@ type ToolChoiceUnionParam struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u ToolChoiceUnionParam) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ToolChoiceUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolChoiceUnionParam](u.OfToolChoiceAuto, u.OfToolChoiceAny, u.OfToolChoiceTool, u.OfToolChoiceNone)
+	return param.MarshalUnion[ToolChoiceUnionParam](u.OfAuto, u.OfAny, u.OfTool, u.OfNone)
 }
 
 func (u *ToolChoiceUnionParam) asAny() any {
-	if !param.IsOmitted(u.OfToolChoiceAuto) {
-		return u.OfToolChoiceAuto
-	} else if !param.IsOmitted(u.OfToolChoiceAny) {
-		return u.OfToolChoiceAny
-	} else if !param.IsOmitted(u.OfToolChoiceTool) {
-		return u.OfToolChoiceTool
-	} else if !param.IsOmitted(u.OfToolChoiceNone) {
-		return u.OfToolChoiceNone
+	if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
+	} else if !param.IsOmitted(u.OfAny) {
+		return u.OfAny
+	} else if !param.IsOmitted(u.OfTool) {
+		return u.OfTool
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolChoiceUnionParam) GetName() *string {
-	if vt := u.OfToolChoiceTool; vt != nil {
+	if vt := u.OfTool; vt != nil {
 		return &vt.Name
 	}
 	return nil
@@ -2684,13 +2684,13 @@ func (u ToolChoiceUnionParam) GetName() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolChoiceUnionParam) GetType() *string {
-	if vt := u.OfToolChoiceAuto; vt != nil {
+	if vt := u.OfAuto; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceAny; vt != nil {
+	} else if vt := u.OfAny; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceTool; vt != nil {
+	} else if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceNone; vt != nil {
+	} else if vt := u.OfNone; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -2698,11 +2698,11 @@ func (u ToolChoiceUnionParam) GetType() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolChoiceUnionParam) GetDisableParallelToolUse() *bool {
-	if vt := u.OfToolChoiceAuto; vt != nil && vt.DisableParallelToolUse.IsPresent() {
+	if vt := u.OfAuto; vt != nil && vt.DisableParallelToolUse.IsPresent() {
 		return &vt.DisableParallelToolUse.Value
-	} else if vt := u.OfToolChoiceAny; vt != nil && vt.DisableParallelToolUse.IsPresent() {
+	} else if vt := u.OfAny; vt != nil && vt.DisableParallelToolUse.IsPresent() {
 		return &vt.DisableParallelToolUse.Value
-	} else if vt := u.OfToolChoiceTool; vt != nil && vt.DisableParallelToolUse.IsPresent() {
+	} else if vt := u.OfTool; vt != nil && vt.DisableParallelToolUse.IsPresent() {
 		return &vt.DisableParallelToolUse.Value
 	}
 	return nil
@@ -2847,8 +2847,8 @@ func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ToolResultBlockParamContentUnion struct {
-	OfRequestTextBlock  *TextBlockParam  `json:",omitzero,inline"`
-	OfRequestImageBlock *ImageBlockParam `json:",omitzero,inline"`
+	OfText  *TextBlockParam  `json:",omitzero,inline"`
+	OfImage *ImageBlockParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -2856,21 +2856,21 @@ type ToolResultBlockParamContentUnion struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u ToolResultBlockParamContentUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolResultBlockParamContentUnion](u.OfRequestTextBlock, u.OfRequestImageBlock)
+	return param.MarshalUnion[ToolResultBlockParamContentUnion](u.OfText, u.OfImage)
 }
 
 func (u *ToolResultBlockParamContentUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestTextBlock) {
-		return u.OfRequestTextBlock
-	} else if !param.IsOmitted(u.OfRequestImageBlock) {
-		return u.OfRequestImageBlock
+	if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfImage) {
+		return u.OfImage
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolResultBlockParamContentUnion) GetText() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.Text
 	}
 	return nil
@@ -2878,7 +2878,7 @@ func (u ToolResultBlockParamContentUnion) GetText() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolResultBlockParamContentUnion) GetCitations() []TextCitationParamUnion {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return vt.Citations
 	}
 	return nil
@@ -2886,7 +2886,7 @@ func (u ToolResultBlockParamContentUnion) GetCitations() []TextCitationParamUnio
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolResultBlockParamContentUnion) GetSource() *ImageBlockParamSourceUnion {
-	if vt := u.OfRequestImageBlock; vt != nil {
+	if vt := u.OfImage; vt != nil {
 		return &vt.Source
 	}
 	return nil
@@ -2894,9 +2894,9 @@ func (u ToolResultBlockParamContentUnion) GetSource() *ImageBlockParamSourceUnio
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolResultBlockParamContentUnion) GetType() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -2904,9 +2904,9 @@ func (u ToolResultBlockParamContentUnion) GetType() *string {
 
 // Returns a pointer to the underlying variant's CacheControl property, if present.
 func (u ToolResultBlockParamContentUnion) GetCacheControl() *CacheControlEphemeralParam {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil

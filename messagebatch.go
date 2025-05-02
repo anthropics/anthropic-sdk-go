@@ -437,33 +437,33 @@ func (MessageBatchExpiredResult) implMessageBatchResultUnion()   {}
 func (u MessageBatchResultUnion) AsAny() anyMessageBatchResult {
 	switch u.Type {
 	case "succeeded":
-		return u.AsSucceededResult()
+		return u.AsSucceeded()
 	case "errored":
-		return u.AsErroredResult()
+		return u.AsErrored()
 	case "canceled":
-		return u.AsCanceledResult()
+		return u.AsCanceled()
 	case "expired":
-		return u.AsExpiredResult()
+		return u.AsExpired()
 	}
 	return nil
 }
 
-func (u MessageBatchResultUnion) AsSucceededResult() (v MessageBatchSucceededResult) {
+func (u MessageBatchResultUnion) AsSucceeded() (v MessageBatchSucceededResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageBatchResultUnion) AsErroredResult() (v MessageBatchErroredResult) {
+func (u MessageBatchResultUnion) AsErrored() (v MessageBatchErroredResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageBatchResultUnion) AsCanceledResult() (v MessageBatchCanceledResult) {
+func (u MessageBatchResultUnion) AsCanceled() (v MessageBatchCanceledResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageBatchResultUnion) AsExpiredResult() (v MessageBatchExpiredResult) {
+func (u MessageBatchResultUnion) AsExpired() (v MessageBatchExpiredResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }

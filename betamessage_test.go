@@ -29,8 +29,8 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.BetaMessageParam{{
 			Content: []anthropic.BetaContentBlockParamUnion{{
-				OfRequestTextBlock: &anthropic.BetaTextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewBetaCacheControlEphemeralParam(), Citations: []anthropic.BetaTextCitationParamUnion{{
-					OfRequestCharLocationCitation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				OfText: &anthropic.BetaTextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewBetaCacheControlEphemeralParam(), Citations: []anthropic.BetaTextCitationParamUnion{{
+					OfCharLocation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
 			Role: anthropic.BetaMessageParamRoleUser,
@@ -41,16 +41,16 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		},
 		StopSequences: []string{"string"},
 		System: []anthropic.BetaTextBlockParam{{Text: "x", CacheControl: anthropic.NewBetaCacheControlEphemeralParam(), Citations: []anthropic.BetaTextCitationParamUnion{{
-			OfRequestCharLocationCitation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+			OfCharLocation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 		}}}},
 		Temperature: anthropic.Float(1),
 		Thinking: anthropic.BetaThinkingConfigParamUnion{
-			OfThinkingConfigEnabled: &anthropic.BetaThinkingConfigEnabledParam{
+			OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{
 				BudgetTokens: 1024,
 			},
 		},
 		ToolChoice: anthropic.BetaToolChoiceUnionParam{
-			OfToolChoiceAuto: &anthropic.BetaToolChoiceAutoParam{
+			OfAuto: &anthropic.BetaToolChoiceAutoParam{
 				DisableParallelToolUse: anthropic.Bool(true),
 			},
 		},
@@ -102,8 +102,8 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 	_, err := client.Beta.Messages.CountTokens(context.TODO(), anthropic.BetaMessageCountTokensParams{
 		Messages: []anthropic.BetaMessageParam{{
 			Content: []anthropic.BetaContentBlockParamUnion{{
-				OfRequestTextBlock: &anthropic.BetaTextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewBetaCacheControlEphemeralParam(), Citations: []anthropic.BetaTextCitationParamUnion{{
-					OfRequestCharLocationCitation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				OfText: &anthropic.BetaTextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewBetaCacheControlEphemeralParam(), Citations: []anthropic.BetaTextCitationParamUnion{{
+					OfCharLocation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
 			Role: anthropic.BetaMessageParamRoleUser,
@@ -114,7 +114,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 				Text:         "Today's date is 2024-06-01.",
 				CacheControl: anthropic.NewBetaCacheControlEphemeralParam(),
 				Citations: []anthropic.BetaTextCitationParamUnion{{
-					OfRequestCharLocationCitation: &anthropic.BetaCitationCharLocationParam{
+					OfCharLocation: &anthropic.BetaCitationCharLocationParam{
 						CitedText:      "cited_text",
 						DocumentIndex:  0,
 						DocumentTitle:  anthropic.String("x"),
@@ -125,12 +125,12 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 			}},
 		},
 		Thinking: anthropic.BetaThinkingConfigParamUnion{
-			OfThinkingConfigEnabled: &anthropic.BetaThinkingConfigEnabledParam{
+			OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{
 				BudgetTokens: 1024,
 			},
 		},
 		ToolChoice: anthropic.BetaToolChoiceUnionParam{
-			OfToolChoiceAuto: &anthropic.BetaToolChoiceAutoParam{
+			OfAuto: &anthropic.BetaToolChoiceAutoParam{
 				DisableParallelToolUse: anthropic.Bool(true),
 			},
 		},

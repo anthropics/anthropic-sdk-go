@@ -29,8 +29,8 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
-					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
 			Role: anthropic.MessageParamRoleUser,
@@ -41,16 +41,16 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		},
 		StopSequences: []string{"string"},
 		System: []anthropic.TextBlockParam{{Text: "x", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
-			OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+			OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 		}}}},
 		Temperature: anthropic.Float(1),
 		Thinking: anthropic.ThinkingConfigParamUnion{
-			OfThinkingConfigEnabled: &anthropic.ThinkingConfigEnabledParam{
+			OfEnabled: &anthropic.ThinkingConfigEnabledParam{
 				BudgetTokens: 1024,
 			},
 		},
 		ToolChoice: anthropic.ToolChoiceUnionParam{
-			OfToolChoiceAuto: &anthropic.ToolChoiceAutoParam{
+			OfAuto: &anthropic.ToolChoiceAutoParam{
 				DisableParallelToolUse: anthropic.Bool(true),
 			},
 		},
@@ -100,8 +100,8 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 	_, err := client.Messages.CountTokens(context.TODO(), anthropic.MessageCountTokensParams{
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
-					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
 			Role: anthropic.MessageParamRoleUser,
@@ -112,7 +112,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 				Text:         "Today's date is 2024-06-01.",
 				CacheControl: anthropic.NewCacheControlEphemeralParam(),
 				Citations: []anthropic.TextCitationParamUnion{{
-					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{
+					OfCharLocation: &anthropic.CitationCharLocationParam{
 						CitedText:      "cited_text",
 						DocumentIndex:  0,
 						DocumentTitle:  anthropic.String("x"),
@@ -123,12 +123,12 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 			}},
 		},
 		Thinking: anthropic.ThinkingConfigParamUnion{
-			OfThinkingConfigEnabled: &anthropic.ThinkingConfigEnabledParam{
+			OfEnabled: &anthropic.ThinkingConfigEnabledParam{
 				BudgetTokens: 1024,
 			},
 		},
 		ToolChoice: anthropic.ToolChoiceUnionParam{
-			OfToolChoiceAuto: &anthropic.ToolChoiceAutoParam{
+			OfAuto: &anthropic.ToolChoiceAutoParam{
 				DisableParallelToolUse: anthropic.Bool(true),
 			},
 		},

@@ -23,8 +23,7 @@ type Page[T any] struct {
 	HasMore bool   `json:"has_more"`
 	FirstID string `json:"first_id,nullable"`
 	LastID  string `json:"last_id,nullable"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Data        resp.Field
 		HasMore     resp.Field
@@ -47,7 +46,7 @@ func (r *Page[T]) UnmarshalJSON(data []byte) error {
 // there is no next page, this function will return a 'nil' for the page value, but
 // will not return an error
 func (r *Page[T]) GetNextPage() (res *Page[T], err error) {
-	if r.JSON.HasMore.IsPresent() && r.HasMore == false {
+	if r.JSON.HasMore.Valid() && r.HasMore == false {
 		return nil, nil
 	}
 	cfg := r.cfg.Clone(r.cfg.Context)

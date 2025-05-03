@@ -177,8 +177,7 @@ type DeletedMessageBatch struct {
 	//
 	// For Message Batches, this is always `"message_batch_deleted"`.
 	Type constant.MessageBatchDeleted `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		ID          resp.Field
 		Type        resp.Field
@@ -236,8 +235,7 @@ type MessageBatch struct {
 	//
 	// For Message Batches, this is always `"message_batch"`.
 	Type constant.MessageBatch `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		ID                resp.Field
 		ArchivedAt        resp.Field
@@ -271,8 +269,7 @@ const (
 
 type MessageBatchCanceledResult struct {
 	Type constant.Canceled `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Type        resp.Field
 		ExtraFields map[string]resp.Field
@@ -289,8 +286,7 @@ func (r *MessageBatchCanceledResult) UnmarshalJSON(data []byte) error {
 type MessageBatchErroredResult struct {
 	Error shared.ErrorResponse `json:"error,required"`
 	Type  constant.Errored     `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Error       resp.Field
 		Type        resp.Field
@@ -307,8 +303,7 @@ func (r *MessageBatchErroredResult) UnmarshalJSON(data []byte) error {
 
 type MessageBatchExpiredResult struct {
 	Type constant.Expired `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Type        resp.Field
 		ExtraFields map[string]resp.Field
@@ -336,8 +331,7 @@ type MessageBatchIndividualResponse struct {
 	// processing failed, or the reason why processing was not attempted, such as
 	// cancellation or expiration.
 	Result MessageBatchResultUnion `json:"result,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		CustomID    resp.Field
 		Result      resp.Field
@@ -371,8 +365,7 @@ type MessageBatchRequestCounts struct {
 	//
 	// This is zero until processing of the entire Message Batch has ended.
 	Succeeded int64 `json:"succeeded,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Canceled    resp.Field
 		Errored     resp.Field
@@ -478,8 +471,7 @@ func (r *MessageBatchResultUnion) UnmarshalJSON(data []byte) error {
 type MessageBatchSucceededResult struct {
 	Message Message            `json:"message,required"`
 	Type    constant.Succeeded `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Message     resp.Field
 		Type        resp.Field
@@ -501,10 +493,6 @@ type MessageBatchNewParams struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageBatchNewParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-
 func (r MessageBatchNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow MessageBatchNewParams
 	return param.MarshalObject(r, (*shadow)(&r))
@@ -525,9 +513,6 @@ type MessageBatchNewParamsRequest struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageBatchNewParamsRequest) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r MessageBatchNewParamsRequest) MarshalJSON() (data []byte, err error) {
 	type shadow MessageBatchNewParamsRequest
 	return param.MarshalObject(r, (*shadow)(&r))
@@ -787,11 +772,6 @@ type MessageBatchNewParamsRequestParams struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageBatchNewParamsRequestParams) IsPresent() bool {
-	return !param.IsOmitted(f) && !f.IsNull()
-}
 func (r MessageBatchNewParamsRequestParams) MarshalJSON() (data []byte, err error) {
 	type shadow MessageBatchNewParamsRequestParams
 	return param.MarshalObject(r, (*shadow)(&r))
@@ -810,10 +790,6 @@ type MessageBatchListParams struct {
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	paramObj
 }
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageBatchListParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 
 // URLQuery serializes [MessageBatchListParams]'s query parameters as `url.Values`.
 func (r MessageBatchListParams) URLQuery() (v url.Values, err error) {

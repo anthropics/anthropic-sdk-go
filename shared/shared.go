@@ -20,8 +20,7 @@ type paramObj = param.APIObject
 type APIErrorObject struct {
 	Message string            `json:"message,required"`
 	Type    constant.APIError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Message     resp.Field
 		Type        resp.Field
@@ -39,8 +38,7 @@ func (r *APIErrorObject) UnmarshalJSON(data []byte) error {
 type AuthenticationError struct {
 	Message string                       `json:"message,required"`
 	Type    constant.AuthenticationError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Message     resp.Field
 		Type        resp.Field
@@ -58,8 +56,7 @@ func (r *AuthenticationError) UnmarshalJSON(data []byte) error {
 type BillingError struct {
 	Message string                `json:"message,required"`
 	Type    constant.BillingError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Message     resp.Field
 		Type        resp.Field
@@ -205,8 +202,7 @@ func (r *ErrorObjectUnion) UnmarshalJSON(data []byte) error {
 type ErrorResponse struct {
 	Error ErrorObjectUnion `json:"error,required"`
 	Type  constant.Error   `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Error       resp.Field
 		Type        resp.Field
@@ -224,8 +220,7 @@ func (r *ErrorResponse) UnmarshalJSON(data []byte) error {
 type GatewayTimeoutError struct {
 	Message string                `json:"message,required"`
 	Type    constant.TimeoutError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Message     resp.Field
 		Type        resp.Field
@@ -243,8 +238,7 @@ func (r *GatewayTimeoutError) UnmarshalJSON(data []byte) error {
 type InvalidRequestError struct {
 	Message string                       `json:"message,required"`
 	Type    constant.InvalidRequestError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Message     resp.Field
 		Type        resp.Field
@@ -262,8 +256,7 @@ func (r *InvalidRequestError) UnmarshalJSON(data []byte) error {
 type NotFoundError struct {
 	Message string                 `json:"message,required"`
 	Type    constant.NotFoundError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Message     resp.Field
 		Type        resp.Field
@@ -281,8 +274,7 @@ func (r *NotFoundError) UnmarshalJSON(data []byte) error {
 type OverloadedError struct {
 	Message string                   `json:"message,required"`
 	Type    constant.OverloadedError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Message     resp.Field
 		Type        resp.Field
@@ -300,8 +292,7 @@ func (r *OverloadedError) UnmarshalJSON(data []byte) error {
 type PermissionError struct {
 	Message string                   `json:"message,required"`
 	Type    constant.PermissionError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Message     resp.Field
 		Type        resp.Field
@@ -319,8 +310,7 @@ func (r *PermissionError) UnmarshalJSON(data []byte) error {
 type RateLimitError struct {
 	Message string                  `json:"message,required"`
 	Type    constant.RateLimitError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		Message     resp.Field
 		Type        resp.Field

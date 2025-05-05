@@ -1,4 +1,4 @@
-package param
+package paramutil
 
 import (
 	"github.com/anthropics/anthropic-sdk-go/internal/encoding/json/sentinel"

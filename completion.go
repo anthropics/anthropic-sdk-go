@@ -96,8 +96,7 @@ type Completion struct {
 	//
 	// For Text Completions, this is always `"completion"`.
 	Type constant.Completion `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		ID          resp.Field
 		Completion  resp.Field
@@ -176,10 +175,6 @@ type CompletionNewParams struct {
 	StopSequences []string `json:"stop_sequences,omitzero"`
 	paramObj
 }
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CompletionNewParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 
 func (r CompletionNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow CompletionNewParams

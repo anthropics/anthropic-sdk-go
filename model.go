@@ -95,8 +95,7 @@ type ModelInfo struct {
 	//
 	// For Models, this is always `"model"`.
 	Type constant.Model `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
 	JSON struct {
 		ID          resp.Field
 		CreatedAt   resp.Field
@@ -126,10 +125,6 @@ type ModelListParams struct {
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	paramObj
 }
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ModelListParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 
 // URLQuery serializes [ModelListParams]'s query parameters as `url.Values`.
 func (r ModelListParams) URLQuery() (v url.Values, err error) {

@@ -275,9 +275,15 @@ func (r BetaBase64PDFSourceParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
-// The property Type is required.
+func NewBetaCacheControlEphemeralParam() BetaCacheControlEphemeralParam {
+	return BetaCacheControlEphemeralParam{
+		Type: "ephemeral",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewBetaCacheControlEphemeralParam].
 type BetaCacheControlEphemeralParam struct {
-	// This field can be elided, and will marshal its zero value as "ephemeral".
 	Type constant.Ephemeral `json:"type,required"`
 	paramObj
 }
@@ -2436,9 +2442,15 @@ func (r BetaThinkingBlockParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
-// The property Type is required.
+func NewBetaThinkingConfigDisabledParam() BetaThinkingConfigDisabledParam {
+	return BetaThinkingConfigDisabledParam{
+		Type: "disabled",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewBetaThinkingConfigDisabledParam].
 type BetaThinkingConfigDisabledParam struct {
-	// This field can be elided, and will marshal its zero value as "disabled".
 	Type constant.Disabled `json:"type,required"`
 	paramObj
 }
@@ -2805,11 +2817,17 @@ func (r BetaToolChoiceAutoParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
+func NewBetaToolChoiceNoneParam() BetaToolChoiceNoneParam {
+	return BetaToolChoiceNoneParam{
+		Type: "none",
+	}
+}
+
 // The model will not be allowed to use tools.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaToolChoiceNoneParam].
 type BetaToolChoiceNoneParam struct {
-	// This field can be elided, and will marshal its zero value as "none".
 	Type constant.None `json:"type,required"`
 	paramObj
 }

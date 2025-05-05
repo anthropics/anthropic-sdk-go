@@ -32,7 +32,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				MaxTokens: 1024,
 				Messages: []anthropic.BetaMessageParam{{
 					Content: []anthropic.BetaContentBlockParamUnion{{
-						OfRequestTextBlock: &anthropic.BetaTextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.BetaCacheControlEphemeralParam{}, Citations: []anthropic.BetaTextCitationParamUnion{{
+						OfRequestTextBlock: &anthropic.BetaTextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewBetaCacheControlEphemeralParam(), Citations: []anthropic.BetaTextCitationParamUnion{{
 							OfRequestCharLocationCitation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 						}}},
 					}},
@@ -44,7 +44,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				},
 				StopSequences: []string{"string"},
 				Stream:        anthropic.Bool(true),
-				System: []anthropic.BetaTextBlockParam{{Text: "x", CacheControl: anthropic.BetaCacheControlEphemeralParam{}, Citations: []anthropic.BetaTextCitationParamUnion{{
+				System: []anthropic.BetaTextBlockParam{{Text: "x", CacheControl: anthropic.NewBetaCacheControlEphemeralParam(), Citations: []anthropic.BetaTextCitationParamUnion{{
 					OfRequestCharLocationCitation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}}},
 				Temperature: anthropic.Float(1),
@@ -73,7 +73,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 							},
 						},
 						Name:         "name",
-						CacheControl: anthropic.BetaCacheControlEphemeralParam{},
+						CacheControl: anthropic.NewBetaCacheControlEphemeralParam(),
 						Description:  anthropic.String("Get the current weather in a given location"),
 						Type:         anthropic.BetaToolTypeCustom,
 					},

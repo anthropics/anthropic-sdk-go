@@ -137,9 +137,15 @@ func (r Base64PDFSourceParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
-// The property Type is required.
+func NewCacheControlEphemeralParam() CacheControlEphemeralParam {
+	return CacheControlEphemeralParam{
+		Type: "ephemeral",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewCacheControlEphemeralParam].
 type CacheControlEphemeralParam struct {
-	// This field can be elided, and will marshal its zero value as "ephemeral".
 	Type constant.Ephemeral `json:"type,required"`
 	paramObj
 }
@@ -2631,9 +2637,15 @@ func (r ThinkingBlockParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
-// The property Type is required.
+func NewThinkingConfigDisabledParam() ThinkingConfigDisabledParam {
+	return ThinkingConfigDisabledParam{
+		Type: "disabled",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewThinkingConfigDisabledParam].
 type ThinkingConfigDisabledParam struct {
-	// This field can be elided, and will marshal its zero value as "disabled".
 	Type constant.Disabled `json:"type,required"`
 	paramObj
 }
@@ -2970,11 +2982,16 @@ func (r ToolChoiceAutoParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
+func NewToolChoiceNoneParam() ToolChoiceNoneParam {
+	return ToolChoiceNoneParam{
+		Type: "none",
+	}
+}
+
 // The model will not be allowed to use tools.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with [NewToolChoiceNoneParam].
 type ToolChoiceNoneParam struct {
-	// This field can be elided, and will marshal its zero value as "none".
 	Type constant.None `json:"type,required"`
 	paramObj
 }

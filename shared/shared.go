@@ -141,7 +141,7 @@ func (u ErrorObjectUnion) AsAny() anyErrorObject {
 	case "rate_limit_error":
 		return u.AsRateLimitError()
 	case "timeout_error":
-		return u.AsGatewayTimeoutError()
+		return u.AsTimeoutError()
 	case "api_error":
 		return u.AsAPIError()
 	case "overloaded_error":
@@ -180,7 +180,7 @@ func (u ErrorObjectUnion) AsRateLimitError() (v RateLimitError) {
 	return
 }
 
-func (u ErrorObjectUnion) AsGatewayTimeoutError() (v GatewayTimeoutError) {
+func (u ErrorObjectUnion) AsTimeoutError() (v GatewayTimeoutError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }

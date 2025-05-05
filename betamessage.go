@@ -152,10 +152,10 @@ func (r BetaBase64PDFBlockParam) MarshalJSON() (data []byte, err error) {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaBase64PDFBlockSourceUnionParam struct {
-	OfBase64PDFSource    *BetaBase64PDFSourceParam    `json:",omitzero,inline"`
-	OfPlainTextSource    *BetaPlainTextSourceParam    `json:",omitzero,inline"`
-	OfContentBlockSource *BetaContentBlockSourceParam `json:",omitzero,inline"`
-	OfUrlpdfSource       *BetaURLPDFSourceParam       `json:",omitzero,inline"`
+	OfBase64  *BetaBase64PDFSourceParam    `json:",omitzero,inline"`
+	OfText    *BetaPlainTextSourceParam    `json:",omitzero,inline"`
+	OfContent *BetaContentBlockSourceParam `json:",omitzero,inline"`
+	OfURL     *BetaURLPDFSourceParam       `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -165,25 +165,25 @@ func (u BetaBase64PDFBlockSourceUnionParam) IsPresent() bool {
 	return !param.IsOmitted(u) && !u.IsNull()
 }
 func (u BetaBase64PDFBlockSourceUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaBase64PDFBlockSourceUnionParam](u.OfBase64PDFSource, u.OfPlainTextSource, u.OfContentBlockSource, u.OfUrlpdfSource)
+	return param.MarshalUnion[BetaBase64PDFBlockSourceUnionParam](u.OfBase64, u.OfText, u.OfContent, u.OfURL)
 }
 
 func (u *BetaBase64PDFBlockSourceUnionParam) asAny() any {
-	if !param.IsOmitted(u.OfBase64PDFSource) {
-		return u.OfBase64PDFSource
-	} else if !param.IsOmitted(u.OfPlainTextSource) {
-		return u.OfPlainTextSource
-	} else if !param.IsOmitted(u.OfContentBlockSource) {
-		return u.OfContentBlockSource
-	} else if !param.IsOmitted(u.OfUrlpdfSource) {
-		return u.OfUrlpdfSource
+	if !param.IsOmitted(u.OfBase64) {
+		return u.OfBase64
+	} else if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfContent) {
+		return u.OfContent
+	} else if !param.IsOmitted(u.OfURL) {
+		return u.OfURL
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaBase64PDFBlockSourceUnionParam) GetContent() *BetaContentBlockSourceContentUnionParam {
-	if vt := u.OfContentBlockSource; vt != nil {
+	if vt := u.OfContent; vt != nil {
 		return &vt.Content
 	}
 	return nil
@@ -191,7 +191,7 @@ func (u BetaBase64PDFBlockSourceUnionParam) GetContent() *BetaContentBlockSource
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaBase64PDFBlockSourceUnionParam) GetURL() *string {
-	if vt := u.OfUrlpdfSource; vt != nil {
+	if vt := u.OfURL; vt != nil {
 		return &vt.URL
 	}
 	return nil
@@ -199,9 +199,9 @@ func (u BetaBase64PDFBlockSourceUnionParam) GetURL() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaBase64PDFBlockSourceUnionParam) GetData() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.Data)
-	} else if vt := u.OfPlainTextSource; vt != nil {
+	} else if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Data)
 	}
 	return nil
@@ -209,9 +209,9 @@ func (u BetaBase64PDFBlockSourceUnionParam) GetData() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaBase64PDFBlockSourceUnionParam) GetMediaType() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.MediaType)
-	} else if vt := u.OfPlainTextSource; vt != nil {
+	} else if vt := u.OfText; vt != nil {
 		return (*string)(&vt.MediaType)
 	}
 	return nil
@@ -219,13 +219,13 @@ func (u BetaBase64PDFBlockSourceUnionParam) GetMediaType() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaBase64PDFBlockSourceUnionParam) GetType() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfPlainTextSource; vt != nil {
+	} else if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfContentBlockSource; vt != nil {
+	} else if vt := u.OfContent; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfUrlpdfSource; vt != nil {
+	} else if vt := u.OfURL; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -538,26 +538,26 @@ func (BetaCitationContentBlockLocation) implBetaCitationsDeltaCitationUnion() {}
 func (u BetaCitationsDeltaCitationUnion) AsAny() anyBetaCitationsDeltaCitation {
 	switch u.Type {
 	case "char_location":
-		return u.AsResponseCharLocationCitation()
+		return u.AsCharLocation()
 	case "page_location":
-		return u.AsResponsePageLocationCitation()
+		return u.AsPageLocation()
 	case "content_block_location":
-		return u.AsResponseContentBlockLocationCitation()
+		return u.AsContentBlockLocation()
 	}
 	return nil
 }
 
-func (u BetaCitationsDeltaCitationUnion) AsResponseCharLocationCitation() (v BetaCitationCharLocation) {
+func (u BetaCitationsDeltaCitationUnion) AsCharLocation() (v BetaCitationCharLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaCitationsDeltaCitationUnion) AsResponsePageLocationCitation() (v BetaCitationPageLocation) {
+func (u BetaCitationsDeltaCitationUnion) AsPageLocation() (v BetaCitationPageLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaCitationsDeltaCitationUnion) AsResponseContentBlockLocationCitation() (v BetaCitationContentBlockLocation) {
+func (u BetaCitationsDeltaCitationUnion) AsContentBlockLocation() (v BetaCitationContentBlockLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -651,33 +651,33 @@ func (BetaRedactedThinkingBlock) implBetaContentBlockUnion() {}
 func (u BetaContentBlockUnion) AsAny() anyBetaContentBlock {
 	switch u.Type {
 	case "text":
-		return u.AsResponseTextBlock()
+		return u.AsText()
 	case "tool_use":
-		return u.AsResponseToolUseBlock()
+		return u.AsToolUse()
 	case "thinking":
-		return u.AsResponseThinkingBlock()
+		return u.AsThinking()
 	case "redacted_thinking":
-		return u.AsResponseRedactedThinkingBlock()
+		return u.AsRedactedThinking()
 	}
 	return nil
 }
 
-func (u BetaContentBlockUnion) AsResponseTextBlock() (v BetaTextBlock) {
+func (u BetaContentBlockUnion) AsText() (v BetaTextBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaContentBlockUnion) AsResponseToolUseBlock() (v BetaToolUseBlock) {
+func (u BetaContentBlockUnion) AsToolUse() (v BetaToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaContentBlockUnion) AsResponseThinkingBlock() (v BetaThinkingBlock) {
+func (u BetaContentBlockUnion) AsThinking() (v BetaThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaContentBlockUnion) AsResponseRedactedThinkingBlock() (v BetaRedactedThinkingBlock) {
+func (u BetaContentBlockUnion) AsRedactedThinking() (v BetaRedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -689,80 +689,80 @@ func (r *BetaContentBlockUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func BetaContentBlockParamOfRequestTextBlock(text string) BetaContentBlockParamUnion {
+func BetaContentBlockParamOfText(text string) BetaContentBlockParamUnion {
 	var variant BetaTextBlockParam
 	variant.Text = text
-	return BetaContentBlockParamUnion{OfRequestTextBlock: &variant}
+	return BetaContentBlockParamUnion{OfText: &variant}
 }
 
-func BetaContentBlockParamOfRequestImageBlock[
+func BetaContentBlockParamOfImage[
 	T BetaBase64ImageSourceParam | BetaURLImageSourceParam,
 ](source T) BetaContentBlockParamUnion {
-	var variant BetaImageBlockParam
+	var image BetaImageBlockParam
 	switch v := any(source).(type) {
 	case BetaBase64ImageSourceParam:
-		variant.Source.OfBase64ImageSource = &v
+		image.Source.OfBase64 = &v
 	case BetaURLImageSourceParam:
-		variant.Source.OfURLImageSource = &v
+		image.Source.OfURL = &v
 	}
-	return BetaContentBlockParamUnion{OfRequestImageBlock: &variant}
+	return BetaContentBlockParamUnion{OfImage: &image}
 }
 
-func BetaContentBlockParamOfRequestToolUseBlock(id string, input any, name string) BetaContentBlockParamUnion {
-	var variant BetaToolUseBlockParam
-	variant.ID = id
-	variant.Input = input
-	variant.Name = name
-	return BetaContentBlockParamUnion{OfRequestToolUseBlock: &variant}
+func BetaContentBlockParamOfToolUse(id string, input any, name string) BetaContentBlockParamUnion {
+	var toolUse BetaToolUseBlockParam
+	toolUse.ID = id
+	toolUse.Input = input
+	toolUse.Name = name
+	return BetaContentBlockParamUnion{OfToolUse: &toolUse}
 }
 
-func BetaContentBlockParamOfRequestToolResultBlock(toolUseID string) BetaContentBlockParamUnion {
-	var variant BetaToolResultBlockParam
-	variant.ToolUseID = toolUseID
-	return BetaContentBlockParamUnion{OfRequestToolResultBlock: &variant}
+func BetaContentBlockParamOfToolResult(toolUseID string) BetaContentBlockParamUnion {
+	var toolResult BetaToolResultBlockParam
+	toolResult.ToolUseID = toolUseID
+	return BetaContentBlockParamUnion{OfToolResult: &toolResult}
 }
 
-func BetaContentBlockParamOfRequestDocumentBlock[
+func BetaContentBlockParamOfDocument[
 	T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam,
 ](source T) BetaContentBlockParamUnion {
-	var variant BetaBase64PDFBlockParam
+	var document BetaBase64PDFBlockParam
 	switch v := any(source).(type) {
 	case BetaBase64PDFSourceParam:
-		variant.Source.OfBase64PDFSource = &v
+		document.Source.OfBase64 = &v
 	case BetaPlainTextSourceParam:
-		variant.Source.OfPlainTextSource = &v
+		document.Source.OfText = &v
 	case BetaContentBlockSourceParam:
-		variant.Source.OfContentBlockSource = &v
+		document.Source.OfContent = &v
 	case BetaURLPDFSourceParam:
-		variant.Source.OfUrlpdfSource = &v
+		document.Source.OfURL = &v
 	}
-	return BetaContentBlockParamUnion{OfRequestDocumentBlock: &variant}
+	return BetaContentBlockParamUnion{OfDocument: &document}
 }
 
-func BetaContentBlockParamOfRequestThinkingBlock(signature string, thinking string) BetaContentBlockParamUnion {
+func BetaContentBlockParamOfThinking(signature string, thinking string) BetaContentBlockParamUnion {
 	var variant BetaThinkingBlockParam
 	variant.Signature = signature
 	variant.Thinking = thinking
-	return BetaContentBlockParamUnion{OfRequestThinkingBlock: &variant}
+	return BetaContentBlockParamUnion{OfThinking: &variant}
 }
 
-func BetaContentBlockParamOfRequestRedactedThinkingBlock(data string) BetaContentBlockParamUnion {
-	var variant BetaRedactedThinkingBlockParam
-	variant.Data = data
-	return BetaContentBlockParamUnion{OfRequestRedactedThinkingBlock: &variant}
+func BetaContentBlockParamOfRedactedThinking(data string) BetaContentBlockParamUnion {
+	var redactedThinking BetaRedactedThinkingBlockParam
+	redactedThinking.Data = data
+	return BetaContentBlockParamUnion{OfRedactedThinking: &redactedThinking}
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaContentBlockParamUnion struct {
-	OfRequestTextBlock             *BetaTextBlockParam             `json:",omitzero,inline"`
-	OfRequestImageBlock            *BetaImageBlockParam            `json:",omitzero,inline"`
-	OfRequestToolUseBlock          *BetaToolUseBlockParam          `json:",omitzero,inline"`
-	OfRequestToolResultBlock       *BetaToolResultBlockParam       `json:",omitzero,inline"`
-	OfRequestDocumentBlock         *BetaBase64PDFBlockParam        `json:",omitzero,inline"`
-	OfRequestThinkingBlock         *BetaThinkingBlockParam         `json:",omitzero,inline"`
-	OfRequestRedactedThinkingBlock *BetaRedactedThinkingBlockParam `json:",omitzero,inline"`
+	OfText             *BetaTextBlockParam             `json:",omitzero,inline"`
+	OfImage            *BetaImageBlockParam            `json:",omitzero,inline"`
+	OfToolUse          *BetaToolUseBlockParam          `json:",omitzero,inline"`
+	OfToolResult       *BetaToolResultBlockParam       `json:",omitzero,inline"`
+	OfDocument         *BetaBase64PDFBlockParam        `json:",omitzero,inline"`
+	OfThinking         *BetaThinkingBlockParam         `json:",omitzero,inline"`
+	OfRedactedThinking *BetaRedactedThinkingBlockParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -770,37 +770,37 @@ type BetaContentBlockParamUnion struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u BetaContentBlockParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u BetaContentBlockParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaContentBlockParamUnion](u.OfRequestTextBlock,
-		u.OfRequestImageBlock,
-		u.OfRequestToolUseBlock,
-		u.OfRequestToolResultBlock,
-		u.OfRequestDocumentBlock,
-		u.OfRequestThinkingBlock,
-		u.OfRequestRedactedThinkingBlock)
+	return param.MarshalUnion[BetaContentBlockParamUnion](u.OfText,
+		u.OfImage,
+		u.OfToolUse,
+		u.OfToolResult,
+		u.OfDocument,
+		u.OfThinking,
+		u.OfRedactedThinking)
 }
 
 func (u *BetaContentBlockParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestTextBlock) {
-		return u.OfRequestTextBlock
-	} else if !param.IsOmitted(u.OfRequestImageBlock) {
-		return u.OfRequestImageBlock
-	} else if !param.IsOmitted(u.OfRequestToolUseBlock) {
-		return u.OfRequestToolUseBlock
-	} else if !param.IsOmitted(u.OfRequestToolResultBlock) {
-		return u.OfRequestToolResultBlock
-	} else if !param.IsOmitted(u.OfRequestDocumentBlock) {
-		return u.OfRequestDocumentBlock
-	} else if !param.IsOmitted(u.OfRequestThinkingBlock) {
-		return u.OfRequestThinkingBlock
-	} else if !param.IsOmitted(u.OfRequestRedactedThinkingBlock) {
-		return u.OfRequestRedactedThinkingBlock
+	if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfImage) {
+		return u.OfImage
+	} else if !param.IsOmitted(u.OfToolUse) {
+		return u.OfToolUse
+	} else if !param.IsOmitted(u.OfToolResult) {
+		return u.OfToolResult
+	} else if !param.IsOmitted(u.OfDocument) {
+		return u.OfDocument
+	} else if !param.IsOmitted(u.OfThinking) {
+		return u.OfThinking
+	} else if !param.IsOmitted(u.OfRedactedThinking) {
+		return u.OfRedactedThinking
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetText() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.Text
 	}
 	return nil
@@ -808,7 +808,7 @@ func (u BetaContentBlockParamUnion) GetText() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetID() *string {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
+	if vt := u.OfToolUse; vt != nil {
 		return &vt.ID
 	}
 	return nil
@@ -816,7 +816,7 @@ func (u BetaContentBlockParamUnion) GetID() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetInput() *any {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
+	if vt := u.OfToolUse; vt != nil {
 		return &vt.Input
 	}
 	return nil
@@ -824,7 +824,7 @@ func (u BetaContentBlockParamUnion) GetInput() *any {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetName() *string {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
+	if vt := u.OfToolUse; vt != nil {
 		return &vt.Name
 	}
 	return nil
@@ -832,7 +832,7 @@ func (u BetaContentBlockParamUnion) GetName() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetToolUseID() *string {
-	if vt := u.OfRequestToolResultBlock; vt != nil {
+	if vt := u.OfToolResult; vt != nil {
 		return &vt.ToolUseID
 	}
 	return nil
@@ -840,7 +840,7 @@ func (u BetaContentBlockParamUnion) GetToolUseID() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetContent() *[]BetaToolResultBlockParamContentUnion {
-	if vt := u.OfRequestToolResultBlock; vt != nil {
+	if vt := u.OfToolResult; vt != nil {
 		return &vt.Content
 	}
 	return nil
@@ -848,7 +848,7 @@ func (u BetaContentBlockParamUnion) GetContent() *[]BetaToolResultBlockParamCont
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetIsError() *bool {
-	if vt := u.OfRequestToolResultBlock; vt != nil && vt.IsError.IsPresent() {
+	if vt := u.OfToolResult; vt != nil && vt.IsError.IsPresent() {
 		return &vt.IsError.Value
 	}
 	return nil
@@ -856,7 +856,7 @@ func (u BetaContentBlockParamUnion) GetIsError() *bool {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetContext() *string {
-	if vt := u.OfRequestDocumentBlock; vt != nil && vt.Context.IsPresent() {
+	if vt := u.OfDocument; vt != nil && vt.Context.IsPresent() {
 		return &vt.Context.Value
 	}
 	return nil
@@ -864,7 +864,7 @@ func (u BetaContentBlockParamUnion) GetContext() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetTitle() *string {
-	if vt := u.OfRequestDocumentBlock; vt != nil && vt.Title.IsPresent() {
+	if vt := u.OfDocument; vt != nil && vt.Title.IsPresent() {
 		return &vt.Title.Value
 	}
 	return nil
@@ -872,7 +872,7 @@ func (u BetaContentBlockParamUnion) GetTitle() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetSignature() *string {
-	if vt := u.OfRequestThinkingBlock; vt != nil {
+	if vt := u.OfThinking; vt != nil {
 		return &vt.Signature
 	}
 	return nil
@@ -880,7 +880,7 @@ func (u BetaContentBlockParamUnion) GetSignature() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetThinking() *string {
-	if vt := u.OfRequestThinkingBlock; vt != nil {
+	if vt := u.OfThinking; vt != nil {
 		return &vt.Thinking
 	}
 	return nil
@@ -888,7 +888,7 @@ func (u BetaContentBlockParamUnion) GetThinking() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetData() *string {
-	if vt := u.OfRequestRedactedThinkingBlock; vt != nil {
+	if vt := u.OfRedactedThinking; vt != nil {
 		return &vt.Data
 	}
 	return nil
@@ -896,19 +896,19 @@ func (u BetaContentBlockParamUnion) GetData() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetType() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestToolUseBlock; vt != nil {
+	} else if vt := u.OfToolUse; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestToolResultBlock; vt != nil {
+	} else if vt := u.OfToolResult; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
+	} else if vt := u.OfDocument; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestThinkingBlock; vt != nil {
+	} else if vt := u.OfThinking; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestRedactedThinkingBlock; vt != nil {
+	} else if vt := u.OfRedactedThinking; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -916,15 +916,15 @@ func (u BetaContentBlockParamUnion) GetType() *string {
 
 // Returns a pointer to the underlying variant's CacheControl property, if present.
 func (u BetaContentBlockParamUnion) GetCacheControl() *BetaCacheControlEphemeralParam {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestToolUseBlock; vt != nil {
+	} else if vt := u.OfToolUse; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestToolResultBlock; vt != nil {
+	} else if vt := u.OfToolResult; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
+	} else if vt := u.OfDocument; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil
@@ -934,9 +934,9 @@ func (u BetaContentBlockParamUnion) GetCacheControl() *BetaCacheControlEphemeral
 //
 // Or use AsAny() to get the underlying value
 func (u BetaContentBlockParamUnion) GetCitations() (res betaContentBlockParamUnionCitations) {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		res.any = &vt.Citations
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
+	} else if vt := u.OfDocument; vt != nil {
 		res.any = &vt.Citations
 	}
 	return
@@ -960,9 +960,9 @@ func (u betaContentBlockParamUnionCitations) AsAny() any { return u.any }
 //
 // Or use AsAny() to get the underlying value
 func (u BetaContentBlockParamUnion) GetSource() (res betaContentBlockParamUnionSource) {
-	if vt := u.OfRequestImageBlock; vt != nil {
+	if vt := u.OfImage; vt != nil {
 		res.any = vt.Source.asAny()
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
+	} else if vt := u.OfDocument; vt != nil {
 		res.any = vt.Source.asAny()
 	}
 	return
@@ -1146,8 +1146,8 @@ func (r BetaImageBlockParam) MarshalJSON() (data []byte, err error) {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaImageBlockParamSourceUnion struct {
-	OfBase64ImageSource *BetaBase64ImageSourceParam `json:",omitzero,inline"`
-	OfURLImageSource    *BetaURLImageSourceParam    `json:",omitzero,inline"`
+	OfBase64 *BetaBase64ImageSourceParam `json:",omitzero,inline"`
+	OfURL    *BetaURLImageSourceParam    `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -1155,21 +1155,21 @@ type BetaImageBlockParamSourceUnion struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u BetaImageBlockParamSourceUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u BetaImageBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaImageBlockParamSourceUnion](u.OfBase64ImageSource, u.OfURLImageSource)
+	return param.MarshalUnion[BetaImageBlockParamSourceUnion](u.OfBase64, u.OfURL)
 }
 
 func (u *BetaImageBlockParamSourceUnion) asAny() any {
-	if !param.IsOmitted(u.OfBase64ImageSource) {
-		return u.OfBase64ImageSource
-	} else if !param.IsOmitted(u.OfURLImageSource) {
-		return u.OfURLImageSource
+	if !param.IsOmitted(u.OfBase64) {
+		return u.OfBase64
+	} else if !param.IsOmitted(u.OfURL) {
+		return u.OfURL
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaImageBlockParamSourceUnion) GetData() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return &vt.Data
 	}
 	return nil
@@ -1177,7 +1177,7 @@ func (u BetaImageBlockParamSourceUnion) GetData() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaImageBlockParamSourceUnion) GetMediaType() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.MediaType)
 	}
 	return nil
@@ -1185,7 +1185,7 @@ func (u BetaImageBlockParamSourceUnion) GetMediaType() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaImageBlockParamSourceUnion) GetURL() *string {
-	if vt := u.OfURLImageSource; vt != nil {
+	if vt := u.OfURL; vt != nil {
 		return &vt.URL
 	}
 	return nil
@@ -1193,9 +1193,9 @@ func (u BetaImageBlockParamSourceUnion) GetURL() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaImageBlockParamSourceUnion) GetType() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfURLImageSource; vt != nil {
+	} else if vt := u.OfURL; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -1531,25 +1531,25 @@ func (BetaSignatureDelta) implBetaRawContentBlockDeltaUnion() {}
 func (u BetaRawContentBlockDeltaUnion) AsAny() anyBetaRawContentBlockDelta {
 	switch u.Type {
 	case "text_delta":
-		return u.AsTextContentBlockDelta()
+		return u.AsTextDelta()
 	case "input_json_delta":
-		return u.AsInputJSONContentBlockDelta()
+		return u.AsInputJSONDelta()
 	case "citations_delta":
 		return u.AsCitationsDelta()
 	case "thinking_delta":
-		return u.AsThinkingContentBlockDelta()
+		return u.AsThinkingDelta()
 	case "signature_delta":
-		return u.AsSignatureContentBlockDelta()
+		return u.AsSignatureDelta()
 	}
 	return nil
 }
 
-func (u BetaRawContentBlockDeltaUnion) AsTextContentBlockDelta() (v BetaTextDelta) {
+func (u BetaRawContentBlockDeltaUnion) AsTextDelta() (v BetaTextDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawContentBlockDeltaUnion) AsInputJSONContentBlockDelta() (v BetaInputJSONDelta) {
+func (u BetaRawContentBlockDeltaUnion) AsInputJSONDelta() (v BetaInputJSONDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1559,12 +1559,12 @@ func (u BetaRawContentBlockDeltaUnion) AsCitationsDelta() (v BetaCitationsDelta)
 	return
 }
 
-func (u BetaRawContentBlockDeltaUnion) AsThinkingContentBlockDelta() (v BetaThinkingDelta) {
+func (u BetaRawContentBlockDeltaUnion) AsThinkingDelta() (v BetaThinkingDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawContentBlockDeltaUnion) AsSignatureContentBlockDelta() (v BetaSignatureDelta) {
+func (u BetaRawContentBlockDeltaUnion) AsSignatureDelta() (v BetaSignatureDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1684,33 +1684,33 @@ func (BetaRedactedThinkingBlock) implBetaRawContentBlockStartEventContentBlockUn
 func (u BetaRawContentBlockStartEventContentBlockUnion) AsAny() anyBetaRawContentBlockStartEventContentBlock {
 	switch u.Type {
 	case "text":
-		return u.AsResponseTextBlock()
+		return u.AsText()
 	case "tool_use":
-		return u.AsResponseToolUseBlock()
+		return u.AsToolUse()
 	case "thinking":
-		return u.AsResponseThinkingBlock()
+		return u.AsThinking()
 	case "redacted_thinking":
-		return u.AsResponseRedactedThinkingBlock()
+		return u.AsRedactedThinking()
 	}
 	return nil
 }
 
-func (u BetaRawContentBlockStartEventContentBlockUnion) AsResponseTextBlock() (v BetaTextBlock) {
+func (u BetaRawContentBlockStartEventContentBlockUnion) AsText() (v BetaTextBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawContentBlockStartEventContentBlockUnion) AsResponseToolUseBlock() (v BetaToolUseBlock) {
+func (u BetaRawContentBlockStartEventContentBlockUnion) AsToolUse() (v BetaToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawContentBlockStartEventContentBlockUnion) AsResponseThinkingBlock() (v BetaThinkingBlock) {
+func (u BetaRawContentBlockStartEventContentBlockUnion) AsThinking() (v BetaThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawContentBlockStartEventContentBlockUnion) AsResponseRedactedThinkingBlock() (v BetaRedactedThinkingBlock) {
+func (u BetaRawContentBlockStartEventContentBlockUnion) AsRedactedThinking() (v BetaRedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1895,47 +1895,47 @@ func (BetaRawContentBlockStopEvent) implBetaRawMessageStreamEventUnion()  {}
 func (u BetaRawMessageStreamEventUnion) AsAny() anyBetaRawMessageStreamEvent {
 	switch u.Type {
 	case "message_start":
-		return u.AsMessageStartEvent()
+		return u.AsMessageStart()
 	case "message_delta":
-		return u.AsMessageDeltaEvent()
+		return u.AsMessageDelta()
 	case "message_stop":
-		return u.AsMessageStopEvent()
+		return u.AsMessageStop()
 	case "content_block_start":
-		return u.AsContentBlockStartEvent()
+		return u.AsContentBlockStart()
 	case "content_block_delta":
-		return u.AsContentBlockDeltaEvent()
+		return u.AsContentBlockDelta()
 	case "content_block_stop":
-		return u.AsContentBlockStopEvent()
+		return u.AsContentBlockStop()
 	}
 	return nil
 }
 
-func (u BetaRawMessageStreamEventUnion) AsMessageStartEvent() (v BetaRawMessageStartEvent) {
+func (u BetaRawMessageStreamEventUnion) AsMessageStart() (v BetaRawMessageStartEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawMessageStreamEventUnion) AsMessageDeltaEvent() (v BetaRawMessageDeltaEvent) {
+func (u BetaRawMessageStreamEventUnion) AsMessageDelta() (v BetaRawMessageDeltaEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawMessageStreamEventUnion) AsMessageStopEvent() (v BetaRawMessageStopEvent) {
+func (u BetaRawMessageStreamEventUnion) AsMessageStop() (v BetaRawMessageStopEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawMessageStreamEventUnion) AsContentBlockStartEvent() (v BetaRawContentBlockStartEvent) {
+func (u BetaRawMessageStreamEventUnion) AsContentBlockStart() (v BetaRawContentBlockStartEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawMessageStreamEventUnion) AsContentBlockDeltaEvent() (v BetaRawContentBlockDeltaEvent) {
+func (u BetaRawMessageStreamEventUnion) AsContentBlockDelta() (v BetaRawContentBlockDeltaEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaRawMessageStreamEventUnion) AsContentBlockStopEvent() (v BetaRawContentBlockStopEvent) {
+func (u BetaRawMessageStreamEventUnion) AsContentBlockStop() (v BetaRawContentBlockStopEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2201,26 +2201,26 @@ func (BetaCitationContentBlockLocation) implBetaTextCitationUnion() {}
 func (u BetaTextCitationUnion) AsAny() anyBetaTextCitation {
 	switch u.Type {
 	case "char_location":
-		return u.AsResponseCharLocationCitation()
+		return u.AsCharLocation()
 	case "page_location":
-		return u.AsResponsePageLocationCitation()
+		return u.AsPageLocation()
 	case "content_block_location":
-		return u.AsResponseContentBlockLocationCitation()
+		return u.AsContentBlockLocation()
 	}
 	return nil
 }
 
-func (u BetaTextCitationUnion) AsResponseCharLocationCitation() (v BetaCitationCharLocation) {
+func (u BetaTextCitationUnion) AsCharLocation() (v BetaCitationCharLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaTextCitationUnion) AsResponsePageLocationCitation() (v BetaCitationPageLocation) {
+func (u BetaTextCitationUnion) AsPageLocation() (v BetaCitationPageLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaTextCitationUnion) AsResponseContentBlockLocationCitation() (v BetaCitationContentBlockLocation) {
+func (u BetaTextCitationUnion) AsContentBlockLocation() (v BetaCitationContentBlockLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2236,9 +2236,9 @@ func (r *BetaTextCitationUnion) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaTextCitationParamUnion struct {
-	OfRequestCharLocationCitation         *BetaCitationCharLocationParam         `json:",omitzero,inline"`
-	OfRequestPageLocationCitation         *BetaCitationPageLocationParam         `json:",omitzero,inline"`
-	OfRequestContentBlockLocationCitation *BetaCitationContentBlockLocationParam `json:",omitzero,inline"`
+	OfCharLocation         *BetaCitationCharLocationParam         `json:",omitzero,inline"`
+	OfPageLocation         *BetaCitationPageLocationParam         `json:",omitzero,inline"`
+	OfContentBlockLocation *BetaCitationContentBlockLocationParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -2246,23 +2246,23 @@ type BetaTextCitationParamUnion struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u BetaTextCitationParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u BetaTextCitationParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaTextCitationParamUnion](u.OfRequestCharLocationCitation, u.OfRequestPageLocationCitation, u.OfRequestContentBlockLocationCitation)
+	return param.MarshalUnion[BetaTextCitationParamUnion](u.OfCharLocation, u.OfPageLocation, u.OfContentBlockLocation)
 }
 
 func (u *BetaTextCitationParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestCharLocationCitation) {
-		return u.OfRequestCharLocationCitation
-	} else if !param.IsOmitted(u.OfRequestPageLocationCitation) {
-		return u.OfRequestPageLocationCitation
-	} else if !param.IsOmitted(u.OfRequestContentBlockLocationCitation) {
-		return u.OfRequestContentBlockLocationCitation
+	if !param.IsOmitted(u.OfCharLocation) {
+		return u.OfCharLocation
+	} else if !param.IsOmitted(u.OfPageLocation) {
+		return u.OfPageLocation
+	} else if !param.IsOmitted(u.OfContentBlockLocation) {
+		return u.OfContentBlockLocation
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetEndCharIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return &vt.EndCharIndex
 	}
 	return nil
@@ -2270,7 +2270,7 @@ func (u BetaTextCitationParamUnion) GetEndCharIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetStartCharIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return &vt.StartCharIndex
 	}
 	return nil
@@ -2278,7 +2278,7 @@ func (u BetaTextCitationParamUnion) GetStartCharIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetEndPageNumber() *int64 {
-	if vt := u.OfRequestPageLocationCitation; vt != nil {
+	if vt := u.OfPageLocation; vt != nil {
 		return &vt.EndPageNumber
 	}
 	return nil
@@ -2286,7 +2286,7 @@ func (u BetaTextCitationParamUnion) GetEndPageNumber() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetStartPageNumber() *int64 {
-	if vt := u.OfRequestPageLocationCitation; vt != nil {
+	if vt := u.OfPageLocation; vt != nil {
 		return &vt.StartPageNumber
 	}
 	return nil
@@ -2294,7 +2294,7 @@ func (u BetaTextCitationParamUnion) GetStartPageNumber() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetEndBlockIndex() *int64 {
-	if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	if vt := u.OfContentBlockLocation; vt != nil {
 		return &vt.EndBlockIndex
 	}
 	return nil
@@ -2302,7 +2302,7 @@ func (u BetaTextCitationParamUnion) GetEndBlockIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetStartBlockIndex() *int64 {
-	if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	if vt := u.OfContentBlockLocation; vt != nil {
 		return &vt.StartBlockIndex
 	}
 	return nil
@@ -2310,11 +2310,11 @@ func (u BetaTextCitationParamUnion) GetStartBlockIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetCitedText() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return (*string)(&vt.CitedText)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
+	} else if vt := u.OfPageLocation; vt != nil {
 		return (*string)(&vt.CitedText)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	} else if vt := u.OfContentBlockLocation; vt != nil {
 		return (*string)(&vt.CitedText)
 	}
 	return nil
@@ -2322,11 +2322,11 @@ func (u BetaTextCitationParamUnion) GetCitedText() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetDocumentIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return (*int64)(&vt.DocumentIndex)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
+	} else if vt := u.OfPageLocation; vt != nil {
 		return (*int64)(&vt.DocumentIndex)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	} else if vt := u.OfContentBlockLocation; vt != nil {
 		return (*int64)(&vt.DocumentIndex)
 	}
 	return nil
@@ -2334,11 +2334,11 @@ func (u BetaTextCitationParamUnion) GetDocumentIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetDocumentTitle() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
+	if vt := u.OfCharLocation; vt != nil && vt.DocumentTitle.IsPresent() {
 		return &vt.DocumentTitle.Value
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
+	} else if vt := u.OfPageLocation; vt != nil && vt.DocumentTitle.IsPresent() {
 		return &vt.DocumentTitle.Value
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
+	} else if vt := u.OfContentBlockLocation; vt != nil && vt.DocumentTitle.IsPresent() {
 		return &vt.DocumentTitle.Value
 	}
 	return nil
@@ -2346,11 +2346,11 @@ func (u BetaTextCitationParamUnion) GetDocumentTitle() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetType() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
+	} else if vt := u.OfPageLocation; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	} else if vt := u.OfContentBlockLocation; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -2488,18 +2488,18 @@ func (r BetaThinkingConfigEnabledParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
-func BetaThinkingConfigParamOfThinkingConfigEnabled(budgetTokens int64) BetaThinkingConfigParamUnion {
-	var variant BetaThinkingConfigEnabledParam
-	variant.BudgetTokens = budgetTokens
-	return BetaThinkingConfigParamUnion{OfThinkingConfigEnabled: &variant}
+func BetaThinkingConfigParamOfEnabled(budgetTokens int64) BetaThinkingConfigParamUnion {
+	var enabled BetaThinkingConfigEnabledParam
+	enabled.BudgetTokens = budgetTokens
+	return BetaThinkingConfigParamUnion{OfEnabled: &enabled}
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaThinkingConfigParamUnion struct {
-	OfThinkingConfigEnabled  *BetaThinkingConfigEnabledParam  `json:",omitzero,inline"`
-	OfThinkingConfigDisabled *BetaThinkingConfigDisabledParam `json:",omitzero,inline"`
+	OfEnabled  *BetaThinkingConfigEnabledParam  `json:",omitzero,inline"`
+	OfDisabled *BetaThinkingConfigDisabledParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -2507,21 +2507,21 @@ type BetaThinkingConfigParamUnion struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u BetaThinkingConfigParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u BetaThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaThinkingConfigParamUnion](u.OfThinkingConfigEnabled, u.OfThinkingConfigDisabled)
+	return param.MarshalUnion[BetaThinkingConfigParamUnion](u.OfEnabled, u.OfDisabled)
 }
 
 func (u *BetaThinkingConfigParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfThinkingConfigEnabled) {
-		return u.OfThinkingConfigEnabled
-	} else if !param.IsOmitted(u.OfThinkingConfigDisabled) {
-		return u.OfThinkingConfigDisabled
+	if !param.IsOmitted(u.OfEnabled) {
+		return u.OfEnabled
+	} else if !param.IsOmitted(u.OfDisabled) {
+		return u.OfDisabled
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaThinkingConfigParamUnion) GetBudgetTokens() *int64 {
-	if vt := u.OfThinkingConfigEnabled; vt != nil {
+	if vt := u.OfEnabled; vt != nil {
 		return &vt.BudgetTokens
 	}
 	return nil
@@ -2529,9 +2529,9 @@ func (u BetaThinkingConfigParamUnion) GetBudgetTokens() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaThinkingConfigParamUnion) GetType() *string {
-	if vt := u.OfThinkingConfigEnabled; vt != nil {
+	if vt := u.OfEnabled; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfThinkingConfigDisabled; vt != nil {
+	} else if vt := u.OfDisabled; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -2676,20 +2676,20 @@ func (r BetaToolBash20250124Param) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 
-func BetaToolChoiceParamOfToolChoiceTool(name string) BetaToolChoiceUnionParam {
-	var variant BetaToolChoiceToolParam
-	variant.Name = name
-	return BetaToolChoiceUnionParam{OfToolChoiceTool: &variant}
+func BetaToolChoiceParamOfTool(name string) BetaToolChoiceUnionParam {
+	var tool BetaToolChoiceToolParam
+	tool.Name = name
+	return BetaToolChoiceUnionParam{OfTool: &tool}
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaToolChoiceUnionParam struct {
-	OfToolChoiceAuto *BetaToolChoiceAutoParam `json:",omitzero,inline"`
-	OfToolChoiceAny  *BetaToolChoiceAnyParam  `json:",omitzero,inline"`
-	OfToolChoiceTool *BetaToolChoiceToolParam `json:",omitzero,inline"`
-	OfToolChoiceNone *BetaToolChoiceNoneParam `json:",omitzero,inline"`
+	OfAuto *BetaToolChoiceAutoParam `json:",omitzero,inline"`
+	OfAny  *BetaToolChoiceAnyParam  `json:",omitzero,inline"`
+	OfTool *BetaToolChoiceToolParam `json:",omitzero,inline"`
+	OfNone *BetaToolChoiceNoneParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -2697,25 +2697,25 @@ type BetaToolChoiceUnionParam struct {
 // "null". To check if this field is omitted, use [param.IsOmitted].
 func (u BetaToolChoiceUnionParam) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u BetaToolChoiceUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaToolChoiceUnionParam](u.OfToolChoiceAuto, u.OfToolChoiceAny, u.OfToolChoiceTool, u.OfToolChoiceNone)
+	return param.MarshalUnion[BetaToolChoiceUnionParam](u.OfAuto, u.OfAny, u.OfTool, u.OfNone)
 }
 
 func (u *BetaToolChoiceUnionParam) asAny() any {
-	if !param.IsOmitted(u.OfToolChoiceAuto) {
-		return u.OfToolChoiceAuto
-	} else if !param.IsOmitted(u.OfToolChoiceAny) {
-		return u.OfToolChoiceAny
-	} else if !param.IsOmitted(u.OfToolChoiceTool) {
-		return u.OfToolChoiceTool
-	} else if !param.IsOmitted(u.OfToolChoiceNone) {
-		return u.OfToolChoiceNone
+	if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
+	} else if !param.IsOmitted(u.OfAny) {
+		return u.OfAny
+	} else if !param.IsOmitted(u.OfTool) {
+		return u.OfTool
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaToolChoiceUnionParam) GetName() *string {
-	if vt := u.OfToolChoiceTool; vt != nil {
+	if vt := u.OfTool; vt != nil {
 		return &vt.Name
 	}
 	return nil
@@ -2723,13 +2723,13 @@ func (u BetaToolChoiceUnionParam) GetName() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaToolChoiceUnionParam) GetType() *string {
-	if vt := u.OfToolChoiceAuto; vt != nil {
+	if vt := u.OfAuto; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceAny; vt != nil {
+	} else if vt := u.OfAny; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceTool; vt != nil {
+	} else if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceNone; vt != nil {
+	} else if vt := u.OfNone; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -2737,11 +2737,11 @@ func (u BetaToolChoiceUnionParam) GetType() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaToolChoiceUnionParam) GetDisableParallelToolUse() *bool {
-	if vt := u.OfToolChoiceAuto; vt != nil && vt.DisableParallelToolUse.IsPresent() {
+	if vt := u.OfAuto; vt != nil && vt.DisableParallelToolUse.IsPresent() {
 		return &vt.DisableParallelToolUse.Value
-	} else if vt := u.OfToolChoiceAny; vt != nil && vt.DisableParallelToolUse.IsPresent() {
+	} else if vt := u.OfAny; vt != nil && vt.DisableParallelToolUse.IsPresent() {
 		return &vt.DisableParallelToolUse.Value
-	} else if vt := u.OfToolChoiceTool; vt != nil && vt.DisableParallelToolUse.IsPresent() {
+	} else if vt := u.OfTool; vt != nil && vt.DisableParallelToolUse.IsPresent() {
 		return &vt.DisableParallelToolUse.Value
 	}
 	return nil
@@ -2945,8 +2945,8 @@ func (r BetaToolResultBlockParam) MarshalJSON() (data []byte, err error) {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaToolResultBlockParamContentUnion struct {
-	OfRequestTextBlock  *BetaTextBlockParam  `json:",omitzero,inline"`
-	OfRequestImageBlock *BetaImageBlockParam `json:",omitzero,inline"`
+	OfText  *BetaTextBlockParam  `json:",omitzero,inline"`
+	OfImage *BetaImageBlockParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -2956,21 +2956,21 @@ func (u BetaToolResultBlockParamContentUnion) IsPresent() bool {
 	return !param.IsOmitted(u) && !u.IsNull()
 }
 func (u BetaToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaToolResultBlockParamContentUnion](u.OfRequestTextBlock, u.OfRequestImageBlock)
+	return param.MarshalUnion[BetaToolResultBlockParamContentUnion](u.OfText, u.OfImage)
 }
 
 func (u *BetaToolResultBlockParamContentUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestTextBlock) {
-		return u.OfRequestTextBlock
-	} else if !param.IsOmitted(u.OfRequestImageBlock) {
-		return u.OfRequestImageBlock
+	if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfImage) {
+		return u.OfImage
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaToolResultBlockParamContentUnion) GetText() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.Text
 	}
 	return nil
@@ -2978,7 +2978,7 @@ func (u BetaToolResultBlockParamContentUnion) GetText() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaToolResultBlockParamContentUnion) GetCitations() []BetaTextCitationParamUnion {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return vt.Citations
 	}
 	return nil
@@ -2986,7 +2986,7 @@ func (u BetaToolResultBlockParamContentUnion) GetCitations() []BetaTextCitationP
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaToolResultBlockParamContentUnion) GetSource() *BetaImageBlockParamSourceUnion {
-	if vt := u.OfRequestImageBlock; vt != nil {
+	if vt := u.OfImage; vt != nil {
 		return &vt.Source
 	}
 	return nil
@@ -2994,9 +2994,9 @@ func (u BetaToolResultBlockParamContentUnion) GetSource() *BetaImageBlockParamSo
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaToolResultBlockParamContentUnion) GetType() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -3004,9 +3004,9 @@ func (u BetaToolResultBlockParamContentUnion) GetType() *string {
 
 // Returns a pointer to the underlying variant's CacheControl property, if present.
 func (u BetaToolResultBlockParamContentUnion) GetCacheControl() *BetaCacheControlEphemeralParam {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil

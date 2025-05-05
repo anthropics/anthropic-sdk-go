@@ -18,7 +18,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/jsonl"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/shared"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
@@ -177,11 +177,11 @@ type DeletedMessageBatch struct {
 	//
 	// For Message Batches, this is always `"message_batch_deleted"`.
 	Type constant.MessageBatchDeleted `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		ID          respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -235,19 +235,19 @@ type MessageBatch struct {
 	//
 	// For Message Batches, this is always `"message_batch"`.
 	Type constant.MessageBatch `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID                resp.Field
-		ArchivedAt        resp.Field
-		CancelInitiatedAt resp.Field
-		CreatedAt         resp.Field
-		EndedAt           resp.Field
-		ExpiresAt         resp.Field
-		ProcessingStatus  resp.Field
-		RequestCounts     resp.Field
-		ResultsURL        resp.Field
-		Type              resp.Field
-		ExtraFields       map[string]resp.Field
+		ID                respjson.Field
+		ArchivedAt        respjson.Field
+		CancelInitiatedAt respjson.Field
+		CreatedAt         respjson.Field
+		EndedAt           respjson.Field
+		ExpiresAt         respjson.Field
+		ProcessingStatus  respjson.Field
+		RequestCounts     respjson.Field
+		ResultsURL        respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
 		raw               string
 	} `json:"-"`
 }
@@ -269,10 +269,10 @@ const (
 
 type MessageBatchCanceledResult struct {
 	Type constant.Canceled `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -286,11 +286,11 @@ func (r *MessageBatchCanceledResult) UnmarshalJSON(data []byte) error {
 type MessageBatchErroredResult struct {
 	Error shared.ErrorResponse `json:"error,required"`
 	Type  constant.Errored     `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Error       resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Error       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -303,10 +303,10 @@ func (r *MessageBatchErroredResult) UnmarshalJSON(data []byte) error {
 
 type MessageBatchExpiredResult struct {
 	Type constant.Expired `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -331,11 +331,11 @@ type MessageBatchIndividualResponse struct {
 	// processing failed, or the reason why processing was not attempted, such as
 	// cancellation or expiration.
 	Result MessageBatchResultUnion `json:"result,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CustomID    resp.Field
-		Result      resp.Field
-		ExtraFields map[string]resp.Field
+		CustomID    respjson.Field
+		Result      respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -365,14 +365,14 @@ type MessageBatchRequestCounts struct {
 	//
 	// This is zero until processing of the entire Message Batch has ended.
 	Succeeded int64 `json:"succeeded,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Canceled    resp.Field
-		Errored     resp.Field
-		Expired     resp.Field
-		Processing  resp.Field
-		Succeeded   resp.Field
-		ExtraFields map[string]resp.Field
+		Canceled    respjson.Field
+		Errored     respjson.Field
+		Expired     respjson.Field
+		Processing  respjson.Field
+		Succeeded   respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -398,9 +398,9 @@ type MessageBatchResultUnion struct {
 	// This field is from variant [MessageBatchErroredResult].
 	Error shared.ErrorResponse `json:"error"`
 	JSON  struct {
-		Message resp.Field
-		Type    resp.Field
-		Error   resp.Field
+		Message respjson.Field
+		Type    respjson.Field
+		Error   respjson.Field
 		raw     string
 	} `json:"-"`
 }
@@ -471,11 +471,11 @@ func (r *MessageBatchResultUnion) UnmarshalJSON(data []byte) error {
 type MessageBatchSucceededResult struct {
 	Message Message            `json:"message,required"`
 	Type    constant.Succeeded `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }

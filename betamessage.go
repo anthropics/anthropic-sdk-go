@@ -578,16 +578,16 @@ func (r BetaContentBlockUnion) ToParam() BetaContentBlockParamUnion {
 	switch variant := r.AsAny().(type) {
 	case BetaTextBlock:
 		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfRequestTextBlock: &p}
+		return BetaContentBlockParamUnion{OfText: &p}
 	case BetaToolUseBlock:
 		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfRequestToolUseBlock: &p}
+		return BetaContentBlockParamUnion{OfToolUse: &p}
 	case BetaThinkingBlock:
 		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfRequestThinkingBlock: &p}
+		return BetaContentBlockParamUnion{OfThinking: &p}
 	case BetaRedactedThinkingBlock:
 		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfRequestRedactedThinkingBlock: &p}
+		return BetaContentBlockParamUnion{OfRedactedThinking: &p}
 	}
 	return BetaContentBlockParamUnion{}
 }
@@ -661,7 +661,7 @@ func BetaContentBlockParamOfText(text string) BetaContentBlockParamUnion {
 }
 
 func BetaContentBlockParamOfImage[
-	T BetaBase64ImageSourceParam | BetaURLImageSourceParam,
+T BetaBase64ImageSourceParam | BetaURLImageSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var image BetaImageBlockParam
 	switch v := any(source).(type) {
@@ -688,7 +688,7 @@ func BetaContentBlockParamOfToolResult(toolUseID string) BetaContentBlockParamUn
 }
 
 func BetaContentBlockParamOfDocument[
-	T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam,
+T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var document BetaBase64PDFBlockParam
 	switch v := any(source).(type) {
@@ -2020,7 +2020,7 @@ func (r BetaTextBlock) ToParam() BetaTextBlockParam {
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndCharIndex = citationVariant.EndCharIndex
 			citationParam.StartCharIndex = citationVariant.StartCharIndex
-			p.Citations[i] = BetaTextCitationParamUnion{OfRequestCharLocationCitation: &citationParam}
+			p.Citations[i] = BetaTextCitationParamUnion{OfCharLocation: &citationParam}
 		case BetaCitationPageLocation:
 			var citationParam BetaCitationPageLocationParam
 			citationParam.Type = citationVariant.Type
@@ -2028,7 +2028,7 @@ func (r BetaTextBlock) ToParam() BetaTextBlockParam {
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndPageNumber = citationVariant.EndPageNumber
 			citationParam.StartPageNumber = citationVariant.StartPageNumber
-			p.Citations[i] = BetaTextCitationParamUnion{OfRequestPageLocationCitation: &citationParam}
+			p.Citations[i] = BetaTextCitationParamUnion{OfPageLocation: &citationParam}
 		case BetaCitationContentBlockLocation:
 			var citationParam BetaCitationContentBlockLocationParam
 			citationParam.Type = citationVariant.Type
@@ -2037,7 +2037,7 @@ func (r BetaTextBlock) ToParam() BetaTextBlockParam {
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndBlockIndex = citationVariant.EndBlockIndex
 			citationParam.StartBlockIndex = citationVariant.StartBlockIndex
-			p.Citations[i] = BetaTextCitationParamUnion{OfRequestContentBlockLocationCitation: &citationParam}
+			p.Citations[i] = BetaTextCitationParamUnion{OfContentBlockLocation: &citationParam}
 		}
 	}
 	return p

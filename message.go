@@ -446,16 +446,16 @@ func (r ContentBlockUnion) ToParam() ContentBlockParamUnion {
 	switch variant := r.AsAny().(type) {
 	case TextBlock:
 		p := variant.ToParam()
-		return ContentBlockParamUnion{OfRequestTextBlock: &p}
+		return ContentBlockParamUnion{OfText: &p}
 	case ToolUseBlock:
 		p := variant.ToParam()
-		return ContentBlockParamUnion{OfRequestToolUseBlock: &p}
+		return ContentBlockParamUnion{OfToolUse: &p}
 	case ThinkingBlock:
 		p := variant.ToParam()
-		return ContentBlockParamUnion{OfRequestThinkingBlock: &p}
+		return ContentBlockParamUnion{OfThinking: &p}
 	case RedactedThinkingBlock:
 		p := variant.ToParam()
-		return ContentBlockParamUnion{OfRequestRedactedThinkingBlock: &p}
+		return ContentBlockParamUnion{OfRedactedThinking: &p}
 	}
 	return ContentBlockParamUnion{}
 }
@@ -1075,9 +1075,9 @@ type ImageBlockParam struct {
 
 func NewImageBlockBase64(mediaType string, encodedData string) ContentBlockParamUnion {
 	return ContentBlockParamUnion{
-		OfRequestImageBlock: &ImageBlockParam{
+		OfImage: &ImageBlockParam{
 			Source: ImageBlockParamSourceUnion{
-				OfBase64ImageSource: &Base64ImageSourceParam{
+				OfBase64: &Base64ImageSourceParam{
 					Data:      encodedData,
 					MediaType: Base64ImageSourceMediaType(mediaType),
 				},
@@ -1088,7 +1088,7 @@ func NewImageBlockBase64(mediaType string, encodedData string) ContentBlockParam
 
 // IsPresent returns true if the field's value is not omitted and not the JSON
 // "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ImageBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (f ImageBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
 
 func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ImageBlockParam
@@ -1446,7 +1446,7 @@ func NewAssistantMessage(blocks ...ContentBlockParamUnion) MessageParam {
 
 // IsPresent returns true if the field's value is not omitted and not the JSON
 // "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (f MessageParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
 
 func (r MessageParam) MarshalJSON() (data []byte, err error) {
 	type shadow MessageParam
@@ -2215,7 +2215,7 @@ func (r TextBlock) ToParam() TextBlockParam {
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndCharIndex = citationVariant.EndCharIndex
 			citationParam.StartCharIndex = citationVariant.StartCharIndex
-			p.Citations[i] = TextCitationParamUnion{OfRequestCharLocationCitation: &citationParam}
+			p.Citations[i] = TextCitationParamUnion{OfCharLocation: &citationParam}
 		case CitationPageLocation:
 			var citationParam CitationPageLocationParam
 			citationParam.Type = citationVariant.Type
@@ -2223,7 +2223,7 @@ func (r TextBlock) ToParam() TextBlockParam {
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndPageNumber = citationVariant.EndPageNumber
 			citationParam.StartPageNumber = citationVariant.StartPageNumber
-			p.Citations[i] = TextCitationParamUnion{OfRequestPageLocationCitation: &citationParam}
+			p.Citations[i] = TextCitationParamUnion{OfPageLocation: &citationParam}
 		case CitationContentBlockLocation:
 			var citationParam CitationContentBlockLocationParam
 			citationParam.Type = citationVariant.Type
@@ -2232,7 +2232,7 @@ func (r TextBlock) ToParam() TextBlockParam {
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndBlockIndex = citationVariant.EndBlockIndex
 			citationParam.StartBlockIndex = citationVariant.StartBlockIndex
-			p.Citations[i] = TextCitationParamUnion{OfRequestContentBlockLocationCitation: &citationParam}
+			p.Citations[i] = TextCitationParamUnion{OfContentBlockLocation: &citationParam}
 		}
 	}
 	return p
@@ -2250,7 +2250,7 @@ type TextBlockParam struct {
 
 func NewTextBlock(text string) ContentBlockParamUnion {
 	return ContentBlockParamUnion{
-		OfRequestTextBlock: &TextBlockParam{
+		OfText: &TextBlockParam{
 			Text: text,
 		},
 	}
@@ -2258,7 +2258,7 @@ func NewTextBlock(text string) ContentBlockParamUnion {
 
 // IsPresent returns true if the field's value is not omitted and not the JSON
 // "null". To check if this field is omitted, use [param.IsOmitted].
-func (f TextBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (f TextBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
 
 func (r TextBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow TextBlockParam
@@ -2930,17 +2930,17 @@ type ToolResultBlockParam struct {
 func NewToolResultBlock(toolUseID string, content string, isError bool) ContentBlockParamUnion {
 	blockParam := ToolResultBlockParam{
 		ToolUseID: toolUseID,
-		Content: []ToolResultBlockParamContentUnion{{OfRequestTextBlock: &TextBlockParam{
+		Content: []ToolResultBlockParamContentUnion{{OfText: &TextBlockParam{
 			Text: content,
 		}}},
 		IsError: Bool(isError),
 	}
-	return ContentBlockParamUnion{OfRequestToolResultBlock: &blockParam}
+	return ContentBlockParamUnion{OfToolResult: &blockParam}
 }
 
 // IsPresent returns true if the field's value is not omitted and not the JSON
 // "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolResultBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (f ToolResultBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
 
 func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolResultBlockParam

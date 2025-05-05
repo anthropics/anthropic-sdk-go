@@ -9,7 +9,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 )
 
 // aliased to make [param.APIUnion] private when embedding
@@ -23,13 +23,13 @@ type Page[T any] struct {
 	HasMore bool   `json:"has_more"`
 	FirstID string `json:"first_id,nullable"`
 	LastID  string `json:"last_id,nullable"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Data        resp.Field
-		HasMore     resp.Field
-		FirstID     resp.Field
-		LastID      resp.Field
-		ExtraFields map[string]resp.Field
+		Data        respjson.Field
+		HasMore     respjson.Field
+		FirstID     respjson.Field
+		LastID      respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 	cfg *requestconfig.RequestConfig

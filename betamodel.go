@@ -16,7 +16,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
@@ -95,13 +95,13 @@ type BetaModelInfo struct {
 	//
 	// For Models, this is always `"model"`.
 	Type constant.Model `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          resp.Field
-		CreatedAt   resp.Field
-		DisplayName resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		ID          respjson.Field
+		CreatedAt   respjson.Field
+		DisplayName respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }

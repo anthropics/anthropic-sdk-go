@@ -174,10 +174,10 @@ type Animal struct {
 	Owners int    `json:"owners"`
 	Age    int    `json:"age"`
 	JSON   struct {
-		Name        resp.Field
-		Owner       resp.Field
-		Age         resp.Field
-		ExtraFields map[string]resp.Field
+		Name        respjson.Field
+		Owner       respjson.Field
+		Age         respjson.Field
+		ExtraFields map[string]respjson.Field
 	} `json:"-"`
 }
 ```
@@ -207,11 +207,11 @@ res.JSON.Age.Valid()    // false
 
 // Raw JSON values
 
-res.JSON.Owners.Raw()              // "1"
-res.JSON.Name.Raw() == "null"      // true
-res.JSON.Name.Raw() == resp.Null   // true
-res.JSON.Age.Raw() == ""           // true
-res.JSON.Age.Raw() == resp.Omitted // true
+res.JSON.Owners.Raw()                  // "1"
+res.JSON.Name.Raw() == "null"          // true
+res.JSON.Name.Raw() == respjson.Null   // true
+res.JSON.Age.Raw() == ""               // true
+res.JSON.Age.Raw() == respjson.Omitted // true
 ```
 
 These `.JSON` structs also include an `ExtraFields` map containing
@@ -241,8 +241,9 @@ type AnimalUnion struct {
 	// From variant [Cat]
 	CatBreed string `json:"cat_breed"`
 	// ...
+
 	JSON struct {
-		Owner resp.Field
+		Owner respjson.Field
 		// ...
 	} `json:"-"`
 }

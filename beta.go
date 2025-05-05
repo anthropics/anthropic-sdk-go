@@ -7,7 +7,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
@@ -50,11 +50,11 @@ const (
 type BetaAPIError struct {
 	Message string            `json:"message,required"`
 	Type    constant.APIError `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -68,11 +68,11 @@ func (r *BetaAPIError) UnmarshalJSON(data []byte) error {
 type BetaAuthenticationError struct {
 	Message string                       `json:"message,required"`
 	Type    constant.AuthenticationError `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -86,11 +86,11 @@ func (r *BetaAuthenticationError) UnmarshalJSON(data []byte) error {
 type BetaBillingError struct {
 	Message string                `json:"message,required"`
 	Type    constant.BillingError `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -116,8 +116,8 @@ type BetaErrorUnion struct {
 	// "api_error", "overloaded_error".
 	Type string `json:"type"`
 	JSON struct {
-		Message resp.Field
-		Type    resp.Field
+		Message respjson.Field
+		Type    respjson.Field
 		raw     string
 	} `json:"-"`
 }
@@ -232,11 +232,11 @@ func (r *BetaErrorUnion) UnmarshalJSON(data []byte) error {
 type BetaErrorResponse struct {
 	Error BetaErrorUnion `json:"error,required"`
 	Type  constant.Error `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Error       resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Error       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -250,11 +250,11 @@ func (r *BetaErrorResponse) UnmarshalJSON(data []byte) error {
 type BetaGatewayTimeoutError struct {
 	Message string                `json:"message,required"`
 	Type    constant.TimeoutError `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -268,11 +268,11 @@ func (r *BetaGatewayTimeoutError) UnmarshalJSON(data []byte) error {
 type BetaInvalidRequestError struct {
 	Message string                       `json:"message,required"`
 	Type    constant.InvalidRequestError `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -286,11 +286,11 @@ func (r *BetaInvalidRequestError) UnmarshalJSON(data []byte) error {
 type BetaNotFoundError struct {
 	Message string                 `json:"message,required"`
 	Type    constant.NotFoundError `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -304,11 +304,11 @@ func (r *BetaNotFoundError) UnmarshalJSON(data []byte) error {
 type BetaOverloadedError struct {
 	Message string                   `json:"message,required"`
 	Type    constant.OverloadedError `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -322,11 +322,11 @@ func (r *BetaOverloadedError) UnmarshalJSON(data []byte) error {
 type BetaPermissionError struct {
 	Message string                   `json:"message,required"`
 	Type    constant.PermissionError `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -340,11 +340,11 @@ func (r *BetaPermissionError) UnmarshalJSON(data []byte) error {
 type BetaRateLimitError struct {
 	Message string                  `json:"message,required"`
 	Type    constant.RateLimitError `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }

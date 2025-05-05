@@ -13,7 +13,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 	"github.com/tidwall/gjson"
@@ -285,15 +285,15 @@ type BetaCitationCharLocation struct {
 	EndCharIndex   int64                 `json:"end_char_index,required"`
 	StartCharIndex int64                 `json:"start_char_index,required"`
 	Type           constant.CharLocation `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CitedText      resp.Field
-		DocumentIndex  resp.Field
-		DocumentTitle  resp.Field
-		EndCharIndex   resp.Field
-		StartCharIndex resp.Field
-		Type           resp.Field
-		ExtraFields    map[string]resp.Field
+		CitedText      respjson.Field
+		DocumentIndex  respjson.Field
+		DocumentTitle  respjson.Field
+		EndCharIndex   respjson.Field
+		StartCharIndex respjson.Field
+		Type           respjson.Field
+		ExtraFields    map[string]respjson.Field
 		raw            string
 	} `json:"-"`
 }
@@ -329,15 +329,15 @@ type BetaCitationContentBlockLocation struct {
 	EndBlockIndex   int64                         `json:"end_block_index,required"`
 	StartBlockIndex int64                         `json:"start_block_index,required"`
 	Type            constant.ContentBlockLocation `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndBlockIndex   resp.Field
-		StartBlockIndex resp.Field
-		Type            resp.Field
-		ExtraFields     map[string]resp.Field
+		CitedText       respjson.Field
+		DocumentIndex   respjson.Field
+		DocumentTitle   respjson.Field
+		EndBlockIndex   respjson.Field
+		StartBlockIndex respjson.Field
+		Type            respjson.Field
+		ExtraFields     map[string]respjson.Field
 		raw             string
 	} `json:"-"`
 }
@@ -374,15 +374,15 @@ type BetaCitationPageLocation struct {
 	EndPageNumber   int64                 `json:"end_page_number,required"`
 	StartPageNumber int64                 `json:"start_page_number,required"`
 	Type            constant.PageLocation `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndPageNumber   resp.Field
-		StartPageNumber resp.Field
-		Type            resp.Field
-		ExtraFields     map[string]resp.Field
+		CitedText       respjson.Field
+		DocumentIndex   respjson.Field
+		DocumentTitle   respjson.Field
+		EndPageNumber   respjson.Field
+		StartPageNumber respjson.Field
+		Type            respjson.Field
+		ExtraFields     map[string]respjson.Field
 		raw             string
 	} `json:"-"`
 }
@@ -424,11 +424,11 @@ func (r BetaCitationsConfigParam) MarshalJSON() (data []byte, err error) {
 type BetaCitationsDelta struct {
 	Citation BetaCitationsDeltaCitationUnion `json:"citation,required"`
 	Type     constant.CitationsDelta         `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Citation    resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Citation    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -465,16 +465,16 @@ type BetaCitationsDeltaCitationUnion struct {
 	// This field is from variant [BetaCitationContentBlockLocation].
 	StartBlockIndex int64 `json:"start_block_index"`
 	JSON            struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndCharIndex    resp.Field
-		StartCharIndex  resp.Field
-		Type            resp.Field
-		EndPageNumber   resp.Field
-		StartPageNumber resp.Field
-		EndBlockIndex   resp.Field
-		StartBlockIndex resp.Field
+		CitedText       respjson.Field
+		DocumentIndex   respjson.Field
+		DocumentTitle   respjson.Field
+		EndCharIndex    respjson.Field
+		StartCharIndex  respjson.Field
+		Type            respjson.Field
+		EndPageNumber   respjson.Field
+		StartPageNumber respjson.Field
+		EndBlockIndex   respjson.Field
+		StartBlockIndex respjson.Field
 		raw             string
 	} `json:"-"`
 }
@@ -560,15 +560,15 @@ type BetaContentBlockUnion struct {
 	// This field is from variant [BetaRedactedThinkingBlock].
 	Data string `json:"data"`
 	JSON struct {
-		Citations resp.Field
-		Text      resp.Field
-		Type      resp.Field
-		ID        resp.Field
-		Input     resp.Field
-		Name      resp.Field
-		Signature resp.Field
-		Thinking  resp.Field
-		Data      resp.Field
+		Citations respjson.Field
+		Text      respjson.Field
+		Type      respjson.Field
+		ID        respjson.Field
+		Input     respjson.Field
+		Name      respjson.Field
+		Signature respjson.Field
+		Thinking  respjson.Field
+		Data      respjson.Field
 		raw       string
 	} `json:"-"`
 }
@@ -1149,11 +1149,11 @@ func init() {
 type BetaInputJSONDelta struct {
 	PartialJSON string                  `json:"partial_json,required"`
 	Type        constant.InputJSONDelta `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		PartialJSON resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		PartialJSON respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1251,17 +1251,17 @@ type BetaMessage struct {
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage BetaUsage `json:"usage,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID           resp.Field
-		Content      resp.Field
-		Model        resp.Field
-		Role         resp.Field
-		StopReason   resp.Field
-		StopSequence resp.Field
-		Type         resp.Field
-		Usage        resp.Field
-		ExtraFields  map[string]resp.Field
+		ID           respjson.Field
+		Content      respjson.Field
+		Model        respjson.Field
+		Role         respjson.Field
+		StopReason   respjson.Field
+		StopSequence respjson.Field
+		Type         respjson.Field
+		Usage        respjson.Field
+		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -1275,10 +1275,10 @@ func (r *BetaMessage) UnmarshalJSON(data []byte) error {
 type BetaMessageDeltaUsage struct {
 	// The cumulative number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		OutputTokens resp.Field
-		ExtraFields  map[string]resp.Field
+		OutputTokens respjson.Field
+		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -1313,10 +1313,10 @@ type BetaMessageTokensCount struct {
 	// The total number of tokens across the provided list of messages, system prompt,
 	// and tools.
 	InputTokens int64 `json:"input_tokens,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		InputTokens resp.Field
-		ExtraFields map[string]resp.Field
+		InputTokens respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1379,12 +1379,12 @@ type BetaRawContentBlockDeltaUnion struct {
 	// This field is from variant [BetaSignatureDelta].
 	Signature string `json:"signature"`
 	JSON      struct {
-		Text        resp.Field
-		Type        resp.Field
-		PartialJSON resp.Field
-		Citation    resp.Field
-		Thinking    resp.Field
-		Signature   resp.Field
+		Text        respjson.Field
+		Type        respjson.Field
+		PartialJSON respjson.Field
+		Citation    respjson.Field
+		Thinking    respjson.Field
+		Signature   respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1465,12 +1465,12 @@ type BetaRawContentBlockDeltaEvent struct {
 	Delta BetaRawContentBlockDeltaUnion `json:"delta,required"`
 	Index int64                         `json:"index,required"`
 	Type  constant.ContentBlockDelta    `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Delta       resp.Field
-		Index       resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Delta       respjson.Field
+		Index       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1485,12 +1485,12 @@ type BetaRawContentBlockStartEvent struct {
 	ContentBlock BetaRawContentBlockStartEventContentBlockUnion `json:"content_block,required"`
 	Index        int64                                          `json:"index,required"`
 	Type         constant.ContentBlockStart                     `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ContentBlock resp.Field
-		Index        resp.Field
-		Type         resp.Field
-		ExtraFields  map[string]resp.Field
+		ContentBlock respjson.Field
+		Index        respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -1529,15 +1529,15 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	// This field is from variant [BetaRedactedThinkingBlock].
 	Data string `json:"data"`
 	JSON struct {
-		Citations resp.Field
-		Text      resp.Field
-		Type      resp.Field
-		ID        resp.Field
-		Input     resp.Field
-		Name      resp.Field
-		Signature resp.Field
-		Thinking  resp.Field
-		Data      resp.Field
+		Citations respjson.Field
+		Text      respjson.Field
+		Type      respjson.Field
+		ID        respjson.Field
+		Input     respjson.Field
+		Name      respjson.Field
+		Signature respjson.Field
+		Thinking  respjson.Field
+		Data      respjson.Field
 		raw       string
 	} `json:"-"`
 }
@@ -1608,11 +1608,11 @@ func (r *BetaRawContentBlockStartEventContentBlockUnion) UnmarshalJSON(data []by
 type BetaRawContentBlockStopEvent struct {
 	Index int64                     `json:"index,required"`
 	Type  constant.ContentBlockStop `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Index       resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Index       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1642,12 +1642,12 @@ type BetaRawMessageDeltaEvent struct {
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage BetaMessageDeltaUsage `json:"usage,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Delta       resp.Field
-		Type        resp.Field
-		Usage       resp.Field
-		ExtraFields map[string]resp.Field
+		Delta       respjson.Field
+		Type        respjson.Field
+		Usage       respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1662,11 +1662,11 @@ type BetaRawMessageDeltaEventDelta struct {
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
 	StopReason   BetaStopReason `json:"stop_reason,required"`
 	StopSequence string         `json:"stop_sequence,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		StopReason   resp.Field
-		StopSequence resp.Field
-		ExtraFields  map[string]resp.Field
+		StopReason   respjson.Field
+		StopSequence respjson.Field
+		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -1680,11 +1680,11 @@ func (r *BetaRawMessageDeltaEventDelta) UnmarshalJSON(data []byte) error {
 type BetaRawMessageStartEvent struct {
 	Message BetaMessage           `json:"message,required"`
 	Type    constant.MessageStart `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1697,10 +1697,10 @@ func (r *BetaRawMessageStartEvent) UnmarshalJSON(data []byte) error {
 
 type BetaRawMessageStopEvent struct {
 	Type constant.MessageStop `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1734,12 +1734,12 @@ type BetaRawMessageStreamEventUnion struct {
 	ContentBlock BetaRawContentBlockStartEventContentBlockUnion `json:"content_block"`
 	Index        int64                                          `json:"index"`
 	JSON         struct {
-		Message      resp.Field
-		Type         resp.Field
-		Delta        resp.Field
-		Usage        resp.Field
-		ContentBlock resp.Field
-		Index        resp.Field
+		Message      respjson.Field
+		Type         respjson.Field
+		Delta        respjson.Field
+		Usage        respjson.Field
+		ContentBlock respjson.Field
+		Index        respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -1848,14 +1848,14 @@ type BetaRawMessageStreamEventUnionDelta struct {
 	// This field is from variant [BetaRawContentBlockDeltaUnion].
 	Signature string `json:"signature"`
 	JSON      struct {
-		StopReason   resp.Field
-		StopSequence resp.Field
-		Text         resp.Field
-		Type         resp.Field
-		PartialJSON  resp.Field
-		Citation     resp.Field
-		Thinking     resp.Field
-		Signature    resp.Field
+		StopReason   respjson.Field
+		StopSequence respjson.Field
+		Text         respjson.Field
+		Type         respjson.Field
+		PartialJSON  respjson.Field
+		Citation     respjson.Field
+		Thinking     respjson.Field
+		Signature    respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -1867,11 +1867,11 @@ func (r *BetaRawMessageStreamEventUnionDelta) UnmarshalJSON(data []byte) error {
 type BetaRedactedThinkingBlock struct {
 	Data string                    `json:"data,required"`
 	Type constant.RedactedThinking `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Data        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Data        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1899,11 +1899,11 @@ func (r BetaRedactedThinkingBlockParam) MarshalJSON() (data []byte, err error) {
 type BetaSignatureDelta struct {
 	Signature string                  `json:"signature,required"`
 	Type      constant.SignatureDelta `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Signature   resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Signature   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1932,12 +1932,12 @@ type BetaTextBlock struct {
 	Citations []BetaTextCitationUnion `json:"citations,required"`
 	Text      string                  `json:"text,required"`
 	Type      constant.Text           `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Citations   resp.Field
-		Text        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Citations   respjson.Field
+		Text        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1989,16 +1989,16 @@ type BetaTextCitationUnion struct {
 	// This field is from variant [BetaCitationContentBlockLocation].
 	StartBlockIndex int64 `json:"start_block_index"`
 	JSON            struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndCharIndex    resp.Field
-		StartCharIndex  resp.Field
-		Type            resp.Field
-		EndPageNumber   resp.Field
-		StartPageNumber resp.Field
-		EndBlockIndex   resp.Field
-		StartBlockIndex resp.Field
+		CitedText       respjson.Field
+		DocumentIndex   respjson.Field
+		DocumentTitle   respjson.Field
+		EndCharIndex    respjson.Field
+		StartCharIndex  respjson.Field
+		Type            respjson.Field
+		EndPageNumber   respjson.Field
+		StartPageNumber respjson.Field
+		EndBlockIndex   respjson.Field
+		StartBlockIndex respjson.Field
 		raw             string
 	} `json:"-"`
 }
@@ -2201,11 +2201,11 @@ func init() {
 type BetaTextDelta struct {
 	Text string             `json:"text,required"`
 	Type constant.TextDelta `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Text        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Text        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -2220,12 +2220,12 @@ type BetaThinkingBlock struct {
 	Signature string            `json:"signature,required"`
 	Thinking  string            `json:"thinking,required"`
 	Type      constant.Thinking `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Signature   resp.Field
-		Thinking    resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Signature   respjson.Field
+		Thinking    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -2355,11 +2355,11 @@ func init() {
 type BetaThinkingDelta struct {
 	Thinking string                 `json:"thinking,required"`
 	Type     constant.ThinkingDelta `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Thinking    resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Thinking    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -3002,13 +3002,13 @@ type BetaToolUseBlock struct {
 	Input any              `json:"input,required"`
 	Name  string           `json:"name,required"`
 	Type  constant.ToolUse `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          resp.Field
-		Input       resp.Field
-		Name        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		ID          respjson.Field
+		Input       respjson.Field
+		Name        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -3070,13 +3070,13 @@ type BetaUsage struct {
 	InputTokens int64 `json:"input_tokens,required"`
 	// The number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens,required"`
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CacheCreationInputTokens resp.Field
-		CacheReadInputTokens     resp.Field
-		InputTokens              resp.Field
-		OutputTokens             resp.Field
-		ExtraFields              map[string]resp.Field
+		CacheCreationInputTokens respjson.Field
+		CacheReadInputTokens     respjson.Field
+		InputTokens              respjson.Field
+		OutputTokens             respjson.Field
+		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
 }

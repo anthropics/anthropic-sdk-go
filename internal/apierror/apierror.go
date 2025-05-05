@@ -8,16 +8,16 @@ import (
 	"net/http/httputil"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 )
 
 // Error represents an error that originates from the API, i.e. when a request is
 // made and the API returns a response with a HTTP status code. Other errors are
 // not wrapped by this SDK.
 type Error struct {
-	// JSON contains metadata for fields, check presence with [resp.Field.Valid].
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ExtraFields map[string]resp.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 	StatusCode int

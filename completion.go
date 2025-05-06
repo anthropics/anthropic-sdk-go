@@ -180,3 +180,6 @@ func (r CompletionNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow CompletionNewParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *CompletionNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}

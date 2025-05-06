@@ -497,6 +497,9 @@ func (r MessageBatchNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow MessageBatchNewParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *MessageBatchNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // The properties CustomID, Params are required.
 type MessageBatchNewParamsRequest struct {
@@ -516,6 +519,9 @@ type MessageBatchNewParamsRequest struct {
 func (r MessageBatchNewParamsRequest) MarshalJSON() (data []byte, err error) {
 	type shadow MessageBatchNewParamsRequest
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MessageBatchNewParamsRequest) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Messages API creation parameters for the individual request.
@@ -775,6 +781,9 @@ type MessageBatchNewParamsRequestParams struct {
 func (r MessageBatchNewParamsRequestParams) MarshalJSON() (data []byte, err error) {
 	type shadow MessageBatchNewParamsRequestParams
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MessageBatchNewParamsRequestParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type MessageBatchListParams struct {

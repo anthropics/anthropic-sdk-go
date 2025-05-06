@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reflect"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
@@ -17,7 +16,6 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
-	"github.com/tidwall/gjson"
 )
 
 // MessageService contains methods and other services that help with interacting
@@ -106,6 +104,9 @@ func (r Base64ImageSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow Base64ImageSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *Base64ImageSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type Base64ImageSourceMediaType string
 
@@ -130,6 +131,9 @@ func (r Base64PDFSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow Base64PDFSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *Base64PDFSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 func NewCacheControlEphemeralParam() CacheControlEphemeralParam {
 	return CacheControlEphemeralParam{
@@ -147,6 +151,9 @@ type CacheControlEphemeralParam struct {
 func (r CacheControlEphemeralParam) MarshalJSON() (data []byte, err error) {
 	type shadow CacheControlEphemeralParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CacheControlEphemeralParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type CitationCharLocation struct {
@@ -191,6 +198,9 @@ type CitationCharLocationParam struct {
 func (r CitationCharLocationParam) MarshalJSON() (data []byte, err error) {
 	type shadow CitationCharLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CitationCharLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type CitationContentBlockLocation struct {
@@ -237,6 +247,9 @@ func (r CitationContentBlockLocationParam) MarshalJSON() (data []byte, err error
 	type shadow CitationContentBlockLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *CitationContentBlockLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type CitationPageLocation struct {
 	CitedText       string                `json:"cited_text,required"`
@@ -281,6 +294,9 @@ func (r CitationPageLocationParam) MarshalJSON() (data []byte, err error) {
 	type shadow CitationPageLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *CitationPageLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type CitationsConfigParam struct {
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
@@ -290,6 +306,9 @@ type CitationsConfigParam struct {
 func (r CitationsConfigParam) MarshalJSON() (data []byte, err error) {
 	type shadow CitationsConfigParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CitationsConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type CitationsDelta struct {
@@ -606,6 +625,9 @@ func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
 		u.OfThinking,
 		u.OfRedactedThinking)
 }
+func (u *ContentBlockParamUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
 
 func (u *ContentBlockParamUnion) asAny() any {
 	if !param.IsOmitted(u.OfText) {
@@ -870,41 +892,13 @@ func (u contentBlockParamUnionSource) GetURL() *string {
 func init() {
 	apijson.RegisterUnion[ContentBlockParamUnion](
 		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(TextBlockParam{}),
-			DiscriminatorValue: "text",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ImageBlockParam{}),
-			DiscriminatorValue: "image",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolUseBlockParam{}),
-			DiscriminatorValue: "tool_use",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolResultBlockParam{}),
-			DiscriminatorValue: "tool_result",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(DocumentBlockParam{}),
-			DiscriminatorValue: "document",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ThinkingBlockParam{}),
-			DiscriminatorValue: "thinking",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(RedactedThinkingBlockParam{}),
-			DiscriminatorValue: "redacted_thinking",
-		},
+		apijson.Discriminator[TextBlockParam]("text"),
+		apijson.Discriminator[ImageBlockParam]("image"),
+		apijson.Discriminator[ToolUseBlockParam]("tool_use"),
+		apijson.Discriminator[ToolResultBlockParam]("tool_result"),
+		apijson.Discriminator[DocumentBlockParam]("document"),
+		apijson.Discriminator[ThinkingBlockParam]("thinking"),
+		apijson.Discriminator[RedactedThinkingBlockParam]("redacted_thinking"),
 	)
 }
 
@@ -920,6 +914,9 @@ func (r ContentBlockSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow ContentBlockSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ContentBlockSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Only one field can be non-zero.
 //
@@ -932,6 +929,9 @@ type ContentBlockSourceContentUnionParam struct {
 
 func (u ContentBlockSourceContentUnionParam) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[ContentBlockSourceContentUnionParam](u.OfString, u.OfContentBlockSourceContent)
+}
+func (u *ContentBlockSourceContentUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ContentBlockSourceContentUnionParam) asAny() any {
@@ -959,6 +959,9 @@ func (r DocumentBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow DocumentBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *DocumentBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Only one field can be non-zero.
 //
@@ -973,6 +976,9 @@ type DocumentBlockParamSourceUnion struct {
 
 func (u DocumentBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[DocumentBlockParamSourceUnion](u.OfBase64, u.OfText, u.OfContent, u.OfURL)
+}
+func (u *DocumentBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *DocumentBlockParamSourceUnion) asAny() any {
@@ -1041,26 +1047,10 @@ func (u DocumentBlockParamSourceUnion) GetType() *string {
 func init() {
 	apijson.RegisterUnion[DocumentBlockParamSourceUnion](
 		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(Base64PDFSourceParam{}),
-			DiscriminatorValue: "base64",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(PlainTextSourceParam{}),
-			DiscriminatorValue: "text",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ContentBlockSourceParam{}),
-			DiscriminatorValue: "content",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(URLPDFSourceParam{}),
-			DiscriminatorValue: "url",
-		},
+		apijson.Discriminator[Base64PDFSourceParam]("base64"),
+		apijson.Discriminator[PlainTextSourceParam]("text"),
+		apijson.Discriminator[ContentBlockSourceParam]("content"),
+		apijson.Discriminator[URLPDFSourceParam]("url"),
 	)
 }
 
@@ -1094,6 +1084,9 @@ func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ImageBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ImageBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Only one field can be non-zero.
 //
@@ -1106,6 +1099,9 @@ type ImageBlockParamSourceUnion struct {
 
 func (u ImageBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[ImageBlockParamSourceUnion](u.OfBase64, u.OfURL)
+}
+func (u *ImageBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ImageBlockParamSourceUnion) asAny() any {
@@ -1154,16 +1150,8 @@ func (u ImageBlockParamSourceUnion) GetType() *string {
 func init() {
 	apijson.RegisterUnion[ImageBlockParamSourceUnion](
 		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(Base64ImageSourceParam{}),
-			DiscriminatorValue: "base64",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(URLImageSourceParam{}),
-			DiscriminatorValue: "url",
-		},
+		apijson.Discriminator[Base64ImageSourceParam]("base64"),
+		apijson.Discriminator[URLImageSourceParam]("url"),
 	)
 }
 
@@ -1343,6 +1331,9 @@ type MessageCountTokensToolUnionParam struct {
 func (u MessageCountTokensToolUnionParam) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[MessageCountTokensToolUnionParam](u.OfTool, u.OfBashTool20250124, u.OfTextEditor20250124)
 }
+func (u *MessageCountTokensToolUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
 
 func (u *MessageCountTokensToolUnionParam) asAny() any {
 	if !param.IsOmitted(u.OfTool) {
@@ -1452,6 +1443,9 @@ func (r MessageParam) MarshalJSON() (data []byte, err error) {
 	type shadow MessageParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *MessageParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type MessageParamRole string
 
@@ -1491,6 +1485,9 @@ type MetadataParam struct {
 func (r MetadataParam) MarshalJSON() (data []byte, err error) {
 	type shadow MetadataParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MetadataParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The model that will complete your prompt.\n\nSee
@@ -1536,6 +1533,9 @@ type PlainTextSourceParam struct {
 func (r PlainTextSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow PlainTextSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *PlainTextSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // RawContentBlockDeltaUnion contains all possible properties and values from
@@ -2147,6 +2147,9 @@ func (r RedactedThinkingBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow RedactedThinkingBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *RedactedThinkingBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type SignatureDelta struct {
 	Signature string                  `json:"signature,required"`
@@ -2264,6 +2267,9 @@ func (r TextBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow TextBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *TextBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // TextCitationUnion contains all possible properties and values from
 // [CitationCharLocation], [CitationPageLocation], [CitationContentBlockLocation].
@@ -2369,6 +2375,9 @@ type TextCitationParamUnion struct {
 
 func (u TextCitationParamUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[TextCitationParamUnion](u.OfCharLocation, u.OfPageLocation, u.OfContentBlockLocation)
+}
+func (u *TextCitationParamUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *TextCitationParamUnion) asAny() any {
@@ -2481,21 +2490,9 @@ func (u TextCitationParamUnion) GetType() *string {
 func init() {
 	apijson.RegisterUnion[TextCitationParamUnion](
 		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(CitationCharLocationParam{}),
-			DiscriminatorValue: "char_location",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(CitationPageLocationParam{}),
-			DiscriminatorValue: "page_location",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(CitationContentBlockLocationParam{}),
-			DiscriminatorValue: "content_block_location",
-		},
+		apijson.Discriminator[CitationCharLocationParam]("char_location"),
+		apijson.Discriminator[CitationPageLocationParam]("page_location"),
+		apijson.Discriminator[CitationContentBlockLocationParam]("content_block_location"),
 	)
 }
 
@@ -2558,6 +2555,9 @@ func (r ThinkingBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ThinkingBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ThinkingBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 func NewThinkingConfigDisabledParam() ThinkingConfigDisabledParam {
 	return ThinkingConfigDisabledParam{
@@ -2575,6 +2575,9 @@ type ThinkingConfigDisabledParam struct {
 func (r ThinkingConfigDisabledParam) MarshalJSON() (data []byte, err error) {
 	type shadow ThinkingConfigDisabledParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ThinkingConfigDisabledParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties BudgetTokens, Type are required.
@@ -2598,6 +2601,9 @@ func (r ThinkingConfigEnabledParam) MarshalJSON() (data []byte, err error) {
 	type shadow ThinkingConfigEnabledParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ThinkingConfigEnabledParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 func ThinkingConfigParamOfEnabled(budgetTokens int64) ThinkingConfigParamUnion {
 	var enabled ThinkingConfigEnabledParam
@@ -2616,6 +2622,9 @@ type ThinkingConfigParamUnion struct {
 
 func (u ThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[ThinkingConfigParamUnion](u.OfEnabled, u.OfDisabled)
+}
+func (u *ThinkingConfigParamUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ThinkingConfigParamUnion) asAny() any {
@@ -2648,16 +2657,8 @@ func (u ThinkingConfigParamUnion) GetType() *string {
 func init() {
 	apijson.RegisterUnion[ThinkingConfigParamUnion](
 		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ThinkingConfigEnabledParam{}),
-			DiscriminatorValue: "enabled",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ThinkingConfigDisabledParam{}),
-			DiscriminatorValue: "disabled",
-		},
+		apijson.Discriminator[ThinkingConfigEnabledParam]("enabled"),
+		apijson.Discriminator[ThinkingConfigDisabledParam]("disabled"),
 	)
 }
 
@@ -2705,6 +2706,9 @@ func (r ToolParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ToolParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // [JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.
 //
@@ -2724,6 +2728,9 @@ func (r ToolInputSchemaParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolInputSchemaParam
 	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
 }
+func (r *ToolInputSchemaParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // The properties Name, Type are required.
 type ToolBash20250124Param struct {
@@ -2742,6 +2749,9 @@ type ToolBash20250124Param struct {
 func (r ToolBash20250124Param) MarshalJSON() (data []byte, err error) {
 	type shadow ToolBash20250124Param
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolBash20250124Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 func ToolChoiceParamOfTool(name string) ToolChoiceUnionParam {
@@ -2763,6 +2773,9 @@ type ToolChoiceUnionParam struct {
 
 func (u ToolChoiceUnionParam) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[ToolChoiceUnionParam](u.OfAuto, u.OfAny, u.OfTool, u.OfNone)
+}
+func (u *ToolChoiceUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ToolChoiceUnionParam) asAny() any {
@@ -2815,26 +2828,10 @@ func (u ToolChoiceUnionParam) GetDisableParallelToolUse() *bool {
 func init() {
 	apijson.RegisterUnion[ToolChoiceUnionParam](
 		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceAutoParam{}),
-			DiscriminatorValue: "auto",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceAnyParam{}),
-			DiscriminatorValue: "any",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceToolParam{}),
-			DiscriminatorValue: "tool",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceNoneParam{}),
-			DiscriminatorValue: "none",
-		},
+		apijson.Discriminator[ToolChoiceAutoParam]("auto"),
+		apijson.Discriminator[ToolChoiceAnyParam]("any"),
+		apijson.Discriminator[ToolChoiceToolParam]("tool"),
+		apijson.Discriminator[ToolChoiceNoneParam]("none"),
 	)
 }
 
@@ -2856,6 +2853,9 @@ func (r ToolChoiceAnyParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceAnyParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ToolChoiceAnyParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // The model will automatically decide whether to use tools.
 //
@@ -2875,6 +2875,9 @@ func (r ToolChoiceAutoParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceAutoParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ToolChoiceAutoParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 func NewToolChoiceNoneParam() ToolChoiceNoneParam {
 	return ToolChoiceNoneParam{
@@ -2893,6 +2896,9 @@ type ToolChoiceNoneParam struct {
 func (r ToolChoiceNoneParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceNoneParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolChoiceNoneParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The model will use the specified tool with `tool_choice.name`.
@@ -2914,6 +2920,9 @@ type ToolChoiceToolParam struct {
 func (r ToolChoiceToolParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceToolParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolChoiceToolParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties ToolUseID, Type are required.
@@ -2946,6 +2955,9 @@ func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolResultBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ToolResultBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Only one field can be non-zero.
 //
@@ -2958,6 +2970,9 @@ type ToolResultBlockParamContentUnion struct {
 
 func (u ToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[ToolResultBlockParamContentUnion](u.OfText, u.OfImage)
+}
+func (u *ToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ToolResultBlockParamContentUnion) asAny() any {
@@ -3016,16 +3031,8 @@ func (u ToolResultBlockParamContentUnion) GetCacheControl() *CacheControlEphemer
 func init() {
 	apijson.RegisterUnion[ToolResultBlockParamContentUnion](
 		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(TextBlockParam{}),
-			DiscriminatorValue: "text",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ImageBlockParam{}),
-			DiscriminatorValue: "image",
-		},
+		apijson.Discriminator[TextBlockParam]("text"),
+		apijson.Discriminator[ImageBlockParam]("image"),
 	)
 }
 
@@ -3049,6 +3056,9 @@ func (r ToolTextEditor20250124Param) MarshalJSON() (data []byte, err error) {
 	type shadow ToolTextEditor20250124Param
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ToolTextEditor20250124Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 func ToolUnionParamOfTool(inputSchema ToolInputSchemaParam, name string) ToolUnionParam {
 	var variant ToolParam
@@ -3069,6 +3079,9 @@ type ToolUnionParam struct {
 
 func (u ToolUnionParam) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[ToolUnionParam](u.OfTool, u.OfBashTool20250124, u.OfTextEditor20250124)
+}
+func (u *ToolUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ToolUnionParam) asAny() any {
@@ -3178,6 +3191,9 @@ func (r ToolUseBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolUseBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ToolUseBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // The properties Type, URL are required.
 type URLImageSourceParam struct {
@@ -3191,6 +3207,9 @@ func (r URLImageSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow URLImageSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *URLImageSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // The properties Type, URL are required.
 type URLPDFSourceParam struct {
@@ -3203,6 +3222,9 @@ type URLPDFSourceParam struct {
 func (r URLPDFSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow URLPDFSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *URLPDFSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type Usage struct {
@@ -3478,6 +3500,9 @@ func (r MessageNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow MessageNewParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *MessageNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type MessageCountTokensParams struct {
 	// Input messages.
@@ -3679,6 +3704,9 @@ func (r MessageCountTokensParams) MarshalJSON() (data []byte, err error) {
 	type shadow MessageCountTokensParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *MessageCountTokensParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Only one field can be non-zero.
 //
@@ -3691,6 +3719,9 @@ type MessageCountTokensParamsSystemUnion struct {
 
 func (u MessageCountTokensParamsSystemUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[MessageCountTokensParamsSystemUnion](u.OfString, u.OfMessageCountTokenssSystemArray)
+}
+func (u *MessageCountTokensParamsSystemUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *MessageCountTokensParamsSystemUnion) asAny() any {

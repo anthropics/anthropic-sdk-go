@@ -363,9 +363,9 @@ func (CitationContentBlockLocation) implCitationsDeltaCitationUnion() {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := CitationsDeltaCitationUnion.AsAny().(type) {
-//	case CitationCharLocation:
-//	case CitationPageLocation:
-//	case CitationContentBlockLocation:
+//	case anthropic.CitationCharLocation:
+//	case anthropic.CitationPageLocation:
+//	case anthropic.CitationContentBlockLocation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -474,10 +474,10 @@ func (RedactedThinkingBlock) implContentBlockUnion() {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ContentBlockUnion.AsAny().(type) {
-//	case TextBlock:
-//	case ToolUseBlock:
-//	case ThinkingBlock:
-//	case RedactedThinkingBlock:
+//	case anthropic.TextBlock:
+//	case anthropic.ToolUseBlock:
+//	case anthropic.ThinkingBlock:
+//	case anthropic.RedactedThinkingBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1586,11 +1586,11 @@ func (SignatureDelta) implRawContentBlockDeltaUnion() {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := RawContentBlockDeltaUnion.AsAny().(type) {
-//	case TextDelta:
-//	case InputJSONDelta:
-//	case CitationsDelta:
-//	case ThinkingDelta:
-//	case SignatureDelta:
+//	case anthropic.TextDelta:
+//	case anthropic.InputJSONDelta:
+//	case anthropic.CitationsDelta:
+//	case anthropic.ThinkingDelta:
+//	case anthropic.SignatureDelta:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1738,10 +1738,10 @@ func (RedactedThinkingBlock) implContentBlockStartEventContentBlockUnion() {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ContentBlockStartEventContentBlockUnion.AsAny().(type) {
-//	case TextBlock:
-//	case ToolUseBlock:
-//	case ThinkingBlock:
-//	case RedactedThinkingBlock:
+//	case anthropic.TextBlock:
+//	case anthropic.ToolUseBlock:
+//	case anthropic.ThinkingBlock:
+//	case anthropic.RedactedThinkingBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1940,12 +1940,12 @@ func (ContentBlockStopEvent) implMessageStreamEventUnion()  {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := MessageStreamEventUnion.AsAny().(type) {
-//	case MessageStartEvent:
-//	case MessageDeltaEvent:
-//	case MessageStopEvent:
-//	case ContentBlockStartEvent:
-//	case ContentBlockDeltaEvent:
-//	case ContentBlockStopEvent:
+//	case anthropic.MessageStartEvent:
+//	case anthropic.MessageDeltaEvent:
+//	case anthropic.MessageStopEvent:
+//	case anthropic.ContentBlockStartEvent:
+//	case anthropic.ContentBlockDeltaEvent:
+//	case anthropic.ContentBlockStopEvent:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -2317,9 +2317,9 @@ func (CitationContentBlockLocation) implTextCitationUnion() {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := TextCitationUnion.AsAny().(type) {
-//	case CitationCharLocation:
-//	case CitationPageLocation:
-//	case CitationContentBlockLocation:
+//	case anthropic.CitationCharLocation:
+//	case anthropic.CitationPageLocation:
+//	case anthropic.CitationContentBlockLocation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}

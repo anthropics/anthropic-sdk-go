@@ -441,10 +441,10 @@ func (BetaMessageBatchExpiredResult) implBetaMessageBatchResultUnion()   {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaMessageBatchResultUnion.AsAny().(type) {
-//	case BetaMessageBatchSucceededResult:
-//	case BetaMessageBatchErroredResult:
-//	case BetaMessageBatchCanceledResult:
-//	case BetaMessageBatchExpiredResult:
+//	case anthropic.BetaMessageBatchSucceededResult:
+//	case anthropic.BetaMessageBatchErroredResult:
+//	case anthropic.BetaMessageBatchCanceledResult:
+//	case anthropic.BetaMessageBatchExpiredResult:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}

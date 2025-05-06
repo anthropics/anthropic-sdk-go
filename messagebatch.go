@@ -420,10 +420,10 @@ func (MessageBatchExpiredResult) implMessageBatchResultUnion()   {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := MessageBatchResultUnion.AsAny().(type) {
-//	case MessageBatchSucceededResult:
-//	case MessageBatchErroredResult:
-//	case MessageBatchCanceledResult:
-//	case MessageBatchExpiredResult:
+//	case anthropic.MessageBatchSucceededResult:
+//	case anthropic.MessageBatchErroredResult:
+//	case anthropic.MessageBatchCanceledResult:
+//	case anthropic.MessageBatchExpiredResult:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}

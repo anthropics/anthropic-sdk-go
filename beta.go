@@ -141,15 +141,15 @@ func (BetaOverloadedError) implBetaErrorUnion()     {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaErrorUnion.AsAny().(type) {
-//	case BetaInvalidRequestError:
-//	case BetaAuthenticationError:
-//	case BetaBillingError:
-//	case BetaPermissionError:
-//	case BetaNotFoundError:
-//	case BetaRateLimitError:
-//	case BetaGatewayTimeoutError:
-//	case BetaAPIError:
-//	case BetaOverloadedError:
+//	case anthropic.BetaInvalidRequestError:
+//	case anthropic.BetaAuthenticationError:
+//	case anthropic.BetaBillingError:
+//	case anthropic.BetaPermissionError:
+//	case anthropic.BetaNotFoundError:
+//	case anthropic.BetaRateLimitError:
+//	case anthropic.BetaGatewayTimeoutError:
+//	case anthropic.BetaAPIError:
+//	case anthropic.BetaOverloadedError:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}

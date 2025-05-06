@@ -493,9 +493,9 @@ func (BetaCitationContentBlockLocation) implBetaCitationsDeltaCitationUnion() {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaCitationsDeltaCitationUnion.AsAny().(type) {
-//	case BetaCitationCharLocation:
-//	case BetaCitationPageLocation:
-//	case BetaCitationContentBlockLocation:
+//	case anthropic.BetaCitationCharLocation:
+//	case anthropic.BetaCitationPageLocation:
+//	case anthropic.BetaCitationContentBlockLocation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -587,10 +587,10 @@ func (BetaRedactedThinkingBlock) implBetaContentBlockUnion() {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaContentBlockUnion.AsAny().(type) {
-//	case BetaTextBlock:
-//	case BetaToolUseBlock:
-//	case BetaThinkingBlock:
-//	case BetaRedactedThinkingBlock:
+//	case anthropic.BetaTextBlock:
+//	case anthropic.BetaToolUseBlock:
+//	case anthropic.BetaThinkingBlock:
+//	case anthropic.BetaRedactedThinkingBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1405,11 +1405,11 @@ func (BetaSignatureDelta) implBetaRawContentBlockDeltaUnion() {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaRawContentBlockDeltaUnion.AsAny().(type) {
-//	case BetaTextDelta:
-//	case BetaInputJSONDelta:
-//	case BetaCitationsDelta:
-//	case BetaThinkingDelta:
-//	case BetaSignatureDelta:
+//	case anthropic.BetaTextDelta:
+//	case anthropic.BetaInputJSONDelta:
+//	case anthropic.BetaCitationsDelta:
+//	case anthropic.BetaThinkingDelta:
+//	case anthropic.BetaSignatureDelta:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1557,10 +1557,10 @@ func (BetaRedactedThinkingBlock) implBetaRawContentBlockStartEventContentBlockUn
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaRawContentBlockStartEventContentBlockUnion.AsAny().(type) {
-//	case BetaTextBlock:
-//	case BetaToolUseBlock:
-//	case BetaThinkingBlock:
-//	case BetaRedactedThinkingBlock:
+//	case anthropic.BetaTextBlock:
+//	case anthropic.BetaToolUseBlock:
+//	case anthropic.BetaThinkingBlock:
+//	case anthropic.BetaRedactedThinkingBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1761,12 +1761,12 @@ func (BetaRawContentBlockStopEvent) implBetaRawMessageStreamEventUnion()  {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaRawMessageStreamEventUnion.AsAny().(type) {
-//	case BetaRawMessageStartEvent:
-//	case BetaRawMessageDeltaEvent:
-//	case BetaRawMessageStopEvent:
-//	case BetaRawContentBlockStartEvent:
-//	case BetaRawContentBlockDeltaEvent:
-//	case BetaRawContentBlockStopEvent:
+//	case anthropic.BetaRawMessageStartEvent:
+//	case anthropic.BetaRawMessageDeltaEvent:
+//	case anthropic.BetaRawMessageStopEvent:
+//	case anthropic.BetaRawContentBlockStartEvent:
+//	case anthropic.BetaRawContentBlockDeltaEvent:
+//	case anthropic.BetaRawContentBlockStopEvent:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -2016,9 +2016,9 @@ func (BetaCitationContentBlockLocation) implBetaTextCitationUnion() {}
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaTextCitationUnion.AsAny().(type) {
-//	case BetaCitationCharLocation:
-//	case BetaCitationPageLocation:
-//	case BetaCitationContentBlockLocation:
+//	case anthropic.BetaCitationCharLocation:
+//	case anthropic.BetaCitationPageLocation:
+//	case anthropic.BetaCitationContentBlockLocation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}

@@ -35,6 +35,8 @@ func (r *APIErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (APIErrorObject) ImplErrorObjectUnion() {}
+
 type AuthenticationError struct {
 	Message string                       `json:"message,required"`
 	Type    constant.AuthenticationError `json:"type,required"`
@@ -53,6 +55,8 @@ func (r *AuthenticationError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (AuthenticationError) ImplErrorObjectUnion() {}
+
 type BillingError struct {
 	Message string                `json:"message,required"`
 	Type    constant.BillingError `json:"type,required"`
@@ -70,6 +74,8 @@ func (r BillingError) RawJSON() string { return r.JSON.raw }
 func (r *BillingError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+func (BillingError) ImplErrorObjectUnion() {}
 
 // ErrorObjectUnion contains all possible properties and values from
 // [InvalidRequestError], [AuthenticationError], [BillingError], [PermissionError],
@@ -98,28 +104,18 @@ type anyErrorObject interface {
 	ImplErrorObjectUnion()
 }
 
-func (InvalidRequestError) ImplErrorObjectUnion() {}
-func (AuthenticationError) ImplErrorObjectUnion() {}
-func (BillingError) ImplErrorObjectUnion()        {}
-func (PermissionError) ImplErrorObjectUnion()     {}
-func (NotFoundError) ImplErrorObjectUnion()       {}
-func (RateLimitError) ImplErrorObjectUnion()      {}
-func (GatewayTimeoutError) ImplErrorObjectUnion() {}
-func (APIErrorObject) ImplErrorObjectUnion()      {}
-func (OverloadedError) ImplErrorObjectUnion()     {}
-
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ErrorObjectUnion.AsAny().(type) {
-//	case InvalidRequestError:
-//	case AuthenticationError:
-//	case BillingError:
-//	case PermissionError:
-//	case NotFoundError:
-//	case RateLimitError:
-//	case GatewayTimeoutError:
-//	case APIErrorObject:
-//	case OverloadedError:
+//	case shared.InvalidRequestError:
+//	case shared.AuthenticationError:
+//	case shared.BillingError:
+//	case shared.PermissionError:
+//	case shared.NotFoundError:
+//	case shared.RateLimitError:
+//	case shared.GatewayTimeoutError:
+//	case shared.APIErrorObject:
+//	case shared.OverloadedError:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -235,6 +231,8 @@ func (r *GatewayTimeoutError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (GatewayTimeoutError) ImplErrorObjectUnion() {}
+
 type InvalidRequestError struct {
 	Message string                       `json:"message,required"`
 	Type    constant.InvalidRequestError `json:"type,required"`
@@ -252,6 +250,8 @@ func (r InvalidRequestError) RawJSON() string { return r.JSON.raw }
 func (r *InvalidRequestError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+func (InvalidRequestError) ImplErrorObjectUnion() {}
 
 type NotFoundError struct {
 	Message string                 `json:"message,required"`
@@ -271,6 +271,8 @@ func (r *NotFoundError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (NotFoundError) ImplErrorObjectUnion() {}
+
 type OverloadedError struct {
 	Message string                   `json:"message,required"`
 	Type    constant.OverloadedError `json:"type,required"`
@@ -288,6 +290,8 @@ func (r OverloadedError) RawJSON() string { return r.JSON.raw }
 func (r *OverloadedError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+func (OverloadedError) ImplErrorObjectUnion() {}
 
 type PermissionError struct {
 	Message string                   `json:"message,required"`
@@ -307,6 +311,8 @@ func (r *PermissionError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (PermissionError) ImplErrorObjectUnion() {}
+
 type RateLimitError struct {
 	Message string                  `json:"message,required"`
 	Type    constant.RateLimitError `json:"type,required"`
@@ -324,3 +330,5 @@ func (r RateLimitError) RawJSON() string { return r.JSON.raw }
 func (r *RateLimitError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+func (RateLimitError) ImplErrorObjectUnion() {}

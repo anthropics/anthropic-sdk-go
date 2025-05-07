@@ -75,6 +75,7 @@ func TestMessageBatchNew(t *testing.T) {
 						Name:         "name",
 						CacheControl: anthropic.NewCacheControlEphemeralParam(),
 						Description:  anthropic.String("Get the current weather in a given location"),
+						Type:         anthropic.ToolTypeCustom,
 					},
 				}},
 				TopK: anthropic.Int(5),

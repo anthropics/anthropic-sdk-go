@@ -20,6 +20,12 @@ type Error = apierror.Error
 type APIErrorObject = shared.APIErrorObject
 
 // This is an alias to an internal type.
+type AuthenticationError = shared.AuthenticationError
+
+// This is an alias to an internal type.
+type BillingError = shared.BillingError
+
+// This is an alias to an internal type.
 type ErrorObjectUnion = shared.ErrorObjectUnion
 
 // This is an alias to an internal type.
@@ -27,3 +33,18 @@ type ErrorResponse = shared.ErrorResponse
 
 // This is an alias to an internal type.
 type GatewayTimeoutError = shared.GatewayTimeoutError
+
+// This is an alias to an internal type.
+type InvalidRequestError = shared.InvalidRequestError
+
+// This is an alias to an internal type.
+type NotFoundError = shared.NotFoundError
+
+// This is an alias to an internal type.
+type OverloadedError = shared.OverloadedError
+
+// This is an alias to an internal type.
+type PermissionError = shared.PermissionError
+
+// This is an alias to an internal type.
+type RateLimitError = shared.RateLimitError

@@ -43,7 +43,10 @@ func NewBetaModelService(opts ...option.RequestOption) (r BetaModelService) {
 //
 // The Models API response can be used to determine information about a specific
 // model or resolve a model alias to a model ID.
-func (r *BetaModelService) Get(ctx context.Context, modelID string, opts ...option.RequestOption) (res *BetaModelInfo, err error) {
+func (r *BetaModelService) Get(ctx context.Context, modelID string, query BetaModelGetParams, opts ...option.RequestOption) (res *BetaModelInfo, err error) {
+	for _, v := range query.Betas {
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+	}
 	opts = append(r.Options[:], opts...)
 	if modelID == "" {
 		err = errors.New("missing required model_id parameter")
@@ -58,12 +61,15 @@ func (r *BetaModelService) Get(ctx context.Context, modelID string, opts ...opti
 //
 // The Models API response can be used to determine which models are available for
 // use in the API. More recently released models are listed first.
-func (r *BetaModelService) List(ctx context.Context, query BetaModelListParams, opts ...option.RequestOption) (res *pagination.Page[BetaModelInfo], err error) {
+func (r *BetaModelService) List(ctx context.Context, params BetaModelListParams, opts ...option.RequestOption) (res *pagination.Page[BetaModelInfo], err error) {
 	var raw *http.Response
+	for _, v := range params.Betas {
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/models?beta=true"
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,8 +85,8 @@ func (r *BetaModelService) List(ctx context.Context, query BetaModelListParams, 
 //
 // The Models API response can be used to determine which models are available for
 // use in the API. More recently released models are listed first.
-func (r *BetaModelService) ListAutoPaging(ctx context.Context, query BetaModelListParams, opts ...option.RequestOption) *pagination.PageAutoPager[BetaModelInfo] {
-	return pagination.NewPageAutoPager(r.List(ctx, query, opts...))
+func (r *BetaModelService) ListAutoPaging(ctx context.Context, params BetaModelListParams, opts ...option.RequestOption) *pagination.PageAutoPager[BetaModelInfo] {
+	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }
 
 type BetaModelInfo struct {
@@ -112,6 +118,12 @@ func (r *BetaModelInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type BetaModelGetParams struct {
+	// Optional header to specify the beta version(s) you want to use.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
+	paramObj
+}
+
 type BetaModelListParams struct {
 	// ID of the object to use as a cursor for pagination. When provided, returns the
 	// page of results immediately after this object.
@@ -123,6 +135,8 @@ type BetaModelListParams struct {
 	//
 	// Defaults to `20`. Ranges from `1` to `1000`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Optional header to specify the beta version(s) you want to use.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 

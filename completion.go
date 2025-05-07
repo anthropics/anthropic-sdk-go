@@ -4,6 +4,7 @@ package anthropic
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -44,10 +45,13 @@ func NewCompletionService(opts ...option.RequestOption) (r CompletionService) {
 // for guidance in migrating from Text Completions to Messages.
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
-func (r *CompletionService) New(ctx context.Context, body CompletionNewParams, opts ...option.RequestOption) (res *Completion, err error) {
+func (r *CompletionService) New(ctx context.Context, params CompletionNewParams, opts ...option.RequestOption) (res *Completion, err error) {
+	for _, v := range params.Betas {
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+	}
 	opts = append(r.Options[:], opts...)
 	path := "v1/complete"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return
 }
 
@@ -61,15 +65,18 @@ func (r *CompletionService) New(ctx context.Context, body CompletionNewParams, o
 // for guidance in migrating from Text Completions to Messages.
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
-func (r *CompletionService) NewStreaming(ctx context.Context, body CompletionNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[Completion]) {
+func (r *CompletionService) NewStreaming(ctx context.Context, params CompletionNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[Completion]) {
 	var (
 		raw *http.Response
 		err error
 	)
+	for _, v := range params.Betas {
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithJSONSet("stream", true)}, opts...)
 	path := "v1/complete"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &raw, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &raw, opts...)
 	return ssestream.NewStream[Completion](ssestream.NewDecoder(raw), err)
 }
 
@@ -173,6 +180,8 @@ type CompletionNewParams struct {
 	// sequences in the future. By providing the stop_sequences parameter, you may
 	// include additional strings that will cause the model to stop generating.
 	StopSequences []string `json:"stop_sequences,omitzero"`
+	// Optional header to specify the beta version(s) you want to use.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 

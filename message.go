@@ -3907,6 +3907,36 @@ func (u *WebSearchToolResultBlockParamContentUnion) asAny() any {
 	return nil
 }
 
+type WebSearchToolResultError struct {
+	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
+	// "too_many_requests", "query_too_long".
+	ErrorCode WebSearchToolResultErrorErrorCode `json:"error_code,required"`
+	Type      constant.WebSearchToolResultError `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WebSearchToolResultError) RawJSON() string { return r.JSON.raw }
+func (r *WebSearchToolResultError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type WebSearchToolResultErrorErrorCode string
+
+const (
+	WebSearchToolResultErrorErrorCodeInvalidToolInput WebSearchToolResultErrorErrorCode = "invalid_tool_input"
+	WebSearchToolResultErrorErrorCodeUnavailable      WebSearchToolResultErrorErrorCode = "unavailable"
+	WebSearchToolResultErrorErrorCodeMaxUsesExceeded  WebSearchToolResultErrorErrorCode = "max_uses_exceeded"
+	WebSearchToolResultErrorErrorCodeTooManyRequests  WebSearchToolResultErrorErrorCode = "too_many_requests"
+	WebSearchToolResultErrorErrorCodeQueryTooLong     WebSearchToolResultErrorErrorCode = "query_too_long"
+)
+
 type MessageNewParams struct {
 	// The maximum number of tokens to generate before stopping.
 	//

@@ -4,13 +4,14 @@ package anthropic
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
@@ -44,10 +45,13 @@ func NewCompletionService(opts ...option.RequestOption) (r CompletionService) {
 // for guidance in migrating from Text Completions to Messages.
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
-func (r *CompletionService) New(ctx context.Context, body CompletionNewParams, opts ...option.RequestOption) (res *Completion, err error) {
+func (r *CompletionService) New(ctx context.Context, params CompletionNewParams, opts ...option.RequestOption) (res *Completion, err error) {
+	for _, v := range params.Betas {
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+	}
 	opts = append(r.Options[:], opts...)
 	path := "v1/complete"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return
 }
 
@@ -61,15 +65,18 @@ func (r *CompletionService) New(ctx context.Context, body CompletionNewParams, o
 // for guidance in migrating from Text Completions to Messages.
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
-func (r *CompletionService) NewStreaming(ctx context.Context, body CompletionNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[Completion]) {
+func (r *CompletionService) NewStreaming(ctx context.Context, params CompletionNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[Completion]) {
 	var (
 		raw *http.Response
 		err error
 	)
+	for _, v := range params.Betas {
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithJSONSet("stream", true)}, opts...)
 	path := "v1/complete"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &raw, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &raw, opts...)
 	return ssestream.NewStream[Completion](ssestream.NewDecoder(raw), err)
 }
 
@@ -96,15 +103,14 @@ type Completion struct {
 	//
 	// For Text Completions, this is always `"completion"`.
 	Type constant.Completion `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          resp.Field
-		Completion  resp.Field
-		Model       resp.Field
-		StopReason  resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		ID          respjson.Field
+		Completion  respjson.Field
+		Model       respjson.Field
+		StopReason  respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -174,14 +180,15 @@ type CompletionNewParams struct {
 	// sequences in the future. By providing the stop_sequences parameter, you may
 	// include additional strings that will cause the model to stop generating.
 	StopSequences []string `json:"stop_sequences,omitzero"`
+	// Optional header to specify the beta version(s) you want to use.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CompletionNewParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 
 func (r CompletionNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow CompletionNewParams
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CompletionNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }

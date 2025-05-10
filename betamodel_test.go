@@ -13,7 +13,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
-func TestBetaModelGet(t *testing.T) {
+func TestBetaModelGetWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -25,7 +25,13 @@ func TestBetaModelGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Beta.Models.Get(context.TODO(), "model_id")
+	_, err := client.Beta.Models.Get(
+		context.TODO(),
+		"model_id",
+		anthropic.BetaModelGetParams{
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -51,6 +57,7 @@ func TestBetaModelListWithOptionalParams(t *testing.T) {
 		AfterID:  anthropic.String("after_id"),
 		BeforeID: anthropic.String("before_id"),
 		Limit:    anthropic.Int(1),
+		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

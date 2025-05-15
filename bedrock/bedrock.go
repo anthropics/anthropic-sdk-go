@@ -211,12 +211,12 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 
 				var path string
 				if stream {
-					path = fmt.Sprintf("/model/%s/invoke-with-response-stream", model)
+					path = fmt.Sprintf("/model/%s/invoke-with-response-stream", url.QueryEscape(model))
 				} else {
-					path = fmt.Sprintf("/model/%s/invoke", model)
+					path = fmt.Sprintf("/model/%s/invoke", url.QueryEscape(model))
 				}
 
-				r.URL.Path = path
+				r.URL.RawPath = path
 			}
 
 			reader := bytes.NewReader(body)

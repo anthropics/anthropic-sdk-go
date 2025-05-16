@@ -3638,20 +3638,20 @@ func (r *BetaWebSearchToolResultBlock) UnmarshalJSON(data []byte) error {
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 //
 // If the underlying value is not a json object, one of the following properties
-// will be valid: OfBetaWebSearchToolResultBlockContentArray]
+// will be valid: OfBetaWebSearchResultBlockArray]
 type BetaWebSearchToolResultBlockContentUnion struct {
 	// This field will be present if the value is a [[]BetaWebSearchResultBlock]
 	// instead of an object.
-	OfBetaWebSearchToolResultBlockContentArray []BetaWebSearchResultBlock `json:",inline"`
+	OfBetaWebSearchResultBlockArray []BetaWebSearchResultBlock `json:",inline"`
 	// This field is from variant [BetaWebSearchToolResultError].
 	ErrorCode BetaWebSearchToolResultErrorErrorCode `json:"error_code"`
 	// This field is from variant [BetaWebSearchToolResultError].
 	Type constant.WebSearchToolResultError `json:"type"`
 	JSON struct {
-		OfBetaWebSearchToolResultBlockContentArray respjson.Field
-		ErrorCode                                  respjson.Field
-		Type                                       respjson.Field
-		raw                                        string
+		OfBetaWebSearchResultBlockArray respjson.Field
+		ErrorCode                       respjson.Field
+		Type                            respjson.Field
+		raw                             string
 	} `json:"-"`
 }
 
@@ -3660,7 +3660,7 @@ func (u BetaWebSearchToolResultBlockContentUnion) AsResponseWebSearchToolResultE
 	return
 }
 
-func (u BetaWebSearchToolResultBlockContentUnion) AsBetaWebSearchToolResultBlockContentArrayParam() (v []BetaWebSearchResultBlock) {
+func (u BetaWebSearchToolResultBlockContentUnion) AsBetaWebSearchResultBlockArray() (v []BetaWebSearchResultBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -4220,13 +4220,13 @@ func (r *BetaMessageCountTokensParams) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaMessageCountTokensParamsSystemUnion struct {
-	OfString                             param.Opt[string]    `json:",omitzero,inline"`
-	OfBetaMessageCountTokenssSystemArray []BetaTextBlockParam `json:",omitzero,inline"`
+	OfString             param.Opt[string]    `json:",omitzero,inline"`
+	OfBetaTextBlockArray []BetaTextBlockParam `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaMessageCountTokensParamsSystemUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaMessageCountTokensParamsSystemUnion](u.OfString, u.OfBetaMessageCountTokenssSystemArray)
+	return param.MarshalUnion[BetaMessageCountTokensParamsSystemUnion](u.OfString, u.OfBetaTextBlockArray)
 }
 func (u *BetaMessageCountTokensParamsSystemUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -4235,8 +4235,8 @@ func (u *BetaMessageCountTokensParamsSystemUnion) UnmarshalJSON(data []byte) err
 func (u *BetaMessageCountTokensParamsSystemUnion) asAny() any {
 	if !param.IsOmitted(u.OfString) {
 		return &u.OfString.Value
-	} else if !param.IsOmitted(u.OfBetaMessageCountTokenssSystemArray) {
-		return &u.OfBetaMessageCountTokenssSystemArray
+	} else if !param.IsOmitted(u.OfBetaTextBlockArray) {
+		return &u.OfBetaTextBlockArray
 	}
 	return nil
 }

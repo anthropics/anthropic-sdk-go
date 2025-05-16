@@ -3582,20 +3582,20 @@ func (r *WebSearchToolResultBlock) UnmarshalJSON(data []byte) error {
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 //
 // If the underlying value is not a json object, one of the following properties
-// will be valid: OfWebSearchToolResultBlockContentArray]
+// will be valid: OfWebSearchResultBlockArray]
 type WebSearchToolResultBlockContentUnion struct {
 	// This field will be present if the value is a [[]WebSearchResultBlock] instead of
 	// an object.
-	OfWebSearchToolResultBlockContentArray []WebSearchResultBlock `json:",inline"`
+	OfWebSearchResultBlockArray []WebSearchResultBlock `json:",inline"`
 	// This field is from variant [WebSearchToolResultError].
 	ErrorCode WebSearchToolResultErrorErrorCode `json:"error_code"`
 	// This field is from variant [WebSearchToolResultError].
 	Type constant.WebSearchToolResultError `json:"type"`
 	JSON struct {
-		OfWebSearchToolResultBlockContentArray respjson.Field
-		ErrorCode                              respjson.Field
-		Type                                   respjson.Field
-		raw                                    string
+		OfWebSearchResultBlockArray respjson.Field
+		ErrorCode                   respjson.Field
+		Type                        respjson.Field
+		raw                         string
 	} `json:"-"`
 }
 
@@ -3604,7 +3604,7 @@ func (u WebSearchToolResultBlockContentUnion) AsResponseWebSearchToolResultError
 	return
 }
 
-func (u WebSearchToolResultBlockContentUnion) AsWebSearchToolResultBlockContentArrayParam() (v []WebSearchResultBlock) {
+func (u WebSearchToolResultBlockContentUnion) AsWebSearchResultBlockArray() (v []WebSearchResultBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -4160,13 +4160,13 @@ func (r *MessageCountTokensParams) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type MessageCountTokensParamsSystemUnion struct {
-	OfString                         param.Opt[string] `json:",omitzero,inline"`
-	OfMessageCountTokenssSystemArray []TextBlockParam  `json:",omitzero,inline"`
+	OfString         param.Opt[string] `json:",omitzero,inline"`
+	OfTextBlockArray []TextBlockParam  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u MessageCountTokensParamsSystemUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[MessageCountTokensParamsSystemUnion](u.OfString, u.OfMessageCountTokenssSystemArray)
+	return param.MarshalUnion[MessageCountTokensParamsSystemUnion](u.OfString, u.OfTextBlockArray)
 }
 func (u *MessageCountTokensParamsSystemUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -4175,8 +4175,8 @@ func (u *MessageCountTokensParamsSystemUnion) UnmarshalJSON(data []byte) error {
 func (u *MessageCountTokensParamsSystemUnion) asAny() any {
 	if !param.IsOmitted(u.OfString) {
 		return &u.OfString.Value
-	} else if !param.IsOmitted(u.OfMessageCountTokenssSystemArray) {
-		return &u.OfMessageCountTokenssSystemArray
+	} else if !param.IsOmitted(u.OfTextBlockArray) {
+		return &u.OfTextBlockArray
 	}
 	return nil
 }

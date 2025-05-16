@@ -110,7 +110,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 		}},
 		Model: anthropic.ModelClaude3_7SonnetLatest,
 		System: anthropic.BetaMessageCountTokensParamsSystemUnion{
-			OfBetaMessageCountTokenssSystemArray: []anthropic.BetaTextBlockParam{{
+			OfBetaTextBlockArray: []anthropic.BetaTextBlockParam{{
 				Text:         "Today's date is 2024-06-01.",
 				CacheControl: anthropic.NewBetaCacheControlEphemeralParam(),
 				Citations: []anthropic.BetaTextCitationParamUnion{{

@@ -109,7 +109,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 		}},
 		Model: anthropic.ModelClaude3_7SonnetLatest,
 		System: anthropic.MessageCountTokensParamsSystemUnion{
-			OfMessageCountTokenssSystemArray: []anthropic.TextBlockParam{{
+			OfTextBlockArray: []anthropic.TextBlockParam{{
 				Text:         "Today's date is 2024-06-01.",
 				CacheControl: anthropic.NewCacheControlEphemeralParam(),
 				Citations: []anthropic.TextCitationParamUnion{{

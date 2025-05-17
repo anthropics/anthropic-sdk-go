@@ -38,7 +38,9 @@ func (s *Stream[T]) Next() bool {
 	}
 
 	line := s.scn.Bytes()
-	s.err = json.Unmarshal(line, &s.cur)
+	var nxt T
+	s.err = json.Unmarshal(line, &nxt)
+	s.cur = nxt
 	return s.err == nil
 }
 

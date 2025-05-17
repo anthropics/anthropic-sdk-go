@@ -9,7 +9,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 )
 
 // aliased to make [param.APIUnion] private when embedding
@@ -23,14 +23,13 @@ type Page[T any] struct {
 	HasMore bool   `json:"has_more"`
 	FirstID string `json:"first_id,nullable"`
 	LastID  string `json:"last_id,nullable"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Data        resp.Field
-		HasMore     resp.Field
-		FirstID     resp.Field
-		LastID      resp.Field
-		ExtraFields map[string]resp.Field
+		Data        respjson.Field
+		HasMore     respjson.Field
+		FirstID     respjson.Field
+		LastID      respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 	cfg *requestconfig.RequestConfig
@@ -47,7 +46,7 @@ func (r *Page[T]) UnmarshalJSON(data []byte) error {
 // there is no next page, this function will return a 'nil' for the page value, but
 // will not return an error
 func (r *Page[T]) GetNextPage() (res *Page[T], err error) {
-	if r.JSON.HasMore.IsPresent() && r.HasMore == false {
+	if r.JSON.HasMore.Valid() && r.HasMore == false {
 		return nil, nil
 	}
 	cfg := r.cfg.Clone(r.cfg.Context)
@@ -56,13 +55,19 @@ func (r *Page[T]) GetNextPage() (res *Page[T], err error) {
 		if next == "" {
 			return nil, nil
 		}
-		cfg.Apply(option.WithQuery("before_id", next))
+		err = cfg.Apply(option.WithQuery("before_id", next))
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		next := r.LastID
 		if next == "" {
 			return nil, nil
 		}
-		cfg.Apply(option.WithQuery("after_id", next))
+		err = cfg.Apply(option.WithQuery("after_id", next))
+		if err != nil {
+			return nil, err
+		}
 	}
 	var raw *http.Response
 	cfg.ResponseInto = &raw

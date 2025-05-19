@@ -348,7 +348,10 @@ param.IsNull(p.Point) // true
 
 Request structs contain a `.SetExtraFields(map[string]any)` method which can send non-conforming
 fields in the request body. Extra fields overwrite any struct fields with a matching
-key. For security reasons, only use `SetExtraFields` with trusted data.
+key.
+
+> [!WARNING]
+> For security reasons, only use `SetExtraFields` with trusted data.
 
 To send a custom value instead of a struct, use `param.Override[T](value)`.
 

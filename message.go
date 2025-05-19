@@ -7,16 +7,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reflect"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
-	"github.com/tidwall/gjson"
 )
 
 // MessageService contains methods and other services that help with interacting
@@ -101,12 +100,12 @@ type Base64ImageSourceParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f Base64ImageSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r Base64ImageSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow Base64ImageSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *Base64ImageSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type Base64ImageSourceMediaType string
@@ -128,27 +127,33 @@ type Base64PDFSourceParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f Base64PDFSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r Base64PDFSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow Base64PDFSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *Base64PDFSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
-// The property Type is required.
+func NewCacheControlEphemeralParam() CacheControlEphemeralParam {
+	return CacheControlEphemeralParam{
+		Type: "ephemeral",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewCacheControlEphemeralParam].
 type CacheControlEphemeralParam struct {
-	// This field can be elided, and will marshal its zero value as "ephemeral".
 	Type constant.Ephemeral `json:"type,required"`
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CacheControlEphemeralParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r CacheControlEphemeralParam) MarshalJSON() (data []byte, err error) {
 	type shadow CacheControlEphemeralParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CacheControlEphemeralParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type CitationCharLocation struct {
@@ -158,16 +163,15 @@ type CitationCharLocation struct {
 	EndCharIndex   int64                 `json:"end_char_index,required"`
 	StartCharIndex int64                 `json:"start_char_index,required"`
 	Type           constant.CharLocation `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CitedText      resp.Field
-		DocumentIndex  resp.Field
-		DocumentTitle  resp.Field
-		EndCharIndex   resp.Field
-		StartCharIndex resp.Field
-		Type           resp.Field
-		ExtraFields    map[string]resp.Field
+		CitedText      respjson.Field
+		DocumentIndex  respjson.Field
+		DocumentTitle  respjson.Field
+		EndCharIndex   respjson.Field
+		StartCharIndex respjson.Field
+		Type           respjson.Field
+		ExtraFields    map[string]respjson.Field
 		raw            string
 	} `json:"-"`
 }
@@ -191,12 +195,12 @@ type CitationCharLocationParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CitationCharLocationParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r CitationCharLocationParam) MarshalJSON() (data []byte, err error) {
 	type shadow CitationCharLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CitationCharLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type CitationContentBlockLocation struct {
@@ -206,16 +210,15 @@ type CitationContentBlockLocation struct {
 	EndBlockIndex   int64                         `json:"end_block_index,required"`
 	StartBlockIndex int64                         `json:"start_block_index,required"`
 	Type            constant.ContentBlockLocation `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndBlockIndex   resp.Field
-		StartBlockIndex resp.Field
-		Type            resp.Field
-		ExtraFields     map[string]resp.Field
+		CitedText       respjson.Field
+		DocumentIndex   respjson.Field
+		DocumentTitle   respjson.Field
+		EndBlockIndex   respjson.Field
+		StartBlockIndex respjson.Field
+		Type            respjson.Field
+		ExtraFields     map[string]respjson.Field
 		raw             string
 	} `json:"-"`
 }
@@ -240,14 +243,12 @@ type CitationContentBlockLocationParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CitationContentBlockLocationParam) IsPresent() bool {
-	return !param.IsOmitted(f) && !f.IsNull()
-}
 func (r CitationContentBlockLocationParam) MarshalJSON() (data []byte, err error) {
 	type shadow CitationContentBlockLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CitationContentBlockLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type CitationPageLocation struct {
@@ -257,16 +258,15 @@ type CitationPageLocation struct {
 	EndPageNumber   int64                 `json:"end_page_number,required"`
 	StartPageNumber int64                 `json:"start_page_number,required"`
 	Type            constant.PageLocation `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndPageNumber   resp.Field
-		StartPageNumber resp.Field
-		Type            resp.Field
-		ExtraFields     map[string]resp.Field
+		CitedText       respjson.Field
+		DocumentIndex   respjson.Field
+		DocumentTitle   respjson.Field
+		EndPageNumber   respjson.Field
+		StartPageNumber respjson.Field
+		Type            respjson.Field
+		ExtraFields     map[string]respjson.Field
 		raw             string
 	} `json:"-"`
 }
@@ -290,12 +290,32 @@ type CitationPageLocationParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CitationPageLocationParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r CitationPageLocationParam) MarshalJSON() (data []byte, err error) {
 	type shadow CitationPageLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CitationPageLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties CitedText, EncryptedIndex, Title, Type, URL are required.
+type CitationWebSearchResultLocationParam struct {
+	Title          param.Opt[string] `json:"title,omitzero,required"`
+	CitedText      string            `json:"cited_text,required"`
+	EncryptedIndex string            `json:"encrypted_index,required"`
+	URL            string            `json:"url,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "web_search_result_location".
+	Type constant.WebSearchResultLocation `json:"type,required"`
+	paramObj
+}
+
+func (r CitationWebSearchResultLocationParam) MarshalJSON() (data []byte, err error) {
+	type shadow CitationWebSearchResultLocationParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CitationWebSearchResultLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type CitationsConfigParam struct {
@@ -303,23 +323,22 @@ type CitationsConfigParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f CitationsConfigParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r CitationsConfigParam) MarshalJSON() (data []byte, err error) {
 	type shadow CitationsConfigParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CitationsConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type CitationsDelta struct {
 	Citation CitationsDeltaCitationUnion `json:"citation,required"`
 	Type     constant.CitationsDelta     `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Citation    resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Citation    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -331,7 +350,8 @@ func (r *CitationsDelta) UnmarshalJSON(data []byte) error {
 }
 
 // CitationsDeltaCitationUnion contains all possible properties and values from
-// [CitationCharLocation], [CitationPageLocation], [CitationContentBlockLocation].
+// [CitationCharLocation], [CitationPageLocation], [CitationContentBlockLocation],
+// [CitationsWebSearchResultLocation].
 //
 // Use the [CitationsDeltaCitationUnion.AsAny] method to switch on the variant.
 //
@@ -344,7 +364,8 @@ type CitationsDeltaCitationUnion struct {
 	EndCharIndex int64 `json:"end_char_index"`
 	// This field is from variant [CitationCharLocation].
 	StartCharIndex int64 `json:"start_char_index"`
-	// Any of "char_location", "page_location", "content_block_location".
+	// Any of "char_location", "page_location", "content_block_location",
+	// "web_search_result_location".
 	Type string `json:"type"`
 	// This field is from variant [CitationPageLocation].
 	EndPageNumber int64 `json:"end_page_number"`
@@ -354,53 +375,82 @@ type CitationsDeltaCitationUnion struct {
 	EndBlockIndex int64 `json:"end_block_index"`
 	// This field is from variant [CitationContentBlockLocation].
 	StartBlockIndex int64 `json:"start_block_index"`
-	JSON            struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndCharIndex    resp.Field
-		StartCharIndex  resp.Field
-		Type            resp.Field
-		EndPageNumber   resp.Field
-		StartPageNumber resp.Field
-		EndBlockIndex   resp.Field
-		StartBlockIndex resp.Field
+	// This field is from variant [CitationsWebSearchResultLocation].
+	EncryptedIndex string `json:"encrypted_index"`
+	// This field is from variant [CitationsWebSearchResultLocation].
+	Title string `json:"title"`
+	// This field is from variant [CitationsWebSearchResultLocation].
+	URL  string `json:"url"`
+	JSON struct {
+		CitedText       respjson.Field
+		DocumentIndex   respjson.Field
+		DocumentTitle   respjson.Field
+		EndCharIndex    respjson.Field
+		StartCharIndex  respjson.Field
+		Type            respjson.Field
+		EndPageNumber   respjson.Field
+		StartPageNumber respjson.Field
+		EndBlockIndex   respjson.Field
+		StartBlockIndex respjson.Field
+		EncryptedIndex  respjson.Field
+		Title           respjson.Field
+		URL             respjson.Field
 		raw             string
 	} `json:"-"`
 }
 
+// anyCitationsDeltaCitation is implemented by each variant of
+// [CitationsDeltaCitationUnion] to add type safety for the return type of
+// [CitationsDeltaCitationUnion.AsAny]
+type anyCitationsDeltaCitation interface {
+	implCitationsDeltaCitationUnion()
+}
+
+func (CitationCharLocation) implCitationsDeltaCitationUnion()             {}
+func (CitationPageLocation) implCitationsDeltaCitationUnion()             {}
+func (CitationContentBlockLocation) implCitationsDeltaCitationUnion()     {}
+func (CitationsWebSearchResultLocation) implCitationsDeltaCitationUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := CitationsDeltaCitationUnion.AsAny().(type) {
-//	case CitationCharLocation:
-//	case CitationPageLocation:
-//	case CitationContentBlockLocation:
+//	case anthropic.CitationCharLocation:
+//	case anthropic.CitationPageLocation:
+//	case anthropic.CitationContentBlockLocation:
+//	case anthropic.CitationsWebSearchResultLocation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u CitationsDeltaCitationUnion) AsAny() any {
+func (u CitationsDeltaCitationUnion) AsAny() anyCitationsDeltaCitation {
 	switch u.Type {
 	case "char_location":
-		return u.AsResponseCharLocationCitation()
+		return u.AsCharLocation()
 	case "page_location":
-		return u.AsResponsePageLocationCitation()
+		return u.AsPageLocation()
 	case "content_block_location":
-		return u.AsResponseContentBlockLocationCitation()
+		return u.AsContentBlockLocation()
+	case "web_search_result_location":
+		return u.AsWebSearchResultLocation()
 	}
 	return nil
 }
 
-func (u CitationsDeltaCitationUnion) AsResponseCharLocationCitation() (v CitationCharLocation) {
+func (u CitationsDeltaCitationUnion) AsCharLocation() (v CitationCharLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u CitationsDeltaCitationUnion) AsResponsePageLocationCitation() (v CitationPageLocation) {
+func (u CitationsDeltaCitationUnion) AsPageLocation() (v CitationPageLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u CitationsDeltaCitationUnion) AsResponseContentBlockLocationCitation() (v CitationContentBlockLocation) {
+func (u CitationsDeltaCitationUnion) AsContentBlockLocation() (v CitationContentBlockLocation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CitationsDeltaCitationUnion) AsWebSearchResultLocation() (v CitationsWebSearchResultLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -412,8 +462,33 @@ func (r *CitationsDeltaCitationUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type CitationsWebSearchResultLocation struct {
+	CitedText      string                           `json:"cited_text,required"`
+	EncryptedIndex string                           `json:"encrypted_index,required"`
+	Title          string                           `json:"title,required"`
+	Type           constant.WebSearchResultLocation `json:"type,required"`
+	URL            string                           `json:"url,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CitedText      respjson.Field
+		EncryptedIndex respjson.Field
+		Title          respjson.Field
+		Type           respjson.Field
+		URL            respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CitationsWebSearchResultLocation) RawJSON() string { return r.JSON.raw }
+func (r *CitationsWebSearchResultLocation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // ContentBlockUnion contains all possible properties and values from [TextBlock],
-// [ToolUseBlock], [ThinkingBlock], [RedactedThinkingBlock].
+// [ToolUseBlock], [ServerToolUseBlock], [WebSearchToolResultBlock],
+// [ThinkingBlock], [RedactedThinkingBlock].
 //
 // Use the [ContentBlockUnion.AsAny] method to switch on the variant.
 //
@@ -423,14 +498,16 @@ type ContentBlockUnion struct {
 	Citations []TextCitationUnion `json:"citations"`
 	// This field is from variant [TextBlock].
 	Text string `json:"text"`
-	// Any of "text", "tool_use", "thinking", "redacted_thinking".
+	// Any of "text", "tool_use", "server_tool_use", "web_search_tool_result",
+	// "thinking", "redacted_thinking".
 	Type string `json:"type"`
-	// This field is from variant [ToolUseBlock].
 	ID string `json:"id"`
-	// This field is from variant [ToolUseBlock].
 	Input json.RawMessage `json:"input"`
-	// This field is from variant [ToolUseBlock].
 	Name string `json:"name"`
+	// This field is from variant [WebSearchToolResultBlock].
+	Content WebSearchToolResultBlockContentUnion `json:"content"`
+	// This field is from variant [WebSearchToolResultBlock].
+	ToolUseID string `json:"tool_use_id"`
 	// This field is from variant [ThinkingBlock].
 	Signature string `json:"signature"`
 	// This field is from variant [ThinkingBlock].
@@ -438,15 +515,17 @@ type ContentBlockUnion struct {
 	// This field is from variant [RedactedThinkingBlock].
 	Data string `json:"data"`
 	JSON struct {
-		Citations resp.Field
-		Text      resp.Field
-		Type      resp.Field
-		ID        resp.Field
-		Input     resp.Field
-		Name      resp.Field
-		Signature resp.Field
-		Thinking  resp.Field
-		Data      resp.Field
+		Citations respjson.Field
+		Text      respjson.Field
+		Type      respjson.Field
+		ID        respjson.Field
+		Input     respjson.Field
+		Name      respjson.Field
+		Content   respjson.Field
+		ToolUseID respjson.Field
+		Signature respjson.Field
+		Thinking  respjson.Field
+		Data      respjson.Field
 		raw       string
 	} `json:"-"`
 }
@@ -455,60 +534,89 @@ func (r ContentBlockUnion) ToParam() ContentBlockParamUnion {
 	switch variant := r.AsAny().(type) {
 	case TextBlock:
 		p := variant.ToParam()
-		return ContentBlockParamUnion{OfRequestTextBlock: &p}
+		return ContentBlockParamUnion{OfText: &p}
 	case ToolUseBlock:
 		p := variant.ToParam()
-		return ContentBlockParamUnion{OfRequestToolUseBlock: &p}
+		return ContentBlockParamUnion{OfToolUse: &p}
 	case ThinkingBlock:
 		p := variant.ToParam()
-		return ContentBlockParamUnion{OfRequestThinkingBlock: &p}
+		return ContentBlockParamUnion{OfThinking: &p}
 	case RedactedThinkingBlock:
 		p := variant.ToParam()
-		return ContentBlockParamUnion{OfRequestRedactedThinkingBlock: &p}
+		return ContentBlockParamUnion{OfRedactedThinking: &p}
 	}
 	return ContentBlockParamUnion{}
 }
 
+// anyContentBlock is implemented by each variant of [ContentBlockUnion] to add
+// type safety for the return type of [ContentBlockUnion.AsAny]
+type anyContentBlock interface {
+	implContentBlockUnion()
+}
+
+func (TextBlock) implContentBlockUnion()                {}
+func (ToolUseBlock) implContentBlockUnion()             {}
+func (ServerToolUseBlock) implContentBlockUnion()       {}
+func (WebSearchToolResultBlock) implContentBlockUnion() {}
+func (ThinkingBlock) implContentBlockUnion()            {}
+func (RedactedThinkingBlock) implContentBlockUnion()    {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ContentBlockUnion.AsAny().(type) {
-//	case TextBlock:
-//	case ToolUseBlock:
-//	case ThinkingBlock:
-//	case RedactedThinkingBlock:
+//	case anthropic.TextBlock:
+//	case anthropic.ToolUseBlock:
+//	case anthropic.ServerToolUseBlock:
+//	case anthropic.WebSearchToolResultBlock:
+//	case anthropic.ThinkingBlock:
+//	case anthropic.RedactedThinkingBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u ContentBlockUnion) AsAny() any {
+func (u ContentBlockUnion) AsAny() anyContentBlock {
 	switch u.Type {
 	case "text":
-		return u.AsResponseTextBlock()
+		return u.AsText()
 	case "tool_use":
-		return u.AsResponseToolUseBlock()
+		return u.AsToolUse()
+	case "server_tool_use":
+		return u.AsServerToolUse()
+	case "web_search_tool_result":
+		return u.AsWebSearchToolResult()
 	case "thinking":
-		return u.AsResponseThinkingBlock()
+		return u.AsThinking()
 	case "redacted_thinking":
-		return u.AsResponseRedactedThinkingBlock()
+		return u.AsRedactedThinking()
 	}
 	return nil
 }
 
-func (u ContentBlockUnion) AsResponseTextBlock() (v TextBlock) {
+func (u ContentBlockUnion) AsText() (v TextBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockUnion) AsResponseToolUseBlock() (v ToolUseBlock) {
+func (u ContentBlockUnion) AsToolUse() (v ToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockUnion) AsResponseThinkingBlock() (v ThinkingBlock) {
+func (u ContentBlockUnion) AsServerToolUse() (v ServerToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockUnion) AsResponseRedactedThinkingBlock() (v RedactedThinkingBlock) {
+func (u ContentBlockUnion) AsWebSearchToolResult() (v WebSearchToolResultBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ContentBlockUnion) AsThinking() (v ThinkingBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ContentBlockUnion) AsRedactedThinking() (v RedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -520,164 +628,153 @@ func (r *ContentBlockUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func ContentBlockParamOfRequestTextBlock(text string) ContentBlockParamUnion {
+func ContentBlockParamOfText(text string) ContentBlockParamUnion {
 	var variant TextBlockParam
 	variant.Text = text
-	return ContentBlockParamUnion{OfRequestTextBlock: &variant}
+	return ContentBlockParamUnion{OfText: &variant}
 }
 
-func ContentBlockParamOfRequestImageBlock[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockParamUnion {
-	var variant ImageBlockParam
+func ContentBlockParamOfImage[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockParamUnion {
+	var image ImageBlockParam
 	switch v := any(source).(type) {
 	case Base64ImageSourceParam:
-		variant.Source.OfBase64ImageSource = &v
+		image.Source.OfBase64 = &v
 	case URLImageSourceParam:
-		variant.Source.OfURLImageSource = &v
+		image.Source.OfURL = &v
 	}
-	return ContentBlockParamUnion{OfRequestImageBlock: &variant}
+	return ContentBlockParamUnion{OfImage: &image}
 }
 
-func ContentBlockParamOfRequestToolUseBlock(id string, input interface{}, name string) ContentBlockParamUnion {
-	var variant ToolUseBlockParam
-	variant.ID = id
-	variant.Input = input
-	variant.Name = name
-	return ContentBlockParamUnion{OfRequestToolUseBlock: &variant}
+func ContentBlockParamOfToolUse(id string, input any, name string) ContentBlockParamUnion {
+	var toolUse ToolUseBlockParam
+	toolUse.ID = id
+	toolUse.Input = input
+	toolUse.Name = name
+	return ContentBlockParamUnion{OfToolUse: &toolUse}
 }
 
-func ContentBlockParamOfRequestToolResultBlock(toolUseID string) ContentBlockParamUnion {
-	var variant ToolResultBlockParam
-	variant.ToolUseID = toolUseID
-	return ContentBlockParamUnion{OfRequestToolResultBlock: &variant}
+func ContentBlockParamOfServerToolUse(id string, input any) ContentBlockParamUnion {
+	var serverToolUse ServerToolUseBlockParam
+	serverToolUse.ID = id
+	serverToolUse.Input = input
+	return ContentBlockParamUnion{OfServerToolUse: &serverToolUse}
 }
 
-func ContentBlockParamOfRequestDocumentBlock[
-	T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
+func ContentBlockParamOfWebSearchToolResult[
+	T []WebSearchResultBlockParam | WebSearchToolRequestErrorParam,
+](content T, toolUseID string) ContentBlockParamUnion {
+	var webSearchToolResult WebSearchToolResultBlockParam
+	switch v := any(content).(type) {
+	case []WebSearchResultBlockParam:
+		webSearchToolResult.Content.OfWebSearchToolResultBlockItem = v
+	case WebSearchToolRequestErrorParam:
+		webSearchToolResult.Content.OfRequestWebSearchToolResultError = &v
+	}
+	webSearchToolResult.ToolUseID = toolUseID
+	return ContentBlockParamUnion{OfWebSearchToolResult: &webSearchToolResult}
+}
+
+func ContentBlockParamOfToolResult(toolUseID string) ContentBlockParamUnion {
+	var toolResult ToolResultBlockParam
+	toolResult.ToolUseID = toolUseID
+	return ContentBlockParamUnion{OfToolResult: &toolResult}
+}
+
+func ContentBlockParamOfDocument[
+T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
 ](source T) ContentBlockParamUnion {
-	var variant DocumentBlockParam
+	var document DocumentBlockParam
 	switch v := any(source).(type) {
 	case Base64PDFSourceParam:
-		variant.Source.OfBase64PDFSource = &v
+		document.Source.OfBase64 = &v
 	case PlainTextSourceParam:
-		variant.Source.OfPlainTextSource = &v
+		document.Source.OfText = &v
 	case ContentBlockSourceParam:
-		variant.Source.OfContentBlockSource = &v
+		document.Source.OfContent = &v
 	case URLPDFSourceParam:
-		variant.Source.OfUrlpdfSource = &v
+		document.Source.OfURL = &v
 	}
-	return ContentBlockParamUnion{OfRequestDocumentBlock: &variant}
+	return ContentBlockParamUnion{OfDocument: &document}
 }
 
-func ContentBlockParamOfRequestThinkingBlock(signature string, thinking string) ContentBlockParamUnion {
+func ContentBlockParamOfThinking(signature string, thinking string) ContentBlockParamUnion {
 	var variant ThinkingBlockParam
 	variant.Signature = signature
 	variant.Thinking = thinking
-	return ContentBlockParamUnion{OfRequestThinkingBlock: &variant}
+	return ContentBlockParamUnion{OfThinking: &variant}
 }
 
-func ContentBlockParamOfRequestRedactedThinkingBlock(data string) ContentBlockParamUnion {
-	var variant RedactedThinkingBlockParam
-	variant.Data = data
-	return ContentBlockParamUnion{OfRequestRedactedThinkingBlock: &variant}
+func ContentBlockParamOfRedactedThinking(data string) ContentBlockParamUnion {
+	var redactedThinking RedactedThinkingBlockParam
+	redactedThinking.Data = data
+	return ContentBlockParamUnion{OfRedactedThinking: &redactedThinking}
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ContentBlockParamUnion struct {
-	OfRequestTextBlock             *TextBlockParam             `json:",omitzero,inline"`
-	OfRequestImageBlock            *ImageBlockParam            `json:",omitzero,inline"`
-	OfRequestToolUseBlock          *ToolUseBlockParam          `json:",omitzero,inline"`
-	OfRequestToolResultBlock       *ToolResultBlockParam       `json:",omitzero,inline"`
-	OfRequestDocumentBlock         *DocumentBlockParam         `json:",omitzero,inline"`
-	OfRequestThinkingBlock         *ThinkingBlockParam         `json:",omitzero,inline"`
-	OfRequestRedactedThinkingBlock *RedactedThinkingBlockParam `json:",omitzero,inline"`
+	OfText                *TextBlockParam                `json:",omitzero,inline"`
+	OfImage               *ImageBlockParam               `json:",omitzero,inline"`
+	OfToolUse             *ToolUseBlockParam             `json:",omitzero,inline"`
+	OfServerToolUse       *ServerToolUseBlockParam       `json:",omitzero,inline"`
+	OfWebSearchToolResult *WebSearchToolResultBlockParam `json:",omitzero,inline"`
+	OfToolResult          *ToolResultBlockParam          `json:",omitzero,inline"`
+	OfDocument            *DocumentBlockParam            `json:",omitzero,inline"`
+	OfThinking            *ThinkingBlockParam            `json:",omitzero,inline"`
+	OfRedactedThinking    *RedactedThinkingBlockParam    `json:",omitzero,inline"`
 	paramUnion
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ContentBlockParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ContentBlockParamUnion](u.OfRequestTextBlock,
-		u.OfRequestImageBlock,
-		u.OfRequestToolUseBlock,
-		u.OfRequestToolResultBlock,
-		u.OfRequestDocumentBlock,
-		u.OfRequestThinkingBlock,
-		u.OfRequestRedactedThinkingBlock)
+	return param.MarshalUnion[ContentBlockParamUnion](u.OfText,
+		u.OfImage,
+		u.OfToolUse,
+		u.OfServerToolUse,
+		u.OfWebSearchToolResult,
+		u.OfToolResult,
+		u.OfDocument,
+		u.OfThinking,
+		u.OfRedactedThinking)
+}
+func (u *ContentBlockParamUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ContentBlockParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestTextBlock) {
-		return u.OfRequestTextBlock
-	} else if !param.IsOmitted(u.OfRequestImageBlock) {
-		return u.OfRequestImageBlock
-	} else if !param.IsOmitted(u.OfRequestToolUseBlock) {
-		return u.OfRequestToolUseBlock
-	} else if !param.IsOmitted(u.OfRequestToolResultBlock) {
-		return u.OfRequestToolResultBlock
-	} else if !param.IsOmitted(u.OfRequestDocumentBlock) {
-		return u.OfRequestDocumentBlock
-	} else if !param.IsOmitted(u.OfRequestThinkingBlock) {
-		return u.OfRequestThinkingBlock
-	} else if !param.IsOmitted(u.OfRequestRedactedThinkingBlock) {
-		return u.OfRequestRedactedThinkingBlock
+	if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfImage) {
+		return u.OfImage
+	} else if !param.IsOmitted(u.OfToolUse) {
+		return u.OfToolUse
+	} else if !param.IsOmitted(u.OfServerToolUse) {
+		return u.OfServerToolUse
+	} else if !param.IsOmitted(u.OfWebSearchToolResult) {
+		return u.OfWebSearchToolResult
+	} else if !param.IsOmitted(u.OfToolResult) {
+		return u.OfToolResult
+	} else if !param.IsOmitted(u.OfDocument) {
+		return u.OfDocument
+	} else if !param.IsOmitted(u.OfThinking) {
+		return u.OfThinking
+	} else if !param.IsOmitted(u.OfRedactedThinking) {
+		return u.OfRedactedThinking
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetText() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.Text
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetID() *string {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
-		return &vt.ID
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetInput() *interface{} {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
-		return &vt.Input
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetName() *string {
-	if vt := u.OfRequestToolUseBlock; vt != nil {
-		return &vt.Name
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetToolUseID() *string {
-	if vt := u.OfRequestToolResultBlock; vt != nil {
-		return &vt.ToolUseID
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetContent() *[]ToolResultBlockParamContentUnion {
-	if vt := u.OfRequestToolResultBlock; vt != nil {
-		return &vt.Content
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetIsError() *bool {
-	if vt := u.OfRequestToolResultBlock; vt != nil && vt.IsError.IsPresent() {
+	if vt := u.OfToolResult; vt != nil && vt.IsError.Valid() {
 		return &vt.IsError.Value
 	}
 	return nil
@@ -685,7 +782,7 @@ func (u ContentBlockParamUnion) GetIsError() *bool {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetContext() *string {
-	if vt := u.OfRequestDocumentBlock; vt != nil && vt.Context.IsPresent() {
+	if vt := u.OfDocument; vt != nil && vt.Context.Valid() {
 		return &vt.Context.Value
 	}
 	return nil
@@ -693,7 +790,7 @@ func (u ContentBlockParamUnion) GetContext() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetTitle() *string {
-	if vt := u.OfRequestDocumentBlock; vt != nil && vt.Title.IsPresent() {
+	if vt := u.OfDocument; vt != nil && vt.Title.Valid() {
 		return &vt.Title.Value
 	}
 	return nil
@@ -701,7 +798,7 @@ func (u ContentBlockParamUnion) GetTitle() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetSignature() *string {
-	if vt := u.OfRequestThinkingBlock; vt != nil {
+	if vt := u.OfThinking; vt != nil {
 		return &vt.Signature
 	}
 	return nil
@@ -709,7 +806,7 @@ func (u ContentBlockParamUnion) GetSignature() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetThinking() *string {
-	if vt := u.OfRequestThinkingBlock; vt != nil {
+	if vt := u.OfThinking; vt != nil {
 		return &vt.Thinking
 	}
 	return nil
@@ -717,7 +814,7 @@ func (u ContentBlockParamUnion) GetThinking() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetData() *string {
-	if vt := u.OfRequestRedactedThinkingBlock; vt != nil {
+	if vt := u.OfRedactedThinking; vt != nil {
 		return &vt.Data
 	}
 	return nil
@@ -725,35 +822,73 @@ func (u ContentBlockParamUnion) GetData() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetType() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestToolUseBlock; vt != nil {
+	} else if vt := u.OfToolUse; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestToolResultBlock; vt != nil {
+	} else if vt := u.OfServerToolUse; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestThinkingBlock; vt != nil {
+	} else if vt := u.OfToolResult; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestRedactedThinkingBlock; vt != nil {
+	} else if vt := u.OfDocument; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfThinking; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfRedactedThinking; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockParamUnion) GetID() *string {
+	if vt := u.OfToolUse; vt != nil {
+		return (*string)(&vt.ID)
+	} else if vt := u.OfServerToolUse; vt != nil {
+		return (*string)(&vt.ID)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockParamUnion) GetName() *string {
+	if vt := u.OfToolUse; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfServerToolUse; vt != nil {
+		return (*string)(&vt.Name)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockParamUnion) GetToolUseID() *string {
+	if vt := u.OfWebSearchToolResult; vt != nil {
+		return (*string)(&vt.ToolUseID)
+	} else if vt := u.OfToolResult; vt != nil {
+		return (*string)(&vt.ToolUseID)
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's CacheControl property, if present.
 func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestToolUseBlock; vt != nil {
+	} else if vt := u.OfToolUse; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestToolResultBlock; vt != nil {
+	} else if vt := u.OfServerToolUse; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfToolResult; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfDocument; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil
@@ -763,21 +898,16 @@ func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
 //
 // Or use AsAny() to get the underlying value
 func (u ContentBlockParamUnion) GetCitations() (res contentBlockParamUnionCitations) {
-	if vt := u.OfRequestTextBlock; vt != nil {
-		res.ofTextBlockCitations = &vt.Citations
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
-		res.ofCitationsConfig = &vt.Citations
+	if vt := u.OfText; vt != nil {
+		res.any = &vt.Citations
+	} else if vt := u.OfDocument; vt != nil {
+		res.any = &vt.Citations
 	}
 	return
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type contentBlockParamUnionCitations struct {
-	ofTextBlockCitations *[]TextCitationParamUnion
-	ofCitationsConfig    *CitationsConfigParam
-}
+// Can have the runtime types [*[]TextCitationParamUnion], [*CitationsConfigParam]
+type contentBlockParamUnionCitations struct{ any }
 
 // Use the following switch statement to get the type of the union:
 //
@@ -787,42 +917,24 @@ type contentBlockParamUnionCitations struct {
 //	default:
 //	    fmt.Errorf("not present")
 //	}
-func (u contentBlockParamUnionCitations) AsAny() any {
-	if !param.IsOmitted(u.ofTextBlockCitations) {
-		return u.ofTextBlockCitations
-	} else if !param.IsOmitted(u.ofCitationsConfig) {
-		return u.ofCitationsConfig
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u contentBlockParamUnionCitations) GetEnabled() *bool {
-	if vt := u.ofCitationsConfig; vt != nil && vt.Enabled.IsPresent() {
-		return &vt.Enabled.Value
-	}
-	return nil
-}
+func (u contentBlockParamUnionCitations) AsAny() any { return u.any }
 
 // Returns a subunion which exports methods to access subproperties
 //
 // Or use AsAny() to get the underlying value
 func (u ContentBlockParamUnion) GetSource() (res contentBlockParamUnionSource) {
-	if vt := u.OfRequestImageBlock; vt != nil {
-		res.ofImageBlockSource = &vt.Source
-	} else if vt := u.OfRequestDocumentBlock; vt != nil {
-		res.ofDocumentBlockSource = &vt.Source
+	if vt := u.OfImage; vt != nil {
+		res.any = vt.Source.asAny()
+	} else if vt := u.OfDocument; vt != nil {
+		res.any = vt.Source.asAny()
 	}
 	return
 }
 
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type contentBlockParamUnionSource struct {
-	ofImageBlockSource    *ImageBlockParamSourceUnion
-	ofDocumentBlockSource *DocumentBlockParamSourceUnion
-}
+// Can have the runtime types [*Base64ImageSourceParam], [*URLImageSourceParam],
+// [*Base64PDFSourceParam], [*PlainTextSourceParam], [*ContentBlockSourceParam],
+// [*URLPDFSourceParam]
+type contentBlockParamUnionSource struct{ any }
 
 // Use the following switch statement to get the type of the union:
 //
@@ -836,113 +948,163 @@ type contentBlockParamUnionSource struct {
 //	default:
 //	    fmt.Errorf("not present")
 //	}
-func (u contentBlockParamUnionSource) AsAny() any {
-	if !param.IsOmitted(u.ofImageBlockSource) {
-		return u.ofImageBlockSource.asAny()
-	} else if !param.IsOmitted(u.ofDocumentBlockSource) {
-		return u.ofDocumentBlockSource.asAny()
-	}
-	return nil
-}
+func (u contentBlockParamUnionSource) AsAny() any { return u.any }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u contentBlockParamUnionSource) GetContent() *ContentBlockSourceContentUnionParam {
-	if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetContent()
+	switch vt := u.any.(type) {
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetContent()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u contentBlockParamUnionSource) GetData() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetData()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetData()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetData()
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetData()
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetData()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u contentBlockParamUnionSource) GetMediaType() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetMediaType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetMediaType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetMediaType()
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetMediaType()
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetMediaType()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u contentBlockParamUnionSource) GetType() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetType()
-	} else if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetType()
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetType()
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetType()
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u contentBlockParamUnionSource) GetURL() *string {
-	if u.ofImageBlockSource != nil {
-		return u.ofImageBlockSource.GetURL()
-	} else if u.ofDocumentBlockSource != nil {
-		return u.ofDocumentBlockSource.GetURL()
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetURL()
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetURL()
 	}
 	return nil
 }
 
+// Returns a pointer to the underlying variant's Input property, if present.
+func (u ContentBlockParamUnion) GetInput() *any {
+	if vt := u.OfToolUse; vt != nil {
+		return &vt.Input
+	} else if vt := u.OfServerToolUse; vt != nil {
+		return &vt.Input
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent) {
+	if vt := u.OfWebSearchToolResult; vt != nil {
+		res.any = vt.Content.asAny()
+	} else if vt := u.OfToolResult; vt != nil {
+		res.any = &vt.Content
+	}
+	return
+}
+
+// Can have the runtime types [_[]WebSearchResultBlockParam],
+// [_[]ToolResultBlockParamContentUnion]
+type contentBlockParamUnionContent struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *[]anthropic.WebSearchResultBlockParam:
+//	case *[]anthropic.ToolResultBlockParamContentUnion:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u contentBlockParamUnionContent) AsAny() any { return u.any }
+
 func init() {
 	apijson.RegisterUnion[ContentBlockParamUnion](
 		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(TextBlockParam{}),
-			DiscriminatorValue: "text",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ImageBlockParam{}),
-			DiscriminatorValue: "image",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolUseBlockParam{}),
-			DiscriminatorValue: "tool_use",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolResultBlockParam{}),
-			DiscriminatorValue: "tool_result",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(DocumentBlockParam{}),
-			DiscriminatorValue: "document",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ThinkingBlockParam{}),
-			DiscriminatorValue: "thinking",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(RedactedThinkingBlockParam{}),
-			DiscriminatorValue: "redacted_thinking",
-		},
+		apijson.Discriminator[TextBlockParam]("text"),
+		apijson.Discriminator[ImageBlockParam]("image"),
+		apijson.Discriminator[ToolUseBlockParam]("tool_use"),
+		apijson.Discriminator[ServerToolUseBlockParam]("server_tool_use"),
+		apijson.Discriminator[WebSearchToolResultBlockParam]("web_search_tool_result"),
+		apijson.Discriminator[ToolResultBlockParam]("tool_result"),
+		apijson.Discriminator[DocumentBlockParam]("document"),
+		apijson.Discriminator[ThinkingBlockParam]("thinking"),
+		apijson.Discriminator[RedactedThinkingBlockParam]("redacted_thinking"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[DocumentBlockParamSourceUnion](
+		"type",
+		apijson.Discriminator[Base64PDFSourceParam]("base64"),
+		apijson.Discriminator[PlainTextSourceParam]("text"),
+		apijson.Discriminator[ContentBlockSourceParam]("content"),
+		apijson.Discriminator[URLPDFSourceParam]("url"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[ImageBlockParamSourceUnion](
+		"type",
+		apijson.Discriminator[Base64ImageSourceParam]("base64"),
+		apijson.Discriminator[URLImageSourceParam]("url"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[TextCitationParamUnion](
+		"type",
+		apijson.Discriminator[CitationCharLocationParam]("char_location"),
+		apijson.Discriminator[CitationPageLocationParam]("page_location"),
+		apijson.Discriminator[CitationContentBlockLocationParam]("content_block_location"),
+		apijson.Discriminator[CitationWebSearchResultLocationParam]("web_search_result_location"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[ThinkingConfigParamUnion](
+		"type",
+		apijson.Discriminator[ThinkingConfigEnabledParam]("enabled"),
+		apijson.Discriminator[ThinkingConfigDisabledParam]("disabled"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[ToolChoiceUnionParam](
+		"type",
+		apijson.Discriminator[ToolChoiceAutoParam]("auto"),
+		apijson.Discriminator[ToolChoiceAnyParam]("any"),
+		apijson.Discriminator[ToolChoiceToolParam]("tool"),
+		apijson.Discriminator[ToolChoiceNoneParam]("none"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[ToolResultBlockParamContentUnion](
+		"type",
+		apijson.Discriminator[TextBlockParam]("text"),
+		apijson.Discriminator[ImageBlockParam]("image"),
 	)
 }
 
@@ -954,12 +1116,12 @@ type ContentBlockSourceParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ContentBlockSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ContentBlockSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow ContentBlockSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ContentBlockSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Only one field can be non-zero.
@@ -971,13 +1133,11 @@ type ContentBlockSourceContentUnionParam struct {
 	paramUnion
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ContentBlockSourceContentUnionParam) IsPresent() bool {
-	return !param.IsOmitted(u) && !u.IsNull()
-}
 func (u ContentBlockSourceContentUnionParam) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion[ContentBlockSourceContentUnionParam](u.OfString, u.OfContentBlockSourceContent)
+}
+func (u *ContentBlockSourceContentUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ContentBlockSourceContentUnionParam) asAny() any {
@@ -991,58 +1151,59 @@ func (u *ContentBlockSourceContentUnionParam) asAny() any {
 
 // The properties Source, Type are required.
 type DocumentBlockParam struct {
-	Source       DocumentBlockParamSourceUnion `json:"source,omitzero,required"`
-	Context      param.Opt[string]             `json:"context,omitzero"`
-	Title        param.Opt[string]             `json:"title,omitzero"`
-	CacheControl CacheControlEphemeralParam    `json:"cache_control,omitzero"`
-	Citations    CitationsConfigParam          `json:"citations,omitzero"`
+	Source  DocumentBlockParamSourceUnion `json:"source,omitzero,required"`
+	Context param.Opt[string]             `json:"context,omitzero"`
+	Title   param.Opt[string]             `json:"title,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	Citations    CitationsConfigParam       `json:"citations,omitzero"`
 	// This field can be elided, and will marshal its zero value as "document".
 	Type constant.Document `json:"type,required"`
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f DocumentBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r DocumentBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow DocumentBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *DocumentBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type DocumentBlockParamSourceUnion struct {
-	OfBase64PDFSource    *Base64PDFSourceParam    `json:",omitzero,inline"`
-	OfPlainTextSource    *PlainTextSourceParam    `json:",omitzero,inline"`
-	OfContentBlockSource *ContentBlockSourceParam `json:",omitzero,inline"`
-	OfUrlpdfSource       *URLPDFSourceParam       `json:",omitzero,inline"`
+	OfBase64  *Base64PDFSourceParam    `json:",omitzero,inline"`
+	OfText    *PlainTextSourceParam    `json:",omitzero,inline"`
+	OfContent *ContentBlockSourceParam `json:",omitzero,inline"`
+	OfURL     *URLPDFSourceParam       `json:",omitzero,inline"`
 	paramUnion
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u DocumentBlockParamSourceUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u DocumentBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[DocumentBlockParamSourceUnion](u.OfBase64PDFSource, u.OfPlainTextSource, u.OfContentBlockSource, u.OfUrlpdfSource)
+	return param.MarshalUnion[DocumentBlockParamSourceUnion](u.OfBase64, u.OfText, u.OfContent, u.OfURL)
+}
+func (u *DocumentBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *DocumentBlockParamSourceUnion) asAny() any {
-	if !param.IsOmitted(u.OfBase64PDFSource) {
-		return u.OfBase64PDFSource
-	} else if !param.IsOmitted(u.OfPlainTextSource) {
-		return u.OfPlainTextSource
-	} else if !param.IsOmitted(u.OfContentBlockSource) {
-		return u.OfContentBlockSource
-	} else if !param.IsOmitted(u.OfUrlpdfSource) {
-		return u.OfUrlpdfSource
+	if !param.IsOmitted(u.OfBase64) {
+		return u.OfBase64
+	} else if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfContent) {
+		return u.OfContent
+	} else if !param.IsOmitted(u.OfURL) {
+		return u.OfURL
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetContent() *ContentBlockSourceContentUnionParam {
-	if vt := u.OfContentBlockSource; vt != nil {
+	if vt := u.OfContent; vt != nil {
 		return &vt.Content
 	}
 	return nil
@@ -1050,7 +1211,7 @@ func (u DocumentBlockParamSourceUnion) GetContent() *ContentBlockSourceContentUn
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetURL() *string {
-	if vt := u.OfUrlpdfSource; vt != nil {
+	if vt := u.OfURL; vt != nil {
 		return &vt.URL
 	}
 	return nil
@@ -1058,9 +1219,9 @@ func (u DocumentBlockParamSourceUnion) GetURL() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetData() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.Data)
-	} else if vt := u.OfPlainTextSource; vt != nil {
+	} else if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Data)
 	}
 	return nil
@@ -1068,9 +1229,9 @@ func (u DocumentBlockParamSourceUnion) GetData() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetMediaType() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.MediaType)
-	} else if vt := u.OfPlainTextSource; vt != nil {
+	} else if vt := u.OfText; vt != nil {
 		return (*string)(&vt.MediaType)
 	}
 	return nil
@@ -1078,47 +1239,22 @@ func (u DocumentBlockParamSourceUnion) GetMediaType() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetType() *string {
-	if vt := u.OfBase64PDFSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfPlainTextSource; vt != nil {
+	} else if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfContentBlockSource; vt != nil {
+	} else if vt := u.OfContent; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfUrlpdfSource; vt != nil {
+	} else if vt := u.OfURL; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[DocumentBlockParamSourceUnion](
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(Base64PDFSourceParam{}),
-			DiscriminatorValue: "base64",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(PlainTextSourceParam{}),
-			DiscriminatorValue: "text",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ContentBlockSourceParam{}),
-			DiscriminatorValue: "content",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(URLPDFSourceParam{}),
-			DiscriminatorValue: "url",
-		},
-	)
-}
-
 // The properties Source, Type are required.
 type ImageBlockParam struct {
-	Source       ImageBlockParamSourceUnion `json:"source,omitzero,required"`
+	Source ImageBlockParamSourceUnion `json:"source,omitzero,required"`
+	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "image".
 	Type constant.Image `json:"type,required"`
@@ -1127,9 +1263,9 @@ type ImageBlockParam struct {
 
 func NewImageBlockBase64(mediaType string, encodedData string) ContentBlockParamUnion {
 	return ContentBlockParamUnion{
-		OfRequestImageBlock: &ImageBlockParam{
+		OfImage: &ImageBlockParam{
 			Source: ImageBlockParamSourceUnion{
-				OfBase64ImageSource: &Base64ImageSourceParam{
+				OfBase64: &Base64ImageSourceParam{
 					Data:      encodedData,
 					MediaType: Base64ImageSourceMediaType(mediaType),
 				},
@@ -1140,40 +1276,44 @@ func NewImageBlockBase64(mediaType string, encodedData string) ContentBlockParam
 
 // IsPresent returns true if the field's value is not omitted and not the JSON
 // "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ImageBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (f ImageBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
+
 func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ImageBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ImageBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ImageBlockParamSourceUnion struct {
-	OfBase64ImageSource *Base64ImageSourceParam `json:",omitzero,inline"`
-	OfURLImageSource    *URLImageSourceParam    `json:",omitzero,inline"`
+	OfBase64 *Base64ImageSourceParam `json:",omitzero,inline"`
+	OfURL    *URLImageSourceParam    `json:",omitzero,inline"`
 	paramUnion
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ImageBlockParamSourceUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ImageBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ImageBlockParamSourceUnion](u.OfBase64ImageSource, u.OfURLImageSource)
+	return param.MarshalUnion[ImageBlockParamSourceUnion](u.OfBase64, u.OfURL)
+}
+func (u *ImageBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ImageBlockParamSourceUnion) asAny() any {
-	if !param.IsOmitted(u.OfBase64ImageSource) {
-		return u.OfBase64ImageSource
-	} else if !param.IsOmitted(u.OfURLImageSource) {
-		return u.OfURLImageSource
+	if !param.IsOmitted(u.OfBase64) {
+		return u.OfBase64
+	} else if !param.IsOmitted(u.OfURL) {
+		return u.OfURL
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ImageBlockParamSourceUnion) GetData() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return &vt.Data
 	}
 	return nil
@@ -1181,7 +1321,7 @@ func (u ImageBlockParamSourceUnion) GetData() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ImageBlockParamSourceUnion) GetMediaType() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.MediaType)
 	}
 	return nil
@@ -1189,7 +1329,7 @@ func (u ImageBlockParamSourceUnion) GetMediaType() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ImageBlockParamSourceUnion) GetURL() *string {
-	if vt := u.OfURLImageSource; vt != nil {
+	if vt := u.OfURL; vt != nil {
 		return &vt.URL
 	}
 	return nil
@@ -1197,39 +1337,22 @@ func (u ImageBlockParamSourceUnion) GetURL() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ImageBlockParamSourceUnion) GetType() *string {
-	if vt := u.OfBase64ImageSource; vt != nil {
+	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfURLImageSource; vt != nil {
+	} else if vt := u.OfURL; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[ImageBlockParamSourceUnion](
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(Base64ImageSourceParam{}),
-			DiscriminatorValue: "base64",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(URLImageSourceParam{}),
-			DiscriminatorValue: "url",
-		},
-	)
-}
-
 type InputJSONDelta struct {
 	PartialJSON string                  `json:"partial_json,required"`
 	Type        constant.InputJSONDelta `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		PartialJSON resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		PartialJSON respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1300,8 +1423,9 @@ type Message struct {
 	// In non-streaming mode this value is always non-null. In streaming mode, it is
 	// null in the `message_start` event and non-null otherwise.
 	//
-	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason MessageStopReason `json:"stop_reason,required"`
+	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
+	// "refusal".
+	StopReason StopReason `json:"stop_reason,required"`
 	// Which custom stop sequence was generated, if any.
 	//
 	// This value will be a non-null string if one of your custom stop sequences was
@@ -1327,18 +1451,17 @@ type Message struct {
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage Usage `json:"usage,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID           resp.Field
-		Content      resp.Field
-		Model        resp.Field
-		Role         resp.Field
-		StopReason   resp.Field
-		StopSequence resp.Field
-		Type         resp.Field
-		Usage        resp.Field
-		ExtraFields  map[string]resp.Field
+		ID           respjson.Field
+		Content      respjson.Field
+		Model        respjson.Field
+		Role         respjson.Field
+		StopReason   respjson.Field
+		StopSequence respjson.Field
+		Type         respjson.Field
+		Usage        respjson.Field
+		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -1390,17 +1513,18 @@ func MessageCountTokensToolParamOfTool(inputSchema ToolInputSchemaParam, name st
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type MessageCountTokensToolUnionParam struct {
-	OfTool               *ToolParam                   `json:",omitzero,inline"`
-	OfBashTool20250124   *ToolBash20250124Param       `json:",omitzero,inline"`
-	OfTextEditor20250124 *ToolTextEditor20250124Param `json:",omitzero,inline"`
+	OfTool                  *ToolParam                   `json:",omitzero,inline"`
+	OfBashTool20250124      *ToolBash20250124Param       `json:",omitzero,inline"`
+	OfTextEditor20250124    *ToolTextEditor20250124Param `json:",omitzero,inline"`
+	OfWebSearchTool20250305 *WebSearchTool20250305Param  `json:",omitzero,inline"`
 	paramUnion
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u MessageCountTokensToolUnionParam) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u MessageCountTokensToolUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[MessageCountTokensToolUnionParam](u.OfTool, u.OfBashTool20250124, u.OfTextEditor20250124)
+	return param.MarshalUnion[MessageCountTokensToolUnionParam](u.OfTool, u.OfBashTool20250124, u.OfTextEditor20250124, u.OfWebSearchTool20250305)
+}
+func (u *MessageCountTokensToolUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *MessageCountTokensToolUnionParam) asAny() any {
@@ -1410,6 +1534,8 @@ func (u *MessageCountTokensToolUnionParam) asAny() any {
 		return u.OfBashTool20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250124) {
 		return u.OfTextEditor20250124
+	} else if !param.IsOmitted(u.OfWebSearchTool20250305) {
+		return u.OfWebSearchTool20250305
 	}
 	return nil
 }
@@ -1424,8 +1550,40 @@ func (u MessageCountTokensToolUnionParam) GetInputSchema() *ToolInputSchemaParam
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u MessageCountTokensToolUnionParam) GetDescription() *string {
-	if vt := u.OfTool; vt != nil && vt.Description.IsPresent() {
+	if vt := u.OfTool; vt != nil && vt.Description.Valid() {
 		return &vt.Description.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u MessageCountTokensToolUnionParam) GetAllowedDomains() []string {
+	if vt := u.OfWebSearchTool20250305; vt != nil {
+		return vt.AllowedDomains
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u MessageCountTokensToolUnionParam) GetBlockedDomains() []string {
+	if vt := u.OfWebSearchTool20250305; vt != nil {
+		return vt.BlockedDomains
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u MessageCountTokensToolUnionParam) GetMaxUses() *int64 {
+	if vt := u.OfWebSearchTool20250305; vt != nil && vt.MaxUses.Valid() {
+		return &vt.MaxUses.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u MessageCountTokensToolUnionParam) GetUserLocation() *WebSearchTool20250305UserLocationParam {
+	if vt := u.OfWebSearchTool20250305; vt != nil {
+		return &vt.UserLocation
 	}
 	return nil
 }
@@ -1438,15 +1596,21 @@ func (u MessageCountTokensToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfWebSearchTool20250305; vt != nil {
+		return (*string)(&vt.Name)
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u MessageCountTokensToolUnionParam) GetType() *string {
-	if vt := u.OfBashTool20250124; vt != nil {
+	if vt := u.OfTool; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfBashTool20250124; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -1460,19 +1624,32 @@ func (u MessageCountTokensToolUnionParam) GetCacheControl() *CacheControlEphemer
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return &vt.CacheControl
+	} else if vt := u.OfWebSearchTool20250305; vt != nil {
+		return &vt.CacheControl
 	}
 	return nil
 }
 
 type MessageDeltaUsage struct {
+	// The cumulative number of input tokens used to create the cache entry.
+	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens,required"`
+	// The cumulative number of input tokens read from the cache.
+	CacheReadInputTokens int64 `json:"cache_read_input_tokens,required"`
+	// The cumulative number of input tokens which were used.
+	InputTokens int64 `json:"input_tokens,required"`
 	// The cumulative number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// The number of server tool requests.
+	ServerToolUse ServerToolUsage `json:"server_tool_use,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		OutputTokens resp.Field
-		ExtraFields  map[string]resp.Field
-		raw          string
+		CacheCreationInputTokens respjson.Field
+		CacheReadInputTokens     respjson.Field
+		InputTokens              respjson.Field
+		OutputTokens             respjson.Field
+		ServerToolUse            respjson.Field
+		ExtraFields              map[string]respjson.Field
+		raw                      string
 	} `json:"-"`
 }
 
@@ -1506,10 +1683,14 @@ func NewAssistantMessage(blocks ...ContentBlockParamUnion) MessageParam {
 
 // IsPresent returns true if the field's value is not omitted and not the JSON
 // "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (f MessageParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
+
 func (r MessageParam) MarshalJSON() (data []byte, err error) {
 	type shadow MessageParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MessageParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type MessageParamRole string
@@ -1523,11 +1704,10 @@ type MessageTokensCount struct {
 	// The total number of tokens across the provided list of messages, system prompt,
 	// and tools.
 	InputTokens int64 `json:"input_tokens,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		InputTokens resp.Field
-		ExtraFields map[string]resp.Field
+		InputTokens respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1548,12 +1728,12 @@ type MetadataParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MetadataParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r MetadataParam) MarshalJSON() (data []byte, err error) {
 	type shadow MetadataParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MetadataParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The model that will complete your prompt.\n\nSee
@@ -1596,44 +1776,22 @@ type PlainTextSourceParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f PlainTextSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r PlainTextSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow PlainTextSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-
-type ContentBlockDeltaEvent struct {
-	Delta ContentBlockDeltaEventDeltaUnion `json:"delta,required"`
-	Index int64                            `json:"index,required"`
-	Type  constant.ContentBlockDelta       `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
-	JSON struct {
-		Delta       resp.Field
-		Index       resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ContentBlockDeltaEvent) RawJSON() string { return r.JSON.raw }
-func (r *ContentBlockDeltaEvent) UnmarshalJSON(data []byte) error {
+func (r *PlainTextSourceParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// ContentBlockDeltaEventDeltaUnion contains all possible properties and values
-// from [TextDelta], [InputJSONDelta], [CitationsDelta], [ThinkingDelta],
+// RawContentBlockDeltaUnion contains all possible properties and values from
+// [TextDelta], [InputJSONDelta], [CitationsDelta], [ThinkingDelta],
 // [SignatureDelta].
 //
-// Use the [ContentBlockDeltaEventDeltaUnion.AsAny] method to switch on the
-// variant.
+// Use the [RawContentBlockDeltaUnion.AsAny] method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type ContentBlockDeltaEventDeltaUnion struct {
+type RawContentBlockDeltaUnion struct {
 	// This field is from variant [TextDelta].
 	Text string `json:"text"`
 	// Any of "text_delta", "input_json_delta", "citations_delta", "thinking_delta",
@@ -1648,72 +1806,105 @@ type ContentBlockDeltaEventDeltaUnion struct {
 	// This field is from variant [SignatureDelta].
 	Signature string `json:"signature"`
 	JSON      struct {
-		Text        resp.Field
-		Type        resp.Field
-		PartialJSON resp.Field
-		Citation    resp.Field
-		Thinking    resp.Field
-		Signature   resp.Field
+		Text        respjson.Field
+		Type        respjson.Field
+		PartialJSON respjson.Field
+		Citation    respjson.Field
+		Thinking    respjson.Field
+		Signature   respjson.Field
 		raw         string
 	} `json:"-"`
 }
 
+// anyRawContentBlockDelta is implemented by each variant of
+// [RawContentBlockDeltaUnion] to add type safety for the return type of
+// [RawContentBlockDeltaUnion.AsAny]
+type anyRawContentBlockDelta interface {
+	implRawContentBlockDeltaUnion()
+}
+
+func (TextDelta) implRawContentBlockDeltaUnion()      {}
+func (InputJSONDelta) implRawContentBlockDeltaUnion() {}
+func (CitationsDelta) implRawContentBlockDeltaUnion() {}
+func (ThinkingDelta) implRawContentBlockDeltaUnion()  {}
+func (SignatureDelta) implRawContentBlockDeltaUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := ContentBlockDeltaEventDeltaUnion.AsAny().(type) {
-//	case TextDelta:
-//	case InputJSONDelta:
-//	case CitationsDelta:
-//	case ThinkingDelta:
-//	case SignatureDelta:
+//	switch variant := RawContentBlockDeltaUnion.AsAny().(type) {
+//	case anthropic.TextDelta:
+//	case anthropic.InputJSONDelta:
+//	case anthropic.CitationsDelta:
+//	case anthropic.ThinkingDelta:
+//	case anthropic.SignatureDelta:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u ContentBlockDeltaEventDeltaUnion) AsAny() any {
+func (u RawContentBlockDeltaUnion) AsAny() anyRawContentBlockDelta {
 	switch u.Type {
 	case "text_delta":
-		return u.AsTextContentBlockDelta()
+		return u.AsTextDelta()
 	case "input_json_delta":
-		return u.AsInputJSONContentBlockDelta()
+		return u.AsInputJSONDelta()
 	case "citations_delta":
 		return u.AsCitationsDelta()
 	case "thinking_delta":
-		return u.AsThinkingContentBlockDelta()
+		return u.AsThinkingDelta()
 	case "signature_delta":
-		return u.AsSignatureContentBlockDelta()
+		return u.AsSignatureDelta()
 	}
 	return nil
 }
 
-func (u ContentBlockDeltaEventDeltaUnion) AsTextContentBlockDelta() (v TextDelta) {
+func (u RawContentBlockDeltaUnion) AsTextDelta() (v TextDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockDeltaEventDeltaUnion) AsInputJSONContentBlockDelta() (v InputJSONDelta) {
+func (u RawContentBlockDeltaUnion) AsInputJSONDelta() (v InputJSONDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockDeltaEventDeltaUnion) AsCitationsDelta() (v CitationsDelta) {
+func (u RawContentBlockDeltaUnion) AsCitationsDelta() (v CitationsDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockDeltaEventDeltaUnion) AsThinkingContentBlockDelta() (v ThinkingDelta) {
+func (u RawContentBlockDeltaUnion) AsThinkingDelta() (v ThinkingDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockDeltaEventDeltaUnion) AsSignatureContentBlockDelta() (v SignatureDelta) {
+func (u RawContentBlockDeltaUnion) AsSignatureDelta() (v SignatureDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u ContentBlockDeltaEventDeltaUnion) RawJSON() string { return u.JSON.raw }
+func (u RawContentBlockDeltaUnion) RawJSON() string { return u.JSON.raw }
 
-func (r *ContentBlockDeltaEventDeltaUnion) UnmarshalJSON(data []byte) error {
+func (r *RawContentBlockDeltaUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ContentBlockDeltaEvent struct {
+	Delta RawContentBlockDeltaUnion  `json:"delta,required"`
+	Index int64                      `json:"index,required"`
+	Type  constant.ContentBlockDelta `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Delta       respjson.Field
+		Index       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ContentBlockDeltaEvent) RawJSON() string { return r.JSON.raw }
+func (r *ContentBlockDeltaEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1721,13 +1912,12 @@ type ContentBlockStartEvent struct {
 	ContentBlock ContentBlockStartEventContentBlockUnion `json:"content_block,required"`
 	Index        int64                                   `json:"index,required"`
 	Type         constant.ContentBlockStart              `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ContentBlock resp.Field
-		Index        resp.Field
-		Type         resp.Field
-		ExtraFields  map[string]resp.Field
+		ContentBlock respjson.Field
+		Index        respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -1739,8 +1929,8 @@ func (r *ContentBlockStartEvent) UnmarshalJSON(data []byte) error {
 }
 
 // ContentBlockStartEventContentBlockUnion contains all possible properties and
-// values from [TextBlock], [ToolUseBlock], [ThinkingBlock],
-// [RedactedThinkingBlock].
+// values from [TextBlock], [ToolUseBlock], [ServerToolUseBlock],
+// [WebSearchToolResultBlock], [ThinkingBlock], [RedactedThinkingBlock].
 //
 // Use the [ContentBlockStartEventContentBlockUnion.AsAny] method to switch on the
 // variant.
@@ -1751,14 +1941,16 @@ type ContentBlockStartEventContentBlockUnion struct {
 	Citations []TextCitationUnion `json:"citations"`
 	// This field is from variant [TextBlock].
 	Text string `json:"text"`
-	// Any of "text", "tool_use", "thinking", "redacted_thinking".
-	Type string `json:"type"`
-	// This field is from variant [ToolUseBlock].
-	ID string `json:"id"`
-	// This field is from variant [ToolUseBlock].
-	Input interface{} `json:"input"`
-	// This field is from variant [ToolUseBlock].
-	Name string `json:"name"`
+	// Any of "text", "tool_use", "server_tool_use", "web_search_tool_result",
+	// "thinking", "redacted_thinking".
+	Type  string `json:"type"`
+	ID    string `json:"id"`
+	Input any    `json:"input"`
+	Name  string `json:"name"`
+	// This field is from variant [WebSearchToolResultBlock].
+	Content WebSearchToolResultBlockContentUnion `json:"content"`
+	// This field is from variant [WebSearchToolResultBlock].
+	ToolUseID string `json:"tool_use_id"`
 	// This field is from variant [ThinkingBlock].
 	Signature string `json:"signature"`
 	// This field is from variant [ThinkingBlock].
@@ -1766,59 +1958,91 @@ type ContentBlockStartEventContentBlockUnion struct {
 	// This field is from variant [RedactedThinkingBlock].
 	Data string `json:"data"`
 	JSON struct {
-		Citations resp.Field
-		Text      resp.Field
-		Type      resp.Field
-		ID        resp.Field
-		Input     resp.Field
-		Name      resp.Field
-		Signature resp.Field
-		Thinking  resp.Field
-		Data      resp.Field
+		Citations respjson.Field
+		Text      respjson.Field
+		Type      respjson.Field
+		ID        respjson.Field
+		Input     respjson.Field
+		Name      respjson.Field
+		Content   respjson.Field
+		ToolUseID respjson.Field
+		Signature respjson.Field
+		Thinking  respjson.Field
+		Data      respjson.Field
 		raw       string
 	} `json:"-"`
 }
 
+// anyContentBlockStartEventContentBlock is implemented by each variant of
+// [ContentBlockStartEventContentBlockUnion] to add type safety for the return type
+// of [ContentBlockStartEventContentBlockUnion.AsAny]
+type anyContentBlockStartEventContentBlock interface {
+	implContentBlockStartEventContentBlockUnion()
+}
+
+func (TextBlock) implContentBlockStartEventContentBlockUnion()                {}
+func (ToolUseBlock) implContentBlockStartEventContentBlockUnion()             {}
+func (ServerToolUseBlock) implContentBlockStartEventContentBlockUnion()       {}
+func (WebSearchToolResultBlock) implContentBlockStartEventContentBlockUnion() {}
+func (ThinkingBlock) implContentBlockStartEventContentBlockUnion()            {}
+func (RedactedThinkingBlock) implContentBlockStartEventContentBlockUnion()    {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ContentBlockStartEventContentBlockUnion.AsAny().(type) {
-//	case TextBlock:
-//	case ToolUseBlock:
-//	case ThinkingBlock:
-//	case RedactedThinkingBlock:
+//	case anthropic.TextBlock:
+//	case anthropic.ToolUseBlock:
+//	case anthropic.ServerToolUseBlock:
+//	case anthropic.WebSearchToolResultBlock:
+//	case anthropic.ThinkingBlock:
+//	case anthropic.RedactedThinkingBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u ContentBlockStartEventContentBlockUnion) AsAny() any {
+func (u ContentBlockStartEventContentBlockUnion) AsAny() anyContentBlockStartEventContentBlock {
 	switch u.Type {
 	case "text":
-		return u.AsResponseTextBlock()
+		return u.AsText()
 	case "tool_use":
-		return u.AsResponseToolUseBlock()
+		return u.AsToolUse()
+	case "server_tool_use":
+		return u.AsServerToolUse()
+	case "web_search_tool_result":
+		return u.AsWebSearchToolResult()
 	case "thinking":
-		return u.AsResponseThinkingBlock()
+		return u.AsThinking()
 	case "redacted_thinking":
-		return u.AsResponseRedactedThinkingBlock()
+		return u.AsRedactedThinking()
 	}
 	return nil
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseTextBlock() (v TextBlock) {
+func (u ContentBlockStartEventContentBlockUnion) AsText() (v TextBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseToolUseBlock() (v ToolUseBlock) {
+func (u ContentBlockStartEventContentBlockUnion) AsToolUse() (v ToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseThinkingBlock() (v ThinkingBlock) {
+func (u ContentBlockStartEventContentBlockUnion) AsServerToolUse() (v ServerToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ContentBlockStartEventContentBlockUnion) AsResponseRedactedThinkingBlock() (v RedactedThinkingBlock) {
+func (u ContentBlockStartEventContentBlockUnion) AsWebSearchToolResult() (v WebSearchToolResultBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ContentBlockStartEventContentBlockUnion) AsThinking() (v ThinkingBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ContentBlockStartEventContentBlockUnion) AsRedactedThinking() (v RedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1833,12 +2057,11 @@ func (r *ContentBlockStartEventContentBlockUnion) UnmarshalJSON(data []byte) err
 type ContentBlockStopEvent struct {
 	Index int64                     `json:"index,required"`
 	Type  constant.ContentBlockStop `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Index       resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Index       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1868,13 +2091,12 @@ type MessageDeltaEvent struct {
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage MessageDeltaUsage `json:"usage,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Delta       resp.Field
-		Type        resp.Field
-		Usage       resp.Field
-		ExtraFields map[string]resp.Field
+		Delta       respjson.Field
+		Type        respjson.Field
+		Usage       respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1886,15 +2108,15 @@ func (r *MessageDeltaEvent) UnmarshalJSON(data []byte) error {
 }
 
 type MessageDeltaEventDelta struct {
-	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use".
-	StopReason   string `json:"stop_reason,required"`
-	StopSequence string `json:"stop_sequence,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
+	// "refusal".
+	StopReason   StopReason `json:"stop_reason,required"`
+	StopSequence string     `json:"stop_sequence,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		StopReason   resp.Field
-		StopSequence resp.Field
-		ExtraFields  map[string]resp.Field
+		StopReason   respjson.Field
+		StopSequence respjson.Field
+		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -1908,12 +2130,11 @@ func (r *MessageDeltaEventDelta) UnmarshalJSON(data []byte) error {
 type MessageStartEvent struct {
 	Message Message               `json:"message,required"`
 	Type    constant.MessageStart `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1926,11 +2147,10 @@ func (r *MessageStartEvent) UnmarshalJSON(data []byte) error {
 
 type MessageStopEvent struct {
 	Type constant.MessageStop `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -1954,8 +2174,7 @@ type MessageStreamEventUnion struct {
 	// Any of "message_start", "message_delta", "message_stop", "content_block_start",
 	// "content_block_delta", "content_block_stop".
 	Type string `json:"type"`
-	// This field is a union of [MessageDeltaEventDelta],
-	// [ContentBlockDeltaEventDeltaUnion]
+	// This field is a union of [MessageDeltaEventDelta], [RawContentBlockDeltaUnion]
 	Delta MessageStreamEventUnionDelta `json:"delta"`
 	// This field is from variant [MessageDeltaEvent].
 	Usage MessageDeltaUsage `json:"usage"`
@@ -1963,72 +2182,86 @@ type MessageStreamEventUnion struct {
 	ContentBlock ContentBlockStartEventContentBlockUnion `json:"content_block"`
 	Index        int64                                   `json:"index"`
 	JSON         struct {
-		Message      resp.Field
-		Type         resp.Field
-		Delta        resp.Field
-		Usage        resp.Field
-		ContentBlock resp.Field
-		Index        resp.Field
+		Message      respjson.Field
+		Type         respjson.Field
+		Delta        respjson.Field
+		Usage        respjson.Field
+		ContentBlock respjson.Field
+		Index        respjson.Field
 		raw          string
 	} `json:"-"`
 }
 
+// anyMessageStreamEvent is implemented by each variant of
+// [MessageStreamEventUnion] to add type safety for the return type of
+// [MessageStreamEventUnion.AsAny]
+type anyMessageStreamEvent interface {
+	implMessageStreamEventUnion()
+}
+
+func (MessageStartEvent) implMessageStreamEventUnion()      {}
+func (MessageDeltaEvent) implMessageStreamEventUnion()      {}
+func (MessageStopEvent) implMessageStreamEventUnion()       {}
+func (ContentBlockStartEvent) implMessageStreamEventUnion() {}
+func (ContentBlockDeltaEvent) implMessageStreamEventUnion() {}
+func (ContentBlockStopEvent) implMessageStreamEventUnion()  {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := MessageStreamEventUnion.AsAny().(type) {
-//	case MessageStartEvent:
-//	case MessageDeltaEvent:
-//	case MessageStopEvent:
-//	case ContentBlockStartEvent:
-//	case ContentBlockDeltaEvent:
-//	case ContentBlockStopEvent:
+//	case anthropic.MessageStartEvent:
+//	case anthropic.MessageDeltaEvent:
+//	case anthropic.MessageStopEvent:
+//	case anthropic.ContentBlockStartEvent:
+//	case anthropic.ContentBlockDeltaEvent:
+//	case anthropic.ContentBlockStopEvent:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u MessageStreamEventUnion) AsAny() any {
+func (u MessageStreamEventUnion) AsAny() anyMessageStreamEvent {
 	switch u.Type {
 	case "message_start":
-		return u.AsMessageStartEvent()
+		return u.AsMessageStart()
 	case "message_delta":
-		return u.AsMessageDeltaEvent()
+		return u.AsMessageDelta()
 	case "message_stop":
-		return u.AsMessageStopEvent()
+		return u.AsMessageStop()
 	case "content_block_start":
-		return u.AsContentBlockStartEvent()
+		return u.AsContentBlockStart()
 	case "content_block_delta":
-		return u.AsContentBlockDeltaEvent()
+		return u.AsContentBlockDelta()
 	case "content_block_stop":
-		return u.AsContentBlockStopEvent()
+		return u.AsContentBlockStop()
 	}
 	return nil
 }
 
-func (u MessageStreamEventUnion) AsMessageStartEvent() (v MessageStartEvent) {
+func (u MessageStreamEventUnion) AsMessageStart() (v MessageStartEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageStreamEventUnion) AsMessageDeltaEvent() (v MessageDeltaEvent) {
+func (u MessageStreamEventUnion) AsMessageDelta() (v MessageDeltaEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageStreamEventUnion) AsMessageStopEvent() (v MessageStopEvent) {
+func (u MessageStreamEventUnion) AsMessageStop() (v MessageStopEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageStreamEventUnion) AsContentBlockStartEvent() (v ContentBlockStartEvent) {
+func (u MessageStreamEventUnion) AsContentBlockStart() (v ContentBlockStartEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageStreamEventUnion) AsContentBlockDeltaEvent() (v ContentBlockDeltaEvent) {
+func (u MessageStreamEventUnion) AsContentBlockDelta() (v ContentBlockDeltaEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u MessageStreamEventUnion) AsContentBlockStopEvent() (v ContentBlockStopEvent) {
+func (u MessageStreamEventUnion) AsContentBlockStop() (v ContentBlockStopEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2048,29 +2281,29 @@ func (r *MessageStreamEventUnion) UnmarshalJSON(data []byte) error {
 // [MessageStreamEventUnion].
 type MessageStreamEventUnionDelta struct {
 	// This field is from variant [MessageDeltaEventDelta].
-	StopReason string `json:"stop_reason"`
+	StopReason StopReason `json:"stop_reason"`
 	// This field is from variant [MessageDeltaEventDelta].
 	StopSequence string `json:"stop_sequence"`
-	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
+	// This field is from variant [RawContentBlockDeltaUnion].
 	Text string `json:"text"`
 	Type string `json:"type"`
-	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
+	// This field is from variant [RawContentBlockDeltaUnion].
 	PartialJSON string `json:"partial_json"`
-	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
+	// This field is from variant [RawContentBlockDeltaUnion].
 	Citation CitationsDeltaCitationUnion `json:"citation"`
-	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
+	// This field is from variant [RawContentBlockDeltaUnion].
 	Thinking string `json:"thinking"`
-	// This field is from variant [ContentBlockDeltaEventDeltaUnion].
+	// This field is from variant [RawContentBlockDeltaUnion].
 	Signature string `json:"signature"`
 	JSON      struct {
-		StopReason   resp.Field
-		StopSequence resp.Field
-		Text         resp.Field
-		Type         resp.Field
-		PartialJSON  resp.Field
-		Citation     resp.Field
-		Thinking     resp.Field
-		Signature    resp.Field
+		StopReason   respjson.Field
+		StopSequence respjson.Field
+		Text         respjson.Field
+		Type         respjson.Field
+		PartialJSON  respjson.Field
+		Citation     respjson.Field
+		Thinking     respjson.Field
+		Signature    respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -2097,13 +2330,9 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 	case MessageStartEvent:
 		*acc = event.Message
 	case MessageDeltaEvent:
-		acc.StopReason = MessageStopReason(event.Delta.StopReason)
+		acc.StopReason = event.Delta.StopReason
 		acc.StopSequence = event.Delta.StopSequence
 		acc.Usage.OutputTokens = event.Usage.OutputTokens
-
-		// acc.JSON.StopReason = event.Delta.JSON.StopReason
-		// acc.JSON.StopSequence = event.Delta.JSON.StopSequence
-		// acc.Usage.JSON.OutputTokens = event.Usage.JSON.OutputTokens
 	case MessageStopEvent:
 		accJson, err := json.Marshal(acc)
 		if err != nil {
@@ -2152,12 +2381,11 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 type RedactedThinkingBlock struct {
 	Data string                    `json:"data,required"`
 	Type constant.RedactedThinking `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Data        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Data        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -2184,23 +2412,82 @@ type RedactedThinkingBlockParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f RedactedThinkingBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r RedactedThinkingBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow RedactedThinkingBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *RedactedThinkingBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ServerToolUsage struct {
+	// The number of web search tool requests.
+	WebSearchRequests int64 `json:"web_search_requests,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		WebSearchRequests respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ServerToolUsage) RawJSON() string { return r.JSON.raw }
+func (r *ServerToolUsage) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ServerToolUseBlock struct {
+	ID    string                 `json:"id,required"`
+	Input any                    `json:"input,required"`
+	Name  constant.WebSearch     `json:"name,required"`
+	Type  constant.ServerToolUse `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Input       respjson.Field
+		Name        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ServerToolUseBlock) RawJSON() string { return r.JSON.raw }
+func (r *ServerToolUseBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ID, Input, Name, Type are required.
+type ServerToolUseBlockParam struct {
+	ID    string `json:"id,required"`
+	Input any    `json:"input,omitzero,required"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// This field can be elided, and will marshal its zero value as "web_search".
+	Name constant.WebSearch `json:"name,required"`
+	// This field can be elided, and will marshal its zero value as "server_tool_use".
+	Type constant.ServerToolUse `json:"type,required"`
+	paramObj
+}
+
+func (r ServerToolUseBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow ServerToolUseBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ServerToolUseBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type SignatureDelta struct {
 	Signature string                  `json:"signature,required"`
 	Type      constant.SignatureDelta `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Signature   resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Signature   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -2211,6 +2498,17 @@ func (r *SignatureDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type StopReason string
+
+const (
+	StopReasonEndTurn      StopReason = "end_turn"
+	StopReasonMaxTokens    StopReason = "max_tokens"
+	StopReasonStopSequence StopReason = "stop_sequence"
+	StopReasonToolUse      StopReason = "tool_use"
+	StopReasonPauseTurn    StopReason = "pause_turn"
+	StopReasonRefusal      StopReason = "refusal"
+)
+
 type TextBlock struct {
 	// Citations supporting the text block.
 	//
@@ -2220,13 +2518,12 @@ type TextBlock struct {
 	Citations []TextCitationUnion `json:"citations,required"`
 	Text      string              `json:"text,required"`
 	Type      constant.Text       `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Citations   resp.Field
-		Text        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Citations   respjson.Field
+		Text        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -2247,29 +2544,29 @@ func (r TextBlock) ToParam() TextBlockParam {
 		case CitationCharLocation:
 			var citationParam CitationCharLocationParam
 			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = toParam(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
 			citationParam.CitedText = citationVariant.CitedText
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndCharIndex = citationVariant.EndCharIndex
 			citationParam.StartCharIndex = citationVariant.StartCharIndex
-			p.Citations[i] = TextCitationParamUnion{OfRequestCharLocationCitation: &citationParam}
+			p.Citations[i] = TextCitationParamUnion{OfCharLocation: &citationParam}
 		case CitationPageLocation:
 			var citationParam CitationPageLocationParam
 			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = toParam(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndPageNumber = citationVariant.EndPageNumber
 			citationParam.StartPageNumber = citationVariant.StartPageNumber
-			p.Citations[i] = TextCitationParamUnion{OfRequestPageLocationCitation: &citationParam}
+			p.Citations[i] = TextCitationParamUnion{OfPageLocation: &citationParam}
 		case CitationContentBlockLocation:
 			var citationParam CitationContentBlockLocationParam
 			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = toParam(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
 			citationParam.CitedText = citationVariant.CitedText
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndBlockIndex = citationVariant.EndBlockIndex
 			citationParam.StartBlockIndex = citationVariant.StartBlockIndex
-			p.Citations[i] = TextCitationParamUnion{OfRequestContentBlockLocationCitation: &citationParam}
+			p.Citations[i] = TextCitationParamUnion{OfContentBlockLocation: &citationParam}
 		}
 	}
 	return p
@@ -2277,8 +2574,9 @@ func (r TextBlock) ToParam() TextBlockParam {
 
 // The properties Text, Type are required.
 type TextBlockParam struct {
-	Text         string                     `json:"text,required"`
-	Citations    []TextCitationParamUnion   `json:"citations,omitzero"`
+	Text      string                   `json:"text,required"`
+	Citations []TextCitationParamUnion `json:"citations,omitzero"`
+	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "text".
 	Type constant.Text `json:"type,required"`
@@ -2287,7 +2585,7 @@ type TextBlockParam struct {
 
 func NewTextBlock(text string) ContentBlockParamUnion {
 	return ContentBlockParamUnion{
-		OfRequestTextBlock: &TextBlockParam{
+		OfText: &TextBlockParam{
 			Text: text,
 		},
 	}
@@ -2295,14 +2593,19 @@ func NewTextBlock(text string) ContentBlockParamUnion {
 
 // IsPresent returns true if the field's value is not omitted and not the JSON
 // "null". To check if this field is omitted, use [param.IsOmitted].
-func (f TextBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (f TextBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
+
 func (r TextBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow TextBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *TextBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // TextCitationUnion contains all possible properties and values from
-// [CitationCharLocation], [CitationPageLocation], [CitationContentBlockLocation].
+// [CitationCharLocation], [CitationPageLocation], [CitationContentBlockLocation],
+// [CitationsWebSearchResultLocation].
 //
 // Use the [TextCitationUnion.AsAny] method to switch on the variant.
 //
@@ -2315,7 +2618,8 @@ type TextCitationUnion struct {
 	EndCharIndex int64 `json:"end_char_index"`
 	// This field is from variant [CitationCharLocation].
 	StartCharIndex int64 `json:"start_char_index"`
-	// Any of "char_location", "page_location", "content_block_location".
+	// Any of "char_location", "page_location", "content_block_location",
+	// "web_search_result_location".
 	Type string `json:"type"`
 	// This field is from variant [CitationPageLocation].
 	EndPageNumber int64 `json:"end_page_number"`
@@ -2325,53 +2629,81 @@ type TextCitationUnion struct {
 	EndBlockIndex int64 `json:"end_block_index"`
 	// This field is from variant [CitationContentBlockLocation].
 	StartBlockIndex int64 `json:"start_block_index"`
-	JSON            struct {
-		CitedText       resp.Field
-		DocumentIndex   resp.Field
-		DocumentTitle   resp.Field
-		EndCharIndex    resp.Field
-		StartCharIndex  resp.Field
-		Type            resp.Field
-		EndPageNumber   resp.Field
-		StartPageNumber resp.Field
-		EndBlockIndex   resp.Field
-		StartBlockIndex resp.Field
+	// This field is from variant [CitationsWebSearchResultLocation].
+	EncryptedIndex string `json:"encrypted_index"`
+	// This field is from variant [CitationsWebSearchResultLocation].
+	Title string `json:"title"`
+	// This field is from variant [CitationsWebSearchResultLocation].
+	URL  string `json:"url"`
+	JSON struct {
+		CitedText       respjson.Field
+		DocumentIndex   respjson.Field
+		DocumentTitle   respjson.Field
+		EndCharIndex    respjson.Field
+		StartCharIndex  respjson.Field
+		Type            respjson.Field
+		EndPageNumber   respjson.Field
+		StartPageNumber respjson.Field
+		EndBlockIndex   respjson.Field
+		StartBlockIndex respjson.Field
+		EncryptedIndex  respjson.Field
+		Title           respjson.Field
+		URL             respjson.Field
 		raw             string
 	} `json:"-"`
 }
 
+// anyTextCitation is implemented by each variant of [TextCitationUnion] to add
+// type safety for the return type of [TextCitationUnion.AsAny]
+type anyTextCitation interface {
+	implTextCitationUnion()
+}
+
+func (CitationCharLocation) implTextCitationUnion()             {}
+func (CitationPageLocation) implTextCitationUnion()             {}
+func (CitationContentBlockLocation) implTextCitationUnion()     {}
+func (CitationsWebSearchResultLocation) implTextCitationUnion() {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := TextCitationUnion.AsAny().(type) {
-//	case CitationCharLocation:
-//	case CitationPageLocation:
-//	case CitationContentBlockLocation:
+//	case anthropic.CitationCharLocation:
+//	case anthropic.CitationPageLocation:
+//	case anthropic.CitationContentBlockLocation:
+//	case anthropic.CitationsWebSearchResultLocation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u TextCitationUnion) AsAny() any {
+func (u TextCitationUnion) AsAny() anyTextCitation {
 	switch u.Type {
 	case "char_location":
-		return u.AsResponseCharLocationCitation()
+		return u.AsCharLocation()
 	case "page_location":
-		return u.AsResponsePageLocationCitation()
+		return u.AsPageLocation()
 	case "content_block_location":
-		return u.AsResponseContentBlockLocationCitation()
+		return u.AsContentBlockLocation()
+	case "web_search_result_location":
+		return u.AsWebSearchResultLocation()
 	}
 	return nil
 }
 
-func (u TextCitationUnion) AsResponseCharLocationCitation() (v CitationCharLocation) {
+func (u TextCitationUnion) AsCharLocation() (v CitationCharLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u TextCitationUnion) AsResponsePageLocationCitation() (v CitationPageLocation) {
+func (u TextCitationUnion) AsPageLocation() (v CitationPageLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u TextCitationUnion) AsResponseContentBlockLocationCitation() (v CitationContentBlockLocation) {
+func (u TextCitationUnion) AsContentBlockLocation() (v CitationContentBlockLocation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u TextCitationUnion) AsWebSearchResultLocation() (v CitationsWebSearchResultLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2387,33 +2719,36 @@ func (r *TextCitationUnion) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type TextCitationParamUnion struct {
-	OfRequestCharLocationCitation         *CitationCharLocationParam         `json:",omitzero,inline"`
-	OfRequestPageLocationCitation         *CitationPageLocationParam         `json:",omitzero,inline"`
-	OfRequestContentBlockLocationCitation *CitationContentBlockLocationParam `json:",omitzero,inline"`
+	OfCharLocation            *CitationCharLocationParam            `json:",omitzero,inline"`
+	OfPageLocation            *CitationPageLocationParam            `json:",omitzero,inline"`
+	OfContentBlockLocation    *CitationContentBlockLocationParam    `json:",omitzero,inline"`
+	OfWebSearchResultLocation *CitationWebSearchResultLocationParam `json:",omitzero,inline"`
 	paramUnion
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u TextCitationParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u TextCitationParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[TextCitationParamUnion](u.OfRequestCharLocationCitation, u.OfRequestPageLocationCitation, u.OfRequestContentBlockLocationCitation)
+	return param.MarshalUnion[TextCitationParamUnion](u.OfCharLocation, u.OfPageLocation, u.OfContentBlockLocation, u.OfWebSearchResultLocation)
+}
+func (u *TextCitationParamUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *TextCitationParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestCharLocationCitation) {
-		return u.OfRequestCharLocationCitation
-	} else if !param.IsOmitted(u.OfRequestPageLocationCitation) {
-		return u.OfRequestPageLocationCitation
-	} else if !param.IsOmitted(u.OfRequestContentBlockLocationCitation) {
-		return u.OfRequestContentBlockLocationCitation
+	if !param.IsOmitted(u.OfCharLocation) {
+		return u.OfCharLocation
+	} else if !param.IsOmitted(u.OfPageLocation) {
+		return u.OfPageLocation
+	} else if !param.IsOmitted(u.OfContentBlockLocation) {
+		return u.OfContentBlockLocation
+	} else if !param.IsOmitted(u.OfWebSearchResultLocation) {
+		return u.OfWebSearchResultLocation
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetEndCharIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return &vt.EndCharIndex
 	}
 	return nil
@@ -2421,7 +2756,7 @@ func (u TextCitationParamUnion) GetEndCharIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetStartCharIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return &vt.StartCharIndex
 	}
 	return nil
@@ -2429,7 +2764,7 @@ func (u TextCitationParamUnion) GetStartCharIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetEndPageNumber() *int64 {
-	if vt := u.OfRequestPageLocationCitation; vt != nil {
+	if vt := u.OfPageLocation; vt != nil {
 		return &vt.EndPageNumber
 	}
 	return nil
@@ -2437,7 +2772,7 @@ func (u TextCitationParamUnion) GetEndPageNumber() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetStartPageNumber() *int64 {
-	if vt := u.OfRequestPageLocationCitation; vt != nil {
+	if vt := u.OfPageLocation; vt != nil {
 		return &vt.StartPageNumber
 	}
 	return nil
@@ -2445,7 +2780,7 @@ func (u TextCitationParamUnion) GetStartPageNumber() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetEndBlockIndex() *int64 {
-	if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	if vt := u.OfContentBlockLocation; vt != nil {
 		return &vt.EndBlockIndex
 	}
 	return nil
@@ -2453,19 +2788,45 @@ func (u TextCitationParamUnion) GetEndBlockIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetStartBlockIndex() *int64 {
-	if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	if vt := u.OfContentBlockLocation; vt != nil {
 		return &vt.StartBlockIndex
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u TextCitationParamUnion) GetEncryptedIndex() *string {
+	if vt := u.OfWebSearchResultLocation; vt != nil {
+		return &vt.EncryptedIndex
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u TextCitationParamUnion) GetTitle() *string {
+	if vt := u.OfWebSearchResultLocation; vt != nil && vt.Title.Valid() {
+		return &vt.Title.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u TextCitationParamUnion) GetURL() *string {
+	if vt := u.OfWebSearchResultLocation; vt != nil {
+		return &vt.URL
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetCitedText() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return (*string)(&vt.CitedText)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
+	} else if vt := u.OfPageLocation; vt != nil {
 		return (*string)(&vt.CitedText)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	} else if vt := u.OfContentBlockLocation; vt != nil {
+		return (*string)(&vt.CitedText)
+	} else if vt := u.OfWebSearchResultLocation; vt != nil {
 		return (*string)(&vt.CitedText)
 	}
 	return nil
@@ -2473,11 +2834,11 @@ func (u TextCitationParamUnion) GetCitedText() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetDocumentIndex() *int64 {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return (*int64)(&vt.DocumentIndex)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
+	} else if vt := u.OfPageLocation; vt != nil {
 		return (*int64)(&vt.DocumentIndex)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	} else if vt := u.OfContentBlockLocation; vt != nil {
 		return (*int64)(&vt.DocumentIndex)
 	}
 	return nil
@@ -2485,11 +2846,11 @@ func (u TextCitationParamUnion) GetDocumentIndex() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetDocumentTitle() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
+	if vt := u.OfCharLocation; vt != nil && vt.DocumentTitle.Valid() {
 		return &vt.DocumentTitle.Value
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
+	} else if vt := u.OfPageLocation; vt != nil && vt.DocumentTitle.Valid() {
 		return &vt.DocumentTitle.Value
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil && vt.DocumentTitle.IsPresent() {
+	} else if vt := u.OfContentBlockLocation; vt != nil && vt.DocumentTitle.Valid() {
 		return &vt.DocumentTitle.Value
 	}
 	return nil
@@ -2497,46 +2858,26 @@ func (u TextCitationParamUnion) GetDocumentTitle() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetType() *string {
-	if vt := u.OfRequestCharLocationCitation; vt != nil {
+	if vt := u.OfCharLocation; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestPageLocationCitation; vt != nil {
+	} else if vt := u.OfPageLocation; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestContentBlockLocationCitation; vt != nil {
+	} else if vt := u.OfContentBlockLocation; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebSearchResultLocation; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[TextCitationParamUnion](
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(CitationCharLocationParam{}),
-			DiscriminatorValue: "char_location",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(CitationPageLocationParam{}),
-			DiscriminatorValue: "page_location",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(CitationContentBlockLocationParam{}),
-			DiscriminatorValue: "content_block_location",
-		},
-	)
-}
-
 type TextDelta struct {
 	Text string             `json:"text,required"`
 	Type constant.TextDelta `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Text        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Text        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -2551,13 +2892,12 @@ type ThinkingBlock struct {
 	Signature string            `json:"signature,required"`
 	Thinking  string            `json:"thinking,required"`
 	Type      constant.Thinking `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Signature   resp.Field
-		Thinking    resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Signature   respjson.Field
+		Thinking    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -2585,27 +2925,33 @@ type ThinkingBlockParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ThinkingBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ThinkingBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ThinkingBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ThinkingBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
-// The property Type is required.
+func NewThinkingConfigDisabledParam() ThinkingConfigDisabledParam {
+	return ThinkingConfigDisabledParam{
+		Type: "disabled",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewThinkingConfigDisabledParam].
 type ThinkingConfigDisabledParam struct {
-	// This field can be elided, and will marshal its zero value as "disabled".
 	Type constant.Disabled `json:"type,required"`
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ThinkingConfigDisabledParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ThinkingConfigDisabledParam) MarshalJSON() (data []byte, err error) {
 	type shadow ThinkingConfigDisabledParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ThinkingConfigDisabledParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties BudgetTokens, Type are required.
@@ -2625,48 +2971,48 @@ type ThinkingConfigEnabledParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ThinkingConfigEnabledParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ThinkingConfigEnabledParam) MarshalJSON() (data []byte, err error) {
 	type shadow ThinkingConfigEnabledParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ThinkingConfigEnabledParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
-func ThinkingConfigParamOfThinkingConfigEnabled(budgetTokens int64) ThinkingConfigParamUnion {
-	var variant ThinkingConfigEnabledParam
-	variant.BudgetTokens = budgetTokens
-	return ThinkingConfigParamUnion{OfThinkingConfigEnabled: &variant}
+func ThinkingConfigParamOfEnabled(budgetTokens int64) ThinkingConfigParamUnion {
+	var enabled ThinkingConfigEnabledParam
+	enabled.BudgetTokens = budgetTokens
+	return ThinkingConfigParamUnion{OfEnabled: &enabled}
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ThinkingConfigParamUnion struct {
-	OfThinkingConfigEnabled  *ThinkingConfigEnabledParam  `json:",omitzero,inline"`
-	OfThinkingConfigDisabled *ThinkingConfigDisabledParam `json:",omitzero,inline"`
+	OfEnabled  *ThinkingConfigEnabledParam  `json:",omitzero,inline"`
+	OfDisabled *ThinkingConfigDisabledParam `json:",omitzero,inline"`
 	paramUnion
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ThinkingConfigParamUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ThinkingConfigParamUnion](u.OfThinkingConfigEnabled, u.OfThinkingConfigDisabled)
+	return param.MarshalUnion[ThinkingConfigParamUnion](u.OfEnabled, u.OfDisabled)
+}
+func (u *ThinkingConfigParamUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ThinkingConfigParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfThinkingConfigEnabled) {
-		return u.OfThinkingConfigEnabled
-	} else if !param.IsOmitted(u.OfThinkingConfigDisabled) {
-		return u.OfThinkingConfigDisabled
+	if !param.IsOmitted(u.OfEnabled) {
+		return u.OfEnabled
+	} else if !param.IsOmitted(u.OfDisabled) {
+		return u.OfDisabled
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ThinkingConfigParamUnion) GetBudgetTokens() *int64 {
-	if vt := u.OfThinkingConfigEnabled; vt != nil {
+	if vt := u.OfEnabled; vt != nil {
 		return &vt.BudgetTokens
 	}
 	return nil
@@ -2674,39 +3020,22 @@ func (u ThinkingConfigParamUnion) GetBudgetTokens() *int64 {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ThinkingConfigParamUnion) GetType() *string {
-	if vt := u.OfThinkingConfigEnabled; vt != nil {
+	if vt := u.OfEnabled; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfThinkingConfigDisabled; vt != nil {
+	} else if vt := u.OfDisabled; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[ThinkingConfigParamUnion](
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ThinkingConfigEnabledParam{}),
-			DiscriminatorValue: "enabled",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ThinkingConfigDisabledParam{}),
-			DiscriminatorValue: "disabled",
-		},
-	)
-}
-
 type ThinkingDelta struct {
 	Thinking string                 `json:"thinking,required"`
 	Type     constant.ThinkingDelta `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Thinking    resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Thinking    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -2726,7 +3055,7 @@ type ToolParam struct {
 	InputSchema ToolInputSchemaParam `json:"input_schema,omitzero,required"`
 	// Name of the tool.
 	//
-	// This is how the tool will be called by the model and in tool_use blocks.
+	// This is how the tool will be called by the model and in `tool_use` blocks.
 	Name string `json:"name,required"`
 	// Description of what this tool does.
 	//
@@ -2734,17 +3063,20 @@ type ToolParam struct {
 	// the model has about what the tool is and how to use it, the better it will
 	// perform. You can use natural language descriptions to reinforce important
 	// aspects of the tool input JSON schema.
-	Description  param.Opt[string]          `json:"description,omitzero"`
+	Description param.Opt[string] `json:"description,omitzero"`
+	// Any of "custom".
+	Type ToolType `json:"type,omitzero"`
+	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // [JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.
@@ -2754,27 +3086,34 @@ func (r ToolParam) MarshalJSON() (data []byte, err error) {
 //
 // The property Type is required.
 type ToolInputSchemaParam struct {
-	Properties interface{} `json:"properties,omitzero"`
+	Properties any `json:"properties,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
-	Type        constant.Object        `json:"type,required"`
-	ExtraFields map[string]interface{} `json:"-,extras"`
+	Type        constant.Object `json:"type,required"`
+	ExtraFields map[string]any  `json:"-"`
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolInputSchemaParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolInputSchemaParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolInputSchemaParam
-	return param.MarshalObject(r, (*shadow)(&r))
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
 }
+func (r *ToolInputSchemaParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ToolType string
+
+const (
+	ToolTypeCustom ToolType = "custom"
+)
 
 // The properties Name, Type are required.
 type ToolBash20250124Param struct {
+	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
 	//
-	// This is how the tool will be called by the model and in tool_use blocks.
+	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "bash".
 	Name constant.Bash `json:"name,required"`
@@ -2783,54 +3122,54 @@ type ToolBash20250124Param struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolBash20250124Param) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolBash20250124Param) MarshalJSON() (data []byte, err error) {
 	type shadow ToolBash20250124Param
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ToolBash20250124Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
-func ToolChoiceParamOfToolChoiceTool(name string) ToolChoiceUnionParam {
-	var variant ToolChoiceToolParam
-	variant.Name = name
-	return ToolChoiceUnionParam{OfToolChoiceTool: &variant}
+func ToolChoiceParamOfTool(name string) ToolChoiceUnionParam {
+	var tool ToolChoiceToolParam
+	tool.Name = name
+	return ToolChoiceUnionParam{OfTool: &tool}
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ToolChoiceUnionParam struct {
-	OfToolChoiceAuto *ToolChoiceAutoParam `json:",omitzero,inline"`
-	OfToolChoiceAny  *ToolChoiceAnyParam  `json:",omitzero,inline"`
-	OfToolChoiceTool *ToolChoiceToolParam `json:",omitzero,inline"`
-	OfToolChoiceNone *ToolChoiceNoneParam `json:",omitzero,inline"`
+	OfAuto *ToolChoiceAutoParam `json:",omitzero,inline"`
+	OfAny  *ToolChoiceAnyParam  `json:",omitzero,inline"`
+	OfTool *ToolChoiceToolParam `json:",omitzero,inline"`
+	OfNone *ToolChoiceNoneParam `json:",omitzero,inline"`
 	paramUnion
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ToolChoiceUnionParam) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ToolChoiceUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolChoiceUnionParam](u.OfToolChoiceAuto, u.OfToolChoiceAny, u.OfToolChoiceTool, u.OfToolChoiceNone)
+	return param.MarshalUnion[ToolChoiceUnionParam](u.OfAuto, u.OfAny, u.OfTool, u.OfNone)
+}
+func (u *ToolChoiceUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ToolChoiceUnionParam) asAny() any {
-	if !param.IsOmitted(u.OfToolChoiceAuto) {
-		return u.OfToolChoiceAuto
-	} else if !param.IsOmitted(u.OfToolChoiceAny) {
-		return u.OfToolChoiceAny
-	} else if !param.IsOmitted(u.OfToolChoiceTool) {
-		return u.OfToolChoiceTool
-	} else if !param.IsOmitted(u.OfToolChoiceNone) {
-		return u.OfToolChoiceNone
+	if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
+	} else if !param.IsOmitted(u.OfAny) {
+		return u.OfAny
+	} else if !param.IsOmitted(u.OfTool) {
+		return u.OfTool
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolChoiceUnionParam) GetName() *string {
-	if vt := u.OfToolChoiceTool; vt != nil {
+	if vt := u.OfTool; vt != nil {
 		return &vt.Name
 	}
 	return nil
@@ -2838,13 +3177,13 @@ func (u ToolChoiceUnionParam) GetName() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolChoiceUnionParam) GetType() *string {
-	if vt := u.OfToolChoiceAuto; vt != nil {
+	if vt := u.OfAuto; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceAny; vt != nil {
+	} else if vt := u.OfAny; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceTool; vt != nil {
+	} else if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfToolChoiceNone; vt != nil {
+	} else if vt := u.OfNone; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -2852,40 +3191,14 @@ func (u ToolChoiceUnionParam) GetType() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolChoiceUnionParam) GetDisableParallelToolUse() *bool {
-	if vt := u.OfToolChoiceAuto; vt != nil && vt.DisableParallelToolUse.IsPresent() {
+	if vt := u.OfAuto; vt != nil && vt.DisableParallelToolUse.Valid() {
 		return &vt.DisableParallelToolUse.Value
-	} else if vt := u.OfToolChoiceAny; vt != nil && vt.DisableParallelToolUse.IsPresent() {
+	} else if vt := u.OfAny; vt != nil && vt.DisableParallelToolUse.Valid() {
 		return &vt.DisableParallelToolUse.Value
-	} else if vt := u.OfToolChoiceTool; vt != nil && vt.DisableParallelToolUse.IsPresent() {
+	} else if vt := u.OfTool; vt != nil && vt.DisableParallelToolUse.Valid() {
 		return &vt.DisableParallelToolUse.Value
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[ToolChoiceUnionParam](
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceAutoParam{}),
-			DiscriminatorValue: "auto",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceAnyParam{}),
-			DiscriminatorValue: "any",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceToolParam{}),
-			DiscriminatorValue: "tool",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ToolChoiceNoneParam{}),
-			DiscriminatorValue: "none",
-		},
-	)
 }
 
 // The model will use any available tools.
@@ -2902,12 +3215,12 @@ type ToolChoiceAnyParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolChoiceAnyParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolChoiceAnyParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceAnyParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolChoiceAnyParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The model will automatically decide whether to use tools.
@@ -2924,29 +3237,34 @@ type ToolChoiceAutoParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolChoiceAutoParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolChoiceAutoParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceAutoParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ToolChoiceAutoParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewToolChoiceNoneParam() ToolChoiceNoneParam {
+	return ToolChoiceNoneParam{
+		Type: "none",
+	}
+}
 
 // The model will not be allowed to use tools.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with [NewToolChoiceNoneParam].
 type ToolChoiceNoneParam struct {
-	// This field can be elided, and will marshal its zero value as "none".
 	Type constant.None `json:"type,required"`
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolChoiceNoneParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolChoiceNoneParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceNoneParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolChoiceNoneParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The model will use the specified tool with `tool_choice.name`.
@@ -2965,18 +3283,19 @@ type ToolChoiceToolParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolChoiceToolParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolChoiceToolParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceToolParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+func (r *ToolChoiceToolParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // The properties ToolUseID, Type are required.
 type ToolResultBlockParam struct {
-	ToolUseID    string                             `json:"tool_use_id,required"`
-	IsError      param.Opt[bool]                    `json:"is_error,omitzero"`
+	ToolUseID string          `json:"tool_use_id,required"`
+	IsError   param.Opt[bool] `json:"is_error,omitzero"`
+	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam         `json:"cache_control,omitzero"`
 	Content      []ToolResultBlockParamContentUnion `json:"content,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_result".
@@ -2987,50 +3306,54 @@ type ToolResultBlockParam struct {
 func NewToolResultBlock(toolUseID string, content string, isError bool) ContentBlockParamUnion {
 	blockParam := ToolResultBlockParam{
 		ToolUseID: toolUseID,
-		Content: []ToolResultBlockParamContentUnion{{OfRequestTextBlock: &TextBlockParam{
+		Content: []ToolResultBlockParamContentUnion{{OfText: &TextBlockParam{
 			Text: content,
 		}}},
 		IsError: Bool(isError),
 	}
-	return ContentBlockParamUnion{OfRequestToolResultBlock: &blockParam}
+	return ContentBlockParamUnion{OfToolResult: &blockParam}
 }
 
 // IsPresent returns true if the field's value is not omitted and not the JSON
 // "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolResultBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
+func (f ToolResultBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
+
 func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolResultBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolResultBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ToolResultBlockParamContentUnion struct {
-	OfRequestTextBlock  *TextBlockParam  `json:",omitzero,inline"`
-	OfRequestImageBlock *ImageBlockParam `json:",omitzero,inline"`
+	OfText  *TextBlockParam  `json:",omitzero,inline"`
+	OfImage *ImageBlockParam `json:",omitzero,inline"`
 	paramUnion
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ToolResultBlockParamContentUnion) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolResultBlockParamContentUnion](u.OfRequestTextBlock, u.OfRequestImageBlock)
+	return param.MarshalUnion[ToolResultBlockParamContentUnion](u.OfText, u.OfImage)
+}
+func (u *ToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ToolResultBlockParamContentUnion) asAny() any {
-	if !param.IsOmitted(u.OfRequestTextBlock) {
-		return u.OfRequestTextBlock
-	} else if !param.IsOmitted(u.OfRequestImageBlock) {
-		return u.OfRequestImageBlock
+	if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfImage) {
+		return u.OfImage
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolResultBlockParamContentUnion) GetText() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.Text
 	}
 	return nil
@@ -3038,7 +3361,7 @@ func (u ToolResultBlockParamContentUnion) GetText() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolResultBlockParamContentUnion) GetCitations() []TextCitationParamUnion {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return vt.Citations
 	}
 	return nil
@@ -3046,7 +3369,7 @@ func (u ToolResultBlockParamContentUnion) GetCitations() []TextCitationParamUnio
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolResultBlockParamContentUnion) GetSource() *ImageBlockParamSourceUnion {
-	if vt := u.OfRequestImageBlock; vt != nil {
+	if vt := u.OfImage; vt != nil {
 		return &vt.Source
 	}
 	return nil
@@ -3054,9 +3377,9 @@ func (u ToolResultBlockParamContentUnion) GetSource() *ImageBlockParamSourceUnio
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolResultBlockParamContentUnion) GetType() *string {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -3064,36 +3387,21 @@ func (u ToolResultBlockParamContentUnion) GetType() *string {
 
 // Returns a pointer to the underlying variant's CacheControl property, if present.
 func (u ToolResultBlockParamContentUnion) GetCacheControl() *CacheControlEphemeralParam {
-	if vt := u.OfRequestTextBlock; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfRequestImageBlock; vt != nil {
+	} else if vt := u.OfImage; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[ToolResultBlockParamContentUnion](
-		"type",
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(TextBlockParam{}),
-			DiscriminatorValue: "text",
-		},
-		apijson.UnionVariant{
-			TypeFilter:         gjson.JSON,
-			Type:               reflect.TypeOf(ImageBlockParam{}),
-			DiscriminatorValue: "image",
-		},
-	)
-}
-
 // The properties Name, Type are required.
 type ToolTextEditor20250124Param struct {
+	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
 	//
-	// This is how the tool will be called by the model and in tool_use blocks.
+	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as
 	// "str_replace_editor".
@@ -3104,12 +3412,12 @@ type ToolTextEditor20250124Param struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolTextEditor20250124Param) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolTextEditor20250124Param) MarshalJSON() (data []byte, err error) {
 	type shadow ToolTextEditor20250124Param
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolTextEditor20250124Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 func ToolUnionParamOfTool(inputSchema ToolInputSchemaParam, name string) ToolUnionParam {
@@ -3123,17 +3431,18 @@ func ToolUnionParamOfTool(inputSchema ToolInputSchemaParam, name string) ToolUni
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ToolUnionParam struct {
-	OfTool               *ToolParam                   `json:",omitzero,inline"`
-	OfBashTool20250124   *ToolBash20250124Param       `json:",omitzero,inline"`
-	OfTextEditor20250124 *ToolTextEditor20250124Param `json:",omitzero,inline"`
+	OfTool                  *ToolParam                   `json:",omitzero,inline"`
+	OfBashTool20250124      *ToolBash20250124Param       `json:",omitzero,inline"`
+	OfTextEditor20250124    *ToolTextEditor20250124Param `json:",omitzero,inline"`
+	OfWebSearchTool20250305 *WebSearchTool20250305Param  `json:",omitzero,inline"`
 	paramUnion
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u ToolUnionParam) IsPresent() bool { return !param.IsOmitted(u) && !u.IsNull() }
 func (u ToolUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolUnionParam](u.OfTool, u.OfBashTool20250124, u.OfTextEditor20250124)
+	return param.MarshalUnion[ToolUnionParam](u.OfTool, u.OfBashTool20250124, u.OfTextEditor20250124, u.OfWebSearchTool20250305)
+}
+func (u *ToolUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ToolUnionParam) asAny() any {
@@ -3143,6 +3452,8 @@ func (u *ToolUnionParam) asAny() any {
 		return u.OfBashTool20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250124) {
 		return u.OfTextEditor20250124
+	} else if !param.IsOmitted(u.OfWebSearchTool20250305) {
+		return u.OfWebSearchTool20250305
 	}
 	return nil
 }
@@ -3157,8 +3468,40 @@ func (u ToolUnionParam) GetInputSchema() *ToolInputSchemaParam {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolUnionParam) GetDescription() *string {
-	if vt := u.OfTool; vt != nil && vt.Description.IsPresent() {
+	if vt := u.OfTool; vt != nil && vt.Description.Valid() {
 		return &vt.Description.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ToolUnionParam) GetAllowedDomains() []string {
+	if vt := u.OfWebSearchTool20250305; vt != nil {
+		return vt.AllowedDomains
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ToolUnionParam) GetBlockedDomains() []string {
+	if vt := u.OfWebSearchTool20250305; vt != nil {
+		return vt.BlockedDomains
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ToolUnionParam) GetMaxUses() *int64 {
+	if vt := u.OfWebSearchTool20250305; vt != nil && vt.MaxUses.Valid() {
+		return &vt.MaxUses.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ToolUnionParam) GetUserLocation() *WebSearchTool20250305UserLocationParam {
+	if vt := u.OfWebSearchTool20250305; vt != nil {
+		return &vt.UserLocation
 	}
 	return nil
 }
@@ -3171,15 +3514,21 @@ func (u ToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfWebSearchTool20250305; vt != nil {
+		return (*string)(&vt.Name)
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolUnionParam) GetType() *string {
-	if vt := u.OfBashTool20250124; vt != nil {
+	if vt := u.OfTool; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfBashTool20250124; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -3193,6 +3542,8 @@ func (u ToolUnionParam) GetCacheControl() *CacheControlEphemeralParam {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return &vt.CacheControl
+	} else if vt := u.OfWebSearchTool20250305; vt != nil {
+		return &vt.CacheControl
 	}
 	return nil
 }
@@ -3202,14 +3553,13 @@ type ToolUseBlock struct {
 	Input json.RawMessage  `json:"input,required"`
 	Name  string           `json:"name,required"`
 	Type  constant.ToolUse `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          resp.Field
-		Input       resp.Field
-		Name        resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		ID          respjson.Field
+		Input       respjson.Field
+		Name        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -3231,21 +3581,22 @@ func (r ToolUseBlock) ToParam() ToolUseBlockParam {
 
 // The properties ID, Input, Name, Type are required.
 type ToolUseBlockParam struct {
-	ID           string                     `json:"id,required"`
-	Input        interface{}                `json:"input,omitzero,required"`
-	Name         string                     `json:"name,required"`
+	ID    string `json:"id,required"`
+	Input any    `json:"input,omitzero,required"`
+	Name  string `json:"name,required"`
+	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_use".
 	Type constant.ToolUse `json:"type,required"`
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolUseBlockParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r ToolUseBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolUseBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolUseBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Type, URL are required.
@@ -3256,12 +3607,12 @@ type URLImageSourceParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f URLImageSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r URLImageSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow URLImageSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *URLImageSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Type, URL are required.
@@ -3272,12 +3623,12 @@ type URLPDFSourceParam struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f URLPDFSourceParam) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r URLPDFSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow URLPDFSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *URLPDFSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type Usage struct {
@@ -3289,14 +3640,16 @@ type Usage struct {
 	InputTokens int64 `json:"input_tokens,required"`
 	// The number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// The number of server tool requests.
+	ServerToolUse ServerToolUsage `json:"server_tool_use,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CacheCreationInputTokens resp.Field
-		CacheReadInputTokens     resp.Field
-		InputTokens              resp.Field
-		OutputTokens             resp.Field
-		ExtraFields              map[string]resp.Field
+		CacheCreationInputTokens respjson.Field
+		CacheReadInputTokens     respjson.Field
+		InputTokens              respjson.Field
+		OutputTokens             respjson.Field
+		ServerToolUse            respjson.Field
+		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
 }
@@ -3306,6 +3659,283 @@ func (r Usage) RawJSON() string { return r.JSON.raw }
 func (r *Usage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type WebSearchResultBlock struct {
+	EncryptedContent string                   `json:"encrypted_content,required"`
+	PageAge          string                   `json:"page_age,required"`
+	Title            string                   `json:"title,required"`
+	Type             constant.WebSearchResult `json:"type,required"`
+	URL              string                   `json:"url,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		EncryptedContent respjson.Field
+		PageAge          respjson.Field
+		Title            respjson.Field
+		Type             respjson.Field
+		URL              respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WebSearchResultBlock) RawJSON() string { return r.JSON.raw }
+func (r *WebSearchResultBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties EncryptedContent, Title, Type, URL are required.
+type WebSearchResultBlockParam struct {
+	EncryptedContent string            `json:"encrypted_content,required"`
+	Title            string            `json:"title,required"`
+	URL              string            `json:"url,required"`
+	PageAge          param.Opt[string] `json:"page_age,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "web_search_result".
+	Type constant.WebSearchResult `json:"type,required"`
+	paramObj
+}
+
+func (r WebSearchResultBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebSearchResultBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebSearchResultBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Name, Type are required.
+type WebSearchTool20250305Param struct {
+	// Maximum number of times the tool can be used in the API request.
+	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
+	// If provided, only these domains will be included in results. Cannot be used
+	// alongside `blocked_domains`.
+	AllowedDomains []string `json:"allowed_domains,omitzero"`
+	// If provided, these domains will never appear in results. Cannot be used
+	// alongside `allowed_domains`.
+	BlockedDomains []string `json:"blocked_domains,omitzero"`
+	// Parameters for the user's location. Used to provide more relevant search
+	// results.
+	UserLocation WebSearchTool20250305UserLocationParam `json:"user_location,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as "web_search".
+	Name constant.WebSearch `json:"name,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "web_search_20250305".
+	Type constant.WebSearch20250305 `json:"type,required"`
+	paramObj
+}
+
+func (r WebSearchTool20250305Param) MarshalJSON() (data []byte, err error) {
+	type shadow WebSearchTool20250305Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebSearchTool20250305Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Parameters for the user's location. Used to provide more relevant search
+// results.
+//
+// The property Type is required.
+type WebSearchTool20250305UserLocationParam struct {
+	// The city of the user.
+	City param.Opt[string] `json:"city,omitzero"`
+	// The two letter
+	// [ISO country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) of the
+	// user.
+	Country param.Opt[string] `json:"country,omitzero"`
+	// The region of the user.
+	Region param.Opt[string] `json:"region,omitzero"`
+	// The [IANA timezone](https://nodatime.org/TimeZones) of the user.
+	Timezone param.Opt[string] `json:"timezone,omitzero"`
+	// This field can be elided, and will marshal its zero value as "approximate".
+	Type constant.Approximate `json:"type,required"`
+	paramObj
+}
+
+func (r WebSearchTool20250305UserLocationParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebSearchTool20250305UserLocationParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebSearchTool20250305UserLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties ErrorCode, Type are required.
+type WebSearchToolRequestErrorParam struct {
+	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
+	// "too_many_requests", "query_too_long".
+	ErrorCode WebSearchToolRequestErrorErrorCode `json:"error_code,omitzero,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "web_search_tool_result_error".
+	Type constant.WebSearchToolResultError `json:"type,required"`
+	paramObj
+}
+
+func (r WebSearchToolRequestErrorParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebSearchToolRequestErrorParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebSearchToolRequestErrorParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type WebSearchToolRequestErrorErrorCode string
+
+const (
+	WebSearchToolRequestErrorErrorCodeInvalidToolInput WebSearchToolRequestErrorErrorCode = "invalid_tool_input"
+	WebSearchToolRequestErrorErrorCodeUnavailable      WebSearchToolRequestErrorErrorCode = "unavailable"
+	WebSearchToolRequestErrorErrorCodeMaxUsesExceeded  WebSearchToolRequestErrorErrorCode = "max_uses_exceeded"
+	WebSearchToolRequestErrorErrorCodeTooManyRequests  WebSearchToolRequestErrorErrorCode = "too_many_requests"
+	WebSearchToolRequestErrorErrorCodeQueryTooLong     WebSearchToolRequestErrorErrorCode = "query_too_long"
+)
+
+type WebSearchToolResultBlock struct {
+	Content   WebSearchToolResultBlockContentUnion `json:"content,required"`
+	ToolUseID string                               `json:"tool_use_id,required"`
+	Type      constant.WebSearchToolResult         `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Content     respjson.Field
+		ToolUseID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WebSearchToolResultBlock) RawJSON() string { return r.JSON.raw }
+func (r *WebSearchToolResultBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// WebSearchToolResultBlockContentUnion contains all possible properties and values
+// from [WebSearchToolResultError], [[]WebSearchResultBlock].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfWebSearchResultBlockArray]
+type WebSearchToolResultBlockContentUnion struct {
+	// This field will be present if the value is a [[]WebSearchResultBlock] instead of
+	// an object.
+	OfWebSearchResultBlockArray []WebSearchResultBlock `json:",inline"`
+	// This field is from variant [WebSearchToolResultError].
+	ErrorCode WebSearchToolResultErrorErrorCode `json:"error_code"`
+	// This field is from variant [WebSearchToolResultError].
+	Type constant.WebSearchToolResultError `json:"type"`
+	JSON struct {
+		OfWebSearchResultBlockArray respjson.Field
+		ErrorCode                   respjson.Field
+		Type                        respjson.Field
+		raw                         string
+	} `json:"-"`
+}
+
+func (u WebSearchToolResultBlockContentUnion) AsResponseWebSearchToolResultError() (v WebSearchToolResultError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u WebSearchToolResultBlockContentUnion) AsWebSearchResultBlockArray() (v []WebSearchResultBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u WebSearchToolResultBlockContentUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *WebSearchToolResultBlockContentUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Content, ToolUseID, Type are required.
+type WebSearchToolResultBlockParam struct {
+	Content   WebSearchToolResultBlockParamContentUnion `json:"content,omitzero,required"`
+	ToolUseID string                                    `json:"tool_use_id,required"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "web_search_tool_result".
+	Type constant.WebSearchToolResult `json:"type,required"`
+	paramObj
+}
+
+func (r WebSearchToolResultBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebSearchToolResultBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebSearchToolResultBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func WebSearchToolResultBlockParamContentOfRequestWebSearchToolResultError(errorCode WebSearchToolRequestErrorErrorCode) WebSearchToolResultBlockParamContentUnion {
+	var variant WebSearchToolRequestErrorParam
+	variant.ErrorCode = errorCode
+	return WebSearchToolResultBlockParamContentUnion{OfRequestWebSearchToolResultError: &variant}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type WebSearchToolResultBlockParamContentUnion struct {
+	OfWebSearchToolResultBlockItem    []WebSearchResultBlockParam     `json:",omitzero,inline"`
+	OfRequestWebSearchToolResultError *WebSearchToolRequestErrorParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u WebSearchToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion[WebSearchToolResultBlockParamContentUnion](u.OfWebSearchToolResultBlockItem, u.OfRequestWebSearchToolResultError)
+}
+func (u *WebSearchToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *WebSearchToolResultBlockParamContentUnion) asAny() any {
+	if !param.IsOmitted(u.OfWebSearchToolResultBlockItem) {
+		return &u.OfWebSearchToolResultBlockItem
+	} else if !param.IsOmitted(u.OfRequestWebSearchToolResultError) {
+		return u.OfRequestWebSearchToolResultError
+	}
+	return nil
+}
+
+type WebSearchToolResultError struct {
+	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
+	// "too_many_requests", "query_too_long".
+	ErrorCode WebSearchToolResultErrorErrorCode `json:"error_code,required"`
+	Type      constant.WebSearchToolResultError `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WebSearchToolResultError) RawJSON() string { return r.JSON.raw }
+func (r *WebSearchToolResultError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type WebSearchToolResultErrorErrorCode string
+
+const (
+	WebSearchToolResultErrorErrorCodeInvalidToolInput WebSearchToolResultErrorErrorCode = "invalid_tool_input"
+	WebSearchToolResultErrorErrorCodeUnavailable      WebSearchToolResultErrorErrorCode = "unavailable"
+	WebSearchToolResultErrorErrorCodeMaxUsesExceeded  WebSearchToolResultErrorErrorCode = "max_uses_exceeded"
+	WebSearchToolResultErrorErrorCodeTooManyRequests  WebSearchToolResultErrorErrorCode = "too_many_requests"
+	WebSearchToolResultErrorErrorCodeQueryTooLong     WebSearchToolResultErrorErrorCode = "query_too_long"
+)
 
 type MessageNewParams struct {
 	// The maximum number of tokens to generate before stopping.
@@ -3408,6 +4038,8 @@ type MessageNewParams struct {
 	// [system prompt](https://docs.anthropic.com/en/docs/system-prompts), you can use
 	// the top-level `system` parameter — there is no `"system"` role for input
 	// messages in the Messages API.
+	//
+	// There is a limit of 100000 messages in a single request.
 	Messages []MessageParam `json:"messages,omitzero,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
@@ -3550,13 +4182,12 @@ type MessageNewParams struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageNewParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-
 func (r MessageNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow MessageNewParams
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MessageNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type MessageCountTokensParams struct {
@@ -3652,6 +4283,8 @@ type MessageCountTokensParams struct {
 	// [system prompt](https://docs.anthropic.com/en/docs/system-prompts), you can use
 	// the top-level `system` parameter — there is no `"system"` role for input
 	// messages in the Messages API.
+	//
+	// There is a limit of 100000 messages in a single request.
 	Messages []MessageParam `json:"messages,omitzero,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
@@ -3755,38 +4388,35 @@ type MessageCountTokensParams struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageCountTokensParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-
 func (r MessageCountTokensParams) MarshalJSON() (data []byte, err error) {
 	type shadow MessageCountTokensParams
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MessageCountTokensParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type MessageCountTokensParamsSystemUnion struct {
-	OfString                         param.Opt[string] `json:",omitzero,inline"`
-	OfMessageCountTokenssSystemArray []TextBlockParam  `json:",omitzero,inline"`
+	OfString         param.Opt[string] `json:",omitzero,inline"`
+	OfTextBlockArray []TextBlockParam  `json:",omitzero,inline"`
 	paramUnion
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (u MessageCountTokensParamsSystemUnion) IsPresent() bool {
-	return !param.IsOmitted(u) && !u.IsNull()
-}
 func (u MessageCountTokensParamsSystemUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[MessageCountTokensParamsSystemUnion](u.OfString, u.OfMessageCountTokenssSystemArray)
+	return param.MarshalUnion[MessageCountTokensParamsSystemUnion](u.OfString, u.OfTextBlockArray)
+}
+func (u *MessageCountTokensParamsSystemUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *MessageCountTokensParamsSystemUnion) asAny() any {
 	if !param.IsOmitted(u.OfString) {
 		return &u.OfString.Value
-	} else if !param.IsOmitted(u.OfMessageCountTokenssSystemArray) {
-		return &u.OfMessageCountTokenssSystemArray
+	} else if !param.IsOmitted(u.OfTextBlockArray) {
+		return &u.OfTextBlockArray
 	}
 	return nil
 }

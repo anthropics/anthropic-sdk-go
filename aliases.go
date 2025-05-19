@@ -5,7 +5,6 @@ package anthropic
 import (
 	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
 	"github.com/anthropics/anthropic-sdk-go/shared"
 )
 
@@ -21,6 +20,12 @@ type Error = apierror.Error
 type APIErrorObject = shared.APIErrorObject
 
 // This is an alias to an internal type.
+type AuthenticationError = shared.AuthenticationError
+
+// This is an alias to an internal type.
+type BillingError = shared.BillingError
+
+// This is an alias to an internal type.
 type ErrorObjectUnion = shared.ErrorObjectUnion
 
 // This is an alias to an internal type.
@@ -29,12 +34,17 @@ type ErrorResponse = shared.ErrorResponse
 // This is an alias to an internal type.
 type GatewayTimeoutError = shared.GatewayTimeoutError
 
-func toParam[T comparable](value T, meta resp.Field) param.Opt[T] {
-	if meta.IsPresent() {
-		return param.NewOpt(value)
-	}
-	if meta.IsExplicitNull() {
-		return param.NullOpt[T]()
-	}
-	return param.Opt[T]{}
-}
+// This is an alias to an internal type.
+type InvalidRequestError = shared.InvalidRequestError
+
+// This is an alias to an internal type.
+type NotFoundError = shared.NotFoundError
+
+// This is an alias to an internal type.
+type OverloadedError = shared.OverloadedError
+
+// This is an alias to an internal type.
+type PermissionError = shared.PermissionError
+
+// This is an alias to an internal type.
+type RateLimitError = shared.RateLimitError

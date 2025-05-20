@@ -798,9 +798,14 @@ func NewBetaWebSearchToolResultBlock[
 	return BetaContentBlockParamUnion{OfWebSearchToolResult: &webSearchToolResult}
 }
 
-func NewBetaToolResultBlock(toolUseID string) BetaContentBlockParamUnion {
-	var toolResult BetaToolResultBlockParam
-	toolResult.ToolUseID = toolUseID
+func NewBetaToolResultBlock(toolUseID string, content string, isError bool) BetaContentBlockParamUnion {
+	toolResult := BetaToolResultBlockParam{
+		Content: []BetaToolResultBlockParamContentUnion{
+			{OfText: &BetaTextBlockParam{Text: content}},
+		},
+		ToolUseID: toolUseID,
+		IsError:   Bool(isError),
+	}
 	return BetaContentBlockParamUnion{OfToolResult: &toolResult}
 }
 

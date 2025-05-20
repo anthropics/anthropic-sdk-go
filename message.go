@@ -500,10 +500,10 @@ type ContentBlockUnion struct {
 	Text string `json:"text"`
 	// Any of "text", "tool_use", "server_tool_use", "web_search_tool_result",
 	// "thinking", "redacted_thinking".
-	Type string `json:"type"`
-	ID string `json:"id"`
+	Type  string          `json:"type"`
+	ID    string          `json:"id"`
 	Input json.RawMessage `json:"input"`
-	Name string `json:"name"`
+	Name  string          `json:"name"`
 	// This field is from variant [WebSearchToolResultBlock].
 	Content WebSearchToolResultBlockContentUnion `json:"content"`
 	// This field is from variant [WebSearchToolResultBlock].
@@ -681,7 +681,7 @@ func ContentBlockParamOfToolResult(toolUseID string) ContentBlockParamUnion {
 }
 
 func ContentBlockParamOfDocument[
-T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
+	T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
 ](source T) ContentBlockParamUnion {
 	var document DocumentBlockParam
 	switch v := any(source).(type) {

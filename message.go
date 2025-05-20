@@ -3876,7 +3876,7 @@ func (r *WebSearchToolResultBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func WebSearchToolResultBlockParamContentOfRequestWebSearchToolResultError(errorCode WebSearchToolRequestErrorErrorCode) WebSearchToolResultBlockParamContentUnion {
+func WebSearchToolResultBlockOfError(errorCode WebSearchToolRequestErrorErrorCode) WebSearchToolResultBlockParamContentUnion {
 	var variant WebSearchToolRequestErrorParam
 	variant.ErrorCode = errorCode
 	return WebSearchToolResultBlockParamContentUnion{OfRequestWebSearchToolResultError: &variant}

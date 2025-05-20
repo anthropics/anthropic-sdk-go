@@ -3804,7 +3804,7 @@ func (r *BetaWebSearchToolResultBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func BetaWebSearchToolResultBlockParamContentOfRequestWebSearchToolResultError(errorCode BetaWebSearchToolRequestErrorErrorCode) BetaWebSearchToolResultBlockParamContentUnion {
+func BetaWebSearchToolResultBlockOfError(errorCode BetaWebSearchToolRequestErrorErrorCode) BetaWebSearchToolResultBlockParamContentUnion {
 	var variant BetaWebSearchToolRequestErrorParam
 	variant.ErrorCode = errorCode
 	return BetaWebSearchToolResultBlockParamContentUnion{OfRequestWebSearchToolResultError: &variant}

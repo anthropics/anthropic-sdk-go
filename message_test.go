@@ -169,7 +169,6 @@ func TestAccumulate(t *testing.T) {
 		events   []string
 	}{
 		"empty message": {
-			startingMessage: anthropic.Message{},
 			expected:        anthropic.Message{Usage: anthropic.Usage{}},
 			events: []string{
 				`{"type": "message_start", "message": {}}`,

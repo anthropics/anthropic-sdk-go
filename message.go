@@ -2369,7 +2369,7 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 			citation := TextCitationUnion{}
 			err := citation.UnmarshalJSON([]byte(delta.Citation.RawJSON()))
 			if err != nil {
-				return fmt.Errorf("could not unmarshal citation delta into citation type", err)
+				return fmt.Errorf("could not unmarshal citation delta into citation type: %w", err)
 			}
 			cb.Citations = append(cb.Citations, citation)
 		}

@@ -750,13 +750,13 @@ func (r *BetaContentBlockUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func BetaContentBlockParamOfText(text string) BetaContentBlockParamUnion {
+func NewBetaTextBlock(text string) BetaContentBlockParamUnion {
 	var variant BetaTextBlockParam
 	variant.Text = text
 	return BetaContentBlockParamUnion{OfText: &variant}
 }
 
-func BetaContentBlockParamOfImage[
+func NewBetaImageBlock[
 	T BetaBase64ImageSourceParam | BetaURLImageSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var image BetaImageBlockParam
@@ -769,7 +769,7 @@ func BetaContentBlockParamOfImage[
 	return BetaContentBlockParamUnion{OfImage: &image}
 }
 
-func BetaContentBlockParamOfToolUse(id string, input any, name string) BetaContentBlockParamUnion {
+func NewBetaToolUseBlock(id string, input any, name string) BetaContentBlockParamUnion {
 	var toolUse BetaToolUseBlockParam
 	toolUse.ID = id
 	toolUse.Input = input
@@ -777,14 +777,14 @@ func BetaContentBlockParamOfToolUse(id string, input any, name string) BetaConte
 	return BetaContentBlockParamUnion{OfToolUse: &toolUse}
 }
 
-func BetaContentBlockParamOfServerToolUse(id string, input any) BetaContentBlockParamUnion {
+func NewBetaServerToolUseBlock(id string, input any) BetaContentBlockParamUnion {
 	var serverToolUse BetaServerToolUseBlockParam
 	serverToolUse.ID = id
 	serverToolUse.Input = input
 	return BetaContentBlockParamUnion{OfServerToolUse: &serverToolUse}
 }
 
-func BetaContentBlockParamOfWebSearchToolResult[
+func NewBetaWebSearchToolResultBlock[
 	T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var webSearchToolResult BetaWebSearchToolResultBlockParam
@@ -798,13 +798,13 @@ func BetaContentBlockParamOfWebSearchToolResult[
 	return BetaContentBlockParamUnion{OfWebSearchToolResult: &webSearchToolResult}
 }
 
-func BetaContentBlockParamOfToolResult(toolUseID string) BetaContentBlockParamUnion {
+func NewBetaToolResultBlock(toolUseID string) BetaContentBlockParamUnion {
 	var toolResult BetaToolResultBlockParam
 	toolResult.ToolUseID = toolUseID
 	return BetaContentBlockParamUnion{OfToolResult: &toolResult}
 }
 
-func BetaContentBlockParamOfDocument[
+func NewBetaDocumentBlock[
 	T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var document BetaBase64PDFBlockParam
@@ -821,14 +821,14 @@ func BetaContentBlockParamOfDocument[
 	return BetaContentBlockParamUnion{OfDocument: &document}
 }
 
-func BetaContentBlockParamOfThinking(signature string, thinking string) BetaContentBlockParamUnion {
+func NewBetaThinkingBlock(signature string, thinking string) BetaContentBlockParamUnion {
 	var variant BetaThinkingBlockParam
 	variant.Signature = signature
 	variant.Thinking = thinking
 	return BetaContentBlockParamUnion{OfThinking: &variant}
 }
 
-func BetaContentBlockParamOfRedactedThinking(data string) BetaContentBlockParamUnion {
+func NewBetaRedactedThinkingBlock(data string) BetaContentBlockParamUnion {
 	var redactedThinking BetaRedactedThinkingBlockParam
 	redactedThinking.Data = data
 	return BetaContentBlockParamUnion{OfRedactedThinking: &redactedThinking}
@@ -3810,7 +3810,7 @@ func (r *BetaWebSearchToolResultBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func BetaWebSearchToolResultBlockOfError(errorCode BetaWebSearchToolRequestErrorErrorCode) BetaWebSearchToolResultBlockParamContentUnion {
+func BetaNewWebSearchToolRequestError(errorCode BetaWebSearchToolRequestErrorErrorCode) BetaWebSearchToolResultBlockParamContentUnion {
 	var variant BetaWebSearchToolRequestErrorParam
 	variant.ErrorCode = errorCode
 	return BetaWebSearchToolResultBlockParamContentUnion{OfRequestWebSearchToolResultError: &variant}

@@ -608,13 +608,13 @@ func (r *ContentBlockUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func ContentBlockParamOfText(text string) ContentBlockParamUnion {
+func NewTextBlock(text string) ContentBlockParamUnion {
 	var variant TextBlockParam
 	variant.Text = text
 	return ContentBlockParamUnion{OfText: &variant}
 }
 
-func ContentBlockParamOfImage[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockParamUnion {
+func NewImageBlock[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockParamUnion {
 	var image ImageBlockParam
 	switch v := any(source).(type) {
 	case Base64ImageSourceParam:
@@ -625,7 +625,7 @@ func ContentBlockParamOfImage[T Base64ImageSourceParam | URLImageSourceParam](so
 	return ContentBlockParamUnion{OfImage: &image}
 }
 
-func ContentBlockParamOfToolUse(id string, input any, name string) ContentBlockParamUnion {
+func NewToolUseBlock(id string, input any, name string) ContentBlockParamUnion {
 	var toolUse ToolUseBlockParam
 	toolUse.ID = id
 	toolUse.Input = input
@@ -633,14 +633,14 @@ func ContentBlockParamOfToolUse(id string, input any, name string) ContentBlockP
 	return ContentBlockParamUnion{OfToolUse: &toolUse}
 }
 
-func ContentBlockParamOfServerToolUse(id string, input any) ContentBlockParamUnion {
+func NewServerToolUseBlock(id string, input any) ContentBlockParamUnion {
 	var serverToolUse ServerToolUseBlockParam
 	serverToolUse.ID = id
 	serverToolUse.Input = input
 	return ContentBlockParamUnion{OfServerToolUse: &serverToolUse}
 }
 
-func ContentBlockParamOfWebSearchToolResult[
+func NewWebSearchToolResultBlock[
 	T []WebSearchResultBlockParam | WebSearchToolRequestErrorParam,
 ](content T, toolUseID string) ContentBlockParamUnion {
 	var webSearchToolResult WebSearchToolResultBlockParam
@@ -654,13 +654,13 @@ func ContentBlockParamOfWebSearchToolResult[
 	return ContentBlockParamUnion{OfWebSearchToolResult: &webSearchToolResult}
 }
 
-func ContentBlockParamOfToolResult(toolUseID string) ContentBlockParamUnion {
+func NewToolResultBlock(toolUseID string) ContentBlockParamUnion {
 	var toolResult ToolResultBlockParam
 	toolResult.ToolUseID = toolUseID
 	return ContentBlockParamUnion{OfToolResult: &toolResult}
 }
 
-func ContentBlockParamOfDocument[
+func NewDocumentBlock[
 	T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
 ](source T) ContentBlockParamUnion {
 	var document DocumentBlockParam
@@ -677,14 +677,14 @@ func ContentBlockParamOfDocument[
 	return ContentBlockParamUnion{OfDocument: &document}
 }
 
-func ContentBlockParamOfThinking(signature string, thinking string) ContentBlockParamUnion {
+func NewThinkingBlock(signature string, thinking string) ContentBlockParamUnion {
 	var variant ThinkingBlockParam
 	variant.Signature = signature
 	variant.Thinking = thinking
 	return ContentBlockParamUnion{OfThinking: &variant}
 }
 
-func ContentBlockParamOfRedactedThinking(data string) ContentBlockParamUnion {
+func NewRedactedThinkingBlock(data string) ContentBlockParamUnion {
 	var redactedThinking RedactedThinkingBlockParam
 	redactedThinking.Data = data
 	return ContentBlockParamUnion{OfRedactedThinking: &redactedThinking}
@@ -3636,7 +3636,7 @@ func (r *WebSearchToolResultBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func WebSearchToolResultBlockOfError(errorCode WebSearchToolRequestErrorErrorCode) WebSearchToolResultBlockParamContentUnion {
+func NewWebSearchToolRequestError(errorCode WebSearchToolRequestErrorErrorCode) WebSearchToolResultBlockParamContentUnion {
 	var variant WebSearchToolRequestErrorParam
 	variant.ErrorCode = errorCode
 	return WebSearchToolResultBlockParamContentUnion{OfRequestWebSearchToolResultError: &variant}

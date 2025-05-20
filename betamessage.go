@@ -757,7 +757,7 @@ func BetaContentBlockParamOfText(text string) BetaContentBlockParamUnion {
 }
 
 func BetaContentBlockParamOfImage[
-T BetaBase64ImageSourceParam | BetaURLImageSourceParam,
+	T BetaBase64ImageSourceParam | BetaURLImageSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var image BetaImageBlockParam
 	switch v := any(source).(type) {
@@ -805,7 +805,7 @@ func BetaContentBlockParamOfToolResult(toolUseID string) BetaContentBlockParamUn
 }
 
 func BetaContentBlockParamOfDocument[
-T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam,
+	T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var document BetaBase64PDFBlockParam
 	switch v := any(source).(type) {

@@ -500,10 +500,10 @@ type ContentBlockUnion struct {
 	Text string `json:"text"`
 	// Any of "text", "tool_use", "server_tool_use", "web_search_tool_result",
 	// "thinking", "redacted_thinking".
-	Type string `json:"type"`
-	ID string `json:"id"`
+	Type  string          `json:"type"`
+	ID    string          `json:"id"`
 	Input json.RawMessage `json:"input"`
-	Name string `json:"name"`
+	Name  string          `json:"name"`
 	// This field is from variant [WebSearchToolResultBlock].
 	Content WebSearchToolResultBlockContentUnion `json:"content"`
 	// This field is from variant [WebSearchToolResultBlock].
@@ -681,7 +681,7 @@ func ContentBlockParamOfToolResult(toolUseID string) ContentBlockParamUnion {
 }
 
 func ContentBlockParamOfDocument[
-T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
+	T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
 ](source T) ContentBlockParamUnion {
 	var document DocumentBlockParam
 	switch v := any(source).(type) {
@@ -2354,14 +2354,24 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 		case TextDelta:
 			cb.Text += delta.Text
 		case InputJSONDelta:
-			if string(cb.Input) == "{}" {
-				cb.Input = json.RawMessage{}
+			if len(delta.PartialJSON) != 0 {
+				if string(cb.Input) == "{}" {
+					cb.Input = []byte(delta.PartialJSON)
+				} else {
+					cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
+				}
 			}
-			cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
 		case ThinkingDelta:
 			cb.Thinking += delta.Thinking
 		case SignatureDelta:
 			cb.Signature += delta.Signature
+		case CitationsDelta:
+			citation := TextCitationUnion{}
+			err := citation.UnmarshalJSON([]byte(delta.Citation.RawJSON()))
+			if err != nil {
+				return fmt.Errorf("could not unmarshal citation delta into citation type", err)
+			}
+			cb.Citations = append(cb.Citations, citation)
 		}
 	case ContentBlockStopEvent:
 		if len(acc.Content) == 0 {

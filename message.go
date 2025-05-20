@@ -645,6 +645,19 @@ func NewImageBlock[T Base64ImageSourceParam | URLImageSourceParam](source T) Con
 	return ContentBlockParamUnion{OfImage: &image}
 }
 
+func NewImageBlockBase64(mediaType string, encodedData string) ContentBlockParamUnion {
+	return ContentBlockParamUnion{
+		OfImage: &ImageBlockParam{
+			Source: ImageBlockParamSourceUnion{
+				OfBase64: &Base64ImageSourceParam{
+					Data:      encodedData,
+					MediaType: Base64ImageSourceMediaType(mediaType),
+				},
+			},
+		},
+	}
+}
+
 func NewToolUseBlock(id string, input any, name string) ContentBlockParamUnion {
 	var toolUse ToolUseBlockParam
 	toolUse.ID = id
@@ -674,10 +687,15 @@ func NewWebSearchToolResultBlock[
 	return ContentBlockParamUnion{OfWebSearchToolResult: &webSearchToolResult}
 }
 
-func NewToolResultBlock(toolUseID string) ContentBlockParamUnion {
-	var toolResult ToolResultBlockParam
-	toolResult.ToolUseID = toolUseID
-	return ContentBlockParamUnion{OfToolResult: &toolResult}
+func NewToolResultBlock(toolUseID string, content string, isError bool) ContentBlockParamUnion {
+	toolBlock := ToolResultBlockParam{
+		ToolUseID: toolUseID,
+		Content: []ToolResultBlockParamContentUnion{
+			{OfText: &TextBlockParam{Text: content}},
+		},
+		IsError: Bool(isError),
+	}
+	return ContentBlockParamUnion{OfToolResult: &toolBlock}
 }
 
 func NewDocumentBlock[
@@ -1259,19 +1277,6 @@ type ImageBlockParam struct {
 	// This field can be elided, and will marshal its zero value as "image".
 	Type constant.Image `json:"type,required"`
 	paramObj
-}
-
-func NewImageBlockBase64(mediaType string, encodedData string) ContentBlockParamUnion {
-	return ContentBlockParamUnion{
-		OfImage: &ImageBlockParam{
-			Source: ImageBlockParamSourceUnion{
-				OfBase64: &Base64ImageSourceParam{
-					Data:      encodedData,
-					MediaType: Base64ImageSourceMediaType(mediaType),
-				},
-			},
-		},
-	}
 }
 
 func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
@@ -2591,14 +2596,6 @@ type TextBlockParam struct {
 	paramObj
 }
 
-func NewTextBlock(text string) ContentBlockParamUnion {
-	return ContentBlockParamUnion{
-		OfText: &TextBlockParam{
-			Text: text,
-		},
-	}
-}
-
 func (r TextBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow TextBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
@@ -3305,17 +3302,6 @@ type ToolResultBlockParam struct {
 	// This field can be elided, and will marshal its zero value as "tool_result".
 	Type constant.ToolResult `json:"type,required"`
 	paramObj
-}
-
-func NewToolResultBlock(toolUseID string, content string, isError bool) ContentBlockParamUnion {
-	blockParam := ToolResultBlockParam{
-		ToolUseID: toolUseID,
-		Content: []ToolResultBlockParamContentUnion{{OfText: &TextBlockParam{
-			Text: content,
-		}}},
-		IsError: Bool(isError),
-	}
-	return ContentBlockParamUnion{OfToolResult: &blockParam}
 }
 
 func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {

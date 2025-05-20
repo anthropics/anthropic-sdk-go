@@ -2261,7 +2261,13 @@ func (r BetaTextBlock) ToParam() BetaTextBlockParam {
 	var p BetaTextBlockParam
 	p.Type = r.Type
 	p.Text = r.Text
-	p.Citations = make([]BetaTextCitationParamUnion, len(r.Citations))
+
+	// Distinguish between a nil and zero length slice, since some compatible
+	// APIs may not require citations.
+	if r.Citations != nil {
+		p.Citations = make([]BetaTextCitationParamUnion, len(r.Citations))
+	}
+
 	for i, citation := range r.Citations {
 		switch citationVariant := citation.AsAny().(type) {
 		case BetaCitationCharLocation:

@@ -1274,10 +1274,6 @@ func NewImageBlockBase64(mediaType string, encodedData string) ContentBlockParam
 	}
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ImageBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
-
 func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ImageBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
@@ -1680,10 +1676,6 @@ func NewAssistantMessage(blocks ...ContentBlockParamUnion) MessageParam {
 		Content: blocks,
 	}
 }
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
 
 func (r MessageParam) MarshalJSON() (data []byte, err error) {
 	type shadow MessageParam
@@ -2607,10 +2599,6 @@ func NewTextBlock(text string) ContentBlockParamUnion {
 	}
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f TextBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
-
 func (r TextBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow TextBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
@@ -3329,10 +3317,6 @@ func NewToolResultBlock(toolUseID string, content string, isError bool) ContentB
 	}
 	return ContentBlockParamUnion{OfToolResult: &blockParam}
 }
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolResultBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
 
 func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolResultBlockParam

@@ -1,5 +1,43 @@
 # Changelog
 
+## 1.0.0 (2025-05-21)
+
+Full Changelog: [v0.2.0-beta.4...v1.0.0](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-beta.4...v1.0.0)
+
+### ⚠ BREAKING CHANGES
+
+* **client:** rename variant constructors
+* **client:** remove is present
+
+### Features
+
+* **client:** improve variant constructor names ([227c96b](https://github.com/anthropics/anthropic-sdk-go/commit/227c96bf50e14827e112c31ad0f512354477a409))
+* **client:** rename variant constructors ([078fad6](https://github.com/anthropics/anthropic-sdk-go/commit/078fad6558642a20b5fb3e82186b03c2efc0ab47))
+
+
+### Bug Fixes
+
+* **client:** correctly set stream key for multipart ([f17bfe0](https://github.com/anthropics/anthropic-sdk-go/commit/f17bfe0aac0fb8228d9cad87ccca0deb7449a824))
+* **client:** don't panic on marshal with extra null field ([d67a151](https://github.com/anthropics/anthropic-sdk-go/commit/d67a151a6ef0870918c5eaf84ce996cb5b1860b7))
+* **client:** elide nil citations array ([09cadec](https://github.com/anthropics/anthropic-sdk-go/commit/09cadec3c076d74bda74e67c345a1aee1fdb7ce4))
+* **client:** fix bug with empty tool inputs and citation deltas in Accumulate ([f4ac348](https://github.com/anthropics/anthropic-sdk-go/commit/f4ac348658fb83485d6555c63f90920599c98d99))
+* **client:** increase max stream buffer size ([18a6ccf](https://github.com/anthropics/anthropic-sdk-go/commit/18a6ccf1961922a342467800c737fa000bdd254e))
+* **client:** remove is present ([385d99f](https://github.com/anthropics/anthropic-sdk-go/commit/385d99fa225c755d9af737425ad2ef4d66ad5ba9))
+* **client:** resolve naming collisions in union variants ([2cb6904](https://github.com/anthropics/anthropic-sdk-go/commit/2cb69048a6b583954934bc2926186564b5c74bf6))
+* **client:** use scanner for streaming ([82a2840](https://github.com/anthropics/anthropic-sdk-go/commit/82a2840ce0f8aa8bd63f7697c566f437c06bb132))
+
+
+### Chores
+
+* **examples:** remove fmt ([872e055](https://github.com/anthropics/anthropic-sdk-go/commit/872e0550171942c405786c7eedb23b8270f6e8de))
+* formatting ([1ce0ee8](https://github.com/anthropics/anthropic-sdk-go/commit/1ce0ee863c5df658909d81b138dc1ebedb78844a))
+* improve devcontainer setup ([9021490](https://github.com/anthropics/anthropic-sdk-go/commit/90214901d77ba57901e77d6ea31aafb06c120f2c))
+
+
+### Documentation
+
+* upgrade security note to warning ([#346](https://github.com/anthropics/anthropic-sdk-go/issues/346)) ([83e70de](https://github.com/anthropics/anthropic-sdk-go/commit/83e70decfb5da14a1ecf78402302f7f0600515ea))
+
 ## 0.2.0-beta.4 (2025-05-18)
 
 Full Changelog: [v0.2.0-beta.3...v0.2.0-beta.4](https://github.com/anthropics/anthropic-sdk-go/compare/v0.2.0-beta.3...v0.2.0-beta.4)

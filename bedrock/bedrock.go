@@ -209,14 +209,15 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 				body, _ = sjson.DeleteBytes(body, "model")
 				body, _ = sjson.DeleteBytes(body, "stream")
 
-				var path string
+				var method string
 				if stream {
-					path = fmt.Sprintf("/model/%s/invoke-with-response-stream", url.QueryEscape(model))
+					method = "invoke-with-response-stream"
 				} else {
-					path = fmt.Sprintf("/model/%s/invoke", url.QueryEscape(model))
+					method = "invoke"
 				}
 
-				r.URL.RawPath = path
+				r.URL.Path = fmt.Sprintf("/model/%s/%s", model, method)
+				r.URL.RawPath = fmt.Sprintf("/model/%s/%s", url.QueryEscape(model), method)
 			}
 
 			reader := bytes.NewReader(body)

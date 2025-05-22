@@ -672,6 +672,14 @@ type MessageBatchNewParamsRequestParams struct {
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
+	// Determines whether to use priority capacity (if available) or standard capacity
+	// for this request.
+	//
+	// Anthropic offers different levels of service for your API requests. See
+	// [service-tiers](https://docs.anthropic.com/en/api/service-tiers) for details.
+	//
+	// Any of "auto", "standard_only".
+	ServiceTier string `json:"service_tier,omitzero"`
 	// Custom text sequences that will cause the model to stop generating.
 	//
 	// Our models will normally stop when they have naturally completed their turn,
@@ -786,6 +794,12 @@ func (r MessageBatchNewParamsRequestParams) MarshalJSON() (data []byte, err erro
 }
 func (r *MessageBatchNewParamsRequestParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[MessageBatchNewParamsRequestParams](
+		"service_tier", "auto", "standard_only",
+	)
 }
 
 type MessageBatchListParams struct {

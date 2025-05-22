@@ -21,6 +21,7 @@ type BetaService struct {
 	Options  []option.RequestOption
 	Models   BetaModelService
 	Messages BetaMessageService
+	Files    BetaFileService
 }
 
 // NewBetaService generates a new service that applies the given options to each
@@ -31,6 +32,7 @@ func NewBetaService(opts ...option.RequestOption) (r BetaService) {
 	r.Options = opts
 	r.Models = NewBetaModelService(opts...)
 	r.Messages = NewBetaMessageService(opts...)
+	r.Files = NewBetaFileService(opts...)
 	return
 }
 
@@ -45,6 +47,12 @@ const (
 	AnthropicBetaTokenCounting2024_11_01       AnthropicBeta = "token-counting-2024-11-01"
 	AnthropicBetaTokenEfficientTools2025_02_19 AnthropicBeta = "token-efficient-tools-2025-02-19"
 	AnthropicBetaOutput128k2025_02_19          AnthropicBeta = "output-128k-2025-02-19"
+	AnthropicBetaFilesAPI2025_04_14            AnthropicBeta = "files-api-2025-04-14"
+	AnthropicBetaMCPClient2025_04_04           AnthropicBeta = "mcp-client-2025-04-04"
+	AnthropicBetaDevFullThinking2025_05_14     AnthropicBeta = "dev-full-thinking-2025-05-14"
+	AnthropicBetaInterleavedThinking2025_05_14 AnthropicBeta = "interleaved-thinking-2025-05-14"
+	AnthropicBetaCodeExecution2025_05_22       AnthropicBeta = "code-execution-2025-05-22"
+	AnthropicBetaExtendedCacheTTL2025_04_11    AnthropicBeta = "extended-cache-ttl-2025-04-11"
 )
 
 type BetaAPIError struct {

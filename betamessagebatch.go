@@ -661,6 +661,8 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero,required"`
+	// Container identifier for reuse across requests.
+	Container param.Opt[string] `json:"container,omitzero"`
 	// Whether to incrementally stream the response using server-sent events.
 	//
 	// See [streaming](https://docs.anthropic.com/en/api/messages-streaming) for
@@ -693,8 +695,18 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// Recommended for advanced use cases only. You usually only need to use
 	// `temperature`.
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
+	// MCP servers to be utilized in this request
+	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.
 	Metadata BetaMetadataParam `json:"metadata,omitzero"`
+	// Determines whether to use priority capacity (if available) or standard capacity
+	// for this request.
+	//
+	// Anthropic offers different levels of service for your API requests. See
+	// [service-tiers](https://docs.anthropic.com/en/api/service-tiers) for details.
+	//
+	// Any of "auto", "standard_only".
+	ServiceTier string `json:"service_tier,omitzero"`
 	// Custom text sequences that will cause the model to stop generating.
 	//
 	// Our models will normally stop when they have naturally completed their turn,
@@ -809,6 +821,12 @@ func (r BetaMessageBatchNewParamsRequestParams) MarshalJSON() (data []byte, err 
 }
 func (r *BetaMessageBatchNewParamsRequestParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[BetaMessageBatchNewParamsRequestParams](
+		"service_tier", "auto", "standard_only",
+	)
 }
 
 type BetaMessageBatchGetParams struct {

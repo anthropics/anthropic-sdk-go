@@ -631,14 +631,28 @@ Calling `.Messages.NewStreaming()` or [setting a custom timeout](#timeouts) disa
 
 Request parameters that correspond to file uploads in multipart requests are typed as
 `io.Reader`. The contents of the `io.Reader` will by default be sent as a multipart form
-part with the file name of "anonymous_file" and content-type of "application/octet-stream".
+part with the file name of "anonymous_file" and content-type of "application/octet-stream", so we
+recommend always specifyig a custom content-type with the `anthropic.File(reader io.Reader, filename string, contentType string)`
+helper we provide to easily wrap any `io.Reader` with the appropriate file name and content type.
 
-The file name and content-type can be customized by implementing `Name() string` or `ContentType()
+```go
+// A file from the file system
+file, err := os.Open("/path/to/file.json")
+anthropic.BetaFileUploadParams{
+	File: anthropic.File(file, "custom-name.json", "application/json"),
+	Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaFilesAPI2025_04_14},
+}
+
+// A file from a string
+anthropic.BetaFileUploadParams{
+	File: anthropic.File(strings.NewReader("my file contents"), "custom-name.json", "application/json"),
+	Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaFilesAPI2025_04_14},
+}
+```
+
+The file name and content-type can also be customized by implementing `Name() string` or `ContentType()
 string` on the run-time type of `io.Reader`. Note that `os.File` implements `Name() string`, so a
 file returned by `os.Open` will be sent with the file name on disk.
-
-We also provide a helper `anthropic.File(reader io.Reader, filename string, contentType string)`
-which can be used to wrap any `io.Reader` with the appropriate file name and content type.
 
 ### Retries
 

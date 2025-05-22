@@ -345,8 +345,8 @@ func TestMessageNewWithNonStreamingTimeoutLimits(t *testing.T) {
 	)
 
 	// Set a model with known token limits
-	testModel := "claude-opus-4-20250514"
-	testModelLimit := constant.ModelNonStreamingTokens[testModel]
+	model := anthropic.ModelClaudeOpus4_20250514
+	testModelLimit := constant.ModelNonStreamingTokens[string(model)]
 
 	// This test verifies that we can still create a message with tokens below the limit
 	safeParams := anthropic.MessageNewParams{
@@ -357,7 +357,7 @@ func TestMessageNewWithNonStreamingTimeoutLimits(t *testing.T) {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: testModel,
+		Model: model,
 	}
 
 	_, err := client.Messages.New(context.TODO(), safeParams)
@@ -378,7 +378,7 @@ func TestMessageNewWithNonStreamingTimeoutLimits(t *testing.T) {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: testModel,
+		Model: model,
 	}
 
 	_, err = client.Messages.New(context.TODO(), unsafeParams)

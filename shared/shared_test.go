@@ -65,7 +65,7 @@ func TestCalculateNonStreamingTimeout(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			timeout, err := anthropic.CalculateNonStreamingTimeout(tc.maxTokens, tc.model)
+			timeout, err := anthropic.CalculateNonStreamingTimeout(tc.maxTokens, anthropic.Model(tc.model))
 
 			if tc.expectError && err == nil {
 				t.Error("Expected error but got nil")

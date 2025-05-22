@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.0 (2025-05-22)
+
+Full Changelog: [v1.1.0...v1.2.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.1.0...v1.2.0)
+
+### Features
+
+* **api:** add claude 4 models, files API, code execution tool, MCP connector and more ([b2e5cbf](https://github.com/anthropics/anthropic-sdk-go/commit/b2e5cbffd9d05228c2c2569974a6fa260c3f46be))
+
+
+### Bug Fixes
+
+* **tests:** fix model testing for anthropic.CalculateNonStreamingTimeout ([9956842](https://github.com/anthropics/anthropic-sdk-go/commit/995684240b77284a4590b1b9ae34a85e525d1e52))
+
 ## 1.1.0 (2025-05-22)
 
 Full Changelog: [v1.0.0...v1.1.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.0.0...v1.1.0)

@@ -500,10 +500,10 @@ type ContentBlockUnion struct {
 	Text string `json:"text"`
 	// Any of "text", "tool_use", "server_tool_use", "web_search_tool_result",
 	// "thinking", "redacted_thinking".
-	Type string `json:"type"`
-	ID string `json:"id"`
+	Type  string          `json:"type"`
+	ID    string          `json:"id"`
 	Input json.RawMessage `json:"input"`
-	Name string `json:"name"`
+	Name  string          `json:"name"`
 	// This field is from variant [WebSearchToolResultBlock].
 	Content WebSearchToolResultBlockContentUnion `json:"content"`
 	// This field is from variant [WebSearchToolResultBlock].
@@ -628,13 +628,13 @@ func (r *ContentBlockUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func ContentBlockParamOfText(text string) ContentBlockParamUnion {
+func NewTextBlock(text string) ContentBlockParamUnion {
 	var variant TextBlockParam
 	variant.Text = text
 	return ContentBlockParamUnion{OfText: &variant}
 }
 
-func ContentBlockParamOfImage[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockParamUnion {
+func NewImageBlock[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockParamUnion {
 	var image ImageBlockParam
 	switch v := any(source).(type) {
 	case Base64ImageSourceParam:
@@ -645,7 +645,20 @@ func ContentBlockParamOfImage[T Base64ImageSourceParam | URLImageSourceParam](so
 	return ContentBlockParamUnion{OfImage: &image}
 }
 
-func ContentBlockParamOfToolUse(id string, input any, name string) ContentBlockParamUnion {
+func NewImageBlockBase64(mediaType string, encodedData string) ContentBlockParamUnion {
+	return ContentBlockParamUnion{
+		OfImage: &ImageBlockParam{
+			Source: ImageBlockParamSourceUnion{
+				OfBase64: &Base64ImageSourceParam{
+					Data:      encodedData,
+					MediaType: Base64ImageSourceMediaType(mediaType),
+				},
+			},
+		},
+	}
+}
+
+func NewToolUseBlock(id string, input any, name string) ContentBlockParamUnion {
 	var toolUse ToolUseBlockParam
 	toolUse.ID = id
 	toolUse.Input = input
@@ -653,14 +666,14 @@ func ContentBlockParamOfToolUse(id string, input any, name string) ContentBlockP
 	return ContentBlockParamUnion{OfToolUse: &toolUse}
 }
 
-func ContentBlockParamOfServerToolUse(id string, input any) ContentBlockParamUnion {
+func NewServerToolUseBlock(id string, input any) ContentBlockParamUnion {
 	var serverToolUse ServerToolUseBlockParam
 	serverToolUse.ID = id
 	serverToolUse.Input = input
 	return ContentBlockParamUnion{OfServerToolUse: &serverToolUse}
 }
 
-func ContentBlockParamOfWebSearchToolResult[
+func NewWebSearchToolResultBlock[
 	T []WebSearchResultBlockParam | WebSearchToolRequestErrorParam,
 ](content T, toolUseID string) ContentBlockParamUnion {
 	var webSearchToolResult WebSearchToolResultBlockParam
@@ -674,14 +687,19 @@ func ContentBlockParamOfWebSearchToolResult[
 	return ContentBlockParamUnion{OfWebSearchToolResult: &webSearchToolResult}
 }
 
-func ContentBlockParamOfToolResult(toolUseID string) ContentBlockParamUnion {
-	var toolResult ToolResultBlockParam
-	toolResult.ToolUseID = toolUseID
-	return ContentBlockParamUnion{OfToolResult: &toolResult}
+func NewToolResultBlock(toolUseID string, content string, isError bool) ContentBlockParamUnion {
+	toolBlock := ToolResultBlockParam{
+		ToolUseID: toolUseID,
+		Content: []ToolResultBlockParamContentUnion{
+			{OfText: &TextBlockParam{Text: content}},
+		},
+		IsError: Bool(isError),
+	}
+	return ContentBlockParamUnion{OfToolResult: &toolBlock}
 }
 
-func ContentBlockParamOfDocument[
-T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
+func NewDocumentBlock[
+	T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
 ](source T) ContentBlockParamUnion {
 	var document DocumentBlockParam
 	switch v := any(source).(type) {
@@ -697,14 +715,14 @@ T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDF
 	return ContentBlockParamUnion{OfDocument: &document}
 }
 
-func ContentBlockParamOfThinking(signature string, thinking string) ContentBlockParamUnion {
+func NewThinkingBlock(signature string, thinking string) ContentBlockParamUnion {
 	var variant ThinkingBlockParam
 	variant.Signature = signature
 	variant.Thinking = thinking
 	return ContentBlockParamUnion{OfThinking: &variant}
 }
 
-func ContentBlockParamOfRedactedThinking(data string) ContentBlockParamUnion {
+func NewRedactedThinkingBlock(data string) ContentBlockParamUnion {
 	var redactedThinking RedactedThinkingBlockParam
 	redactedThinking.Data = data
 	return ContentBlockParamUnion{OfRedactedThinking: &redactedThinking}
@@ -1261,23 +1279,6 @@ type ImageBlockParam struct {
 	paramObj
 }
 
-func NewImageBlockBase64(mediaType string, encodedData string) ContentBlockParamUnion {
-	return ContentBlockParamUnion{
-		OfImage: &ImageBlockParam{
-			Source: ImageBlockParamSourceUnion{
-				OfBase64: &Base64ImageSourceParam{
-					Data:      encodedData,
-					MediaType: Base64ImageSourceMediaType(mediaType),
-				},
-			},
-		},
-	}
-}
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ImageBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
-
 func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ImageBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
@@ -1680,10 +1681,6 @@ func NewAssistantMessage(blocks ...ContentBlockParamUnion) MessageParam {
 		Content: blocks,
 	}
 }
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f MessageParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
 
 func (r MessageParam) MarshalJSON() (data []byte, err error) {
 	type shadow MessageParam
@@ -2354,14 +2351,24 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 		case TextDelta:
 			cb.Text += delta.Text
 		case InputJSONDelta:
-			if string(cb.Input) == "{}" {
-				cb.Input = json.RawMessage{}
+			if len(delta.PartialJSON) != 0 {
+				if string(cb.Input) == "{}" {
+					cb.Input = []byte(delta.PartialJSON)
+				} else {
+					cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
+				}
 			}
-			cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
 		case ThinkingDelta:
 			cb.Thinking += delta.Thinking
 		case SignatureDelta:
 			cb.Signature += delta.Signature
+		case CitationsDelta:
+			citation := TextCitationUnion{}
+			err := citation.UnmarshalJSON([]byte(delta.Citation.RawJSON()))
+			if err != nil {
+				return fmt.Errorf("could not unmarshal citation delta into citation type: %w", err)
+			}
+			cb.Citations = append(cb.Citations, citation)
 		}
 	case ContentBlockStopEvent:
 		if len(acc.Content) == 0 {
@@ -2538,7 +2545,13 @@ func (r TextBlock) ToParam() TextBlockParam {
 	var p TextBlockParam
 	p.Type = r.Type
 	p.Text = r.Text
-	p.Citations = make([]TextCitationParamUnion, len(r.Citations))
+
+	// Distinguish between a nil and zero length slice, since some compatible
+	// APIs may not require citations.
+	if r.Citations != nil {
+		p.Citations = make([]TextCitationParamUnion, len(r.Citations))
+	}
+
 	for i, citation := range r.Citations {
 		switch citationVariant := citation.AsAny().(type) {
 		case CitationCharLocation:
@@ -2582,18 +2595,6 @@ type TextBlockParam struct {
 	Type constant.Text `json:"type,required"`
 	paramObj
 }
-
-func NewTextBlock(text string) ContentBlockParamUnion {
-	return ContentBlockParamUnion{
-		OfText: &TextBlockParam{
-			Text: text,
-		},
-	}
-}
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f TextBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
 
 func (r TextBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow TextBlockParam
@@ -3303,21 +3304,6 @@ type ToolResultBlockParam struct {
 	paramObj
 }
 
-func NewToolResultBlock(toolUseID string, content string, isError bool) ContentBlockParamUnion {
-	blockParam := ToolResultBlockParam{
-		ToolUseID: toolUseID,
-		Content: []ToolResultBlockParamContentUnion{{OfText: &TextBlockParam{
-			Text: content,
-		}}},
-		IsError: Bool(isError),
-	}
-	return ContentBlockParamUnion{OfToolResult: &blockParam}
-}
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f ToolResultBlockParam) IsPresent() bool { return !param.IsOmitted(f) && f.IsPresent() }
-
 func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolResultBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
@@ -3876,7 +3862,7 @@ func (r *WebSearchToolResultBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func WebSearchToolResultBlockParamContentOfRequestWebSearchToolResultError(errorCode WebSearchToolRequestErrorErrorCode) WebSearchToolResultBlockParamContentUnion {
+func NewWebSearchToolRequestError(errorCode WebSearchToolRequestErrorErrorCode) WebSearchToolResultBlockParamContentUnion {
 	var variant WebSearchToolRequestErrorParam
 	variant.ErrorCode = errorCode
 	return WebSearchToolResultBlockParamContentUnion{OfRequestWebSearchToolResultError: &variant}

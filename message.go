@@ -608,6 +608,27 @@ func (r *ContentBlockUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func NewServerToolUseBlock(id string, input any) ContentBlockParamUnion {
+	var serverToolUse ServerToolUseBlockParam
+	serverToolUse.ID = id
+	serverToolUse.Input = input
+	return ContentBlockParamUnion{OfServerToolUse: &serverToolUse}
+}
+
+func NewWebSearchToolResultBlock[
+	T []WebSearchResultBlockParam | WebSearchToolRequestErrorParam,
+](content T, toolUseID string) ContentBlockParamUnion {
+	var webSearchToolResult WebSearchToolResultBlockParam
+	switch v := any(content).(type) {
+	case []WebSearchResultBlockParam:
+		webSearchToolResult.Content.OfWebSearchToolResultBlockItem = v
+	case WebSearchToolRequestErrorParam:
+		webSearchToolResult.Content.OfRequestWebSearchToolResultError = &v
+	}
+	webSearchToolResult.ToolUseID = toolUseID
+	return ContentBlockParamUnion{OfWebSearchToolResult: &webSearchToolResult}
+}
+
 func NewTextBlock(text string) ContentBlockParamUnion {
 	var variant TextBlockParam
 	variant.Text = text
@@ -631,27 +652,6 @@ func NewToolUseBlock(id string, input any, name string) ContentBlockParamUnion {
 	toolUse.Input = input
 	toolUse.Name = name
 	return ContentBlockParamUnion{OfToolUse: &toolUse}
-}
-
-func NewServerToolUseBlock(id string, input any) ContentBlockParamUnion {
-	var serverToolUse ServerToolUseBlockParam
-	serverToolUse.ID = id
-	serverToolUse.Input = input
-	return ContentBlockParamUnion{OfServerToolUse: &serverToolUse}
-}
-
-func NewWebSearchToolResultBlock[
-	T []WebSearchResultBlockParam | WebSearchToolRequestErrorParam,
-](content T, toolUseID string) ContentBlockParamUnion {
-	var webSearchToolResult WebSearchToolResultBlockParam
-	switch v := any(content).(type) {
-	case []WebSearchResultBlockParam:
-		webSearchToolResult.Content.OfWebSearchToolResultBlockItem = v
-	case WebSearchToolRequestErrorParam:
-		webSearchToolResult.Content.OfRequestWebSearchToolResultError = &v
-	}
-	webSearchToolResult.ToolUseID = toolUseID
-	return ContentBlockParamUnion{OfWebSearchToolResult: &webSearchToolResult}
 }
 
 func NewToolResultBlock(toolUseID string) ContentBlockParamUnion {
@@ -694,11 +694,11 @@ func NewRedactedThinkingBlock(data string) ContentBlockParamUnion {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ContentBlockParamUnion struct {
+	OfServerToolUse       *ServerToolUseBlockParam       `json:",omitzero,inline"`
+	OfWebSearchToolResult *WebSearchToolResultBlockParam `json:",omitzero,inline"`
 	OfText                *TextBlockParam                `json:",omitzero,inline"`
 	OfImage               *ImageBlockParam               `json:",omitzero,inline"`
 	OfToolUse             *ToolUseBlockParam             `json:",omitzero,inline"`
-	OfServerToolUse       *ServerToolUseBlockParam       `json:",omitzero,inline"`
-	OfWebSearchToolResult *WebSearchToolResultBlockParam `json:",omitzero,inline"`
 	OfToolResult          *ToolResultBlockParam          `json:",omitzero,inline"`
 	OfDocument            *DocumentBlockParam            `json:",omitzero,inline"`
 	OfThinking            *ThinkingBlockParam            `json:",omitzero,inline"`
@@ -707,11 +707,11 @@ type ContentBlockParamUnion struct {
 }
 
 func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ContentBlockParamUnion](u.OfText,
+	return param.MarshalUnion[ContentBlockParamUnion](u.OfServerToolUse,
+		u.OfWebSearchToolResult,
+		u.OfText,
 		u.OfImage,
 		u.OfToolUse,
-		u.OfServerToolUse,
-		u.OfWebSearchToolResult,
 		u.OfToolResult,
 		u.OfDocument,
 		u.OfThinking,
@@ -722,16 +722,16 @@ func (u *ContentBlockParamUnion) UnmarshalJSON(data []byte) error {
 }
 
 func (u *ContentBlockParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfText) {
+	if !param.IsOmitted(u.OfServerToolUse) {
+		return u.OfServerToolUse
+	} else if !param.IsOmitted(u.OfWebSearchToolResult) {
+		return u.OfWebSearchToolResult
+	} else if !param.IsOmitted(u.OfText) {
 		return u.OfText
 	} else if !param.IsOmitted(u.OfImage) {
 		return u.OfImage
 	} else if !param.IsOmitted(u.OfToolUse) {
 		return u.OfToolUse
-	} else if !param.IsOmitted(u.OfServerToolUse) {
-		return u.OfServerToolUse
-	} else if !param.IsOmitted(u.OfWebSearchToolResult) {
-		return u.OfWebSearchToolResult
 	} else if !param.IsOmitted(u.OfToolResult) {
 		return u.OfToolResult
 	} else if !param.IsOmitted(u.OfDocument) {
@@ -801,16 +801,36 @@ func (u ContentBlockParamUnion) GetData() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockParamUnion) GetID() *string {
+	if vt := u.OfServerToolUse; vt != nil {
+		return (*string)(&vt.ID)
+	} else if vt := u.OfToolUse; vt != nil {
+		return (*string)(&vt.ID)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockParamUnion) GetName() *string {
+	if vt := u.OfServerToolUse; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfToolUse; vt != nil {
+		return (*string)(&vt.Name)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetType() *string {
-	if vt := u.OfText; vt != nil {
+	if vt := u.OfServerToolUse; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfImage; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfToolUse; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfServerToolUse; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfWebSearchToolResult; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfToolResult; vt != nil {
 		return (*string)(&vt.Type)
@@ -825,26 +845,6 @@ func (u ContentBlockParamUnion) GetType() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetID() *string {
-	if vt := u.OfToolUse; vt != nil {
-		return (*string)(&vt.ID)
-	} else if vt := u.OfServerToolUse; vt != nil {
-		return (*string)(&vt.ID)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetName() *string {
-	if vt := u.OfToolUse; vt != nil {
-		return (*string)(&vt.Name)
-	} else if vt := u.OfServerToolUse; vt != nil {
-		return (*string)(&vt.Name)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetToolUseID() *string {
 	if vt := u.OfWebSearchToolResult; vt != nil {
 		return (*string)(&vt.ToolUseID)
@@ -854,17 +854,27 @@ func (u ContentBlockParamUnion) GetToolUseID() *string {
 	return nil
 }
 
+// Returns a pointer to the underlying variant's Input property, if present.
+func (u ContentBlockParamUnion) GetInput() *any {
+	if vt := u.OfServerToolUse; vt != nil {
+		return &vt.Input
+	} else if vt := u.OfToolUse; vt != nil {
+		return &vt.Input
+	}
+	return nil
+}
+
 // Returns a pointer to the underlying variant's CacheControl property, if present.
 func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
-	if vt := u.OfText; vt != nil {
+	if vt := u.OfServerToolUse; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfText; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfImage; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfToolUse; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfServerToolUse; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfWebSearchToolResult; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfToolResult; vt != nil {
 		return &vt.CacheControl
@@ -873,6 +883,32 @@ func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
 	}
 	return nil
 }
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent) {
+	if vt := u.OfWebSearchToolResult; vt != nil {
+		res.any = vt.Content.asAny()
+	} else if vt := u.OfToolResult; vt != nil {
+		res.any = &vt.Content
+	}
+	return
+}
+
+// Can have the runtime types [_[]WebSearchResultBlockParam],
+// [_[]ToolResultBlockParamContentUnion]
+type contentBlockParamUnionContent struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *[]anthropic.WebSearchResultBlockParam:
+//	case *[]anthropic.ToolResultBlockParamContentUnion:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u contentBlockParamUnionContent) AsAny() any { return u.any }
 
 // Returns a subunion which exports methods to access subproperties
 //
@@ -983,50 +1019,14 @@ func (u contentBlockParamUnionSource) GetURL() *string {
 	return nil
 }
 
-// Returns a pointer to the underlying variant's Input property, if present.
-func (u ContentBlockParamUnion) GetInput() *any {
-	if vt := u.OfToolUse; vt != nil {
-		return &vt.Input
-	} else if vt := u.OfServerToolUse; vt != nil {
-		return &vt.Input
-	}
-	return nil
-}
-
-// Returns a subunion which exports methods to access subproperties
-//
-// Or use AsAny() to get the underlying value
-func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent) {
-	if vt := u.OfWebSearchToolResult; vt != nil {
-		res.any = vt.Content.asAny()
-	} else if vt := u.OfToolResult; vt != nil {
-		res.any = &vt.Content
-	}
-	return
-}
-
-// Can have the runtime types [_[]WebSearchResultBlockParam],
-// [_[]ToolResultBlockParamContentUnion]
-type contentBlockParamUnionContent struct{ any }
-
-// Use the following switch statement to get the type of the union:
-//
-//	switch u.AsAny().(type) {
-//	case *[]anthropic.WebSearchResultBlockParam:
-//	case *[]anthropic.ToolResultBlockParamContentUnion:
-//	default:
-//	    fmt.Errorf("not present")
-//	}
-func (u contentBlockParamUnionContent) AsAny() any { return u.any }
-
 func init() {
 	apijson.RegisterUnion[ContentBlockParamUnion](
 		"type",
+		apijson.Discriminator[ServerToolUseBlockParam]("server_tool_use"),
+		apijson.Discriminator[WebSearchToolResultBlockParam]("web_search_tool_result"),
 		apijson.Discriminator[TextBlockParam]("text"),
 		apijson.Discriminator[ImageBlockParam]("image"),
 		apijson.Discriminator[ToolUseBlockParam]("tool_use"),
-		apijson.Discriminator[ServerToolUseBlockParam]("server_tool_use"),
-		apijson.Discriminator[WebSearchToolResultBlockParam]("web_search_tool_result"),
 		apijson.Discriminator[ToolResultBlockParam]("tool_result"),
 		apijson.Discriminator[DocumentBlockParam]("document"),
 		apijson.Discriminator[ThinkingBlockParam]("thinking"),
@@ -1618,16 +1618,22 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 // The model that will complete your prompt.\n\nSee
 // [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 // details and options.
-type Model = string
+type Model string
 
 const (
 	ModelClaude3_7SonnetLatest      Model = "claude-3-7-sonnet-latest"
 	ModelClaude3_7Sonnet20250219    Model = "claude-3-7-sonnet-20250219"
 	ModelClaude3_5HaikuLatest       Model = "claude-3-5-haiku-latest"
 	ModelClaude3_5Haiku20241022     Model = "claude-3-5-haiku-20241022"
+	ModelClaudeSonnet4_20250514     Model = "claude-sonnet-4-20250514"
+	ModelClaudeSonnet4_0            Model = "claude-sonnet-4-0"
+	ModelClaude4Sonnet20250514      Model = "claude-4-sonnet-20250514"
 	ModelClaude3_5SonnetLatest      Model = "claude-3-5-sonnet-latest"
 	ModelClaude3_5Sonnet20241022    Model = "claude-3-5-sonnet-20241022"
 	ModelClaude_3_5_Sonnet_20240620 Model = "claude-3-5-sonnet-20240620"
+	ModelClaudeOpus4_0              Model = "claude-opus-4-0"
+	ModelClaudeOpus4_20250514       Model = "claude-opus-4-20250514"
+	ModelClaude4Opus20250514        Model = "claude-4-opus-20250514"
 	ModelClaude3OpusLatest          Model = "claude-3-opus-latest"
 	ModelClaude_3_Opus_20240229     Model = "claude-3-opus-20240229"
 	// Deprecated: Will reach end-of-life on July 21st, 2025. Please migrate to a newer
@@ -3402,6 +3408,10 @@ type Usage struct {
 	OutputTokens int64 `json:"output_tokens,required"`
 	// The number of server tool requests.
 	ServerToolUse ServerToolUsage `json:"server_tool_use,required"`
+	// If the request used the priority, standard, or batch tier.
+	//
+	// Any of "standard", "priority", "batch".
+	ServiceTier UsageServiceTier `json:"service_tier,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CacheCreationInputTokens respjson.Field
@@ -3409,6 +3419,7 @@ type Usage struct {
 		InputTokens              respjson.Field
 		OutputTokens             respjson.Field
 		ServerToolUse            respjson.Field
+		ServiceTier              respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
@@ -3419,6 +3430,15 @@ func (r Usage) RawJSON() string { return r.JSON.raw }
 func (r *Usage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// If the request used the priority, standard, or batch tier.
+type UsageServiceTier string
+
+const (
+	UsageServiceTierStandard UsageServiceTier = "standard"
+	UsageServiceTierPriority UsageServiceTier = "priority"
+	UsageServiceTierBatch    UsageServiceTier = "batch"
+)
 
 type WebSearchResultBlock struct {
 	EncryptedContent string                   `json:"encrypted_content,required"`
@@ -3834,6 +3854,14 @@ type MessageNewParams struct {
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
+	// Determines whether to use priority capacity (if available) or standard capacity
+	// for this request.
+	//
+	// Anthropic offers different levels of service for your API requests. See
+	// [service-tiers](https://docs.anthropic.com/en/api/service-tiers) for details.
+	//
+	// Any of "auto", "standard_only".
+	ServiceTier MessageNewParamsServiceTier `json:"service_tier,omitzero"`
 	// Custom text sequences that will cause the model to stop generating.
 	//
 	// Our models will normally stop when they have naturally completed their turn,
@@ -3949,6 +3977,18 @@ func (r MessageNewParams) MarshalJSON() (data []byte, err error) {
 func (r *MessageNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Determines whether to use priority capacity (if available) or standard capacity
+// for this request.
+//
+// Anthropic offers different levels of service for your API requests. See
+// [service-tiers](https://docs.anthropic.com/en/api/service-tiers) for details.
+type MessageNewParamsServiceTier string
+
+const (
+	MessageNewParamsServiceTierAuto         MessageNewParamsServiceTier = "auto"
+	MessageNewParamsServiceTierStandardOnly MessageNewParamsServiceTier = "standard_only"
+)
 
 type MessageCountTokensParams struct {
 	// Input messages.

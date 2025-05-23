@@ -1141,10 +1141,10 @@ type BetaContentBlockUnion struct {
 	// Any of "text", "tool_use", "server_tool_use", "web_search_tool_result",
 	// "code_execution_tool_result", "mcp_tool_use", "mcp_tool_result",
 	// "container_upload", "thinking", "redacted_thinking".
-	Type  string `json:"type"`
-	ID    string `json:"id"`
-	Input any    `json:"input"`
-	Name  string `json:"name"`
+	Type  string          `json:"type"`
+	ID    string          `json:"id"`
+	Input json.RawMessage `json:"input"`
+	Name  string          `json:"name"`
 	// This field is a union of [BetaWebSearchToolResultBlockContentUnion],
 	// [BetaCodeExecutionToolResultBlockContentUnion],
 	// [BetaMCPToolResultBlockContentUnion]
@@ -3136,6 +3136,82 @@ type BetaRawMessageStreamEventUnionDelta struct {
 
 func (r *BetaRawMessageStreamEventUnionDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Accumulate builds up the Message incrementally from a MessageStreamEvent. The Message then can be used as
+// any other Message, except with the caveat that the Message.JSON field which normally can be used to inspect
+// the JSON sent over the network may not be populated fully.
+//
+//	message := anthropic.Message{}
+//	for stream.Next() {
+//		event := stream.Current()
+//		message.Accumulate(event)
+//	}
+func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
+	if acc == nil {
+		return fmt.Errorf("accumulate: cannot accumlate into nil Message")
+	}
+
+	switch event := event.AsAny().(type) {
+	case BetaRawMessageStartEvent:
+		*acc = event.Message
+	case BetaRawMessageDeltaEvent:
+		acc.StopReason = event.Delta.StopReason
+		acc.StopSequence = event.Delta.StopSequence
+		acc.Usage.OutputTokens = event.Usage.OutputTokens
+	case BetaRawMessageStopEvent:
+		accJson, err := json.Marshal(acc)
+		if err != nil {
+			return fmt.Errorf("error converting content block to JSON: %w", err)
+		}
+		acc.JSON.raw = string(accJson)
+	case BetaRawContentBlockStartEvent:
+		acc.Content = append(acc.Content, BetaContentBlockUnion{})
+		err := acc.Content[len(acc.Content)-1].UnmarshalJSON([]byte(event.ContentBlock.RawJSON()))
+		if err != nil {
+			return err
+		}
+	case BetaRawContentBlockDeltaEvent:
+		if len(acc.Content) == 0 {
+			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
+		}
+		cb := &acc.Content[len(acc.Content)-1]
+		switch delta := event.Delta.AsAny().(type) {
+		case BetaTextDelta:
+			cb.Text += delta.Text
+		case BetaInputJSONDelta:
+			if len(delta.PartialJSON) != 0 {
+				if string(cb.Input) == "{}" {
+					cb.Input = []byte(delta.PartialJSON)
+				} else {
+					cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
+				}
+			}
+		case BetaThinkingDelta:
+			cb.Thinking += delta.Thinking
+		case BetaSignatureDelta:
+			cb.Signature += delta.Signature
+		case BetaCitationsDelta:
+			citation := BetaTextCitationUnion{}
+			err := citation.UnmarshalJSON([]byte(delta.Citation.RawJSON()))
+			if err != nil {
+				return fmt.Errorf("could not unmarshal citation delta into citation type: %w", err)
+			}
+			cb.Citations = append(cb.Citations, citation)
+		}
+	case BetaRawContentBlockStopEvent:
+		if len(acc.Content) == 0 {
+			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
+		}
+		contentBlock := &acc.Content[len(acc.Content)-1]
+		cbJson, err := json.Marshal(contentBlock)
+		if err != nil {
+			return fmt.Errorf("error converting content block to JSON: %w", err)
+		}
+		contentBlock.JSON.raw = string(cbJson)
+	}
+
+	return nil
 }
 
 type BetaRedactedThinkingBlock struct {

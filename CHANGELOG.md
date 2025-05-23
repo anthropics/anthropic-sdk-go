@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.1 (2025-05-23)
+
+Full Changelog: [v1.2.0...v1.2.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.2.0...v1.2.1)
+
+### Chores
+
+* **examples:** clean up MCP example ([66f406a](https://github.com/anthropics/anthropic-sdk-go/commit/66f406a04b9756281e7716e9b635c3e3f29397fb))
+* **internal:** fix release workflows ([6a0ff4c](https://github.com/anthropics/anthropic-sdk-go/commit/6a0ff4cad1c1b4ab6435df80fccd945d6ce07be7))
+
 ## 1.2.0 (2025-05-22)
 
 Full Changelog: [v1.1.0...v1.2.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.1.0...v1.2.0)

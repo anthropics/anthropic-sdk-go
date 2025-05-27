@@ -1714,7 +1714,9 @@ func (u betaContentBlockParamUnionContent) GetStdout() *string {
 func (u betaContentBlockParamUnionContent) GetErrorCode() *string {
 	switch vt := u.any.(type) {
 	case *BetaWebSearchToolResultBlockParamContentUnion:
-		return (*string)(&vt.ErrorCode)
+		if vt.OfError != nil {
+			return (*string)(&vt.OfError.ErrorCode)
+		}
 	case *BetaCodeExecutionToolResultBlockParamContentUnion:
 		return vt.GetErrorCode()
 	}
@@ -1725,7 +1727,9 @@ func (u betaContentBlockParamUnionContent) GetErrorCode() *string {
 func (u betaContentBlockParamUnionContent) GetType() *string {
 	switch vt := u.any.(type) {
 	case *BetaWebSearchToolResultBlockParamContentUnion:
-		return (*string)(&vt.Type)
+		if vt.OfError != nil {
+			return (*string)(&vt.OfError.Type)
+		}
 	case *BetaCodeExecutionToolResultBlockParamContentUnion:
 		return vt.GetType()
 	}

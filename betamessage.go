@@ -57,7 +57,7 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 
 	// For non-streaming requests, calculate the appropriate timeout based on maxTokens
 	// and check against model-specific limits
-	timeout, timeoutErr := CalculateNonStreamingTimeout(int(params.MaxTokens), params.Model)
+	timeout, timeoutErr := CalculateNonStreamingTimeout(int(params.MaxTokens), params.Model, opts)
 	if timeoutErr != nil {
 		return nil, timeoutErr
 	}

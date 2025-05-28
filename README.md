@@ -149,10 +149,10 @@ for stream.Next() {
         }
 
     }
+}
 
-    if stream.Err() != nil {
-        panic(stream.Err())
-    }
+if stream.Err() != nil {
+    panic(stream.Err())
 }
 ```
 

@@ -3,22 +3,22 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/anthropics/anthropic-sdk-go/option"
-
 	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 )
 
 func main() {
-	client := anthropic.NewClient(option.WithHeader("anthropic-beta", "mcp-client-2025-04-04"))
-
-	content := "Use the eBird API to fetch the hotspot details of McGolrick park (L2987624)"
+	client := anthropic.NewClient(option.WithHeader("anthropic-beta", anthropic.AnthropicBetaMCPClient2025_04_04))
 
 	mcpServers := []anthropic.BetaRequestMCPServerURLDefinitionParam{
 		{
-			URL:  "https://remote-ebird-mcp-server-authless.dev-66f.workers.dev/sse",
-			Name: "ebird",
+			URL:                "http://example-server.modelcontextprotocol.io/sse",
+			Name:               "example",
+			AuthorizationToken: param.NewOpt("YOUR_TOKEN"),
 			ToolConfiguration: anthropic.BetaRequestMCPServerToolConfigurationParam{
-				Enabled: anthropic.Bool(true),
+				Enabled:      anthropic.Bool(true),
+				AllowedTools: []string{"echo", "add"},
 			},
 		},
 	}
@@ -26,18 +26,21 @@ func main() {
 	stream := client.Beta.Messages.NewStreaming(context.TODO(), anthropic.BetaMessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.BetaMessageParam{
-			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock(content)),
+			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("what is 1+1?")),
 		},
 		MCPServers:    mcpServers,
 		Model:         anthropic.ModelClaude3_7Sonnet20250219,
 		StopSequences: []string{"```\n"},
 	})
 
-	//message := anthropic.BetaMessage{}
-
+	message := anthropic.BetaMessage{}
 	for stream.Next() {
 		event := stream.Current()
-		//err := message.Accumulate(event)
+		err := message.Accumulate(event)
+		if err != nil {
+			fmt.Printf("error accumulating event: %v\n", err)
+			continue
+		}
 
 		switch eventVariant := event.AsAny().(type) {
 		case anthropic.BetaRawMessageDeltaEvent:

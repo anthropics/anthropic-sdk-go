@@ -252,7 +252,9 @@ func WithRequestBody(contentType string, body any) RequestOption {
 // each request attempt. This should be smaller than the timeout defined in
 // the context, which spans all retries.
 func WithRequestTimeout(dur time.Duration) RequestOption {
-	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+	// we need this to be a PreRequestOptionFunc so that it can be applied at the endpoint level
+	// see: CalculateNonStreamingTimeout
+	return requestconfig.PreRequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		r.RequestTimeout = dur
 		return nil
 	})

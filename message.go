@@ -4460,13 +4460,13 @@ func (u *MessageCountTokensParamsSystemUnion) asAny() any {
 // CalculateNonStreamingTimeout calculates the appropriate timeout for a non-streaming request
 // based on the maximum number of tokens and the model's non-streaming token limit
 func CalculateNonStreamingTimeout(maxTokens int, model Model, opts []option.RequestOption) (time.Duration, error) {
-	tempCfg := requestconfig.RequestConfig{}
-	if err := tempCfg.Apply(opts...); err != nil {
+	preCfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
 		return 0, fmt.Errorf("error applying request options: %w", err)
 	}
 	// if the user has set a specific request timeout, use that
-	if tempCfg.RequestTimeout != 0 {
-		return tempCfg.RequestTimeout, nil
+	if preCfg.RequestTimeout != 0 {
+		return preCfg.RequestTimeout, nil
 	}
 
 	maximumTime := 60 * 60 * time.Second

@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.2 (2025-06-02)
+
+Full Changelog: [v1.2.1...v1.2.2](https://github.com/anthropics/anthropic-sdk-go/compare/v1.2.1...v1.2.2)
+
+### Bug Fixes
+
+* **client:** access subunions properly ([f29c162](https://github.com/anthropics/anthropic-sdk-go/commit/f29c1627fe94c6371937659d02f1af7b55583d60))
+* fix error ([bbc002c](https://github.com/anthropics/anthropic-sdk-go/commit/bbc002ccbbf9df681201d9b8ba806c37338c0fd3))
+
+
+### Chores
+
+* make go mod tidy continue on error ([ac184b4](https://github.com/anthropics/anthropic-sdk-go/commit/ac184b4f7afee4015d133a05ce819a8dac35be52))
+
 ## 1.2.1 (2025-05-23)
 
 Full Changelog: [v1.2.0...v1.2.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.2.0...v1.2.1)

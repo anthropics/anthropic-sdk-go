@@ -170,7 +170,7 @@ type BetaBase64PDFBlockSourceUnionParam struct {
 }
 
 func (u BetaBase64PDFBlockSourceUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaBase64PDFBlockSourceUnionParam](u.OfBase64,
+	return param.MarshalUnion(u, u.OfBase64,
 		u.OfText,
 		u.OfContent,
 		u.OfURL,
@@ -949,7 +949,7 @@ type BetaCodeExecutionToolResultBlockParamContentUnion struct {
 }
 
 func (u BetaCodeExecutionToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaCodeExecutionToolResultBlockParamContentUnion](u.OfError, u.OfResultBlock)
+	return param.MarshalUnion(u, u.OfError, u.OfResultBlock)
 }
 func (u *BetaCodeExecutionToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -1503,7 +1503,7 @@ type BetaContentBlockParamUnion struct {
 }
 
 func (u BetaContentBlockParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaContentBlockParamUnion](u.OfServerToolUse,
+	return param.MarshalUnion(u, u.OfServerToolUse,
 		u.OfWebSearchToolResult,
 		u.OfCodeExecutionToolResult,
 		u.OfMCPToolUse,
@@ -1984,7 +1984,7 @@ type BetaContentBlockSourceContentUnionParam struct {
 }
 
 func (u BetaContentBlockSourceContentUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaContentBlockSourceContentUnionParam](u.OfString, u.OfBetaContentBlockSourceContent)
+	return param.MarshalUnion(u, u.OfString, u.OfBetaContentBlockSourceContent)
 }
 func (u *BetaContentBlockSourceContentUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -2060,7 +2060,7 @@ type BetaImageBlockParamSourceUnion struct {
 }
 
 func (u BetaImageBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaImageBlockParamSourceUnion](u.OfBase64, u.OfURL, u.OfFile)
+	return param.MarshalUnion(u, u.OfBase64, u.OfURL, u.OfFile)
 }
 func (u *BetaImageBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3319,7 +3319,7 @@ type BetaRequestMCPToolResultBlockParamContentUnion struct {
 }
 
 func (u BetaRequestMCPToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaRequestMCPToolResultBlockParamContentUnion](u.OfString, u.OfBetaMCPToolResultBlockContent)
+	return param.MarshalUnion(u, u.OfString, u.OfBetaMCPToolResultBlockContent)
 }
 func (u *BetaRequestMCPToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3650,7 +3650,7 @@ type BetaTextCitationParamUnion struct {
 }
 
 func (u BetaTextCitationParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaTextCitationParamUnion](u.OfCharLocation, u.OfPageLocation, u.OfContentBlockLocation, u.OfWebSearchResultLocation)
+	return param.MarshalUnion(u, u.OfCharLocation, u.OfPageLocation, u.OfContentBlockLocation, u.OfWebSearchResultLocation)
 }
 func (u *BetaTextCitationParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3918,7 +3918,7 @@ type BetaThinkingConfigParamUnion struct {
 }
 
 func (u BetaThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaThinkingConfigParamUnion](u.OfEnabled, u.OfDisabled)
+	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled)
 }
 func (u *BetaThinkingConfigParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -4095,7 +4095,7 @@ type BetaToolChoiceUnionParam struct {
 }
 
 func (u BetaToolChoiceUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaToolChoiceUnionParam](u.OfAuto, u.OfAny, u.OfTool, u.OfNone)
+	return param.MarshalUnion(u, u.OfAuto, u.OfAny, u.OfTool, u.OfNone)
 }
 func (u *BetaToolChoiceUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -4329,7 +4329,7 @@ type BetaToolResultBlockParamContentUnion struct {
 }
 
 func (u BetaToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaToolResultBlockParamContentUnion](u.OfText, u.OfImage)
+	return param.MarshalUnion(u, u.OfText, u.OfImage)
 }
 func (u *BetaToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -4502,7 +4502,7 @@ type BetaToolUnionParam struct {
 }
 
 func (u BetaToolUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaToolUnionParam](u.OfTool,
+	return param.MarshalUnion(u, u.OfTool,
 		u.OfComputerUseTool20241022,
 		u.OfBashTool20241022,
 		u.OfTextEditor20241022,
@@ -5049,7 +5049,7 @@ type BetaWebSearchToolResultBlockParamContentUnion struct {
 }
 
 func (u BetaWebSearchToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaWebSearchToolResultBlockParamContentUnion](u.OfResultBlock, u.OfError)
+	return param.MarshalUnion(u, u.OfResultBlock, u.OfError)
 }
 func (u *BetaWebSearchToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -5593,7 +5593,7 @@ type BetaMessageCountTokensParamsSystemUnion struct {
 }
 
 func (u BetaMessageCountTokensParamsSystemUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaMessageCountTokensParamsSystemUnion](u.OfString, u.OfBetaTextBlockArray)
+	return param.MarshalUnion(u, u.OfString, u.OfBetaTextBlockArray)
 }
 func (u *BetaMessageCountTokensParamsSystemUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -5626,7 +5626,7 @@ type BetaMessageCountTokensParamsToolUnion struct {
 }
 
 func (u BetaMessageCountTokensParamsToolUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[BetaMessageCountTokensParamsToolUnion](u.OfTool,
+	return param.MarshalUnion(u, u.OfTool,
 		u.OfComputerUseTool20241022,
 		u.OfBashTool20241022,
 		u.OfTextEditor20241022,

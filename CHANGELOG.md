@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0 (2025-06-03)
+
+Full Changelog: [v1.2.2...v1.3.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.2.2...v1.3.0)
+
+### Features
+
+* **client:** add support for new text_editor_20250429 tool ([b33c543](https://github.com/anthropics/anthropic-sdk-go/commit/b33c543f7dc3b74c3322b6f84c189b81f67b6154))
+
 ## 1.2.2 (2025-06-02)
 
 Full Changelog: [v1.2.1...v1.2.2](https://github.com/anthropics/anthropic-sdk-go/compare/v1.2.1...v1.2.2)

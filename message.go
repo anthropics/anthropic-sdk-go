@@ -1524,11 +1524,11 @@ func MessageCountTokensToolParamOfTool(inputSchema ToolInputSchemaParam, name st
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type MessageCountTokensToolUnionParam struct {
-	OfTool                  *ToolParam                   `json:",omitzero,inline"`
-	OfBashTool20250124      *ToolBash20250124Param       `json:",omitzero,inline"`
-	OfTextEditor20250124    *ToolTextEditor20250124Param `json:",omitzero,inline"`
-	OfTextEditor20250429    *ToolTextEditor20250429Param `json:",omitzero,inline"`
-	OfWebSearchTool20250305 *WebSearchTool20250305Param  `json:",omitzero,inline"`
+	OfTool                  *ToolParam                                     `json:",omitzero,inline"`
+	OfBashTool20250124      *ToolBash20250124Param                         `json:",omitzero,inline"`
+	OfTextEditor20250124    *ToolTextEditor20250124Param                   `json:",omitzero,inline"`
+	OfTextEditor20250429    *MessageCountTokensToolTextEditor20250429Param `json:",omitzero,inline"`
+	OfWebSearchTool20250305 *WebSearchTool20250305Param                    `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -1652,6 +1652,31 @@ func (u MessageCountTokensToolUnionParam) GetCacheControl() *CacheControlEphemer
 		return &vt.CacheControl
 	}
 	return nil
+}
+
+// The properties Name, Type are required.
+type MessageCountTokensToolTextEditor20250429Param struct {
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as
+	// "str_replace_based_edit_tool".
+	Name constant.StrReplaceBasedEditTool `json:"name,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "text_editor_20250429".
+	Type constant.TextEditor20250429 `json:"type,required"`
+	paramObj
+}
+
+func (r MessageCountTokensToolTextEditor20250429Param) MarshalJSON() (data []byte, err error) {
+	type shadow MessageCountTokensToolTextEditor20250429Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MessageCountTokensToolTextEditor20250429Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type MessageDeltaUsage struct {
@@ -3436,31 +3461,6 @@ func (r *ToolTextEditor20250124Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties Name, Type are required.
-type ToolTextEditor20250429Param struct {
-	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Name of the tool.
-	//
-	// This is how the tool will be called by the model and in `tool_use` blocks.
-	//
-	// This field can be elided, and will marshal its zero value as
-	// "str_replace_based_edit_tool".
-	Name constant.StrReplaceBasedEditTool `json:"name,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "text_editor_20250429".
-	Type constant.TextEditor20250429 `json:"type,required"`
-	paramObj
-}
-
-func (r ToolTextEditor20250429Param) MarshalJSON() (data []byte, err error) {
-	type shadow ToolTextEditor20250429Param
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ToolTextEditor20250429Param) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 func ToolUnionParamOfTool(inputSchema ToolInputSchemaParam, name string) ToolUnionParam {
 	var variant ToolParam
 	variant.InputSchema = inputSchema
@@ -3472,11 +3472,11 @@ func ToolUnionParamOfTool(inputSchema ToolInputSchemaParam, name string) ToolUni
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ToolUnionParam struct {
-	OfTool                  *ToolParam                   `json:",omitzero,inline"`
-	OfBashTool20250124      *ToolBash20250124Param       `json:",omitzero,inline"`
-	OfTextEditor20250124    *ToolTextEditor20250124Param `json:",omitzero,inline"`
-	OfTextEditor20250429    *ToolTextEditor20250429Param `json:",omitzero,inline"`
-	OfWebSearchTool20250305 *WebSearchTool20250305Param  `json:",omitzero,inline"`
+	OfTool                  *ToolParam                        `json:",omitzero,inline"`
+	OfBashTool20250124      *ToolBash20250124Param            `json:",omitzero,inline"`
+	OfTextEditor20250124    *ToolTextEditor20250124Param      `json:",omitzero,inline"`
+	OfTextEditor20250429    *ToolUnionTextEditor20250429Param `json:",omitzero,inline"`
+	OfWebSearchTool20250305 *WebSearchTool20250305Param       `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -3600,6 +3600,31 @@ func (u ToolUnionParam) GetCacheControl() *CacheControlEphemeralParam {
 		return &vt.CacheControl
 	}
 	return nil
+}
+
+// The properties Name, Type are required.
+type ToolUnionTextEditor20250429Param struct {
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as
+	// "str_replace_based_edit_tool".
+	Name constant.StrReplaceBasedEditTool `json:"name,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "text_editor_20250429".
+	Type constant.TextEditor20250429 `json:"type,required"`
+	paramObj
+}
+
+func (r ToolUnionTextEditor20250429Param) MarshalJSON() (data []byte, err error) {
+	type shadow ToolUnionTextEditor20250429Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolUnionTextEditor20250429Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ToolUseBlock struct {

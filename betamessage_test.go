@@ -79,6 +79,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 							"type":        "string",
 						},
 					},
+					Required: []string{"location"},
 				},
 				Name: "name",
 				CacheControl: anthropic.BetaCacheControlEphemeralParam{
@@ -172,6 +173,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 							"type":        "string",
 						},
 					},
+					Required: []string{"location"},
 				},
 				Name: "name",
 				CacheControl: anthropic.BetaCacheControlEphemeralParam{

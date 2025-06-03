@@ -3785,7 +3785,8 @@ func (r *BetaToolParam) UnmarshalJSON(data []byte) error {
 //
 // The property Type is required.
 type BetaToolInputSchemaParam struct {
-	Properties any `json:"properties,omitzero"`
+	Properties any      `json:"properties,omitzero"`
+	Required   []string `json:"required,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
 	Type        constant.Object `json:"type,required"`
 	ExtraFields map[string]any  `json:"-"`

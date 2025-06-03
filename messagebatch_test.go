@@ -72,6 +72,7 @@ func TestMessageBatchNew(t *testing.T) {
 									"type":        "string",
 								},
 							},
+							Required: []string{"location"},
 						},
 						Name:         "name",
 						CacheControl: anthropic.NewCacheControlEphemeralParam(),

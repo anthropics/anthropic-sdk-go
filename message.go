@@ -1527,12 +1527,17 @@ type MessageCountTokensToolUnionParam struct {
 	OfTool                  *ToolParam                   `json:",omitzero,inline"`
 	OfBashTool20250124      *ToolBash20250124Param       `json:",omitzero,inline"`
 	OfTextEditor20250124    *ToolTextEditor20250124Param `json:",omitzero,inline"`
+	OfTextEditor20250429    *ToolTextEditor20250429Param `json:",omitzero,inline"`
 	OfWebSearchTool20250305 *WebSearchTool20250305Param  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u MessageCountTokensToolUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[MessageCountTokensToolUnionParam](u.OfTool, u.OfBashTool20250124, u.OfTextEditor20250124, u.OfWebSearchTool20250305)
+	return param.MarshalUnion[MessageCountTokensToolUnionParam](u.OfTool,
+		u.OfBashTool20250124,
+		u.OfTextEditor20250124,
+		u.OfTextEditor20250429,
+		u.OfWebSearchTool20250305)
 }
 func (u *MessageCountTokensToolUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -1545,6 +1550,8 @@ func (u *MessageCountTokensToolUnionParam) asAny() any {
 		return u.OfBashTool20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250124) {
 		return u.OfTextEditor20250124
+	} else if !param.IsOmitted(u.OfTextEditor20250429) {
+		return u.OfTextEditor20250429
 	} else if !param.IsOmitted(u.OfWebSearchTool20250305) {
 		return u.OfWebSearchTool20250305
 	}
@@ -1607,6 +1614,8 @@ func (u MessageCountTokensToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfTextEditor20250429; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Name)
 	}
@@ -1621,6 +1630,8 @@ func (u MessageCountTokensToolUnionParam) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfTextEditor20250429; vt != nil {
+		return (*string)(&vt.Type)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Type)
 	}
@@ -1634,6 +1645,8 @@ func (u MessageCountTokensToolUnionParam) GetCacheControl() *CacheControlEphemer
 	} else if vt := u.OfBashTool20250124; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250124; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return &vt.CacheControl
@@ -3103,7 +3116,8 @@ func (r *ToolParam) UnmarshalJSON(data []byte) error {
 //
 // The property Type is required.
 type ToolInputSchemaParam struct {
-	Properties any `json:"properties,omitzero"`
+	Properties any      `json:"properties,omitzero"`
+	Required   []string `json:"required,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
 	Type        constant.Object `json:"type,required"`
 	ExtraFields map[string]any  `json:"-"`
@@ -3422,6 +3436,31 @@ func (r *ToolTextEditor20250124Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Name, Type are required.
+type ToolTextEditor20250429Param struct {
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as
+	// "str_replace_based_edit_tool".
+	Name constant.StrReplaceBasedEditTool `json:"name,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "text_editor_20250429".
+	Type constant.TextEditor20250429 `json:"type,required"`
+	paramObj
+}
+
+func (r ToolTextEditor20250429Param) MarshalJSON() (data []byte, err error) {
+	type shadow ToolTextEditor20250429Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolTextEditor20250429Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 func ToolUnionParamOfTool(inputSchema ToolInputSchemaParam, name string) ToolUnionParam {
 	var variant ToolParam
 	variant.InputSchema = inputSchema
@@ -3436,12 +3475,17 @@ type ToolUnionParam struct {
 	OfTool                  *ToolParam                   `json:",omitzero,inline"`
 	OfBashTool20250124      *ToolBash20250124Param       `json:",omitzero,inline"`
 	OfTextEditor20250124    *ToolTextEditor20250124Param `json:",omitzero,inline"`
+	OfTextEditor20250429    *ToolTextEditor20250429Param `json:",omitzero,inline"`
 	OfWebSearchTool20250305 *WebSearchTool20250305Param  `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ToolUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolUnionParam](u.OfTool, u.OfBashTool20250124, u.OfTextEditor20250124, u.OfWebSearchTool20250305)
+	return param.MarshalUnion[ToolUnionParam](u.OfTool,
+		u.OfBashTool20250124,
+		u.OfTextEditor20250124,
+		u.OfTextEditor20250429,
+		u.OfWebSearchTool20250305)
 }
 func (u *ToolUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3454,6 +3498,8 @@ func (u *ToolUnionParam) asAny() any {
 		return u.OfBashTool20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250124) {
 		return u.OfTextEditor20250124
+	} else if !param.IsOmitted(u.OfTextEditor20250429) {
+		return u.OfTextEditor20250429
 	} else if !param.IsOmitted(u.OfWebSearchTool20250305) {
 		return u.OfWebSearchTool20250305
 	}
@@ -3516,6 +3562,8 @@ func (u ToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfTextEditor20250429; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Name)
 	}
@@ -3530,6 +3578,8 @@ func (u ToolUnionParam) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfTextEditor20250429; vt != nil {
+		return (*string)(&vt.Type)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Type)
 	}
@@ -3543,6 +3593,8 @@ func (u ToolUnionParam) GetCacheControl() *CacheControlEphemeralParam {
 	} else if vt := u.OfBashTool20250124; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250124; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return &vt.CacheControl

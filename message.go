@@ -707,7 +707,7 @@ type ContentBlockParamUnion struct {
 }
 
 func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ContentBlockParamUnion](u.OfServerToolUse,
+	return param.MarshalUnion(u, u.OfServerToolUse,
 		u.OfWebSearchToolResult,
 		u.OfText,
 		u.OfImage,
@@ -1060,7 +1060,7 @@ type ContentBlockSourceContentUnionParam struct {
 }
 
 func (u ContentBlockSourceContentUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ContentBlockSourceContentUnionParam](u.OfString, u.OfContentBlockSourceContent)
+	return param.MarshalUnion(u, u.OfString, u.OfContentBlockSourceContent)
 }
 func (u *ContentBlockSourceContentUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -1108,7 +1108,7 @@ type DocumentBlockParamSourceUnion struct {
 }
 
 func (u DocumentBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[DocumentBlockParamSourceUnion](u.OfBase64, u.OfText, u.OfContent, u.OfURL)
+	return param.MarshalUnion(u, u.OfBase64, u.OfText, u.OfContent, u.OfURL)
 }
 func (u *DocumentBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -1215,7 +1215,7 @@ type ImageBlockParamSourceUnion struct {
 }
 
 func (u ImageBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ImageBlockParamSourceUnion](u.OfBase64, u.OfURL)
+	return param.MarshalUnion(u, u.OfBase64, u.OfURL)
 }
 func (u *ImageBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -1419,7 +1419,7 @@ type MessageCountTokensToolUnionParam struct {
 }
 
 func (u MessageCountTokensToolUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[MessageCountTokensToolUnionParam](u.OfTool,
+	return param.MarshalUnion(u, u.OfTool,
 		u.OfBashTool20250124,
 		u.OfTextEditor20250124,
 		u.OfTextEditor20250429,
@@ -2502,7 +2502,7 @@ type TextCitationParamUnion struct {
 }
 
 func (u TextCitationParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[TextCitationParamUnion](u.OfCharLocation, u.OfPageLocation, u.OfContentBlockLocation, u.OfWebSearchResultLocation)
+	return param.MarshalUnion(u, u.OfCharLocation, u.OfPageLocation, u.OfContentBlockLocation, u.OfWebSearchResultLocation)
 }
 func (u *TextCitationParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -2772,7 +2772,7 @@ type ThinkingConfigParamUnion struct {
 }
 
 func (u ThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ThinkingConfigParamUnion](u.OfEnabled, u.OfDisabled)
+	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled)
 }
 func (u *ThinkingConfigParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -2934,7 +2934,7 @@ type ToolChoiceUnionParam struct {
 }
 
 func (u ToolChoiceUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolChoiceUnionParam](u.OfAuto, u.OfAny, u.OfTool, u.OfNone)
+	return param.MarshalUnion(u, u.OfAuto, u.OfAny, u.OfTool, u.OfNone)
 }
 func (u *ToolChoiceUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3117,7 +3117,7 @@ type ToolResultBlockParamContentUnion struct {
 }
 
 func (u ToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolResultBlockParamContentUnion](u.OfText, u.OfImage)
+	return param.MarshalUnion(u, u.OfText, u.OfImage)
 }
 func (u *ToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3254,7 +3254,7 @@ type ToolUnionParam struct {
 }
 
 func (u ToolUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[ToolUnionParam](u.OfTool,
+	return param.MarshalUnion(u, u.OfTool,
 		u.OfBashTool20250124,
 		u.OfTextEditor20250124,
 		u.OfTextEditor20250429,
@@ -3724,7 +3724,7 @@ type WebSearchToolResultBlockParamContentUnion struct {
 }
 
 func (u WebSearchToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[WebSearchToolResultBlockParamContentUnion](u.OfWebSearchToolResultBlockItem, u.OfRequestWebSearchToolResultError)
+	return param.MarshalUnion(u, u.OfWebSearchToolResultBlockItem, u.OfRequestWebSearchToolResultError)
 }
 func (u *WebSearchToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -4258,7 +4258,7 @@ type MessageCountTokensParamsSystemUnion struct {
 }
 
 func (u MessageCountTokensParamsSystemUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion[MessageCountTokensParamsSystemUnion](u.OfString, u.OfTextBlockArray)
+	return param.MarshalUnion(u, u.OfString, u.OfTextBlockArray)
 }
 func (u *MessageCountTokensParamsSystemUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)

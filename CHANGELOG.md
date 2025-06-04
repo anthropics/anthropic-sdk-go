@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.4.0 (2025-06-04)
+
+Full Changelog: [v1.3.0...v1.4.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.3.0...v1.4.0)
+
+### Features
+
+* **client:** allow overriding unions ([079149c](https://github.com/anthropics/anthropic-sdk-go/commit/079149c673981891ecd35906cd610f8d4a4b69a9))
+
+
+### Chores
+
+* **internal:** codegen related update ([853ba1f](https://github.com/anthropics/anthropic-sdk-go/commit/853ba1f46d2b6c476ee04d9c061368e708cc9e18))
+
 ## 1.3.0 (2025-06-03)
 
 Full Changelog: [v1.2.2...v1.3.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.2.2...v1.3.0)

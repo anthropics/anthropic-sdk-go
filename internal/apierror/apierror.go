@@ -35,11 +35,11 @@ func (r *Error) UnmarshalJSON(data []byte) error {
 func (r *Error) Error() string {
 	// Attempt to re-populate the response body
 	statusInfo := fmt.Sprintf("%s %q: %d %s", r.Request.Method, r.Request.URL, r.Response.StatusCode, http.StatusText(r.Response.StatusCode))
-	
+
 	if r.RequestID != "" {
 		statusInfo += fmt.Sprintf(" (Request-ID: %s)", r.RequestID)
 	}
-	
+
 	return fmt.Sprintf("%s %s", statusInfo, r.JSON.raw)
 }
 

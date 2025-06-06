@@ -23,6 +23,7 @@ type Error struct {
 	StatusCode int
 	Request    *http.Request
 	Response   *http.Response
+	RequestID  string
 }
 
 // Returns the unmodified JSON received from the API
@@ -33,6 +34,9 @@ func (r *Error) UnmarshalJSON(data []byte) error {
 
 func (r *Error) Error() string {
 	// Attempt to re-populate the response body
+	if r.RequestID != "" {
+		return fmt.Sprintf("%s %q: %d %s (Request-ID: %s) %s", r.Request.Method, r.Request.URL, r.Response.StatusCode, http.StatusText(r.Response.StatusCode), r.RequestID, r.JSON.raw)
+	}
 	return fmt.Sprintf("%s %q: %d %s %s", r.Request.Method, r.Request.URL, r.Response.StatusCode, http.StatusText(r.Response.StatusCode), r.JSON.raw)
 }
 

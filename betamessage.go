@@ -267,25 +267,6 @@ func init() {
 }
 
 func init() {
-	apijson.RegisterUnion[BetaContentBlockParamUnion](
-		"type",
-		apijson.Discriminator[BetaServerToolUseBlockParam]("server_tool_use"),
-		apijson.Discriminator[BetaWebSearchToolResultBlockParam]("web_search_tool_result"),
-		apijson.Discriminator[BetaCodeExecutionToolResultBlockParam]("code_execution_tool_result"),
-		apijson.Discriminator[BetaMCPToolUseBlockParam]("mcp_tool_use"),
-		apijson.Discriminator[BetaRequestMCPToolResultBlockParam]("mcp_tool_result"),
-		apijson.Discriminator[BetaTextBlockParam]("text"),
-		apijson.Discriminator[BetaImageBlockParam]("image"),
-		apijson.Discriminator[BetaToolUseBlockParam]("tool_use"),
-		apijson.Discriminator[BetaToolResultBlockParam]("tool_result"),
-		apijson.Discriminator[BetaBase64PDFBlockParam]("document"),
-		apijson.Discriminator[BetaThinkingBlockParam]("thinking"),
-		apijson.Discriminator[BetaRedactedThinkingBlockParam]("redacted_thinking"),
-		apijson.Discriminator[BetaContainerUploadBlockParam]("container_upload"),
-	)
-}
-
-func init() {
 	apijson.RegisterUnion[BetaImageBlockParamSourceUnion](
 		"type",
 		apijson.Discriminator[BetaBase64ImageSourceParam]("base64"),
@@ -1447,7 +1428,7 @@ func NewBetaToolResultBlock(toolUseID string, content string, isError bool) Beta
 func NewBetaDocumentBlock[
 	T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam | BetaFileDocumentSourceParam,
 ](source T) BetaContentBlockParamUnion {
-	var document BetaBase64PDFBlockParam
+	var document BetaRequestDocumentBlockParam
 	switch v := any(source).(type) {
 	case BetaBase64PDFSourceParam:
 		document.Source.OfBase64 = &v
@@ -1495,7 +1476,7 @@ type BetaContentBlockParamUnion struct {
 	OfImage                   *BetaImageBlockParam                   `json:",omitzero,inline"`
 	OfToolUse                 *BetaToolUseBlockParam                 `json:",omitzero,inline"`
 	OfToolResult              *BetaToolResultBlockParam              `json:",omitzero,inline"`
-	OfDocument                *BetaBase64PDFBlockParam               `json:",omitzero,inline"`
+	OfDocument                *BetaRequestDocumentBlockParam         `json:",omitzero,inline"`
 	OfThinking                *BetaThinkingBlockParam                `json:",omitzero,inline"`
 	OfRedactedThinking        *BetaRedactedThinkingBlockParam        `json:",omitzero,inline"`
 	OfContainerUpload         *BetaContainerUploadBlockParam         `json:",omitzero,inline"`
@@ -1897,7 +1878,7 @@ func (u betaContentBlockParamUnionSource) AsAny() any { return u.any }
 // Returns a pointer to the underlying variant's property, if present.
 func (u betaContentBlockParamUnionSource) GetContent() *BetaContentBlockSourceContentUnionParam {
 	switch vt := u.any.(type) {
-	case *BetaBase64PDFBlockSourceUnionParam:
+	case *BetaRequestDocumentBlockSourceUnionParam:
 		return vt.GetContent()
 	}
 	return nil
@@ -1908,7 +1889,7 @@ func (u betaContentBlockParamUnionSource) GetData() *string {
 	switch vt := u.any.(type) {
 	case *BetaImageBlockParamSourceUnion:
 		return vt.GetData()
-	case *BetaBase64PDFBlockSourceUnionParam:
+	case *BetaRequestDocumentBlockSourceUnionParam:
 		return vt.GetData()
 	}
 	return nil
@@ -1919,7 +1900,7 @@ func (u betaContentBlockParamUnionSource) GetMediaType() *string {
 	switch vt := u.any.(type) {
 	case *BetaImageBlockParamSourceUnion:
 		return vt.GetMediaType()
-	case *BetaBase64PDFBlockSourceUnionParam:
+	case *BetaRequestDocumentBlockSourceUnionParam:
 		return vt.GetMediaType()
 	}
 	return nil
@@ -1930,7 +1911,7 @@ func (u betaContentBlockParamUnionSource) GetType() *string {
 	switch vt := u.any.(type) {
 	case *BetaImageBlockParamSourceUnion:
 		return vt.GetType()
-	case *BetaBase64PDFBlockSourceUnionParam:
+	case *BetaRequestDocumentBlockSourceUnionParam:
 		return vt.GetType()
 	}
 	return nil
@@ -1941,7 +1922,7 @@ func (u betaContentBlockParamUnionSource) GetURL() *string {
 	switch vt := u.any.(type) {
 	case *BetaImageBlockParamSourceUnion:
 		return vt.GetURL()
-	case *BetaBase64PDFBlockSourceUnionParam:
+	case *BetaRequestDocumentBlockSourceUnionParam:
 		return vt.GetURL()
 	}
 	return nil
@@ -1952,10 +1933,29 @@ func (u betaContentBlockParamUnionSource) GetFileID() *string {
 	switch vt := u.any.(type) {
 	case *BetaImageBlockParamSourceUnion:
 		return vt.GetFileID()
-	case *BetaBase64PDFBlockSourceUnionParam:
+	case *BetaRequestDocumentBlockSourceUnionParam:
 		return vt.GetFileID()
 	}
 	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaContentBlockParamUnion](
+		"type",
+		apijson.Discriminator[BetaServerToolUseBlockParam]("server_tool_use"),
+		apijson.Discriminator[BetaWebSearchToolResultBlockParam]("web_search_tool_result"),
+		apijson.Discriminator[BetaCodeExecutionToolResultBlockParam]("code_execution_tool_result"),
+		apijson.Discriminator[BetaMCPToolUseBlockParam]("mcp_tool_use"),
+		apijson.Discriminator[BetaRequestMCPToolResultBlockParam]("mcp_tool_result"),
+		apijson.Discriminator[BetaTextBlockParam]("text"),
+		apijson.Discriminator[BetaImageBlockParam]("image"),
+		apijson.Discriminator[BetaToolUseBlockParam]("tool_use"),
+		apijson.Discriminator[BetaToolResultBlockParam]("tool_result"),
+		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
+		apijson.Discriminator[BetaThinkingBlockParam]("thinking"),
+		apijson.Discriminator[BetaRedactedThinkingBlockParam]("redacted_thinking"),
+		apijson.Discriminator[BetaContainerUploadBlockParam]("container_upload"),
+	)
 }
 
 // The properties Content, Type are required.
@@ -3254,6 +3254,136 @@ func (r BetaRedactedThinkingBlockParam) MarshalJSON() (data []byte, err error) {
 }
 func (r *BetaRedactedThinkingBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Source, Type are required.
+type BetaRequestDocumentBlockParam struct {
+	Source  BetaRequestDocumentBlockSourceUnionParam `json:"source,omitzero,required"`
+	Context param.Opt[string]                        `json:"context,omitzero"`
+	Title   param.Opt[string]                        `json:"title,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	Citations    BetaCitationsConfigParam       `json:"citations,omitzero"`
+	// This field can be elided, and will marshal its zero value as "document".
+	Type constant.Document `json:"type,required"`
+	paramObj
+}
+
+func (r BetaRequestDocumentBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaRequestDocumentBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaRequestDocumentBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaRequestDocumentBlockSourceUnionParam struct {
+	OfBase64  *BetaBase64PDFSourceParam    `json:",omitzero,inline"`
+	OfText    *BetaPlainTextSourceParam    `json:",omitzero,inline"`
+	OfContent *BetaContentBlockSourceParam `json:",omitzero,inline"`
+	OfURL     *BetaURLPDFSourceParam       `json:",omitzero,inline"`
+	OfFile    *BetaFileDocumentSourceParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaRequestDocumentBlockSourceUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBase64,
+		u.OfText,
+		u.OfContent,
+		u.OfURL,
+		u.OfFile)
+}
+func (u *BetaRequestDocumentBlockSourceUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaRequestDocumentBlockSourceUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfBase64) {
+		return u.OfBase64
+	} else if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfContent) {
+		return u.OfContent
+	} else if !param.IsOmitted(u.OfURL) {
+		return u.OfURL
+	} else if !param.IsOmitted(u.OfFile) {
+		return u.OfFile
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestDocumentBlockSourceUnionParam) GetContent() *BetaContentBlockSourceContentUnionParam {
+	if vt := u.OfContent; vt != nil {
+		return &vt.Content
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestDocumentBlockSourceUnionParam) GetURL() *string {
+	if vt := u.OfURL; vt != nil {
+		return &vt.URL
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestDocumentBlockSourceUnionParam) GetFileID() *string {
+	if vt := u.OfFile; vt != nil {
+		return &vt.FileID
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestDocumentBlockSourceUnionParam) GetData() *string {
+	if vt := u.OfBase64; vt != nil {
+		return (*string)(&vt.Data)
+	} else if vt := u.OfText; vt != nil {
+		return (*string)(&vt.Data)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestDocumentBlockSourceUnionParam) GetMediaType() *string {
+	if vt := u.OfBase64; vt != nil {
+		return (*string)(&vt.MediaType)
+	} else if vt := u.OfText; vt != nil {
+		return (*string)(&vt.MediaType)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestDocumentBlockSourceUnionParam) GetType() *string {
+	if vt := u.OfBase64; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfText; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfContent; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfURL; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfFile; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaRequestDocumentBlockSourceUnionParam](
+		"type",
+		apijson.Discriminator[BetaBase64PDFSourceParam]("base64"),
+		apijson.Discriminator[BetaPlainTextSourceParam]("text"),
+		apijson.Discriminator[BetaContentBlockSourceParam]("content"),
+		apijson.Discriminator[BetaURLPDFSourceParam]("url"),
+		apijson.Discriminator[BetaFileDocumentSourceParam]("file"),
+	)
 }
 
 type BetaRequestMCPServerToolConfigurationParam struct {

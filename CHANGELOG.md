@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.1 (2025-06-07)
+
+Full Changelog: [v1.4.0...v1.4.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.4.0...v1.4.1)
+
+### Bug Fixes
+
+* **client:** deprecate BetaBase64PDFBlock in favor of BetaRequestDocumentBlock ([5d8fd96](https://github.com/anthropics/anthropic-sdk-go/commit/5d8fd9661585c1894aeb4e80670d577ab1cc3582))
+
 ## 1.4.0 (2025-06-04)
 
 Full Changelog: [v1.3.0...v1.4.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.3.0...v1.4.0)

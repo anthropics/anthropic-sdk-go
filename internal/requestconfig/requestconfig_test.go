@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"strings"
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // mockBaseURL is a helper function to create a URL for testing
@@ -32,9 +33,7 @@ func TestErrorWithRequestID(t *testing.T) {
 
 	// Create a request to the test server
 	req, err := http.NewRequest("GET", "/test", nil)
-	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
-	}
+	require.NoError(t, err, "Failed to create request")
 
 	// Create a RequestConfig with proper BaseURL
 	cfg := &RequestConfig{
@@ -46,25 +45,17 @@ func TestErrorWithRequestID(t *testing.T) {
 
 	// Execute the request, which should return an error
 	err = cfg.Execute()
-	if err == nil {
-		t.Fatal("Expected an error, but got nil")
-	}
+	require.Error(t, err, "Expected an error, but got nil")
 
 	// The error should be of type *apierror.Error
 	apiErr, ok := err.(*apierror.Error)
-	if !ok {
-		t.Fatalf("Expected error of type *apierror.Error, got %T", err)
-	}
+	require.True(t, ok, "Expected error of type *apierror.Error, got %T", err)
 
 	// Verify that RequestID field was properly set from the header
 	expectedRequestID := "req_123456789"
-	if apiErr.RequestID != expectedRequestID {
-		t.Errorf("Expected RequestID to be %s, got %s", expectedRequestID, apiErr.RequestID)
-	}
+	assert.Equal(t, expectedRequestID, apiErr.RequestID, "Expected RequestID to be %s, got %s", expectedRequestID, apiErr.RequestID)
 
 	// Verify that the error message includes the RequestID
 	errorMsg := apiErr.Error()
-	if !strings.Contains(errorMsg, "Request-ID: req_123456789") {
-		t.Errorf("Error message should contain request ID, got: %s", errorMsg)
-	}
+	assert.Contains(t, errorMsg, "Request-ID: req_123456789", "Error message should contain request ID")
 }

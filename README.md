@@ -558,7 +558,8 @@ if err != nil {
 When the API returns a non-success status code, we return an error with type
 `*anthropic.Error`. This contains the `StatusCode`, `*http.Request`, and
 `*http.Response` values of the request, as well as the JSON of the error body
-(much like other response objects in the SDK).
+(much like other response objects in the SDK). The error also includes the `RequestID` 
+from the response headers, which is useful for troubleshooting with Anthropic support.
 
 To handle errors, we recommend that you use the `errors.As` pattern:
 
@@ -578,10 +579,11 @@ _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 if err != nil {
 	var apierr *anthropic.Error
 	if errors.As(err, &apierr) {
+		println("Request ID:", apierr.RequestID)
 		println(string(apierr.DumpRequest(true)))  // Prints the serialized HTTP request
 		println(string(apierr.DumpResponse(true))) // Prints the serialized HTTP response
 	}
-	panic(err.Error()) // GET "/v1/messages": 400 Bad Request { ... }
+	panic(err.Error()) // GET "/v1/messages": 400 Bad Request (Request-ID: req_xxx) { ... }
 }
 ```
 

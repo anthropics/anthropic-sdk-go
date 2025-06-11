@@ -19,9 +19,9 @@ import (
 // the [NewBetaService] method instead.
 type BetaService struct {
 	Options  []option.RequestOption
-	Files    BetaFileService
-	Messages BetaMessageService
 	Models   BetaModelService
+	Messages BetaMessageService
+	Files    BetaFileService
 }
 
 // NewBetaService generates a new service that applies the given options to each
@@ -30,9 +30,9 @@ type BetaService struct {
 func NewBetaService(opts ...option.RequestOption) (r BetaService) {
 	r = BetaService{}
 	r.Options = opts
-	r.Files = NewBetaFileService(opts...)
-	r.Messages = NewBetaMessageService(opts...)
 	r.Models = NewBetaModelService(opts...)
+	r.Messages = NewBetaMessageService(opts...)
+	r.Files = NewBetaFileService(opts...)
 	return
 }
 

@@ -16,10 +16,10 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options     []option.RequestOption
-	Beta        BetaService
 	Completions CompletionService
 	Messages    MessageService
 	Models      ModelService
+	Beta        BetaService
 }
 
 // DefaultClientOptions read from the environment (ANTHROPIC_API_KEY,
@@ -48,10 +48,10 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 
 	r = Client{Options: opts}
 
-	r.Beta = NewBetaService(opts...)
 	r.Completions = NewCompletionService(opts...)
 	r.Messages = NewMessageService(opts...)
 	r.Models = NewModelService(opts...)
+	r.Beta = NewBetaService(opts...)
 
 	return
 }

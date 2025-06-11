@@ -20,14 +20,14 @@ type paramObj = param.APIObject
 
 type Page[T any] struct {
 	Data    []T    `json:"data"`
-	FirstID string `json:"first_id,nullable"`
 	HasMore bool   `json:"has_more"`
+	FirstID string `json:"first_id,nullable"`
 	LastID  string `json:"last_id,nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
-		FirstID     respjson.Field
 		HasMore     respjson.Field
+		FirstID     respjson.Field
 		LastID      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string

@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.5.0 (2025-06-15)
+
+Full Changelog: [v1.4.0...v1.5.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.4.0...v1.5.0)
+
+### Features
+
+* add RequestID to API errors ([884f13b](https://github.com/anthropics/anthropic-sdk-go/commit/884f13b87969c94bd3ed1343c17c84e69b676de8))
+* **api:** api update ([27a18f2](https://github.com/anthropics/anthropic-sdk-go/commit/27a18f25697da82de75d5800a9077353bb5319a6))
+* **api:** manual updates ([926b094](https://github.com/anthropics/anthropic-sdk-go/commit/926b094724c0443e8c2d19fc2c885d296254c01a))
+
+
+### Bug Fixes
+
+* **client:** deprecate BetaBase64PDFBlock in favor of BetaRequestDocumentBlock ([5d8fd96](https://github.com/anthropics/anthropic-sdk-go/commit/5d8fd9661585c1894aeb4e80670d577ab1cc3582))
+
+
+### Refactors
+
+* improve Error() method to avoid code duplication ([43651c2](https://github.com/anthropics/anthropic-sdk-go/commit/43651c2804801454d24674baf62e05fc9e27e366))
+
 ## 1.4.0 (2025-06-04)
 
 Full Changelog: [v1.3.0...v1.4.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.3.0...v1.4.0)

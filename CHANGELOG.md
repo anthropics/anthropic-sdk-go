@@ -1,5 +1,33 @@
 # Changelog
 
+## 1.5.0 (2025-06-21)
+
+Full Changelog: [v1.4.0...v1.5.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.4.0...v1.5.0)
+
+### Features
+
+* add RequestID to API errors ([884f13b](https://github.com/anthropics/anthropic-sdk-go/commit/884f13b87969c94bd3ed1343c17c84e69b676de8))
+* **api:** api update ([27a18f2](https://github.com/anthropics/anthropic-sdk-go/commit/27a18f25697da82de75d5800a9077353bb5319a6))
+* **api:** manual updates ([926b094](https://github.com/anthropics/anthropic-sdk-go/commit/926b094724c0443e8c2d19fc2c885d296254c01a))
+* **client:** add debug log helper ([e427bb3](https://github.com/anthropics/anthropic-sdk-go/commit/e427bb35859880729e16cca16499accc3bb19a1b))
+* **client:** add escape hatch for null slice & maps ([9e3ded0](https://github.com/anthropics/anthropic-sdk-go/commit/9e3ded03652bfd8fc5e63095f0849995907537fb))
+
+
+### Bug Fixes
+
+* **client:** deprecate BetaBase64PDFBlock in favor of BetaRequestDocumentBlock ([5d8fd96](https://github.com/anthropics/anthropic-sdk-go/commit/5d8fd9661585c1894aeb4e80670d577ab1cc3582))
+
+
+### Chores
+
+* **ci:** enable for pull requests ([cdb1340](https://github.com/anthropics/anthropic-sdk-go/commit/cdb134079026cfa467d5f0299ee5e551fb50628a))
+* fix documentation of null map ([c79ab28](https://github.com/anthropics/anthropic-sdk-go/commit/c79ab28a977f1bbda336bfffdd9fdc7ee6adccaf))
+
+
+### Refactors
+
+* improve Error() method to avoid code duplication ([43651c2](https://github.com/anthropics/anthropic-sdk-go/commit/43651c2804801454d24674baf62e05fc9e27e366))
+
 ## 1.4.0 (2025-06-04)
 
 Full Changelog: [v1.3.0...v1.4.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.3.0...v1.4.0)

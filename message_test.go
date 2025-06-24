@@ -488,3 +488,35 @@ func TestModelLimits(t *testing.T) {
 		t.Error("Expected model limit for claude-opus-4@20250514 but not found")
 	}
 }
+
+// TestMaxTokensTooSmallIssue demonstrates the issue where non-streaming calls
+// get stuck when max_tokens is too small for the expected response.
+func TestMaxTokensTooSmallIssue(t *testing.T) {
+	client := anthropic.NewClient()
+
+	longPrompt := "Write a detailed 500-word essay about artificial intelligence."
+
+	response, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+		MaxTokens: 5, // Intentionally too small
+		Messages: []anthropic.MessageParam{{
+			Content: []anthropic.ContentBlockParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: longPrompt},
+			}},
+			Role: anthropic.MessageParamRoleUser,
+		}},
+		Model: anthropic.ModelClaude3_5SonnetLatest,
+	})
+
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Errorf("Expected no error, but got: %v", err)
+		return
+	}
+
+	if response.StopReason != "max_tokens" {
+		t.Errorf("Expected stop reason 'max_tokens', but got: %s", response.StopReason)
+	}
+}

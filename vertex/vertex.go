@@ -45,9 +45,16 @@ func WithCredentials(ctx context.Context, region string, projectID string, creds
 	}
 	middleware := vertexMiddleware(region, projectID)
 
+	var baseURL string
+	if region == "global" {
+		baseURL = "https://aiplatform.googleapis.com/"
+	} else {
+		baseURL = fmt.Sprintf("https://%s-aiplatform.googleapis.com/", region)
+	}
+
 	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		return rc.Apply(
-			sdkoption.WithBaseURL(fmt.Sprintf("https://%s-aiplatform.googleapis.com/", region)),
+			sdkoption.WithBaseURL(baseURL),
 			sdkoption.WithMiddleware(middleware),
 			sdkoption.WithHTTPClient(client),
 		)

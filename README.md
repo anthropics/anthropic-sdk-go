@@ -52,12 +52,9 @@ func main() {
 	)
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		MaxTokens: 1024,
-		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?"},
-			}},
-			Role: anthropic.MessageParamRoleUser,
-		}},
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
+		},
 		Model: anthropic.ModelClaude3_7SonnetLatest,
 	})
 	if err != nil {

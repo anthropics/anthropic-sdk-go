@@ -1672,8 +1672,16 @@ const (
 	ModelClaudeOpus4_0              Model = "claude-opus-4-0"
 	ModelClaudeOpus4_20250514       Model = "claude-opus-4-20250514"
 	ModelClaude4Opus20250514        Model = "claude-4-opus-20250514"
-	ModelClaude3OpusLatest          Model = "claude-3-opus-latest"
-	ModelClaude_3_Opus_20240229     Model = "claude-3-opus-20240229"
+	// Deprecated: Will reach end-of-life on January 5th, 2026. Please migrate to a
+	// newer model. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
+	ModelClaude3OpusLatest Model = "claude-3-opus-latest"
+	// Deprecated: Will reach end-of-life on January 5th, 2026. Please migrate to a
+	// newer model. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
+	ModelClaude_3_Opus_20240229 Model = "claude-3-opus-20240229"
 	// Deprecated: Will reach end-of-life on July 21st, 2025. Please migrate to a newer
 	// model. Visit https://docs.anthropic.com/en/docs/resources/model-deprecations for
 	// more information.

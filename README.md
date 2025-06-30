@@ -22,7 +22,7 @@ Or to pin the version:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/anthropics/anthropic-sdk-go@v1.4.0'
+go get -u 'github.com/anthropics/anthropic-sdk-go@v1.5.0'
 ```
 
 <!-- x-release-please-end -->
@@ -52,12 +52,9 @@ func main() {
 	)
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		MaxTokens: 1024,
-		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?"},
-			}},
-			Role: anthropic.MessageParamRoleUser,
-		}},
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
+		},
 		Model: anthropic.ModelClaude3_7SonnetLatest,
 	})
 	if err != nil {
@@ -513,6 +510,8 @@ client.Messages.New(context.TODO(), ...,
 )
 ```
 
+The request option `option.WithDebugLog(nil)` may be helpful while debugging.
+
 See the [full list of request options](https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/option).
 
 ### Pagination
@@ -558,7 +557,8 @@ if err != nil {
 When the API returns a non-success status code, we return an error with type
 `*anthropic.Error`. This contains the `StatusCode`, `*http.Request`, and
 `*http.Response` values of the request, as well as the JSON of the error body
-(much like other response objects in the SDK).
+(much like other response objects in the SDK). The error also includes the `RequestID` 
+from the response headers, which is useful for troubleshooting with Anthropic support.
 
 To handle errors, we recommend that you use the `errors.As` pattern:
 
@@ -578,10 +578,11 @@ _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 if err != nil {
 	var apierr *anthropic.Error
 	if errors.As(err, &apierr) {
+		println("Request ID:", apierr.RequestID)
 		println(string(apierr.DumpRequest(true)))  // Prints the serialized HTTP request
 		println(string(apierr.DumpResponse(true))) // Prints the serialized HTTP response
 	}
-	panic(err.Error()) // GET "/v1/messages": 400 Bad Request { ... }
+	panic(err.Error()) // GET "/v1/messages": 400 Bad Request (Request-ID: req_xxx) { ... }
 }
 ```
 

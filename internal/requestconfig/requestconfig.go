@@ -491,7 +491,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 		res.Body = io.NopCloser(bytes.NewBuffer(contents))
 
 		// Load the contents into the error format if it is provided.
-		aerr := apierror.Error{Request: cfg.Request, Response: res, StatusCode: res.StatusCode}
+		aerr := apierror.Error{Request: cfg.Request, Response: res, StatusCode: res.StatusCode, RequestID: res.Header.Get("request-id")}
 		err = aerr.UnmarshalJSON(contents)
 		if err != nil {
 			return err
@@ -536,15 +536,15 @@ func (cfg *RequestConfig) Execute() (err error) {
 		return nil
 	}
 
-	// If the response happens to be a byte array, deserialize the body as-is.
 	switch dst := cfg.ResponseBodyInto.(type) {
+	// If the response happens to be a byte array, deserialize the body as-is.
 	case *[]byte:
 		*dst = contents
-	}
-
-	err = json.NewDecoder(bytes.NewReader(contents)).Decode(cfg.ResponseBodyInto)
-	if err != nil {
-		return fmt.Errorf("error parsing response json: %w", err)
+	default:
+		err = json.NewDecoder(bytes.NewReader(contents)).Decode(cfg.ResponseBodyInto)
+		if err != nil {
+			return fmt.Errorf("error parsing response json: %w", err)
+		}
 	}
 
 	return nil

@@ -20,7 +20,7 @@ func main() {
 		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
 		},
-		Model:         "claude-3-5-sonnet-v2@20241022",
+		Model:         "claude-sonnet-4-v1@20250514",
 		StopSequences: []string{"```\n"},
 	})
 

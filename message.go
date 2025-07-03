@@ -706,10 +706,15 @@ func NewToolUseBlock(id string, input any, name string) ContentBlockParamUnion {
 	return ContentBlockParamUnion{OfToolUse: &toolUse}
 }
 
-func NewToolResultBlock(toolUseID string) ContentBlockParamUnion {
-	var toolResult ToolResultBlockParam
-	toolResult.ToolUseID = toolUseID
-	return ContentBlockParamUnion{OfToolResult: &toolResult}
+func NewToolResultBlock(toolUseID string, content string, isError bool) ContentBlockParamUnion {
+	toolBlock := ToolResultBlockParam{
+		ToolUseID: toolUseID,
+		Content: []ToolResultBlockParamContentUnion{
+			{OfText: &TextBlockParam{Text: content}},
+		},
+		IsError: Bool(isError),
+	}
+	return ContentBlockParamUnion{OfToolResult: &toolBlock}
 }
 
 func NewServerToolUseBlock(id string, input any) ContentBlockParamUnion {

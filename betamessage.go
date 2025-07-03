@@ -520,6 +520,57 @@ func (r *BetaCitationPageLocationParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type BetaCitationSearchResultLocation struct {
+	CitedText         string                        `json:"cited_text,required"`
+	EndBlockIndex     int64                         `json:"end_block_index,required"`
+	SearchResultIndex int64                         `json:"search_result_index,required"`
+	Source            string                        `json:"source,required"`
+	StartBlockIndex   int64                         `json:"start_block_index,required"`
+	Title             string                        `json:"title,required"`
+	Type              constant.SearchResultLocation `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CitedText         respjson.Field
+		EndBlockIndex     respjson.Field
+		SearchResultIndex respjson.Field
+		Source            respjson.Field
+		StartBlockIndex   respjson.Field
+		Title             respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCitationSearchResultLocation) RawJSON() string { return r.JSON.raw }
+func (r *BetaCitationSearchResultLocation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties CitedText, EndBlockIndex, SearchResultIndex, Source,
+// StartBlockIndex, Title, Type are required.
+type BetaCitationSearchResultLocationParam struct {
+	Title             param.Opt[string] `json:"title,omitzero,required"`
+	CitedText         string            `json:"cited_text,required"`
+	EndBlockIndex     int64             `json:"end_block_index,required"`
+	SearchResultIndex int64             `json:"search_result_index,required"`
+	Source            string            `json:"source,required"`
+	StartBlockIndex   int64             `json:"start_block_index,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "search_result_location".
+	Type constant.SearchResultLocation `json:"type,required"`
+	paramObj
+}
+
+func (r BetaCitationSearchResultLocationParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaCitationSearchResultLocationParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaCitationSearchResultLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The properties CitedText, EncryptedIndex, Title, Type, URL are required.
 type BetaCitationWebSearchResultLocationParam struct {
 	Title          param.Opt[string] `json:"title,omitzero,required"`
@@ -574,7 +625,7 @@ func (r *BetaCitationsDelta) UnmarshalJSON(data []byte) error {
 // BetaCitationsDeltaCitationUnion contains all possible properties and values from
 // [BetaCitationCharLocation], [BetaCitationPageLocation],
 // [BetaCitationContentBlockLocation], [BetaCitationsWebSearchResultLocation],
-// [BetaSearchResultLocationCitation].
+// [BetaCitationSearchResultLocation].
 //
 // Use the [BetaCitationsDeltaCitationUnion.AsAny] method to switch on the variant.
 //
@@ -601,9 +652,9 @@ type BetaCitationsDeltaCitationUnion struct {
 	Title          string `json:"title"`
 	// This field is from variant [BetaCitationsWebSearchResultLocation].
 	URL string `json:"url"`
-	// This field is from variant [BetaSearchResultLocationCitation].
+	// This field is from variant [BetaCitationSearchResultLocation].
 	SearchResultIndex int64 `json:"search_result_index"`
-	// This field is from variant [BetaSearchResultLocationCitation].
+	// This field is from variant [BetaCitationSearchResultLocation].
 	Source string `json:"source"`
 	JSON   struct {
 		CitedText         respjson.Field
@@ -636,7 +687,7 @@ func (BetaCitationCharLocation) implBetaCitationsDeltaCitationUnion()           
 func (BetaCitationPageLocation) implBetaCitationsDeltaCitationUnion()             {}
 func (BetaCitationContentBlockLocation) implBetaCitationsDeltaCitationUnion()     {}
 func (BetaCitationsWebSearchResultLocation) implBetaCitationsDeltaCitationUnion() {}
-func (BetaSearchResultLocationCitation) implBetaCitationsDeltaCitationUnion()     {}
+func (BetaCitationSearchResultLocation) implBetaCitationsDeltaCitationUnion()     {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -645,7 +696,7 @@ func (BetaSearchResultLocationCitation) implBetaCitationsDeltaCitationUnion()   
 //	case anthropic.BetaCitationPageLocation:
 //	case anthropic.BetaCitationContentBlockLocation:
 //	case anthropic.BetaCitationsWebSearchResultLocation:
-//	case anthropic.BetaSearchResultLocationCitation:
+//	case anthropic.BetaCitationSearchResultLocation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -685,7 +736,7 @@ func (u BetaCitationsDeltaCitationUnion) AsWebSearchResultLocation() (v BetaCita
 	return
 }
 
-func (u BetaCitationsDeltaCitationUnion) AsSearchResultLocation() (v BetaSearchResultLocationCitation) {
+func (u BetaCitationsDeltaCitationUnion) AsSearchResultLocation() (v BetaCitationSearchResultLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -3515,57 +3566,6 @@ func (r *BetaSearchResultBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaSearchResultLocationCitation struct {
-	CitedText         string                        `json:"cited_text,required"`
-	EndBlockIndex     int64                         `json:"end_block_index,required"`
-	SearchResultIndex int64                         `json:"search_result_index,required"`
-	Source            string                        `json:"source,required"`
-	StartBlockIndex   int64                         `json:"start_block_index,required"`
-	Title             string                        `json:"title,required"`
-	Type              constant.SearchResultLocation `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		CitedText         respjson.Field
-		EndBlockIndex     respjson.Field
-		SearchResultIndex respjson.Field
-		Source            respjson.Field
-		StartBlockIndex   respjson.Field
-		Title             respjson.Field
-		Type              respjson.Field
-		ExtraFields       map[string]respjson.Field
-		raw               string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaSearchResultLocationCitation) RawJSON() string { return r.JSON.raw }
-func (r *BetaSearchResultLocationCitation) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties CitedText, EndBlockIndex, SearchResultIndex, Source,
-// StartBlockIndex, Title, Type are required.
-type BetaSearchResultLocationCitationParam struct {
-	Title             param.Opt[string] `json:"title,omitzero,required"`
-	CitedText         string            `json:"cited_text,required"`
-	EndBlockIndex     int64             `json:"end_block_index,required"`
-	SearchResultIndex int64             `json:"search_result_index,required"`
-	Source            string            `json:"source,required"`
-	StartBlockIndex   int64             `json:"start_block_index,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "search_result_location".
-	Type constant.SearchResultLocation `json:"type,required"`
-	paramObj
-}
-
-func (r BetaSearchResultLocationCitationParam) MarshalJSON() (data []byte, err error) {
-	type shadow BetaSearchResultLocationCitationParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *BetaSearchResultLocationCitationParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 type BetaServerToolUsage struct {
 	// The number of web search tool requests.
 	WebSearchRequests int64 `json:"web_search_requests,required"`
@@ -3761,7 +3761,7 @@ func (r *BetaTextBlockParam) UnmarshalJSON(data []byte) error {
 // BetaTextCitationUnion contains all possible properties and values from
 // [BetaCitationCharLocation], [BetaCitationPageLocation],
 // [BetaCitationContentBlockLocation], [BetaCitationsWebSearchResultLocation],
-// [BetaSearchResultLocationCitation].
+// [BetaCitationSearchResultLocation].
 //
 // Use the [BetaTextCitationUnion.AsAny] method to switch on the variant.
 //
@@ -3788,9 +3788,9 @@ type BetaTextCitationUnion struct {
 	Title          string `json:"title"`
 	// This field is from variant [BetaCitationsWebSearchResultLocation].
 	URL string `json:"url"`
-	// This field is from variant [BetaSearchResultLocationCitation].
+	// This field is from variant [BetaCitationSearchResultLocation].
 	SearchResultIndex int64 `json:"search_result_index"`
-	// This field is from variant [BetaSearchResultLocationCitation].
+	// This field is from variant [BetaCitationSearchResultLocation].
 	Source string `json:"source"`
 	JSON   struct {
 		CitedText         respjson.Field
@@ -3822,7 +3822,7 @@ func (BetaCitationCharLocation) implBetaTextCitationUnion()             {}
 func (BetaCitationPageLocation) implBetaTextCitationUnion()             {}
 func (BetaCitationContentBlockLocation) implBetaTextCitationUnion()     {}
 func (BetaCitationsWebSearchResultLocation) implBetaTextCitationUnion() {}
-func (BetaSearchResultLocationCitation) implBetaTextCitationUnion()     {}
+func (BetaCitationSearchResultLocation) implBetaTextCitationUnion()     {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -3831,7 +3831,7 @@ func (BetaSearchResultLocationCitation) implBetaTextCitationUnion()     {}
 //	case anthropic.BetaCitationPageLocation:
 //	case anthropic.BetaCitationContentBlockLocation:
 //	case anthropic.BetaCitationsWebSearchResultLocation:
-//	case anthropic.BetaSearchResultLocationCitation:
+//	case anthropic.BetaCitationSearchResultLocation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -3871,7 +3871,7 @@ func (u BetaTextCitationUnion) AsWebSearchResultLocation() (v BetaCitationsWebSe
 	return
 }
 
-func (u BetaTextCitationUnion) AsSearchResultLocation() (v BetaSearchResultLocationCitation) {
+func (u BetaTextCitationUnion) AsSearchResultLocation() (v BetaCitationSearchResultLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -3891,7 +3891,7 @@ type BetaTextCitationParamUnion struct {
 	OfPageLocation            *BetaCitationPageLocationParam            `json:",omitzero,inline"`
 	OfContentBlockLocation    *BetaCitationContentBlockLocationParam    `json:",omitzero,inline"`
 	OfWebSearchResultLocation *BetaCitationWebSearchResultLocationParam `json:",omitzero,inline"`
-	OfSearchResultLocation    *BetaSearchResultLocationCitationParam    `json:",omitzero,inline"`
+	OfSearchResultLocation    *BetaCitationSearchResultLocationParam    `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -4078,7 +4078,7 @@ func init() {
 		apijson.Discriminator[BetaCitationPageLocationParam]("page_location"),
 		apijson.Discriminator[BetaCitationContentBlockLocationParam]("content_block_location"),
 		apijson.Discriminator[BetaCitationWebSearchResultLocationParam]("web_search_result_location"),
-		apijson.Discriminator[BetaSearchResultLocationCitationParam]("search_result_location"),
+		apijson.Discriminator[BetaCitationSearchResultLocationParam]("search_result_location"),
 	)
 }
 

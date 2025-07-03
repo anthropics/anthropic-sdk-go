@@ -497,8 +497,8 @@ func (r *CitationsWebSearchResultLocation) UnmarshalJSON(data []byte) error {
 }
 
 // ContentBlockUnion contains all possible properties and values from [TextBlock],
-// [ToolUseBlock], [ServerToolUseBlock], [WebSearchToolResultBlock],
-// [ThinkingBlock], [RedactedThinkingBlock].
+// [ThinkingBlock], [RedactedThinkingBlock], [ToolUseBlock], [ServerToolUseBlock],
+// [WebSearchToolResultBlock].
 //
 // Use the [ContentBlockUnion.AsAny] method to switch on the variant.
 //
@@ -508,9 +508,15 @@ type ContentBlockUnion struct {
 	Citations []TextCitationUnion `json:"citations"`
 	// This field is from variant [TextBlock].
 	Text string `json:"text"`
-	// Any of "text", "tool_use", "server_tool_use", "web_search_tool_result",
-	// "thinking", "redacted_thinking".
-	Type  string          `json:"type"`
+	// Any of "text", "thinking", "redacted_thinking", "tool_use", "server_tool_use",
+	// "web_search_tool_result".
+	Type string `json:"type"`
+	// This field is from variant [ThinkingBlock].
+	Signature string `json:"signature"`
+	// This field is from variant [ThinkingBlock].
+	Thinking string `json:"thinking"`
+	// This field is from variant [RedactedThinkingBlock].
+	Data  string          `json:"data"`
 	ID    string          `json:"id"`
 	Input json.RawMessage `json:"input"`
 	Name  string          `json:"name"`
@@ -518,24 +524,18 @@ type ContentBlockUnion struct {
 	Content WebSearchToolResultBlockContentUnion `json:"content"`
 	// This field is from variant [WebSearchToolResultBlock].
 	ToolUseID string `json:"tool_use_id"`
-	// This field is from variant [ThinkingBlock].
-	Signature string `json:"signature"`
-	// This field is from variant [ThinkingBlock].
-	Thinking string `json:"thinking"`
-	// This field is from variant [RedactedThinkingBlock].
-	Data string `json:"data"`
-	JSON struct {
+	JSON      struct {
 		Citations respjson.Field
 		Text      respjson.Field
 		Type      respjson.Field
+		Signature respjson.Field
+		Thinking  respjson.Field
+		Data      respjson.Field
 		ID        respjson.Field
 		Input     respjson.Field
 		Name      respjson.Field
 		Content   respjson.Field
 		ToolUseID respjson.Field
-		Signature respjson.Field
-		Thinking  respjson.Field
-		Data      respjson.Field
 		raw       string
 	} `json:"-"`
 }
@@ -565,21 +565,21 @@ type anyContentBlock interface {
 }
 
 func (TextBlock) implContentBlockUnion()                {}
+func (ThinkingBlock) implContentBlockUnion()            {}
+func (RedactedThinkingBlock) implContentBlockUnion()    {}
 func (ToolUseBlock) implContentBlockUnion()             {}
 func (ServerToolUseBlock) implContentBlockUnion()       {}
 func (WebSearchToolResultBlock) implContentBlockUnion() {}
-func (ThinkingBlock) implContentBlockUnion()            {}
-func (RedactedThinkingBlock) implContentBlockUnion()    {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ContentBlockUnion.AsAny().(type) {
 //	case anthropic.TextBlock:
+//	case anthropic.ThinkingBlock:
+//	case anthropic.RedactedThinkingBlock:
 //	case anthropic.ToolUseBlock:
 //	case anthropic.ServerToolUseBlock:
 //	case anthropic.WebSearchToolResultBlock:
-//	case anthropic.ThinkingBlock:
-//	case anthropic.RedactedThinkingBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -587,21 +587,31 @@ func (u ContentBlockUnion) AsAny() anyContentBlock {
 	switch u.Type {
 	case "text":
 		return u.AsText()
+	case "thinking":
+		return u.AsThinking()
+	case "redacted_thinking":
+		return u.AsRedactedThinking()
 	case "tool_use":
 		return u.AsToolUse()
 	case "server_tool_use":
 		return u.AsServerToolUse()
 	case "web_search_tool_result":
 		return u.AsWebSearchToolResult()
-	case "thinking":
-		return u.AsThinking()
-	case "redacted_thinking":
-		return u.AsRedactedThinking()
 	}
 	return nil
 }
 
 func (u ContentBlockUnion) AsText() (v TextBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ContentBlockUnion) AsThinking() (v ThinkingBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ContentBlockUnion) AsRedactedThinking() (v RedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -621,42 +631,11 @@ func (u ContentBlockUnion) AsWebSearchToolResult() (v WebSearchToolResultBlock) 
 	return
 }
 
-func (u ContentBlockUnion) AsThinking() (v ThinkingBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ContentBlockUnion) AsRedactedThinking() (v RedactedThinkingBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
 func (u ContentBlockUnion) RawJSON() string { return u.JSON.raw }
 
 func (r *ContentBlockUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func NewServerToolUseBlock(id string, input any) ContentBlockParamUnion {
-	var serverToolUse ServerToolUseBlockParam
-	serverToolUse.ID = id
-	serverToolUse.Input = input
-	return ContentBlockParamUnion{OfServerToolUse: &serverToolUse}
-}
-
-func NewWebSearchToolResultBlock[
-	T []WebSearchResultBlockParam | WebSearchToolRequestErrorParam,
-](content T, toolUseID string) ContentBlockParamUnion {
-	var webSearchToolResult WebSearchToolResultBlockParam
-	switch v := any(content).(type) {
-	case []WebSearchResultBlockParam:
-		webSearchToolResult.Content.OfWebSearchToolResultBlockItem = v
-	case WebSearchToolRequestErrorParam:
-		webSearchToolResult.Content.OfRequestWebSearchToolResultError = &v
-	}
-	webSearchToolResult.ToolUseID = toolUseID
-	return ContentBlockParamUnion{OfWebSearchToolResult: &webSearchToolResult}
 }
 
 func NewTextBlock(text string) ContentBlockParamUnion {
@@ -689,25 +668,6 @@ func NewImageBlockBase64(mediaType string, encodedData string) ContentBlockParam
 	}
 }
 
-func NewToolUseBlock(id string, input any, name string) ContentBlockParamUnion {
-	var toolUse ToolUseBlockParam
-	toolUse.ID = id
-	toolUse.Input = input
-	toolUse.Name = name
-	return ContentBlockParamUnion{OfToolUse: &toolUse}
-}
-
-func NewToolResultBlock(toolUseID string, content string, isError bool) ContentBlockParamUnion {
-	toolBlock := ToolResultBlockParam{
-		ToolUseID: toolUseID,
-		Content: []ToolResultBlockParamContentUnion{
-			{OfText: &TextBlockParam{Text: content}},
-		},
-		IsError: Bool(isError),
-	}
-	return ContentBlockParamUnion{OfToolResult: &toolBlock}
-}
-
 func NewDocumentBlock[
 	T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
 ](source T) ContentBlockParamUnion {
@@ -738,56 +698,91 @@ func NewRedactedThinkingBlock(data string) ContentBlockParamUnion {
 	return ContentBlockParamUnion{OfRedactedThinking: &redactedThinking}
 }
 
+func NewToolUseBlock(id string, input any, name string) ContentBlockParamUnion {
+	var toolUse ToolUseBlockParam
+	toolUse.ID = id
+	toolUse.Input = input
+	toolUse.Name = name
+	return ContentBlockParamUnion{OfToolUse: &toolUse}
+}
+
+func NewToolResultBlock(toolUseID string) ContentBlockParamUnion {
+	var toolResult ToolResultBlockParam
+	toolResult.ToolUseID = toolUseID
+	return ContentBlockParamUnion{OfToolResult: &toolResult}
+}
+
+func NewServerToolUseBlock(id string, input any) ContentBlockParamUnion {
+	var serverToolUse ServerToolUseBlockParam
+	serverToolUse.ID = id
+	serverToolUse.Input = input
+	return ContentBlockParamUnion{OfServerToolUse: &serverToolUse}
+}
+
+func NewWebSearchToolResultBlock[
+	T []WebSearchResultBlockParam | WebSearchToolRequestErrorParam,
+](content T, toolUseID string) ContentBlockParamUnion {
+	var webSearchToolResult WebSearchToolResultBlockParam
+	switch v := any(content).(type) {
+	case []WebSearchResultBlockParam:
+		webSearchToolResult.Content.OfWebSearchToolResultBlockItem = v
+	case WebSearchToolRequestErrorParam:
+		webSearchToolResult.Content.OfRequestWebSearchToolResultError = &v
+	}
+	webSearchToolResult.ToolUseID = toolUseID
+	return ContentBlockParamUnion{OfWebSearchToolResult: &webSearchToolResult}
+}
+
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ContentBlockParamUnion struct {
-	OfServerToolUse       *ServerToolUseBlockParam       `json:",omitzero,inline"`
-	OfWebSearchToolResult *WebSearchToolResultBlockParam `json:",omitzero,inline"`
 	OfText                *TextBlockParam                `json:",omitzero,inline"`
 	OfImage               *ImageBlockParam               `json:",omitzero,inline"`
-	OfToolUse             *ToolUseBlockParam             `json:",omitzero,inline"`
-	OfToolResult          *ToolResultBlockParam          `json:",omitzero,inline"`
 	OfDocument            *DocumentBlockParam            `json:",omitzero,inline"`
 	OfThinking            *ThinkingBlockParam            `json:",omitzero,inline"`
 	OfRedactedThinking    *RedactedThinkingBlockParam    `json:",omitzero,inline"`
+	OfToolUse             *ToolUseBlockParam             `json:",omitzero,inline"`
+	OfToolResult          *ToolResultBlockParam          `json:",omitzero,inline"`
+	OfServerToolUse       *ServerToolUseBlockParam       `json:",omitzero,inline"`
+	OfWebSearchToolResult *WebSearchToolResultBlockParam `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfServerToolUse,
-		u.OfWebSearchToolResult,
-		u.OfText,
+	return param.MarshalUnion(u, u.OfText,
 		u.OfImage,
-		u.OfToolUse,
-		u.OfToolResult,
 		u.OfDocument,
 		u.OfThinking,
-		u.OfRedactedThinking)
+		u.OfRedactedThinking,
+		u.OfToolUse,
+		u.OfToolResult,
+		u.OfServerToolUse,
+		u.OfWebSearchToolResult)
 }
 func (u *ContentBlockParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
 
 func (u *ContentBlockParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfServerToolUse) {
-		return u.OfServerToolUse
-	} else if !param.IsOmitted(u.OfWebSearchToolResult) {
-		return u.OfWebSearchToolResult
-	} else if !param.IsOmitted(u.OfText) {
+	if !param.IsOmitted(u.OfText) {
 		return u.OfText
 	} else if !param.IsOmitted(u.OfImage) {
 		return u.OfImage
-	} else if !param.IsOmitted(u.OfToolUse) {
-		return u.OfToolUse
-	} else if !param.IsOmitted(u.OfToolResult) {
-		return u.OfToolResult
 	} else if !param.IsOmitted(u.OfDocument) {
 		return u.OfDocument
 	} else if !param.IsOmitted(u.OfThinking) {
 		return u.OfThinking
 	} else if !param.IsOmitted(u.OfRedactedThinking) {
 		return u.OfRedactedThinking
+	} else if !param.IsOmitted(u.OfToolUse) {
+		return u.OfToolUse
+	} else if !param.IsOmitted(u.OfToolResult) {
+		return u.OfToolResult
+	} else if !param.IsOmitted(u.OfServerToolUse) {
+		return u.OfServerToolUse
+	} else if !param.IsOmitted(u.OfWebSearchToolResult) {
+		return u.OfWebSearchToolResult
 	}
 	return nil
 }
@@ -796,14 +791,6 @@ func (u *ContentBlockParamUnion) asAny() any {
 func (u ContentBlockParamUnion) GetText() *string {
 	if vt := u.OfText; vt != nil {
 		return &vt.Text
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetIsError() *bool {
-	if vt := u.OfToolResult; vt != nil && vt.IsError.Valid() {
-		return &vt.IsError.Value
 	}
 	return nil
 }
@@ -849,38 +836,18 @@ func (u ContentBlockParamUnion) GetData() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetID() *string {
-	if vt := u.OfServerToolUse; vt != nil {
-		return (*string)(&vt.ID)
-	} else if vt := u.OfToolUse; vt != nil {
-		return (*string)(&vt.ID)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetName() *string {
-	if vt := u.OfServerToolUse; vt != nil {
-		return (*string)(&vt.Name)
-	} else if vt := u.OfToolUse; vt != nil {
-		return (*string)(&vt.Name)
+func (u ContentBlockParamUnion) GetIsError() *bool {
+	if vt := u.OfToolResult; vt != nil && vt.IsError.Valid() {
+		return &vt.IsError.Value
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetType() *string {
-	if vt := u.OfServerToolUse; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfWebSearchToolResult; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfText; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfImage; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfToolUse; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfToolResult; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfDocument; vt != nil {
 		return (*string)(&vt.Type)
@@ -888,75 +855,67 @@ func (u ContentBlockParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfRedactedThinking; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfToolUse; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfToolResult; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfServerToolUse; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockParamUnion) GetID() *string {
+	if vt := u.OfToolUse; vt != nil {
+		return (*string)(&vt.ID)
+	} else if vt := u.OfServerToolUse; vt != nil {
+		return (*string)(&vt.ID)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockParamUnion) GetName() *string {
+	if vt := u.OfToolUse; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfServerToolUse; vt != nil {
+		return (*string)(&vt.Name)
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetToolUseID() *string {
-	if vt := u.OfWebSearchToolResult; vt != nil {
+	if vt := u.OfToolResult; vt != nil {
 		return (*string)(&vt.ToolUseID)
-	} else if vt := u.OfToolResult; vt != nil {
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
 		return (*string)(&vt.ToolUseID)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's Input property, if present.
-func (u ContentBlockParamUnion) GetInput() *any {
-	if vt := u.OfServerToolUse; vt != nil {
-		return &vt.Input
-	} else if vt := u.OfToolUse; vt != nil {
-		return &vt.Input
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's CacheControl property, if present.
 func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
-	if vt := u.OfServerToolUse; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfWebSearchToolResult; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfText; vt != nil {
+	if vt := u.OfText; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfImage; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfDocument; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfToolUse; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfToolResult; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfDocument; vt != nil {
+	} else if vt := u.OfServerToolUse; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil
 }
-
-// Returns a subunion which exports methods to access subproperties
-//
-// Or use AsAny() to get the underlying value
-func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent) {
-	if vt := u.OfWebSearchToolResult; vt != nil {
-		res.any = vt.Content.asAny()
-	} else if vt := u.OfToolResult; vt != nil {
-		res.any = &vt.Content
-	}
-	return
-}
-
-// Can have the runtime types [_[]WebSearchResultBlockParam],
-// [_[]ToolResultBlockParamContentUnion]
-type contentBlockParamUnionContent struct{ any }
-
-// Use the following switch statement to get the type of the union:
-//
-//	switch u.AsAny().(type) {
-//	case *[]anthropic.WebSearchResultBlockParam:
-//	case *[]anthropic.ToolResultBlockParamContentUnion:
-//	default:
-//	    fmt.Errorf("not present")
-//	}
-func (u contentBlockParamUnionContent) AsAny() any { return u.any }
 
 // Returns a subunion which exports methods to access subproperties
 //
@@ -1067,18 +1026,54 @@ func (u contentBlockParamUnionSource) GetURL() *string {
 	return nil
 }
 
+// Returns a pointer to the underlying variant's Input property, if present.
+func (u ContentBlockParamUnion) GetInput() *any {
+	if vt := u.OfToolUse; vt != nil {
+		return &vt.Input
+	} else if vt := u.OfServerToolUse; vt != nil {
+		return &vt.Input
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent) {
+	if vt := u.OfToolResult; vt != nil {
+		res.any = &vt.Content
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
+		res.any = vt.Content.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [_[]ToolResultBlockParamContentUnion],
+// [_[]WebSearchResultBlockParam]
+type contentBlockParamUnionContent struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *[]anthropic.ToolResultBlockParamContentUnion:
+//	case *[]anthropic.WebSearchResultBlockParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u contentBlockParamUnionContent) AsAny() any { return u.any }
+
 func init() {
 	apijson.RegisterUnion[ContentBlockParamUnion](
 		"type",
-		apijson.Discriminator[ServerToolUseBlockParam]("server_tool_use"),
-		apijson.Discriminator[WebSearchToolResultBlockParam]("web_search_tool_result"),
 		apijson.Discriminator[TextBlockParam]("text"),
 		apijson.Discriminator[ImageBlockParam]("image"),
-		apijson.Discriminator[ToolUseBlockParam]("tool_use"),
-		apijson.Discriminator[ToolResultBlockParam]("tool_result"),
 		apijson.Discriminator[DocumentBlockParam]("document"),
 		apijson.Discriminator[ThinkingBlockParam]("thinking"),
 		apijson.Discriminator[RedactedThinkingBlockParam]("redacted_thinking"),
+		apijson.Discriminator[ToolUseBlockParam]("tool_use"),
+		apijson.Discriminator[ToolResultBlockParam]("tool_result"),
+		apijson.Discriminator[ServerToolUseBlockParam]("server_tool_use"),
+		apijson.Discriminator[WebSearchToolResultBlockParam]("web_search_tool_result"),
 	)
 }
 
@@ -1426,10 +1421,14 @@ type Message struct {
 	//
 	// This may be one the following values:
 	//
-	// - `"end_turn"`: the model reached a natural stopping point
-	// - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
-	// - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
-	// - `"tool_use"`: the model invoked one or more tools
+	//   - `"end_turn"`: the model reached a natural stopping point
+	//   - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
+	//   - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
+	//   - `"tool_use"`: the model invoked one or more tools
+	//   - `"pause_turn"`: we paused a long-running turn. You may provide the response
+	//     back as-is in a subsequent request to let the model continue.
+	//   - `"refusal"`: when streaming classifiers intervene to handle potential policy
+	//     violations
 	//
 	// In non-streaming mode this value is always non-null. In streaming mode, it is
 	// null in the `message_start` event and non-null otherwise.
@@ -1988,8 +1987,8 @@ func (r *ContentBlockStartEvent) UnmarshalJSON(data []byte) error {
 }
 
 // ContentBlockStartEventContentBlockUnion contains all possible properties and
-// values from [TextBlock], [ToolUseBlock], [ServerToolUseBlock],
-// [WebSearchToolResultBlock], [ThinkingBlock], [RedactedThinkingBlock].
+// values from [TextBlock], [ThinkingBlock], [RedactedThinkingBlock],
+// [ToolUseBlock], [ServerToolUseBlock], [WebSearchToolResultBlock].
 //
 // Use the [ContentBlockStartEventContentBlockUnion.AsAny] method to switch on the
 // variant.
@@ -2000,9 +1999,15 @@ type ContentBlockStartEventContentBlockUnion struct {
 	Citations []TextCitationUnion `json:"citations"`
 	// This field is from variant [TextBlock].
 	Text string `json:"text"`
-	// Any of "text", "tool_use", "server_tool_use", "web_search_tool_result",
-	// "thinking", "redacted_thinking".
-	Type  string `json:"type"`
+	// Any of "text", "thinking", "redacted_thinking", "tool_use", "server_tool_use",
+	// "web_search_tool_result".
+	Type string `json:"type"`
+	// This field is from variant [ThinkingBlock].
+	Signature string `json:"signature"`
+	// This field is from variant [ThinkingBlock].
+	Thinking string `json:"thinking"`
+	// This field is from variant [RedactedThinkingBlock].
+	Data  string `json:"data"`
 	ID    string `json:"id"`
 	Input any    `json:"input"`
 	Name  string `json:"name"`
@@ -2010,24 +2015,18 @@ type ContentBlockStartEventContentBlockUnion struct {
 	Content WebSearchToolResultBlockContentUnion `json:"content"`
 	// This field is from variant [WebSearchToolResultBlock].
 	ToolUseID string `json:"tool_use_id"`
-	// This field is from variant [ThinkingBlock].
-	Signature string `json:"signature"`
-	// This field is from variant [ThinkingBlock].
-	Thinking string `json:"thinking"`
-	// This field is from variant [RedactedThinkingBlock].
-	Data string `json:"data"`
-	JSON struct {
+	JSON      struct {
 		Citations respjson.Field
 		Text      respjson.Field
 		Type      respjson.Field
+		Signature respjson.Field
+		Thinking  respjson.Field
+		Data      respjson.Field
 		ID        respjson.Field
 		Input     respjson.Field
 		Name      respjson.Field
 		Content   respjson.Field
 		ToolUseID respjson.Field
-		Signature respjson.Field
-		Thinking  respjson.Field
-		Data      respjson.Field
 		raw       string
 	} `json:"-"`
 }
@@ -2040,21 +2039,21 @@ type anyContentBlockStartEventContentBlock interface {
 }
 
 func (TextBlock) implContentBlockStartEventContentBlockUnion()                {}
+func (ThinkingBlock) implContentBlockStartEventContentBlockUnion()            {}
+func (RedactedThinkingBlock) implContentBlockStartEventContentBlockUnion()    {}
 func (ToolUseBlock) implContentBlockStartEventContentBlockUnion()             {}
 func (ServerToolUseBlock) implContentBlockStartEventContentBlockUnion()       {}
 func (WebSearchToolResultBlock) implContentBlockStartEventContentBlockUnion() {}
-func (ThinkingBlock) implContentBlockStartEventContentBlockUnion()            {}
-func (RedactedThinkingBlock) implContentBlockStartEventContentBlockUnion()    {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ContentBlockStartEventContentBlockUnion.AsAny().(type) {
 //	case anthropic.TextBlock:
+//	case anthropic.ThinkingBlock:
+//	case anthropic.RedactedThinkingBlock:
 //	case anthropic.ToolUseBlock:
 //	case anthropic.ServerToolUseBlock:
 //	case anthropic.WebSearchToolResultBlock:
-//	case anthropic.ThinkingBlock:
-//	case anthropic.RedactedThinkingBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -2062,21 +2061,31 @@ func (u ContentBlockStartEventContentBlockUnion) AsAny() anyContentBlockStartEve
 	switch u.Type {
 	case "text":
 		return u.AsText()
+	case "thinking":
+		return u.AsThinking()
+	case "redacted_thinking":
+		return u.AsRedactedThinking()
 	case "tool_use":
 		return u.AsToolUse()
 	case "server_tool_use":
 		return u.AsServerToolUse()
 	case "web_search_tool_result":
 		return u.AsWebSearchToolResult()
-	case "thinking":
-		return u.AsThinking()
-	case "redacted_thinking":
-		return u.AsRedactedThinking()
 	}
 	return nil
 }
 
 func (u ContentBlockStartEventContentBlockUnion) AsText() (v TextBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ContentBlockStartEventContentBlockUnion) AsThinking() (v ThinkingBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ContentBlockStartEventContentBlockUnion) AsRedactedThinking() (v RedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2092,16 +2101,6 @@ func (u ContentBlockStartEventContentBlockUnion) AsServerToolUse() (v ServerTool
 }
 
 func (u ContentBlockStartEventContentBlockUnion) AsWebSearchToolResult() (v WebSearchToolResultBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ContentBlockStartEventContentBlockUnion) AsThinking() (v ThinkingBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ContentBlockStartEventContentBlockUnion) AsRedactedThinking() (v RedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -4140,7 +4139,7 @@ type MessageNewParams struct {
 	// the top-level `system` parameter — there is no `"system"` role for input
 	// messages in the Messages API.
 	//
-	// There is a limit of 100000 messages in a single request.
+	// There is a limit of 100,000 messages in a single request.
 	Messages []MessageParam `json:"messages,omitzero,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
@@ -4218,6 +4217,12 @@ type MessageNewParams struct {
 	// content blocks that represent the model's use of those tools. You can then run
 	// those tools using the tool input generated by the model and then optionally
 	// return results back to the model using `tool_result` content blocks.
+	//
+	// There are two types of tools: **client tools** and **server tools**. The
+	// behavior described below applies to client tools. For
+	// [server tools](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview#server-tools),
+	// see their individual documentation as each has its own behavior (e.g., the
+	// [web search tool](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/web-search-tool)).
 	//
 	// Each tool definition includes:
 	//
@@ -4405,7 +4410,7 @@ type MessageCountTokensParams struct {
 	// the top-level `system` parameter — there is no `"system"` role for input
 	// messages in the Messages API.
 	//
-	// There is a limit of 100000 messages in a single request.
+	// There is a limit of 100,000 messages in a single request.
 	Messages []MessageParam `json:"messages,omitzero,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
@@ -4436,6 +4441,12 @@ type MessageCountTokensParams struct {
 	// content blocks that represent the model's use of those tools. You can then run
 	// those tools using the tool input generated by the model and then optionally
 	// return results back to the model using `tool_result` content blocks.
+	//
+	// There are two types of tools: **client tools** and **server tools**. The
+	// behavior described below applies to client tools. For
+	// [server tools](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview#server-tools),
+	// see their individual documentation as each has its own behavior (e.g., the
+	// [web search tool](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/web-search-tool)).
 	//
 	// Each tool definition includes:
 	//

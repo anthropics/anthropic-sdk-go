@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
@@ -29,7 +30,7 @@ func main() {
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("what is 1+1?")),
 		},
 		MCPServers:    mcpServers,
-		Model:         anthropic.ModelClaude3_7Sonnet20250219,
+		Model:         anthropic.ModelClaudeSonnet4_20250514,
 		StopSequences: []string{"```\n"},
 	})
 

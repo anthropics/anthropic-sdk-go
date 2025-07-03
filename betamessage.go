@@ -276,16 +276,6 @@ func init() {
 }
 
 func init() {
-	apijson.RegisterUnion[BetaTextCitationParamUnion](
-		"type",
-		apijson.Discriminator[BetaCitationCharLocationParam]("char_location"),
-		apijson.Discriminator[BetaCitationPageLocationParam]("page_location"),
-		apijson.Discriminator[BetaCitationContentBlockLocationParam]("content_block_location"),
-		apijson.Discriminator[BetaCitationWebSearchResultLocationParam]("web_search_result_location"),
-	)
-}
-
-func init() {
 	apijson.RegisterUnion[BetaThinkingConfigParamUnion](
 		"type",
 		apijson.Discriminator[BetaThinkingConfigEnabledParam]("enabled"),
@@ -300,14 +290,6 @@ func init() {
 		apijson.Discriminator[BetaToolChoiceAnyParam]("any"),
 		apijson.Discriminator[BetaToolChoiceToolParam]("tool"),
 		apijson.Discriminator[BetaToolChoiceNoneParam]("none"),
-	)
-}
-
-func init() {
-	apijson.RegisterUnion[BetaToolResultBlockParamContentUnion](
-		"type",
-		apijson.Discriminator[BetaTextBlockParam]("text"),
-		apijson.Discriminator[BetaImageBlockParam]("image"),
 	)
 }
 
@@ -591,7 +573,8 @@ func (r *BetaCitationsDelta) UnmarshalJSON(data []byte) error {
 
 // BetaCitationsDeltaCitationUnion contains all possible properties and values from
 // [BetaCitationCharLocation], [BetaCitationPageLocation],
-// [BetaCitationContentBlockLocation], [BetaCitationsWebSearchResultLocation].
+// [BetaCitationContentBlockLocation], [BetaCitationsWebSearchResultLocation],
+// [BetaSearchResultLocationCitation].
 //
 // Use the [BetaCitationsDeltaCitationUnion.AsAny] method to switch on the variant.
 //
@@ -605,37 +588,40 @@ type BetaCitationsDeltaCitationUnion struct {
 	// This field is from variant [BetaCitationCharLocation].
 	StartCharIndex int64 `json:"start_char_index"`
 	// Any of "char_location", "page_location", "content_block_location",
-	// "web_search_result_location".
+	// "web_search_result_location", "search_result_location".
 	Type string `json:"type"`
 	// This field is from variant [BetaCitationPageLocation].
 	EndPageNumber int64 `json:"end_page_number"`
 	// This field is from variant [BetaCitationPageLocation].
 	StartPageNumber int64 `json:"start_page_number"`
-	// This field is from variant [BetaCitationContentBlockLocation].
-	EndBlockIndex int64 `json:"end_block_index"`
-	// This field is from variant [BetaCitationContentBlockLocation].
+	EndBlockIndex   int64 `json:"end_block_index"`
 	StartBlockIndex int64 `json:"start_block_index"`
 	// This field is from variant [BetaCitationsWebSearchResultLocation].
 	EncryptedIndex string `json:"encrypted_index"`
+	Title          string `json:"title"`
 	// This field is from variant [BetaCitationsWebSearchResultLocation].
-	Title string `json:"title"`
-	// This field is from variant [BetaCitationsWebSearchResultLocation].
-	URL  string `json:"url"`
-	JSON struct {
-		CitedText       respjson.Field
-		DocumentIndex   respjson.Field
-		DocumentTitle   respjson.Field
-		EndCharIndex    respjson.Field
-		StartCharIndex  respjson.Field
-		Type            respjson.Field
-		EndPageNumber   respjson.Field
-		StartPageNumber respjson.Field
-		EndBlockIndex   respjson.Field
-		StartBlockIndex respjson.Field
-		EncryptedIndex  respjson.Field
-		Title           respjson.Field
-		URL             respjson.Field
-		raw             string
+	URL string `json:"url"`
+	// This field is from variant [BetaSearchResultLocationCitation].
+	SearchResultIndex int64 `json:"search_result_index"`
+	// This field is from variant [BetaSearchResultLocationCitation].
+	Source string `json:"source"`
+	JSON   struct {
+		CitedText         respjson.Field
+		DocumentIndex     respjson.Field
+		DocumentTitle     respjson.Field
+		EndCharIndex      respjson.Field
+		StartCharIndex    respjson.Field
+		Type              respjson.Field
+		EndPageNumber     respjson.Field
+		StartPageNumber   respjson.Field
+		EndBlockIndex     respjson.Field
+		StartBlockIndex   respjson.Field
+		EncryptedIndex    respjson.Field
+		Title             respjson.Field
+		URL               respjson.Field
+		SearchResultIndex respjson.Field
+		Source            respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -650,6 +636,7 @@ func (BetaCitationCharLocation) implBetaCitationsDeltaCitationUnion()           
 func (BetaCitationPageLocation) implBetaCitationsDeltaCitationUnion()             {}
 func (BetaCitationContentBlockLocation) implBetaCitationsDeltaCitationUnion()     {}
 func (BetaCitationsWebSearchResultLocation) implBetaCitationsDeltaCitationUnion() {}
+func (BetaSearchResultLocationCitation) implBetaCitationsDeltaCitationUnion()     {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -658,6 +645,7 @@ func (BetaCitationsWebSearchResultLocation) implBetaCitationsDeltaCitationUnion(
 //	case anthropic.BetaCitationPageLocation:
 //	case anthropic.BetaCitationContentBlockLocation:
 //	case anthropic.BetaCitationsWebSearchResultLocation:
+//	case anthropic.BetaSearchResultLocationCitation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -671,6 +659,8 @@ func (u BetaCitationsDeltaCitationUnion) AsAny() anyBetaCitationsDeltaCitation {
 		return u.AsContentBlockLocation()
 	case "web_search_result_location":
 		return u.AsWebSearchResultLocation()
+	case "search_result_location":
+		return u.AsSearchResultLocation()
 	}
 	return nil
 }
@@ -691,6 +681,11 @@ func (u BetaCitationsDeltaCitationUnion) AsContentBlockLocation() (v BetaCitatio
 }
 
 func (u BetaCitationsDeltaCitationUnion) AsWebSearchResultLocation() (v BetaCitationsWebSearchResultLocation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaCitationsDeltaCitationUnion) AsSearchResultLocation() (v BetaSearchResultLocationCitation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1106,10 +1101,10 @@ func (r *BetaContainerUploadBlockParam) UnmarshalJSON(data []byte) error {
 }
 
 // BetaContentBlockUnion contains all possible properties and values from
-// [BetaTextBlock], [BetaToolUseBlock], [BetaServerToolUseBlock],
-// [BetaWebSearchToolResultBlock], [BetaCodeExecutionToolResultBlock],
-// [BetaMCPToolUseBlock], [BetaMCPToolResultBlock], [BetaContainerUploadBlock],
-// [BetaThinkingBlock], [BetaRedactedThinkingBlock].
+// [BetaTextBlock], [BetaThinkingBlock], [BetaRedactedThinkingBlock],
+// [BetaToolUseBlock], [BetaServerToolUseBlock], [BetaWebSearchToolResultBlock],
+// [BetaCodeExecutionToolResultBlock], [BetaMCPToolUseBlock],
+// [BetaMCPToolResultBlock], [BetaContainerUploadBlock].
 //
 // Use the [BetaContentBlockUnion.AsAny] method to switch on the variant.
 //
@@ -1119,10 +1114,16 @@ type BetaContentBlockUnion struct {
 	Citations []BetaTextCitationUnion `json:"citations"`
 	// This field is from variant [BetaTextBlock].
 	Text string `json:"text"`
-	// Any of "text", "tool_use", "server_tool_use", "web_search_tool_result",
-	// "code_execution_tool_result", "mcp_tool_use", "mcp_tool_result",
-	// "container_upload", "thinking", "redacted_thinking".
-	Type  string          `json:"type"`
+	// Any of "text", "thinking", "redacted_thinking", "tool_use", "server_tool_use",
+	// "web_search_tool_result", "code_execution_tool_result", "mcp_tool_use",
+	// "mcp_tool_result", "container_upload".
+	Type string `json:"type"`
+	// This field is from variant [BetaThinkingBlock].
+	Signature string `json:"signature"`
+	// This field is from variant [BetaThinkingBlock].
+	Thinking string `json:"thinking"`
+	// This field is from variant [BetaRedactedThinkingBlock].
+	Data  string          `json:"data"`
 	ID    string          `json:"id"`
 	Input json.RawMessage `json:"input"`
 	Name  string          `json:"name"`
@@ -1137,16 +1138,13 @@ type BetaContentBlockUnion struct {
 	IsError bool `json:"is_error"`
 	// This field is from variant [BetaContainerUploadBlock].
 	FileID string `json:"file_id"`
-	// This field is from variant [BetaThinkingBlock].
-	Signature string `json:"signature"`
-	// This field is from variant [BetaThinkingBlock].
-	Thinking string `json:"thinking"`
-	// This field is from variant [BetaRedactedThinkingBlock].
-	Data string `json:"data"`
-	JSON struct {
+	JSON   struct {
 		Citations  respjson.Field
 		Text       respjson.Field
 		Type       respjson.Field
+		Signature  respjson.Field
+		Thinking   respjson.Field
+		Data       respjson.Field
 		ID         respjson.Field
 		Input      respjson.Field
 		Name       respjson.Field
@@ -1155,9 +1153,6 @@ type BetaContentBlockUnion struct {
 		ServerName respjson.Field
 		IsError    respjson.Field
 		FileID     respjson.Field
-		Signature  respjson.Field
-		Thinking   respjson.Field
-		Data       respjson.Field
 		raw        string
 	} `json:"-"`
 }
@@ -1187,6 +1182,8 @@ type anyBetaContentBlock interface {
 }
 
 func (BetaTextBlock) implBetaContentBlockUnion()                    {}
+func (BetaThinkingBlock) implBetaContentBlockUnion()                {}
+func (BetaRedactedThinkingBlock) implBetaContentBlockUnion()        {}
 func (BetaToolUseBlock) implBetaContentBlockUnion()                 {}
 func (BetaServerToolUseBlock) implBetaContentBlockUnion()           {}
 func (BetaWebSearchToolResultBlock) implBetaContentBlockUnion()     {}
@@ -1194,13 +1191,13 @@ func (BetaCodeExecutionToolResultBlock) implBetaContentBlockUnion() {}
 func (BetaMCPToolUseBlock) implBetaContentBlockUnion()              {}
 func (BetaMCPToolResultBlock) implBetaContentBlockUnion()           {}
 func (BetaContainerUploadBlock) implBetaContentBlockUnion()         {}
-func (BetaThinkingBlock) implBetaContentBlockUnion()                {}
-func (BetaRedactedThinkingBlock) implBetaContentBlockUnion()        {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaContentBlockUnion.AsAny().(type) {
 //	case anthropic.BetaTextBlock:
+//	case anthropic.BetaThinkingBlock:
+//	case anthropic.BetaRedactedThinkingBlock:
 //	case anthropic.BetaToolUseBlock:
 //	case anthropic.BetaServerToolUseBlock:
 //	case anthropic.BetaWebSearchToolResultBlock:
@@ -1208,8 +1205,6 @@ func (BetaRedactedThinkingBlock) implBetaContentBlockUnion()        {}
 //	case anthropic.BetaMCPToolUseBlock:
 //	case anthropic.BetaMCPToolResultBlock:
 //	case anthropic.BetaContainerUploadBlock:
-//	case anthropic.BetaThinkingBlock:
-//	case anthropic.BetaRedactedThinkingBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1217,6 +1212,10 @@ func (u BetaContentBlockUnion) AsAny() anyBetaContentBlock {
 	switch u.Type {
 	case "text":
 		return u.AsText()
+	case "thinking":
+		return u.AsThinking()
+	case "redacted_thinking":
+		return u.AsRedactedThinking()
 	case "tool_use":
 		return u.AsToolUse()
 	case "server_tool_use":
@@ -1231,15 +1230,21 @@ func (u BetaContentBlockUnion) AsAny() anyBetaContentBlock {
 		return u.AsMCPToolResult()
 	case "container_upload":
 		return u.AsContainerUpload()
-	case "thinking":
-		return u.AsThinking()
-	case "redacted_thinking":
-		return u.AsRedactedThinking()
 	}
 	return nil
 }
 
 func (u BetaContentBlockUnion) AsText() (v BetaTextBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaContentBlockUnion) AsThinking() (v BetaThinkingBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaContentBlockUnion) AsRedactedThinking() (v BetaRedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1275,16 +1280,6 @@ func (u BetaContentBlockUnion) AsMCPToolResult() (v BetaMCPToolResultBlock) {
 }
 
 func (u BetaContentBlockUnion) AsContainerUpload() (v BetaContainerUploadBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaContentBlockUnion) AsThinking() (v BetaThinkingBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaContentBlockUnion) AsRedactedThinking() (v BetaRedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1343,6 +1338,81 @@ func (r *BetaContentBlockUnionContent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func NewBetaTextBlock(text string) BetaContentBlockParamUnion {
+	var variant BetaTextBlockParam
+	variant.Text = text
+	return BetaContentBlockParamUnion{OfText: &variant}
+}
+
+func NewBetaImageBlock[
+T BetaBase64ImageSourceParam | BetaURLImageSourceParam | BetaFileImageSourceParam,
+](source T) BetaContentBlockParamUnion {
+	var image BetaImageBlockParam
+	switch v := any(source).(type) {
+	case BetaBase64ImageSourceParam:
+		image.Source.OfBase64 = &v
+	case BetaURLImageSourceParam:
+		image.Source.OfURL = &v
+	case BetaFileImageSourceParam:
+		image.Source.OfFile = &v
+	}
+	return BetaContentBlockParamUnion{OfImage: &image}
+}
+
+func NewBetaDocumentBlock[
+T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam | BetaFileDocumentSourceParam,
+](source T) BetaContentBlockParamUnion {
+	var document BetaRequestDocumentBlockParam
+	switch v := any(source).(type) {
+	case BetaBase64PDFSourceParam:
+		document.Source.OfBase64 = &v
+	case BetaPlainTextSourceParam:
+		document.Source.OfText = &v
+	case BetaContentBlockSourceParam:
+		document.Source.OfContent = &v
+	case BetaURLPDFSourceParam:
+		document.Source.OfURL = &v
+	case BetaFileDocumentSourceParam:
+		document.Source.OfFile = &v
+	}
+	return BetaContentBlockParamUnion{OfDocument: &document}
+}
+
+func NewBetaSearchResultBlock(content []BetaTextBlockParam, source string, title string) BetaContentBlockParamUnion {
+	var searchResult BetaSearchResultBlockParam
+	searchResult.Content = content
+	searchResult.Source = source
+	searchResult.Title = title
+	return BetaContentBlockParamUnion{OfSearchResult: &searchResult}
+}
+
+func NewBetaThinkingBlock(signature string, thinking string) BetaContentBlockParamUnion {
+	var variant BetaThinkingBlockParam
+	variant.Signature = signature
+	variant.Thinking = thinking
+	return BetaContentBlockParamUnion{OfThinking: &variant}
+}
+
+func NewBetaRedactedThinkingBlock(data string) BetaContentBlockParamUnion {
+	var redactedThinking BetaRedactedThinkingBlockParam
+	redactedThinking.Data = data
+	return BetaContentBlockParamUnion{OfRedactedThinking: &redactedThinking}
+}
+
+func NewBetaToolUseBlock(id string, input any, name string) BetaContentBlockParamUnion {
+	var toolUse BetaToolUseBlockParam
+	toolUse.ID = id
+	toolUse.Input = input
+	toolUse.Name = name
+	return BetaContentBlockParamUnion{OfToolUse: &toolUse}
+}
+
+func NewBetaToolResultBlock(toolUseID string) BetaContentBlockParamUnion {
+	var toolResult BetaToolResultBlockParam
+	toolResult.ToolUseID = toolUseID
+	return BetaContentBlockParamUnion{OfToolResult: &toolResult}
+}
+
 func NewBetaServerToolUseBlock(id string, input any, name BetaServerToolUseBlockParamName) BetaContentBlockParamUnion {
 	var serverToolUse BetaServerToolUseBlockParam
 	serverToolUse.ID = id
@@ -1352,7 +1422,7 @@ func NewBetaServerToolUseBlock(id string, input any, name BetaServerToolUseBlock
 }
 
 func NewBetaWebSearchToolResultBlock[
-	T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
+T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var webSearchToolResult BetaWebSearchToolResultBlockParam
 	switch v := any(content).(type) {
@@ -1366,7 +1436,7 @@ func NewBetaWebSearchToolResultBlock[
 }
 
 func NewBetaCodeExecutionToolResultBlock[
-	T BetaCodeExecutionToolResultErrorParam | BetaCodeExecutionResultBlockParam,
+T BetaCodeExecutionToolResultErrorParam | BetaCodeExecutionResultBlockParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var codeExecutionToolResult BetaCodeExecutionToolResultBlockParam
 	switch v := any(content).(type) {
@@ -1385,78 +1455,6 @@ func NewBetaMCPToolResultBlock(toolUseID string) BetaContentBlockParamUnion {
 	return BetaContentBlockParamUnion{OfMCPToolResult: &mcpToolResult}
 }
 
-func NewBetaTextBlock(text string) BetaContentBlockParamUnion {
-	var variant BetaTextBlockParam
-	variant.Text = text
-	return BetaContentBlockParamUnion{OfText: &variant}
-}
-
-func NewBetaImageBlock[
-	T BetaBase64ImageSourceParam | BetaURLImageSourceParam | BetaFileImageSourceParam,
-](source T) BetaContentBlockParamUnion {
-	var image BetaImageBlockParam
-	switch v := any(source).(type) {
-	case BetaBase64ImageSourceParam:
-		image.Source.OfBase64 = &v
-	case BetaURLImageSourceParam:
-		image.Source.OfURL = &v
-	case BetaFileImageSourceParam:
-		image.Source.OfFile = &v
-	}
-	return BetaContentBlockParamUnion{OfImage: &image}
-}
-
-func NewBetaToolUseBlock(id string, input any, name string) BetaContentBlockParamUnion {
-	var toolUse BetaToolUseBlockParam
-	toolUse.ID = id
-	toolUse.Input = input
-	toolUse.Name = name
-	return BetaContentBlockParamUnion{OfToolUse: &toolUse}
-}
-
-func NewBetaToolResultBlock(toolUseID string, content string, isError bool) BetaContentBlockParamUnion {
-	toolResult := BetaToolResultBlockParam{
-		Content: []BetaToolResultBlockParamContentUnion{
-			{OfText: &BetaTextBlockParam{Text: content}},
-		},
-		ToolUseID: toolUseID,
-		IsError:   Bool(isError),
-	}
-	return BetaContentBlockParamUnion{OfToolResult: &toolResult}
-}
-
-func NewBetaDocumentBlock[
-	T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam | BetaFileDocumentSourceParam,
-](source T) BetaContentBlockParamUnion {
-	var document BetaRequestDocumentBlockParam
-	switch v := any(source).(type) {
-	case BetaBase64PDFSourceParam:
-		document.Source.OfBase64 = &v
-	case BetaPlainTextSourceParam:
-		document.Source.OfText = &v
-	case BetaContentBlockSourceParam:
-		document.Source.OfContent = &v
-	case BetaURLPDFSourceParam:
-		document.Source.OfURL = &v
-	case BetaFileDocumentSourceParam:
-		document.Source.OfFile = &v
-	}
-	return BetaContentBlockParamUnion{OfDocument: &document}
-}
-
-func NewBetaThinkingBlock(signature string, thinking string) BetaContentBlockParamUnion {
-	var variant BetaThinkingBlockParam
-	variant.Signature = signature
-	variant.Thinking = thinking
-	return BetaContentBlockParamUnion{OfThinking: &variant}
-}
-
-func NewBetaRedactedThinkingBlock(data string) BetaContentBlockParamUnion {
-	var redactedThinking BetaRedactedThinkingBlockParam
-	redactedThinking.Data = data
-	return BetaContentBlockParamUnion{OfRedactedThinking: &redactedThinking}
-}
-
 func NewBetaContainerUploadBlock(fileID string) BetaContentBlockParamUnion {
 	var containerUpload BetaContainerUploadBlockParam
 	containerUpload.FileID = fileID
@@ -1467,35 +1465,37 @@ func NewBetaContainerUploadBlock(fileID string) BetaContentBlockParamUnion {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaContentBlockParamUnion struct {
+	OfText                    *BetaTextBlockParam                    `json:",omitzero,inline"`
+	OfImage                   *BetaImageBlockParam                   `json:",omitzero,inline"`
+	OfDocument                *BetaRequestDocumentBlockParam         `json:",omitzero,inline"`
+	OfSearchResult            *BetaSearchResultBlockParam            `json:",omitzero,inline"`
+	OfThinking                *BetaThinkingBlockParam                `json:",omitzero,inline"`
+	OfRedactedThinking        *BetaRedactedThinkingBlockParam        `json:",omitzero,inline"`
+	OfToolUse                 *BetaToolUseBlockParam                 `json:",omitzero,inline"`
+	OfToolResult              *BetaToolResultBlockParam              `json:",omitzero,inline"`
 	OfServerToolUse           *BetaServerToolUseBlockParam           `json:",omitzero,inline"`
 	OfWebSearchToolResult     *BetaWebSearchToolResultBlockParam     `json:",omitzero,inline"`
 	OfCodeExecutionToolResult *BetaCodeExecutionToolResultBlockParam `json:",omitzero,inline"`
 	OfMCPToolUse              *BetaMCPToolUseBlockParam              `json:",omitzero,inline"`
 	OfMCPToolResult           *BetaRequestMCPToolResultBlockParam    `json:",omitzero,inline"`
-	OfText                    *BetaTextBlockParam                    `json:",omitzero,inline"`
-	OfImage                   *BetaImageBlockParam                   `json:",omitzero,inline"`
-	OfToolUse                 *BetaToolUseBlockParam                 `json:",omitzero,inline"`
-	OfToolResult              *BetaToolResultBlockParam              `json:",omitzero,inline"`
-	OfDocument                *BetaRequestDocumentBlockParam         `json:",omitzero,inline"`
-	OfThinking                *BetaThinkingBlockParam                `json:",omitzero,inline"`
-	OfRedactedThinking        *BetaRedactedThinkingBlockParam        `json:",omitzero,inline"`
 	OfContainerUpload         *BetaContainerUploadBlockParam         `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaContentBlockParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfServerToolUse,
+	return param.MarshalUnion(u, u.OfText,
+		u.OfImage,
+		u.OfDocument,
+		u.OfSearchResult,
+		u.OfThinking,
+		u.OfRedactedThinking,
+		u.OfToolUse,
+		u.OfToolResult,
+		u.OfServerToolUse,
 		u.OfWebSearchToolResult,
 		u.OfCodeExecutionToolResult,
 		u.OfMCPToolUse,
 		u.OfMCPToolResult,
-		u.OfText,
-		u.OfImage,
-		u.OfToolUse,
-		u.OfToolResult,
-		u.OfDocument,
-		u.OfThinking,
-		u.OfRedactedThinking,
 		u.OfContainerUpload)
 }
 func (u *BetaContentBlockParamUnion) UnmarshalJSON(data []byte) error {
@@ -1503,7 +1503,23 @@ func (u *BetaContentBlockParamUnion) UnmarshalJSON(data []byte) error {
 }
 
 func (u *BetaContentBlockParamUnion) asAny() any {
-	if !param.IsOmitted(u.OfServerToolUse) {
+	if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfImage) {
+		return u.OfImage
+	} else if !param.IsOmitted(u.OfDocument) {
+		return u.OfDocument
+	} else if !param.IsOmitted(u.OfSearchResult) {
+		return u.OfSearchResult
+	} else if !param.IsOmitted(u.OfThinking) {
+		return u.OfThinking
+	} else if !param.IsOmitted(u.OfRedactedThinking) {
+		return u.OfRedactedThinking
+	} else if !param.IsOmitted(u.OfToolUse) {
+		return u.OfToolUse
+	} else if !param.IsOmitted(u.OfToolResult) {
+		return u.OfToolResult
+	} else if !param.IsOmitted(u.OfServerToolUse) {
 		return u.OfServerToolUse
 	} else if !param.IsOmitted(u.OfWebSearchToolResult) {
 		return u.OfWebSearchToolResult
@@ -1513,30 +1529,8 @@ func (u *BetaContentBlockParamUnion) asAny() any {
 		return u.OfMCPToolUse
 	} else if !param.IsOmitted(u.OfMCPToolResult) {
 		return u.OfMCPToolResult
-	} else if !param.IsOmitted(u.OfText) {
-		return u.OfText
-	} else if !param.IsOmitted(u.OfImage) {
-		return u.OfImage
-	} else if !param.IsOmitted(u.OfToolUse) {
-		return u.OfToolUse
-	} else if !param.IsOmitted(u.OfToolResult) {
-		return u.OfToolResult
-	} else if !param.IsOmitted(u.OfDocument) {
-		return u.OfDocument
-	} else if !param.IsOmitted(u.OfThinking) {
-		return u.OfThinking
-	} else if !param.IsOmitted(u.OfRedactedThinking) {
-		return u.OfRedactedThinking
 	} else if !param.IsOmitted(u.OfContainerUpload) {
 		return u.OfContainerUpload
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaContentBlockParamUnion) GetServerName() *string {
-	if vt := u.OfMCPToolUse; vt != nil {
-		return &vt.ServerName
 	}
 	return nil
 }
@@ -1553,14 +1547,6 @@ func (u BetaContentBlockParamUnion) GetText() *string {
 func (u BetaContentBlockParamUnion) GetContext() *string {
 	if vt := u.OfDocument; vt != nil && vt.Context.Valid() {
 		return &vt.Context.Value
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaContentBlockParamUnion) GetTitle() *string {
-	if vt := u.OfDocument; vt != nil && vt.Title.Valid() {
-		return &vt.Title.Value
 	}
 	return nil
 }
@@ -1590,6 +1576,14 @@ func (u BetaContentBlockParamUnion) GetData() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u BetaContentBlockParamUnion) GetServerName() *string {
+	if vt := u.OfMCPToolUse; vt != nil {
+		return &vt.ServerName
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetFileID() *string {
 	if vt := u.OfContainerUpload; vt != nil {
 		return &vt.FileID
@@ -1598,12 +1592,56 @@ func (u BetaContentBlockParamUnion) GetFileID() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u BetaContentBlockParamUnion) GetType() *string {
+	if vt := u.OfText; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfImage; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfDocument; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfSearchResult; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfThinking; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfRedactedThinking; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfToolUse; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfToolResult; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfServerToolUse; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfCodeExecutionToolResult; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfMCPToolUse; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfMCPToolResult; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfContainerUpload; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaContentBlockParamUnion) GetTitle() *string {
+	if vt := u.OfDocument; vt != nil && vt.Title.Valid() {
+		return &vt.Title.Value
+	} else if vt := u.OfSearchResult; vt != nil {
+		return (*string)(&vt.Title)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetID() *string {
-	if vt := u.OfServerToolUse; vt != nil {
+	if vt := u.OfToolUse; vt != nil {
+		return (*string)(&vt.ID)
+	} else if vt := u.OfServerToolUse; vt != nil {
 		return (*string)(&vt.ID)
 	} else if vt := u.OfMCPToolUse; vt != nil {
-		return (*string)(&vt.ID)
-	} else if vt := u.OfToolUse; vt != nil {
 		return (*string)(&vt.ID)
 	}
 	return nil
@@ -1611,57 +1649,25 @@ func (u BetaContentBlockParamUnion) GetID() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetName() *string {
-	if vt := u.OfServerToolUse; vt != nil {
+	if vt := u.OfToolUse; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfServerToolUse; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfMCPToolUse; vt != nil {
 		return (*string)(&vt.Name)
-	} else if vt := u.OfToolUse; vt != nil {
-		return (*string)(&vt.Name)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaContentBlockParamUnion) GetType() *string {
-	if vt := u.OfServerToolUse; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfWebSearchToolResult; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfCodeExecutionToolResult; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfMCPToolUse; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfMCPToolResult; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfText; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfImage; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfToolUse; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfToolResult; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfDocument; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfThinking; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfRedactedThinking; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfContainerUpload; vt != nil {
-		return (*string)(&vt.Type)
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetToolUseID() *string {
-	if vt := u.OfWebSearchToolResult; vt != nil {
+	if vt := u.OfToolResult; vt != nil {
+		return (*string)(&vt.ToolUseID)
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
 		return (*string)(&vt.ToolUseID)
 	} else if vt := u.OfCodeExecutionToolResult; vt != nil {
 		return (*string)(&vt.ToolUseID)
 	} else if vt := u.OfMCPToolResult; vt != nil {
-		return (*string)(&vt.ToolUseID)
-	} else if vt := u.OfToolResult; vt != nil {
 		return (*string)(&vt.ToolUseID)
 	}
 	return nil
@@ -1669,29 +1675,29 @@ func (u BetaContentBlockParamUnion) GetToolUseID() *string {
 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetIsError() *bool {
-	if vt := u.OfMCPToolResult; vt != nil && vt.IsError.Valid() {
+	if vt := u.OfToolResult; vt != nil && vt.IsError.Valid() {
 		return &vt.IsError.Value
-	} else if vt := u.OfToolResult; vt != nil && vt.IsError.Valid() {
+	} else if vt := u.OfMCPToolResult; vt != nil && vt.IsError.Valid() {
 		return &vt.IsError.Value
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's Input property, if present.
-func (u BetaContentBlockParamUnion) GetInput() *any {
-	if vt := u.OfServerToolUse; vt != nil {
-		return &vt.Input
-	} else if vt := u.OfMCPToolUse; vt != nil {
-		return &vt.Input
-	} else if vt := u.OfToolUse; vt != nil {
-		return &vt.Input
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's CacheControl property, if present.
 func (u BetaContentBlockParamUnion) GetCacheControl() *BetaCacheControlEphemeralParam {
-	if vt := u.OfServerToolUse; vt != nil {
+	if vt := u.OfText; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfImage; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfDocument; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfSearchResult; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfToolUse; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfToolResult; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfServerToolUse; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebSearchToolResult; vt != nil {
 		return &vt.CacheControl
@@ -1701,115 +1707,8 @@ func (u BetaContentBlockParamUnion) GetCacheControl() *BetaCacheControlEphemeral
 		return &vt.CacheControl
 	} else if vt := u.OfMCPToolResult; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfText; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfImage; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfToolUse; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfToolResult; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfDocument; vt != nil {
-		return &vt.CacheControl
 	} else if vt := u.OfContainerUpload; vt != nil {
 		return &vt.CacheControl
-	}
-	return nil
-}
-
-// Returns a subunion which exports methods to access subproperties
-//
-// Or use AsAny() to get the underlying value
-func (u BetaContentBlockParamUnion) GetContent() (res betaContentBlockParamUnionContent) {
-	if vt := u.OfWebSearchToolResult; vt != nil {
-		res.any = vt.Content.asAny()
-	} else if vt := u.OfCodeExecutionToolResult; vt != nil {
-		res.any = vt.Content.asAny()
-	} else if vt := u.OfMCPToolResult; vt != nil {
-		res.any = vt.Content.asAny()
-	} else if vt := u.OfToolResult; vt != nil {
-		res.any = &vt.Content
-	}
-	return
-}
-
-// Can have the runtime types [*[]BetaWebSearchResultBlockParam],
-// [*BetaCodeExecutionToolResultErrorParam], [*BetaCodeExecutionResultBlockParam],
-// [*string], [_[]BetaTextBlockParam], [_[]BetaToolResultBlockParamContentUnion]
-type betaContentBlockParamUnionContent struct{ any }
-
-// Use the following switch statement to get the type of the union:
-//
-//	switch u.AsAny().(type) {
-//	case *[]anthropic.BetaWebSearchResultBlockParam:
-//	case *anthropic.BetaCodeExecutionToolResultErrorParam:
-//	case *anthropic.BetaCodeExecutionResultBlockParam:
-//	case *string:
-//	case *[]anthropic.BetaTextBlockParam:
-//	case *[]anthropic.BetaToolResultBlockParamContentUnion:
-//	default:
-//	    fmt.Errorf("not present")
-//	}
-func (u betaContentBlockParamUnionContent) AsAny() any { return u.any }
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u betaContentBlockParamUnionContent) GetContent() []BetaCodeExecutionOutputBlockParam {
-	switch vt := u.any.(type) {
-	case *BetaCodeExecutionToolResultBlockParamContentUnion:
-		return vt.GetContent()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u betaContentBlockParamUnionContent) GetReturnCode() *int64 {
-	switch vt := u.any.(type) {
-	case *BetaCodeExecutionToolResultBlockParamContentUnion:
-		return vt.GetReturnCode()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u betaContentBlockParamUnionContent) GetStderr() *string {
-	switch vt := u.any.(type) {
-	case *BetaCodeExecutionToolResultBlockParamContentUnion:
-		return vt.GetStderr()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u betaContentBlockParamUnionContent) GetStdout() *string {
-	switch vt := u.any.(type) {
-	case *BetaCodeExecutionToolResultBlockParamContentUnion:
-		return vt.GetStdout()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u betaContentBlockParamUnionContent) GetErrorCode() *string {
-	switch vt := u.any.(type) {
-	case *BetaWebSearchToolResultBlockParamContentUnion:
-		if vt := vt.OfError; vt != nil {
-			return (*string)(&vt.ErrorCode)
-		}
-	case *BetaCodeExecutionToolResultBlockParamContentUnion:
-		return vt.GetErrorCode()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u betaContentBlockParamUnionContent) GetType() *string {
-	switch vt := u.any.(type) {
-	case *BetaWebSearchToolResultBlockParamContentUnion:
-		if vt := vt.OfError; vt != nil {
-			return (*string)(&vt.Type)
-		}
-	case *BetaCodeExecutionToolResultBlockParamContentUnion:
-		return vt.GetType()
 	}
 	return nil
 }
@@ -1821,6 +1720,8 @@ func (u BetaContentBlockParamUnion) GetCitations() (res betaContentBlockParamUni
 	if vt := u.OfText; vt != nil {
 		res.any = &vt.Citations
 	} else if vt := u.OfDocument; vt != nil {
+		res.any = &vt.Citations
+	} else if vt := u.OfSearchResult; vt != nil {
 		res.any = &vt.Citations
 	}
 	return
@@ -1840,6 +1741,15 @@ type betaContentBlockParamUnionCitations struct{ any }
 //	}
 func (u betaContentBlockParamUnionCitations) AsAny() any { return u.any }
 
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContentBlockParamUnionCitations) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BetaCitationsConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
 // Returns a subunion which exports methods to access subproperties
 //
 // Or use AsAny() to get the underlying value
@@ -1848,6 +1758,8 @@ func (u BetaContentBlockParamUnion) GetSource() (res betaContentBlockParamUnionS
 		res.any = vt.Source.asAny()
 	} else if vt := u.OfDocument; vt != nil {
 		res.any = vt.Source.asAny()
+	} else if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Source
 	}
 	return
 }
@@ -1856,7 +1768,7 @@ func (u BetaContentBlockParamUnion) GetSource() (res betaContentBlockParamUnionS
 // [*BetaURLImageSourceParam], [*BetaFileImageSourceParam],
 // [*BetaBase64PDFSourceParam], [*BetaPlainTextSourceParam],
 // [*BetaContentBlockSourceParam], [*BetaURLPDFSourceParam],
-// [*BetaFileDocumentSourceParam]
+// [*BetaFileDocumentSourceParam], [*string]
 type betaContentBlockParamUnionSource struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -1870,6 +1782,7 @@ type betaContentBlockParamUnionSource struct{ any }
 //	case *anthropic.BetaContentBlockSourceParam:
 //	case *anthropic.BetaURLPDFSourceParam:
 //	case *anthropic.BetaFileDocumentSourceParam:
+//	case *string:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -1939,21 +1852,134 @@ func (u betaContentBlockParamUnionSource) GetFileID() *string {
 	return nil
 }
 
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u BetaContentBlockParamUnion) GetContent() (res betaContentBlockParamUnionContent) {
+	if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Content
+	} else if vt := u.OfToolResult; vt != nil {
+		res.any = &vt.Content
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
+		res.any = vt.Content.asAny()
+	} else if vt := u.OfCodeExecutionToolResult; vt != nil {
+		res.any = vt.Content.asAny()
+	} else if vt := u.OfMCPToolResult; vt != nil {
+		res.any = vt.Content.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [_[]BetaTextBlockParam],
+// [_[]BetaToolResultBlockParamContentUnion], [*[]BetaWebSearchResultBlockParam],
+// [*BetaCodeExecutionToolResultErrorParam], [*BetaCodeExecutionResultBlockParam],
+// [*string]
+type betaContentBlockParamUnionContent struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *[]anthropic.BetaTextBlockParam:
+//	case *[]anthropic.BetaToolResultBlockParamContentUnion:
+//	case *[]anthropic.BetaWebSearchResultBlockParam:
+//	case *anthropic.BetaCodeExecutionToolResultErrorParam:
+//	case *anthropic.BetaCodeExecutionResultBlockParam:
+//	case *string:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u betaContentBlockParamUnionContent) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContentBlockParamUnionContent) GetContent() []BetaCodeExecutionOutputBlockParam {
+	switch vt := u.any.(type) {
+	case *BetaCodeExecutionToolResultBlockParamContentUnion:
+		return vt.GetContent()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContentBlockParamUnionContent) GetReturnCode() *int64 {
+	switch vt := u.any.(type) {
+	case *BetaCodeExecutionToolResultBlockParamContentUnion:
+		return vt.GetReturnCode()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContentBlockParamUnionContent) GetStderr() *string {
+	switch vt := u.any.(type) {
+	case *BetaCodeExecutionToolResultBlockParamContentUnion:
+		return vt.GetStderr()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContentBlockParamUnionContent) GetStdout() *string {
+	switch vt := u.any.(type) {
+	case *BetaCodeExecutionToolResultBlockParamContentUnion:
+		return vt.GetStdout()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContentBlockParamUnionContent) GetErrorCode() *string {
+	switch vt := u.any.(type) {
+	case *BetaWebSearchToolResultBlockParamContentUnion:
+		if vt.OfError != nil {
+			return (*string)(&vt.OfError.ErrorCode)
+		}
+	case *BetaCodeExecutionToolResultBlockParamContentUnion:
+		return vt.GetErrorCode()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContentBlockParamUnionContent) GetType() *string {
+	switch vt := u.any.(type) {
+	case *BetaWebSearchToolResultBlockParamContentUnion:
+		if vt.OfError != nil {
+			return (*string)(&vt.OfError.Type)
+		}
+	case *BetaCodeExecutionToolResultBlockParamContentUnion:
+		return vt.GetType()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's Input property, if present.
+func (u BetaContentBlockParamUnion) GetInput() *any {
+	if vt := u.OfToolUse; vt != nil {
+		return &vt.Input
+	} else if vt := u.OfServerToolUse; vt != nil {
+		return &vt.Input
+	} else if vt := u.OfMCPToolUse; vt != nil {
+		return &vt.Input
+	}
+	return nil
+}
+
 func init() {
 	apijson.RegisterUnion[BetaContentBlockParamUnion](
 		"type",
+		apijson.Discriminator[BetaTextBlockParam]("text"),
+		apijson.Discriminator[BetaImageBlockParam]("image"),
+		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
+		apijson.Discriminator[BetaSearchResultBlockParam]("search_result"),
+		apijson.Discriminator[BetaThinkingBlockParam]("thinking"),
+		apijson.Discriminator[BetaRedactedThinkingBlockParam]("redacted_thinking"),
+		apijson.Discriminator[BetaToolUseBlockParam]("tool_use"),
+		apijson.Discriminator[BetaToolResultBlockParam]("tool_result"),
 		apijson.Discriminator[BetaServerToolUseBlockParam]("server_tool_use"),
 		apijson.Discriminator[BetaWebSearchToolResultBlockParam]("web_search_tool_result"),
 		apijson.Discriminator[BetaCodeExecutionToolResultBlockParam]("code_execution_tool_result"),
 		apijson.Discriminator[BetaMCPToolUseBlockParam]("mcp_tool_use"),
 		apijson.Discriminator[BetaRequestMCPToolResultBlockParam]("mcp_tool_result"),
-		apijson.Discriminator[BetaTextBlockParam]("text"),
-		apijson.Discriminator[BetaImageBlockParam]("image"),
-		apijson.Discriminator[BetaToolUseBlockParam]("tool_use"),
-		apijson.Discriminator[BetaToolResultBlockParam]("tool_result"),
-		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
-		apijson.Discriminator[BetaThinkingBlockParam]("thinking"),
-		apijson.Discriminator[BetaRedactedThinkingBlockParam]("redacted_thinking"),
 		apijson.Discriminator[BetaContainerUploadBlockParam]("container_upload"),
 	)
 }
@@ -2301,10 +2327,14 @@ type BetaMessage struct {
 	//
 	// This may be one the following values:
 	//
-	// - `"end_turn"`: the model reached a natural stopping point
-	// - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
-	// - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
-	// - `"tool_use"`: the model invoked one or more tools
+	//   - `"end_turn"`: the model reached a natural stopping point
+	//   - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
+	//   - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
+	//   - `"tool_use"`: the model invoked one or more tools
+	//   - `"pause_turn"`: we paused a long-running turn. You may provide the response
+	//     back as-is in a subsequent request to let the model continue.
+	//   - `"refusal"`: when streaming classifiers intervene to handle potential policy
+	//     violations
 	//
 	// In non-streaming mode this value is always non-null. In streaming mode, it is
 	// null in the `message_start` event and non-null otherwise.
@@ -2649,10 +2679,10 @@ func (r *BetaRawContentBlockStartEvent) UnmarshalJSON(data []byte) error {
 }
 
 // BetaRawContentBlockStartEventContentBlockUnion contains all possible properties
-// and values from [BetaTextBlock], [BetaToolUseBlock], [BetaServerToolUseBlock],
+// and values from [BetaTextBlock], [BetaThinkingBlock],
+// [BetaRedactedThinkingBlock], [BetaToolUseBlock], [BetaServerToolUseBlock],
 // [BetaWebSearchToolResultBlock], [BetaCodeExecutionToolResultBlock],
-// [BetaMCPToolUseBlock], [BetaMCPToolResultBlock], [BetaContainerUploadBlock],
-// [BetaThinkingBlock], [BetaRedactedThinkingBlock].
+// [BetaMCPToolUseBlock], [BetaMCPToolResultBlock], [BetaContainerUploadBlock].
 //
 // Use the [BetaRawContentBlockStartEventContentBlockUnion.AsAny] method to switch
 // on the variant.
@@ -2663,10 +2693,16 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	Citations []BetaTextCitationUnion `json:"citations"`
 	// This field is from variant [BetaTextBlock].
 	Text string `json:"text"`
-	// Any of "text", "tool_use", "server_tool_use", "web_search_tool_result",
-	// "code_execution_tool_result", "mcp_tool_use", "mcp_tool_result",
-	// "container_upload", "thinking", "redacted_thinking".
-	Type  string `json:"type"`
+	// Any of "text", "thinking", "redacted_thinking", "tool_use", "server_tool_use",
+	// "web_search_tool_result", "code_execution_tool_result", "mcp_tool_use",
+	// "mcp_tool_result", "container_upload".
+	Type string `json:"type"`
+	// This field is from variant [BetaThinkingBlock].
+	Signature string `json:"signature"`
+	// This field is from variant [BetaThinkingBlock].
+	Thinking string `json:"thinking"`
+	// This field is from variant [BetaRedactedThinkingBlock].
+	Data  string `json:"data"`
 	ID    string `json:"id"`
 	Input any    `json:"input"`
 	Name  string `json:"name"`
@@ -2681,16 +2717,13 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	IsError bool `json:"is_error"`
 	// This field is from variant [BetaContainerUploadBlock].
 	FileID string `json:"file_id"`
-	// This field is from variant [BetaThinkingBlock].
-	Signature string `json:"signature"`
-	// This field is from variant [BetaThinkingBlock].
-	Thinking string `json:"thinking"`
-	// This field is from variant [BetaRedactedThinkingBlock].
-	Data string `json:"data"`
-	JSON struct {
+	JSON   struct {
 		Citations  respjson.Field
 		Text       respjson.Field
 		Type       respjson.Field
+		Signature  respjson.Field
+		Thinking   respjson.Field
+		Data       respjson.Field
 		ID         respjson.Field
 		Input      respjson.Field
 		Name       respjson.Field
@@ -2699,9 +2732,6 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 		ServerName respjson.Field
 		IsError    respjson.Field
 		FileID     respjson.Field
-		Signature  respjson.Field
-		Thinking   respjson.Field
-		Data       respjson.Field
 		raw        string
 	} `json:"-"`
 }
@@ -2714,6 +2744,8 @@ type anyBetaRawContentBlockStartEventContentBlock interface {
 }
 
 func (BetaTextBlock) implBetaRawContentBlockStartEventContentBlockUnion()                    {}
+func (BetaThinkingBlock) implBetaRawContentBlockStartEventContentBlockUnion()                {}
+func (BetaRedactedThinkingBlock) implBetaRawContentBlockStartEventContentBlockUnion()        {}
 func (BetaToolUseBlock) implBetaRawContentBlockStartEventContentBlockUnion()                 {}
 func (BetaServerToolUseBlock) implBetaRawContentBlockStartEventContentBlockUnion()           {}
 func (BetaWebSearchToolResultBlock) implBetaRawContentBlockStartEventContentBlockUnion()     {}
@@ -2721,13 +2753,13 @@ func (BetaCodeExecutionToolResultBlock) implBetaRawContentBlockStartEventContent
 func (BetaMCPToolUseBlock) implBetaRawContentBlockStartEventContentBlockUnion()              {}
 func (BetaMCPToolResultBlock) implBetaRawContentBlockStartEventContentBlockUnion()           {}
 func (BetaContainerUploadBlock) implBetaRawContentBlockStartEventContentBlockUnion()         {}
-func (BetaThinkingBlock) implBetaRawContentBlockStartEventContentBlockUnion()                {}
-func (BetaRedactedThinkingBlock) implBetaRawContentBlockStartEventContentBlockUnion()        {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaRawContentBlockStartEventContentBlockUnion.AsAny().(type) {
 //	case anthropic.BetaTextBlock:
+//	case anthropic.BetaThinkingBlock:
+//	case anthropic.BetaRedactedThinkingBlock:
 //	case anthropic.BetaToolUseBlock:
 //	case anthropic.BetaServerToolUseBlock:
 //	case anthropic.BetaWebSearchToolResultBlock:
@@ -2735,8 +2767,6 @@ func (BetaRedactedThinkingBlock) implBetaRawContentBlockStartEventContentBlockUn
 //	case anthropic.BetaMCPToolUseBlock:
 //	case anthropic.BetaMCPToolResultBlock:
 //	case anthropic.BetaContainerUploadBlock:
-//	case anthropic.BetaThinkingBlock:
-//	case anthropic.BetaRedactedThinkingBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -2744,6 +2774,10 @@ func (u BetaRawContentBlockStartEventContentBlockUnion) AsAny() anyBetaRawConten
 	switch u.Type {
 	case "text":
 		return u.AsText()
+	case "thinking":
+		return u.AsThinking()
+	case "redacted_thinking":
+		return u.AsRedactedThinking()
 	case "tool_use":
 		return u.AsToolUse()
 	case "server_tool_use":
@@ -2758,15 +2792,21 @@ func (u BetaRawContentBlockStartEventContentBlockUnion) AsAny() anyBetaRawConten
 		return u.AsMCPToolResult()
 	case "container_upload":
 		return u.AsContainerUpload()
-	case "thinking":
-		return u.AsThinking()
-	case "redacted_thinking":
-		return u.AsRedactedThinking()
 	}
 	return nil
 }
 
 func (u BetaRawContentBlockStartEventContentBlockUnion) AsText() (v BetaTextBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaRawContentBlockStartEventContentBlockUnion) AsThinking() (v BetaThinkingBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaRawContentBlockStartEventContentBlockUnion) AsRedactedThinking() (v BetaRedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2802,16 +2842,6 @@ func (u BetaRawContentBlockStartEventContentBlockUnion) AsMCPToolResult() (v Bet
 }
 
 func (u BetaRawContentBlockStartEventContentBlockUnion) AsContainerUpload() (v BetaContainerUploadBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaRawContentBlockStartEventContentBlockUnion) AsThinking() (v BetaThinkingBlock) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaRawContentBlockStartEventContentBlockUnion) AsRedactedThinking() (v BetaRedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -3464,6 +3494,78 @@ func (u *BetaRequestMCPToolResultBlockParamContentUnion) asAny() any {
 	return nil
 }
 
+// The properties Content, Source, Title, Type are required.
+type BetaSearchResultBlockParam struct {
+	Content []BetaTextBlockParam `json:"content,omitzero,required"`
+	Source  string               `json:"source,required"`
+	Title   string               `json:"title,required"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	Citations    BetaCitationsConfigParam       `json:"citations,omitzero"`
+	// This field can be elided, and will marshal its zero value as "search_result".
+	Type constant.SearchResult `json:"type,required"`
+	paramObj
+}
+
+func (r BetaSearchResultBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaSearchResultBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaSearchResultBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaSearchResultLocationCitation struct {
+	CitedText         string                        `json:"cited_text,required"`
+	EndBlockIndex     int64                         `json:"end_block_index,required"`
+	SearchResultIndex int64                         `json:"search_result_index,required"`
+	Source            string                        `json:"source,required"`
+	StartBlockIndex   int64                         `json:"start_block_index,required"`
+	Title             string                        `json:"title,required"`
+	Type              constant.SearchResultLocation `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CitedText         respjson.Field
+		EndBlockIndex     respjson.Field
+		SearchResultIndex respjson.Field
+		Source            respjson.Field
+		StartBlockIndex   respjson.Field
+		Title             respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaSearchResultLocationCitation) RawJSON() string { return r.JSON.raw }
+func (r *BetaSearchResultLocationCitation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties CitedText, EndBlockIndex, SearchResultIndex, Source,
+// StartBlockIndex, Title, Type are required.
+type BetaSearchResultLocationCitationParam struct {
+	Title             param.Opt[string] `json:"title,omitzero,required"`
+	CitedText         string            `json:"cited_text,required"`
+	EndBlockIndex     int64             `json:"end_block_index,required"`
+	SearchResultIndex int64             `json:"search_result_index,required"`
+	Source            string            `json:"source,required"`
+	StartBlockIndex   int64             `json:"start_block_index,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "search_result_location".
+	Type constant.SearchResultLocation `json:"type,required"`
+	paramObj
+}
+
+func (r BetaSearchResultLocationCitationParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaSearchResultLocationCitationParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaSearchResultLocationCitationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaServerToolUsage struct {
 	// The number of web search tool requests.
 	WebSearchRequests int64 `json:"web_search_requests,required"`
@@ -3658,7 +3760,8 @@ func (r *BetaTextBlockParam) UnmarshalJSON(data []byte) error {
 
 // BetaTextCitationUnion contains all possible properties and values from
 // [BetaCitationCharLocation], [BetaCitationPageLocation],
-// [BetaCitationContentBlockLocation], [BetaCitationsWebSearchResultLocation].
+// [BetaCitationContentBlockLocation], [BetaCitationsWebSearchResultLocation],
+// [BetaSearchResultLocationCitation].
 //
 // Use the [BetaTextCitationUnion.AsAny] method to switch on the variant.
 //
@@ -3672,37 +3775,40 @@ type BetaTextCitationUnion struct {
 	// This field is from variant [BetaCitationCharLocation].
 	StartCharIndex int64 `json:"start_char_index"`
 	// Any of "char_location", "page_location", "content_block_location",
-	// "web_search_result_location".
+	// "web_search_result_location", "search_result_location".
 	Type string `json:"type"`
 	// This field is from variant [BetaCitationPageLocation].
 	EndPageNumber int64 `json:"end_page_number"`
 	// This field is from variant [BetaCitationPageLocation].
 	StartPageNumber int64 `json:"start_page_number"`
-	// This field is from variant [BetaCitationContentBlockLocation].
-	EndBlockIndex int64 `json:"end_block_index"`
-	// This field is from variant [BetaCitationContentBlockLocation].
+	EndBlockIndex   int64 `json:"end_block_index"`
 	StartBlockIndex int64 `json:"start_block_index"`
 	// This field is from variant [BetaCitationsWebSearchResultLocation].
 	EncryptedIndex string `json:"encrypted_index"`
+	Title          string `json:"title"`
 	// This field is from variant [BetaCitationsWebSearchResultLocation].
-	Title string `json:"title"`
-	// This field is from variant [BetaCitationsWebSearchResultLocation].
-	URL  string `json:"url"`
-	JSON struct {
-		CitedText       respjson.Field
-		DocumentIndex   respjson.Field
-		DocumentTitle   respjson.Field
-		EndCharIndex    respjson.Field
-		StartCharIndex  respjson.Field
-		Type            respjson.Field
-		EndPageNumber   respjson.Field
-		StartPageNumber respjson.Field
-		EndBlockIndex   respjson.Field
-		StartBlockIndex respjson.Field
-		EncryptedIndex  respjson.Field
-		Title           respjson.Field
-		URL             respjson.Field
-		raw             string
+	URL string `json:"url"`
+	// This field is from variant [BetaSearchResultLocationCitation].
+	SearchResultIndex int64 `json:"search_result_index"`
+	// This field is from variant [BetaSearchResultLocationCitation].
+	Source string `json:"source"`
+	JSON   struct {
+		CitedText         respjson.Field
+		DocumentIndex     respjson.Field
+		DocumentTitle     respjson.Field
+		EndCharIndex      respjson.Field
+		StartCharIndex    respjson.Field
+		Type              respjson.Field
+		EndPageNumber     respjson.Field
+		StartPageNumber   respjson.Field
+		EndBlockIndex     respjson.Field
+		StartBlockIndex   respjson.Field
+		EncryptedIndex    respjson.Field
+		Title             respjson.Field
+		URL               respjson.Field
+		SearchResultIndex respjson.Field
+		Source            respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -3716,6 +3822,7 @@ func (BetaCitationCharLocation) implBetaTextCitationUnion()             {}
 func (BetaCitationPageLocation) implBetaTextCitationUnion()             {}
 func (BetaCitationContentBlockLocation) implBetaTextCitationUnion()     {}
 func (BetaCitationsWebSearchResultLocation) implBetaTextCitationUnion() {}
+func (BetaSearchResultLocationCitation) implBetaTextCitationUnion()     {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -3724,6 +3831,7 @@ func (BetaCitationsWebSearchResultLocation) implBetaTextCitationUnion() {}
 //	case anthropic.BetaCitationPageLocation:
 //	case anthropic.BetaCitationContentBlockLocation:
 //	case anthropic.BetaCitationsWebSearchResultLocation:
+//	case anthropic.BetaSearchResultLocationCitation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -3737,6 +3845,8 @@ func (u BetaTextCitationUnion) AsAny() anyBetaTextCitation {
 		return u.AsContentBlockLocation()
 	case "web_search_result_location":
 		return u.AsWebSearchResultLocation()
+	case "search_result_location":
+		return u.AsSearchResultLocation()
 	}
 	return nil
 }
@@ -3761,6 +3871,11 @@ func (u BetaTextCitationUnion) AsWebSearchResultLocation() (v BetaCitationsWebSe
 	return
 }
 
+func (u BetaTextCitationUnion) AsSearchResultLocation() (v BetaSearchResultLocationCitation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaTextCitationUnion) RawJSON() string { return u.JSON.raw }
 
@@ -3776,11 +3891,16 @@ type BetaTextCitationParamUnion struct {
 	OfPageLocation            *BetaCitationPageLocationParam            `json:",omitzero,inline"`
 	OfContentBlockLocation    *BetaCitationContentBlockLocationParam    `json:",omitzero,inline"`
 	OfWebSearchResultLocation *BetaCitationWebSearchResultLocationParam `json:",omitzero,inline"`
+	OfSearchResultLocation    *BetaSearchResultLocationCitationParam    `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaTextCitationParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfCharLocation, u.OfPageLocation, u.OfContentBlockLocation, u.OfWebSearchResultLocation)
+	return param.MarshalUnion(u, u.OfCharLocation,
+		u.OfPageLocation,
+		u.OfContentBlockLocation,
+		u.OfWebSearchResultLocation,
+		u.OfSearchResultLocation)
 }
 func (u *BetaTextCitationParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3795,6 +3915,8 @@ func (u *BetaTextCitationParamUnion) asAny() any {
 		return u.OfContentBlockLocation
 	} else if !param.IsOmitted(u.OfWebSearchResultLocation) {
 		return u.OfWebSearchResultLocation
+	} else if !param.IsOmitted(u.OfSearchResultLocation) {
+		return u.OfSearchResultLocation
 	}
 	return nil
 }
@@ -3832,33 +3954,9 @@ func (u BetaTextCitationParamUnion) GetStartPageNumber() *int64 {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaTextCitationParamUnion) GetEndBlockIndex() *int64 {
-	if vt := u.OfContentBlockLocation; vt != nil {
-		return &vt.EndBlockIndex
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaTextCitationParamUnion) GetStartBlockIndex() *int64 {
-	if vt := u.OfContentBlockLocation; vt != nil {
-		return &vt.StartBlockIndex
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetEncryptedIndex() *string {
 	if vt := u.OfWebSearchResultLocation; vt != nil {
 		return &vt.EncryptedIndex
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaTextCitationParamUnion) GetTitle() *string {
-	if vt := u.OfWebSearchResultLocation; vt != nil && vt.Title.Valid() {
-		return &vt.Title.Value
 	}
 	return nil
 }
@@ -3872,6 +3970,22 @@ func (u BetaTextCitationParamUnion) GetURL() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u BetaTextCitationParamUnion) GetSearchResultIndex() *int64 {
+	if vt := u.OfSearchResultLocation; vt != nil {
+		return &vt.SearchResultIndex
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaTextCitationParamUnion) GetSource() *string {
+	if vt := u.OfSearchResultLocation; vt != nil {
+		return &vt.Source
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u BetaTextCitationParamUnion) GetCitedText() *string {
 	if vt := u.OfCharLocation; vt != nil {
 		return (*string)(&vt.CitedText)
@@ -3880,6 +3994,8 @@ func (u BetaTextCitationParamUnion) GetCitedText() *string {
 	} else if vt := u.OfContentBlockLocation; vt != nil {
 		return (*string)(&vt.CitedText)
 	} else if vt := u.OfWebSearchResultLocation; vt != nil {
+		return (*string)(&vt.CitedText)
+	} else if vt := u.OfSearchResultLocation; vt != nil {
 		return (*string)(&vt.CitedText)
 	}
 	return nil
@@ -3919,8 +4035,51 @@ func (u BetaTextCitationParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebSearchResultLocation; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfSearchResultLocation; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaTextCitationParamUnion) GetEndBlockIndex() *int64 {
+	if vt := u.OfContentBlockLocation; vt != nil {
+		return (*int64)(&vt.EndBlockIndex)
+	} else if vt := u.OfSearchResultLocation; vt != nil {
+		return (*int64)(&vt.EndBlockIndex)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaTextCitationParamUnion) GetStartBlockIndex() *int64 {
+	if vt := u.OfContentBlockLocation; vt != nil {
+		return (*int64)(&vt.StartBlockIndex)
+	} else if vt := u.OfSearchResultLocation; vt != nil {
+		return (*int64)(&vt.StartBlockIndex)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaTextCitationParamUnion) GetTitle() *string {
+	if vt := u.OfWebSearchResultLocation; vt != nil && vt.Title.Valid() {
+		return &vt.Title.Value
+	} else if vt := u.OfSearchResultLocation; vt != nil && vt.Title.Valid() {
+		return &vt.Title.Value
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaTextCitationParamUnion](
+		"type",
+		apijson.Discriminator[BetaCitationCharLocationParam]("char_location"),
+		apijson.Discriminator[BetaCitationPageLocationParam]("page_location"),
+		apijson.Discriminator[BetaCitationContentBlockLocationParam]("content_block_location"),
+		apijson.Discriminator[BetaCitationWebSearchResultLocationParam]("web_search_result_location"),
+		apijson.Discriminator[BetaSearchResultLocationCitationParam]("search_result_location"),
+	)
 }
 
 type BetaTextDelta struct {
@@ -4453,13 +4612,14 @@ func (r *BetaToolResultBlockParam) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaToolResultBlockParamContentUnion struct {
-	OfText  *BetaTextBlockParam  `json:",omitzero,inline"`
-	OfImage *BetaImageBlockParam `json:",omitzero,inline"`
+	OfText         *BetaTextBlockParam         `json:",omitzero,inline"`
+	OfImage        *BetaImageBlockParam        `json:",omitzero,inline"`
+	OfSearchResult *BetaSearchResultBlockParam `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfText, u.OfImage)
+	return param.MarshalUnion(u, u.OfText, u.OfImage, u.OfSearchResult)
 }
 func (u *BetaToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -4470,6 +4630,8 @@ func (u *BetaToolResultBlockParamContentUnion) asAny() any {
 		return u.OfText
 	} else if !param.IsOmitted(u.OfImage) {
 		return u.OfImage
+	} else if !param.IsOmitted(u.OfSearchResult) {
+		return u.OfSearchResult
 	}
 	return nil
 }
@@ -4483,17 +4645,17 @@ func (u BetaToolResultBlockParamContentUnion) GetText() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaToolResultBlockParamContentUnion) GetCitations() []BetaTextCitationParamUnion {
-	if vt := u.OfText; vt != nil {
-		return vt.Citations
+func (u BetaToolResultBlockParamContentUnion) GetContent() []BetaTextBlockParam {
+	if vt := u.OfSearchResult; vt != nil {
+		return vt.Content
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaToolResultBlockParamContentUnion) GetSource() *BetaImageBlockParamSourceUnion {
-	if vt := u.OfImage; vt != nil {
-		return &vt.Source
+func (u BetaToolResultBlockParamContentUnion) GetTitle() *string {
+	if vt := u.OfSearchResult; vt != nil {
+		return &vt.Title
 	}
 	return nil
 }
@@ -4503,6 +4665,8 @@ func (u BetaToolResultBlockParamContentUnion) GetType() *string {
 	if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfImage; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfSearchResult; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -4514,8 +4678,118 @@ func (u BetaToolResultBlockParamContentUnion) GetCacheControl() *BetaCacheContro
 		return &vt.CacheControl
 	} else if vt := u.OfImage; vt != nil {
 		return &vt.CacheControl
+	} else if vt := u.OfSearchResult; vt != nil {
+		return &vt.CacheControl
 	}
 	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u BetaToolResultBlockParamContentUnion) GetCitations() (res betaToolResultBlockParamContentUnionCitations) {
+	if vt := u.OfText; vt != nil {
+		res.any = &vt.Citations
+	} else if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Citations
+	}
+	return
+}
+
+// Can have the runtime types [*[]BetaTextCitationParamUnion],
+// [*BetaCitationsConfigParam]
+type betaToolResultBlockParamContentUnionCitations struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *[]anthropic.BetaTextCitationParamUnion:
+//	case *anthropic.BetaCitationsConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u betaToolResultBlockParamContentUnionCitations) AsAny() any { return u.any }
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u BetaToolResultBlockParamContentUnion) GetSource() (res betaToolResultBlockParamContentUnionSource) {
+	if vt := u.OfImage; vt != nil {
+		res.any = vt.Source.asAny()
+	} else if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Source
+	}
+	return
+}
+
+// Can have the runtime types [*BetaBase64ImageSourceParam],
+// [*BetaURLImageSourceParam], [*BetaFileImageSourceParam], [*string]
+type betaToolResultBlockParamContentUnionSource struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BetaBase64ImageSourceParam:
+//	case *anthropic.BetaURLImageSourceParam:
+//	case *anthropic.BetaFileImageSourceParam:
+//	case *string:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u betaToolResultBlockParamContentUnionSource) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaToolResultBlockParamContentUnionSource) GetData() *string {
+	switch vt := u.any.(type) {
+	case *BetaImageBlockParamSourceUnion:
+		return vt.GetData()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaToolResultBlockParamContentUnionSource) GetMediaType() *string {
+	switch vt := u.any.(type) {
+	case *BetaImageBlockParamSourceUnion:
+		return vt.GetMediaType()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaToolResultBlockParamContentUnionSource) GetURL() *string {
+	switch vt := u.any.(type) {
+	case *BetaImageBlockParamSourceUnion:
+		return vt.GetURL()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaToolResultBlockParamContentUnionSource) GetFileID() *string {
+	switch vt := u.any.(type) {
+	case *BetaImageBlockParamSourceUnion:
+		return vt.GetFileID()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaToolResultBlockParamContentUnionSource) GetType() *string {
+	switch vt := u.any.(type) {
+	case *BetaImageBlockParamSourceUnion:
+		return vt.GetType()
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaToolResultBlockParamContentUnion](
+		"type",
+		apijson.Discriminator[BetaTextBlockParam]("text"),
+		apijson.Discriminator[BetaImageBlockParam]("image"),
+		apijson.Discriminator[BetaSearchResultBlockParam]("search_result"),
+	)
 }
 
 // The properties Name, Type are required.
@@ -4619,29 +4893,29 @@ func BetaToolUnionParamOfComputerUseTool20250124(displayHeightPx int64, displayW
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaToolUnionParam struct {
 	OfTool                      *BetaToolParam                      `json:",omitzero,inline"`
-	OfComputerUseTool20241022   *BetaToolComputerUse20241022Param   `json:",omitzero,inline"`
 	OfBashTool20241022          *BetaToolBash20241022Param          `json:",omitzero,inline"`
-	OfTextEditor20241022        *BetaToolTextEditor20241022Param    `json:",omitzero,inline"`
-	OfComputerUseTool20250124   *BetaToolComputerUse20250124Param   `json:",omitzero,inline"`
 	OfBashTool20250124          *BetaToolBash20250124Param          `json:",omitzero,inline"`
+	OfCodeExecutionTool20250522 *BetaCodeExecutionTool20250522Param `json:",omitzero,inline"`
+	OfComputerUseTool20241022   *BetaToolComputerUse20241022Param   `json:",omitzero,inline"`
+	OfComputerUseTool20250124   *BetaToolComputerUse20250124Param   `json:",omitzero,inline"`
+	OfTextEditor20241022        *BetaToolTextEditor20241022Param    `json:",omitzero,inline"`
 	OfTextEditor20250124        *BetaToolTextEditor20250124Param    `json:",omitzero,inline"`
 	OfTextEditor20250429        *BetaToolTextEditor20250429Param    `json:",omitzero,inline"`
 	OfWebSearchTool20250305     *BetaWebSearchTool20250305Param     `json:",omitzero,inline"`
-	OfCodeExecutionTool20250522 *BetaCodeExecutionTool20250522Param `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaToolUnionParam) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfTool,
-		u.OfComputerUseTool20241022,
 		u.OfBashTool20241022,
-		u.OfTextEditor20241022,
-		u.OfComputerUseTool20250124,
 		u.OfBashTool20250124,
+		u.OfCodeExecutionTool20250522,
+		u.OfComputerUseTool20241022,
+		u.OfComputerUseTool20250124,
+		u.OfTextEditor20241022,
 		u.OfTextEditor20250124,
 		u.OfTextEditor20250429,
-		u.OfWebSearchTool20250305,
-		u.OfCodeExecutionTool20250522)
+		u.OfWebSearchTool20250305)
 }
 func (u *BetaToolUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -4650,24 +4924,24 @@ func (u *BetaToolUnionParam) UnmarshalJSON(data []byte) error {
 func (u *BetaToolUnionParam) asAny() any {
 	if !param.IsOmitted(u.OfTool) {
 		return u.OfTool
-	} else if !param.IsOmitted(u.OfComputerUseTool20241022) {
-		return u.OfComputerUseTool20241022
 	} else if !param.IsOmitted(u.OfBashTool20241022) {
 		return u.OfBashTool20241022
-	} else if !param.IsOmitted(u.OfTextEditor20241022) {
-		return u.OfTextEditor20241022
-	} else if !param.IsOmitted(u.OfComputerUseTool20250124) {
-		return u.OfComputerUseTool20250124
 	} else if !param.IsOmitted(u.OfBashTool20250124) {
 		return u.OfBashTool20250124
+	} else if !param.IsOmitted(u.OfCodeExecutionTool20250522) {
+		return u.OfCodeExecutionTool20250522
+	} else if !param.IsOmitted(u.OfComputerUseTool20241022) {
+		return u.OfComputerUseTool20241022
+	} else if !param.IsOmitted(u.OfComputerUseTool20250124) {
+		return u.OfComputerUseTool20250124
+	} else if !param.IsOmitted(u.OfTextEditor20241022) {
+		return u.OfTextEditor20241022
 	} else if !param.IsOmitted(u.OfTextEditor20250124) {
 		return u.OfTextEditor20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250429) {
 		return u.OfTextEditor20250429
 	} else if !param.IsOmitted(u.OfWebSearchTool20250305) {
 		return u.OfWebSearchTool20250305
-	} else if !param.IsOmitted(u.OfCodeExecutionTool20250522) {
-		return u.OfCodeExecutionTool20250522
 	}
 	return nil
 }
@@ -4724,23 +4998,23 @@ func (u BetaToolUnionParam) GetUserLocation() *BetaWebSearchTool20250305UserLoca
 func (u BetaToolUnionParam) GetName() *string {
 	if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Name)
-	} else if vt := u.OfComputerUseTool20241022; vt != nil {
-		return (*string)(&vt.Name)
 	} else if vt := u.OfBashTool20241022; vt != nil {
 		return (*string)(&vt.Name)
-	} else if vt := u.OfTextEditor20241022; vt != nil {
+	} else if vt := u.OfBashTool20250124; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfComputerUseTool20241022; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return (*string)(&vt.Name)
-	} else if vt := u.OfBashTool20250124; vt != nil {
+	} else if vt := u.OfTextEditor20241022; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
-		return (*string)(&vt.Name)
-	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
 		return (*string)(&vt.Name)
 	}
 	return nil
@@ -4750,23 +5024,23 @@ func (u BetaToolUnionParam) GetName() *string {
 func (u BetaToolUnionParam) GetType() *string {
 	if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfComputerUseTool20241022; vt != nil {
-		return (*string)(&vt.Type)
 	} else if vt := u.OfBashTool20241022; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfTextEditor20241022; vt != nil {
+	} else if vt := u.OfBashTool20250124; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfComputerUseTool20241022; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfBashTool20250124; vt != nil {
+	} else if vt := u.OfTextEditor20241022; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -4806,23 +5080,23 @@ func (u BetaToolUnionParam) GetDisplayNumber() *int64 {
 func (u BetaToolUnionParam) GetCacheControl() *BetaCacheControlEphemeralParam {
 	if vt := u.OfTool; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfComputerUseTool20241022; vt != nil {
-		return &vt.CacheControl
 	} else if vt := u.OfBashTool20241022; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfTextEditor20241022; vt != nil {
+	} else if vt := u.OfBashTool20250124; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfComputerUseTool20241022; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfBashTool20250124; vt != nil {
+	} else if vt := u.OfTextEditor20241022; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil
@@ -5326,7 +5600,7 @@ type BetaMessageNewParams struct {
 	// the top-level `system` parameter — there is no `"system"` role for input
 	// messages in the Messages API.
 	//
-	// There is a limit of 100000 messages in a single request.
+	// There is a limit of 100,000 messages in a single request.
 	Messages []BetaMessageParam `json:"messages,omitzero,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
@@ -5408,6 +5682,12 @@ type BetaMessageNewParams struct {
 	// content blocks that represent the model's use of those tools. You can then run
 	// those tools using the tool input generated by the model and then optionally
 	// return results back to the model using `tool_result` content blocks.
+	//
+	// There are two types of tools: **client tools** and **server tools**. The
+	// behavior described below applies to client tools. For
+	// [server tools](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview#server-tools),
+	// see their individual documentation as each has its own behavior (e.g., the
+	// [web search tool](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/web-search-tool)).
 	//
 	// Each tool definition includes:
 	//
@@ -5597,7 +5877,7 @@ type BetaMessageCountTokensParams struct {
 	// the top-level `system` parameter — there is no `"system"` role for input
 	// messages in the Messages API.
 	//
-	// There is a limit of 100000 messages in a single request.
+	// There is a limit of 100,000 messages in a single request.
 	Messages []BetaMessageParam `json:"messages,omitzero,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
@@ -5630,6 +5910,12 @@ type BetaMessageCountTokensParams struct {
 	// content blocks that represent the model's use of those tools. You can then run
 	// those tools using the tool input generated by the model and then optionally
 	// return results back to the model using `tool_result` content blocks.
+	//
+	// There are two types of tools: **client tools** and **server tools**. The
+	// behavior described below applies to client tools. For
+	// [server tools](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview#server-tools),
+	// see their individual documentation as each has its own behavior (e.g., the
+	// [web search tool](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/web-search-tool)).
 	//
 	// Each tool definition includes:
 	//
@@ -5743,29 +6029,29 @@ func (u *BetaMessageCountTokensParamsSystemUnion) asAny() any {
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaMessageCountTokensParamsToolUnion struct {
 	OfTool                      *BetaToolParam                      `json:",omitzero,inline"`
-	OfComputerUseTool20241022   *BetaToolComputerUse20241022Param   `json:",omitzero,inline"`
 	OfBashTool20241022          *BetaToolBash20241022Param          `json:",omitzero,inline"`
-	OfTextEditor20241022        *BetaToolTextEditor20241022Param    `json:",omitzero,inline"`
-	OfComputerUseTool20250124   *BetaToolComputerUse20250124Param   `json:",omitzero,inline"`
 	OfBashTool20250124          *BetaToolBash20250124Param          `json:",omitzero,inline"`
+	OfCodeExecutionTool20250522 *BetaCodeExecutionTool20250522Param `json:",omitzero,inline"`
+	OfComputerUseTool20241022   *BetaToolComputerUse20241022Param   `json:",omitzero,inline"`
+	OfComputerUseTool20250124   *BetaToolComputerUse20250124Param   `json:",omitzero,inline"`
+	OfTextEditor20241022        *BetaToolTextEditor20241022Param    `json:",omitzero,inline"`
 	OfTextEditor20250124        *BetaToolTextEditor20250124Param    `json:",omitzero,inline"`
 	OfTextEditor20250429        *BetaToolTextEditor20250429Param    `json:",omitzero,inline"`
 	OfWebSearchTool20250305     *BetaWebSearchTool20250305Param     `json:",omitzero,inline"`
-	OfCodeExecutionTool20250522 *BetaCodeExecutionTool20250522Param `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaMessageCountTokensParamsToolUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfTool,
-		u.OfComputerUseTool20241022,
 		u.OfBashTool20241022,
-		u.OfTextEditor20241022,
-		u.OfComputerUseTool20250124,
 		u.OfBashTool20250124,
+		u.OfCodeExecutionTool20250522,
+		u.OfComputerUseTool20241022,
+		u.OfComputerUseTool20250124,
+		u.OfTextEditor20241022,
 		u.OfTextEditor20250124,
 		u.OfTextEditor20250429,
-		u.OfWebSearchTool20250305,
-		u.OfCodeExecutionTool20250522)
+		u.OfWebSearchTool20250305)
 }
 func (u *BetaMessageCountTokensParamsToolUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -5774,24 +6060,24 @@ func (u *BetaMessageCountTokensParamsToolUnion) UnmarshalJSON(data []byte) error
 func (u *BetaMessageCountTokensParamsToolUnion) asAny() any {
 	if !param.IsOmitted(u.OfTool) {
 		return u.OfTool
-	} else if !param.IsOmitted(u.OfComputerUseTool20241022) {
-		return u.OfComputerUseTool20241022
 	} else if !param.IsOmitted(u.OfBashTool20241022) {
 		return u.OfBashTool20241022
-	} else if !param.IsOmitted(u.OfTextEditor20241022) {
-		return u.OfTextEditor20241022
-	} else if !param.IsOmitted(u.OfComputerUseTool20250124) {
-		return u.OfComputerUseTool20250124
 	} else if !param.IsOmitted(u.OfBashTool20250124) {
 		return u.OfBashTool20250124
+	} else if !param.IsOmitted(u.OfCodeExecutionTool20250522) {
+		return u.OfCodeExecutionTool20250522
+	} else if !param.IsOmitted(u.OfComputerUseTool20241022) {
+		return u.OfComputerUseTool20241022
+	} else if !param.IsOmitted(u.OfComputerUseTool20250124) {
+		return u.OfComputerUseTool20250124
+	} else if !param.IsOmitted(u.OfTextEditor20241022) {
+		return u.OfTextEditor20241022
 	} else if !param.IsOmitted(u.OfTextEditor20250124) {
 		return u.OfTextEditor20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250429) {
 		return u.OfTextEditor20250429
 	} else if !param.IsOmitted(u.OfWebSearchTool20250305) {
 		return u.OfWebSearchTool20250305
-	} else if !param.IsOmitted(u.OfCodeExecutionTool20250522) {
-		return u.OfCodeExecutionTool20250522
 	}
 	return nil
 }
@@ -5848,23 +6134,23 @@ func (u BetaMessageCountTokensParamsToolUnion) GetUserLocation() *BetaWebSearchT
 func (u BetaMessageCountTokensParamsToolUnion) GetName() *string {
 	if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Name)
-	} else if vt := u.OfComputerUseTool20241022; vt != nil {
-		return (*string)(&vt.Name)
 	} else if vt := u.OfBashTool20241022; vt != nil {
 		return (*string)(&vt.Name)
-	} else if vt := u.OfTextEditor20241022; vt != nil {
+	} else if vt := u.OfBashTool20250124; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfComputerUseTool20241022; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return (*string)(&vt.Name)
-	} else if vt := u.OfBashTool20250124; vt != nil {
+	} else if vt := u.OfTextEditor20241022; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
-		return (*string)(&vt.Name)
-	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
 		return (*string)(&vt.Name)
 	}
 	return nil
@@ -5874,23 +6160,23 @@ func (u BetaMessageCountTokensParamsToolUnion) GetName() *string {
 func (u BetaMessageCountTokensParamsToolUnion) GetType() *string {
 	if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfComputerUseTool20241022; vt != nil {
-		return (*string)(&vt.Type)
 	} else if vt := u.OfBashTool20241022; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfTextEditor20241022; vt != nil {
+	} else if vt := u.OfBashTool20250124; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfComputerUseTool20241022; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfBashTool20250124; vt != nil {
+	} else if vt := u.OfTextEditor20241022; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -5930,23 +6216,23 @@ func (u BetaMessageCountTokensParamsToolUnion) GetDisplayNumber() *int64 {
 func (u BetaMessageCountTokensParamsToolUnion) GetCacheControl() *BetaCacheControlEphemeralParam {
 	if vt := u.OfTool; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfComputerUseTool20241022; vt != nil {
-		return &vt.CacheControl
 	} else if vt := u.OfBashTool20241022; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfTextEditor20241022; vt != nil {
+	} else if vt := u.OfBashTool20250124; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfComputerUseTool20241022; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return &vt.CacheControl
-	} else if vt := u.OfBashTool20250124; vt != nil {
+	} else if vt := u.OfTextEditor20241022; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil

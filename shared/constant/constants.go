@@ -87,6 +87,8 @@ type PageLocation string                 // Always "page_location"
 type PermissionError string              // Always "permission_error"
 type RateLimitError string               // Always "rate_limit_error"
 type RedactedThinking string             // Always "redacted_thinking"
+type SearchResult string                 // Always "search_result"
+type SearchResultLocation string         // Always "search_result_location"
 type ServerToolUse string                // Always "server_tool_use"
 type SignatureDelta string               // Always "signature_delta"
 type StrReplaceBasedEditTool string      // Always "str_replace_based_edit_tool"
@@ -175,6 +177,8 @@ func (c PageLocation) Default() PageLocation                 { return "page_loca
 func (c PermissionError) Default() PermissionError           { return "permission_error" }
 func (c RateLimitError) Default() RateLimitError             { return "rate_limit_error" }
 func (c RedactedThinking) Default() RedactedThinking         { return "redacted_thinking" }
+func (c SearchResult) Default() SearchResult                 { return "search_result" }
+func (c SearchResultLocation) Default() SearchResultLocation { return "search_result_location" }
 func (c ServerToolUse) Default() ServerToolUse               { return "server_tool_use" }
 func (c SignatureDelta) Default() SignatureDelta             { return "signature_delta" }
 func (c StrReplaceBasedEditTool) Default() StrReplaceBasedEditTool {
@@ -265,6 +269,8 @@ func (c PageLocation) MarshalJSON() ([]byte, error)                 { return mar
 func (c PermissionError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c RateLimitError) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c RedactedThinking) MarshalJSON() ([]byte, error)             { return marshalString(c) }
+func (c SearchResult) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c SearchResultLocation) MarshalJSON() ([]byte, error)         { return marshalString(c) }
 func (c ServerToolUse) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c SignatureDelta) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c StrReplaceBasedEditTool) MarshalJSON() ([]byte, error)      { return marshalString(c) }

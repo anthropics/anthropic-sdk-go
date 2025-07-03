@@ -55,7 +55,7 @@ func main() {
 		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
 		},
-		Model: anthropic.ModelClaude3_7SonnetLatest,
+		Model: anthropic.ModelClaudeSonnet4_20250514,
 	})
 	if err != nil {
 		panic(err.Error())
@@ -74,7 +74,7 @@ messages := []anthropic.MessageParam{
 }
 
 message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-    Model:     anthropic.ModelClaude3_7SonnetLatest,
+    Model:     anthropic.ModelClaudeSonnet4_20250514,
     Messages:  messages,
     MaxTokens: 1024,
 })
@@ -90,7 +90,7 @@ messages = append(messages, anthropic.NewUserMessage(
 ))
 
 message, err = client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-    Model:     anthropic.ModelClaude3_7SonnetLatest,
+    Model:     anthropic.ModelClaudeSonnet4_20250514,
     Messages:  messages,
     MaxTokens: 1024,
 })
@@ -105,7 +105,7 @@ fmt.Printf("%+v\n", message.Content)
 
 ```go
 message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-    Model:     anthropic.ModelClaude3_7SonnetLatest,
+    Model:     anthropic.ModelClaudeSonnet4_20250514,
     MaxTokens: 1024,
     System: []anthropic.TextBlockParam{
         {Text: "Be very serious at all times."},
@@ -123,7 +123,7 @@ message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 content := "What is a quaternion?"
 
 stream := client.Messages.NewStreaming(context.TODO(), anthropic.MessageNewParams{
-    Model:     anthropic.ModelClaude3_7SonnetLatest,
+    Model:     anthropic.ModelClaudeSonnet4_20250514,
     MaxTokens: 1024,
     Messages: []anthropic.MessageParam{
         anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
@@ -195,7 +195,7 @@ func main() {
 
 	for {
 		message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_20250514,
 			MaxTokens: 1024,
 			Messages:  messages,
 			Tools:     tools,
@@ -521,13 +521,13 @@ This library provides some conveniences for working with paginated list endpoint
 You can use `.ListAutoPaging()` methods to iterate through items across all pages:
 
 ```go
-iter := client.Beta.Messages.Batches.ListAutoPaging(context.TODO(), anthropic.BetaMessageBatchListParams{
+iter := client.Messages.Batches.ListAutoPaging(context.TODO(), anthropic.MessageBatchListParams{
 	Limit: anthropic.Int(20),
 })
 // Automatically fetches more pages as needed.
 for iter.Next() {
-	betaMessageBatch := iter.Current()
-	fmt.Printf("%+v\n", betaMessageBatch)
+	messageBatch := iter.Current()
+	fmt.Printf("%+v\n", messageBatch)
 }
 if err := iter.Err(); err != nil {
 	panic(err.Error())
@@ -538,7 +538,7 @@ Or you can use simple `.List()` methods to fetch a single page and receive a sta
 with additional helper methods like `.GetNextPage()`, e.g.:
 
 ```go
-page, err := client.Beta.Messages.Batches.List(context.TODO(), anthropic.BetaMessageBatchListParams{
+page, err := client.Messages.Batches.List(context.TODO(), anthropic.MessageBatchListParams{
 	Limit: anthropic.Int(20),
 })
 for page != nil {
@@ -557,7 +557,7 @@ if err != nil {
 When the API returns a non-success status code, we return an error with type
 `*anthropic.Error`. This contains the `StatusCode`, `*http.Request`, and
 `*http.Response` values of the request, as well as the JSON of the error body
-(much like other response objects in the SDK). The error also includes the `RequestID` 
+(much like other response objects in the SDK). The error also includes the `RequestID`
 from the response headers, which is useful for troubleshooting with Anthropic support.
 
 To handle errors, we recommend that you use the `errors.As` pattern:
@@ -573,7 +573,7 @@ _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		}},
 		Role: anthropic.MessageParamRoleUser,
 	}},
-	Model: anthropic.ModelClaude3_7SonnetLatest,
+	Model: anthropic.ModelClaudeSonnet4_20250514,
 })
 if err != nil {
 	var apierr *anthropic.Error
@@ -610,7 +610,7 @@ client.Messages.New(
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaude3_7SonnetLatest,
+		Model: anthropic.ModelClaudeSonnet4_20250514,
 	},
 	// This sets the per-retry timeout
 	option.WithRequestTimeout(20*time.Second),
@@ -680,7 +680,7 @@ client.Messages.New(
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaude3_7SonnetLatest,
+		Model: anthropic.ModelClaudeSonnet4_20250514,
 	},
 	option.WithMaxRetries(5),
 )
@@ -706,7 +706,7 @@ message, err := client.Messages.New(
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaude3_7SonnetLatest,
+		Model: anthropic.ModelClaudeSonnet4_20250514,
 	},
 	option.WithResponseInto(&response),
 )

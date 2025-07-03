@@ -266,33 +266,6 @@ func init() {
 	)
 }
 
-func init() {
-	apijson.RegisterUnion[BetaImageBlockParamSourceUnion](
-		"type",
-		apijson.Discriminator[BetaBase64ImageSourceParam]("base64"),
-		apijson.Discriminator[BetaURLImageSourceParam]("url"),
-		apijson.Discriminator[BetaFileImageSourceParam]("file"),
-	)
-}
-
-func init() {
-	apijson.RegisterUnion[BetaThinkingConfigParamUnion](
-		"type",
-		apijson.Discriminator[BetaThinkingConfigEnabledParam]("enabled"),
-		apijson.Discriminator[BetaThinkingConfigDisabledParam]("disabled"),
-	)
-}
-
-func init() {
-	apijson.RegisterUnion[BetaToolChoiceUnionParam](
-		"type",
-		apijson.Discriminator[BetaToolChoiceAutoParam]("auto"),
-		apijson.Discriminator[BetaToolChoiceAnyParam]("any"),
-		apijson.Discriminator[BetaToolChoiceToolParam]("tool"),
-		apijson.Discriminator[BetaToolChoiceNoneParam]("none"),
-	)
-}
-
 // The properties Data, MediaType, Type are required.
 type BetaBase64PDFSourceParam struct {
 	Data string `json:"data,required" format:"byte"`
@@ -1174,8 +1147,9 @@ type BetaContentBlockUnion struct {
 	// This field is from variant [BetaThinkingBlock].
 	Thinking string `json:"thinking"`
 	// This field is from variant [BetaRedactedThinkingBlock].
-	Data  string          `json:"data"`
-	ID    string          `json:"id"`
+	Data string `json:"data"`
+	ID   string `json:"id"`
+	// necessary custom code modification
 	Input json.RawMessage `json:"input"`
 	Name  string          `json:"name"`
 	// This field is a union of [BetaWebSearchToolResultBlockContentUnion],
@@ -1396,7 +1370,7 @@ func NewBetaTextBlock(text string) BetaContentBlockParamUnion {
 }
 
 func NewBetaImageBlock[
-T BetaBase64ImageSourceParam | BetaURLImageSourceParam | BetaFileImageSourceParam,
+	T BetaBase64ImageSourceParam | BetaURLImageSourceParam | BetaFileImageSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var image BetaImageBlockParam
 	switch v := any(source).(type) {
@@ -1411,7 +1385,7 @@ T BetaBase64ImageSourceParam | BetaURLImageSourceParam | BetaFileImageSourcePara
 }
 
 func NewBetaDocumentBlock[
-T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam | BetaFileDocumentSourceParam,
+	T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam | BetaFileDocumentSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var document BetaRequestDocumentBlockParam
 	switch v := any(source).(type) {
@@ -1473,7 +1447,7 @@ func NewBetaServerToolUseBlock(id string, input any, name BetaServerToolUseBlock
 }
 
 func NewBetaWebSearchToolResultBlock[
-T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
+	T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var webSearchToolResult BetaWebSearchToolResultBlockParam
 	switch v := any(content).(type) {
@@ -1487,7 +1461,7 @@ T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
 }
 
 func NewBetaCodeExecutionToolResultBlock[
-T BetaCodeExecutionToolResultErrorParam | BetaCodeExecutionResultBlockParam,
+	T BetaCodeExecutionToolResultErrorParam | BetaCodeExecutionResultBlockParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var codeExecutionToolResult BetaCodeExecutionToolResultBlockParam
 	switch v := any(content).(type) {
@@ -2196,6 +2170,15 @@ func (u BetaImageBlockParamSourceUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	}
 	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaImageBlockParamSourceUnion](
+		"type",
+		apijson.Discriminator[BetaBase64ImageSourceParam]("base64"),
+		apijson.Discriminator[BetaURLImageSourceParam]("url"),
+		apijson.Discriminator[BetaFileImageSourceParam]("file"),
+	)
 }
 
 type BetaInputJSONDelta struct {
@@ -4240,6 +4223,14 @@ func (u BetaThinkingConfigParamUnion) GetType() *string {
 	return nil
 }
 
+func init() {
+	apijson.RegisterUnion[BetaThinkingConfigParamUnion](
+		"type",
+		apijson.Discriminator[BetaThinkingConfigEnabledParam]("enabled"),
+		apijson.Discriminator[BetaThinkingConfigDisabledParam]("disabled"),
+	)
+}
+
 type BetaThinkingDelta struct {
 	Thinking string                 `json:"thinking,required"`
 	Type     constant.ThinkingDelta `json:"type,required"`
@@ -4435,6 +4426,16 @@ func (u BetaToolChoiceUnionParam) GetDisableParallelToolUse() *bool {
 		return &vt.DisableParallelToolUse.Value
 	}
 	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaToolChoiceUnionParam](
+		"type",
+		apijson.Discriminator[BetaToolChoiceAutoParam]("auto"),
+		apijson.Discriminator[BetaToolChoiceAnyParam]("any"),
+		apijson.Discriminator[BetaToolChoiceToolParam]("tool"),
+		apijson.Discriminator[BetaToolChoiceNoneParam]("none"),
+	)
 }
 
 // The model will use any available tools.

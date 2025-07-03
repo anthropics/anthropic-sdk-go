@@ -516,8 +516,9 @@ type ContentBlockUnion struct {
 	// This field is from variant [ThinkingBlock].
 	Thinking string `json:"thinking"`
 	// This field is from variant [RedactedThinkingBlock].
-	Data  string          `json:"data"`
-	ID    string          `json:"id"`
+	Data string `json:"data"`
+	ID   string `json:"id"`
+	// necessary custom code modification
 	Input json.RawMessage `json:"input"`
 	Name  string          `json:"name"`
 	// This field is from variant [WebSearchToolResultBlock].
@@ -1082,60 +1083,6 @@ func init() {
 	)
 }
 
-func init() {
-	apijson.RegisterUnion[DocumentBlockParamSourceUnion](
-		"type",
-		apijson.Discriminator[Base64PDFSourceParam]("base64"),
-		apijson.Discriminator[PlainTextSourceParam]("text"),
-		apijson.Discriminator[ContentBlockSourceParam]("content"),
-		apijson.Discriminator[URLPDFSourceParam]("url"),
-	)
-}
-
-func init() {
-	apijson.RegisterUnion[ImageBlockParamSourceUnion](
-		"type",
-		apijson.Discriminator[Base64ImageSourceParam]("base64"),
-		apijson.Discriminator[URLImageSourceParam]("url"),
-	)
-}
-
-func init() {
-	apijson.RegisterUnion[TextCitationParamUnion](
-		"type",
-		apijson.Discriminator[CitationCharLocationParam]("char_location"),
-		apijson.Discriminator[CitationPageLocationParam]("page_location"),
-		apijson.Discriminator[CitationContentBlockLocationParam]("content_block_location"),
-		apijson.Discriminator[CitationWebSearchResultLocationParam]("web_search_result_location"),
-	)
-}
-
-func init() {
-	apijson.RegisterUnion[ThinkingConfigParamUnion](
-		"type",
-		apijson.Discriminator[ThinkingConfigEnabledParam]("enabled"),
-		apijson.Discriminator[ThinkingConfigDisabledParam]("disabled"),
-	)
-}
-
-func init() {
-	apijson.RegisterUnion[ToolChoiceUnionParam](
-		"type",
-		apijson.Discriminator[ToolChoiceAutoParam]("auto"),
-		apijson.Discriminator[ToolChoiceAnyParam]("any"),
-		apijson.Discriminator[ToolChoiceToolParam]("tool"),
-		apijson.Discriminator[ToolChoiceNoneParam]("none"),
-	)
-}
-
-func init() {
-	apijson.RegisterUnion[ToolResultBlockParamContentUnion](
-		"type",
-		apijson.Discriminator[TextBlockParam]("text"),
-		apijson.Discriminator[ImageBlockParam]("image"),
-	)
-}
-
 // The properties Content, Type are required.
 type ContentBlockSourceParam struct {
 	Content ContentBlockSourceContentUnionParam `json:"content,omitzero,required"`
@@ -1279,6 +1226,16 @@ func (u DocumentBlockParamSourceUnion) GetType() *string {
 	return nil
 }
 
+func init() {
+	apijson.RegisterUnion[DocumentBlockParamSourceUnion](
+		"type",
+		apijson.Discriminator[Base64PDFSourceParam]("base64"),
+		apijson.Discriminator[PlainTextSourceParam]("text"),
+		apijson.Discriminator[ContentBlockSourceParam]("content"),
+		apijson.Discriminator[URLPDFSourceParam]("url"),
+	)
+}
+
 // The properties Source, Type are required.
 type ImageBlockParam struct {
 	Source ImageBlockParamSourceUnion `json:"source,omitzero,required"`
@@ -1354,6 +1311,14 @@ func (u ImageBlockParamSourceUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	}
 	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[ImageBlockParamSourceUnion](
+		"type",
+		apijson.Discriminator[Base64ImageSourceParam]("base64"),
+		apijson.Discriminator[URLImageSourceParam]("url"),
+	)
 }
 
 type InputJSONDelta struct {
@@ -2937,6 +2902,16 @@ func (u TextCitationParamUnion) GetType() *string {
 	return nil
 }
 
+func init() {
+	apijson.RegisterUnion[TextCitationParamUnion](
+		"type",
+		apijson.Discriminator[CitationCharLocationParam]("char_location"),
+		apijson.Discriminator[CitationPageLocationParam]("page_location"),
+		apijson.Discriminator[CitationContentBlockLocationParam]("content_block_location"),
+		apijson.Discriminator[CitationWebSearchResultLocationParam]("web_search_result_location"),
+	)
+}
+
 type TextDelta struct {
 	Text string             `json:"text,required"`
 	Type constant.TextDelta `json:"type,required"`
@@ -3093,6 +3068,14 @@ func (u ThinkingConfigParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	}
 	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[ThinkingConfigParamUnion](
+		"type",
+		apijson.Discriminator[ThinkingConfigEnabledParam]("enabled"),
+		apijson.Discriminator[ThinkingConfigDisabledParam]("disabled"),
+	)
 }
 
 type ThinkingDelta struct {
@@ -3267,6 +3250,16 @@ func (u ToolChoiceUnionParam) GetDisableParallelToolUse() *bool {
 		return &vt.DisableParallelToolUse.Value
 	}
 	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[ToolChoiceUnionParam](
+		"type",
+		apijson.Discriminator[ToolChoiceAutoParam]("auto"),
+		apijson.Discriminator[ToolChoiceAnyParam]("any"),
+		apijson.Discriminator[ToolChoiceToolParam]("tool"),
+		apijson.Discriminator[ToolChoiceNoneParam]("none"),
+	)
 }
 
 // The model will use any available tools.
@@ -3446,6 +3439,14 @@ func (u ToolResultBlockParamContentUnion) GetCacheControl() *CacheControlEphemer
 		return &vt.CacheControl
 	}
 	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[ToolResultBlockParamContentUnion](
+		"type",
+		apijson.Discriminator[TextBlockParam]("text"),
+		apijson.Discriminator[ImageBlockParam]("image"),
+	)
 }
 
 // The properties Name, Type are required.
@@ -3640,7 +3641,8 @@ func (r *ToolUnionTextEditor20250429Param) UnmarshalJSON(data []byte) error {
 }
 
 type ToolUseBlock struct {
-	ID    string           `json:"id,required"`
+	ID string `json:"id,required"`
+	// necessary custom code modification
 	Input json.RawMessage  `json:"input,required"`
 	Name  string           `json:"name,required"`
 	Type  constant.ToolUse `json:"type,required"`

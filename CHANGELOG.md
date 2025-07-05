@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.5.1 (2025-07-05)
+
+Full Changelog: [v1.5.0...v1.5.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.5.0...v1.5.1)
+
+### Bug Fixes
+
+* **api:** revert change to NewToolResultBlock ([b4167e7](https://github.com/anthropics/anthropic-sdk-go/commit/b4167e7b3bb80927b3f397c0b6fb00f7340272a0))
+* **tests:** make sure to build examples in scripts/lint ([69bcb13](https://github.com/anthropics/anthropic-sdk-go/commit/69bcb139fcf661bff527d345e9876c26c784befc))
+
+
+### Chores
+
+* **api:** update BetaCitationSearchResultLocation ([5d040a7](https://github.com/anthropics/anthropic-sdk-go/commit/5d040a7698b11ee059c175ce4a806509a9ae8e5b))
+* **internal:** restructure things to avoid conflicts ([5f1bead](https://github.com/anthropics/anthropic-sdk-go/commit/5f1bead6fd696504d63ebbbf21c1a55c707a3df7))
+
+
+### Documentation
+
+* model in examples ([da9d5af](https://github.com/anthropics/anthropic-sdk-go/commit/da9d5af61544a6f25d9284ee6eee25f5d1364e8a))
+* model in examples ([fe2da16](https://github.com/anthropics/anthropic-sdk-go/commit/fe2da16e4bf05ee7029b1be33059bf3a4e76c300))
+
 ## 1.5.0 (2025-07-03)
 
 Full Changelog: [v1.4.0...v1.5.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.4.0...v1.5.0)

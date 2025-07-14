@@ -4572,8 +4572,8 @@ func CalculateNonStreamingTimeout(maxTokens int, model Model, opts []option.Requ
 		return preCfg.RequestTimeout, nil
 	}
 
-	maximumTime := 60 * 60 * time.Second
-	defaultTime := 60 * 10 * time.Second
+	maximumTime := time.Hour // 1 hour
+	defaultTime := 10 * time.Minute
 
 	expectedTime := time.Duration(float64(maximumTime) * float64(maxTokens) / 128000.0)
 
@@ -4584,5 +4584,5 @@ func CalculateNonStreamingTimeout(maxTokens int, model Model, opts []option.Requ
 		return 0, fmt.Errorf("streaming is strongly recommended for operations that may take longer than 10 minutes")
 	}
 
-	return expectedTime, nil
+	return defaultTime, nil
 }

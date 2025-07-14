@@ -405,6 +405,7 @@ func TestCalculateNonStreamingTimeout(t *testing.T) {
 	constant.ModelNonStreamingTokens = map[string]int{
 		"test-model": 8192,
 	}
+	defaultTimeout := 10 * time.Minute
 
 	tests := []struct {
 		name          string
@@ -415,10 +416,10 @@ func TestCalculateNonStreamingTimeout(t *testing.T) {
 		opts          []option.RequestOption
 	}{
 		{
-			name:          "small token count returns expected timeout",
+			name:          "small token count returns default timeout",
 			maxTokens:     1000,
 			model:         "any-model",
-			expectTimeout: time.Duration(float64(60*60) * float64(1000) / 128000.0 * float64(time.Second)),
+			expectTimeout: defaultTimeout,
 			expectError:   false,
 		},
 		{
@@ -439,7 +440,7 @@ func TestCalculateNonStreamingTimeout(t *testing.T) {
 			name:          "token count below model specific limit is ok",
 			maxTokens:     8000,
 			model:         "test-model",
-			expectTimeout: time.Duration(float64(60*60) * float64(8000) / 128000.0 * float64(time.Second)),
+			expectTimeout: defaultTimeout,
 			expectError:   false,
 		},
 		{

@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.6.0 (2025-07-18)
+
+Full Changelog: [v1.5.0...v1.6.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.5.0...v1.6.0)
+
+### Features
+
+* **client:** expand max streaming buffer size ([8b206e2](https://github.com/anthropics/anthropic-sdk-go/commit/8b206e2267b83af7e9f7f56f029497bd403608fe))
+
+
+### Bug Fixes
+
+* **api:** revert change to NewToolResultBlock ([b4167e7](https://github.com/anthropics/anthropic-sdk-go/commit/b4167e7b3bb80927b3f397c0b6fb00f7340272a0))
+* **client:** fix default timeout logic to match other languages ([47e47f5](https://github.com/anthropics/anthropic-sdk-go/commit/47e47f54f8bd1a58413c82137713bedf88e2d4d2))
+* **tests:** make sure to build examples in scripts/lint ([69bcb13](https://github.com/anthropics/anthropic-sdk-go/commit/69bcb139fcf661bff527d345e9876c26c784befc))
+
+
+### Chores
+
+* **api:** update BetaCitationSearchResultLocation ([5d040a7](https://github.com/anthropics/anthropic-sdk-go/commit/5d040a7698b11ee059c175ce4a806509a9ae8e5b))
+* **internal:** fix lint script for tests ([f54301d](https://github.com/anthropics/anthropic-sdk-go/commit/f54301d9f251fa6e409852605f2d301c50d3466d))
+* **internal:** restructure things to avoid conflicts ([5f1bead](https://github.com/anthropics/anthropic-sdk-go/commit/5f1bead6fd696504d63ebbbf21c1a55c707a3df7))
+* lint tests ([4a64d14](https://github.com/anthropics/anthropic-sdk-go/commit/4a64d14e7988ba0c2343d7abc65f15da41bafb24))
+* lint tests in subpackages ([4ae61a6](https://github.com/anthropics/anthropic-sdk-go/commit/4ae61a601cf94e459bc431e07c9b7e25557af493))
+
+
+### Documentation
+
+* model in examples ([da9d5af](https://github.com/anthropics/anthropic-sdk-go/commit/da9d5af61544a6f25d9284ee6eee25f5d1364e8a))
+* model in examples ([fe2da16](https://github.com/anthropics/anthropic-sdk-go/commit/fe2da16e4bf05ee7029b1be33059bf3a4e76c300))
+
 ## 1.5.0 (2025-07-03)
 
 Full Changelog: [v1.4.0...v1.5.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.4.0...v1.5.0)

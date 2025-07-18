@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.1 (2025-07-18)
+
+Full Changelog: [v1.6.0...v1.6.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.6.0...v1.6.1)
+
+### Chores
+
+* **internal:** version bump ([459dd39](https://github.com/anthropics/anthropic-sdk-go/commit/459dd391b281273af9027a23e39b78c422dace0b))
+
 ## 1.6.0 (2025-07-18)
 
 Full Changelog: [v1.5.0...v1.6.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.5.0...v1.6.0)

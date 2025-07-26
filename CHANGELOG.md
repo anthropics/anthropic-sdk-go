@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.7.0 (2025-07-26)
+
+Full Changelog: [v1.6.2...v1.7.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.6.2...v1.7.0)
+
+### Features
+
+* **api:** removed older deprecated models ([88a397a](https://github.com/anthropics/anthropic-sdk-go/commit/88a397acb01a7557fbd6852f85ece295a7c2a2b7))
+
+
+### Bug Fixes
+
+* **client:** process custom base url ahead of time ([2165b1a](https://github.com/anthropics/anthropic-sdk-go/commit/2165b1ac1c78491be85fdc6b49c63ab027caeed6))
+
+
+### Chores
+
+* **internal:** version bump ([e03b3bd](https://github.com/anthropics/anthropic-sdk-go/commit/e03b3bdd13e207925a9da2b12b830ce9bb6ed88b))
+
 ## 1.6.2 (2025-07-18)
 
 Full Changelog: [v1.6.1...v1.6.2](https://github.com/anthropics/anthropic-sdk-go/compare/v1.6.1...v1.6.2)

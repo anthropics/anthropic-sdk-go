@@ -4566,10 +4566,10 @@ func CalculateNonStreamingTimeout(maxTokens int, model Model, opts []option.Requ
 	expectedTime := time.Duration(float64(maximumTime) * float64(maxTokens) / 128000.0)
 
 	// If the model has a non-streaming token limit and max_tokens exceeds it,
-	// or if the expected time exceeds default time, recommend streaming
+	// or if the expected time exceeds default time, require streaming
 	maxNonStreamingTokens, hasLimit := constant.ModelNonStreamingTokens[string(model)]
 	if expectedTime > defaultTime || (hasLimit && maxTokens > maxNonStreamingTokens) {
-		return 0, fmt.Errorf("streaming is strongly recommended for operations that may take longer than 10 minutes")
+		return 0, fmt.Errorf("streaming is required for operations that may take longer than 10 minutes")
 	}
 
 	return defaultTime, nil

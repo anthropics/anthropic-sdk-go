@@ -32,8 +32,8 @@ func TestMessageBatchNew(t *testing.T) {
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{{
 					Content: []anthropic.ContentBlockParamUnion{{
-						OfRequestTextBlock: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
-							OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+						OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+							OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 						}}},
 					}},
 					Role: anthropic.MessageParamRoleUser,
@@ -42,19 +42,20 @@ func TestMessageBatchNew(t *testing.T) {
 				Metadata: anthropic.MetadataParam{
 					UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				},
+				ServiceTier:   "auto",
 				StopSequences: []string{"string"},
 				Stream:        anthropic.Bool(true),
-				System: []anthropic.TextBlockParam{{Text: "x", CacheControl: anthropic.CacheControlEphemeralParam{}, Citations: []anthropic.TextCitationParamUnion{{
-					OfRequestCharLocationCitation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				System: []anthropic.TextBlockParam{{Text: "x", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}}},
 				Temperature: anthropic.Float(1),
 				Thinking: anthropic.ThinkingConfigParamUnion{
-					OfThinkingConfigEnabled: &anthropic.ThinkingConfigEnabledParam{
+					OfEnabled: &anthropic.ThinkingConfigEnabledParam{
 						BudgetTokens: 1024,
 					},
 				},
 				ToolChoice: anthropic.ToolChoiceUnionParam{
-					OfToolChoiceAuto: &anthropic.ToolChoiceAutoParam{
+					OfAuto: &anthropic.ToolChoiceAutoParam{
 						DisableParallelToolUse: anthropic.Bool(true),
 					},
 				},
@@ -71,10 +72,12 @@ func TestMessageBatchNew(t *testing.T) {
 									"type":        "string",
 								},
 							},
+							Required: []string{"location"},
 						},
 						Name:         "name",
-						CacheControl: anthropic.CacheControlEphemeralParam{},
+						CacheControl: anthropic.NewCacheControlEphemeralParam(),
 						Description:  anthropic.String("Get the current weather in a given location"),
+						Type:         anthropic.ToolTypeCustom,
 					},
 				}},
 				TopK: anthropic.Int(5),

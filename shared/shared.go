@@ -7,7 +7,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
@@ -20,12 +20,11 @@ type paramObj = param.APIObject
 type APIErrorObject struct {
 	Message string            `json:"message,required"`
 	Type    constant.APIError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -36,15 +35,16 @@ func (r *APIErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (APIErrorObject) ImplErrorObjectUnion() {}
+
 type AuthenticationError struct {
 	Message string                       `json:"message,required"`
 	Type    constant.AuthenticationError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -55,15 +55,16 @@ func (r *AuthenticationError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (AuthenticationError) ImplErrorObjectUnion() {}
+
 type BillingError struct {
 	Message string                `json:"message,required"`
 	Type    constant.BillingError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -73,6 +74,8 @@ func (r BillingError) RawJSON() string { return r.JSON.raw }
 func (r *BillingError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+func (BillingError) ImplErrorObjectUnion() {}
 
 // ErrorObjectUnion contains all possible properties and values from
 // [InvalidRequestError], [AuthenticationError], [BillingError], [PermissionError],
@@ -89,28 +92,34 @@ type ErrorObjectUnion struct {
 	// "api_error", "overloaded_error".
 	Type string `json:"type"`
 	JSON struct {
-		Message resp.Field
-		Type    resp.Field
+		Message respjson.Field
+		Type    respjson.Field
 		raw     string
 	} `json:"-"`
+}
+
+// anyErrorObject is implemented by each variant of [ErrorObjectUnion] to add type
+// safety for the return type of [ErrorObjectUnion.AsAny]
+type anyErrorObject interface {
+	ImplErrorObjectUnion()
 }
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ErrorObjectUnion.AsAny().(type) {
-//	case InvalidRequestError:
-//	case AuthenticationError:
-//	case BillingError:
-//	case PermissionError:
-//	case NotFoundError:
-//	case RateLimitError:
-//	case GatewayTimeoutError:
-//	case APIErrorObject:
-//	case OverloadedError:
+//	case shared.InvalidRequestError:
+//	case shared.AuthenticationError:
+//	case shared.BillingError:
+//	case shared.PermissionError:
+//	case shared.NotFoundError:
+//	case shared.RateLimitError:
+//	case shared.GatewayTimeoutError:
+//	case shared.APIErrorObject:
+//	case shared.OverloadedError:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u ErrorObjectUnion) AsAny() any {
+func (u ErrorObjectUnion) AsAny() anyErrorObject {
 	switch u.Type {
 	case "invalid_request_error":
 		return u.AsInvalidRequestError()
@@ -125,7 +134,7 @@ func (u ErrorObjectUnion) AsAny() any {
 	case "rate_limit_error":
 		return u.AsRateLimitError()
 	case "timeout_error":
-		return u.AsGatewayTimeoutError()
+		return u.AsTimeoutError()
 	case "api_error":
 		return u.AsAPIError()
 	case "overloaded_error":
@@ -164,7 +173,7 @@ func (u ErrorObjectUnion) AsRateLimitError() (v RateLimitError) {
 	return
 }
 
-func (u ErrorObjectUnion) AsGatewayTimeoutError() (v GatewayTimeoutError) {
+func (u ErrorObjectUnion) AsTimeoutError() (v GatewayTimeoutError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -189,12 +198,11 @@ func (r *ErrorObjectUnion) UnmarshalJSON(data []byte) error {
 type ErrorResponse struct {
 	Error ErrorObjectUnion `json:"error,required"`
 	Type  constant.Error   `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Error       resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Error       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -208,12 +216,11 @@ func (r *ErrorResponse) UnmarshalJSON(data []byte) error {
 type GatewayTimeoutError struct {
 	Message string                `json:"message,required"`
 	Type    constant.TimeoutError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -224,15 +231,16 @@ func (r *GatewayTimeoutError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (GatewayTimeoutError) ImplErrorObjectUnion() {}
+
 type InvalidRequestError struct {
 	Message string                       `json:"message,required"`
 	Type    constant.InvalidRequestError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -243,15 +251,16 @@ func (r *InvalidRequestError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (InvalidRequestError) ImplErrorObjectUnion() {}
+
 type NotFoundError struct {
 	Message string                 `json:"message,required"`
 	Type    constant.NotFoundError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -262,15 +271,16 @@ func (r *NotFoundError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (NotFoundError) ImplErrorObjectUnion() {}
+
 type OverloadedError struct {
 	Message string                   `json:"message,required"`
 	Type    constant.OverloadedError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -281,15 +291,16 @@ func (r *OverloadedError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (OverloadedError) ImplErrorObjectUnion() {}
+
 type PermissionError struct {
 	Message string                   `json:"message,required"`
 	Type    constant.PermissionError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -300,15 +311,16 @@ func (r *PermissionError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func (PermissionError) ImplErrorObjectUnion() {}
+
 type RateLimitError struct {
 	Message string                  `json:"message,required"`
 	Type    constant.RateLimitError `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -318,3 +330,5 @@ func (r RateLimitError) RawJSON() string { return r.JSON.raw }
 func (r *RateLimitError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+func (RateLimitError) ImplErrorObjectUnion() {}

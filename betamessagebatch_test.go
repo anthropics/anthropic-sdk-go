@@ -32,29 +32,40 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				MaxTokens: 1024,
 				Messages: []anthropic.BetaMessageParam{{
 					Content: []anthropic.BetaContentBlockParamUnion{{
-						OfRequestTextBlock: &anthropic.BetaTextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.BetaCacheControlEphemeralParam{}, Citations: []anthropic.BetaTextCitationParamUnion{{
-							OfRequestCharLocationCitation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+						OfText: &anthropic.BetaTextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.BetaCacheControlEphemeralParam{TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m}, Citations: []anthropic.BetaTextCitationParamUnion{{
+							OfCharLocation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 						}}},
 					}},
 					Role: anthropic.BetaMessageParamRoleUser,
 				}},
-				Model: anthropic.ModelClaude3_7SonnetLatest,
+				Model:     anthropic.ModelClaude3_7SonnetLatest,
+				Container: anthropic.String("container"),
+				MCPServers: []anthropic.BetaRequestMCPServerURLDefinitionParam{{
+					Name:               "name",
+					URL:                "url",
+					AuthorizationToken: anthropic.String("authorization_token"),
+					ToolConfiguration: anthropic.BetaRequestMCPServerToolConfigurationParam{
+						AllowedTools: []string{"string"},
+						Enabled:      anthropic.Bool(true),
+					},
+				}},
 				Metadata: anthropic.BetaMetadataParam{
 					UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				},
+				ServiceTier:   "auto",
 				StopSequences: []string{"string"},
 				Stream:        anthropic.Bool(true),
-				System: []anthropic.BetaTextBlockParam{{Text: "x", CacheControl: anthropic.BetaCacheControlEphemeralParam{}, Citations: []anthropic.BetaTextCitationParamUnion{{
-					OfRequestCharLocationCitation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
+				System: []anthropic.BetaTextBlockParam{{Text: "x", CacheControl: anthropic.BetaCacheControlEphemeralParam{TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m}, Citations: []anthropic.BetaTextCitationParamUnion{{
+					OfCharLocation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}}},
 				Temperature: anthropic.Float(1),
 				Thinking: anthropic.BetaThinkingConfigParamUnion{
-					OfThinkingConfigEnabled: &anthropic.BetaThinkingConfigEnabledParam{
+					OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{
 						BudgetTokens: 1024,
 					},
 				},
 				ToolChoice: anthropic.BetaToolChoiceUnionParam{
-					OfToolChoiceAuto: &anthropic.BetaToolChoiceAutoParam{
+					OfAuto: &anthropic.BetaToolChoiceAutoParam{
 						DisableParallelToolUse: anthropic.Bool(true),
 					},
 				},
@@ -71,11 +82,14 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 									"type":        "string",
 								},
 							},
+							Required: []string{"location"},
 						},
-						Name:         "name",
-						CacheControl: anthropic.BetaCacheControlEphemeralParam{},
-						Description:  anthropic.String("Get the current weather in a given location"),
-						Type:         anthropic.BetaToolTypeCustom,
+						Name: "name",
+						CacheControl: anthropic.BetaCacheControlEphemeralParam{
+							TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
+						},
+						Description: anthropic.String("Get the current weather in a given location"),
+						Type:        anthropic.BetaToolTypeCustom,
 					},
 				}},
 				TopK: anthropic.Int(5),

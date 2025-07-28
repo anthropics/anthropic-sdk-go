@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/anthropics/anthropic-sdk-go"
 )
@@ -19,7 +18,7 @@ func main() {
 		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
 		},
-		Model:         anthropic.ModelClaude_3_5_Sonnet_20240620,
+		Model:         anthropic.ModelClaudeSonnet4_20250514,
 		StopSequences: []string{"```\n"},
 	})
 

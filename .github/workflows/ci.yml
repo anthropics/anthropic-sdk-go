@@ -1,18 +1,23 @@
 name: CI
 on:
   push:
-    branches:
-      - main
+    branches-ignore:
+      - 'generated'
+      - 'codegen/**'
+      - 'integrated/**'
+      - 'stl-preview-head/**'
+      - 'stl-preview-base/**'
   pull_request:
-    branches:
-      - main
-      - next
+    branches-ignore:
+      - 'stl-preview-head/**'
+      - 'stl-preview-base/**'
 
 jobs:
   lint:
+    timeout-minutes: 10
     name: lint
-    runs-on: ubuntu-latest
-    if: github.repository == 'anthropics/anthropic-sdk-go'
+    runs-on: ${{ github.repository == 'stainless-sdks/anthropic-go' && 'depot-ubuntu-24.04' || 'ubuntu-latest' }}
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.fork
 
     steps:
       - uses: actions/checkout@v4
@@ -25,10 +30,10 @@ jobs:
       - name: Run lints
         run: ./scripts/lint
   test:
+    timeout-minutes: 10
     name: test
-    runs-on: ubuntu-latest
-    if: github.repository == 'anthropics/anthropic-sdk-go'
-
+    runs-on: ${{ github.repository == 'stainless-sdks/anthropic-go' && 'depot-ubuntu-24.04' || 'ubuntu-latest' }}
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.fork
     steps:
       - uses: actions/checkout@v4
 

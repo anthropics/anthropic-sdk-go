@@ -16,7 +16,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
@@ -43,7 +43,10 @@ func NewBetaModelService(opts ...option.RequestOption) (r BetaModelService) {
 //
 // The Models API response can be used to determine information about a specific
 // model or resolve a model alias to a model ID.
-func (r *BetaModelService) Get(ctx context.Context, modelID string, opts ...option.RequestOption) (res *BetaModelInfo, err error) {
+func (r *BetaModelService) Get(ctx context.Context, modelID string, query BetaModelGetParams, opts ...option.RequestOption) (res *BetaModelInfo, err error) {
+	for _, v := range query.Betas {
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+	}
 	opts = append(r.Options[:], opts...)
 	if modelID == "" {
 		err = errors.New("missing required model_id parameter")
@@ -58,12 +61,15 @@ func (r *BetaModelService) Get(ctx context.Context, modelID string, opts ...opti
 //
 // The Models API response can be used to determine which models are available for
 // use in the API. More recently released models are listed first.
-func (r *BetaModelService) List(ctx context.Context, query BetaModelListParams, opts ...option.RequestOption) (res *pagination.Page[BetaModelInfo], err error) {
+func (r *BetaModelService) List(ctx context.Context, params BetaModelListParams, opts ...option.RequestOption) (res *pagination.Page[BetaModelInfo], err error) {
 	var raw *http.Response
+	for _, v := range params.Betas {
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+	}
 	opts = append(r.Options[:], opts...)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/models?beta=true"
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,8 +85,8 @@ func (r *BetaModelService) List(ctx context.Context, query BetaModelListParams, 
 //
 // The Models API response can be used to determine which models are available for
 // use in the API. More recently released models are listed first.
-func (r *BetaModelService) ListAutoPaging(ctx context.Context, query BetaModelListParams, opts ...option.RequestOption) *pagination.PageAutoPager[BetaModelInfo] {
-	return pagination.NewPageAutoPager(r.List(ctx, query, opts...))
+func (r *BetaModelService) ListAutoPaging(ctx context.Context, params BetaModelListParams, opts ...option.RequestOption) *pagination.PageAutoPager[BetaModelInfo] {
+	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }
 
 type BetaModelInfo struct {
@@ -95,14 +101,13 @@ type BetaModelInfo struct {
 	//
 	// For Models, this is always `"model"`.
 	Type constant.Model `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          resp.Field
-		CreatedAt   resp.Field
-		DisplayName resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		ID          respjson.Field
+		CreatedAt   respjson.Field
+		DisplayName respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -111,6 +116,12 @@ type BetaModelInfo struct {
 func (r BetaModelInfo) RawJSON() string { return r.JSON.raw }
 func (r *BetaModelInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaModelGetParams struct {
+	// Optional header to specify the beta version(s) you want to use.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
+	paramObj
 }
 
 type BetaModelListParams struct {
@@ -124,15 +135,13 @@ type BetaModelListParams struct {
 	//
 	// Defaults to `20`. Ranges from `1` to `1000`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Optional header to specify the beta version(s) you want to use.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f BetaModelListParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-
 // URLQuery serializes [BetaModelListParams]'s query parameters as `url.Values`.
-func (r BetaModelListParams) URLQuery() (v url.Values) {
+func (r BetaModelListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,

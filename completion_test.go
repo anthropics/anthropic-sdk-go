@@ -36,6 +36,7 @@ func TestCompletionNewWithOptionalParams(t *testing.T) {
 		Temperature:   anthropic.Float(1),
 		TopK:          anthropic.Int(5),
 		TopP:          anthropic.Float(0.7),
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

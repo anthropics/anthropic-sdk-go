@@ -18,7 +18,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/jsonl"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
@@ -198,12 +198,11 @@ type BetaDeletedMessageBatch struct {
 	//
 	// For Message Batches, this is always `"message_batch_deleted"`.
 	Type constant.MessageBatchDeleted `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		ID          respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -257,20 +256,19 @@ type BetaMessageBatch struct {
 	//
 	// For Message Batches, this is always `"message_batch"`.
 	Type constant.MessageBatch `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID                resp.Field
-		ArchivedAt        resp.Field
-		CancelInitiatedAt resp.Field
-		CreatedAt         resp.Field
-		EndedAt           resp.Field
-		ExpiresAt         resp.Field
-		ProcessingStatus  resp.Field
-		RequestCounts     resp.Field
-		ResultsURL        resp.Field
-		Type              resp.Field
-		ExtraFields       map[string]resp.Field
+		ID                respjson.Field
+		ArchivedAt        respjson.Field
+		CancelInitiatedAt respjson.Field
+		CreatedAt         respjson.Field
+		EndedAt           respjson.Field
+		ExpiresAt         respjson.Field
+		ProcessingStatus  respjson.Field
+		RequestCounts     respjson.Field
+		ResultsURL        respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
 		raw               string
 	} `json:"-"`
 }
@@ -292,11 +290,10 @@ const (
 
 type BetaMessageBatchCanceledResult struct {
 	Type constant.Canceled `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -310,12 +307,11 @@ func (r *BetaMessageBatchCanceledResult) UnmarshalJSON(data []byte) error {
 type BetaMessageBatchErroredResult struct {
 	Error BetaErrorResponse `json:"error,required"`
 	Type  constant.Errored  `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Error       resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Error       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -328,11 +324,10 @@ func (r *BetaMessageBatchErroredResult) UnmarshalJSON(data []byte) error {
 
 type BetaMessageBatchExpiredResult struct {
 	Type constant.Expired `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -357,12 +352,11 @@ type BetaMessageBatchIndividualResponse struct {
 	// processing failed, or the reason why processing was not attempted, such as
 	// cancellation or expiration.
 	Result BetaMessageBatchResultUnion `json:"result,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CustomID    resp.Field
-		Result      resp.Field
-		ExtraFields map[string]resp.Field
+		CustomID    respjson.Field
+		Result      respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -392,15 +386,14 @@ type BetaMessageBatchRequestCounts struct {
 	//
 	// This is zero until processing of the entire Message Batch has ended.
 	Succeeded int64 `json:"succeeded,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Canceled    resp.Field
-		Errored     resp.Field
-		Expired     resp.Field
-		Processing  resp.Field
-		Succeeded   resp.Field
-		ExtraFields map[string]resp.Field
+		Canceled    respjson.Field
+		Errored     respjson.Field
+		Expired     respjson.Field
+		Processing  respjson.Field
+		Succeeded   respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -426,53 +419,65 @@ type BetaMessageBatchResultUnion struct {
 	// This field is from variant [BetaMessageBatchErroredResult].
 	Error BetaErrorResponse `json:"error"`
 	JSON  struct {
-		Message resp.Field
-		Type    resp.Field
-		Error   resp.Field
+		Message respjson.Field
+		Type    respjson.Field
+		Error   respjson.Field
 		raw     string
 	} `json:"-"`
 }
 
+// anyBetaMessageBatchResult is implemented by each variant of
+// [BetaMessageBatchResultUnion] to add type safety for the return type of
+// [BetaMessageBatchResultUnion.AsAny]
+type anyBetaMessageBatchResult interface {
+	implBetaMessageBatchResultUnion()
+}
+
+func (BetaMessageBatchSucceededResult) implBetaMessageBatchResultUnion() {}
+func (BetaMessageBatchErroredResult) implBetaMessageBatchResultUnion()   {}
+func (BetaMessageBatchCanceledResult) implBetaMessageBatchResultUnion()  {}
+func (BetaMessageBatchExpiredResult) implBetaMessageBatchResultUnion()   {}
+
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaMessageBatchResultUnion.AsAny().(type) {
-//	case BetaMessageBatchSucceededResult:
-//	case BetaMessageBatchErroredResult:
-//	case BetaMessageBatchCanceledResult:
-//	case BetaMessageBatchExpiredResult:
+//	case anthropic.BetaMessageBatchSucceededResult:
+//	case anthropic.BetaMessageBatchErroredResult:
+//	case anthropic.BetaMessageBatchCanceledResult:
+//	case anthropic.BetaMessageBatchExpiredResult:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaMessageBatchResultUnion) AsAny() any {
+func (u BetaMessageBatchResultUnion) AsAny() anyBetaMessageBatchResult {
 	switch u.Type {
 	case "succeeded":
-		return u.AsSucceededResult()
+		return u.AsSucceeded()
 	case "errored":
-		return u.AsErroredResult()
+		return u.AsErrored()
 	case "canceled":
-		return u.AsCanceledResult()
+		return u.AsCanceled()
 	case "expired":
-		return u.AsExpiredResult()
+		return u.AsExpired()
 	}
 	return nil
 }
 
-func (u BetaMessageBatchResultUnion) AsSucceededResult() (v BetaMessageBatchSucceededResult) {
+func (u BetaMessageBatchResultUnion) AsSucceeded() (v BetaMessageBatchSucceededResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaMessageBatchResultUnion) AsErroredResult() (v BetaMessageBatchErroredResult) {
+func (u BetaMessageBatchResultUnion) AsErrored() (v BetaMessageBatchErroredResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaMessageBatchResultUnion) AsCanceledResult() (v BetaMessageBatchCanceledResult) {
+func (u BetaMessageBatchResultUnion) AsCanceled() (v BetaMessageBatchCanceledResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaMessageBatchResultUnion) AsExpiredResult() (v BetaMessageBatchExpiredResult) {
+func (u BetaMessageBatchResultUnion) AsExpired() (v BetaMessageBatchExpiredResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -487,12 +492,11 @@ func (r *BetaMessageBatchResultUnion) UnmarshalJSON(data []byte) error {
 type BetaMessageBatchSucceededResult struct {
 	Message BetaMessage        `json:"message,required"`
 	Type    constant.Succeeded `json:"type,required"`
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Message     resp.Field
-		Type        resp.Field
-		ExtraFields map[string]resp.Field
+		Message     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -512,13 +516,12 @@ type BetaMessageBatchNewParams struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f BetaMessageBatchNewParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-
 func (r BetaMessageBatchNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow BetaMessageBatchNewParams
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaMessageBatchNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties CustomID, Params are required.
@@ -536,12 +539,12 @@ type BetaMessageBatchNewParamsRequest struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f BetaMessageBatchNewParamsRequest) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 func (r BetaMessageBatchNewParamsRequest) MarshalJSON() (data []byte, err error) {
 	type shadow BetaMessageBatchNewParamsRequest
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaMessageBatchNewParamsRequest) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Messages API creation parameters for the individual request.
@@ -651,11 +654,15 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// [system prompt](https://docs.anthropic.com/en/docs/system-prompts), you can use
 	// the top-level `system` parameter — there is no `"system"` role for input
 	// messages in the Messages API.
+	//
+	// There is a limit of 100,000 messages in a single request.
 	Messages []BetaMessageParam `json:"messages,omitzero,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero,required"`
+	// Container identifier for reuse across requests.
+	Container param.Opt[string] `json:"container,omitzero"`
 	// Whether to incrementally stream the response using server-sent events.
 	//
 	// See [streaming](https://docs.anthropic.com/en/api/messages-streaming) for
@@ -688,8 +695,18 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// Recommended for advanced use cases only. You usually only need to use
 	// `temperature`.
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
+	// MCP servers to be utilized in this request
+	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.
 	Metadata BetaMetadataParam `json:"metadata,omitzero"`
+	// Determines whether to use priority capacity (if available) or standard capacity
+	// for this request.
+	//
+	// Anthropic offers different levels of service for your API requests. See
+	// [service-tiers](https://docs.anthropic.com/en/api/service-tiers) for details.
+	//
+	// Any of "auto", "standard_only".
+	ServiceTier string `json:"service_tier,omitzero"`
 	// Custom text sequences that will cause the model to stop generating.
 	//
 	// Our models will normally stop when they have naturally completed their turn,
@@ -725,6 +742,12 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// content blocks that represent the model's use of those tools. You can then run
 	// those tools using the tool input generated by the model and then optionally
 	// return results back to the model using `tool_result` content blocks.
+	//
+	// There are two types of tools: **client tools** and **server tools**. The
+	// behavior described below applies to client tools. For
+	// [server tools](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview#server-tools),
+	// see their individual documentation as each has its own behavior (e.g., the
+	// [web search tool](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/web-search-tool)).
 	//
 	// Each tool definition includes:
 	//
@@ -798,14 +821,18 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f BetaMessageBatchNewParamsRequestParams) IsPresent() bool {
-	return !param.IsOmitted(f) && !f.IsNull()
-}
 func (r BetaMessageBatchNewParamsRequestParams) MarshalJSON() (data []byte, err error) {
 	type shadow BetaMessageBatchNewParamsRequestParams
 	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaMessageBatchNewParamsRequestParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func init() {
+	apijson.RegisterFieldValidator[BetaMessageBatchNewParamsRequestParams](
+		"service_tier", "auto", "standard_only",
+	)
 }
 
 type BetaMessageBatchGetParams struct {
@@ -813,10 +840,6 @@ type BetaMessageBatchGetParams struct {
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f BetaMessageBatchGetParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
 
 type BetaMessageBatchListParams struct {
 	// ID of the object to use as a cursor for pagination. When provided, returns the
@@ -834,13 +857,9 @@ type BetaMessageBatchListParams struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f BetaMessageBatchListParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-
 // URLQuery serializes [BetaMessageBatchListParams]'s query parameters as
 // `url.Values`.
-func (r BetaMessageBatchListParams) URLQuery() (v url.Values) {
+func (r BetaMessageBatchListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
@@ -853,26 +872,14 @@ type BetaMessageBatchDeleteParams struct {
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f BetaMessageBatchDeleteParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-
 type BetaMessageBatchCancelParams struct {
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f BetaMessageBatchCancelParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }
-
 type BetaMessageBatchResultsParams struct {
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
-
-// IsPresent returns true if the field's value is not omitted and not the JSON
-// "null". To check if this field is omitted, use [param.IsOmitted].
-func (f BetaMessageBatchResultsParams) IsPresent() bool { return !param.IsOmitted(f) && !f.IsNull() }

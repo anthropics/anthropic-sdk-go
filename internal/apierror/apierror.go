@@ -8,22 +8,22 @@ import (
 	"net/http/httputil"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/packages/resp"
+	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 )
 
 // Error represents an error that originates from the API, i.e. when a request is
 // made and the API returns a response with a HTTP status code. Other errors are
 // not wrapped by this SDK.
 type Error struct {
-	// Metadata for the response, check the presence of optional fields with the
-	// [resp.Field.IsPresent] method.
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ExtraFields map[string]resp.Field
+		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 	StatusCode int
 	Request    *http.Request
 	Response   *http.Response
+	RequestID  string
 }
 
 // Returns the unmodified JSON received from the API
@@ -34,7 +34,13 @@ func (r *Error) UnmarshalJSON(data []byte) error {
 
 func (r *Error) Error() string {
 	// Attempt to re-populate the response body
-	return fmt.Sprintf("%s %q: %d %s %s", r.Request.Method, r.Request.URL, r.Response.StatusCode, http.StatusText(r.Response.StatusCode), r.JSON.raw)
+	statusInfo := fmt.Sprintf("%s %q: %d %s", r.Request.Method, r.Request.URL, r.Response.StatusCode, http.StatusText(r.Response.StatusCode))
+
+	if r.RequestID != "" {
+		statusInfo += fmt.Sprintf(" (Request-ID: %s)", r.RequestID)
+	}
+
+	return fmt.Sprintf("%s %s", statusInfo, r.JSON.raw)
 }
 
 func (r *Error) DumpRequest(body bool) []byte {

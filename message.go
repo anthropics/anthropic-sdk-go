@@ -159,6 +159,7 @@ type CitationCharLocation struct {
 	DocumentIndex  int64                 `json:"document_index,required"`
 	DocumentTitle  string                `json:"document_title,required"`
 	EndCharIndex   int64                 `json:"end_char_index,required"`
+	FileID         string                `json:"file_id,required"`
 	StartCharIndex int64                 `json:"start_char_index,required"`
 	Type           constant.CharLocation `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -167,6 +168,7 @@ type CitationCharLocation struct {
 		DocumentIndex  respjson.Field
 		DocumentTitle  respjson.Field
 		EndCharIndex   respjson.Field
+		FileID         respjson.Field
 		StartCharIndex respjson.Field
 		Type           respjson.Field
 		ExtraFields    map[string]respjson.Field
@@ -206,6 +208,7 @@ type CitationContentBlockLocation struct {
 	DocumentIndex   int64                         `json:"document_index,required"`
 	DocumentTitle   string                        `json:"document_title,required"`
 	EndBlockIndex   int64                         `json:"end_block_index,required"`
+	FileID          string                        `json:"file_id,required"`
 	StartBlockIndex int64                         `json:"start_block_index,required"`
 	Type            constant.ContentBlockLocation `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -214,6 +217,7 @@ type CitationContentBlockLocation struct {
 		DocumentIndex   respjson.Field
 		DocumentTitle   respjson.Field
 		EndBlockIndex   respjson.Field
+		FileID          respjson.Field
 		StartBlockIndex respjson.Field
 		Type            respjson.Field
 		ExtraFields     map[string]respjson.Field
@@ -254,6 +258,7 @@ type CitationPageLocation struct {
 	DocumentIndex   int64                 `json:"document_index,required"`
 	DocumentTitle   string                `json:"document_title,required"`
 	EndPageNumber   int64                 `json:"end_page_number,required"`
+	FileID          string                `json:"file_id,required"`
 	StartPageNumber int64                 `json:"start_page_number,required"`
 	Type            constant.PageLocation `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -262,6 +267,7 @@ type CitationPageLocation struct {
 		DocumentIndex   respjson.Field
 		DocumentTitle   respjson.Field
 		EndPageNumber   respjson.Field
+		FileID          respjson.Field
 		StartPageNumber respjson.Field
 		Type            respjson.Field
 		ExtraFields     map[string]respjson.Field
@@ -359,7 +365,8 @@ type CitationsDeltaCitationUnion struct {
 	DocumentIndex int64  `json:"document_index"`
 	DocumentTitle string `json:"document_title"`
 	// This field is from variant [CitationCharLocation].
-	EndCharIndex int64 `json:"end_char_index"`
+	EndCharIndex int64  `json:"end_char_index"`
+	FileID       string `json:"file_id"`
 	// This field is from variant [CitationCharLocation].
 	StartCharIndex int64 `json:"start_char_index"`
 	// Any of "char_location", "page_location", "content_block_location",
@@ -384,6 +391,7 @@ type CitationsDeltaCitationUnion struct {
 		DocumentIndex   respjson.Field
 		DocumentTitle   respjson.Field
 		EndCharIndex    respjson.Field
+		FileID          respjson.Field
 		StartCharIndex  respjson.Field
 		Type            respjson.Field
 		EndPageNumber   respjson.Field
@@ -1418,6 +1426,7 @@ type MessageCountTokensToolUnionParam struct {
 	OfBashTool20250124      *ToolBash20250124Param                         `json:",omitzero,inline"`
 	OfTextEditor20250124    *ToolTextEditor20250124Param                   `json:",omitzero,inline"`
 	OfTextEditor20250429    *MessageCountTokensToolTextEditor20250429Param `json:",omitzero,inline"`
+	OfTextEditor20250728    *ToolTextEditor20250728Param                   `json:",omitzero,inline"`
 	OfWebSearchTool20250305 *WebSearchTool20250305Param                    `json:",omitzero,inline"`
 	paramUnion
 }
@@ -1427,6 +1436,7 @@ func (u MessageCountTokensToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfBashTool20250124,
 		u.OfTextEditor20250124,
 		u.OfTextEditor20250429,
+		u.OfTextEditor20250728,
 		u.OfWebSearchTool20250305)
 }
 func (u *MessageCountTokensToolUnionParam) UnmarshalJSON(data []byte) error {
@@ -1442,6 +1452,8 @@ func (u *MessageCountTokensToolUnionParam) asAny() any {
 		return u.OfTextEditor20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250429) {
 		return u.OfTextEditor20250429
+	} else if !param.IsOmitted(u.OfTextEditor20250728) {
+		return u.OfTextEditor20250728
 	} else if !param.IsOmitted(u.OfWebSearchTool20250305) {
 		return u.OfWebSearchTool20250305
 	}
@@ -1460,6 +1472,14 @@ func (u MessageCountTokensToolUnionParam) GetInputSchema() *ToolInputSchemaParam
 func (u MessageCountTokensToolUnionParam) GetDescription() *string {
 	if vt := u.OfTool; vt != nil && vt.Description.Valid() {
 		return &vt.Description.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u MessageCountTokensToolUnionParam) GetMaxCharacters() *int64 {
+	if vt := u.OfTextEditor20250728; vt != nil && vt.MaxCharacters.Valid() {
+		return &vt.MaxCharacters.Value
 	}
 	return nil
 }
@@ -1506,6 +1526,8 @@ func (u MessageCountTokensToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfTextEditor20250728; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Name)
 	}
@@ -1522,6 +1544,8 @@ func (u MessageCountTokensToolUnionParam) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfTextEditor20250728; vt != nil {
+		return (*string)(&vt.Type)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Type)
 	}
@@ -1537,6 +1561,8 @@ func (u MessageCountTokensToolUnionParam) GetCacheControl() *CacheControlEphemer
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250429; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfTextEditor20250728; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return &vt.CacheControl
@@ -2415,7 +2441,8 @@ type TextCitationUnion struct {
 	DocumentIndex int64  `json:"document_index"`
 	DocumentTitle string `json:"document_title"`
 	// This field is from variant [CitationCharLocation].
-	EndCharIndex int64 `json:"end_char_index"`
+	EndCharIndex int64  `json:"end_char_index"`
+	FileID       string `json:"file_id"`
 	// This field is from variant [CitationCharLocation].
 	StartCharIndex int64 `json:"start_char_index"`
 	// Any of "char_location", "page_location", "content_block_location",
@@ -2440,6 +2467,7 @@ type TextCitationUnion struct {
 		DocumentIndex   respjson.Field
 		DocumentTitle   respjson.Field
 		EndCharIndex    respjson.Field
+		FileID          respjson.Field
 		StartCharIndex  respjson.Field
 		Type            respjson.Field
 		EndPageNumber   respjson.Field
@@ -3234,6 +3262,34 @@ func (r *ToolTextEditor20250124Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Name, Type are required.
+type ToolTextEditor20250728Param struct {
+	// Maximum number of characters to display when viewing a file. If not specified,
+	// defaults to displaying the full file.
+	MaxCharacters param.Opt[int64] `json:"max_characters,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as
+	// "str_replace_based_edit_tool".
+	Name constant.StrReplaceBasedEditTool `json:"name,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "text_editor_20250728".
+	Type constant.TextEditor20250728 `json:"type,required"`
+	paramObj
+}
+
+func (r ToolTextEditor20250728Param) MarshalJSON() (data []byte, err error) {
+	type shadow ToolTextEditor20250728Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ToolTextEditor20250728Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 func ToolUnionParamOfTool(inputSchema ToolInputSchemaParam, name string) ToolUnionParam {
 	var variant ToolParam
 	variant.InputSchema = inputSchema
@@ -3249,6 +3305,7 @@ type ToolUnionParam struct {
 	OfBashTool20250124      *ToolBash20250124Param            `json:",omitzero,inline"`
 	OfTextEditor20250124    *ToolTextEditor20250124Param      `json:",omitzero,inline"`
 	OfTextEditor20250429    *ToolUnionTextEditor20250429Param `json:",omitzero,inline"`
+	OfTextEditor20250728    *ToolTextEditor20250728Param      `json:",omitzero,inline"`
 	OfWebSearchTool20250305 *WebSearchTool20250305Param       `json:",omitzero,inline"`
 	paramUnion
 }
@@ -3258,6 +3315,7 @@ func (u ToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfBashTool20250124,
 		u.OfTextEditor20250124,
 		u.OfTextEditor20250429,
+		u.OfTextEditor20250728,
 		u.OfWebSearchTool20250305)
 }
 func (u *ToolUnionParam) UnmarshalJSON(data []byte) error {
@@ -3273,6 +3331,8 @@ func (u *ToolUnionParam) asAny() any {
 		return u.OfTextEditor20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250429) {
 		return u.OfTextEditor20250429
+	} else if !param.IsOmitted(u.OfTextEditor20250728) {
+		return u.OfTextEditor20250728
 	} else if !param.IsOmitted(u.OfWebSearchTool20250305) {
 		return u.OfWebSearchTool20250305
 	}
@@ -3291,6 +3351,14 @@ func (u ToolUnionParam) GetInputSchema() *ToolInputSchemaParam {
 func (u ToolUnionParam) GetDescription() *string {
 	if vt := u.OfTool; vt != nil && vt.Description.Valid() {
 		return &vt.Description.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ToolUnionParam) GetMaxCharacters() *int64 {
+	if vt := u.OfTextEditor20250728; vt != nil && vt.MaxCharacters.Valid() {
+		return &vt.MaxCharacters.Value
 	}
 	return nil
 }
@@ -3337,6 +3405,8 @@ func (u ToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfTextEditor20250728; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Name)
 	}
@@ -3353,6 +3423,8 @@ func (u ToolUnionParam) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfTextEditor20250728; vt != nil {
+		return (*string)(&vt.Type)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Type)
 	}
@@ -3368,6 +3440,8 @@ func (u ToolUnionParam) GetCacheControl() *CacheControlEphemeralParam {
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250429; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfTextEditor20250728; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return &vt.CacheControl

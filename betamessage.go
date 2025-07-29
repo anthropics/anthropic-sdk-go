@@ -356,6 +356,7 @@ type BetaCitationCharLocation struct {
 	DocumentIndex  int64                 `json:"document_index,required"`
 	DocumentTitle  string                `json:"document_title,required"`
 	EndCharIndex   int64                 `json:"end_char_index,required"`
+	FileID         string                `json:"file_id,required"`
 	StartCharIndex int64                 `json:"start_char_index,required"`
 	Type           constant.CharLocation `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -364,6 +365,7 @@ type BetaCitationCharLocation struct {
 		DocumentIndex  respjson.Field
 		DocumentTitle  respjson.Field
 		EndCharIndex   respjson.Field
+		FileID         respjson.Field
 		StartCharIndex respjson.Field
 		Type           respjson.Field
 		ExtraFields    map[string]respjson.Field
@@ -403,6 +405,7 @@ type BetaCitationContentBlockLocation struct {
 	DocumentIndex   int64                         `json:"document_index,required"`
 	DocumentTitle   string                        `json:"document_title,required"`
 	EndBlockIndex   int64                         `json:"end_block_index,required"`
+	FileID          string                        `json:"file_id,required"`
 	StartBlockIndex int64                         `json:"start_block_index,required"`
 	Type            constant.ContentBlockLocation `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -411,6 +414,7 @@ type BetaCitationContentBlockLocation struct {
 		DocumentIndex   respjson.Field
 		DocumentTitle   respjson.Field
 		EndBlockIndex   respjson.Field
+		FileID          respjson.Field
 		StartBlockIndex respjson.Field
 		Type            respjson.Field
 		ExtraFields     map[string]respjson.Field
@@ -451,6 +455,7 @@ type BetaCitationPageLocation struct {
 	DocumentIndex   int64                 `json:"document_index,required"`
 	DocumentTitle   string                `json:"document_title,required"`
 	EndPageNumber   int64                 `json:"end_page_number,required"`
+	FileID          string                `json:"file_id,required"`
 	StartPageNumber int64                 `json:"start_page_number,required"`
 	Type            constant.PageLocation `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -459,6 +464,7 @@ type BetaCitationPageLocation struct {
 		DocumentIndex   respjson.Field
 		DocumentTitle   respjson.Field
 		EndPageNumber   respjson.Field
+		FileID          respjson.Field
 		StartPageNumber respjson.Field
 		Type            respjson.Field
 		ExtraFields     map[string]respjson.Field
@@ -608,7 +614,8 @@ type BetaCitationsDeltaCitationUnion struct {
 	DocumentIndex int64  `json:"document_index"`
 	DocumentTitle string `json:"document_title"`
 	// This field is from variant [BetaCitationCharLocation].
-	EndCharIndex int64 `json:"end_char_index"`
+	EndCharIndex int64  `json:"end_char_index"`
+	FileID       string `json:"file_id"`
 	// This field is from variant [BetaCitationCharLocation].
 	StartCharIndex int64 `json:"start_char_index"`
 	// Any of "char_location", "page_location", "content_block_location",
@@ -634,6 +641,7 @@ type BetaCitationsDeltaCitationUnion struct {
 		DocumentIndex     respjson.Field
 		DocumentTitle     respjson.Field
 		EndCharIndex      respjson.Field
+		FileID            respjson.Field
 		StartCharIndex    respjson.Field
 		Type              respjson.Field
 		EndPageNumber     respjson.Field
@@ -3754,7 +3762,8 @@ type BetaTextCitationUnion struct {
 	DocumentIndex int64  `json:"document_index"`
 	DocumentTitle string `json:"document_title"`
 	// This field is from variant [BetaCitationCharLocation].
-	EndCharIndex int64 `json:"end_char_index"`
+	EndCharIndex int64  `json:"end_char_index"`
+	FileID       string `json:"file_id"`
 	// This field is from variant [BetaCitationCharLocation].
 	StartCharIndex int64 `json:"start_char_index"`
 	// Any of "char_location", "page_location", "content_block_location",
@@ -3780,6 +3789,7 @@ type BetaTextCitationUnion struct {
 		DocumentIndex     respjson.Field
 		DocumentTitle     respjson.Field
 		EndCharIndex      respjson.Field
+		FileID            respjson.Field
 		StartCharIndex    respjson.Field
 		Type              respjson.Field
 		EndPageNumber     respjson.Field
@@ -4868,6 +4878,34 @@ func (r *BetaToolTextEditor20250429Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Name, Type are required.
+type BetaToolTextEditor20250728Param struct {
+	// Maximum number of characters to display when viewing a file. If not specified,
+	// defaults to displaying the full file.
+	MaxCharacters param.Opt[int64] `json:"max_characters,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as
+	// "str_replace_based_edit_tool".
+	Name constant.StrReplaceBasedEditTool `json:"name,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "text_editor_20250728".
+	Type constant.TextEditor20250728 `json:"type,required"`
+	paramObj
+}
+
+func (r BetaToolTextEditor20250728Param) MarshalJSON() (data []byte, err error) {
+	type shadow BetaToolTextEditor20250728Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaToolTextEditor20250728Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 func BetaToolUnionParamOfTool(inputSchema BetaToolInputSchemaParam, name string) BetaToolUnionParam {
 	var variant BetaToolParam
 	variant.InputSchema = inputSchema
@@ -4902,6 +4940,7 @@ type BetaToolUnionParam struct {
 	OfTextEditor20241022        *BetaToolTextEditor20241022Param    `json:",omitzero,inline"`
 	OfTextEditor20250124        *BetaToolTextEditor20250124Param    `json:",omitzero,inline"`
 	OfTextEditor20250429        *BetaToolTextEditor20250429Param    `json:",omitzero,inline"`
+	OfTextEditor20250728        *BetaToolTextEditor20250728Param    `json:",omitzero,inline"`
 	OfWebSearchTool20250305     *BetaWebSearchTool20250305Param     `json:",omitzero,inline"`
 	paramUnion
 }
@@ -4916,6 +4955,7 @@ func (u BetaToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfTextEditor20241022,
 		u.OfTextEditor20250124,
 		u.OfTextEditor20250429,
+		u.OfTextEditor20250728,
 		u.OfWebSearchTool20250305)
 }
 func (u *BetaToolUnionParam) UnmarshalJSON(data []byte) error {
@@ -4941,6 +4981,8 @@ func (u *BetaToolUnionParam) asAny() any {
 		return u.OfTextEditor20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250429) {
 		return u.OfTextEditor20250429
+	} else if !param.IsOmitted(u.OfTextEditor20250728) {
+		return u.OfTextEditor20250728
 	} else if !param.IsOmitted(u.OfWebSearchTool20250305) {
 		return u.OfWebSearchTool20250305
 	}
@@ -4959,6 +5001,14 @@ func (u BetaToolUnionParam) GetInputSchema() *BetaToolInputSchemaParam {
 func (u BetaToolUnionParam) GetDescription() *string {
 	if vt := u.OfTool; vt != nil && vt.Description.Valid() {
 		return &vt.Description.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaToolUnionParam) GetMaxCharacters() *int64 {
+	if vt := u.OfTextEditor20250728; vt != nil && vt.MaxCharacters.Valid() {
+		return &vt.MaxCharacters.Value
 	}
 	return nil
 }
@@ -5015,6 +5065,8 @@ func (u BetaToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfTextEditor20250728; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Name)
 	}
@@ -5040,6 +5092,8 @@ func (u BetaToolUnionParam) GetType() *string {
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfTextEditor20250728; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Type)
@@ -5096,6 +5150,8 @@ func (u BetaToolUnionParam) GetCacheControl() *BetaCacheControlEphemeralParam {
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250429; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfTextEditor20250728; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return &vt.CacheControl
@@ -6038,6 +6094,7 @@ type BetaMessageCountTokensParamsToolUnion struct {
 	OfTextEditor20241022        *BetaToolTextEditor20241022Param    `json:",omitzero,inline"`
 	OfTextEditor20250124        *BetaToolTextEditor20250124Param    `json:",omitzero,inline"`
 	OfTextEditor20250429        *BetaToolTextEditor20250429Param    `json:",omitzero,inline"`
+	OfTextEditor20250728        *BetaToolTextEditor20250728Param    `json:",omitzero,inline"`
 	OfWebSearchTool20250305     *BetaWebSearchTool20250305Param     `json:",omitzero,inline"`
 	paramUnion
 }
@@ -6052,6 +6109,7 @@ func (u BetaMessageCountTokensParamsToolUnion) MarshalJSON() ([]byte, error) {
 		u.OfTextEditor20241022,
 		u.OfTextEditor20250124,
 		u.OfTextEditor20250429,
+		u.OfTextEditor20250728,
 		u.OfWebSearchTool20250305)
 }
 func (u *BetaMessageCountTokensParamsToolUnion) UnmarshalJSON(data []byte) error {
@@ -6077,6 +6135,8 @@ func (u *BetaMessageCountTokensParamsToolUnion) asAny() any {
 		return u.OfTextEditor20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250429) {
 		return u.OfTextEditor20250429
+	} else if !param.IsOmitted(u.OfTextEditor20250728) {
+		return u.OfTextEditor20250728
 	} else if !param.IsOmitted(u.OfWebSearchTool20250305) {
 		return u.OfWebSearchTool20250305
 	}
@@ -6095,6 +6155,14 @@ func (u BetaMessageCountTokensParamsToolUnion) GetInputSchema() *BetaToolInputSc
 func (u BetaMessageCountTokensParamsToolUnion) GetDescription() *string {
 	if vt := u.OfTool; vt != nil && vt.Description.Valid() {
 		return &vt.Description.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageCountTokensParamsToolUnion) GetMaxCharacters() *int64 {
+	if vt := u.OfTextEditor20250728; vt != nil && vt.MaxCharacters.Valid() {
+		return &vt.MaxCharacters.Value
 	}
 	return nil
 }
@@ -6151,6 +6219,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfTextEditor20250728; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Name)
 	}
@@ -6176,6 +6246,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetType() *string {
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfTextEditor20250728; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Type)
@@ -6232,6 +6304,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetCacheControl() *BetaCacheContr
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250429; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfTextEditor20250728; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return &vt.CacheControl

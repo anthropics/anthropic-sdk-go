@@ -1677,6 +1677,7 @@ const (
 	ModelClaudeOpus4_0              Model = "claude-opus-4-0"
 	ModelClaudeOpus4_20250514       Model = "claude-opus-4-20250514"
 	ModelClaude4Opus20250514        Model = "claude-4-opus-20250514"
+	ModelClaudeOpus4_1_20250805     Model = "claude-opus-4-1-20250805"
 	// Deprecated: Will reach end-of-life on January 5th, 2026. Please migrate to a
 	// newer model. Visit
 	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more

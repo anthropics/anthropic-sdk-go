@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.7.0 (2025-08-05)
+
+Full Changelog: [v1.6.2...v1.7.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.6.2...v1.7.0)
+
+### Features
+
+* **api:** add claude-opus-4-1-20250805 ([72c9d29](https://github.com/anthropics/anthropic-sdk-go/commit/72c9d29255cb59d11b132062df00889a63dd609e))
+* **api:** adds support for text_editor_20250728 tool ([be56278](https://github.com/anthropics/anthropic-sdk-go/commit/be56278e456ff5eb034852e17a4642be612e30a2))
+* **api:** removed older deprecated models ([88a397a](https://github.com/anthropics/anthropic-sdk-go/commit/88a397acb01a7557fbd6852f85ece295a7c2a2b7))
+* **docs:** add File Upload example ([bade71b](https://github.com/anthropics/anthropic-sdk-go/commit/bade71b64850e8fa4410c404f263d4252cdbb82d))
+* update streaming error message to say 'required' not 'recommended' ([0fb3d30](https://github.com/anthropics/anthropic-sdk-go/commit/0fb3d30814f8aead1237283a994f405c1103aff2))
+* update streaming error message to say 'required' not 'recommended' ([b23f6df](https://github.com/anthropics/anthropic-sdk-go/commit/b23f6df73098c6fe3aa599beb73973b699c4b2a4))
+
+
+### Bug Fixes
+
+* **client:** process custom base url ahead of time ([2165b1a](https://github.com/anthropics/anthropic-sdk-go/commit/2165b1ac1c78491be85fdc6b49c63ab027caeed6))
+
+
+### Chores
+
+* **client:** add TextEditor_20250429 tool ([20424fc](https://github.com/anthropics/anthropic-sdk-go/commit/20424fc340b4f10b208f5ba8ee2d2b4a6f9e546d))
+* **internal:** version bump ([e03b3bd](https://github.com/anthropics/anthropic-sdk-go/commit/e03b3bdd13e207925a9da2b12b830ce9bb6ed88b))
+
 ## 1.6.2 (2025-07-18)
 
 Full Changelog: [v1.6.1...v1.6.2](https://github.com/anthropics/anthropic-sdk-go/compare/v1.6.1...v1.6.2)

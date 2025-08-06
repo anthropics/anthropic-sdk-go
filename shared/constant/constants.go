@@ -3,7 +3,7 @@
 package constant
 
 import (
-	"encoding/json"
+	shimjson "github.com/anthropics/anthropic-sdk-go/internal/encoding/json"
 )
 
 // ModelNonStreamingTokens defines the maximum tokens for models that should limit
@@ -312,5 +312,5 @@ func marshalString[T ~string, PT constant[T]](v T) ([]byte, error) {
 	if v == zero {
 		v = PT(&v).Default()
 	}
-	return json.Marshal(string(v))
+	return shimjson.Marshal(string(v))
 }

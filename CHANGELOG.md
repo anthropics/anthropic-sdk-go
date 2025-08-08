@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.8.0 (2025-08-08)
+
+Full Changelog: [v1.7.0...v1.8.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.7.0...v1.8.0)
+
+### Features
+
+* **api:** search result content blocks ([0907804](https://github.com/anthropics/anthropic-sdk-go/commit/0907804ae58405abc4f4c0acb76464da3abdd00b))
+* **client:** support optional json html escaping ([8da877c](https://github.com/anthropics/anthropic-sdk-go/commit/8da877cb04c62d081d36a1f8cb5eea7922a396ce))
+
 ## 1.7.0 (2025-08-05)
 
 Full Changelog: [v1.6.2...v1.7.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.6.2...v1.7.0)

@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
@@ -302,6 +303,29 @@ func (r *CitationPageLocationParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties CitedText, EndBlockIndex, SearchResultIndex, Source,
+// StartBlockIndex, Title, Type are required.
+type CitationSearchResultLocationParam struct {
+	Title             param.Opt[string] `json:"title,omitzero,required"`
+	CitedText         string            `json:"cited_text,required"`
+	EndBlockIndex     int64             `json:"end_block_index,required"`
+	SearchResultIndex int64             `json:"search_result_index,required"`
+	Source            string            `json:"source,required"`
+	StartBlockIndex   int64             `json:"start_block_index,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "search_result_location".
+	Type constant.SearchResultLocation `json:"type,required"`
+	paramObj
+}
+
+func (r CitationSearchResultLocationParam) MarshalJSON() (data []byte, err error) {
+	type shadow CitationSearchResultLocationParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CitationSearchResultLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The properties CitedText, EncryptedIndex, Title, Type, URL are required.
 type CitationWebSearchResultLocationParam struct {
 	Title          param.Opt[string] `json:"title,omitzero,required"`
@@ -355,7 +379,7 @@ func (r *CitationsDelta) UnmarshalJSON(data []byte) error {
 
 // CitationsDeltaCitationUnion contains all possible properties and values from
 // [CitationCharLocation], [CitationPageLocation], [CitationContentBlockLocation],
-// [CitationsWebSearchResultLocation].
+// [CitationsWebSearchResultLocation], [CitationsSearchResultLocation].
 //
 // Use the [CitationsDeltaCitationUnion.AsAny] method to switch on the variant.
 //
@@ -370,38 +394,41 @@ type CitationsDeltaCitationUnion struct {
 	// This field is from variant [CitationCharLocation].
 	StartCharIndex int64 `json:"start_char_index"`
 	// Any of "char_location", "page_location", "content_block_location",
-	// "web_search_result_location".
+	// "web_search_result_location", "search_result_location".
 	Type string `json:"type"`
 	// This field is from variant [CitationPageLocation].
 	EndPageNumber int64 `json:"end_page_number"`
 	// This field is from variant [CitationPageLocation].
 	StartPageNumber int64 `json:"start_page_number"`
-	// This field is from variant [CitationContentBlockLocation].
-	EndBlockIndex int64 `json:"end_block_index"`
-	// This field is from variant [CitationContentBlockLocation].
+	EndBlockIndex   int64 `json:"end_block_index"`
 	StartBlockIndex int64 `json:"start_block_index"`
 	// This field is from variant [CitationsWebSearchResultLocation].
 	EncryptedIndex string `json:"encrypted_index"`
+	Title          string `json:"title"`
 	// This field is from variant [CitationsWebSearchResultLocation].
-	Title string `json:"title"`
-	// This field is from variant [CitationsWebSearchResultLocation].
-	URL  string `json:"url"`
-	JSON struct {
-		CitedText       respjson.Field
-		DocumentIndex   respjson.Field
-		DocumentTitle   respjson.Field
-		EndCharIndex    respjson.Field
-		FileID          respjson.Field
-		StartCharIndex  respjson.Field
-		Type            respjson.Field
-		EndPageNumber   respjson.Field
-		StartPageNumber respjson.Field
-		EndBlockIndex   respjson.Field
-		StartBlockIndex respjson.Field
-		EncryptedIndex  respjson.Field
-		Title           respjson.Field
-		URL             respjson.Field
-		raw             string
+	URL string `json:"url"`
+	// This field is from variant [CitationsSearchResultLocation].
+	SearchResultIndex int64 `json:"search_result_index"`
+	// This field is from variant [CitationsSearchResultLocation].
+	Source string `json:"source"`
+	JSON   struct {
+		CitedText         respjson.Field
+		DocumentIndex     respjson.Field
+		DocumentTitle     respjson.Field
+		EndCharIndex      respjson.Field
+		FileID            respjson.Field
+		StartCharIndex    respjson.Field
+		Type              respjson.Field
+		EndPageNumber     respjson.Field
+		StartPageNumber   respjson.Field
+		EndBlockIndex     respjson.Field
+		StartBlockIndex   respjson.Field
+		EncryptedIndex    respjson.Field
+		Title             respjson.Field
+		URL               respjson.Field
+		SearchResultIndex respjson.Field
+		Source            respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -416,6 +443,7 @@ func (CitationCharLocation) implCitationsDeltaCitationUnion()             {}
 func (CitationPageLocation) implCitationsDeltaCitationUnion()             {}
 func (CitationContentBlockLocation) implCitationsDeltaCitationUnion()     {}
 func (CitationsWebSearchResultLocation) implCitationsDeltaCitationUnion() {}
+func (CitationsSearchResultLocation) implCitationsDeltaCitationUnion()    {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -424,6 +452,7 @@ func (CitationsWebSearchResultLocation) implCitationsDeltaCitationUnion() {}
 //	case anthropic.CitationPageLocation:
 //	case anthropic.CitationContentBlockLocation:
 //	case anthropic.CitationsWebSearchResultLocation:
+//	case anthropic.CitationsSearchResultLocation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -437,6 +466,8 @@ func (u CitationsDeltaCitationUnion) AsAny() anyCitationsDeltaCitation {
 		return u.AsContentBlockLocation()
 	case "web_search_result_location":
 		return u.AsWebSearchResultLocation()
+	case "search_result_location":
+		return u.AsSearchResultLocation()
 	}
 	return nil
 }
@@ -461,10 +492,43 @@ func (u CitationsDeltaCitationUnion) AsWebSearchResultLocation() (v CitationsWeb
 	return
 }
 
+func (u CitationsDeltaCitationUnion) AsSearchResultLocation() (v CitationsSearchResultLocation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u CitationsDeltaCitationUnion) RawJSON() string { return u.JSON.raw }
 
 func (r *CitationsDeltaCitationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CitationsSearchResultLocation struct {
+	CitedText         string                        `json:"cited_text,required"`
+	EndBlockIndex     int64                         `json:"end_block_index,required"`
+	SearchResultIndex int64                         `json:"search_result_index,required"`
+	Source            string                        `json:"source,required"`
+	StartBlockIndex   int64                         `json:"start_block_index,required"`
+	Title             string                        `json:"title,required"`
+	Type              constant.SearchResultLocation `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CitedText         respjson.Field
+		EndBlockIndex     respjson.Field
+		SearchResultIndex respjson.Field
+		Source            respjson.Field
+		StartBlockIndex   respjson.Field
+		Title             respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CitationsSearchResultLocation) RawJSON() string { return r.JSON.raw }
+func (r *CitationsSearchResultLocation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -650,6 +714,14 @@ func NewDocumentBlock[
 	return ContentBlockParamUnion{OfDocument: &document}
 }
 
+func NewSearchResultBlock(content []TextBlockParam, source string, title string) ContentBlockParamUnion {
+	var searchResult SearchResultBlockParam
+	searchResult.Content = content
+	searchResult.Source = source
+	searchResult.Title = title
+	return ContentBlockParamUnion{OfSearchResult: &searchResult}
+}
+
 func NewThinkingBlock(signature string, thinking string) ContentBlockParamUnion {
 	var variant ThinkingBlockParam
 	variant.Signature = signature
@@ -705,6 +777,7 @@ type ContentBlockParamUnion struct {
 	OfText                *TextBlockParam                `json:",omitzero,inline"`
 	OfImage               *ImageBlockParam               `json:",omitzero,inline"`
 	OfDocument            *DocumentBlockParam            `json:",omitzero,inline"`
+	OfSearchResult        *SearchResultBlockParam        `json:",omitzero,inline"`
 	OfThinking            *ThinkingBlockParam            `json:",omitzero,inline"`
 	OfRedactedThinking    *RedactedThinkingBlockParam    `json:",omitzero,inline"`
 	OfToolUse             *ToolUseBlockParam             `json:",omitzero,inline"`
@@ -718,6 +791,7 @@ func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfText,
 		u.OfImage,
 		u.OfDocument,
+		u.OfSearchResult,
 		u.OfThinking,
 		u.OfRedactedThinking,
 		u.OfToolUse,
@@ -736,6 +810,8 @@ func (u *ContentBlockParamUnion) asAny() any {
 		return u.OfImage
 	} else if !param.IsOmitted(u.OfDocument) {
 		return u.OfDocument
+	} else if !param.IsOmitted(u.OfSearchResult) {
+		return u.OfSearchResult
 	} else if !param.IsOmitted(u.OfThinking) {
 		return u.OfThinking
 	} else if !param.IsOmitted(u.OfRedactedThinking) {
@@ -764,14 +840,6 @@ func (u ContentBlockParamUnion) GetText() *string {
 func (u ContentBlockParamUnion) GetContext() *string {
 	if vt := u.OfDocument; vt != nil && vt.Context.Valid() {
 		return &vt.Context.Value
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u ContentBlockParamUnion) GetTitle() *string {
-	if vt := u.OfDocument; vt != nil && vt.Title.Valid() {
-		return &vt.Title.Value
 	}
 	return nil
 }
@@ -816,6 +884,8 @@ func (u ContentBlockParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfDocument; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfSearchResult; vt != nil {
+		return (*string)(&vt.Type)
 	} else if vt := u.OfThinking; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfRedactedThinking; vt != nil {
@@ -828,6 +898,16 @@ func (u ContentBlockParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebSearchToolResult; vt != nil {
 		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockParamUnion) GetTitle() *string {
+	if vt := u.OfDocument; vt != nil && vt.Title.Valid() {
+		return &vt.Title.Value
+	} else if vt := u.OfSearchResult; vt != nil {
+		return (*string)(&vt.Title)
 	}
 	return nil
 }
@@ -870,6 +950,8 @@ func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
 		return &vt.CacheControl
 	} else if vt := u.OfDocument; vt != nil {
 		return &vt.CacheControl
+	} else if vt := u.OfSearchResult; vt != nil {
+		return &vt.CacheControl
 	} else if vt := u.OfToolUse; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfToolResult; vt != nil {
@@ -890,6 +972,8 @@ func (u ContentBlockParamUnion) GetCitations() (res contentBlockParamUnionCitati
 		res.any = &vt.Citations
 	} else if vt := u.OfDocument; vt != nil {
 		res.any = &vt.Citations
+	} else if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Citations
 	}
 	return
 }
@@ -907,6 +991,15 @@ type contentBlockParamUnionCitations struct{ any }
 //	}
 func (u contentBlockParamUnionCitations) AsAny() any { return u.any }
 
+// Returns a pointer to the underlying variant's property, if present.
+func (u contentBlockParamUnionCitations) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *CitationsConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
 // Returns a subunion which exports methods to access subproperties
 //
 // Or use AsAny() to get the underlying value
@@ -915,13 +1008,15 @@ func (u ContentBlockParamUnion) GetSource() (res contentBlockParamUnionSource) {
 		res.any = vt.Source.asAny()
 	} else if vt := u.OfDocument; vt != nil {
 		res.any = vt.Source.asAny()
+	} else if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Source
 	}
 	return
 }
 
 // Can have the runtime types [*Base64ImageSourceParam], [*URLImageSourceParam],
 // [*Base64PDFSourceParam], [*PlainTextSourceParam], [*ContentBlockSourceParam],
-// [*URLPDFSourceParam]
+// [*URLPDFSourceParam], [*string]
 type contentBlockParamUnionSource struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -933,6 +1028,7 @@ type contentBlockParamUnionSource struct{ any }
 //	case *anthropic.PlainTextSourceParam:
 //	case *anthropic.ContentBlockSourceParam:
 //	case *anthropic.URLPDFSourceParam:
+//	case *string:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -991,6 +1087,35 @@ func (u contentBlockParamUnionSource) GetURL() *string {
 	return nil
 }
 
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent) {
+	if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Content
+	} else if vt := u.OfToolResult; vt != nil {
+		res.any = &vt.Content
+	} else if vt := u.OfWebSearchToolResult; vt != nil {
+		res.any = vt.Content.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [_[]TextBlockParam],
+// [_[]ToolResultBlockParamContentUnion], [\*[]WebSearchResultBlockParam]
+type contentBlockParamUnionContent struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *[]anthropic.TextBlockParam:
+//	case *[]anthropic.ToolResultBlockParamContentUnion:
+//	case *[]anthropic.WebSearchResultBlockParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u contentBlockParamUnionContent) AsAny() any { return u.any }
+
 // Returns a pointer to the underlying variant's Input property, if present.
 func (u ContentBlockParamUnion) GetInput() *any {
 	if vt := u.OfToolUse; vt != nil {
@@ -1001,38 +1126,13 @@ func (u ContentBlockParamUnion) GetInput() *any {
 	return nil
 }
 
-// Returns a subunion which exports methods to access subproperties
-//
-// Or use AsAny() to get the underlying value
-func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent) {
-	if vt := u.OfToolResult; vt != nil {
-		res.any = &vt.Content
-	} else if vt := u.OfWebSearchToolResult; vt != nil {
-		res.any = vt.Content.asAny()
-	}
-	return
-}
-
-// Can have the runtime types [_[]ToolResultBlockParamContentUnion],
-// [_[]WebSearchResultBlockParam]
-type contentBlockParamUnionContent struct{ any }
-
-// Use the following switch statement to get the type of the union:
-//
-//	switch u.AsAny().(type) {
-//	case *[]anthropic.ToolResultBlockParamContentUnion:
-//	case *[]anthropic.WebSearchResultBlockParam:
-//	default:
-//	    fmt.Errorf("not present")
-//	}
-func (u contentBlockParamUnionContent) AsAny() any { return u.any }
-
 func init() {
 	apijson.RegisterUnion[ContentBlockParamUnion](
 		"type",
 		apijson.Discriminator[TextBlockParam]("text"),
 		apijson.Discriminator[ImageBlockParam]("image"),
 		apijson.Discriminator[DocumentBlockParam]("document"),
+		apijson.Discriminator[SearchResultBlockParam]("search_result"),
 		apijson.Discriminator[ThinkingBlockParam]("thinking"),
 		apijson.Discriminator[RedactedThinkingBlockParam]("redacted_thinking"),
 		apijson.Discriminator[ToolUseBlockParam]("tool_use"),
@@ -2272,6 +2372,27 @@ func (r *RedactedThinkingBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Content, Source, Title, Type are required.
+type SearchResultBlockParam struct {
+	Content []TextBlockParam `json:"content,omitzero,required"`
+	Source  string           `json:"source,required"`
+	Title   string           `json:"title,required"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	Citations    CitationsConfigParam       `json:"citations,omitzero"`
+	// This field can be elided, and will marshal its zero value as "search_result".
+	Type constant.SearchResult `json:"type,required"`
+	paramObj
+}
+
+func (r SearchResultBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow SearchResultBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SearchResultBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ServerToolUsage struct {
 	// The number of web search tool requests.
 	WebSearchRequests int64 `json:"web_search_requests,required"`
@@ -2407,7 +2528,7 @@ func (r *TextBlockParam) UnmarshalJSON(data []byte) error {
 
 // TextCitationUnion contains all possible properties and values from
 // [CitationCharLocation], [CitationPageLocation], [CitationContentBlockLocation],
-// [CitationsWebSearchResultLocation].
+// [CitationsWebSearchResultLocation], [CitationsSearchResultLocation].
 //
 // Use the [TextCitationUnion.AsAny] method to switch on the variant.
 //
@@ -2422,38 +2543,41 @@ type TextCitationUnion struct {
 	// This field is from variant [CitationCharLocation].
 	StartCharIndex int64 `json:"start_char_index"`
 	// Any of "char_location", "page_location", "content_block_location",
-	// "web_search_result_location".
+	// "web_search_result_location", "search_result_location".
 	Type string `json:"type"`
 	// This field is from variant [CitationPageLocation].
 	EndPageNumber int64 `json:"end_page_number"`
 	// This field is from variant [CitationPageLocation].
 	StartPageNumber int64 `json:"start_page_number"`
-	// This field is from variant [CitationContentBlockLocation].
-	EndBlockIndex int64 `json:"end_block_index"`
-	// This field is from variant [CitationContentBlockLocation].
+	EndBlockIndex   int64 `json:"end_block_index"`
 	StartBlockIndex int64 `json:"start_block_index"`
 	// This field is from variant [CitationsWebSearchResultLocation].
 	EncryptedIndex string `json:"encrypted_index"`
+	Title          string `json:"title"`
 	// This field is from variant [CitationsWebSearchResultLocation].
-	Title string `json:"title"`
-	// This field is from variant [CitationsWebSearchResultLocation].
-	URL  string `json:"url"`
-	JSON struct {
-		CitedText       respjson.Field
-		DocumentIndex   respjson.Field
-		DocumentTitle   respjson.Field
-		EndCharIndex    respjson.Field
-		FileID          respjson.Field
-		StartCharIndex  respjson.Field
-		Type            respjson.Field
-		EndPageNumber   respjson.Field
-		StartPageNumber respjson.Field
-		EndBlockIndex   respjson.Field
-		StartBlockIndex respjson.Field
-		EncryptedIndex  respjson.Field
-		Title           respjson.Field
-		URL             respjson.Field
-		raw             string
+	URL string `json:"url"`
+	// This field is from variant [CitationsSearchResultLocation].
+	SearchResultIndex int64 `json:"search_result_index"`
+	// This field is from variant [CitationsSearchResultLocation].
+	Source string `json:"source"`
+	JSON   struct {
+		CitedText         respjson.Field
+		DocumentIndex     respjson.Field
+		DocumentTitle     respjson.Field
+		EndCharIndex      respjson.Field
+		FileID            respjson.Field
+		StartCharIndex    respjson.Field
+		Type              respjson.Field
+		EndPageNumber     respjson.Field
+		StartPageNumber   respjson.Field
+		EndBlockIndex     respjson.Field
+		StartBlockIndex   respjson.Field
+		EncryptedIndex    respjson.Field
+		Title             respjson.Field
+		URL               respjson.Field
+		SearchResultIndex respjson.Field
+		Source            respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -2467,6 +2591,7 @@ func (CitationCharLocation) implTextCitationUnion()             {}
 func (CitationPageLocation) implTextCitationUnion()             {}
 func (CitationContentBlockLocation) implTextCitationUnion()     {}
 func (CitationsWebSearchResultLocation) implTextCitationUnion() {}
+func (CitationsSearchResultLocation) implTextCitationUnion()    {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -2475,6 +2600,7 @@ func (CitationsWebSearchResultLocation) implTextCitationUnion() {}
 //	case anthropic.CitationPageLocation:
 //	case anthropic.CitationContentBlockLocation:
 //	case anthropic.CitationsWebSearchResultLocation:
+//	case anthropic.CitationsSearchResultLocation:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -2488,6 +2614,8 @@ func (u TextCitationUnion) AsAny() anyTextCitation {
 		return u.AsContentBlockLocation()
 	case "web_search_result_location":
 		return u.AsWebSearchResultLocation()
+	case "search_result_location":
+		return u.AsSearchResultLocation()
 	}
 	return nil
 }
@@ -2512,6 +2640,11 @@ func (u TextCitationUnion) AsWebSearchResultLocation() (v CitationsWebSearchResu
 	return
 }
 
+func (u TextCitationUnion) AsSearchResultLocation() (v CitationsSearchResultLocation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u TextCitationUnion) RawJSON() string { return u.JSON.raw }
 
@@ -2527,11 +2660,16 @@ type TextCitationParamUnion struct {
 	OfPageLocation            *CitationPageLocationParam            `json:",omitzero,inline"`
 	OfContentBlockLocation    *CitationContentBlockLocationParam    `json:",omitzero,inline"`
 	OfWebSearchResultLocation *CitationWebSearchResultLocationParam `json:",omitzero,inline"`
+	OfSearchResultLocation    *CitationSearchResultLocationParam    `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u TextCitationParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfCharLocation, u.OfPageLocation, u.OfContentBlockLocation, u.OfWebSearchResultLocation)
+	return param.MarshalUnion(u, u.OfCharLocation,
+		u.OfPageLocation,
+		u.OfContentBlockLocation,
+		u.OfWebSearchResultLocation,
+		u.OfSearchResultLocation)
 }
 func (u *TextCitationParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -2546,6 +2684,8 @@ func (u *TextCitationParamUnion) asAny() any {
 		return u.OfContentBlockLocation
 	} else if !param.IsOmitted(u.OfWebSearchResultLocation) {
 		return u.OfWebSearchResultLocation
+	} else if !param.IsOmitted(u.OfSearchResultLocation) {
+		return u.OfSearchResultLocation
 	}
 	return nil
 }
@@ -2583,33 +2723,9 @@ func (u TextCitationParamUnion) GetStartPageNumber() *int64 {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetEndBlockIndex() *int64 {
-	if vt := u.OfContentBlockLocation; vt != nil {
-		return &vt.EndBlockIndex
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetStartBlockIndex() *int64 {
-	if vt := u.OfContentBlockLocation; vt != nil {
-		return &vt.StartBlockIndex
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetEncryptedIndex() *string {
 	if vt := u.OfWebSearchResultLocation; vt != nil {
 		return &vt.EncryptedIndex
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u TextCitationParamUnion) GetTitle() *string {
-	if vt := u.OfWebSearchResultLocation; vt != nil && vt.Title.Valid() {
-		return &vt.Title.Value
 	}
 	return nil
 }
@@ -2623,6 +2739,22 @@ func (u TextCitationParamUnion) GetURL() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u TextCitationParamUnion) GetSearchResultIndex() *int64 {
+	if vt := u.OfSearchResultLocation; vt != nil {
+		return &vt.SearchResultIndex
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u TextCitationParamUnion) GetSource() *string {
+	if vt := u.OfSearchResultLocation; vt != nil {
+		return &vt.Source
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetCitedText() *string {
 	if vt := u.OfCharLocation; vt != nil {
 		return (*string)(&vt.CitedText)
@@ -2631,6 +2763,8 @@ func (u TextCitationParamUnion) GetCitedText() *string {
 	} else if vt := u.OfContentBlockLocation; vt != nil {
 		return (*string)(&vt.CitedText)
 	} else if vt := u.OfWebSearchResultLocation; vt != nil {
+		return (*string)(&vt.CitedText)
+	} else if vt := u.OfSearchResultLocation; vt != nil {
 		return (*string)(&vt.CitedText)
 	}
 	return nil
@@ -2670,6 +2804,38 @@ func (u TextCitationParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebSearchResultLocation; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfSearchResultLocation; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u TextCitationParamUnion) GetEndBlockIndex() *int64 {
+	if vt := u.OfContentBlockLocation; vt != nil {
+		return (*int64)(&vt.EndBlockIndex)
+	} else if vt := u.OfSearchResultLocation; vt != nil {
+		return (*int64)(&vt.EndBlockIndex)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u TextCitationParamUnion) GetStartBlockIndex() *int64 {
+	if vt := u.OfContentBlockLocation; vt != nil {
+		return (*int64)(&vt.StartBlockIndex)
+	} else if vt := u.OfSearchResultLocation; vt != nil {
+		return (*int64)(&vt.StartBlockIndex)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u TextCitationParamUnion) GetTitle() *string {
+	if vt := u.OfWebSearchResultLocation; vt != nil && vt.Title.Valid() {
+		return &vt.Title.Value
+	} else if vt := u.OfSearchResultLocation; vt != nil && vt.Title.Valid() {
+		return &vt.Title.Value
 	}
 	return nil
 }
@@ -2681,6 +2847,7 @@ func init() {
 		apijson.Discriminator[CitationPageLocationParam]("page_location"),
 		apijson.Discriminator[CitationContentBlockLocationParam]("content_block_location"),
 		apijson.Discriminator[CitationWebSearchResultLocationParam]("web_search_result_location"),
+		apijson.Discriminator[CitationSearchResultLocationParam]("search_result_location"),
 	)
 }
 
@@ -3140,13 +3307,14 @@ func (r *ToolResultBlockParam) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ToolResultBlockParamContentUnion struct {
-	OfText  *TextBlockParam  `json:",omitzero,inline"`
-	OfImage *ImageBlockParam `json:",omitzero,inline"`
+	OfText         *TextBlockParam         `json:",omitzero,inline"`
+	OfImage        *ImageBlockParam        `json:",omitzero,inline"`
+	OfSearchResult *SearchResultBlockParam `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfText, u.OfImage)
+	return param.MarshalUnion(u, u.OfText, u.OfImage, u.OfSearchResult)
 }
 func (u *ToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3157,6 +3325,8 @@ func (u *ToolResultBlockParamContentUnion) asAny() any {
 		return u.OfText
 	} else if !param.IsOmitted(u.OfImage) {
 		return u.OfImage
+	} else if !param.IsOmitted(u.OfSearchResult) {
+		return u.OfSearchResult
 	}
 	return nil
 }
@@ -3170,17 +3340,17 @@ func (u ToolResultBlockParamContentUnion) GetText() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u ToolResultBlockParamContentUnion) GetCitations() []TextCitationParamUnion {
-	if vt := u.OfText; vt != nil {
-		return vt.Citations
+func (u ToolResultBlockParamContentUnion) GetContent() []TextBlockParam {
+	if vt := u.OfSearchResult; vt != nil {
+		return vt.Content
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u ToolResultBlockParamContentUnion) GetSource() *ImageBlockParamSourceUnion {
-	if vt := u.OfImage; vt != nil {
-		return &vt.Source
+func (u ToolResultBlockParamContentUnion) GetTitle() *string {
+	if vt := u.OfSearchResult; vt != nil {
+		return &vt.Title
 	}
 	return nil
 }
@@ -3190,6 +3360,8 @@ func (u ToolResultBlockParamContentUnion) GetType() *string {
 	if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfImage; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfSearchResult; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -3201,6 +3373,96 @@ func (u ToolResultBlockParamContentUnion) GetCacheControl() *CacheControlEphemer
 		return &vt.CacheControl
 	} else if vt := u.OfImage; vt != nil {
 		return &vt.CacheControl
+	} else if vt := u.OfSearchResult; vt != nil {
+		return &vt.CacheControl
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u ToolResultBlockParamContentUnion) GetCitations() (res toolResultBlockParamContentUnionCitations) {
+	if vt := u.OfText; vt != nil {
+		res.any = &vt.Citations
+	} else if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Citations
+	}
+	return
+}
+
+// Can have the runtime types [*[]TextCitationParamUnion], [*CitationsConfigParam]
+type toolResultBlockParamContentUnionCitations struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *[]anthropic.TextCitationParamUnion:
+//	case *anthropic.CitationsConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolResultBlockParamContentUnionCitations) AsAny() any { return u.any }
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u ToolResultBlockParamContentUnion) GetSource() (res toolResultBlockParamContentUnionSource) {
+	if vt := u.OfImage; vt != nil {
+		res.any = vt.Source.asAny()
+	} else if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Source
+	}
+	return
+}
+
+// Can have the runtime types [*Base64ImageSourceParam], [*URLImageSourceParam],
+// [*string]
+type toolResultBlockParamContentUnionSource struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.Base64ImageSourceParam:
+//	case *anthropic.URLImageSourceParam:
+//	case *string:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolResultBlockParamContentUnionSource) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolResultBlockParamContentUnionSource) GetData() *string {
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetData()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolResultBlockParamContentUnionSource) GetMediaType() *string {
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetMediaType()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolResultBlockParamContentUnionSource) GetURL() *string {
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetURL()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolResultBlockParamContentUnionSource) GetType() *string {
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetType()
 	}
 	return nil
 }
@@ -3210,6 +3472,7 @@ func init() {
 		"type",
 		apijson.Discriminator[TextBlockParam]("text"),
 		apijson.Discriminator[ImageBlockParam]("image"),
+		apijson.Discriminator[SearchResultBlockParam]("search_result"),
 	)
 }
 

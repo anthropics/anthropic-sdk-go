@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.8.1 (2025-08-09)
+
+Full Changelog: [v1.8.0...v1.8.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.8.0...v1.8.1)
+
+### Chores
+
+* **internal:** detect breaking changes when removing endpoints ([91ea519](https://github.com/anthropics/anthropic-sdk-go/commit/91ea5197646ffd3d807610f11bab8726092e7a4b))
+* **internal:** update comment in script ([de412b0](https://github.com/anthropics/anthropic-sdk-go/commit/de412b007a097ce7d3231e0ccdf7d57572f78199))
+* update @stainless-api/prism-cli to v5.15.0 ([555556f](https://github.com/anthropics/anthropic-sdk-go/commit/555556f4ce77d406e904733b30c782039dacb837))
+
 ## 1.8.0 (2025-08-08)
 
 Full Changelog: [v1.7.0...v1.8.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.7.0...v1.8.0)

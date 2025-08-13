@@ -32,7 +32,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
@@ -44,7 +44,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		},
 		ServiceTier:   anthropic.MessageNewParamsServiceTierAuto,
 		StopSequences: []string{"string"},
-		System: []anthropic.TextBlockParam{{Text: "x", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+		System: []anthropic.TextBlockParam{{Text: "x", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 			OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 		}}}},
 		Temperature: anthropic.Float(1),
@@ -73,10 +73,12 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 					},
 					Required: []string{"location"},
 				},
-				Name:         "name",
-				CacheControl: anthropic.NewCacheControlEphemeralParam(),
-				Description:  anthropic.String("Get the current weather in a given location"),
-				Type:         anthropic.ToolTypeCustom,
+				Name: "name",
+				CacheControl: anthropic.CacheControlEphemeralParam{
+					TTL: anthropic.CacheControlEphemeralTTLTTL5m,
+				},
+				Description: anthropic.String("Get the current weather in a given location"),
+				Type:        anthropic.ToolTypeCustom,
 			},
 		}},
 		TopK: anthropic.Int(5),
@@ -106,7 +108,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 	_, err := client.Messages.CountTokens(context.TODO(), anthropic.MessageCountTokensParams{
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
@@ -115,8 +117,10 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 		Model: anthropic.ModelClaude3_7SonnetLatest,
 		System: anthropic.MessageCountTokensParamsSystemUnion{
 			OfTextBlockArray: []anthropic.TextBlockParam{{
-				Text:         "Today's date is 2024-06-01.",
-				CacheControl: anthropic.NewCacheControlEphemeralParam(),
+				Text: "Today's date is 2024-06-01.",
+				CacheControl: anthropic.CacheControlEphemeralParam{
+					TTL: anthropic.CacheControlEphemeralTTLTTL5m,
+				},
 				Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{
 						CitedText:      "cited_text",
@@ -153,10 +157,12 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 					},
 					Required: []string{"location"},
 				},
-				Name:         "name",
-				CacheControl: anthropic.NewCacheControlEphemeralParam(),
-				Description:  anthropic.String("Get the current weather in a given location"),
-				Type:         anthropic.ToolTypeCustom,
+				Name: "name",
+				CacheControl: anthropic.CacheControlEphemeralParam{
+					TTL: anthropic.CacheControlEphemeralTTLTTL5m,
+				},
+				Description: anthropic.String("Get the current weather in a given location"),
+				Type:        anthropic.ToolTypeCustom,
 			},
 		}},
 	})

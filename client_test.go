@@ -43,7 +43,7 @@ func TestUserAgentHeader(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
@@ -78,7 +78,7 @@ func TestRetryAfter(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
@@ -124,7 +124,7 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
@@ -165,7 +165,7 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
@@ -205,7 +205,7 @@ func TestRetryAfterMs(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
@@ -239,7 +239,7 @@ func TestContextCancel(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
@@ -270,7 +270,7 @@ func TestContextCancelDelay(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}},
 			}},
@@ -307,7 +307,7 @@ func TestContextDeadline(t *testing.T) {
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
 				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+					OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 						OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 					}}},
 				}},
@@ -363,7 +363,7 @@ func TestContextDeadlineStreaming(t *testing.T) {
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
 				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+					OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 						OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 					}}},
 				}},
@@ -421,7 +421,7 @@ func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{{
 					Content: []anthropic.ContentBlockParamUnion{{
-						OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+						OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 							OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 						}}},
 					}},

@@ -489,3 +489,67 @@ func TestModelLimits(t *testing.T) {
 		t.Error("Expected model limit for claude-opus-4@20250514 but not found")
 	}
 }
+
+func TestMessageNew_ContextTimeout(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+
+	// Create a context with a very short timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
+	defer cancel()
+
+	_, err := client.Messages.New(ctx, anthropic.MessageNewParams{
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{{
+			Content: []anthropic.ContentBlockParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: "Test timeout"},
+			}},
+			Role: anthropic.MessageParamRoleUser,
+		}},
+		Model: anthropic.ModelClaude3_7SonnetLatest,
+	})
+
+	if err == nil {
+		t.Fatal("Expected a timeout error, but no error was received")
+	}
+	if !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
+		t.Fatalf("Unexpected error, expected context.DeadlineExceeded or context.Canceled, got: %v", err)
+	}
+}
+
+func TestMessageNew_HTTPError(t *testing.T) {
+	// Use a fake URL to force an HTTP error (e.g. 404)
+	client := anthropic.NewClient(
+		option.WithBaseURL("http://localhost:9999"), // Unused port
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+
+	_, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{{
+			Content: []anthropic.ContentBlockParamUnion{{
+				OfText: &anthropic.TextBlockParam{Text: "Test HTTP error"},
+			}},
+			Role: anthropic.MessageParamRoleUser,
+		}},
+		Model: anthropic.ModelClaude3_7SonnetLatest,
+	})
+
+	if err == nil {
+		t.Fatal("Expected an HTTP error, but no error was received")
+	}
+	// Optional: check the error type (e.g. *url.Error)
+	var urlErr *os.SyscallError
+	if !errors.As(err, &urlErr) {
+		t.Logf("Received error (not a SyscallError, but that's OK for a network error test): %v", err)
+	}
+}

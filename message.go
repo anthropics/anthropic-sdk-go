@@ -154,7 +154,18 @@ func NewCacheControlEphemeralParam() CacheControlEphemeralParam {
 // This struct has a constant value, construct it with
 // [NewCacheControlEphemeralParam].
 type CacheControlEphemeralParam struct {
-	Type constant.Ephemeral `json:"type,required"`
+	// The time-to-live for the cache control breakpoint.
+	//
+	// This may be one the following values:
+	//
+	// - `5m`: 5 minutes
+	// - `1h`: 1 hour
+	//
+	// Defaults to `5m`.
+	//
+	// Any of "5m", "1h".
+	TTL  CacheControlEphemeralTTL `json:"ttl,omitzero"`
+	Type constant.Ephemeral       `json:"type,required"`
 	paramObj
 }
 
@@ -163,6 +174,41 @@ func (r CacheControlEphemeralParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *CacheControlEphemeralParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The time-to-live for the cache control breakpoint.
+//
+// This may be one the following values:
+//
+// - `5m`: 5 minutes
+// - `1h`: 1 hour
+//
+// Defaults to `5m`.
+type CacheControlEphemeralTTL string
+
+const (
+	CacheControlEphemeralTTLTTL5m CacheControlEphemeralTTL = "5m"
+	CacheControlEphemeralTTLTTL1h CacheControlEphemeralTTL = "1h"
+)
+
+type CacheCreation struct {
+	// The number of input tokens used to create the 1 hour cache entry.
+	Ephemeral1hInputTokens int64 `json:"ephemeral_1h_input_tokens,required"`
+	// The number of input tokens used to create the 5 minute cache entry.
+	Ephemeral5mInputTokens int64 `json:"ephemeral_5m_input_tokens,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Ephemeral1hInputTokens respjson.Field
+		Ephemeral5mInputTokens respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheCreation) RawJSON() string { return r.JSON.raw }
+func (r *CacheCreation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1856,15 +1902,23 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model string
 
 const (
-	ModelClaude3_7SonnetLatest      Model = "claude-3-7-sonnet-latest"
-	ModelClaude3_7Sonnet20250219    Model = "claude-3-7-sonnet-20250219"
-	ModelClaude3_5HaikuLatest       Model = "claude-3-5-haiku-latest"
-	ModelClaude3_5Haiku20241022     Model = "claude-3-5-haiku-20241022"
-	ModelClaudeSonnet4_20250514     Model = "claude-sonnet-4-20250514"
-	ModelClaudeSonnet4_0            Model = "claude-sonnet-4-0"
-	ModelClaude4Sonnet20250514      Model = "claude-4-sonnet-20250514"
-	ModelClaude3_5SonnetLatest      Model = "claude-3-5-sonnet-latest"
-	ModelClaude3_5Sonnet20241022    Model = "claude-3-5-sonnet-20241022"
+	ModelClaude3_7SonnetLatest   Model = "claude-3-7-sonnet-latest"
+	ModelClaude3_7Sonnet20250219 Model = "claude-3-7-sonnet-20250219"
+	ModelClaude3_5HaikuLatest    Model = "claude-3-5-haiku-latest"
+	ModelClaude3_5Haiku20241022  Model = "claude-3-5-haiku-20241022"
+	ModelClaudeSonnet4_20250514  Model = "claude-sonnet-4-20250514"
+	ModelClaudeSonnet4_0         Model = "claude-sonnet-4-0"
+	ModelClaude4Sonnet20250514   Model = "claude-4-sonnet-20250514"
+	ModelClaude3_5SonnetLatest   Model = "claude-3-5-sonnet-latest"
+	// Deprecated: Will reach end-of-life on October 22nd, 2025. Please migrate to a
+	// newer model. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
+	ModelClaude3_5Sonnet20241022 Model = "claude-3-5-sonnet-20241022"
+	// Deprecated: Will reach end-of-life on October 22nd, 2025. Please migrate to a
+	// newer model. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
 	ModelClaude_3_5_Sonnet_20240620 Model = "claude-3-5-sonnet-20240620"
 	ModelClaudeOpus4_0              Model = "claude-opus-4-0"
 	ModelClaudeOpus4_20250514       Model = "claude-opus-4-20250514"
@@ -4025,6 +4079,8 @@ func (r *URLPDFSourceParam) UnmarshalJSON(data []byte) error {
 }
 
 type Usage struct {
+	// Breakdown of cached tokens by TTL
+	CacheCreation CacheCreation `json:"cache_creation,required"`
 	// The number of input tokens used to create the cache entry.
 	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens,required"`
 	// The number of input tokens read from the cache.
@@ -4041,6 +4097,7 @@ type Usage struct {
 	ServiceTier UsageServiceTier `json:"service_tier,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
+		CacheCreation            respjson.Field
 		CacheCreationInputTokens respjson.Field
 		CacheReadInputTokens     respjson.Field
 		InputTokens              respjson.Field

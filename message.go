@@ -1215,7 +1215,41 @@ type ContentBlockSourceContentUnionParam struct {
 	paramUnion
 }
 
+// MarshalJSON implements custom JSON marshaling to handle custom content blocks for citations.
+// When creating document sources with custom content for block-based citations, the API expects
+// an array of objects with {"type": "text", "text": "..."} structure, not an array of strings.
+// This custom marshaler detects when we have content blocks that should be marshaled as text
+// blocks and produces the correct JSON structure expected by the Anthropic API.
 func (u ContentBlockSourceContentUnionParam) MarshalJSON() ([]byte, error) {
+	// Handle the case where we have an array of content blocks
+	if len(u.OfContentBlockSourceContent) > 0 {
+		// Check if all elements are simple strings that should be marshaled as text blocks
+		allStrings := true
+		for _, item := range u.OfContentBlockSourceContent {
+			if param.IsOmitted(item.OfString) {
+				allStrings = false
+				break
+			}
+		}
+
+		if allStrings {
+			// Marshal as array of text blocks for custom content citations
+			type textBlock struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+			}
+			blocks := make([]textBlock, len(u.OfContentBlockSourceContent))
+			for i, item := range u.OfContentBlockSourceContent {
+				blocks[i] = textBlock{
+					Type: "text",
+					Text: item.OfString.Value,
+				}
+			}
+			return json.Marshal(blocks)
+		}
+	}
+
+	// Fall back to the original marshaling logic for other cases
 	return param.MarshalUnion(u, u.OfString, u.OfContentBlockSourceContent)
 }
 func (u *ContentBlockSourceContentUnionParam) UnmarshalJSON(data []byte) error {

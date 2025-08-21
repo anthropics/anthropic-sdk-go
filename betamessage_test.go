@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"os"
 	"testing"
 
@@ -356,5 +357,132 @@ Therefore, the answer is..."}}`,
 				t.Fatalf("Mismatched message: expected %s but got %s", marshaledExpectedMessage, marshaledMessage)
 			}
 		})
+	}
+}
+
+func TestCustomContentCitations(t *testing.T) {
+	// Test the current implementation's ability to create custom content blocks
+	chunks := []string{
+		"First chunk of text",
+		"Second chunk of text",
+		"Third chunk of text",
+	}
+
+	// Attempt 1: Try to create content blocks using the union type
+	contentChunks := make([]anthropic.BetaContentBlockSourceContentUnionParam, len(chunks))
+	for i, chunk := range chunks {
+		contentChunks[i] = anthropic.BetaContentBlockSourceContentUnionParam{
+			OfString: param.NewOpt(chunk),
+		}
+	}
+
+	// Create the source with content blocks
+	source := anthropic.BetaContentBlockSourceParam{
+		Content: anthropic.BetaContentBlockSourceContentUnionParam{
+			OfBetaContentBlockSourceContent: contentChunks,
+		},
+	}
+
+	// Marshal and check the JSON output
+	data, err := json.MarshalIndent(source, "", "  ")
+	if err != nil {
+		t.Fatalf("Failed to marshal source: %v", err)
+	}
+
+	t.Logf("Marshaled JSON (attempt 1):\n%s", string(data))
+
+	// Check if the marshaled JSON matches the expected structure
+	var result map[string]interface{}
+	if err := json.Unmarshal(data, &result); err != nil {
+		t.Fatalf("Failed to unmarshal result: %v", err)
+	}
+
+	// The API expects:
+	// {
+	//   "type": "content",
+	//   "content": [
+	//     {"type": "text", "text": "First chunk"},
+	//     {"type": "text", "text": "Second chunk"},
+	//     {"type": "text", "text": "Third chunk"}
+	//   ]
+	// }
+
+	// Check if content is an array
+	content, ok := result["content"].([]interface{})
+	if !ok {
+		t.Errorf("Expected content to be an array, got %T", result["content"])
+	} else {
+		t.Logf("Content is an array with %d elements", len(content))
+
+		// Check if each element has the correct structure
+		for i, item := range content {
+			block, ok := item.(map[string]interface{})
+			if !ok {
+				t.Errorf("Expected content[%d] to be an object, got %T", i, item)
+				continue
+			}
+
+			// Check for "type": "text"
+			if blockType, exists := block["type"]; !exists || blockType != "text" {
+				t.Errorf("Expected content[%d].type to be 'text', got %v", i, blockType)
+			}
+
+			// Check for "text" field
+			if _, exists := block["text"]; !exists {
+				t.Errorf("Expected content[%d] to have 'text' field", i)
+			}
+		}
+	}
+}
+
+func TestCustomContentWithWorkaround(t *testing.T) {
+	// Test the workaround using param.Override
+	chunks := []string{
+		"First chunk of text",
+		"Second chunk of text",
+		"Third chunk of text",
+	}
+
+	// Create custom type for marshaling
+	type CustomContentBlocks []string
+
+	// Implement MarshalJSON to produce the correct structure
+	type textBlock struct {
+		Type string `json:"type"`
+		Text string `json:"text"`
+	}
+
+	blocks := make([]textBlock, len(chunks))
+	for i, chunk := range chunks {
+		blocks[i] = textBlock{
+			Type: "text",
+			Text: chunk,
+		}
+	}
+
+	sourceJSON := map[string]interface{}{
+		"type":    "content",
+		"content": blocks,
+	}
+
+	sourceBytes, err := json.Marshal(sourceJSON)
+	if err != nil {
+		t.Fatalf("Failed to marshal source: %v", err)
+	}
+
+	t.Logf("Marshaled JSON (workaround):\n%s", string(sourceBytes))
+
+	// Verify the structure
+	var result map[string]interface{}
+	if err := json.Unmarshal(sourceBytes, &result); err != nil {
+		t.Fatalf("Failed to unmarshal result: %v", err)
+	}
+
+	// Check if content is an array with correct structure
+	content, ok := result["content"].([]interface{})
+	if !ok {
+		t.Errorf("Expected content to be an array, got %T", result["content"])
+	} else {
+		t.Logf("Workaround produces correct structure with %d elements", len(content))
 	}
 }

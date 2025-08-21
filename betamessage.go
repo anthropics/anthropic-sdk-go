@@ -1378,7 +1378,7 @@ func NewBetaTextBlock(text string) BetaContentBlockParamUnion {
 }
 
 func NewBetaImageBlock[
-	T BetaBase64ImageSourceParam | BetaURLImageSourceParam | BetaFileImageSourceParam,
+T BetaBase64ImageSourceParam | BetaURLImageSourceParam | BetaFileImageSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var image BetaImageBlockParam
 	switch v := any(source).(type) {
@@ -1393,7 +1393,7 @@ func NewBetaImageBlock[
 }
 
 func NewBetaDocumentBlock[
-	T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam | BetaFileDocumentSourceParam,
+T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam | BetaFileDocumentSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var document BetaRequestDocumentBlockParam
 	switch v := any(source).(type) {
@@ -1455,7 +1455,7 @@ func NewBetaServerToolUseBlock(id string, input any, name BetaServerToolUseBlock
 }
 
 func NewBetaWebSearchToolResultBlock[
-	T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
+T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var webSearchToolResult BetaWebSearchToolResultBlockParam
 	switch v := any(content).(type) {
@@ -1469,7 +1469,7 @@ func NewBetaWebSearchToolResultBlock[
 }
 
 func NewBetaCodeExecutionToolResultBlock[
-	T BetaCodeExecutionToolResultErrorParam | BetaCodeExecutionResultBlockParam,
+T BetaCodeExecutionToolResultErrorParam | BetaCodeExecutionResultBlockParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var codeExecutionToolResult BetaCodeExecutionToolResultBlockParam
 	switch v := any(content).(type) {
@@ -2042,7 +2042,37 @@ type BetaContentBlockSourceContentUnionParam struct {
 	paramUnion
 }
 
+// MarshalJSON implements custom JSON marshaling to handle custom content blocks for citations.
+// When creating document sources with custom content for block-based citations, the API expects
+// an array of objects with {"type": "text", "text": "..."} structure, not an array of strings.
+// This custom marshaler detects when we have content blocks that should be marshaled as text
+// blocks and produces the correct JSON structure expected by the Anthropic API.
 func (u BetaContentBlockSourceContentUnionParam) MarshalJSON() ([]byte, error) {
+	if len(u.OfBetaContentBlockSourceContent) > 0 {
+		allStrings := true
+		for _, item := range u.OfBetaContentBlockSourceContent {
+			if param.IsOmitted(item.OfString) {
+				allStrings = false
+				break
+			}
+		}
+
+		if allStrings {
+			type textBlock struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+			}
+			blocks := make([]textBlock, len(u.OfBetaContentBlockSourceContent))
+			for i, item := range u.OfBetaContentBlockSourceContent {
+				blocks[i] = textBlock{
+					Type: "text",
+					Text: item.OfString.Value,
+				}
+			}
+			return json.Marshal(blocks)
+		}
+	}
+
 	return param.MarshalUnion(u, u.OfString, u.OfBetaContentBlockSourceContent)
 }
 func (u *BetaContentBlockSourceContentUnionParam) UnmarshalJSON(data []byte) error {

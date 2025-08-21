@@ -495,7 +495,7 @@ func TestBetaContentBlockSourceContentUnionParamMarshalJSON(t *testing.T) {
 		// Create content chunks as strings
 		chunks := []string{
 			"First document chunk",
-			"Second document chunk", 
+			"Second document chunk",
 			"Third document chunk",
 		}
 
@@ -692,10 +692,10 @@ func TestBetaMessageWithCustomContentCitationsIntegration(t *testing.T) {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
-			
+
 			// Check if the request body contains the properly formatted content blocks
 			requestBody := string(apierr.DumpRequest(false))
-			
+
 			// Verify the content blocks are formatted as text blocks with type and text fields
 			if !strings.Contains(requestBody, `"type":"text"`) {
 				t.Error("Request body should contain text blocks with 'type':'text'")

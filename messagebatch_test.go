@@ -32,7 +32,7 @@ func TestMessageBatchNew(t *testing.T) {
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{{
 					Content: []anthropic.ContentBlockParamUnion{{
-						OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+						OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 							OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 						}}},
 					}},
@@ -45,7 +45,7 @@ func TestMessageBatchNew(t *testing.T) {
 				ServiceTier:   "auto",
 				StopSequences: []string{"string"},
 				Stream:        anthropic.Bool(true),
-				System: []anthropic.TextBlockParam{{Text: "x", CacheControl: anthropic.NewCacheControlEphemeralParam(), Citations: []anthropic.TextCitationParamUnion{{
+				System: []anthropic.TextBlockParam{{Text: "x", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
 				}}}},
 				Temperature: anthropic.Float(1),
@@ -74,10 +74,12 @@ func TestMessageBatchNew(t *testing.T) {
 							},
 							Required: []string{"location"},
 						},
-						Name:         "name",
-						CacheControl: anthropic.NewCacheControlEphemeralParam(),
-						Description:  anthropic.String("Get the current weather in a given location"),
-						Type:         anthropic.ToolTypeCustom,
+						Name: "name",
+						CacheControl: anthropic.CacheControlEphemeralParam{
+							TTL: anthropic.CacheControlEphemeralTTLTTL5m,
+						},
+						Description: anthropic.String("Get the current weather in a given location"),
+						Type:        anthropic.ToolTypeCustom,
 					},
 				}},
 				TopK: anthropic.Int(5),

@@ -308,6 +308,18 @@ Therefore, the answer is..."}}`,
 				{Type: "text", Text: "The weather in Los Angeles is 85 degrees Fahrenheit!"},
 			}},
 		},
+		"tool use block with incomplete JSON input": {
+			events: []string{
+				`{"type": "message_start", "message": {}}`,
+				`{"type": "content_block_start", "index": 0, "content_block": {"type": "tool_use", "id": "toolu_id", "name": "tool_name", "input": {}}}`,
+				`{"type": "content_block_delta", "index": 0, "delta": {"type": "input_json_delta", "partial_json": "{\"command\": \"str_replace\", \"path\": \"some/path/test.go\""}}`,
+				`{"type": "content_block_stop", "index": 0}`,
+				`{"type": "message_stop"}`,
+			},
+			expected: anthropic.Message{Content: []anthropic.ContentBlockUnion{
+				{Type: "tool_use", ID: "toolu_id", Name: "tool_name", Input: []byte("{}")},
+			}},
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			message := anthropic.Message{}

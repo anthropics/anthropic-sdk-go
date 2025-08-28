@@ -2495,6 +2495,13 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
 		}
 		contentBlock := &acc.Content[len(acc.Content)-1]
+
+		if (contentBlock.Type == "tool_use" || contentBlock.Type == "server_tool_use") && len(contentBlock.Input) > 0 {
+			if !json.Valid(contentBlock.Input) {
+				contentBlock.Input = []byte("{}")
+			}
+		}
+
 		cbJson, err := json.Marshal(contentBlock)
 		if err != nil {
 			return fmt.Errorf("error converting content block to JSON: %w", err)

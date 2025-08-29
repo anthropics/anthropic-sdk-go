@@ -171,6 +171,23 @@ func unmarshalerDecoder(n gjson.Result, v reflect.Value, state *decoderState) er
 }
 
 func (d *decoderBuilder) newTypeDecoder(t reflect.Type) decoderFunc {
+	// Check for custom decoders first
+	if customDecoder, ok := customDecoderRegistry[t]; ok {
+		// Create the default decoder for this type (without the custom decoder)
+		defaultDecoder := d.newDefaultTypeDecoder(t)
+		return func(node gjson.Result, value reflect.Value, state *decoderState) error {
+			// Provide a wrapper that removes the state parameter for the custom decoder
+			defaultWrapper := func(node gjson.Result, value reflect.Value) error {
+				return defaultDecoder(node, value, state)
+			}
+			return customDecoder(node, value, defaultWrapper)
+		}
+	}
+
+	return d.newDefaultTypeDecoder(t)
+}
+
+func (d *decoderBuilder) newDefaultTypeDecoder(t reflect.Type) decoderFunc {
 	if t.ConvertibleTo(reflect.TypeOf(time.Time{})) {
 		return d.newTimeTypeDecoder(t)
 	}

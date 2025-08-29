@@ -495,3 +495,45 @@ func TestModelLimits(t *testing.T) {
 		t.Error("Expected model limit for claude-opus-4@20250514 but not found")
 	}
 }
+
+func TestToolResultBlockParamStringContent(t *testing.T) {
+	toolResultJSON := `{"type":"tool_result","content":"error message","tool_use_id":"123"}`
+	var toolResult anthropic.ToolResultBlockParam
+	err := json.Unmarshal([]byte(toolResultJSON), &toolResult)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(toolResult.Content) != 1 || toolResult.Content[0].OfText.Text != "error message" {
+		t.Error("String content not converted to TextBlock")
+	}
+}
+
+func TestMessageParamStringContent(t *testing.T) {
+	messageJSON := `{"role":"user","content":"hello world"}`
+	var message anthropic.MessageParam
+	err := json.Unmarshal([]byte(messageJSON), &message)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(message.Content) != 1 || message.Content[0].OfText.Text != "hello world" {
+		t.Error("String content not converted to TextBlock")
+	}
+}
+
+func TestMessageParamArrayContent(t *testing.T) {
+	messageJSON := `{"role":"user","content":[{"type":"text","text":"first block"},{"type":"text","text":"second block"}]}`
+	var message anthropic.MessageParam
+	err := json.Unmarshal([]byte(messageJSON), &message)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(message.Content) != 2 {
+		t.Errorf("Expected 2 content blocks, got %d", len(message.Content))
+	}
+	if message.Content[0].OfText.Text != "first block" {
+		t.Errorf("Expected first block text 'first block', got '%s'", message.Content[0].OfText.Text)
+	}
+	if message.Content[1].OfText.Text != "second block" {
+		t.Errorf("Expected second block text 'second block', got '%s'", message.Content[1].OfText.Text)
+	}
+}

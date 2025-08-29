@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -17,6 +18,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/tidwall/gjson"
 )
 
 // MessageService contains methods and other services that help with interacting
@@ -1234,6 +1236,26 @@ func init() {
 		apijson.Discriminator[ServerToolUseBlockParam]("server_tool_use"),
 		apijson.Discriminator[WebSearchToolResultBlockParam]("web_search_tool_result"),
 	)
+
+	// Register custom decoder for []ContentBlockParamUnion to handle string content
+	apijson.RegisterCustomDecoder[[]ContentBlockParamUnion](func(node gjson.Result, value reflect.Value, defaultDecoder func(gjson.Result, reflect.Value) error) error {
+		// If it's a string, convert it to a TextBlock automatically
+		if node.Type == gjson.String {
+			textBlock := TextBlockParam{
+				Text: node.String(),
+				Type: "text",
+			}
+			contentUnion := ContentBlockParamUnion{
+				OfText: &textBlock,
+			}
+			arrayValue := reflect.MakeSlice(value.Type(), 1, 1)
+			arrayValue.Index(0).Set(reflect.ValueOf(contentUnion))
+			value.Set(arrayValue)
+			return nil
+		}
+
+		return defaultDecoder(node, value)
+	})
 }
 
 // The properties Content, Type are required.
@@ -3755,6 +3777,27 @@ func init() {
 		apijson.Discriminator[ImageBlockParam]("image"),
 		apijson.Discriminator[SearchResultBlockParam]("search_result"),
 	)
+
+	// Register custom decoder for []ToolResultBlockParamContentUnion to handle string content
+	apijson.RegisterCustomDecoder[[]ToolResultBlockParamContentUnion](func(node gjson.Result, value reflect.Value, defaultDecoder func(gjson.Result, reflect.Value) error) error {
+		// If it's a string, convert it to a TextBlock automatically
+		if node.Type == gjson.String {
+			textBlock := TextBlockParam{
+				Text: node.String(),
+				Type: "text",
+			}
+			contentUnion := ToolResultBlockParamContentUnion{
+				OfText: &textBlock,
+			}
+			arrayValue := reflect.MakeSlice(value.Type(), 1, 1)
+			arrayValue.Index(0).Set(reflect.ValueOf(contentUnion))
+			value.Set(arrayValue)
+			return nil
+		}
+
+		// If it's already an array, use the default decoder
+		return defaultDecoder(node, value)
+	})
 }
 
 // The properties Name, Type are required.

@@ -14,6 +14,7 @@ type UnionVariant struct {
 
 var unionRegistry = map[reflect.Type]unionEntry{}
 var unionVariants = map[reflect.Type]any{}
+var customDecoderRegistry = map[reflect.Type]CustomDecoderFunc{}
 
 type unionEntry struct {
 	discriminatorKey string
@@ -48,4 +49,11 @@ type UnionUnmarshaler[T any] struct {
 
 func (c *UnionUnmarshaler[T]) UnmarshalJSON(buf []byte) error {
 	return UnmarshalRoot(buf, &c.Value)
+}
+
+type CustomDecoderFunc func(node gjson.Result, value reflect.Value, defaultDecoder func(gjson.Result, reflect.Value) error) error
+
+func RegisterCustomDecoder[T any](decoder CustomDecoderFunc) {
+	typ := reflect.TypeOf((*T)(nil)).Elem()
+	customDecoderRegistry[typ] = decoder
 }

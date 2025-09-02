@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.10.0 (2025-09-02)
+
+Full Changelog: [v1.9.1...v1.10.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.9.1...v1.10.0)
+
+### Features
+
+* **api:** makes 1 hour TTL Cache Control generally available ([c28a9a3](https://github.com/anthropics/anthropic-sdk-go/commit/c28a9a3272acb1973f2a2fb768157ab27a8f440d))
+* **client:** adds support for code-execution-2025-08-26 tool ([066a126](https://github.com/anthropics/anthropic-sdk-go/commit/066a126a92a8e09f10742f13e0db36724a96c788))
+* use custom decoder for []ContentBlockParamUnion ([#464](https://github.com/anthropics/anthropic-sdk-go/issues/464)) ([4731597](https://github.com/anthropics/anthropic-sdk-go/commit/473159792468018c709da311d7ac27139cf851e6))
+
+
+### Bug Fixes
+
+* close body before retrying ([c970e10](https://github.com/anthropics/anthropic-sdk-go/commit/c970e10ff45c04c38a5a2c87fe85a8c191e06f80))
+
+
+### Chores
+
+* deprecate older claude-3-5 sonnet models ([#453](https://github.com/anthropics/anthropic-sdk-go/issues/453)) ([e49d59b](https://github.com/anthropics/anthropic-sdk-go/commit/e49d59b14be89dcfb858b565e5183ecf9c1e246b))
+
 ## 1.9.1 (2025-08-12)
 
 Full Changelog: [v1.9.0...v1.9.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.9.0...v1.9.1)

@@ -196,11 +196,13 @@ func (r *ErrorObjectUnion) UnmarshalJSON(data []byte) error {
 }
 
 type ErrorResponse struct {
-	Error ErrorObjectUnion `json:"error,required"`
-	Type  constant.Error   `json:"type,required"`
+	Error     ErrorObjectUnion `json:"error,required"`
+	RequestID string           `json:"request_id,required"`
+	Type      constant.Error   `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
+		RequestID   respjson.Field
 		Type        respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string

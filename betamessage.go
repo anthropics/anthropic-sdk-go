@@ -5816,14 +5816,15 @@ func (r *BetaToolResultBlockParam) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaToolResultBlockParamContentUnion struct {
-	OfText         *BetaTextBlockParam         `json:",omitzero,inline"`
-	OfImage        *BetaImageBlockParam        `json:",omitzero,inline"`
-	OfSearchResult *BetaSearchResultBlockParam `json:",omitzero,inline"`
+	OfText         *BetaTextBlockParam            `json:",omitzero,inline"`
+	OfImage        *BetaImageBlockParam           `json:",omitzero,inline"`
+	OfSearchResult *BetaSearchResultBlockParam    `json:",omitzero,inline"`
+	OfDocument     *BetaRequestDocumentBlockParam `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfText, u.OfImage, u.OfSearchResult)
+	return param.MarshalUnion(u, u.OfText, u.OfImage, u.OfSearchResult, u.OfDocument)
 }
 func (u *BetaToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -5836,6 +5837,8 @@ func (u *BetaToolResultBlockParamContentUnion) asAny() any {
 		return u.OfImage
 	} else if !param.IsOmitted(u.OfSearchResult) {
 		return u.OfSearchResult
+	} else if !param.IsOmitted(u.OfDocument) {
+		return u.OfDocument
 	}
 	return nil
 }
@@ -5857,9 +5860,9 @@ func (u BetaToolResultBlockParamContentUnion) GetContent() []BetaTextBlockParam 
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaToolResultBlockParamContentUnion) GetTitle() *string {
-	if vt := u.OfSearchResult; vt != nil {
-		return &vt.Title
+func (u BetaToolResultBlockParamContentUnion) GetContext() *string {
+	if vt := u.OfDocument; vt != nil && vt.Context.Valid() {
+		return &vt.Context.Value
 	}
 	return nil
 }
@@ -5872,6 +5875,18 @@ func (u BetaToolResultBlockParamContentUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfSearchResult; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfDocument; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaToolResultBlockParamContentUnion) GetTitle() *string {
+	if vt := u.OfSearchResult; vt != nil {
+		return (*string)(&vt.Title)
+	} else if vt := u.OfDocument; vt != nil && vt.Title.Valid() {
+		return &vt.Title.Value
 	}
 	return nil
 }
@@ -5884,6 +5899,8 @@ func (u BetaToolResultBlockParamContentUnion) GetCacheControl() *BetaCacheContro
 		return &vt.CacheControl
 	} else if vt := u.OfSearchResult; vt != nil {
 		return &vt.CacheControl
+	} else if vt := u.OfDocument; vt != nil {
+		return &vt.CacheControl
 	}
 	return nil
 }
@@ -5895,6 +5912,8 @@ func (u BetaToolResultBlockParamContentUnion) GetCitations() (res betaToolResult
 	if vt := u.OfText; vt != nil {
 		res.any = &vt.Citations
 	} else if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Citations
+	} else if vt := u.OfDocument; vt != nil {
 		res.any = &vt.Citations
 	}
 	return
@@ -5914,6 +5933,15 @@ type betaToolResultBlockParamContentUnionCitations struct{ any }
 //	}
 func (u betaToolResultBlockParamContentUnionCitations) AsAny() any { return u.any }
 
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaToolResultBlockParamContentUnionCitations) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BetaCitationsConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
 // Returns a subunion which exports methods to access subproperties
 //
 // Or use AsAny() to get the underlying value
@@ -5922,12 +5950,17 @@ func (u BetaToolResultBlockParamContentUnion) GetSource() (res betaToolResultBlo
 		res.any = vt.Source.asAny()
 	} else if vt := u.OfSearchResult; vt != nil {
 		res.any = &vt.Source
+	} else if vt := u.OfDocument; vt != nil {
+		res.any = vt.Source.asAny()
 	}
 	return
 }
 
 // Can have the runtime types [*BetaBase64ImageSourceParam],
-// [*BetaURLImageSourceParam], [*BetaFileImageSourceParam], [*string]
+// [*BetaURLImageSourceParam], [*BetaFileImageSourceParam], [*string],
+// [*BetaBase64PDFSourceParam], [*BetaPlainTextSourceParam],
+// [*BetaContentBlockSourceParam], [*BetaURLPDFSourceParam],
+// [*BetaFileDocumentSourceParam]
 type betaToolResultBlockParamContentUnionSource struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -5937,15 +5970,31 @@ type betaToolResultBlockParamContentUnionSource struct{ any }
 //	case *anthropic.BetaURLImageSourceParam:
 //	case *anthropic.BetaFileImageSourceParam:
 //	case *string:
+//	case *anthropic.BetaBase64PDFSourceParam:
+//	case *anthropic.BetaPlainTextSourceParam:
+//	case *anthropic.BetaContentBlockSourceParam:
+//	case *anthropic.BetaURLPDFSourceParam:
+//	case *anthropic.BetaFileDocumentSourceParam:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
 func (u betaToolResultBlockParamContentUnionSource) AsAny() any { return u.any }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u betaToolResultBlockParamContentUnionSource) GetContent() *BetaContentBlockSourceContentUnionParam {
+	switch vt := u.any.(type) {
+	case *BetaRequestDocumentBlockSourceUnionParam:
+		return vt.GetContent()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u betaToolResultBlockParamContentUnionSource) GetData() *string {
 	switch vt := u.any.(type) {
 	case *BetaImageBlockParamSourceUnion:
+		return vt.GetData()
+	case *BetaRequestDocumentBlockSourceUnionParam:
 		return vt.GetData()
 	}
 	return nil
@@ -5956,6 +6005,19 @@ func (u betaToolResultBlockParamContentUnionSource) GetMediaType() *string {
 	switch vt := u.any.(type) {
 	case *BetaImageBlockParamSourceUnion:
 		return vt.GetMediaType()
+	case *BetaRequestDocumentBlockSourceUnionParam:
+		return vt.GetMediaType()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaToolResultBlockParamContentUnionSource) GetType() *string {
+	switch vt := u.any.(type) {
+	case *BetaImageBlockParamSourceUnion:
+		return vt.GetType()
+	case *BetaRequestDocumentBlockSourceUnionParam:
+		return vt.GetType()
 	}
 	return nil
 }
@@ -5964,6 +6026,8 @@ func (u betaToolResultBlockParamContentUnionSource) GetMediaType() *string {
 func (u betaToolResultBlockParamContentUnionSource) GetURL() *string {
 	switch vt := u.any.(type) {
 	case *BetaImageBlockParamSourceUnion:
+		return vt.GetURL()
+	case *BetaRequestDocumentBlockSourceUnionParam:
 		return vt.GetURL()
 	}
 	return nil
@@ -5974,15 +6038,8 @@ func (u betaToolResultBlockParamContentUnionSource) GetFileID() *string {
 	switch vt := u.any.(type) {
 	case *BetaImageBlockParamSourceUnion:
 		return vt.GetFileID()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u betaToolResultBlockParamContentUnionSource) GetType() *string {
-	switch vt := u.any.(type) {
-	case *BetaImageBlockParamSourceUnion:
-		return vt.GetType()
+	case *BetaRequestDocumentBlockSourceUnionParam:
+		return vt.GetFileID()
 	}
 	return nil
 }
@@ -5993,6 +6050,7 @@ func init() {
 		apijson.Discriminator[BetaTextBlockParam]("text"),
 		apijson.Discriminator[BetaImageBlockParam]("image"),
 		apijson.Discriminator[BetaSearchResultBlockParam]("search_result"),
+		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
 	)
 }
 

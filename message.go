@@ -1278,8 +1278,8 @@ func (r *ContentBlockSourceParam) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ContentBlockSourceContentUnionParam struct {
-	OfString                    param.Opt[string]                     `json:",omitzero,inline"`
-	OfContentBlockSourceContent []ContentBlockSourceContentUnionParam `json:",omitzero,inline"`
+	OfString                    param.Opt[string] `json:",omitzero,inline"`
+	OfContentBlockSourceContent []TextBlockParam  `json:",omitzero,inline"`
 	paramUnion
 }
 

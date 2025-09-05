@@ -1278,8 +1278,8 @@ func (r *ContentBlockSourceParam) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ContentBlockSourceContentUnionParam struct {
-	OfString                    param.Opt[string]                     `json:",omitzero,inline"`
-	OfContentBlockSourceContent []ContentBlockSourceContentUnionParam `json:",omitzero,inline"`
+	OfString                    param.Opt[string]                         `json:",omitzero,inline"`
+	OfContentBlockSourceContent []ContentBlockSourceContentItemUnionParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -1297,6 +1297,100 @@ func (u *ContentBlockSourceContentUnionParam) asAny() any {
 		return &u.OfContentBlockSourceContent
 	}
 	return nil
+}
+
+func ContentBlockSourceContentItemParamOfText(text string) ContentBlockSourceContentItemUnionParam {
+	var variant TextBlockParam
+	variant.Text = text
+	return ContentBlockSourceContentItemUnionParam{OfText: &variant}
+}
+
+func ContentBlockSourceContentItemParamOfImage[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockSourceContentItemUnionParam {
+	var image ImageBlockParam
+	switch v := any(source).(type) {
+	case Base64ImageSourceParam:
+		image.Source.OfBase64 = &v
+	case URLImageSourceParam:
+		image.Source.OfURL = &v
+	}
+	return ContentBlockSourceContentItemUnionParam{OfImage: &image}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type ContentBlockSourceContentItemUnionParam struct {
+	OfText  *TextBlockParam  `json:",omitzero,inline"`
+	OfImage *ImageBlockParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u ContentBlockSourceContentItemUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfText, u.OfImage)
+}
+func (u *ContentBlockSourceContentItemUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *ContentBlockSourceContentItemUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfImage) {
+		return u.OfImage
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockSourceContentItemUnionParam) GetText() *string {
+	if vt := u.OfText; vt != nil {
+		return &vt.Text
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockSourceContentItemUnionParam) GetCitations() []TextCitationParamUnion {
+	if vt := u.OfText; vt != nil {
+		return vt.Citations
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockSourceContentItemUnionParam) GetSource() *ImageBlockParamSourceUnion {
+	if vt := u.OfImage; vt != nil {
+		return &vt.Source
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockSourceContentItemUnionParam) GetType() *string {
+	if vt := u.OfText; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfImage; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's CacheControl property, if present.
+func (u ContentBlockSourceContentItemUnionParam) GetCacheControl() *CacheControlEphemeralParam {
+	if vt := u.OfText; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfImage; vt != nil {
+		return &vt.CacheControl
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[ContentBlockSourceContentItemUnionParam](
+		"type",
+		apijson.Discriminator[TextBlockParam]("text"),
+		apijson.Discriminator[ImageBlockParam]("image"),
+	)
 }
 
 // The properties Source, Type are required.

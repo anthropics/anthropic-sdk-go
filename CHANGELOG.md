@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.11.0 (2025-09-05)
+
+Full Changelog: [v1.10.0...v1.11.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.10.0...v1.11.0)
+
+### Features
+
+* **api:** adds support for Documents in tool results ([7161c2c](https://github.com/anthropics/anthropic-sdk-go/commit/7161c2ce9843b80374186dc83fd84a8dfebda45f))
+
+
+### Bug Fixes
+
+* **client:** fix issue in Go with nested document content params ([b442cc3](https://github.com/anthropics/anthropic-sdk-go/commit/b442cc3fd41ee53a18f8ccec868ae1057dae53a8))
+* use release please annotations on more places ([31a09b0](https://github.com/anthropics/anthropic-sdk-go/commit/31a09b07991cc92d38517c80320d154246779a76))
+
 ## 1.10.0 (2025-09-02)
 
 Full Changelog: [v1.9.1...v1.10.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.9.1...v1.10.0)

@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.12.0 (2025-09-10)
+
+Full Changelog: [v1.11.0...v1.12.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.11.0...v1.12.0)
+
+### Features
+
+* **api:** adds support for web_fetch_20250910 tool ([6d5e237](https://github.com/anthropics/anthropic-sdk-go/commit/6d5e2370e14e1d125ebebcf741b721e88dc0e810))
+
+
+### Chores
+
+* tmp ([07b65e9](https://github.com/anthropics/anthropic-sdk-go/commit/07b65e9b178a1c280fc96e3f2a7bf30bd9932329))
+
 ## 1.11.0 (2025-09-05)
 
 Full Changelog: [v1.10.0...v1.11.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.10.0...v1.11.0)

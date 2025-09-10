@@ -108,6 +108,11 @@ type Tool string                                    // Always "tool"
 type ToolResult string                              // Always "tool_result"
 type ToolUse string                                 // Always "tool_use"
 type URL string                                     // Always "url"
+type WebFetch string                                // Always "web_fetch"
+type WebFetch20250910 string                        // Always "web_fetch_20250910"
+type WebFetchResult string                          // Always "web_fetch_result"
+type WebFetchToolResult string                      // Always "web_fetch_tool_result"
+type WebFetchToolResultError string                 // Always "web_fetch_tool_result_error"
 type WebSearch string                               // Always "web_search"
 type WebSearch20250305 string                       // Always "web_search_20250305"
 type WebSearchResult string                         // Always "web_search_result"
@@ -221,14 +226,21 @@ func (c TextEditorCodeExecutionToolResultError) Default() TextEditorCodeExecutio
 func (c TextEditorCodeExecutionViewResult) Default() TextEditorCodeExecutionViewResult {
 	return "text_editor_code_execution_view_result"
 }
-func (c TextPlain) Default() TextPlain                 { return "text/plain" }
-func (c Thinking) Default() Thinking                   { return "thinking" }
-func (c ThinkingDelta) Default() ThinkingDelta         { return "thinking_delta" }
-func (c TimeoutError) Default() TimeoutError           { return "timeout_error" }
-func (c Tool) Default() Tool                           { return "tool" }
-func (c ToolResult) Default() ToolResult               { return "tool_result" }
-func (c ToolUse) Default() ToolUse                     { return "tool_use" }
-func (c URL) Default() URL                             { return "url" }
+func (c TextPlain) Default() TextPlain                   { return "text/plain" }
+func (c Thinking) Default() Thinking                     { return "thinking" }
+func (c ThinkingDelta) Default() ThinkingDelta           { return "thinking_delta" }
+func (c TimeoutError) Default() TimeoutError             { return "timeout_error" }
+func (c Tool) Default() Tool                             { return "tool" }
+func (c ToolResult) Default() ToolResult                 { return "tool_result" }
+func (c ToolUse) Default() ToolUse                       { return "tool_use" }
+func (c URL) Default() URL                               { return "url" }
+func (c WebFetch) Default() WebFetch                     { return "web_fetch" }
+func (c WebFetch20250910) Default() WebFetch20250910     { return "web_fetch_20250910" }
+func (c WebFetchResult) Default() WebFetchResult         { return "web_fetch_result" }
+func (c WebFetchToolResult) Default() WebFetchToolResult { return "web_fetch_tool_result" }
+func (c WebFetchToolResultError) Default() WebFetchToolResultError {
+	return "web_fetch_tool_result_error"
+}
 func (c WebSearch) Default() WebSearch                 { return "web_search" }
 func (c WebSearch20250305) Default() WebSearch20250305 { return "web_search_20250305" }
 func (c WebSearchResult) Default() WebSearchResult     { return "web_search_result" }
@@ -334,6 +346,11 @@ func (c Tool) MarshalJSON() ([]byte, error)                              { retur
 func (c ToolResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c ToolUse) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c WebFetch) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c WebFetch20250910) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c WebFetchResult) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c WebFetchToolResult) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c WebFetchToolResultError) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c WebSearch) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c WebSearch20250305) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c WebSearchResult) MarshalJSON() ([]byte, error)                   { return marshalString(c) }

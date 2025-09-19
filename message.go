@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"reflect"
 	"time"
+	"slices"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
@@ -52,7 +53,7 @@ func NewMessageService(opts ...option.RequestOption) (r MessageService) {
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *MessageService) New(ctx context.Context, body MessageNewParams, opts ...option.RequestOption) (res *Message, err error) {
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 
 	// For non-streaming requests, calculate the appropriate timeout based on maxTokens
 	// and check against model-specific limits
@@ -81,7 +82,7 @@ func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams
 		raw *http.Response
 		err error
 	)
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithJSONSet("stream", true)}, opts...)
 	path := "v1/messages"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &raw, opts...)
@@ -96,7 +97,7 @@ func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams
 // Learn more about token counting in our
 // [user guide](/en/docs/build-with-claude/token-counting)
 func (r *MessageService) CountTokens(ctx context.Context, body MessageCountTokensParams, opts ...option.RequestOption) (res *MessageTokensCount, err error) {
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
@@ -1258,6 +1259,92 @@ func init() {
 	})
 }
 
+func init() {
+	apijson.RegisterUnion[ContentBlockSourceContentItemUnionParam](
+		"type",
+		apijson.Discriminator[TextBlockParam]("text"),
+		apijson.Discriminator[ImageBlockParam]("image"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[DocumentBlockParamSourceUnion](
+		"type",
+		apijson.Discriminator[Base64PDFSourceParam]("base64"),
+		apijson.Discriminator[PlainTextSourceParam]("text"),
+		apijson.Discriminator[ContentBlockSourceParam]("content"),
+		apijson.Discriminator[URLPDFSourceParam]("url"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[ImageBlockParamSourceUnion](
+		"type",
+		apijson.Discriminator[Base64ImageSourceParam]("base64"),
+		apijson.Discriminator[URLImageSourceParam]("url"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[TextCitationParamUnion](
+		"type",
+		apijson.Discriminator[CitationCharLocationParam]("char_location"),
+		apijson.Discriminator[CitationPageLocationParam]("page_location"),
+		apijson.Discriminator[CitationContentBlockLocationParam]("content_block_location"),
+		apijson.Discriminator[CitationWebSearchResultLocationParam]("web_search_result_location"),
+		apijson.Discriminator[CitationSearchResultLocationParam]("search_result_location"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[ThinkingConfigParamUnion](
+		"type",
+		apijson.Discriminator[ThinkingConfigEnabledParam]("enabled"),
+		apijson.Discriminator[ThinkingConfigDisabledParam]("disabled"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[ToolChoiceUnionParam](
+		"type",
+		apijson.Discriminator[ToolChoiceAutoParam]("auto"),
+		apijson.Discriminator[ToolChoiceAnyParam]("any"),
+		apijson.Discriminator[ToolChoiceToolParam]("tool"),
+		apijson.Discriminator[ToolChoiceNoneParam]("none"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[ToolResultBlockParamContentUnion](
+		"type",
+		apijson.Discriminator[TextBlockParam]("text"),
+		apijson.Discriminator[ImageBlockParam]("image"),
+		apijson.Discriminator[SearchResultBlockParam]("search_result"),
+		apijson.Discriminator[DocumentBlockParam]("document"),
+	)
+
+	// Register custom decoder for []ToolResultBlockParamContentUnion to handle string content
+	apijson.RegisterCustomDecoder[[]ToolResultBlockParamContentUnion](func(node gjson.Result, value reflect.Value, defaultDecoder func(gjson.Result, reflect.Value) error) error {
+		// If it's a string, convert it to a TextBlock automatically
+		if node.Type == gjson.String {
+			textBlock := TextBlockParam{
+				Text: node.String(),
+				Type: "text",
+			}
+			contentUnion := ToolResultBlockParamContentUnion{
+				OfText: &textBlock,
+			}
+			arrayValue := reflect.MakeSlice(value.Type(), 1, 1)
+			arrayValue.Index(0).Set(reflect.ValueOf(contentUnion))
+			value.Set(arrayValue)
+			return nil
+		}
+
+		// If it's already an array, use the default decoder
+		return defaultDecoder(node, value)
+	})
+}
+
 // The properties Content, Type are required.
 type ContentBlockSourceParam struct {
 	Content ContentBlockSourceContentUnionParam `json:"content,omitzero,required"`
@@ -1385,14 +1472,6 @@ func (u ContentBlockSourceContentItemUnionParam) GetCacheControl() *CacheControl
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[ContentBlockSourceContentItemUnionParam](
-		"type",
-		apijson.Discriminator[TextBlockParam]("text"),
-		apijson.Discriminator[ImageBlockParam]("image"),
-	)
-}
-
 // The properties Source, Type are required.
 type DocumentBlockParam struct {
 	Source  DocumentBlockParamSourceUnion `json:"source,omitzero,required"`
@@ -1495,16 +1574,6 @@ func (u DocumentBlockParamSourceUnion) GetType() *string {
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[DocumentBlockParamSourceUnion](
-		"type",
-		apijson.Discriminator[Base64PDFSourceParam]("base64"),
-		apijson.Discriminator[PlainTextSourceParam]("text"),
-		apijson.Discriminator[ContentBlockSourceParam]("content"),
-		apijson.Discriminator[URLPDFSourceParam]("url"),
-	)
-}
-
 // The properties Source, Type are required.
 type ImageBlockParam struct {
 	Source ImageBlockParamSourceUnion `json:"source,omitzero,required"`
@@ -1580,14 +1649,6 @@ func (u ImageBlockParamSourceUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[ImageBlockParamSourceUnion](
-		"type",
-		apijson.Discriminator[Base64ImageSourceParam]("base64"),
-		apijson.Discriminator[URLImageSourceParam]("url"),
-	)
 }
 
 type InputJSONDelta struct {
@@ -3229,17 +3290,6 @@ func (u TextCitationParamUnion) GetTitle() *string {
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[TextCitationParamUnion](
-		"type",
-		apijson.Discriminator[CitationCharLocationParam]("char_location"),
-		apijson.Discriminator[CitationPageLocationParam]("page_location"),
-		apijson.Discriminator[CitationContentBlockLocationParam]("content_block_location"),
-		apijson.Discriminator[CitationWebSearchResultLocationParam]("web_search_result_location"),
-		apijson.Discriminator[CitationSearchResultLocationParam]("search_result_location"),
-	)
-}
-
 type TextDelta struct {
 	Text string             `json:"text,required"`
 	Type constant.TextDelta `json:"type,required"`
@@ -3396,14 +3446,6 @@ func (u ThinkingConfigParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[ThinkingConfigParamUnion](
-		"type",
-		apijson.Discriminator[ThinkingConfigEnabledParam]("enabled"),
-		apijson.Discriminator[ThinkingConfigDisabledParam]("disabled"),
-	)
 }
 
 type ThinkingDelta struct {
@@ -3578,16 +3620,6 @@ func (u ToolChoiceUnionParam) GetDisableParallelToolUse() *bool {
 		return &vt.DisableParallelToolUse.Value
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[ToolChoiceUnionParam](
-		"type",
-		apijson.Discriminator[ToolChoiceAutoParam]("auto"),
-		apijson.Discriminator[ToolChoiceAnyParam]("any"),
-		apijson.Discriminator[ToolChoiceToolParam]("tool"),
-		apijson.Discriminator[ToolChoiceNoneParam]("none"),
-	)
 }
 
 // The model will use any available tools.
@@ -3914,37 +3946,6 @@ func (u toolResultBlockParamContentUnionSource) GetURL() *string {
 		return vt.GetURL()
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[ToolResultBlockParamContentUnion](
-		"type",
-		apijson.Discriminator[TextBlockParam]("text"),
-		apijson.Discriminator[ImageBlockParam]("image"),
-		apijson.Discriminator[SearchResultBlockParam]("search_result"),
-		apijson.Discriminator[DocumentBlockParam]("document"),
-	)
-
-	// Register custom decoder for []ToolResultBlockParamContentUnion to handle string content
-	apijson.RegisterCustomDecoder[[]ToolResultBlockParamContentUnion](func(node gjson.Result, value reflect.Value, defaultDecoder func(gjson.Result, reflect.Value) error) error {
-		// If it's a string, convert it to a TextBlock automatically
-		if node.Type == gjson.String {
-			textBlock := TextBlockParam{
-				Text: node.String(),
-				Type: "text",
-			}
-			contentUnion := ToolResultBlockParamContentUnion{
-				OfText: &textBlock,
-			}
-			arrayValue := reflect.MakeSlice(value.Type(), 1, 1)
-			arrayValue.Index(0).Set(reflect.ValueOf(contentUnion))
-			value.Set(arrayValue)
-			return nil
-		}
-
-		// If it's already an array, use the default decoder
-		return defaultDecoder(node, value)
-	})
 }
 
 // The properties Name, Type are required.

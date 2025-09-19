@@ -33,7 +33,7 @@ go get -u 'github.com/anthropics/anthropic-sdk-go@v1.12.0'
 
 ## Requirements
 
-This library requires Go 1.18+.
+This library requires Go 1.22+.
 
 ## Usage
 

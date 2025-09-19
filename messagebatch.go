@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -51,7 +52,7 @@ func NewMessageBatchService(opts ...option.RequestOption) (r MessageBatchService
 // Learn more about the Message Batches API in our
 // [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) New(ctx context.Context, body MessageBatchNewParams, opts ...option.RequestOption) (res *MessageBatch, err error) {
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/batches"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
@@ -64,7 +65,7 @@ func (r *MessageBatchService) New(ctx context.Context, body MessageBatchNewParam
 // Learn more about the Message Batches API in our
 // [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *MessageBatch, err error) {
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
 		return
@@ -81,7 +82,7 @@ func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, op
 // [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) List(ctx context.Context, query MessageBatchListParams, opts ...option.RequestOption) (res *pagination.Page[MessageBatch], err error) {
 	var raw *http.Response
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/messages/batches"
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
@@ -113,7 +114,7 @@ func (r *MessageBatchService) ListAutoPaging(ctx context.Context, query MessageB
 // Learn more about the Message Batches API in our
 // [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *DeletedMessageBatch, err error) {
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
 		return
@@ -136,7 +137,7 @@ func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string,
 // Learn more about the Message Batches API in our
 // [user guide](/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *MessageBatch, err error) {
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
 		return
@@ -159,7 +160,7 @@ func (r *MessageBatchService) ResultsStreaming(ctx context.Context, messageBatch
 		raw *http.Response
 		err error
 	)
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "application/x-jsonl")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")

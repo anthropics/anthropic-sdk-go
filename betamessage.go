@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -53,7 +54,7 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 
 	// For non-streaming requests, calculate the appropriate timeout based on maxTokens
 	// and check against model-specific limits
@@ -85,7 +86,7 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithJSONSet("stream", true)}, opts...)
 	path := "v1/messages?beta=true"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &raw, opts...)
@@ -103,7 +104,7 @@ func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessage
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens?beta=true"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return
@@ -263,6 +264,88 @@ func init() {
 		apijson.Discriminator[BetaContentBlockSourceParam]("content"),
 		apijson.Discriminator[BetaURLPDFSourceParam]("url"),
 		apijson.Discriminator[BetaFileDocumentSourceParam]("file"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaContentBlockParamUnion](
+		"type",
+		apijson.Discriminator[BetaTextBlockParam]("text"),
+		apijson.Discriminator[BetaImageBlockParam]("image"),
+		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
+		apijson.Discriminator[BetaSearchResultBlockParam]("search_result"),
+		apijson.Discriminator[BetaThinkingBlockParam]("thinking"),
+		apijson.Discriminator[BetaRedactedThinkingBlockParam]("redacted_thinking"),
+		apijson.Discriminator[BetaToolUseBlockParam]("tool_use"),
+		apijson.Discriminator[BetaToolResultBlockParam]("tool_result"),
+		apijson.Discriminator[BetaServerToolUseBlockParam]("server_tool_use"),
+		apijson.Discriminator[BetaWebSearchToolResultBlockParam]("web_search_tool_result"),
+		apijson.Discriminator[BetaWebFetchToolResultBlockParam]("web_fetch_tool_result"),
+		apijson.Discriminator[BetaCodeExecutionToolResultBlockParam]("code_execution_tool_result"),
+		apijson.Discriminator[BetaBashCodeExecutionToolResultBlockParam]("bash_code_execution_tool_result"),
+		apijson.Discriminator[BetaTextEditorCodeExecutionToolResultBlockParam]("text_editor_code_execution_tool_result"),
+		apijson.Discriminator[BetaMCPToolUseBlockParam]("mcp_tool_use"),
+		apijson.Discriminator[BetaRequestMCPToolResultBlockParam]("mcp_tool_result"),
+		apijson.Discriminator[BetaContainerUploadBlockParam]("container_upload"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaImageBlockParamSourceUnion](
+		"type",
+		apijson.Discriminator[BetaBase64ImageSourceParam]("base64"),
+		apijson.Discriminator[BetaURLImageSourceParam]("url"),
+		apijson.Discriminator[BetaFileImageSourceParam]("file"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaRequestDocumentBlockSourceUnionParam](
+		"type",
+		apijson.Discriminator[BetaBase64PDFSourceParam]("base64"),
+		apijson.Discriminator[BetaPlainTextSourceParam]("text"),
+		apijson.Discriminator[BetaContentBlockSourceParam]("content"),
+		apijson.Discriminator[BetaURLPDFSourceParam]("url"),
+		apijson.Discriminator[BetaFileDocumentSourceParam]("file"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaTextCitationParamUnion](
+		"type",
+		apijson.Discriminator[BetaCitationCharLocationParam]("char_location"),
+		apijson.Discriminator[BetaCitationPageLocationParam]("page_location"),
+		apijson.Discriminator[BetaCitationContentBlockLocationParam]("content_block_location"),
+		apijson.Discriminator[BetaCitationWebSearchResultLocationParam]("web_search_result_location"),
+		apijson.Discriminator[BetaCitationSearchResultLocationParam]("search_result_location"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaThinkingConfigParamUnion](
+		"type",
+		apijson.Discriminator[BetaThinkingConfigEnabledParam]("enabled"),
+		apijson.Discriminator[BetaThinkingConfigDisabledParam]("disabled"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaToolChoiceUnionParam](
+		"type",
+		apijson.Discriminator[BetaToolChoiceAutoParam]("auto"),
+		apijson.Discriminator[BetaToolChoiceAnyParam]("any"),
+		apijson.Discriminator[BetaToolChoiceToolParam]("tool"),
+		apijson.Discriminator[BetaToolChoiceNoneParam]("none"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaToolResultBlockParamContentUnion](
+		"type",
+		apijson.Discriminator[BetaTextBlockParam]("text"),
+		apijson.Discriminator[BetaImageBlockParam]("image"),
+		apijson.Discriminator[BetaSearchResultBlockParam]("search_result"),
+		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
 	)
 }
 
@@ -2739,29 +2822,6 @@ func (u BetaContentBlockParamUnion) GetInput() *any {
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[BetaContentBlockParamUnion](
-		"type",
-		apijson.Discriminator[BetaTextBlockParam]("text"),
-		apijson.Discriminator[BetaImageBlockParam]("image"),
-		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
-		apijson.Discriminator[BetaSearchResultBlockParam]("search_result"),
-		apijson.Discriminator[BetaThinkingBlockParam]("thinking"),
-		apijson.Discriminator[BetaRedactedThinkingBlockParam]("redacted_thinking"),
-		apijson.Discriminator[BetaToolUseBlockParam]("tool_use"),
-		apijson.Discriminator[BetaToolResultBlockParam]("tool_result"),
-		apijson.Discriminator[BetaServerToolUseBlockParam]("server_tool_use"),
-		apijson.Discriminator[BetaWebSearchToolResultBlockParam]("web_search_tool_result"),
-		apijson.Discriminator[BetaWebFetchToolResultBlockParam]("web_fetch_tool_result"),
-		apijson.Discriminator[BetaCodeExecutionToolResultBlockParam]("code_execution_tool_result"),
-		apijson.Discriminator[BetaBashCodeExecutionToolResultBlockParam]("bash_code_execution_tool_result"),
-		apijson.Discriminator[BetaTextEditorCodeExecutionToolResultBlockParam]("text_editor_code_execution_tool_result"),
-		apijson.Discriminator[BetaMCPToolUseBlockParam]("mcp_tool_use"),
-		apijson.Discriminator[BetaRequestMCPToolResultBlockParam]("mcp_tool_result"),
-		apijson.Discriminator[BetaContainerUploadBlockParam]("container_upload"),
-	)
-}
-
 // The properties Content, Type are required.
 type BetaContentBlockSourceParam struct {
 	Content BetaContentBlockSourceContentUnionParam `json:"content,omitzero,required"`
@@ -3011,15 +3071,6 @@ func (u BetaImageBlockParamSourceUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[BetaImageBlockParamSourceUnion](
-		"type",
-		apijson.Discriminator[BetaBase64ImageSourceParam]("base64"),
-		apijson.Discriminator[BetaURLImageSourceParam]("url"),
-		apijson.Discriminator[BetaFileImageSourceParam]("file"),
-	)
 }
 
 type BetaInputJSONDelta struct {
@@ -4430,17 +4481,6 @@ func (u BetaRequestDocumentBlockSourceUnionParam) GetType() *string {
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[BetaRequestDocumentBlockSourceUnionParam](
-		"type",
-		apijson.Discriminator[BetaBase64PDFSourceParam]("base64"),
-		apijson.Discriminator[BetaPlainTextSourceParam]("text"),
-		apijson.Discriminator[BetaContentBlockSourceParam]("content"),
-		apijson.Discriminator[BetaURLPDFSourceParam]("url"),
-		apijson.Discriminator[BetaFileDocumentSourceParam]("file"),
-	)
-}
-
 type BetaRequestMCPServerToolConfigurationParam struct {
 	Enabled      param.Opt[bool] `json:"enabled,omitzero"`
 	AllowedTools []string        `json:"allowed_tools,omitzero"`
@@ -5056,17 +5096,6 @@ func (u BetaTextCitationParamUnion) GetTitle() *string {
 		return &vt.Title.Value
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[BetaTextCitationParamUnion](
-		"type",
-		apijson.Discriminator[BetaCitationCharLocationParam]("char_location"),
-		apijson.Discriminator[BetaCitationPageLocationParam]("page_location"),
-		apijson.Discriminator[BetaCitationContentBlockLocationParam]("content_block_location"),
-		apijson.Discriminator[BetaCitationWebSearchResultLocationParam]("web_search_result_location"),
-		apijson.Discriminator[BetaCitationSearchResultLocationParam]("search_result_location"),
-	)
 }
 
 type BetaTextDelta struct {
@@ -5706,14 +5735,6 @@ func (u BetaThinkingConfigParamUnion) GetType() *string {
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[BetaThinkingConfigParamUnion](
-		"type",
-		apijson.Discriminator[BetaThinkingConfigEnabledParam]("enabled"),
-		apijson.Discriminator[BetaThinkingConfigDisabledParam]("disabled"),
-	)
-}
-
 type BetaThinkingDelta struct {
 	Thinking string                 `json:"thinking,required"`
 	Type     constant.ThinkingDelta `json:"type,required"`
@@ -5909,16 +5930,6 @@ func (u BetaToolChoiceUnionParam) GetDisableParallelToolUse() *bool {
 		return &vt.DisableParallelToolUse.Value
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[BetaToolChoiceUnionParam](
-		"type",
-		apijson.Discriminator[BetaToolChoiceAutoParam]("auto"),
-		apijson.Discriminator[BetaToolChoiceAnyParam]("any"),
-		apijson.Discriminator[BetaToolChoiceToolParam]("tool"),
-		apijson.Discriminator[BetaToolChoiceNoneParam]("none"),
-	)
 }
 
 // The model will use any available tools.
@@ -6322,16 +6333,6 @@ func (u betaToolResultBlockParamContentUnionSource) GetFileID() *string {
 		return vt.GetFileID()
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[BetaToolResultBlockParamContentUnion](
-		"type",
-		apijson.Discriminator[BetaTextBlockParam]("text"),
-		apijson.Discriminator[BetaImageBlockParam]("image"),
-		apijson.Discriminator[BetaSearchResultBlockParam]("search_result"),
-		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
-	)
 }
 
 // The properties Name, Type are required.

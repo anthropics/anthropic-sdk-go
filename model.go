@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -47,7 +48,7 @@ func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetPa
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	if modelID == "" {
 		err = errors.New("missing required model_id parameter")
 		return
@@ -66,7 +67,7 @@ func (r *ModelService) List(ctx context.Context, params ModelListParams, opts ..
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/models"
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)

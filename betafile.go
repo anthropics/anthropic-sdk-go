@@ -11,6 +11,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"slices"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apiform"
@@ -49,7 +50,7 @@ func (r *BetaFileService) List(ctx context.Context, params BetaFileListParams, o
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "files-api-2025-04-14"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/files?beta=true"
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -74,7 +75,7 @@ func (r *BetaFileService) Delete(ctx context.Context, fileID string, body BetaFi
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "files-api-2025-04-14")}, opts...)
 	if fileID == "" {
 		err = errors.New("missing required file_id parameter")
@@ -90,7 +91,7 @@ func (r *BetaFileService) Download(ctx context.Context, fileID string, query Bet
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "files-api-2025-04-14"), option.WithHeader("Accept", "application/binary")}, opts...)
 	if fileID == "" {
 		err = errors.New("missing required file_id parameter")
@@ -106,7 +107,7 @@ func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query 
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "files-api-2025-04-14")}, opts...)
 	if fileID == "" {
 		err = errors.New("missing required file_id parameter")
@@ -122,7 +123,7 @@ func (r *BetaFileService) Upload(ctx context.Context, params BetaFileUploadParam
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "files-api-2025-04-14")}, opts...)
 	path := "v1/files?beta=true"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)

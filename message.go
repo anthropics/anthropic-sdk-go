@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"slices"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
@@ -48,7 +49,7 @@ func NewMessageService(opts ...option.RequestOption) (r MessageService) {
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *MessageService) New(ctx context.Context, body MessageNewParams, opts ...option.RequestOption) (res *Message, err error) {
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return
@@ -68,7 +69,7 @@ func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams
 		raw *http.Response
 		err error
 	)
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithJSONSet("stream", true)}, opts...)
 	path := "v1/messages"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &raw, opts...)
@@ -83,7 +84,7 @@ func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams
 // Learn more about token counting in our
 // [user guide](/en/docs/build-with-claude/token-counting)
 func (r *MessageService) CountTokens(ctx context.Context, body MessageCountTokensParams, opts ...option.RequestOption) (res *MessageTokensCount, err error) {
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return

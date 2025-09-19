@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -53,7 +54,7 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	path := "v1/messages/batches?beta=true"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -70,7 +71,7 @@ func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
@@ -91,7 +92,7 @@ func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBa
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/messages/batches?beta=true"
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -126,7 +127,7 @@ func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID str
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
@@ -153,7 +154,7 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
@@ -180,7 +181,7 @@ func (r *BetaMessageBatchService) ResultsStreaming(ctx context.Context, messageB
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
-	opts = append(r.Options[:], opts...)
+	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithHeader("Accept", "application/x-jsonl")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")

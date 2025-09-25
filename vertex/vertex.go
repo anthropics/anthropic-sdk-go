@@ -68,7 +68,9 @@ func vertexMiddleware(region, projectID string) sdkoption.Middleware {
 			if err != nil {
 				return nil, err
 			}
-			r.Body.Close()
+			if err := r.Body.Close(); err != nil {
+				return nil, err
+			}
 
 			if !gjson.GetBytes(body, "anthropic_version").Exists() {
 				body, _ = sjson.SetBytes(body, "anthropic_version", DefaultVersion)

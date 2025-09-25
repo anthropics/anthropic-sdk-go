@@ -10,6 +10,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
+	thttp "google.golang.org/api/transport/http"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	sdkoption "github.com/anthropics/anthropic-sdk-go/option"
@@ -70,10 +71,6 @@ func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes
 // (POST /v1/messages with the model in the body) — identical to the
 // first-party API.
 func WithCredentials(ctx context.Context, region string, projectID string, creds *google.Credentials) sdkoption.RequestOption {
-	client, _, err := transport.NewHTTPClient(ctx, option.WithTokenSource(creds.TokenSource))
-	if err != nil {
-		panic(fmt.Errorf("failed to create HTTP client: %v", err))
-	}
 	middleware := vertexMiddleware(region, projectID)
 
 	var baseURL string
@@ -89,6 +86,24 @@ func WithCredentials(ctx context.Context, region string, projectID string, creds
 	}
 
 	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+		getClient := func() (*http.Client, error) {
+			if rc.HTTPClient == nil || rc.HTTPClient.Transport == nil {
+				c, _, err := transport.NewHTTPClient(ctx, option.WithTokenSource(creds.TokenSource))
+				return c, err
+			}
+			transport, err := thttp.NewTransport(
+				ctx,
+				rc.HTTPClient.Transport,
+				option.WithTokenSource(creds.TokenSource),
+			)
+			return &http.Client{Transport: transport}, err
+		}
+
+		client, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create http client: %v", err)
+		}
+
 		return rc.Apply(
 			sdkoption.WithBaseURL(baseURL),
 			sdkoption.WithMiddleware(middleware),

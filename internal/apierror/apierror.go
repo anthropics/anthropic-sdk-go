@@ -28,6 +28,7 @@ type Error struct {
 
 // Returns the unmodified JSON received from the API
 func (r Error) RawJSON() string { return r.JSON.raw }
+
 func (r *Error) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

@@ -1,10 +1,11 @@
 package apiquery
 
 import (
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"net/url"
 	"testing"
 	"time"
+
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 )
 
 func P[T any](v T) *T { return &v }
@@ -334,7 +335,7 @@ var tests = map[string]struct {
 	"union_struct_time": {
 		`union=2010-05-23`,
 		UnionStruct{
-			Union: UnionTime(time.Date(2010, 05, 23, 0, 0, 0, 0, time.UTC)),
+			Union: UnionTime(time.Date(2010, 0o5, 23, 0, 0, 0, 0, time.UTC)),
 		},
 		QuerySettings{},
 	},

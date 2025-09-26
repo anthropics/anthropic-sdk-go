@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/anthropics/anthropic-sdk-go"
 	"os"
+
+	"github.com/anthropics/anthropic-sdk-go"
 )
 
 func main() {

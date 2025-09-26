@@ -1,8 +1,9 @@
 package apiquery
 
 import (
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"reflect"
+
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 )
 
 func (e *encoder) newRichFieldTypeEncoder(t reflect.Type) encoderFunc {

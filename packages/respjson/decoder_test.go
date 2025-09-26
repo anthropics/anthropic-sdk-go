@@ -3,10 +3,11 @@ package respjson_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	rj "github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"reflect"
 	"testing"
+
+	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
+	rj "github.com/anthropics/anthropic-sdk-go/packages/respjson"
 )
 
 type UnionOfStringIntOrObject struct {

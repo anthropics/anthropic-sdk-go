@@ -268,7 +268,7 @@ type MarshallingUnionStruct struct {
 func (r *MarshallingUnionStruct) UnmarshalJSON(data []byte) (err error) {
 	*r = MarshallingUnionStruct{}
 	err = UnmarshalRoot(data, &r.Union)
-	return
+	return err
 }
 
 func (r MarshallingUnionStruct) MarshalJSON() (data []byte, err error) {
@@ -513,7 +513,7 @@ var tests = map[string]struct {
 	"union_struct_time": {
 		`{"union":"2010-05-23"}`,
 		UnionStruct{
-			Union: UnionTime(time.Date(2010, 05, 23, 0, 0, 0, 0, time.UTC)),
+			Union: UnionTime(time.Date(2010, 0o5, 23, 0, 0, 0, 0, time.UTC)),
 		},
 	},
 

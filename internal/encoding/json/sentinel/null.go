@@ -1,9 +1,10 @@
 package sentinel
 
 import (
-	"github.com/anthropics/anthropic-sdk-go/internal/encoding/json/shims"
 	"reflect"
 	"sync"
+
+	"github.com/anthropics/anthropic-sdk-go/internal/encoding/json/shims"
 )
 
 type cacheEntry struct {

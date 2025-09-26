@@ -69,12 +69,12 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		Tools: []anthropic.BetaToolUnionParam{{
 			OfTool: &anthropic.BetaToolParam{
 				InputSchema: anthropic.BetaToolInputSchemaParam{
-					Properties: map[string]interface{}{
-						"location": map[string]interface{}{
+					Properties: map[string]any{
+						"location": map[string]any{
 							"description": "The city and state, e.g. San Francisco, CA",
 							"type":        "string",
 						},
-						"unit": map[string]interface{}{
+						"unit": map[string]any{
 							"description": "Unit for the output - one of (celsius, fahrenheit)",
 							"type":        "string",
 						},
@@ -163,12 +163,12 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 		Tools: []anthropic.BetaMessageCountTokensParamsToolUnion{{
 			OfTool: &anthropic.BetaToolParam{
 				InputSchema: anthropic.BetaToolInputSchemaParam{
-					Properties: map[string]interface{}{
-						"location": map[string]interface{}{
+					Properties: map[string]any{
+						"location": map[string]any{
 							"description": "The city and state, e.g. San Francisco, CA",
 							"type":        "string",
 						},
-						"unit": map[string]interface{}{
+						"unit": map[string]any{
 							"description": "Unit for the output - one of (celsius, fahrenheit)",
 							"type":        "string",
 						},

@@ -90,7 +90,7 @@ func appendCompact(dst, src []byte, escape bool) ([]byte, error) {
 func appendNewline(dst []byte, prefix, indent string, depth int) []byte {
 	dst = append(dst, '\n')
 	dst = append(dst, prefix...)
-	for i := 0; i < depth; i++ {
+	for range depth {
 		dst = append(dst, indent...)
 	}
 	return dst

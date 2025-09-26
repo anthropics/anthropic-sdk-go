@@ -2,12 +2,13 @@ package apiform
 
 import (
 	"bytes"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"io"
 	"mime/multipart"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 )
 
 func P[T any](v T) *T { return &v }
@@ -23,10 +24,12 @@ type Primitives struct {
 
 // These aliases are necessary to bypass the cache.
 // This only relevant during testing.
-type int_ int
-type PrimitivesBrackets struct {
-	F []int_ `form:"f"`
-}
+type (
+	int_               int
+	PrimitivesBrackets struct {
+		F []int_ `form:"f"`
+	}
+)
 
 type PrimitivePointers struct {
 	A *bool    `form:"a"`
@@ -526,7 +529,7 @@ Content-Disposition: form-data; name="union"
 --xxx--
 `,
 		UnionStruct{
-			Union: UnionTime(time.Date(2010, 05, 23, 0, 0, 0, 0, time.UTC)),
+			Union: UnionTime(time.Date(2010, 0o5, 23, 0, 0, 0, 0, time.UTC)),
 		},
 	},
 }

@@ -39,7 +39,7 @@ func NewMessageService(opts ...option.RequestOption) (r MessageService) {
 	r = MessageService{}
 	r.Options = opts
 	r.Batches = NewMessageBatchService(opts...)
-	return
+	return r
 }
 
 // Send a structured list of input messages with text and/or image content, and the
@@ -64,7 +64,7 @@ func (r *MessageService) New(ctx context.Context, body MessageNewParams, opts ..
 
 	path := "v1/messages"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // Send a structured list of input messages with text and/or image content, and the
@@ -99,7 +99,7 @@ func (r *MessageService) CountTokens(ctx context.Context, body MessageCountToken
 	opts = append(r.Options[:], opts...)
 	path := "v1/messages/count_tokens"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // The properties Data, MediaType, Type are required.
@@ -116,6 +116,7 @@ func (r Base64ImageSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow Base64ImageSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *Base64ImageSourceParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -143,6 +144,7 @@ func (r Base64PDFSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow Base64PDFSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *Base64PDFSourceParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -175,6 +177,7 @@ func (r CacheControlEphemeralParam) MarshalJSON() (data []byte, err error) {
 	type shadow CacheControlEphemeralParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *CacheControlEphemeralParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -210,6 +213,7 @@ type CacheCreation struct {
 
 // Returns the unmodified JSON received from the API
 func (r CacheCreation) RawJSON() string { return r.JSON.raw }
+
 func (r *CacheCreation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -238,6 +242,7 @@ type CitationCharLocation struct {
 
 // Returns the unmodified JSON received from the API
 func (r CitationCharLocation) RawJSON() string { return r.JSON.raw }
+
 func (r *CitationCharLocation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -259,6 +264,7 @@ func (r CitationCharLocationParam) MarshalJSON() (data []byte, err error) {
 	type shadow CitationCharLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *CitationCharLocationParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -287,6 +293,7 @@ type CitationContentBlockLocation struct {
 
 // Returns the unmodified JSON received from the API
 func (r CitationContentBlockLocation) RawJSON() string { return r.JSON.raw }
+
 func (r *CitationContentBlockLocation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -309,6 +316,7 @@ func (r CitationContentBlockLocationParam) MarshalJSON() (data []byte, err error
 	type shadow CitationContentBlockLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *CitationContentBlockLocationParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -337,6 +345,7 @@ type CitationPageLocation struct {
 
 // Returns the unmodified JSON received from the API
 func (r CitationPageLocation) RawJSON() string { return r.JSON.raw }
+
 func (r *CitationPageLocation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -358,6 +367,7 @@ func (r CitationPageLocationParam) MarshalJSON() (data []byte, err error) {
 	type shadow CitationPageLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *CitationPageLocationParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -381,6 +391,7 @@ func (r CitationSearchResultLocationParam) MarshalJSON() (data []byte, err error
 	type shadow CitationSearchResultLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *CitationSearchResultLocationParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -401,6 +412,7 @@ func (r CitationWebSearchResultLocationParam) MarshalJSON() (data []byte, err er
 	type shadow CitationWebSearchResultLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *CitationWebSearchResultLocationParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -414,6 +426,7 @@ func (r CitationsConfigParam) MarshalJSON() (data []byte, err error) {
 	type shadow CitationsConfigParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *CitationsConfigParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -432,6 +445,7 @@ type CitationsDelta struct {
 
 // Returns the unmodified JSON received from the API
 func (r CitationsDelta) RawJSON() string { return r.JSON.raw }
+
 func (r *CitationsDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -533,27 +547,27 @@ func (u CitationsDeltaCitationUnion) AsAny() anyCitationsDeltaCitation {
 
 func (u CitationsDeltaCitationUnion) AsCharLocation() (v CitationCharLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u CitationsDeltaCitationUnion) AsPageLocation() (v CitationPageLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u CitationsDeltaCitationUnion) AsContentBlockLocation() (v CitationContentBlockLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u CitationsDeltaCitationUnion) AsWebSearchResultLocation() (v CitationsWebSearchResultLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u CitationsDeltaCitationUnion) AsSearchResultLocation() (v CitationsSearchResultLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 // Returns the unmodified JSON received from the API
@@ -587,6 +601,7 @@ type CitationsSearchResultLocation struct {
 
 // Returns the unmodified JSON received from the API
 func (r CitationsSearchResultLocation) RawJSON() string { return r.JSON.raw }
+
 func (r *CitationsSearchResultLocation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -611,6 +626,7 @@ type CitationsWebSearchResultLocation struct {
 
 // Returns the unmodified JSON received from the API
 func (r CitationsWebSearchResultLocation) RawJSON() string { return r.JSON.raw }
+
 func (r *CitationsWebSearchResultLocation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -723,32 +739,32 @@ func (u ContentBlockUnion) AsAny() anyContentBlock {
 
 func (u ContentBlockUnion) AsText() (v TextBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u ContentBlockUnion) AsThinking() (v ThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u ContentBlockUnion) AsRedactedThinking() (v RedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u ContentBlockUnion) AsToolUse() (v ToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u ContentBlockUnion) AsServerToolUse() (v ServerToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u ContentBlockUnion) AsWebSearchToolResult() (v WebSearchToolResultBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 // Returns the unmodified JSON received from the API
@@ -895,6 +911,7 @@ func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
 		u.OfServerToolUse,
 		u.OfWebSearchToolResult)
 }
+
 func (u *ContentBlockParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -1071,7 +1088,7 @@ func (u ContentBlockParamUnion) GetCitations() (res contentBlockParamUnionCitati
 	} else if vt := u.OfSearchResult; vt != nil {
 		res.any = &vt.Citations
 	}
-	return
+	return res
 }
 
 // Can have the runtime types [*[]TextCitationParamUnion], [*CitationsConfigParam]
@@ -1107,7 +1124,7 @@ func (u ContentBlockParamUnion) GetSource() (res contentBlockParamUnionSource) {
 	} else if vt := u.OfSearchResult; vt != nil {
 		res.any = &vt.Source
 	}
-	return
+	return res
 }
 
 // Can have the runtime types [*Base64ImageSourceParam], [*URLImageSourceParam],
@@ -1194,7 +1211,7 @@ func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent)
 	} else if vt := u.OfWebSearchToolResult; vt != nil {
 		res.any = vt.Content.asAny()
 	}
-	return
+	return res
 }
 
 // Can have the runtime types [_[]TextBlockParam],
@@ -1270,6 +1287,7 @@ func (r ContentBlockSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow ContentBlockSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ContentBlockSourceParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -1286,6 +1304,7 @@ type ContentBlockSourceContentUnionParam struct {
 func (u ContentBlockSourceContentUnionParam) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfString, u.OfContentBlockSourceContent)
 }
+
 func (u *ContentBlockSourceContentUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -1328,6 +1347,7 @@ type ContentBlockSourceContentItemUnionParam struct {
 func (u ContentBlockSourceContentItemUnionParam) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfText, u.OfImage)
 }
+
 func (u *ContentBlockSourceContentItemUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -1410,6 +1430,7 @@ func (r DocumentBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow DocumentBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *DocumentBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -1428,6 +1449,7 @@ type DocumentBlockParamSourceUnion struct {
 func (u DocumentBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfBase64, u.OfText, u.OfContent, u.OfURL)
 }
+
 func (u *DocumentBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -1519,6 +1541,7 @@ func (r ImageBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ImageBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ImageBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -1535,6 +1558,7 @@ type ImageBlockParamSourceUnion struct {
 func (u ImageBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfBase64, u.OfURL)
 }
+
 func (u *ImageBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -1604,6 +1628,7 @@ type InputJSONDelta struct {
 
 // Returns the unmodified JSON received from the API
 func (r InputJSONDelta) RawJSON() string { return r.JSON.raw }
+
 func (r *InputJSONDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -1717,6 +1742,7 @@ type Message struct {
 
 // Returns the unmodified JSON received from the API
 func (r Message) RawJSON() string { return r.JSON.raw }
+
 func (r *Message) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -1779,6 +1805,7 @@ func (u MessageCountTokensToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfTextEditor20250728,
 		u.OfWebSearchTool20250305)
 }
+
 func (u *MessageCountTokensToolUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -1935,6 +1962,7 @@ type MessageDeltaUsage struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageDeltaUsage) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageDeltaUsage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -1965,6 +1993,7 @@ func (r MessageParam) MarshalJSON() (data []byte, err error) {
 	type shadow MessageParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *MessageParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -1990,6 +2019,7 @@ type MessageTokensCount struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageTokensCount) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageTokensCount) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2008,6 +2038,7 @@ func (r MetadataParam) MarshalJSON() (data []byte, err error) {
 	type shadow MetadataParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2067,6 +2098,7 @@ func (r PlainTextSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow PlainTextSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *PlainTextSourceParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2145,27 +2177,27 @@ func (u RawContentBlockDeltaUnion) AsAny() anyRawContentBlockDelta {
 
 func (u RawContentBlockDeltaUnion) AsTextDelta() (v TextDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u RawContentBlockDeltaUnion) AsInputJSONDelta() (v InputJSONDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u RawContentBlockDeltaUnion) AsCitationsDelta() (v CitationsDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u RawContentBlockDeltaUnion) AsThinkingDelta() (v ThinkingDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u RawContentBlockDeltaUnion) AsSignatureDelta() (v SignatureDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 // Returns the unmodified JSON received from the API
@@ -2191,6 +2223,7 @@ type ContentBlockDeltaEvent struct {
 
 // Returns the unmodified JSON received from the API
 func (r ContentBlockDeltaEvent) RawJSON() string { return r.JSON.raw }
+
 func (r *ContentBlockDeltaEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2211,6 +2244,7 @@ type ContentBlockStartEvent struct {
 
 // Returns the unmodified JSON received from the API
 func (r ContentBlockStartEvent) RawJSON() string { return r.JSON.raw }
+
 func (r *ContentBlockStartEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2306,32 +2340,32 @@ func (u ContentBlockStartEventContentBlockUnion) AsAny() anyContentBlockStartEve
 
 func (u ContentBlockStartEventContentBlockUnion) AsText() (v TextBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u ContentBlockStartEventContentBlockUnion) AsThinking() (v ThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u ContentBlockStartEventContentBlockUnion) AsRedactedThinking() (v RedactedThinkingBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u ContentBlockStartEventContentBlockUnion) AsToolUse() (v ToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u ContentBlockStartEventContentBlockUnion) AsServerToolUse() (v ServerToolUseBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u ContentBlockStartEventContentBlockUnion) AsWebSearchToolResult() (v WebSearchToolResultBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 // Returns the unmodified JSON received from the API
@@ -2355,6 +2389,7 @@ type ContentBlockStopEvent struct {
 
 // Returns the unmodified JSON received from the API
 func (r ContentBlockStopEvent) RawJSON() string { return r.JSON.raw }
+
 func (r *ContentBlockStopEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2390,6 +2425,7 @@ type MessageDeltaEvent struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageDeltaEvent) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageDeltaEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2410,6 +2446,7 @@ type MessageDeltaEventDelta struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageDeltaEventDelta) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageDeltaEventDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2428,6 +2465,7 @@ type MessageStartEvent struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageStartEvent) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageStartEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2444,6 +2482,7 @@ type MessageStopEvent struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageStopEvent) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageStopEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2525,32 +2564,32 @@ func (u MessageStreamEventUnion) AsAny() anyMessageStreamEvent {
 
 func (u MessageStreamEventUnion) AsMessageStart() (v MessageStartEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u MessageStreamEventUnion) AsMessageDelta() (v MessageDeltaEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u MessageStreamEventUnion) AsMessageStop() (v MessageStopEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u MessageStreamEventUnion) AsContentBlockStart() (v ContentBlockStartEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u MessageStreamEventUnion) AsContentBlockDelta() (v ContentBlockDeltaEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u MessageStreamEventUnion) AsContentBlockStop() (v ContentBlockStopEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 // Returns the unmodified JSON received from the API
@@ -2689,6 +2728,7 @@ type RedactedThinkingBlock struct {
 
 // Returns the unmodified JSON received from the API
 func (r RedactedThinkingBlock) RawJSON() string { return r.JSON.raw }
+
 func (r *RedactedThinkingBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2713,6 +2753,7 @@ func (r RedactedThinkingBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow RedactedThinkingBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *RedactedThinkingBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2734,6 +2775,7 @@ func (r SearchResultBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow SearchResultBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *SearchResultBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2751,6 +2793,7 @@ type ServerToolUsage struct {
 
 // Returns the unmodified JSON received from the API
 func (r ServerToolUsage) RawJSON() string { return r.JSON.raw }
+
 func (r *ServerToolUsage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2773,6 +2816,7 @@ type ServerToolUseBlock struct {
 
 // Returns the unmodified JSON received from the API
 func (r ServerToolUseBlock) RawJSON() string { return r.JSON.raw }
+
 func (r *ServerToolUseBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2794,6 +2838,7 @@ func (r ServerToolUseBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ServerToolUseBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ServerToolUseBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2812,6 +2857,7 @@ type SignatureDelta struct {
 
 // Returns the unmodified JSON received from the API
 func (r SignatureDelta) RawJSON() string { return r.JSON.raw }
+
 func (r *SignatureDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2848,6 +2894,7 @@ type TextBlock struct {
 
 // Returns the unmodified JSON received from the API
 func (r TextBlock) RawJSON() string { return r.JSON.raw }
+
 func (r *TextBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -2911,6 +2958,7 @@ func (r TextBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow TextBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *TextBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3011,27 +3059,27 @@ func (u TextCitationUnion) AsAny() anyTextCitation {
 
 func (u TextCitationUnion) AsCharLocation() (v CitationCharLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u TextCitationUnion) AsPageLocation() (v CitationPageLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u TextCitationUnion) AsContentBlockLocation() (v CitationContentBlockLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u TextCitationUnion) AsWebSearchResultLocation() (v CitationsWebSearchResultLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u TextCitationUnion) AsSearchResultLocation() (v CitationsSearchResultLocation) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 // Returns the unmodified JSON received from the API
@@ -3060,6 +3108,7 @@ func (u TextCitationParamUnion) MarshalJSON() ([]byte, error) {
 		u.OfWebSearchResultLocation,
 		u.OfSearchResultLocation)
 }
+
 func (u *TextCitationParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -3254,6 +3303,7 @@ type TextDelta struct {
 
 // Returns the unmodified JSON received from the API
 func (r TextDelta) RawJSON() string { return r.JSON.raw }
+
 func (r *TextDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3274,6 +3324,7 @@ type ThinkingBlock struct {
 
 // Returns the unmodified JSON received from the API
 func (r ThinkingBlock) RawJSON() string { return r.JSON.raw }
+
 func (r *ThinkingBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3299,6 +3350,7 @@ func (r ThinkingBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ThinkingBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ThinkingBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3320,6 +3372,7 @@ func (r ThinkingConfigDisabledParam) MarshalJSON() (data []byte, err error) {
 	type shadow ThinkingConfigDisabledParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ThinkingConfigDisabledParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3345,6 +3398,7 @@ func (r ThinkingConfigEnabledParam) MarshalJSON() (data []byte, err error) {
 	type shadow ThinkingConfigEnabledParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ThinkingConfigEnabledParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3367,6 +3421,7 @@ type ThinkingConfigParamUnion struct {
 func (u ThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled)
 }
+
 func (u *ThinkingConfigParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -3420,6 +3475,7 @@ type ThinkingDelta struct {
 
 // Returns the unmodified JSON received from the API
 func (r ThinkingDelta) RawJSON() string { return r.JSON.raw }
+
 func (r *ThinkingDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3453,6 +3509,7 @@ func (r ToolParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ToolParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3476,6 +3533,7 @@ func (r ToolInputSchemaParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolInputSchemaParam
 	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
 }
+
 func (r *ToolInputSchemaParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3505,6 +3563,7 @@ func (r ToolBash20250124Param) MarshalJSON() (data []byte, err error) {
 	type shadow ToolBash20250124Param
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ToolBash20250124Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3529,6 +3588,7 @@ type ToolChoiceUnionParam struct {
 func (u ToolChoiceUnionParam) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfAuto, u.OfAny, u.OfTool, u.OfNone)
 }
+
 func (u *ToolChoiceUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -3608,6 +3668,7 @@ func (r ToolChoiceAnyParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceAnyParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ToolChoiceAnyParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3630,6 +3691,7 @@ func (r ToolChoiceAutoParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceAutoParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ToolChoiceAutoParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3652,6 +3714,7 @@ func (r ToolChoiceNoneParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceNoneParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ToolChoiceNoneParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3676,6 +3739,7 @@ func (r ToolChoiceToolParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolChoiceToolParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ToolChoiceToolParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3696,6 +3760,7 @@ func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolResultBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ToolResultBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3714,6 +3779,7 @@ type ToolResultBlockParamContentUnion struct {
 func (u ToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfText, u.OfImage, u.OfSearchResult, u.OfDocument)
 }
+
 func (u *ToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -3804,7 +3870,7 @@ func (u ToolResultBlockParamContentUnion) GetCitations() (res toolResultBlockPar
 	} else if vt := u.OfDocument; vt != nil {
 		res.any = &vt.Citations
 	}
-	return
+	return res
 }
 
 // Can have the runtime types [*[]TextCitationParamUnion], [*CitationsConfigParam]
@@ -3840,7 +3906,7 @@ func (u ToolResultBlockParamContentUnion) GetSource() (res toolResultBlockParamC
 	} else if vt := u.OfDocument; vt != nil {
 		res.any = vt.Source.asAny()
 	}
-	return
+	return res
 }
 
 // Can have the runtime types [*Base64ImageSourceParam], [*URLImageSourceParam],
@@ -3968,6 +4034,7 @@ func (r ToolTextEditor20250124Param) MarshalJSON() (data []byte, err error) {
 	type shadow ToolTextEditor20250124Param
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ToolTextEditor20250124Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -3993,6 +4060,7 @@ func (r ToolTextEditor20250429Param) MarshalJSON() (data []byte, err error) {
 	type shadow ToolTextEditor20250429Param
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ToolTextEditor20250429Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4021,6 +4089,7 @@ func (r ToolTextEditor20250728Param) MarshalJSON() (data []byte, err error) {
 	type shadow ToolTextEditor20250728Param
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ToolTextEditor20250728Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4053,6 +4122,7 @@ func (u ToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfTextEditor20250728,
 		u.OfWebSearchTool20250305)
 }
+
 func (u *ToolUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -4203,6 +4273,7 @@ type ToolUseBlock struct {
 
 // Returns the unmodified JSON received from the API
 func (r ToolUseBlock) RawJSON() string { return r.JSON.raw }
+
 func (r *ToolUseBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4232,6 +4303,7 @@ func (r ToolUseBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow ToolUseBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *ToolUseBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4248,6 +4320,7 @@ func (r URLImageSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow URLImageSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *URLImageSourceParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4264,6 +4337,7 @@ func (r URLPDFSourceParam) MarshalJSON() (data []byte, err error) {
 	type shadow URLPDFSourceParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *URLPDFSourceParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4301,6 +4375,7 @@ type Usage struct {
 
 // Returns the unmodified JSON received from the API
 func (r Usage) RawJSON() string { return r.JSON.raw }
+
 func (r *Usage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4334,6 +4409,7 @@ type WebSearchResultBlock struct {
 
 // Returns the unmodified JSON received from the API
 func (r WebSearchResultBlock) RawJSON() string { return r.JSON.raw }
+
 func (r *WebSearchResultBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4354,6 +4430,7 @@ func (r WebSearchResultBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow WebSearchResultBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *WebSearchResultBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4389,6 +4466,7 @@ func (r WebSearchTool20250305Param) MarshalJSON() (data []byte, err error) {
 	type shadow WebSearchTool20250305Param
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *WebSearchTool20250305Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4417,6 +4495,7 @@ func (r WebSearchTool20250305UserLocationParam) MarshalJSON() (data []byte, err 
 	type shadow WebSearchTool20250305UserLocationParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *WebSearchTool20250305UserLocationParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4436,6 +4515,7 @@ func (r WebSearchToolRequestErrorParam) MarshalJSON() (data []byte, err error) {
 	type shadow WebSearchToolRequestErrorParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *WebSearchToolRequestErrorParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4466,6 +4546,7 @@ type WebSearchToolResultBlock struct {
 
 // Returns the unmodified JSON received from the API
 func (r WebSearchToolResultBlock) RawJSON() string { return r.JSON.raw }
+
 func (r *WebSearchToolResultBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4495,12 +4576,12 @@ type WebSearchToolResultBlockContentUnion struct {
 
 func (u WebSearchToolResultBlockContentUnion) AsResponseWebSearchToolResultError() (v WebSearchToolResultError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u WebSearchToolResultBlockContentUnion) AsWebSearchResultBlockArray() (v []WebSearchResultBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 // Returns the unmodified JSON received from the API
@@ -4526,6 +4607,7 @@ func (r WebSearchToolResultBlockParam) MarshalJSON() (data []byte, err error) {
 	type shadow WebSearchToolResultBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *WebSearchToolResultBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4548,6 +4630,7 @@ type WebSearchToolResultBlockParamContentUnion struct {
 func (u WebSearchToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfWebSearchToolResultBlockItem, u.OfRequestWebSearchToolResultError)
 }
+
 func (u *WebSearchToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
@@ -4577,6 +4660,7 @@ type WebSearchToolResultError struct {
 
 // Returns the unmodified JSON received from the API
 func (r WebSearchToolResultError) RawJSON() string { return r.JSON.raw }
+
 func (r *WebSearchToolResultError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -4829,6 +4913,7 @@ func (r MessageNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow MessageNewParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *MessageNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -5028,6 +5113,7 @@ func (r MessageCountTokensParams) MarshalJSON() (data []byte, err error) {
 	type shadow MessageCountTokensParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *MessageCountTokensParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -5044,6 +5130,7 @@ type MessageCountTokensParamsSystemUnion struct {
 func (u MessageCountTokensParamsSystemUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfString, u.OfTextBlockArray)
 }
+
 func (u *MessageCountTokensParamsSystemUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }

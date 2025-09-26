@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"maps"
 	"os"
 	"testing"
 	"time"
@@ -61,12 +62,12 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		Tools: []anthropic.ToolUnionParam{{
 			OfTool: &anthropic.ToolParam{
 				InputSchema: anthropic.ToolInputSchemaParam{
-					Properties: map[string]interface{}{
-						"location": map[string]interface{}{
+					Properties: map[string]any{
+						"location": map[string]any{
 							"description": "The city and state, e.g. San Francisco, CA",
 							"type":        "string",
 						},
-						"unit": map[string]interface{}{
+						"unit": map[string]any{
 							"description": "Unit for the output - one of (celsius, fahrenheit)",
 							"type":        "string",
 						},
@@ -145,12 +146,12 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 		Tools: []anthropic.MessageCountTokensToolUnionParam{{
 			OfTool: &anthropic.ToolParam{
 				InputSchema: anthropic.ToolInputSchemaParam{
-					Properties: map[string]interface{}{
-						"location": map[string]interface{}{
+					Properties: map[string]any{
+						"location": map[string]any{
 							"description": "The city and state, e.g. San Francisco, CA",
 							"type":        "string",
 						},
-						"unit": map[string]interface{}{
+						"unit": map[string]any{
 							"description": "Unit for the output - one of (celsius, fahrenheit)",
 							"type":        "string",
 						},
@@ -399,9 +400,7 @@ func TestMessageNewWithNonStreamingTimeoutLimits(t *testing.T) {
 func TestCalculateNonStreamingTimeout(t *testing.T) {
 	// Store original model token limits to restore after test
 	originalModelTokenLimits := make(map[string]int)
-	for k, v := range constant.ModelNonStreamingTokens {
-		originalModelTokenLimits[k] = v
-	}
+	maps.Copy(originalModelTokenLimits, constant.ModelNonStreamingTokens)
 	defer func() {
 		// Restore original model token limits
 		constant.ModelNonStreamingTokens = originalModelTokenLimits

@@ -74,7 +74,7 @@ func TestBedrockURLEncoding(t *testing.T) {
 			middleware := bedrockMiddleware(signer, cfg)
 
 			// Create request body
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"model":  tc.model,
 				"stream": tc.stream,
 				"messages": []map[string]string{

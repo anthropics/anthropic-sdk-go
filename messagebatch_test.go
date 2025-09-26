@@ -62,12 +62,12 @@ func TestMessageBatchNew(t *testing.T) {
 				Tools: []anthropic.ToolUnionParam{{
 					OfTool: &anthropic.ToolParam{
 						InputSchema: anthropic.ToolInputSchemaParam{
-							Properties: map[string]interface{}{
-								"location": map[string]interface{}{
+							Properties: map[string]any{
+								"location": map[string]any{
 									"description": "The city and state, e.g. San Francisco, CA",
 									"type":        "string",
 								},
-								"unit": map[string]interface{}{
+								"unit": map[string]any{
 									"description": "Unit for the output - one of (celsius, fahrenheit)",
 									"type":        "string",
 								},

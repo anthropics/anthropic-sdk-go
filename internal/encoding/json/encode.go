@@ -903,7 +903,7 @@ type arrayEncoder struct {
 func (ae arrayEncoder) encode(e *encodeState, v reflect.Value, opts encOpts) {
 	e.WriteByte('[')
 	n := v.Len()
-	for i := 0; i < n; i++ {
+	for i := range n {
 		if i > 0 {
 			e.WriteByte(',')
 		}
@@ -1057,10 +1057,7 @@ func appendString[Bytes []byte | string](dst []byte, src Bytes, escapeHTML bool)
 		// For now, cast only a small portion of byte slices to a string
 		// so that it can be stack allocated. This slows down []byte slightly
 		// due to the extra copy, but keeps string performance roughly the same.
-		n := len(src) - i
-		if n > utf8.UTFMax {
-			n = utf8.UTFMax
-		}
+		n := min(len(src)-i, utf8.UTFMax)
 		c, size := utf8.DecodeRuneInString(string(src[i : i+n]))
 		if c == utf8.RuneError && size == 1 {
 			dst = append(dst, src[start:i]...)

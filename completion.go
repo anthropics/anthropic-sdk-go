@@ -32,7 +32,7 @@ type CompletionService struct {
 func NewCompletionService(opts ...option.RequestOption) (r CompletionService) {
 	r = CompletionService{}
 	r.Options = opts
-	return
+	return r
 }
 
 // [Legacy] Create a Text Completion.
@@ -52,7 +52,7 @@ func (r *CompletionService) New(ctx context.Context, params CompletionNewParams,
 	opts = append(r.Options[:], opts...)
 	path := "v1/complete"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 // [Legacy] Create a Text Completion.
@@ -117,6 +117,7 @@ type Completion struct {
 
 // Returns the unmodified JSON received from the API
 func (r Completion) RawJSON() string { return r.JSON.raw }
+
 func (r *Completion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -189,6 +190,7 @@ func (r CompletionNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow CompletionNewParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *CompletionNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

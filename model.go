@@ -36,7 +36,7 @@ type ModelService struct {
 func NewModelService(opts ...option.RequestOption) (r ModelService) {
 	r = ModelService{}
 	r.Options = opts
-	return
+	return r
 }
 
 // Get a specific model.
@@ -50,11 +50,11 @@ func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetPa
 	opts = append(r.Options[:], opts...)
 	if modelID == "" {
 		err = errors.New("missing required model_id parameter")
-		return
+		return res, err
 	}
 	path := fmt.Sprintf("v1/models/%s", modelID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // List available models.
@@ -114,6 +114,7 @@ type ModelInfo struct {
 
 // Returns the unmodified JSON received from the API
 func (r ModelInfo) RawJSON() string { return r.JSON.raw }
+
 func (r *ModelInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

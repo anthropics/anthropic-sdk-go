@@ -5,9 +5,11 @@ import (
 	"strings"
 )
 
-const jsonStructTag = "json"
-const formStructTag = "form"
-const formatStructTag = "format"
+const (
+	jsonStructTag   = "json"
+	formStructTag   = "form"
+	formatStructTag = "format"
+)
 
 type parsedStructTag struct {
 	name     string
@@ -23,7 +25,7 @@ func parseFormStructTag(field reflect.StructField) (tag parsedStructTag, ok bool
 		raw, ok = field.Tag.Lookup(jsonStructTag)
 	}
 	if !ok {
-		return
+		return tag, ok
 	}
 	parts := strings.Split(raw, ",")
 	if len(parts) == 0 {
@@ -42,10 +44,10 @@ func parseFormStructTag(field reflect.StructField) (tag parsedStructTag, ok bool
 			tag.omitzero = true
 		}
 	}
-	return
+	return tag, ok
 }
 
 func parseFormatStructTag(field reflect.StructField) (format string, ok bool) {
 	format, ok = field.Tag.Lookup(formatStructTag)
-	return
+	return format, ok
 }

@@ -38,7 +38,7 @@ type BetaMessageBatchService struct {
 func NewBetaMessageBatchService(opts ...option.RequestOption) (r BetaMessageBatchService) {
 	r = BetaMessageBatchService{}
 	r.Options = opts
-	return
+	return r
 }
 
 // Send a batch of Message creation requests.
@@ -57,7 +57,7 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	path := "v1/messages/batches?beta=true"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 // This endpoint is idempotent and can be used to poll for Message Batch
@@ -74,11 +74,11 @@ func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return res, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // List all Message Batches within a Workspace. Most recently created batches are
@@ -130,11 +130,11 @@ func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID str
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return res, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Batches may be canceled any time before processing ends. Once cancellation is
@@ -157,11 +157,11 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return res, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/cancel?beta=true", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Streams the results of a Message Batch as a `.jsonl` file.
@@ -184,7 +184,7 @@ func (r *BetaMessageBatchService) ResultsStreaming(ctx context.Context, messageB
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithHeader("Accept", "application/x-jsonl")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return stream
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/results?beta=true", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
@@ -209,6 +209,7 @@ type BetaDeletedMessageBatch struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaDeletedMessageBatch) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaDeletedMessageBatch) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -275,6 +276,7 @@ type BetaMessageBatch struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaMessageBatch) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaMessageBatch) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -300,6 +302,7 @@ type BetaMessageBatchCanceledResult struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaMessageBatchCanceledResult) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaMessageBatchCanceledResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -318,6 +321,7 @@ type BetaMessageBatchErroredResult struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaMessageBatchErroredResult) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaMessageBatchErroredResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -334,6 +338,7 @@ type BetaMessageBatchExpiredResult struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaMessageBatchExpiredResult) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaMessageBatchExpiredResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -363,6 +368,7 @@ type BetaMessageBatchIndividualResponse struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaMessageBatchIndividualResponse) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaMessageBatchIndividualResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -400,6 +406,7 @@ type BetaMessageBatchRequestCounts struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaMessageBatchRequestCounts) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaMessageBatchRequestCounts) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -464,22 +471,22 @@ func (u BetaMessageBatchResultUnion) AsAny() anyBetaMessageBatchResult {
 
 func (u BetaMessageBatchResultUnion) AsSucceeded() (v BetaMessageBatchSucceededResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u BetaMessageBatchResultUnion) AsErrored() (v BetaMessageBatchErroredResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u BetaMessageBatchResultUnion) AsCanceled() (v BetaMessageBatchCanceledResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u BetaMessageBatchResultUnion) AsExpired() (v BetaMessageBatchExpiredResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 // Returns the unmodified JSON received from the API
@@ -503,6 +510,7 @@ type BetaMessageBatchSucceededResult struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaMessageBatchSucceededResult) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaMessageBatchSucceededResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -520,6 +528,7 @@ func (r BetaMessageBatchNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow BetaMessageBatchNewParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *BetaMessageBatchNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -543,6 +552,7 @@ func (r BetaMessageBatchNewParamsRequest) MarshalJSON() (data []byte, err error)
 	type shadow BetaMessageBatchNewParamsRequest
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *BetaMessageBatchNewParamsRequest) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -800,6 +810,7 @@ func (r BetaMessageBatchNewParamsRequestParams) MarshalJSON() (data []byte, err 
 	type shadow BetaMessageBatchNewParamsRequestParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *BetaMessageBatchNewParamsRequestParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

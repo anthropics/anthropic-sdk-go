@@ -2,8 +2,9 @@ package paramutil
 
 import (
 	"fmt"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"reflect"
+
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 )
 
 var paramUnionType = reflect.TypeOf(param.APIUnion{})

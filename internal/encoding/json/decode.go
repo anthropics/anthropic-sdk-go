@@ -14,14 +14,16 @@ import (
 	"encoding"
 	"encoding/base64"
 	"fmt"
-	"github.com/anthropics/anthropic-sdk-go/internal/encoding/json/shims"
 	"reflect"
 	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
-	_ "unsafe" // for linkname
+	_ "unsafe"
+
+	"github.com/anthropics/anthropic-sdk-go/internal/encoding/json/shims"
+	// for linkname
 )
 
 // Unmarshal parses the JSON-encoded data and stores the result
@@ -1055,12 +1057,12 @@ func (d *decodeState) valueInterface() (val any) {
 	case scanBeginLiteral:
 		val = d.literalInterface()
 	}
-	return
+	return val
 }
 
 // arrayInterface is like array but returns []any.
 func (d *decodeState) arrayInterface() []any {
-	var v = make([]any, 0)
+	v := make([]any, 0)
 	for {
 		// Look ahead for ] - can only happen on first iteration.
 		d.scanWhile(scanSkipSpace)
@@ -1197,7 +1199,7 @@ func getu4(s []byte) rune {
 func unquote(s []byte) (t string, ok bool) {
 	s, ok = unquoteBytes(s)
 	t = string(s)
-	return
+	return t, ok
 }
 
 // unquoteBytes should be an internal detail,
@@ -1211,7 +1213,7 @@ func unquote(s []byte) (t string, ok bool) {
 //go:linkname unquoteBytes
 func unquoteBytes(s []byte) (t []byte, ok bool) {
 	if len(s) < 2 || s[0] != '"' || s[len(s)-1] != '"' {
-		return
+		return t, ok
 	}
 	s = s[1 : len(s)-1]
 
@@ -1253,11 +1255,11 @@ func unquoteBytes(s []byte) (t []byte, ok bool) {
 		case c == '\\':
 			r++
 			if r >= len(s) {
-				return
+				return t, ok
 			}
 			switch s[r] {
 			default:
-				return
+				return t, ok
 			case '"', '\\', '/', '\'':
 				b[w] = s[r]
 				r++
@@ -1286,7 +1288,7 @@ func unquoteBytes(s []byte) (t []byte, ok bool) {
 				r--
 				rr := getu4(s[r:])
 				if rr < 0 {
-					return
+					return t, ok
 				}
 				r += 6
 				if utf16.IsSurrogate(rr) {
@@ -1305,7 +1307,7 @@ func unquoteBytes(s []byte) (t []byte, ok bool) {
 
 		// Quote, control characters are invalid.
 		case c == '"', c < ' ':
-			return
+			return t, ok
 
 		// ASCII
 		case c < utf8.RuneSelf:

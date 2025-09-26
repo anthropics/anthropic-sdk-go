@@ -33,7 +33,7 @@ func NewBetaService(opts ...option.RequestOption) (r BetaService) {
 	r.Models = NewBetaModelService(opts...)
 	r.Messages = NewBetaMessageService(opts...)
 	r.Files = NewBetaFileService(opts...)
-	return
+	return r
 }
 
 type AnthropicBeta = string
@@ -70,6 +70,7 @@ type BetaAPIError struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaAPIError) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaAPIError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -88,6 +89,7 @@ type BetaAuthenticationError struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaAuthenticationError) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaAuthenticationError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -106,6 +108,7 @@ type BetaBillingError struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaBillingError) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaBillingError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -188,47 +191,47 @@ func (u BetaErrorUnion) AsAny() anyBetaError {
 
 func (u BetaErrorUnion) AsInvalidRequestError() (v BetaInvalidRequestError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u BetaErrorUnion) AsAuthenticationError() (v BetaAuthenticationError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u BetaErrorUnion) AsBillingError() (v BetaBillingError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u BetaErrorUnion) AsPermissionError() (v BetaPermissionError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u BetaErrorUnion) AsNotFoundError() (v BetaNotFoundError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u BetaErrorUnion) AsRateLimitError() (v BetaRateLimitError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u BetaErrorUnion) AsTimeoutError() (v BetaGatewayTimeoutError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u BetaErrorUnion) AsAPIError() (v BetaAPIError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u BetaErrorUnion) AsOverloadedError() (v BetaOverloadedError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 // Returns the unmodified JSON received from the API
@@ -254,6 +257,7 @@ type BetaErrorResponse struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaErrorResponse) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaErrorResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -272,6 +276,7 @@ type BetaGatewayTimeoutError struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaGatewayTimeoutError) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaGatewayTimeoutError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -290,6 +295,7 @@ type BetaInvalidRequestError struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaInvalidRequestError) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaInvalidRequestError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -308,6 +314,7 @@ type BetaNotFoundError struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaNotFoundError) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaNotFoundError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -326,6 +333,7 @@ type BetaOverloadedError struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaOverloadedError) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaOverloadedError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -344,6 +352,7 @@ type BetaPermissionError struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaPermissionError) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaPermissionError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -362,6 +371,7 @@ type BetaRateLimitError struct {
 
 // Returns the unmodified JSON received from the API
 func (r BetaRateLimitError) RawJSON() string { return r.JSON.raw }
+
 func (r *BetaRateLimitError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

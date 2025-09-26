@@ -1,11 +1,12 @@
 package sentinel_test
 
 import (
-	"github.com/anthropics/anthropic-sdk-go/internal/encoding/json/sentinel"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"reflect"
 	"slices"
 	"testing"
+
+	"github.com/anthropics/anthropic-sdk-go/internal/encoding/json/sentinel"
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 )
 
 type Pair struct {

@@ -153,9 +153,7 @@ func (e *eventstreamDecoder) Event() ssestream.Event {
 	return e.evt
 }
 
-var (
-	_ ssestream.Decoder = &eventstreamDecoder{}
-)
+var _ ssestream.Decoder = &eventstreamDecoder{}
 
 func init() {
 	ssestream.RegisterDecoder("application/vnd.amazon.eventstream", func(rc io.ReadCloser) ssestream.Decoder {

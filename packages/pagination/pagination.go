@@ -38,6 +38,7 @@ type Page[T any] struct {
 
 // Returns the unmodified JSON received from the API
 func (r Page[T]) RawJSON() string { return r.JSON.raw }
+
 func (r *Page[T]) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

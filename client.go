@@ -53,7 +53,7 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r.Models = NewModelService(opts...)
 	r.Beta = NewBetaService(opts...)
 
-	return
+	return r
 }
 
 // Execute makes a request with the given context, method, URL, request params,

@@ -2,9 +2,10 @@
 package json
 
 import (
-	"github.com/anthropics/anthropic-sdk-go/internal/encoding/json/shims"
 	"reflect"
 	"time"
+
+	"github.com/anthropics/anthropic-sdk-go/internal/encoding/json/shims"
 )
 
 type TimeMarshaler interface {

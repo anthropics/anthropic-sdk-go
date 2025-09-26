@@ -26,8 +26,10 @@ type validationEntry struct {
 
 type validatorFunc func(reflect.Value) exactness
 
-var validators sync.Map
-var validationRegistry = map[reflect.Type][]validationEntry{}
+var (
+	validators         sync.Map
+	validationRegistry = map[reflect.Type][]validationEntry{}
+)
 
 func RegisterFieldValidator[T any, V string | bool | int](fieldName string, values ...V) {
 	var t T

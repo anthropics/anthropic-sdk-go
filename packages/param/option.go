@@ -3,8 +3,9 @@ package param
 import (
 	"encoding/json"
 	"fmt"
-	shimjson "github.com/anthropics/anthropic-sdk-go/internal/encoding/json"
 	"time"
+
+	shimjson "github.com/anthropics/anthropic-sdk-go/internal/encoding/json"
 )
 
 func NewOpt[T comparable](v T) Opt[T] {

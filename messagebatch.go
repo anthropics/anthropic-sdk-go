@@ -39,7 +39,7 @@ type MessageBatchService struct {
 func NewMessageBatchService(opts ...option.RequestOption) (r MessageBatchService) {
 	r = MessageBatchService{}
 	r.Options = opts
-	return
+	return r
 }
 
 // Send a batch of Message creation requests.
@@ -54,7 +54,7 @@ func (r *MessageBatchService) New(ctx context.Context, body MessageBatchNewParam
 	opts = append(r.Options[:], opts...)
 	path := "v1/messages/batches"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // This endpoint is idempotent and can be used to poll for Message Batch
@@ -67,11 +67,11 @@ func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, op
 	opts = append(r.Options[:], opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return res, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // List all Message Batches within a Workspace. Most recently created batches are
@@ -116,11 +116,11 @@ func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string,
 	opts = append(r.Options[:], opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return res, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Batches may be canceled any time before processing ends. Once cancellation is
@@ -139,11 +139,11 @@ func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string,
 	opts = append(r.Options[:], opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return res, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/cancel", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Streams the results of a Message Batch as a `.jsonl` file.
@@ -163,7 +163,7 @@ func (r *MessageBatchService) ResultsStreaming(ctx context.Context, messageBatch
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "application/x-jsonl")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return stream
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/results", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
@@ -188,6 +188,7 @@ type DeletedMessageBatch struct {
 
 // Returns the unmodified JSON received from the API
 func (r DeletedMessageBatch) RawJSON() string { return r.JSON.raw }
+
 func (r *DeletedMessageBatch) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -254,6 +255,7 @@ type MessageBatch struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageBatch) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageBatch) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -279,6 +281,7 @@ type MessageBatchCanceledResult struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageBatchCanceledResult) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageBatchCanceledResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -297,6 +300,7 @@ type MessageBatchErroredResult struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageBatchErroredResult) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageBatchErroredResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -313,6 +317,7 @@ type MessageBatchExpiredResult struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageBatchExpiredResult) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageBatchExpiredResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -342,6 +347,7 @@ type MessageBatchIndividualResponse struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageBatchIndividualResponse) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageBatchIndividualResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -379,6 +385,7 @@ type MessageBatchRequestCounts struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageBatchRequestCounts) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageBatchRequestCounts) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -443,22 +450,22 @@ func (u MessageBatchResultUnion) AsAny() anyMessageBatchResult {
 
 func (u MessageBatchResultUnion) AsSucceeded() (v MessageBatchSucceededResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u MessageBatchResultUnion) AsErrored() (v MessageBatchErroredResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u MessageBatchResultUnion) AsCanceled() (v MessageBatchCanceledResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 func (u MessageBatchResultUnion) AsExpired() (v MessageBatchExpiredResult) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
+	return v
 }
 
 // Returns the unmodified JSON received from the API
@@ -482,6 +489,7 @@ type MessageBatchSucceededResult struct {
 
 // Returns the unmodified JSON received from the API
 func (r MessageBatchSucceededResult) RawJSON() string { return r.JSON.raw }
+
 func (r *MessageBatchSucceededResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -497,6 +505,7 @@ func (r MessageBatchNewParams) MarshalJSON() (data []byte, err error) {
 	type shadow MessageBatchNewParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *MessageBatchNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -520,6 +529,7 @@ func (r MessageBatchNewParamsRequest) MarshalJSON() (data []byte, err error) {
 	type shadow MessageBatchNewParamsRequest
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *MessageBatchNewParamsRequest) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
@@ -773,6 +783,7 @@ func (r MessageBatchNewParamsRequestParams) MarshalJSON() (data []byte, err erro
 	type shadow MessageBatchNewParamsRequestParams
 	return param.MarshalObject(r, (*shadow)(&r))
 }
+
 func (r *MessageBatchNewParamsRequestParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

@@ -77,7 +77,6 @@ func main() {
 			Messages:  messages,
 			Tools:     tools,
 		})
-
 		if err != nil {
 			panic(err)
 		}

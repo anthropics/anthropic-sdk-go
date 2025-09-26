@@ -12,9 +12,11 @@ type UnionVariant struct {
 	Type               reflect.Type
 }
 
-var unionRegistry = map[reflect.Type]unionEntry{}
-var unionVariants = map[reflect.Type]any{}
-var customDecoderRegistry = map[reflect.Type]CustomDecoderFunc{}
+var (
+	unionRegistry         = map[reflect.Type]unionEntry{}
+	unionVariants         = map[reflect.Type]any{}
+	customDecoderRegistry = map[reflect.Type]CustomDecoderFunc{}
+)
 
 type unionEntry struct {
 	discriminatorKey string

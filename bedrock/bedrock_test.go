@@ -118,7 +118,6 @@ func TestBedrockURLEncoding(t *testing.T) {
 					Body:       http.NoBody,
 				}, nil
 			})
-
 			if err != nil {
 				t.Fatalf("Middleware failed: %v", err)
 			}

@@ -5,8 +5,10 @@ import (
 	"strings"
 )
 
-const jsonStructTag = "json"
-const formatStructTag = "format"
+const (
+	jsonStructTag   = "json"
+	formatStructTag = "format"
+)
 
 type parsedStructTag struct {
 	name     string
@@ -19,7 +21,7 @@ type parsedStructTag struct {
 func parseJSONStructTag(field reflect.StructField) (tag parsedStructTag, ok bool) {
 	raw, ok := field.Tag.Lookup(jsonStructTag)
 	if !ok {
-		return
+		return tag, ok
 	}
 	parts := strings.Split(raw, ",")
 	if len(parts) == 0 {
@@ -38,10 +40,10 @@ func parseJSONStructTag(field reflect.StructField) (tag parsedStructTag, ok bool
 			tag.inline = true
 		}
 	}
-	return
+	return tag, ok
 }
 
 func parseFormatStructTag(field reflect.StructField) (format string, ok bool) {
 	format, ok = field.Tag.Lookup(formatStructTag)
-	return
+	return format, ok
 }

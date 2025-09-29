@@ -54,6 +54,7 @@ const (
 	AnthropicBetaCodeExecution2025_05_22       AnthropicBeta = "code-execution-2025-05-22"
 	AnthropicBetaExtendedCacheTTL2025_04_11    AnthropicBeta = "extended-cache-ttl-2025-04-11"
 	AnthropicBetaContext1m2025_08_07           AnthropicBeta = "context-1m-2025-08-07"
+	AnthropicBetaContextManagement2025_06_27   AnthropicBeta = "context-management-2025-06-27"
 )
 
 type BetaAPIError struct {

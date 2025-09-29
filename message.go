@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"time"
 	"slices"
+	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
@@ -1734,7 +1734,7 @@ type Message struct {
 	// null in the `message_start` event and non-null otherwise.
 	//
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
-	// "refusal".
+	// "refusal", "model_context_window_exceeded".
 	StopReason StopReason `json:"stop_reason,required"`
 	// Which custom stop sequence was generated, if any.
 	//
@@ -2079,14 +2079,16 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model string
 
 const (
-	ModelClaude3_7SonnetLatest   Model = "claude-3-7-sonnet-latest"
-	ModelClaude3_7Sonnet20250219 Model = "claude-3-7-sonnet-20250219"
-	ModelClaude3_5HaikuLatest    Model = "claude-3-5-haiku-latest"
-	ModelClaude3_5Haiku20241022  Model = "claude-3-5-haiku-20241022"
-	ModelClaudeSonnet4_20250514  Model = "claude-sonnet-4-20250514"
-	ModelClaudeSonnet4_0         Model = "claude-sonnet-4-0"
-	ModelClaude4Sonnet20250514   Model = "claude-4-sonnet-20250514"
-	ModelClaude3_5SonnetLatest   Model = "claude-3-5-sonnet-latest"
+	ModelClaude3_7SonnetLatest    Model = "claude-3-7-sonnet-latest"
+	ModelClaude3_7Sonnet20250219  Model = "claude-3-7-sonnet-20250219"
+	ModelClaude3_5HaikuLatest     Model = "claude-3-5-haiku-latest"
+	ModelClaude3_5Haiku20241022   Model = "claude-3-5-haiku-20241022"
+	ModelClaudeSonnet4_20250514   Model = "claude-sonnet-4-20250514"
+	ModelClaudeSonnet4_0          Model = "claude-sonnet-4-0"
+	ModelClaudeSonnet4_5          Model = "claude-sonnet-4-5"
+	ModelClaudeSonnet4_5_20250929 Model = "claude-sonnet-4-5-20250929"
+	ModelClaude4Sonnet20250514    Model = "claude-4-sonnet-20250514"
+	ModelClaude3_5SonnetLatest    Model = "claude-3-5-sonnet-latest"
 	// Deprecated: Will reach end-of-life on October 22nd, 2025. Please migrate to a
 	// newer model. Visit
 	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
@@ -2457,7 +2459,7 @@ func (r *MessageDeltaEvent) UnmarshalJSON(data []byte) error {
 
 type MessageDeltaEventDelta struct {
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
-	// "refusal".
+	// "refusal", "model_context_window_exceeded".
 	StopReason   StopReason `json:"stop_reason,required"`
 	StopSequence string     `json:"stop_sequence,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -2880,12 +2882,13 @@ func (r *SignatureDelta) UnmarshalJSON(data []byte) error {
 type StopReason string
 
 const (
-	StopReasonEndTurn      StopReason = "end_turn"
-	StopReasonMaxTokens    StopReason = "max_tokens"
-	StopReasonStopSequence StopReason = "stop_sequence"
-	StopReasonToolUse      StopReason = "tool_use"
-	StopReasonPauseTurn    StopReason = "pause_turn"
-	StopReasonRefusal      StopReason = "refusal"
+	StopReasonEndTurn                    StopReason = "end_turn"
+	StopReasonMaxTokens                  StopReason = "max_tokens"
+	StopReasonStopSequence               StopReason = "stop_sequence"
+	StopReasonToolUse                    StopReason = "tool_use"
+	StopReasonPauseTurn                  StopReason = "pause_turn"
+	StopReasonRefusal                    StopReason = "refusal"
+	StopReasonModelContextWindowExceeded StopReason = "model_context_window_exceeded"
 )
 
 type TextBlock struct {

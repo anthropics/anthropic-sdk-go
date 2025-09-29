@@ -59,7 +59,7 @@ func main() {
 		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock("What is a quaternion?")),
 		},
-		Model: anthropic.ModelClaudeSonnet4_20250514,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	})
 	if err != nil {
 		panic(err.Error())
@@ -78,7 +78,7 @@ messages := []anthropic.MessageParam{
 }
 
 message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-    Model:     anthropic.ModelClaudeSonnet4_20250514,
+    Model:     anthropic.ModelClaudeSonnet4_5_20250929,
     Messages:  messages,
     MaxTokens: 1024,
 })
@@ -94,7 +94,7 @@ messages = append(messages, anthropic.NewUserMessage(
 ))
 
 message, err = client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-    Model:     anthropic.ModelClaudeSonnet4_20250514,
+    Model:     anthropic.ModelClaudeSonnet4_5_20250929,
     Messages:  messages,
     MaxTokens: 1024,
 })
@@ -109,7 +109,7 @@ fmt.Printf("%+v\n", message.Content)
 
 ```go
 message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-    Model:     anthropic.ModelClaudeSonnet4_20250514,
+    Model:     anthropic.ModelClaudeSonnet4_5_20250929,
     MaxTokens: 1024,
     System: []anthropic.TextBlockParam{
         {Text: "Be very serious at all times."},
@@ -127,7 +127,7 @@ message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 content := "What is a quaternion?"
 
 stream := client.Messages.NewStreaming(context.TODO(), anthropic.MessageNewParams{
-    Model:     anthropic.ModelClaudeSonnet4_20250514,
+    Model:     anthropic.ModelClaudeSonnet4_5_20250929,
     MaxTokens: 1024,
     Messages: []anthropic.MessageParam{
         anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
@@ -199,7 +199,7 @@ func main() {
 
 	for {
 		message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-			Model:     anthropic.ModelClaudeSonnet4_20250514,
+			Model:     anthropic.ModelClaudeSonnet4_5_20250929,
 			MaxTokens: 1024,
 			Messages:  messages,
 			Tools:     tools,
@@ -577,7 +577,7 @@ _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		}},
 		Role: anthropic.MessageParamRoleUser,
 	}},
-	Model: anthropic.ModelClaudeSonnet4_20250514,
+	Model: anthropic.ModelClaudeSonnet4_5_20250929,
 })
 if err != nil {
 	var apierr *anthropic.Error
@@ -614,7 +614,7 @@ client.Messages.New(
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeSonnet4_20250514,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	},
 	// This sets the per-retry timeout
 	option.WithRequestTimeout(20*time.Second),
@@ -684,7 +684,7 @@ client.Messages.New(
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeSonnet4_20250514,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	},
 	option.WithMaxRetries(5),
 )
@@ -710,7 +710,7 @@ message, err := client.Messages.New(
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeSonnet4_20250514,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	},
 	option.WithResponseInto(&response),
 )

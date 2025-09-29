@@ -1179,6 +1179,135 @@ func (r *BetaCitationsWebSearchResultLocation) UnmarshalJSON(data []byte) error 
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The property Type is required.
+type BetaClearToolUses20250919EditParam struct {
+	// Whether to clear all tool inputs (bool) or specific tool inputs to clear (list)
+	ClearToolInputs BetaClearToolUses20250919EditClearToolInputsUnionParam `json:"clear_tool_inputs,omitzero"`
+	// Tool names whose uses are preserved from clearing
+	ExcludeTools []string `json:"exclude_tools,omitzero"`
+	// Minimum number of tokens that must be cleared when triggered. Context will only
+	// be modified if at least this many tokens can be removed.
+	ClearAtLeast BetaInputTokensClearAtLeastParam `json:"clear_at_least,omitzero"`
+	// Number of tool uses to retain in the conversation
+	Keep BetaToolUsesKeepParam `json:"keep,omitzero"`
+	// Condition that triggers the context management strategy
+	Trigger BetaClearToolUses20250919EditTriggerUnionParam `json:"trigger,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "clear_tool_uses_20250919".
+	Type constant.ClearToolUses20250919 `json:"type,required"`
+	paramObj
+}
+
+func (r BetaClearToolUses20250919EditParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaClearToolUses20250919EditParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaClearToolUses20250919EditParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaClearToolUses20250919EditClearToolInputsUnionParam struct {
+	OfBool        param.Opt[bool] `json:",omitzero,inline"`
+	OfStringArray []string        `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaClearToolUses20250919EditClearToolInputsUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBool, u.OfStringArray)
+}
+func (u *BetaClearToolUses20250919EditClearToolInputsUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaClearToolUses20250919EditClearToolInputsUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfBool) {
+		return &u.OfBool.Value
+	} else if !param.IsOmitted(u.OfStringArray) {
+		return &u.OfStringArray
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaClearToolUses20250919EditTriggerUnionParam struct {
+	OfInputTokens *BetaInputTokensTriggerParam `json:",omitzero,inline"`
+	OfToolUses    *BetaToolUsesTriggerParam    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaClearToolUses20250919EditTriggerUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfInputTokens, u.OfToolUses)
+}
+func (u *BetaClearToolUses20250919EditTriggerUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaClearToolUses20250919EditTriggerUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfInputTokens) {
+		return u.OfInputTokens
+	} else if !param.IsOmitted(u.OfToolUses) {
+		return u.OfToolUses
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaClearToolUses20250919EditTriggerUnionParam) GetType() *string {
+	if vt := u.OfInputTokens; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfToolUses; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaClearToolUses20250919EditTriggerUnionParam) GetValue() *int64 {
+	if vt := u.OfInputTokens; vt != nil {
+		return (*int64)(&vt.Value)
+	} else if vt := u.OfToolUses; vt != nil {
+		return (*int64)(&vt.Value)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaClearToolUses20250919EditTriggerUnionParam](
+		"type",
+		apijson.Discriminator[BetaInputTokensTriggerParam]("input_tokens"),
+		apijson.Discriminator[BetaToolUsesTriggerParam]("tool_uses"),
+	)
+}
+
+// Results for clear_tool_uses_20250919 edit.
+type BetaClearToolUses20250919EditResponse struct {
+	// Number of input tokens cleared by this edit.
+	ClearedInputTokens int64 `json:"cleared_input_tokens,required"`
+	// Number of tool uses that were cleared.
+	ClearedToolUses int64 `json:"cleared_tool_uses,required"`
+	// The type of context management edit applied.
+	Type constant.ClearToolUses20250919 `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ClearedInputTokens respjson.Field
+		ClearedToolUses    respjson.Field
+		Type               respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaClearToolUses20250919EditResponse) RawJSON() string { return r.JSON.raw }
+func (r *BetaClearToolUses20250919EditResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaCodeExecutionOutputBlock struct {
 	FileID string                       `json:"file_id,required"`
 	Type   constant.CodeExecutionOutput `json:"type,required"`
@@ -2863,6 +2992,56 @@ func (u *BetaContentBlockSourceContentUnionParam) asAny() any {
 	return nil
 }
 
+// Configuration for context management operations.
+type BetaContextManagementConfigParam struct {
+	// List of context management edits to apply
+	Edits []BetaClearToolUses20250919EditParam `json:"edits,omitzero"`
+	paramObj
+}
+
+func (r BetaContextManagementConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaContextManagementConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaContextManagementConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Information about context management operations applied during the request.
+type BetaContextManagementResponse struct {
+	// List of context management edits that were applied.
+	AppliedEdits []BetaClearToolUses20250919EditResponse `json:"applied_edits,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AppliedEdits respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaContextManagementResponse) RawJSON() string { return r.JSON.raw }
+func (r *BetaContextManagementResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaCountTokensContextManagementResponse struct {
+	// The original token count before context management was applied
+	OriginalInputTokens int64 `json:"original_input_tokens,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		OriginalInputTokens respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCountTokensContextManagementResponse) RawJSON() string { return r.JSON.raw }
+func (r *BetaCountTokensContextManagementResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaDocumentBlock struct {
 	// Citation configuration for the document
 	Citations BetaCitationConfig           `json:"citations,required"`
@@ -3091,6 +3270,38 @@ func (r *BetaInputJSONDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Type, Value are required.
+type BetaInputTokensClearAtLeastParam struct {
+	Value int64 `json:"value,required"`
+	// This field can be elided, and will marshal its zero value as "input_tokens".
+	Type constant.InputTokens `json:"type,required"`
+	paramObj
+}
+
+func (r BetaInputTokensClearAtLeastParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaInputTokensClearAtLeastParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaInputTokensClearAtLeastParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Type, Value are required.
+type BetaInputTokensTriggerParam struct {
+	Value int64 `json:"value,required"`
+	// This field can be elided, and will marshal its zero value as "input_tokens".
+	Type constant.InputTokens `json:"type,required"`
+	paramObj
+}
+
+func (r BetaInputTokensTriggerParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaInputTokensTriggerParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaInputTokensTriggerParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaMCPToolResultBlock struct {
 	Content   BetaMCPToolResultBlockContentUnion `json:"content,required"`
 	IsError   bool                               `json:"is_error,required"`
@@ -3198,6 +3409,296 @@ func (r *BetaMCPToolUseBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Name, Type are required.
+type BetaMemoryTool20250818Param struct {
+	// Create a cache control breakpoint at this content block.
+	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as "memory".
+	Name constant.Memory `json:"name,required"`
+	// This field can be elided, and will marshal its zero value as "memory_20250818".
+	Type constant.Memory20250818 `json:"type,required"`
+	paramObj
+}
+
+func (r BetaMemoryTool20250818Param) MarshalJSON() (data []byte, err error) {
+	type shadow BetaMemoryTool20250818Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaMemoryTool20250818Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaMemoryTool20250818CommandUnion contains all possible properties and values
+// from [BetaMemoryTool20250818ViewCommand], [BetaMemoryTool20250818CreateCommand],
+// [BetaMemoryTool20250818StrReplaceCommand],
+// [BetaMemoryTool20250818InsertCommand], [BetaMemoryTool20250818DeleteCommand],
+// [BetaMemoryTool20250818RenameCommand].
+//
+// Use the [BetaMemoryTool20250818CommandUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaMemoryTool20250818CommandUnion struct {
+	// Any of "view", "create", "str_replace", "insert", "delete", "rename".
+	Command string `json:"command"`
+	Path    string `json:"path"`
+	// This field is from variant [BetaMemoryTool20250818ViewCommand].
+	ViewRange []int64 `json:"view_range"`
+	// This field is from variant [BetaMemoryTool20250818CreateCommand].
+	FileText string `json:"file_text"`
+	// This field is from variant [BetaMemoryTool20250818StrReplaceCommand].
+	NewStr string `json:"new_str"`
+	// This field is from variant [BetaMemoryTool20250818StrReplaceCommand].
+	OldStr string `json:"old_str"`
+	// This field is from variant [BetaMemoryTool20250818InsertCommand].
+	InsertLine int64 `json:"insert_line"`
+	// This field is from variant [BetaMemoryTool20250818InsertCommand].
+	InsertText string `json:"insert_text"`
+	// This field is from variant [BetaMemoryTool20250818RenameCommand].
+	NewPath string `json:"new_path"`
+	// This field is from variant [BetaMemoryTool20250818RenameCommand].
+	OldPath string `json:"old_path"`
+	JSON    struct {
+		Command    respjson.Field
+		Path       respjson.Field
+		ViewRange  respjson.Field
+		FileText   respjson.Field
+		NewStr     respjson.Field
+		OldStr     respjson.Field
+		InsertLine respjson.Field
+		InsertText respjson.Field
+		NewPath    respjson.Field
+		OldPath    respjson.Field
+		raw        string
+	} `json:"-"`
+}
+
+// anyBetaMemoryTool20250818Command is implemented by each variant of
+// [BetaMemoryTool20250818CommandUnion] to add type safety for the return type of
+// [BetaMemoryTool20250818CommandUnion.AsAny]
+type anyBetaMemoryTool20250818Command interface {
+	implBetaMemoryTool20250818CommandUnion()
+}
+
+func (BetaMemoryTool20250818ViewCommand) implBetaMemoryTool20250818CommandUnion()       {}
+func (BetaMemoryTool20250818CreateCommand) implBetaMemoryTool20250818CommandUnion()     {}
+func (BetaMemoryTool20250818StrReplaceCommand) implBetaMemoryTool20250818CommandUnion() {}
+func (BetaMemoryTool20250818InsertCommand) implBetaMemoryTool20250818CommandUnion()     {}
+func (BetaMemoryTool20250818DeleteCommand) implBetaMemoryTool20250818CommandUnion()     {}
+func (BetaMemoryTool20250818RenameCommand) implBetaMemoryTool20250818CommandUnion()     {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaMemoryTool20250818CommandUnion.AsAny().(type) {
+//	case anthropic.BetaMemoryTool20250818ViewCommand:
+//	case anthropic.BetaMemoryTool20250818CreateCommand:
+//	case anthropic.BetaMemoryTool20250818StrReplaceCommand:
+//	case anthropic.BetaMemoryTool20250818InsertCommand:
+//	case anthropic.BetaMemoryTool20250818DeleteCommand:
+//	case anthropic.BetaMemoryTool20250818RenameCommand:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaMemoryTool20250818CommandUnion) AsAny() anyBetaMemoryTool20250818Command {
+	switch u.Command {
+	case "view":
+		return u.AsView()
+	case "create":
+		return u.AsCreate()
+	case "str_replace":
+		return u.AsStrReplace()
+	case "insert":
+		return u.AsInsert()
+	case "delete":
+		return u.AsDelete()
+	case "rename":
+		return u.AsRename()
+	}
+	return nil
+}
+
+func (u BetaMemoryTool20250818CommandUnion) AsView() (v BetaMemoryTool20250818ViewCommand) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaMemoryTool20250818CommandUnion) AsCreate() (v BetaMemoryTool20250818CreateCommand) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaMemoryTool20250818CommandUnion) AsStrReplace() (v BetaMemoryTool20250818StrReplaceCommand) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaMemoryTool20250818CommandUnion) AsInsert() (v BetaMemoryTool20250818InsertCommand) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaMemoryTool20250818CommandUnion) AsDelete() (v BetaMemoryTool20250818DeleteCommand) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaMemoryTool20250818CommandUnion) AsRename() (v BetaMemoryTool20250818RenameCommand) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaMemoryTool20250818CommandUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaMemoryTool20250818CommandUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaMemoryTool20250818CreateCommand struct {
+	// Command type identifier
+	Command constant.Create `json:"command,required"`
+	// Content to write to the file
+	FileText string `json:"file_text,required"`
+	// Path where the file should be created
+	Path string `json:"path,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Command     respjson.Field
+		FileText    respjson.Field
+		Path        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaMemoryTool20250818CreateCommand) RawJSON() string { return r.JSON.raw }
+func (r *BetaMemoryTool20250818CreateCommand) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaMemoryTool20250818DeleteCommand struct {
+	// Command type identifier
+	Command constant.Delete `json:"command,required"`
+	// Path to the file or directory to delete
+	Path string `json:"path,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Command     respjson.Field
+		Path        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaMemoryTool20250818DeleteCommand) RawJSON() string { return r.JSON.raw }
+func (r *BetaMemoryTool20250818DeleteCommand) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaMemoryTool20250818InsertCommand struct {
+	// Command type identifier
+	Command constant.Insert `json:"command,required"`
+	// Line number where text should be inserted
+	InsertLine int64 `json:"insert_line,required"`
+	// Text to insert at the specified line
+	InsertText string `json:"insert_text,required"`
+	// Path to the file where text should be inserted
+	Path string `json:"path,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Command     respjson.Field
+		InsertLine  respjson.Field
+		InsertText  respjson.Field
+		Path        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaMemoryTool20250818InsertCommand) RawJSON() string { return r.JSON.raw }
+func (r *BetaMemoryTool20250818InsertCommand) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaMemoryTool20250818RenameCommand struct {
+	// Command type identifier
+	Command constant.Rename `json:"command,required"`
+	// New path for the file or directory
+	NewPath string `json:"new_path,required"`
+	// Current path of the file or directory
+	OldPath string `json:"old_path,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Command     respjson.Field
+		NewPath     respjson.Field
+		OldPath     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaMemoryTool20250818RenameCommand) RawJSON() string { return r.JSON.raw }
+func (r *BetaMemoryTool20250818RenameCommand) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaMemoryTool20250818StrReplaceCommand struct {
+	// Command type identifier
+	Command constant.StrReplace `json:"command,required"`
+	// Text to replace with
+	NewStr string `json:"new_str,required"`
+	// Text to search for and replace
+	OldStr string `json:"old_str,required"`
+	// Path to the file where text should be replaced
+	Path string `json:"path,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Command     respjson.Field
+		NewStr      respjson.Field
+		OldStr      respjson.Field
+		Path        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaMemoryTool20250818StrReplaceCommand) RawJSON() string { return r.JSON.raw }
+func (r *BetaMemoryTool20250818StrReplaceCommand) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaMemoryTool20250818ViewCommand struct {
+	// Command type identifier
+	Command constant.View `json:"command,required"`
+	// Path to directory or file to view
+	Path string `json:"path,required"`
+	// Optional line range for viewing specific lines
+	ViewRange []int64 `json:"view_range"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Command     respjson.Field
+		Path        respjson.Field
+		ViewRange   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaMemoryTool20250818ViewCommand) RawJSON() string { return r.JSON.raw }
+func (r *BetaMemoryTool20250818ViewCommand) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaMessage struct {
 	// Unique object identifier.
 	//
@@ -3241,6 +3742,8 @@ type BetaMessage struct {
 	// [{ "type": "text", "text": "B)" }]
 	// ```
 	Content []BetaContentBlockUnion `json:"content,required"`
+	// Information about context management operations applied during the request.
+	ContextManagement BetaContextManagementResponse `json:"context_management,required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
@@ -3266,7 +3769,7 @@ type BetaMessage struct {
 	// null in the `message_start` event and non-null otherwise.
 	//
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
-	// "refusal".
+	// "refusal", "model_context_window_exceeded".
 	StopReason BetaStopReason `json:"stop_reason,required"`
 	// Which custom stop sequence was generated, if any.
 	//
@@ -3295,17 +3798,18 @@ type BetaMessage struct {
 	Usage BetaUsage `json:"usage,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID           respjson.Field
-		Container    respjson.Field
-		Content      respjson.Field
-		Model        respjson.Field
-		Role         respjson.Field
-		StopReason   respjson.Field
-		StopSequence respjson.Field
-		Type         respjson.Field
-		Usage        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
+		ID                respjson.Field
+		Container         respjson.Field
+		Content           respjson.Field
+		ContextManagement respjson.Field
+		Model             respjson.Field
+		Role              respjson.Field
+		StopReason        respjson.Field
+		StopSequence      respjson.Field
+		Type              respjson.Field
+		Usage             respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -3406,14 +3910,17 @@ const (
 )
 
 type BetaMessageTokensCount struct {
+	// Information about context management applied to the message.
+	ContextManagement BetaCountTokensContextManagementResponse `json:"context_management,required"`
 	// The total number of tokens across the provided list of messages, system prompt,
 	// and tools.
 	InputTokens int64 `json:"input_tokens,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		InputTokens respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		ContextManagement respjson.Field
+		InputTokens       respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -3996,8 +4503,10 @@ func (r *BetaRawContentBlockStopEvent) UnmarshalJSON(data []byte) error {
 }
 
 type BetaRawMessageDeltaEvent struct {
-	Delta BetaRawMessageDeltaEventDelta `json:"delta,required"`
-	Type  constant.MessageDelta         `json:"type,required"`
+	// Information about context management operations applied during the request.
+	ContextManagement BetaContextManagementResponse `json:"context_management,required"`
+	Delta             BetaRawMessageDeltaEventDelta `json:"delta,required"`
+	Type              constant.MessageDelta         `json:"type,required"`
 	// Billing and rate-limit usage.
 	//
 	// Anthropic's API bills and rate-limits by token counts, as tokens represent the
@@ -4016,11 +4525,12 @@ type BetaRawMessageDeltaEvent struct {
 	Usage BetaMessageDeltaUsage `json:"usage,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Delta       respjson.Field
-		Type        respjson.Field
-		Usage       respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		ContextManagement respjson.Field
+		Delta             respjson.Field
+		Type              respjson.Field
+		Usage             respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -4035,7 +4545,7 @@ type BetaRawMessageDeltaEventDelta struct {
 	// tool)
 	Container BetaContainer `json:"container,required"`
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
-	// "refusal".
+	// "refusal", "model_context_window_exceeded".
 	StopReason   BetaStopReason `json:"stop_reason,required"`
 	StopSequence string         `json:"stop_sequence,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -4102,6 +4612,8 @@ type BetaRawMessageStreamEventUnion struct {
 	// Any of "message_start", "message_delta", "message_stop", "content_block_start",
 	// "content_block_delta", "content_block_stop".
 	Type string `json:"type"`
+	// This field is from variant [BetaRawMessageDeltaEvent].
+	ContextManagement BetaContextManagementResponse `json:"context_management"`
 	// This field is a union of [BetaRawMessageDeltaEventDelta],
 	// [BetaRawContentBlockDeltaUnion]
 	Delta BetaRawMessageStreamEventUnionDelta `json:"delta"`
@@ -4111,13 +4623,14 @@ type BetaRawMessageStreamEventUnion struct {
 	ContentBlock BetaRawContentBlockStartEventContentBlockUnion `json:"content_block"`
 	Index        int64                                          `json:"index"`
 	JSON         struct {
-		Message      respjson.Field
-		Type         respjson.Field
-		Delta        respjson.Field
-		Usage        respjson.Field
-		ContentBlock respjson.Field
-		Index        respjson.Field
-		raw          string
+		Message           respjson.Field
+		Type              respjson.Field
+		ContextManagement respjson.Field
+		Delta             respjson.Field
+		Usage             respjson.Field
+		ContentBlock      respjson.Field
+		Index             respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -4265,6 +4778,7 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 		acc.StopReason = event.Delta.StopReason
 		acc.StopSequence = event.Delta.StopSequence
 		acc.Usage.OutputTokens = event.Usage.OutputTokens
+		acc.ContextManagement = event.ContextManagement
 	case BetaRawMessageStopEvent:
 		accJson, err := json.Marshal(acc)
 		if err != nil {
@@ -4687,12 +5201,13 @@ func (r *BetaSignatureDelta) UnmarshalJSON(data []byte) error {
 type BetaStopReason string
 
 const (
-	BetaStopReasonEndTurn      BetaStopReason = "end_turn"
-	BetaStopReasonMaxTokens    BetaStopReason = "max_tokens"
-	BetaStopReasonStopSequence BetaStopReason = "stop_sequence"
-	BetaStopReasonToolUse      BetaStopReason = "tool_use"
-	BetaStopReasonPauseTurn    BetaStopReason = "pause_turn"
-	BetaStopReasonRefusal      BetaStopReason = "refusal"
+	BetaStopReasonEndTurn                    BetaStopReason = "end_turn"
+	BetaStopReasonMaxTokens                  BetaStopReason = "max_tokens"
+	BetaStopReasonStopSequence               BetaStopReason = "stop_sequence"
+	BetaStopReasonToolUse                    BetaStopReason = "tool_use"
+	BetaStopReasonPauseTurn                  BetaStopReason = "pause_turn"
+	BetaStopReasonRefusal                    BetaStopReason = "refusal"
+	BetaStopReasonModelContextWindowExceeded BetaStopReason = "model_context_window_exceeded"
 )
 
 type BetaTextBlock struct {
@@ -6469,6 +6984,7 @@ type BetaToolUnionParam struct {
 	OfCodeExecutionTool20250522 *BetaCodeExecutionTool20250522Param `json:",omitzero,inline"`
 	OfCodeExecutionTool20250825 *BetaCodeExecutionTool20250825Param `json:",omitzero,inline"`
 	OfComputerUseTool20241022   *BetaToolComputerUse20241022Param   `json:",omitzero,inline"`
+	OfMemoryTool20250818        *BetaMemoryTool20250818Param        `json:",omitzero,inline"`
 	OfComputerUseTool20250124   *BetaToolComputerUse20250124Param   `json:",omitzero,inline"`
 	OfTextEditor20241022        *BetaToolTextEditor20241022Param    `json:",omitzero,inline"`
 	OfTextEditor20250124        *BetaToolTextEditor20250124Param    `json:",omitzero,inline"`
@@ -6486,6 +7002,7 @@ func (u BetaToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfCodeExecutionTool20250522,
 		u.OfCodeExecutionTool20250825,
 		u.OfComputerUseTool20241022,
+		u.OfMemoryTool20250818,
 		u.OfComputerUseTool20250124,
 		u.OfTextEditor20241022,
 		u.OfTextEditor20250124,
@@ -6511,6 +7028,8 @@ func (u *BetaToolUnionParam) asAny() any {
 		return u.OfCodeExecutionTool20250825
 	} else if !param.IsOmitted(u.OfComputerUseTool20241022) {
 		return u.OfComputerUseTool20241022
+	} else if !param.IsOmitted(u.OfMemoryTool20250818) {
+		return u.OfMemoryTool20250818
 	} else if !param.IsOmitted(u.OfComputerUseTool20250124) {
 		return u.OfComputerUseTool20250124
 	} else if !param.IsOmitted(u.OfTextEditor20241022) {
@@ -6591,6 +7110,8 @@ func (u BetaToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfComputerUseTool20241022; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfMemoryTool20250818; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20241022; vt != nil {
@@ -6622,6 +7143,8 @@ func (u BetaToolUnionParam) GetType() *string {
 	} else if vt := u.OfCodeExecutionTool20250825; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfComputerUseTool20241022; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfMemoryTool20250818; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return (*string)(&vt.Type)
@@ -6694,6 +7217,8 @@ func (u BetaToolUnionParam) GetCacheControl() *BetaCacheControlEphemeralParam {
 	} else if vt := u.OfCodeExecutionTool20250825; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfComputerUseTool20241022; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfMemoryTool20250818; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return &vt.CacheControl
@@ -6783,6 +7308,38 @@ func (r BetaToolUseBlockParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *BetaToolUseBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Type, Value are required.
+type BetaToolUsesKeepParam struct {
+	Value int64 `json:"value,required"`
+	// This field can be elided, and will marshal its zero value as "tool_uses".
+	Type constant.ToolUses `json:"type,required"`
+	paramObj
+}
+
+func (r BetaToolUsesKeepParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaToolUsesKeepParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaToolUsesKeepParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Type, Value are required.
+type BetaToolUsesTriggerParam struct {
+	Value int64 `json:"value,required"`
+	// This field can be elided, and will marshal its zero value as "tool_uses".
+	Type constant.ToolUses `json:"type,required"`
+	paramObj
+}
+
+func (r BetaToolUsesTriggerParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaToolUsesTriggerParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaToolUsesTriggerParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -7525,6 +8082,8 @@ type BetaMessageNewParams struct {
 	// Recommended for advanced use cases only. You usually only need to use
 	// `temperature`.
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
+	// Configuration for context management operations.
+	ContextManagement BetaContextManagementConfigParam `json:"context_management,omitzero"`
 	// MCP servers to be utilized in this request
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.
@@ -7748,6 +8307,8 @@ type BetaMessageCountTokensParams struct {
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero,required"`
+	// Configuration for context management operations.
+	ContextManagement BetaContextManagementConfigParam `json:"context_management,omitzero"`
 	// MCP servers to be utilized in this request
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// System prompt.
@@ -7899,6 +8460,7 @@ type BetaMessageCountTokensParamsToolUnion struct {
 	OfCodeExecutionTool20250522 *BetaCodeExecutionTool20250522Param `json:",omitzero,inline"`
 	OfCodeExecutionTool20250825 *BetaCodeExecutionTool20250825Param `json:",omitzero,inline"`
 	OfComputerUseTool20241022   *BetaToolComputerUse20241022Param   `json:",omitzero,inline"`
+	OfMemoryTool20250818        *BetaMemoryTool20250818Param        `json:",omitzero,inline"`
 	OfComputerUseTool20250124   *BetaToolComputerUse20250124Param   `json:",omitzero,inline"`
 	OfTextEditor20241022        *BetaToolTextEditor20241022Param    `json:",omitzero,inline"`
 	OfTextEditor20250124        *BetaToolTextEditor20250124Param    `json:",omitzero,inline"`
@@ -7916,6 +8478,7 @@ func (u BetaMessageCountTokensParamsToolUnion) MarshalJSON() ([]byte, error) {
 		u.OfCodeExecutionTool20250522,
 		u.OfCodeExecutionTool20250825,
 		u.OfComputerUseTool20241022,
+		u.OfMemoryTool20250818,
 		u.OfComputerUseTool20250124,
 		u.OfTextEditor20241022,
 		u.OfTextEditor20250124,
@@ -7941,6 +8504,8 @@ func (u *BetaMessageCountTokensParamsToolUnion) asAny() any {
 		return u.OfCodeExecutionTool20250825
 	} else if !param.IsOmitted(u.OfComputerUseTool20241022) {
 		return u.OfComputerUseTool20241022
+	} else if !param.IsOmitted(u.OfMemoryTool20250818) {
+		return u.OfMemoryTool20250818
 	} else if !param.IsOmitted(u.OfComputerUseTool20250124) {
 		return u.OfComputerUseTool20250124
 	} else if !param.IsOmitted(u.OfTextEditor20241022) {
@@ -8021,6 +8586,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfComputerUseTool20241022; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfMemoryTool20250818; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfTextEditor20241022; vt != nil {
@@ -8052,6 +8619,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetType() *string {
 	} else if vt := u.OfCodeExecutionTool20250825; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfComputerUseTool20241022; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfMemoryTool20250818; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return (*string)(&vt.Type)
@@ -8124,6 +8693,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetCacheControl() *BetaCacheContr
 	} else if vt := u.OfCodeExecutionTool20250825; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfComputerUseTool20241022; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfMemoryTool20250818; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfComputerUseTool20250124; vt != nil {
 		return &vt.CacheControl

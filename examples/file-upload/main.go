@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/anthropics/anthropic-sdk-go"
 	"os"
+
+	"github.com/anthropics/anthropic-sdk-go"
 )
 
 func main() {
@@ -38,7 +39,7 @@ func main() {
 				}),
 			),
 		},
-		Model: anthropic.ModelClaudeSonnet4_20250514,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaFilesAPI2025_04_14},
 	})
 	if err != nil {

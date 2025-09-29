@@ -30,7 +30,7 @@ func main() {
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("what is 1+1?")),
 		},
 		MCPServers:    mcpServers,
-		Model:         anthropic.ModelClaudeSonnet4_20250514,
+		Model:         anthropic.ModelClaudeSonnet4_5_20250929,
 		StopSequences: []string{"```\n"},
 	})
 

@@ -1604,7 +1604,7 @@ type Message struct {
 	// null in the `message_start` event and non-null otherwise.
 	//
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
-	// "refusal".
+	// "refusal", "model_context_window_exceeded".
 	StopReason StopReason `json:"stop_reason,required"`
 	// Which custom stop sequence was generated, if any.
 	//
@@ -1912,6 +1912,8 @@ const (
 	ModelClaudeSonnet4_20250514     Model = "claude-sonnet-4-20250514"
 	ModelClaudeSonnet4_0            Model = "claude-sonnet-4-0"
 	ModelClaude4Sonnet20250514      Model = "claude-4-sonnet-20250514"
+	ModelClaudeSonnet4_5            Model = "claude-sonnet-4-5"
+	ModelClaudeSonnet4_5_20250929   Model = "claude-sonnet-4-5-20250929"
 	ModelClaude3_5SonnetLatest      Model = "claude-3-5-sonnet-latest"
 	ModelClaude3_5Sonnet20241022    Model = "claude-3-5-sonnet-20241022"
 	ModelClaude_3_5_Sonnet_20240620 Model = "claude-3-5-sonnet-20240620"
@@ -2275,7 +2277,7 @@ func (r *MessageDeltaEvent) UnmarshalJSON(data []byte) error {
 
 type MessageDeltaEventDelta struct {
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
-	// "refusal".
+	// "refusal", "model_context_window_exceeded".
 	StopReason   StopReason `json:"stop_reason,required"`
 	StopSequence string     `json:"stop_sequence,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -2615,12 +2617,13 @@ func (r *SignatureDelta) UnmarshalJSON(data []byte) error {
 type StopReason string
 
 const (
-	StopReasonEndTurn      StopReason = "end_turn"
-	StopReasonMaxTokens    StopReason = "max_tokens"
-	StopReasonStopSequence StopReason = "stop_sequence"
-	StopReasonToolUse      StopReason = "tool_use"
-	StopReasonPauseTurn    StopReason = "pause_turn"
-	StopReasonRefusal      StopReason = "refusal"
+	StopReasonEndTurn                    StopReason = "end_turn"
+	StopReasonMaxTokens                  StopReason = "max_tokens"
+	StopReasonStopSequence               StopReason = "stop_sequence"
+	StopReasonToolUse                    StopReason = "tool_use"
+	StopReasonPauseTurn                  StopReason = "pause_turn"
+	StopReasonRefusal                    StopReason = "refusal"
+	StopReasonModelContextWindowExceeded StopReason = "model_context_window_exceeded"
 )
 
 type TextBlock struct {

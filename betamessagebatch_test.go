@@ -41,6 +41,25 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				}},
 				Model:     anthropic.ModelClaude3_7SonnetLatest,
 				Container: anthropic.String("container"),
+				ContextManagement: anthropic.BetaContextManagementConfigParam{
+					Edits: []anthropic.BetaClearToolUses20250919EditParam{{
+						ClearAtLeast: anthropic.BetaInputTokensClearAtLeastParam{
+							Value: 0,
+						},
+						ClearToolInputs: anthropic.BetaClearToolUses20250919EditClearToolInputsUnionParam{
+							OfBool: anthropic.Bool(true),
+						},
+						ExcludeTools: []string{"string"},
+						Keep: anthropic.BetaToolUsesKeepParam{
+							Value: 0,
+						},
+						Trigger: anthropic.BetaClearToolUses20250919EditTriggerUnionParam{
+							OfInputTokens: &anthropic.BetaInputTokensTriggerParam{
+								Value: 1,
+							},
+						},
+					}},
+				},
 				MCPServers: []anthropic.BetaRequestMCPServerURLDefinitionParam{{
 					Name:               "name",
 					URL:                "url",

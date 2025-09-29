@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.13.0 (2025-09-29)
+
+Full Changelog: [v1.12.0...v1.13.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.12.0...v1.13.0)
+
+### Features
+
+* **api:** adds support for Claude Sonnet 4.5 and context management features ([3d5d51a](https://github.com/anthropics/anthropic-sdk-go/commit/3d5d51ad6ee64b34c7cc361a9dfd6f45966987dd))
+
+
+### Bug Fixes
+
+* bugfix for setting JSON keys with special characters ([c868b92](https://github.com/anthropics/anthropic-sdk-go/commit/c868b921190f8d371cc93d12e019daf5a7463306))
+* **internal:** unmarshal correctly when there are multiple discriminators ([ecc3ce3](https://github.com/anthropics/anthropic-sdk-go/commit/ecc3ce31a9ed98b8f2b66b5e1489fce510528f77))
+* use slices.Concat instead of sometimes modifying r.Options ([88e7186](https://github.com/anthropics/anthropic-sdk-go/commit/88e7186cad944290498a3381c829df36d26a1cce))
+
+
+### Chores
+
+* bump minimum go version to 1.22 ([87af8f3](https://github.com/anthropics/anthropic-sdk-go/commit/87af8f397ae68ce72a76a07a735d21495aad8799))
+* do not install brew dependencies in ./scripts/bootstrap by default ([c689348](https://github.com/anthropics/anthropic-sdk-go/commit/c689348cc4b5ec7ab3512261e4e3cc50d208a02c))
+* **internal:** fix tests ([bfc6eaf](https://github.com/anthropics/anthropic-sdk-go/commit/bfc6eafeff58664f0d6f155f96286f3993e60f89))
+* update more docs for 1.22 ([d67c50d](https://github.com/anthropics/anthropic-sdk-go/commit/d67c50d49082b4b28bdabc44943853431cd5205c))
+
 ## 1.12.0 (2025-09-10)
 
 Full Changelog: [v1.11.0...v1.12.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.11.0...v1.12.0)

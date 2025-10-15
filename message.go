@@ -2083,6 +2083,8 @@ const (
 	ModelClaude3_7Sonnet20250219  Model = "claude-3-7-sonnet-20250219"
 	ModelClaude3_5HaikuLatest     Model = "claude-3-5-haiku-latest"
 	ModelClaude3_5Haiku20241022   Model = "claude-3-5-haiku-20241022"
+	ModelClaudeHaiku4_5             Model = "claude-haiku-4-5"
+	ModelClaudeHaiku4_5_20251001    Model = "claude-haiku-4-5-20251001"
 	ModelClaudeSonnet4_20250514   Model = "claude-sonnet-4-20250514"
 	ModelClaudeSonnet4_0          Model = "claude-sonnet-4-0"
 	ModelClaudeSonnet4_5          Model = "claude-sonnet-4-5"

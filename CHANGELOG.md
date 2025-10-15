@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.14.0 (2025-10-15)
+
+Full Changelog: [v1.13.0...v1.14.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.13.0...v1.14.0)
+
+### Features
+
+* **api:** manual updates ([3eac8aa](https://github.com/anthropics/anthropic-sdk-go/commit/3eac8aaee0dbb3f4a5e30b039d60503614365a82))
+
+
+### Chores
+
+* **client:** add context-management-2025-06-27 beta header ([eeba6fa](https://github.com/anthropics/anthropic-sdk-go/commit/eeba6fa95ca9eedf16897b413950fc5f80d0d8cb))
+* **client:** add model-context-window-exceeded-2025-08-26 beta header ([7d5a37d](https://github.com/anthropics/anthropic-sdk-go/commit/7d5a37d895b769739d23b6e91f6c0a806cade710))
+
 ## 1.13.0 (2025-09-29)
 
 Full Changelog: [v1.12.0...v1.13.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.12.0...v1.13.0)

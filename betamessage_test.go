@@ -36,8 +36,17 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.BetaMessageParamRoleUser,
 		}},
-		Model:     anthropic.ModelClaude3_7SonnetLatest,
-		Container: anthropic.String("container"),
+		Model: anthropic.ModelClaude3_7SonnetLatest,
+		Container: anthropic.BetaMessageNewParamsContainerUnion{
+			OfContainers: &anthropic.BetaContainerParams{
+				ID: anthropic.String("id"),
+				Skills: []anthropic.BetaSkillParams{{
+					SkillID: "x",
+					Type:    anthropic.BetaSkillParamsTypeAnthropic,
+					Version: anthropic.String("x"),
+				}},
+			},
+		},
 		ContextManagement: anthropic.BetaContextManagementConfigParam{
 			Edits: []anthropic.BetaClearToolUses20250919EditParam{{
 				ClearAtLeast: anthropic.BetaInputTokensClearAtLeastParam{

@@ -22,6 +22,7 @@ type BetaService struct {
 	Models   BetaModelService
 	Messages BetaMessageService
 	Files    BetaFileService
+	Skills   BetaSkillService
 }
 
 // NewBetaService generates a new service that applies the given options to each
@@ -33,6 +34,7 @@ func NewBetaService(opts ...option.RequestOption) (r BetaService) {
 	r.Models = NewBetaModelService(opts...)
 	r.Messages = NewBetaMessageService(opts...)
 	r.Files = NewBetaFileService(opts...)
+	r.Skills = NewBetaSkillService(opts...)
 	return
 }
 
@@ -56,6 +58,7 @@ const (
 	AnthropicBetaContext1m2025_08_07                  AnthropicBeta = "context-1m-2025-08-07"
 	AnthropicBetaContextManagement2025_06_27          AnthropicBeta = "context-management-2025-06-27"
 	AnthropicBetaModelContextWindowExceeded2025_08_26 AnthropicBeta = "model-context-window-exceeded-2025-08-26"
+	AnthropicBetaSkills2025_10_02                     AnthropicBeta = "skills-2025-10-02"
 )
 
 type BetaAPIError struct {

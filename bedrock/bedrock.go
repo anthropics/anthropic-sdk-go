@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -179,7 +180,7 @@ func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptio
 // intercepts request to the Messages API so that this SDK can be used with Amazon Bedrock.
 func WithConfig(cfg aws.Config) option.RequestOption {
 	signer := v4.NewSigner()
-	middleware := bedrockMiddleware(signer, cfg)
+	middleware := bedrockMiddleware(signer, cfg, "")
 
 	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		return rc.Apply(
@@ -189,7 +190,33 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 	})
 }
 
-func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
+// WithBearerToken returns a request option which uses the provided bearer token for authentication
+// instead of AWS SigV4 signing. This is useful in corporate environments where teams need access
+// to Bedrock without managing AWS credentials, IAM roles, or account-level permissions.
+//
+// The bearer token can be obtained from AWS Bedrock API keys.
+// See: https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys-use.html
+//
+// If token is empty, it will attempt to read from the AWS_BEARER_TOKEN_BEDROCK environment variable.
+func WithBearerToken(token string, region string) option.RequestOption {
+	if token == "" {
+		token = os.Getenv("AWS_BEARER_TOKEN_BEDROCK")
+	}
+	if region == "" {
+		region = "us-east-1"
+	}
+
+	middleware := bedrockMiddleware(nil, aws.Config{Region: region}, token)
+
+	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+		return rc.Apply(
+			option.WithBaseURL(fmt.Sprintf("https://bedrock-runtime.%s.amazonaws.com", region)),
+			option.WithMiddleware(middleware),
+		)
+	})
+}
+
+func bedrockMiddleware(signer *v4.Signer, cfg aws.Config, bearerToken string) option.Middleware {
 	return func(r *http.Request, next option.MiddlewareNext) (res *http.Response, err error) {
 		var body []byte
 		if r.Body != nil {
@@ -230,16 +257,20 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 			r.ContentLength = int64(len(body))
 		}
 
-		ctx := r.Context()
-		credentials, err := cfg.Credentials.Retrieve(ctx)
-		if err != nil {
-			return nil, err
-		}
+		if bearerToken != "" {
+			r.Header.Set("Authorization", "Bearer "+bearerToken)
+		} else {
+			ctx := r.Context()
+			credentials, err := cfg.Credentials.Retrieve(ctx)
+			if err != nil {
+				return nil, err
+			}
 
-		hash := sha256.Sum256(body)
-		err = signer.SignHTTP(ctx, credentials, r, hex.EncodeToString(hash[:]), "bedrock", cfg.Region, time.Now())
-		if err != nil {
-			return nil, err
+			hash := sha256.Sum256(body)
+			err = signer.SignHTTP(ctx, credentials, r, hex.EncodeToString(hash[:]), "bedrock", cfg.Region, time.Now())
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		return next(r)

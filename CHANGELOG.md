@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.15.0 (2025-10-25)
+
+Full Changelog: [v1.14.0...v1.15.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.14.0...v1.15.0)
+
+### Features
+
+* **api:** adding support for agent skills ([5660b52](https://github.com/anthropics/anthropic-sdk-go/commit/5660b5252a4de07f3343c9089b148b16cda794d4))
+
 ## 1.14.0 (2025-10-15)
 
 Full Changelog: [v1.13.0...v1.14.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.13.0...v1.14.0)

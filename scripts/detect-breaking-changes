@@ -16,6 +16,8 @@ TEST_PATHS=(
 	betamessage_test.go
 	betamessagebatch_test.go
 	betafile_test.go
+	betaskill_test.go
+	betaskillversion_test.go
 	usage_test.go
 	paginationauto_test.go
 	paginationmanual_test.go

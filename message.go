@@ -1734,7 +1734,7 @@ type Message struct {
 	// null in the `message_start` event and non-null otherwise.
 	//
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
-	// "refusal", "model_context_window_exceeded".
+	// "refusal".
 	StopReason StopReason `json:"stop_reason,required"`
 	// Which custom stop sequence was generated, if any.
 	//
@@ -2079,32 +2079,29 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model string
 
 const (
-	ModelClaude3_7SonnetLatest    Model = "claude-3-7-sonnet-latest"
+	// Deprecated: Will reach end-of-life on February 19th, 2026. Please migrate to a
+	// newer model. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
+	ModelClaude3_7SonnetLatest Model = "claude-3-7-sonnet-latest"
+	// Deprecated: Will reach end-of-life on February 19th, 2026. Please migrate to a
+	// newer model. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
 	ModelClaude3_7Sonnet20250219  Model = "claude-3-7-sonnet-20250219"
 	ModelClaude3_5HaikuLatest     Model = "claude-3-5-haiku-latest"
 	ModelClaude3_5Haiku20241022   Model = "claude-3-5-haiku-20241022"
-	ModelClaudeHaiku4_5             Model = "claude-haiku-4-5"
-	ModelClaudeHaiku4_5_20251001    Model = "claude-haiku-4-5-20251001"
+	ModelClaudeHaiku4_5           Model = "claude-haiku-4-5"
+	ModelClaudeHaiku4_5_20251001  Model = "claude-haiku-4-5-20251001"
 	ModelClaudeSonnet4_20250514   Model = "claude-sonnet-4-20250514"
 	ModelClaudeSonnet4_0          Model = "claude-sonnet-4-0"
+	ModelClaude4Sonnet20250514    Model = "claude-4-sonnet-20250514"
 	ModelClaudeSonnet4_5          Model = "claude-sonnet-4-5"
 	ModelClaudeSonnet4_5_20250929 Model = "claude-sonnet-4-5-20250929"
-	ModelClaude4Sonnet20250514    Model = "claude-4-sonnet-20250514"
-	ModelClaude3_5SonnetLatest    Model = "claude-3-5-sonnet-latest"
-	// Deprecated: Will reach end-of-life on October 22nd, 2025. Please migrate to a
-	// newer model. Visit
-	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
-	// information.
-	ModelClaude3_5Sonnet20241022 Model = "claude-3-5-sonnet-20241022"
-	// Deprecated: Will reach end-of-life on October 22nd, 2025. Please migrate to a
-	// newer model. Visit
-	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
-	// information.
-	ModelClaude_3_5_Sonnet_20240620 Model = "claude-3-5-sonnet-20240620"
-	ModelClaudeOpus4_0              Model = "claude-opus-4-0"
-	ModelClaudeOpus4_20250514       Model = "claude-opus-4-20250514"
-	ModelClaude4Opus20250514        Model = "claude-4-opus-20250514"
-	ModelClaudeOpus4_1_20250805     Model = "claude-opus-4-1-20250805"
+	ModelClaudeOpus4_0            Model = "claude-opus-4-0"
+	ModelClaudeOpus4_20250514     Model = "claude-opus-4-20250514"
+	ModelClaude4Opus20250514      Model = "claude-4-opus-20250514"
+	ModelClaudeOpus4_1_20250805   Model = "claude-opus-4-1-20250805"
 	// Deprecated: Will reach end-of-life on January 5th, 2026. Please migrate to a
 	// newer model. Visit
 	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
@@ -2461,7 +2458,7 @@ func (r *MessageDeltaEvent) UnmarshalJSON(data []byte) error {
 
 type MessageDeltaEventDelta struct {
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
-	// "refusal", "model_context_window_exceeded".
+	// "refusal".
 	StopReason   StopReason `json:"stop_reason,required"`
 	StopSequence string     `json:"stop_sequence,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -2884,13 +2881,12 @@ func (r *SignatureDelta) UnmarshalJSON(data []byte) error {
 type StopReason string
 
 const (
-	StopReasonEndTurn                    StopReason = "end_turn"
-	StopReasonMaxTokens                  StopReason = "max_tokens"
-	StopReasonStopSequence               StopReason = "stop_sequence"
-	StopReasonToolUse                    StopReason = "tool_use"
-	StopReasonPauseTurn                  StopReason = "pause_turn"
-	StopReasonRefusal                    StopReason = "refusal"
-	StopReasonModelContextWindowExceeded StopReason = "model_context_window_exceeded"
+	StopReasonEndTurn      StopReason = "end_turn"
+	StopReasonMaxTokens    StopReason = "max_tokens"
+	StopReasonStopSequence StopReason = "stop_sequence"
+	StopReasonToolUse      StopReason = "tool_use"
+	StopReasonPauseTurn    StopReason = "pause_turn"
+	StopReasonRefusal      StopReason = "refusal"
 )
 
 type TextBlock struct {
@@ -3388,7 +3384,7 @@ type ThinkingConfigEnabledParam struct {
 	// Must be ≥1024 and less than `max_tokens`.
 	//
 	// See
-	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// [extended thinking](https://docs.claude.com/en/docs/build-with-claude/extended-thinking)
 	// for details.
 	BudgetTokens int64 `json:"budget_tokens,required"`
 	// This field can be elided, and will marshal its zero value as "enabled".
@@ -4604,7 +4600,7 @@ type MessageNewParams struct {
 	// only specifies the absolute maximum number of tokens to generate.
 	//
 	// Different models have different maximum values for this parameter. See
-	// [models](https://docs.anthropic.com/en/docs/models-overview) for details.
+	// [models](https://docs.claude.com/en/docs/models-overview) for details.
 	MaxTokens int64 `json:"max_tokens,required"`
 	// Input messages.
 	//
@@ -4667,12 +4663,12 @@ type MessageNewParams struct {
 	// { "role": "user", "content": [{ "type": "text", "text": "Hello, Claude" }] }
 	// ```
 	//
-	// See [input examples](https://docs.anthropic.com/en/api/messages-examples).
+	// See [input examples](https://docs.claude.com/en/api/messages-examples).
 	//
 	// Note that if you want to include a
-	// [system prompt](https://docs.anthropic.com/en/docs/system-prompts), you can use
-	// the top-level `system` parameter — there is no `"system"` role for input
-	// messages in the Messages API.
+	// [system prompt](https://docs.claude.com/en/docs/system-prompts), you can use the
+	// top-level `system` parameter — there is no `"system"` role for input messages in
+	// the Messages API.
 	//
 	// There is a limit of 100,000 messages in a single request.
 	Messages []MessageParam `json:"messages,omitzero,required"`
@@ -4713,7 +4709,7 @@ type MessageNewParams struct {
 	// for this request.
 	//
 	// Anthropic offers different levels of service for your API requests. See
-	// [service-tiers](https://docs.anthropic.com/en/api/service-tiers) for details.
+	// [service-tiers](https://docs.claude.com/en/api/service-tiers) for details.
 	//
 	// Any of "auto", "standard_only".
 	ServiceTier MessageNewParamsServiceTier `json:"service_tier,omitzero"`
@@ -4731,7 +4727,7 @@ type MessageNewParams struct {
 	//
 	// A system prompt is a way of providing context and instructions to Claude, such
 	// as specifying a particular goal or role. See our
-	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
+	// [guide to system prompts](https://docs.claude.com/en/docs/system-prompts).
 	System []TextBlockParam `json:"system,omitzero"`
 	// Configuration for enabling Claude's extended thinking.
 	//
@@ -4740,7 +4736,7 @@ type MessageNewParams struct {
 	// tokens and counts towards your `max_tokens` limit.
 	//
 	// See
-	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// [extended thinking](https://docs.claude.com/en/docs/build-with-claude/extended-thinking)
 	// for details.
 	Thinking ThinkingConfigParamUnion `json:"thinking,omitzero"`
 	// How the model should use the provided tools. The model can use a specific tool,
@@ -4755,9 +4751,9 @@ type MessageNewParams struct {
 	//
 	// There are two types of tools: **client tools** and **server tools**. The
 	// behavior described below applies to client tools. For
-	// [server tools](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview#server-tools),
+	// [server tools](https://docs.claude.com/en/docs/agents-and-tools/tool-use/overview#server-tools),
 	// see their individual documentation as each has its own behavior (e.g., the
-	// [web search tool](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/web-search-tool)).
+	// [web search tool](https://docs.claude.com/en/docs/agents-and-tools/tool-use/web-search-tool)).
 	//
 	// Each tool definition includes:
 	//
@@ -4826,7 +4822,7 @@ type MessageNewParams struct {
 	// functions, or more generally whenever you want the model to produce a particular
 	// JSON structure of output.
 	//
-	// See our [guide](https://docs.anthropic.com/en/docs/tool-use) for more details.
+	// See our [guide](https://docs.claude.com/en/docs/tool-use) for more details.
 	Tools []ToolUnionParam `json:"tools,omitzero"`
 	paramObj
 }
@@ -4843,7 +4839,7 @@ func (r *MessageNewParams) UnmarshalJSON(data []byte) error {
 // for this request.
 //
 // Anthropic offers different levels of service for your API requests. See
-// [service-tiers](https://docs.anthropic.com/en/api/service-tiers) for details.
+// [service-tiers](https://docs.claude.com/en/api/service-tiers) for details.
 type MessageNewParamsServiceTier string
 
 const (
@@ -4913,12 +4909,12 @@ type MessageCountTokensParams struct {
 	// { "role": "user", "content": [{ "type": "text", "text": "Hello, Claude" }] }
 	// ```
 	//
-	// See [input examples](https://docs.anthropic.com/en/api/messages-examples).
+	// See [input examples](https://docs.claude.com/en/api/messages-examples).
 	//
 	// Note that if you want to include a
-	// [system prompt](https://docs.anthropic.com/en/docs/system-prompts), you can use
-	// the top-level `system` parameter — there is no `"system"` role for input
-	// messages in the Messages API.
+	// [system prompt](https://docs.claude.com/en/docs/system-prompts), you can use the
+	// top-level `system` parameter — there is no `"system"` role for input messages in
+	// the Messages API.
 	//
 	// There is a limit of 100,000 messages in a single request.
 	Messages []MessageParam `json:"messages,omitzero,required"`
@@ -4930,7 +4926,7 @@ type MessageCountTokensParams struct {
 	//
 	// A system prompt is a way of providing context and instructions to Claude, such
 	// as specifying a particular goal or role. See our
-	// [guide to system prompts](https://docs.anthropic.com/en/docs/system-prompts).
+	// [guide to system prompts](https://docs.claude.com/en/docs/system-prompts).
 	System MessageCountTokensParamsSystemUnion `json:"system,omitzero"`
 	// Configuration for enabling Claude's extended thinking.
 	//
@@ -4939,7 +4935,7 @@ type MessageCountTokensParams struct {
 	// tokens and counts towards your `max_tokens` limit.
 	//
 	// See
-	// [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+	// [extended thinking](https://docs.claude.com/en/docs/build-with-claude/extended-thinking)
 	// for details.
 	Thinking ThinkingConfigParamUnion `json:"thinking,omitzero"`
 	// How the model should use the provided tools. The model can use a specific tool,
@@ -4954,9 +4950,9 @@ type MessageCountTokensParams struct {
 	//
 	// There are two types of tools: **client tools** and **server tools**. The
 	// behavior described below applies to client tools. For
-	// [server tools](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview#server-tools),
+	// [server tools](https://docs.claude.com/en/docs/agents-and-tools/tool-use/overview#server-tools),
 	// see their individual documentation as each has its own behavior (e.g., the
-	// [web search tool](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/web-search-tool)).
+	// [web search tool](https://docs.claude.com/en/docs/agents-and-tools/tool-use/web-search-tool)).
 	//
 	// Each tool definition includes:
 	//
@@ -5025,7 +5021,7 @@ type MessageCountTokensParams struct {
 	// functions, or more generally whenever you want the model to produce a particular
 	// JSON structure of output.
 	//
-	// See our [guide](https://docs.anthropic.com/en/docs/tool-use) for more details.
+	// See our [guide](https://docs.claude.com/en/docs/tool-use) for more details.
 	Tools []MessageCountTokensToolUnionParam `json:"tools,omitzero"`
 	paramObj
 }

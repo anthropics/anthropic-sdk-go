@@ -49,20 +49,22 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 			},
 		},
 		ContextManagement: anthropic.BetaContextManagementConfigParam{
-			Edits: []anthropic.BetaClearToolUses20250919EditParam{{
-				ClearAtLeast: anthropic.BetaInputTokensClearAtLeastParam{
-					Value: 0,
-				},
-				ClearToolInputs: anthropic.BetaClearToolUses20250919EditClearToolInputsUnionParam{
-					OfBool: anthropic.Bool(true),
-				},
-				ExcludeTools: []string{"string"},
-				Keep: anthropic.BetaToolUsesKeepParam{
-					Value: 0,
-				},
-				Trigger: anthropic.BetaClearToolUses20250919EditTriggerUnionParam{
-					OfInputTokens: &anthropic.BetaInputTokensTriggerParam{
-						Value: 1,
+			Edits: []anthropic.BetaContextManagementConfigEditUnionParam{{
+				OfClearToolUses20250919: &anthropic.BetaClearToolUses20250919EditParam{
+					ClearAtLeast: anthropic.BetaInputTokensClearAtLeastParam{
+						Value: 0,
+					},
+					ClearToolInputs: anthropic.BetaClearToolUses20250919EditClearToolInputsUnionParam{
+						OfBool: anthropic.Bool(true),
+					},
+					ExcludeTools: []string{"string"},
+					Keep: anthropic.BetaToolUsesKeepParam{
+						Value: 0,
+					},
+					Trigger: anthropic.BetaClearToolUses20250919EditTriggerUnionParam{
+						OfInputTokens: &anthropic.BetaInputTokensTriggerParam{
+							Value: 1,
+						},
 					},
 				},
 			}},
@@ -98,15 +100,9 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		Tools: []anthropic.BetaToolUnionParam{{
 			OfTool: &anthropic.BetaToolParam{
 				InputSchema: anthropic.BetaToolInputSchemaParam{
-					Properties: map[string]interface{}{
-						"location": map[string]interface{}{
-							"description": "The city and state, e.g. San Francisco, CA",
-							"type":        "string",
-						},
-						"unit": map[string]interface{}{
-							"description": "Unit for the output - one of (celsius, fahrenheit)",
-							"type":        "string",
-						},
+					Properties: map[string]any{
+						"location": "bar",
+						"unit":     "bar",
 					},
 					Required: []string{"location"},
 				},
@@ -155,20 +151,22 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 		}},
 		Model: anthropic.ModelClaude3_7SonnetLatest,
 		ContextManagement: anthropic.BetaContextManagementConfigParam{
-			Edits: []anthropic.BetaClearToolUses20250919EditParam{{
-				ClearAtLeast: anthropic.BetaInputTokensClearAtLeastParam{
-					Value: 0,
-				},
-				ClearToolInputs: anthropic.BetaClearToolUses20250919EditClearToolInputsUnionParam{
-					OfBool: anthropic.Bool(true),
-				},
-				ExcludeTools: []string{"string"},
-				Keep: anthropic.BetaToolUsesKeepParam{
-					Value: 0,
-				},
-				Trigger: anthropic.BetaClearToolUses20250919EditTriggerUnionParam{
-					OfInputTokens: &anthropic.BetaInputTokensTriggerParam{
-						Value: 1,
+			Edits: []anthropic.BetaContextManagementConfigEditUnionParam{{
+				OfClearToolUses20250919: &anthropic.BetaClearToolUses20250919EditParam{
+					ClearAtLeast: anthropic.BetaInputTokensClearAtLeastParam{
+						Value: 0,
+					},
+					ClearToolInputs: anthropic.BetaClearToolUses20250919EditClearToolInputsUnionParam{
+						OfBool: anthropic.Bool(true),
+					},
+					ExcludeTools: []string{"string"},
+					Keep: anthropic.BetaToolUsesKeepParam{
+						Value: 0,
+					},
+					Trigger: anthropic.BetaClearToolUses20250919EditTriggerUnionParam{
+						OfInputTokens: &anthropic.BetaInputTokensTriggerParam{
+							Value: 1,
+						},
 					},
 				},
 			}},
@@ -212,15 +210,9 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 		Tools: []anthropic.BetaMessageCountTokensParamsToolUnion{{
 			OfTool: &anthropic.BetaToolParam{
 				InputSchema: anthropic.BetaToolInputSchemaParam{
-					Properties: map[string]interface{}{
-						"location": map[string]interface{}{
-							"description": "The city and state, e.g. San Francisco, CA",
-							"type":        "string",
-						},
-						"unit": map[string]interface{}{
-							"description": "Unit for the output - one of (celsius, fahrenheit)",
-							"type":        "string",
-						},
+					Properties: map[string]any{
+						"location": "bar",
+						"unit":     "bar",
 					},
 					Required: []string{"location"},
 				},

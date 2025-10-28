@@ -180,39 +180,11 @@ func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptio
 	return WithConfig(cfg)
 }
 
-// WithConfig returns a request option which uses the provided config  and registers middleware that
+// WithConfig returns a request option which uses the provided config and registers middleware that
 // intercepts request to the Messages API so that this SDK can be used with Amazon Bedrock.
 func WithConfig(cfg aws.Config) option.RequestOption {
-	return WithConfigAndExtraBody(cfg, nil)
-}
-
-// WithConfigAndExtraBody returns a request option for Bedrock with support for extra_body parameter.
-// The extraBody map will be merged into the request JSON after SDK serialization.
-//
-// Deprecated: Use WithExtraBody() as a per-request option instead for more flexibility.
-// This function is kept for backwards compatibility and for cases where you want
-// a static extraBody applied to all requests from this client.
-//
-// This allows passing fields like context_management that Bedrock's API validation
-// rejects when sent as standard SDK parameters. Similar to Python SDK's extra_body.
-//
-// Example:
-//
-//	extraBody := map[string]any{
-//	    "context_management": map[string]any{
-//	        "edits": []map[string]any{
-//	            {
-//	                "type": "clear_tool_uses_20250919",
-//	                "trigger": map[string]any{"type": "input_tokens", "value": 30000},
-//	                "keep": map[string]any{"type": "tool_uses", "value": 3},
-//	            },
-//	        },
-//	    },
-//	}
-//	client := anthropic.NewClient(bedrock.WithConfigAndExtraBody(cfg, extraBody))
-func WithConfigAndExtraBody(cfg aws.Config, extraBody map[string]any) option.RequestOption {
 	signer := v4.NewSigner()
-	middleware := bedrockMiddlewareWithExtra(signer, cfg, extraBody)
+	middleware := bedrockMiddlewareWithExtra(signer, cfg, nil)
 
 	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		return rc.Apply(
@@ -220,18 +192,6 @@ func WithConfigAndExtraBody(cfg aws.Config, extraBody map[string]any) option.Req
 			option.WithMiddleware(middleware),
 		)
 	})
-}
-
-// WithLoadDefaultConfigAndExtraBody loads AWS config and creates a Bedrock client with extra_body support.
-//
-// Deprecated: Use WithExtraBody() as a per-request option instead for more flexibility.
-// This function is kept for backwards compatibility.
-func WithLoadDefaultConfigAndExtraBody(ctx context.Context, extraBody map[string]any, optFns ...func(*config.LoadOptions) error) option.RequestOption {
-	cfg, err := config.LoadDefaultConfig(ctx, optFns...)
-	if err != nil {
-		panic(err)
-	}
-	return WithConfigAndExtraBody(cfg, extraBody)
 }
 
 // WithExtraBody returns a request option that adds extraBody fields to this specific request.
@@ -339,16 +299,14 @@ func bedrockMiddlewareWithExtra(signer *v4.Signer, cfg aws.Config, staticExtraBo
 				// WORKAROUND: Merge extraBody fields into request JSON
 				// This allows sending fields like context_management that Bedrock
 				// rejects when sent as standard SDK parameters (similar to Python's extra_body)
-				if extraBody != nil {
-					for key, value := range extraBody {
-						valueJSON, err := json.Marshal(value)
-						if err != nil {
-							return nil, fmt.Errorf("failed to marshal extra_body field %s: %w", key, err)
-						}
-						body, err = sjson.SetRawBytes(body, key, valueJSON)
-						if err != nil {
-							return nil, fmt.Errorf("failed to set extra_body field %s: %w", key, err)
-						}
+				for key, value := range extraBody {
+					valueJSON, err := json.Marshal(value)
+					if err != nil {
+						return nil, fmt.Errorf("failed to marshal extra_body field %s: %w", key, err)
+					}
+					body, err = sjson.SetRawBytes(body, key, valueJSON)
+					if err != nil {
+						return nil, fmt.Errorf("failed to set extra_body field %s: %w", key, err)
 					}
 				}
 

@@ -178,8 +178,32 @@ func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptio
 // WithConfig returns a request option which uses the provided config  and registers middleware that
 // intercepts request to the Messages API so that this SDK can be used with Amazon Bedrock.
 func WithConfig(cfg aws.Config) option.RequestOption {
+	return WithConfigAndExtraBody(cfg, nil)
+}
+
+// WithConfigAndExtraBody returns a request option for Bedrock with support for extra_body parameter.
+// The extraBody map will be merged into the request JSON after SDK serialization.
+//
+// This allows passing fields like context_management that Bedrock's API validation
+// rejects when sent as standard SDK parameters. Similar to Python SDK's extra_body.
+//
+// Example:
+//
+//	extraBody := map[string]any{
+//	    "context_management": map[string]any{
+//	        "edits": []map[string]any{
+//	            {
+//	                "type": "clear_tool_uses_20250919",
+//	                "trigger": map[string]any{"type": "input_tokens", "value": 30000},
+//	                "keep": map[string]any{"type": "tool_uses", "value": 3},
+//	            },
+//	        },
+//	    },
+//	}
+//	client := anthropic.NewClient(bedrock.WithConfigAndExtraBody(cfg, extraBody))
+func WithConfigAndExtraBody(cfg aws.Config, extraBody map[string]any) option.RequestOption {
 	signer := v4.NewSigner()
-	middleware := bedrockMiddleware(signer, cfg)
+	middleware := bedrockMiddlewareWithExtra(signer, cfg, extraBody)
 
 	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		return rc.Apply(
@@ -189,7 +213,20 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 	})
 }
 
+// WithLoadDefaultConfigAndExtraBody loads AWS config and creates a Bedrock client with extra_body support.
+func WithLoadDefaultConfigAndExtraBody(ctx context.Context, extraBody map[string]any, optFns ...func(*config.LoadOptions) error) option.RequestOption {
+	cfg, err := config.LoadDefaultConfig(ctx, optFns...)
+	if err != nil {
+		panic(err)
+	}
+	return WithConfigAndExtraBody(cfg, extraBody)
+}
+
 func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
+	return bedrockMiddlewareWithExtra(signer, cfg, nil)
+}
+
+func bedrockMiddlewareWithExtra(signer *v4.Signer, cfg aws.Config, extraBody map[string]any) option.Middleware {
 	return func(r *http.Request, next option.MiddlewareNext) (res *http.Response, err error) {
 		var body []byte
 		if r.Body != nil {
@@ -203,12 +240,58 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 				body, _ = sjson.SetBytes(body, "anthropic_version", DefaultVersion)
 			}
 
+			// Convert anthropic-beta header or beta query param to anthropic_beta field in body (similar to Python SDK)
+			// The Go SDK uses MessagesStreamBeta which adds ?beta=true, but Bedrock needs this in the body
+			betaHeader := r.Header.Get("anthropic-beta")
+			betaQuery := r.URL.Query().Get("beta")
+
+			if betaHeader != "" {
+				// Split comma-separated betas into array
+				betas := []string{}
+				for _, b := range bytes.Split([]byte(betaHeader), []byte(",")) {
+					betas = append(betas, string(bytes.TrimSpace(b)))
+				}
+				if len(betas) > 0 {
+					betasJSON, _ := json.Marshal(betas)
+					body, _ = sjson.SetRawBytes(body, "anthropic_beta", betasJSON)
+				}
+			} else if betaQuery == "true" {
+				// Beta query param detected - infer which betas from extraBody
+				// If context_management is present, we need context-management-2025-06-27
+				inferred := []string{}
+				if extraBody != nil {
+					if _, hasContextMgmt := extraBody["context_management"]; hasContextMgmt {
+						inferred = append(inferred, "context-management-2025-06-27")
+					}
+				}
+				if len(inferred) > 0 {
+					betasJSON, _ := json.Marshal(inferred)
+					body, _ = sjson.SetRawBytes(body, "anthropic_beta", betasJSON)
+				}
+			}
+
 			if r.Method == http.MethodPost && DefaultEndpoints[r.URL.Path] {
 				model := gjson.GetBytes(body, "model").String()
 				stream := gjson.GetBytes(body, "stream").Bool()
 
 				body, _ = sjson.DeleteBytes(body, "model")
 				body, _ = sjson.DeleteBytes(body, "stream")
+
+				// WORKAROUND: Merge extraBody fields into request JSON
+				// This allows sending fields like context_management that Bedrock
+				// rejects when sent as standard SDK parameters (similar to Python's extra_body)
+				if extraBody != nil {
+					for key, value := range extraBody {
+						valueJSON, err := json.Marshal(value)
+						if err != nil {
+							return nil, fmt.Errorf("failed to marshal extra_body field %s: %w", key, err)
+						}
+						body, err = sjson.SetRawBytes(body, key, valueJSON)
+						if err != nil {
+							return nil, fmt.Errorf("failed to set extra_body field %s: %w", key, err)
+						}
+					}
+				}
 
 				var method string
 				if stream {

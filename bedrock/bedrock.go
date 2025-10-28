@@ -33,6 +33,11 @@ var DefaultEndpoints = map[string]bool{
 	"/v1/messages": true,
 }
 
+// Context key for per-request extraBody
+type contextKey string
+
+const extraBodyKey contextKey = "bedrock_extra_body"
+
 type eventstreamChunk struct {
 	Bytes string `json:"bytes"`
 	P     string `json:"p"`
@@ -184,6 +189,10 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 // WithConfigAndExtraBody returns a request option for Bedrock with support for extra_body parameter.
 // The extraBody map will be merged into the request JSON after SDK serialization.
 //
+// Deprecated: Use WithExtraBody() as a per-request option instead for more flexibility.
+// This function is kept for backwards compatibility and for cases where you want
+// a static extraBody applied to all requests from this client.
+//
 // This allows passing fields like context_management that Bedrock's API validation
 // rejects when sent as standard SDK parameters. Similar to Python SDK's extra_body.
 //
@@ -214,6 +223,9 @@ func WithConfigAndExtraBody(cfg aws.Config, extraBody map[string]any) option.Req
 }
 
 // WithLoadDefaultConfigAndExtraBody loads AWS config and creates a Bedrock client with extra_body support.
+//
+// Deprecated: Use WithExtraBody() as a per-request option instead for more flexibility.
+// This function is kept for backwards compatibility.
 func WithLoadDefaultConfigAndExtraBody(ctx context.Context, extraBody map[string]any, optFns ...func(*config.LoadOptions) error) option.RequestOption {
 	cfg, err := config.LoadDefaultConfig(ctx, optFns...)
 	if err != nil {
@@ -222,12 +234,59 @@ func WithLoadDefaultConfigAndExtraBody(ctx context.Context, extraBody map[string
 	return WithConfigAndExtraBody(cfg, extraBody)
 }
 
+// WithExtraBody returns a request option that adds extraBody fields to this specific request.
+// The extraBody map will be merged into the request JSON before AWS signing.
+//
+// This is the recommended way to pass extraBody parameters like context_management.
+// It provides more flexibility than WithConfigAndExtraBody since you can vary the
+// extraBody per request.
+//
+// Example:
+//
+//	extraBody := map[string]any{
+//	    "context_management": map[string]any{
+//	        "edits": []map[string]any{{
+//	            "type": "clear_tool_uses_20250919",
+//	            "trigger": map[string]any{"type": "input_tokens", "value": 30000},
+//	        }},
+//	    },
+//	}
+//	response, err := client.Messages.New(ctx, params, bedrock.WithExtraBody(extraBody))
+func WithExtraBody(extraBody map[string]any) option.RequestOption {
+	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+		if rc.Context == nil {
+			rc.Context = context.Background()
+		}
+		rc.Context = context.WithValue(rc.Context, extraBodyKey, extraBody)
+		// CRITICAL: Must also update the Request's context so middleware can access it
+		if rc.Request != nil {
+			rc.Request = rc.Request.WithContext(rc.Context)
+		}
+		return nil
+	})
+}
+
 func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 	return bedrockMiddlewareWithExtra(signer, cfg, nil)
 }
 
-func bedrockMiddlewareWithExtra(signer *v4.Signer, cfg aws.Config, extraBody map[string]any) option.Middleware {
+func bedrockMiddlewareWithExtra(signer *v4.Signer, cfg aws.Config, staticExtraBody map[string]any) option.Middleware {
 	return func(r *http.Request, next option.MiddlewareNext) (res *http.Response, err error) {
+		// First check for per-request extraBody from context
+		var extraBody map[string]any
+		if r.Context() != nil {
+			if val := r.Context().Value(extraBodyKey); val != nil {
+				if eb, ok := val.(map[string]any); ok {
+					extraBody = eb
+				}
+			}
+		}
+
+		// Fall back to static extraBody if no per-request one
+		if extraBody == nil {
+			extraBody = staticExtraBody
+		}
+
 		var body []byte
 		if r.Body != nil {
 			body, err = io.ReadAll(r.Body)

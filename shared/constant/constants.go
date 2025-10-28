@@ -18,6 +18,7 @@ func ValueOf[T Constant[T]]() T {
 	return t.Default()
 }
 
+type All string                                     // Always "all"
 type Any string                                     // Always "any"
 type APIError string                                // Always "api_error"
 type ApplicationPDF string                          // Always "application/pdf"
@@ -37,6 +38,7 @@ type BillingError string                            // Always "billing_error"
 type Canceled string                                // Always "canceled"
 type CharLocation string                            // Always "char_location"
 type CitationsDelta string                          // Always "citations_delta"
+type ClearThinking20251015 string                   // Always "clear_thinking_20251015"
 type ClearToolUses20250919 string                   // Always "clear_tool_uses_20250919"
 type CodeExecution string                           // Always "code_execution"
 type CodeExecution20250522 string                   // Always "code_execution_20250522"
@@ -112,6 +114,7 @@ type TextEditorCodeExecutionViewResult string       // Always "text_editor_code_
 type TextPlain string                               // Always "text/plain"
 type Thinking string                                // Always "thinking"
 type ThinkingDelta string                           // Always "thinking_delta"
+type ThinkingTurns string                           // Always "thinking_turns"
 type TimeoutError string                            // Always "timeout_error"
 type Tool string                                    // Always "tool"
 type ToolResult string                              // Always "tool_result"
@@ -131,6 +134,7 @@ type WebSearchResultLocation string                 // Always "web_search_result
 type WebSearchToolResult string                     // Always "web_search_tool_result"
 type WebSearchToolResultError string                // Always "web_search_tool_result_error"
 
+func (c All) Default() All                                 { return "all" }
 func (c Any) Default() Any                                 { return "any" }
 func (c APIError) Default() APIError                       { return "api_error" }
 func (c ApplicationPDF) Default() ApplicationPDF           { return "application/pdf" }
@@ -158,6 +162,7 @@ func (c BillingError) Default() BillingError                   { return "billing
 func (c Canceled) Default() Canceled                           { return "canceled" }
 func (c CharLocation) Default() CharLocation                   { return "char_location" }
 func (c CitationsDelta) Default() CitationsDelta               { return "citations_delta" }
+func (c ClearThinking20251015) Default() ClearThinking20251015 { return "clear_thinking_20251015" }
 func (c ClearToolUses20250919) Default() ClearToolUses20250919 { return "clear_tool_uses_20250919" }
 func (c CodeExecution) Default() CodeExecution                 { return "code_execution" }
 func (c CodeExecution20250522) Default() CodeExecution20250522 { return "code_execution_20250522" }
@@ -249,6 +254,7 @@ func (c TextEditorCodeExecutionViewResult) Default() TextEditorCodeExecutionView
 func (c TextPlain) Default() TextPlain                   { return "text/plain" }
 func (c Thinking) Default() Thinking                     { return "thinking" }
 func (c ThinkingDelta) Default() ThinkingDelta           { return "thinking_delta" }
+func (c ThinkingTurns) Default() ThinkingTurns           { return "thinking_turns" }
 func (c TimeoutError) Default() TimeoutError             { return "timeout_error" }
 func (c Tool) Default() Tool                             { return "tool" }
 func (c ToolResult) Default() ToolResult                 { return "tool_result" }
@@ -274,6 +280,7 @@ func (c WebSearchToolResultError) Default() WebSearchToolResultError {
 	return "web_search_tool_result_error"
 }
 
+func (c All) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Any) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c APIError) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c ApplicationPDF) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
@@ -293,6 +300,7 @@ func (c BillingError) MarshalJSON() ([]byte, error)                        { ret
 func (c Canceled) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c CharLocation) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c CitationsDelta) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c ClearThinking20251015) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c ClearToolUses20250919) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c CodeExecution) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c CodeExecution20250522) MarshalJSON() ([]byte, error)               { return marshalString(c) }
@@ -372,6 +380,7 @@ func (c TextEditorCodeExecutionViewResult) MarshalJSON() ([]byte, error) { retur
 func (c TextPlain) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Thinking) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c ThinkingDelta) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c ThinkingTurns) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c TimeoutError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Tool) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c ToolResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }

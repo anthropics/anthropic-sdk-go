@@ -101,6 +101,27 @@ func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessage
 	return
 }
 
+func NewBetaAllThinkingTurnsParam() BetaAllThinkingTurnsParam {
+	return BetaAllThinkingTurnsParam{
+		Type: "all",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewBetaAllThinkingTurnsParam].
+type BetaAllThinkingTurnsParam struct {
+	Type constant.All `json:"type,required"`
+	paramObj
+}
+
+func (r BetaAllThinkingTurnsParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaAllThinkingTurnsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaAllThinkingTurnsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The properties Data, MediaType, Type are required.
 type BetaBase64ImageSourceParam struct {
 	Data string `json:"data,required" format:"byte"`
@@ -955,6 +976,95 @@ type BetaCitationsWebSearchResultLocation struct {
 // Returns the unmodified JSON received from the API
 func (r BetaCitationsWebSearchResultLocation) RawJSON() string { return r.JSON.raw }
 func (r *BetaCitationsWebSearchResultLocation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The property Type is required.
+type BetaClearThinking20251015EditParam struct {
+	// Number of most recent assistant turns to keep thinking blocks for. Older turns
+	// will have their thinking blocks removed.
+	Keep BetaClearThinking20251015EditKeepUnionParam `json:"keep,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "clear_thinking_20251015".
+	Type constant.ClearThinking20251015 `json:"type,required"`
+	paramObj
+}
+
+func (r BetaClearThinking20251015EditParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaClearThinking20251015EditParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaClearThinking20251015EditParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaClearThinking20251015EditKeepUnionParam struct {
+	OfThinkingTurns    *BetaThinkingTurnsParam    `json:",omitzero,inline"`
+	OfAllThinkingTurns *BetaAllThinkingTurnsParam `json:",omitzero,inline"`
+	// Construct this variant with constant.ValueOf[constant.All]()
+	OfAll constant.All `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaClearThinking20251015EditKeepUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfThinkingTurns, u.OfAllThinkingTurns, u.OfAll)
+}
+func (u *BetaClearThinking20251015EditKeepUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaClearThinking20251015EditKeepUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfThinkingTurns) {
+		return u.OfThinkingTurns
+	} else if !param.IsOmitted(u.OfAllThinkingTurns) {
+		return u.OfAllThinkingTurns
+	} else if !param.IsOmitted(u.OfAll) {
+		return &u.OfAll
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaClearThinking20251015EditKeepUnionParam) GetValue() *int64 {
+	if vt := u.OfThinkingTurns; vt != nil {
+		return &vt.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaClearThinking20251015EditKeepUnionParam) GetType() *string {
+	if vt := u.OfThinkingTurns; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfAllThinkingTurns; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+type BetaClearThinking20251015EditResponse struct {
+	// Number of input tokens cleared by this edit.
+	ClearedInputTokens int64 `json:"cleared_input_tokens,required"`
+	// Number of thinking turns that were cleared.
+	ClearedThinkingTurns int64 `json:"cleared_thinking_turns,required"`
+	// The type of context management edit applied.
+	Type constant.ClearThinking20251015 `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ClearedInputTokens   respjson.Field
+		ClearedThinkingTurns respjson.Field
+		Type                 respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaClearThinking20251015EditResponse) RawJSON() string { return r.JSON.raw }
+func (r *BetaClearThinking20251015EditResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1909,7 +2019,7 @@ func NewBetaRedactedThinkingBlock(data string) BetaContentBlockParamUnion {
 	return BetaContentBlockParamUnion{OfRedactedThinking: &redactedThinking}
 }
 
-func NewBetaToolUseBlock(id string, input any, name string) BetaContentBlockParamUnion {
+func NewBetaToolUseBlock(id string, input map[string]any, name string) BetaContentBlockParamUnion {
 	var toolUse BetaToolUseBlockParam
 	toolUse.ID = id
 	toolUse.Input = input
@@ -1923,7 +2033,7 @@ func NewBetaToolResultBlock(toolUseID string) BetaContentBlockParamUnion {
 	return BetaContentBlockParamUnion{OfToolResult: &toolResult}
 }
 
-func NewBetaServerToolUseBlock(id string, input any, name BetaServerToolUseBlockParamName) BetaContentBlockParamUnion {
+func NewBetaServerToolUseBlock(id string, input map[string]any, name BetaServerToolUseBlockParamName) BetaContentBlockParamUnion {
 	var serverToolUse BetaServerToolUseBlockParam
 	serverToolUse.ID = id
 	serverToolUse.Input = input
@@ -2719,13 +2829,13 @@ type betaContentBlockParamUnionContentContent struct{ any }
 func (u betaContentBlockParamUnionContentContent) AsAny() any { return u.any }
 
 // Returns a pointer to the underlying variant's Input property, if present.
-func (u BetaContentBlockParamUnion) GetInput() *any {
+func (u BetaContentBlockParamUnion) GetInput() map[string]any {
 	if vt := u.OfToolUse; vt != nil {
-		return &vt.Input
+		return vt.Input
 	} else if vt := u.OfServerToolUse; vt != nil {
-		return &vt.Input
+		return vt.Input
 	} else if vt := u.OfMCPToolUse; vt != nil {
-		return &vt.Input
+		return vt.Input
 	}
 	return nil
 }
@@ -2796,7 +2906,7 @@ func (u *BetaContentBlockSourceContentUnionParam) asAny() any {
 
 type BetaContextManagementConfigParam struct {
 	// List of context management edits to apply
-	Edits []BetaClearToolUses20250919EditParam `json:"edits,omitzero"`
+	Edits []BetaContextManagementConfigEditUnionParam `json:"edits,omitzero"`
 	paramObj
 }
 
@@ -2808,9 +2918,131 @@ func (r *BetaContextManagementConfigParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaContextManagementConfigEditUnionParam struct {
+	OfClearToolUses20250919 *BetaClearToolUses20250919EditParam `json:",omitzero,inline"`
+	OfClearThinking20251015 *BetaClearThinking20251015EditParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaContextManagementConfigEditUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfClearToolUses20250919, u.OfClearThinking20251015)
+}
+func (u *BetaContextManagementConfigEditUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaContextManagementConfigEditUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfClearToolUses20250919) {
+		return u.OfClearToolUses20250919
+	} else if !param.IsOmitted(u.OfClearThinking20251015) {
+		return u.OfClearThinking20251015
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaContextManagementConfigEditUnionParam) GetClearAtLeast() *BetaInputTokensClearAtLeastParam {
+	if vt := u.OfClearToolUses20250919; vt != nil {
+		return &vt.ClearAtLeast
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaContextManagementConfigEditUnionParam) GetClearToolInputs() *BetaClearToolUses20250919EditClearToolInputsUnionParam {
+	if vt := u.OfClearToolUses20250919; vt != nil {
+		return &vt.ClearToolInputs
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaContextManagementConfigEditUnionParam) GetExcludeTools() []string {
+	if vt := u.OfClearToolUses20250919; vt != nil {
+		return vt.ExcludeTools
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaContextManagementConfigEditUnionParam) GetTrigger() *BetaClearToolUses20250919EditTriggerUnionParam {
+	if vt := u.OfClearToolUses20250919; vt != nil {
+		return &vt.Trigger
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaContextManagementConfigEditUnionParam) GetType() *string {
+	if vt := u.OfClearToolUses20250919; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfClearThinking20251015; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u BetaContextManagementConfigEditUnionParam) GetKeep() (res betaContextManagementConfigEditUnionParamKeep) {
+	if vt := u.OfClearToolUses20250919; vt != nil {
+		res.any = &vt.Keep
+	} else if vt := u.OfClearThinking20251015; vt != nil {
+		res.any = vt.Keep.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*BetaToolUsesKeepParam], [*string]
+type betaContextManagementConfigEditUnionParamKeep struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BetaToolUsesKeepParam:
+//	case *string:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u betaContextManagementConfigEditUnionParamKeep) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContextManagementConfigEditUnionParamKeep) GetType() *string {
+	switch vt := u.any.(type) {
+	case *BetaToolUsesKeepParam:
+		return (*string)(&vt.Type)
+	case *BetaClearThinking20251015EditKeepUnionParam:
+		return vt.GetType()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContextManagementConfigEditUnionParamKeep) GetValue() *int64 {
+	switch vt := u.any.(type) {
+	case *BetaToolUsesKeepParam:
+		return (*int64)(&vt.Value)
+	case *BetaClearThinking20251015EditKeepUnionParam:
+		return vt.GetValue()
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaContextManagementConfigEditUnionParam](
+		"type",
+		apijson.Discriminator[BetaClearToolUses20250919EditParam]("clear_tool_uses_20250919"),
+		apijson.Discriminator[BetaClearThinking20251015EditParam]("clear_thinking_20251015"),
+	)
+}
+
 type BetaContextManagementResponse struct {
 	// List of context management edits that were applied.
-	AppliedEdits []BetaClearToolUses20250919EditResponse `json:"applied_edits,required"`
+	AppliedEdits []BetaContextManagementResponseAppliedEditUnion `json:"applied_edits,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		AppliedEdits respjson.Field
@@ -2822,6 +3054,76 @@ type BetaContextManagementResponse struct {
 // Returns the unmodified JSON received from the API
 func (r BetaContextManagementResponse) RawJSON() string { return r.JSON.raw }
 func (r *BetaContextManagementResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaContextManagementResponseAppliedEditUnion contains all possible properties
+// and values from [BetaClearToolUses20250919EditResponse],
+// [BetaClearThinking20251015EditResponse].
+//
+// Use the [BetaContextManagementResponseAppliedEditUnion.AsAny] method to switch
+// on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaContextManagementResponseAppliedEditUnion struct {
+	ClearedInputTokens int64 `json:"cleared_input_tokens"`
+	// This field is from variant [BetaClearToolUses20250919EditResponse].
+	ClearedToolUses int64 `json:"cleared_tool_uses"`
+	// Any of "clear_tool_uses_20250919", "clear_thinking_20251015".
+	Type string `json:"type"`
+	// This field is from variant [BetaClearThinking20251015EditResponse].
+	ClearedThinkingTurns int64 `json:"cleared_thinking_turns"`
+	JSON                 struct {
+		ClearedInputTokens   respjson.Field
+		ClearedToolUses      respjson.Field
+		Type                 respjson.Field
+		ClearedThinkingTurns respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// anyBetaContextManagementResponseAppliedEdit is implemented by each variant of
+// [BetaContextManagementResponseAppliedEditUnion] to add type safety for the
+// return type of [BetaContextManagementResponseAppliedEditUnion.AsAny]
+type anyBetaContextManagementResponseAppliedEdit interface {
+	implBetaContextManagementResponseAppliedEditUnion()
+}
+
+func (BetaClearToolUses20250919EditResponse) implBetaContextManagementResponseAppliedEditUnion() {}
+func (BetaClearThinking20251015EditResponse) implBetaContextManagementResponseAppliedEditUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaContextManagementResponseAppliedEditUnion.AsAny().(type) {
+//	case anthropic.BetaClearToolUses20250919EditResponse:
+//	case anthropic.BetaClearThinking20251015EditResponse:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaContextManagementResponseAppliedEditUnion) AsAny() anyBetaContextManagementResponseAppliedEdit {
+	switch u.Type {
+	case "clear_tool_uses_20250919":
+		return u.AsClearToolUses20250919()
+	case "clear_thinking_20251015":
+		return u.AsClearThinking20251015()
+	}
+	return nil
+}
+
+func (u BetaContextManagementResponseAppliedEditUnion) AsClearToolUses20250919() (v BetaClearToolUses20250919EditResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaContextManagementResponseAppliedEditUnion) AsClearThinking20251015() (v BetaClearThinking20251015EditResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaContextManagementResponseAppliedEditUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaContextManagementResponseAppliedEditUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3171,8 +3473,8 @@ func (r *BetaMCPToolResultBlockContentUnion) UnmarshalJSON(data []byte) error {
 }
 
 type BetaMCPToolUseBlock struct {
-	ID    string `json:"id,required"`
-	Input any    `json:"input,required"`
+	ID    string         `json:"id,required"`
+	Input map[string]any `json:"input,required"`
 	// The name of the MCP tool
 	Name string `json:"name,required"`
 	// The name of the MCP server
@@ -3198,9 +3500,9 @@ func (r *BetaMCPToolUseBlock) UnmarshalJSON(data []byte) error {
 
 // The properties ID, Input, Name, ServerName, Type are required.
 type BetaMCPToolUseBlockParam struct {
-	ID    string `json:"id,required"`
-	Input any    `json:"input,omitzero,required"`
-	Name  string `json:"name,required"`
+	ID    string         `json:"id,required"`
+	Input map[string]any `json:"input,omitzero,required"`
+	Name  string         `json:"name,required"`
 	// The name of the MCP server
 	ServerName string `json:"server_name,required"`
 	// Create a cache control breakpoint at this content block.
@@ -4815,8 +5117,8 @@ func (r *BetaServerToolUsage) UnmarshalJSON(data []byte) error {
 }
 
 type BetaServerToolUseBlock struct {
-	ID    string `json:"id,required"`
-	Input any    `json:"input,required"`
+	ID    string         `json:"id,required"`
+	Input map[string]any `json:"input,required"`
 	// Any of "web_search", "web_fetch", "code_execution", "bash_code_execution",
 	// "text_editor_code_execution".
 	Name BetaServerToolUseBlockName `json:"name,required"`
@@ -4850,8 +5152,8 @@ const (
 
 // The properties ID, Input, Name, Type are required.
 type BetaServerToolUseBlockParam struct {
-	ID    string `json:"id,required"`
-	Input any    `json:"input,omitzero,required"`
+	ID    string         `json:"id,required"`
+	Input map[string]any `json:"input,omitzero,required"`
 	// Any of "web_search", "web_fetch", "code_execution", "bash_code_execution",
 	// "text_editor_code_execution".
 	Name BetaServerToolUseBlockParamName `json:"name,omitzero,required"`
@@ -6000,6 +6302,22 @@ func (r *BetaThinkingDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Type, Value are required.
+type BetaThinkingTurnsParam struct {
+	Value int64 `json:"value,required"`
+	// This field can be elided, and will marshal its zero value as "thinking_turns".
+	Type constant.ThinkingTurns `json:"type,required"`
+	paramObj
+}
+
+func (r BetaThinkingTurnsParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaThinkingTurnsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaThinkingTurnsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The properties InputSchema, Name are required.
 type BetaToolParam struct {
 	// [JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.
@@ -6040,8 +6358,8 @@ func (r *BetaToolParam) UnmarshalJSON(data []byte) error {
 //
 // The property Type is required.
 type BetaToolInputSchemaParam struct {
-	Properties any      `json:"properties,omitzero"`
-	Required   []string `json:"required,omitzero"`
+	Properties map[string]any `json:"properties,omitzero"`
+	Required   []string       `json:"required,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
 	Type        constant.Object `json:"type,required"`
 	ExtraFields map[string]any  `json:"-"`
@@ -7014,7 +7332,7 @@ func (u BetaToolUnionParam) GetBlockedDomains() []string {
 
 type BetaToolUseBlock struct {
 	ID    string           `json:"id,required"`
-	Input any              `json:"input,required"`
+	Input map[string]any   `json:"input,required"`
 	Name  string           `json:"name,required"`
 	Type  constant.ToolUse `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -7036,9 +7354,9 @@ func (r *BetaToolUseBlock) UnmarshalJSON(data []byte) error {
 
 // The properties ID, Input, Name, Type are required.
 type BetaToolUseBlockParam struct {
-	ID    string `json:"id,required"`
-	Input any    `json:"input,omitzero,required"`
-	Name  string `json:"name,required"`
+	ID    string         `json:"id,required"`
+	Input map[string]any `json:"input,omitzero,required"`
+	Name  string         `json:"name,required"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_use".

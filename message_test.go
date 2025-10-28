@@ -58,15 +58,9 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		Tools: []anthropic.ToolUnionParam{{
 			OfTool: &anthropic.ToolParam{
 				InputSchema: anthropic.ToolInputSchemaParam{
-					Properties: map[string]interface{}{
-						"location": map[string]interface{}{
-							"description": "The city and state, e.g. San Francisco, CA",
-							"type":        "string",
-						},
-						"unit": map[string]interface{}{
-							"description": "Unit for the output - one of (celsius, fahrenheit)",
-							"type":        "string",
-						},
+					Properties: map[string]any{
+						"location": "bar",
+						"unit":     "bar",
 					},
 					Required: []string{"location"},
 				},
@@ -142,15 +136,9 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 		Tools: []anthropic.MessageCountTokensToolUnionParam{{
 			OfTool: &anthropic.ToolParam{
 				InputSchema: anthropic.ToolInputSchemaParam{
-					Properties: map[string]interface{}{
-						"location": map[string]interface{}{
-							"description": "The city and state, e.g. San Francisco, CA",
-							"type":        "string",
-						},
-						"unit": map[string]interface{}{
-							"description": "Unit for the output - one of (celsius, fahrenheit)",
-							"type":        "string",
-						},
+					Properties: map[string]any{
+						"location": "bar",
+						"unit":     "bar",
 					},
 					Required: []string{"location"},
 				},

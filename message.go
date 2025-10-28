@@ -782,7 +782,7 @@ func NewRedactedThinkingBlock(data string) ContentBlockParamUnion {
 	return ContentBlockParamUnion{OfRedactedThinking: &redactedThinking}
 }
 
-func NewToolUseBlock(id string, input any, name string) ContentBlockParamUnion {
+func NewToolUseBlock(id string, input map[string]any, name string) ContentBlockParamUnion {
 	var toolUse ToolUseBlockParam
 	toolUse.ID = id
 	toolUse.Input = input
@@ -796,7 +796,7 @@ func NewToolResultBlock(toolUseID string) ContentBlockParamUnion {
 	return ContentBlockParamUnion{OfToolResult: &toolResult}
 }
 
-func NewServerToolUseBlock(id string, input any) ContentBlockParamUnion {
+func NewServerToolUseBlock(id string, input map[string]any) ContentBlockParamUnion {
 	var serverToolUse ServerToolUseBlockParam
 	serverToolUse.ID = id
 	serverToolUse.Input = input
@@ -1164,11 +1164,11 @@ type contentBlockParamUnionContent struct{ any }
 func (u contentBlockParamUnionContent) AsAny() any { return u.any }
 
 // Returns a pointer to the underlying variant's Input property, if present.
-func (u ContentBlockParamUnion) GetInput() *any {
+func (u ContentBlockParamUnion) GetInput() map[string]any {
 	if vt := u.OfToolUse; vt != nil {
-		return &vt.Input
+		return vt.Input
 	} else if vt := u.OfServerToolUse; vt != nil {
-		return &vt.Input
+		return vt.Input
 	}
 	return nil
 }
@@ -2562,7 +2562,7 @@ func (r *ServerToolUsage) UnmarshalJSON(data []byte) error {
 
 type ServerToolUseBlock struct {
 	ID    string                 `json:"id,required"`
-	Input any                    `json:"input,required"`
+	Input map[string]any         `json:"input,required"`
 	Name  constant.WebSearch     `json:"name,required"`
 	Type  constant.ServerToolUse `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -2584,8 +2584,8 @@ func (r *ServerToolUseBlock) UnmarshalJSON(data []byte) error {
 
 // The properties ID, Input, Name, Type are required.
 type ServerToolUseBlockParam struct {
-	ID    string `json:"id,required"`
-	Input any    `json:"input,omitzero,required"`
+	ID    string         `json:"id,required"`
+	Input map[string]any `json:"input,omitzero,required"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "web_search".
@@ -3217,8 +3217,8 @@ func (r *ToolParam) UnmarshalJSON(data []byte) error {
 //
 // The property Type is required.
 type ToolInputSchemaParam struct {
-	Properties any      `json:"properties,omitzero"`
-	Required   []string `json:"required,omitzero"`
+	Properties map[string]any `json:"properties,omitzero"`
+	Required   []string       `json:"required,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
 	Type        constant.Object `json:"type,required"`
 	ExtraFields map[string]any  `json:"-"`
@@ -3918,7 +3918,7 @@ func (u ToolUnionParam) GetCacheControl() *CacheControlEphemeralParam {
 
 type ToolUseBlock struct {
 	ID    string           `json:"id,required"`
-	Input any              `json:"input,required"`
+	Input map[string]any   `json:"input,required"`
 	Name  string           `json:"name,required"`
 	Type  constant.ToolUse `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -3940,9 +3940,9 @@ func (r *ToolUseBlock) UnmarshalJSON(data []byte) error {
 
 // The properties ID, Input, Name, Type are required.
 type ToolUseBlockParam struct {
-	ID    string `json:"id,required"`
-	Input any    `json:"input,omitzero,required"`
-	Name  string `json:"name,required"`
+	ID    string         `json:"id,required"`
+	Input map[string]any `json:"input,omitzero,required"`
+	Name  string         `json:"name,required"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_use".

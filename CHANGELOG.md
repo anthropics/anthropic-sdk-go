@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.16.0 (2025-10-29)
+
+Full Changelog: [v1.15.0...v1.16.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.15.0...v1.16.0)
+
+### Features
+
+* **api:** add ability to clear thinking in context management ([6082754](https://github.com/anthropics/anthropic-sdk-go/commit/6082754e9b6a04570a93efdb5339853c71f1fe94))
+
 ## 1.15.0 (2025-10-28)
 
 Full Changelog: [v1.14.0...v1.15.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.14.0...v1.15.0)

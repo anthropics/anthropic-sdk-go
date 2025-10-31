@@ -203,6 +203,15 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 				body, _ = sjson.SetBytes(body, "anthropic_version", DefaultVersion)
 			}
 
+			// pull the betas off of the header (if set) and put them in the body
+			if betaHeader := r.Header.Values("anthropic-beta"); len(betaHeader) > 0 {
+				r.Header.Del("anthropic-beta")
+				body, err = sjson.SetBytes(body, "anthropic_beta", betaHeader)
+				if err != nil {
+					return nil, err
+				}
+			}
+
 			if r.Method == http.MethodPost && DefaultEndpoints[r.URL.Path] {
 				model := gjson.GetBytes(body, "model").String()
 				stream := gjson.GetBytes(body, "stream").Bool()

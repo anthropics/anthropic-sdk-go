@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.17.0 (2025-11-01)
+
+Full Changelog: [v1.16.0...v1.17.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.16.0...v1.17.0)
+
+### Features
+
+* **bedrock:** re-route beta headers through request body ([00a2bf3](https://github.com/anthropics/anthropic-sdk-go/commit/00a2bf35b34aa49f1514493cf0638b467c4f4eec))
+
 ## 1.16.0 (2025-10-29)
 
 Full Changelog: [v1.15.0...v1.16.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.15.0...v1.16.0)

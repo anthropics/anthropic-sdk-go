@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.18.0 (2025-11-14)
+
+Full Changelog: [v1.17.0...v1.18.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.17.0...v1.18.0)
+
+### Features
+
+* **api:** add support for structured outputs beta ([fb9cfb4](https://github.com/anthropics/anthropic-sdk-go/commit/fb9cfb4e4b571d5fec7da9874610aa8820aee80c))
+
+
+### Chores
+
+* bump gjson version ([69b5e0e](https://github.com/anthropics/anthropic-sdk-go/commit/69b5e0e40757884bece66397fb6ca769f4e00118))
+
 ## 1.17.0 (2025-11-05)
 
 Full Changelog: [v1.16.0...v1.17.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.16.0...v1.17.0)

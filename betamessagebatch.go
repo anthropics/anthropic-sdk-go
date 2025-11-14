@@ -49,7 +49,7 @@ func NewBetaMessageBatchService(opts ...option.RequestOption) (r BetaMessageBatc
 // can take up to 24 hours to complete.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBatchNewParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
@@ -66,7 +66,7 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 // `results_url` field in the response.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string, query BetaMessageBatchGetParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
@@ -86,7 +86,7 @@ func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string
 // returned first.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBatchListParams, opts ...option.RequestOption) (res *pagination.Page[BetaMessageBatch], err error) {
 	var raw *http.Response
 	for _, v := range params.Betas {
@@ -111,7 +111,7 @@ func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBa
 // returned first.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *BetaMessageBatchService) ListAutoPaging(ctx context.Context, params BetaMessageBatchListParams, opts ...option.RequestOption) *pagination.PageAutoPager[BetaMessageBatch] {
 	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }
@@ -122,7 +122,7 @@ func (r *BetaMessageBatchService) ListAutoPaging(ctx context.Context, params Bet
 // like to delete an in-progress batch, you must first cancel it.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID string, body BetaMessageBatchDeleteParams, opts ...option.RequestOption) (res *BetaDeletedMessageBatch, err error) {
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
@@ -149,7 +149,7 @@ func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID str
 // non-interruptible.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID string, body BetaMessageBatchCancelParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
@@ -172,7 +172,7 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 // requests. Use the `custom_id` field to match results to requests.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *BetaMessageBatchService) ResultsStreaming(ctx context.Context, messageBatchID string, query BetaMessageBatchResultsParams, opts ...option.RequestOption) (stream *jsonl.Stream[BetaMessageBatchIndividualResponse]) {
 	var (
 		raw *http.Response
@@ -679,6 +679,8 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.
 	Metadata BetaMetadataParam `json:"metadata,omitzero"`
+	// A schema to specify Claude's output format in responses.
+	OutputFormat BetaJSONOutputFormatParam `json:"output_format,omitzero"`
 	// Determines whether to use priority capacity (if available) or standard capacity
 	// for this request.
 	//

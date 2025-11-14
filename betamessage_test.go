@@ -80,6 +80,11 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		Metadata: anthropic.BetaMetadataParam{
 			UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		},
+		OutputFormat: anthropic.BetaJSONOutputFormatParam{
+			Schema: map[string]any{
+				"foo": "bar",
+			},
+		},
 		ServiceTier:   anthropic.BetaMessageNewParamsServiceTierAuto,
 		StopSequences: []string{"string"},
 		System: []anthropic.BetaTextBlockParam{{Text: "x", CacheControl: anthropic.BetaCacheControlEphemeralParam{TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m}, Citations: []anthropic.BetaTextCitationParamUnion{{
@@ -110,6 +115,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 					TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 				},
 				Description: anthropic.String("Get the current weather in a given location"),
+				Strict:      anthropic.Bool(true),
 				Type:        anthropic.BetaToolTypeCustom,
 			},
 		}},
@@ -179,6 +185,11 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 				Enabled:      anthropic.Bool(true),
 			},
 		}},
+		OutputFormat: anthropic.BetaJSONOutputFormatParam{
+			Schema: map[string]any{
+				"foo": "bar",
+			},
+		},
 		System: anthropic.BetaMessageCountTokensParamsSystemUnion{
 			OfBetaTextBlockArray: []anthropic.BetaTextBlockParam{{
 				Text: "Today's date is 2024-06-01.",
@@ -220,6 +231,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 					TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 				},
 				Description: anthropic.String("Get the current weather in a given location"),
+				Strict:      anthropic.Bool(true),
 				Type:        anthropic.BetaToolTypeCustom,
 			},
 		}},

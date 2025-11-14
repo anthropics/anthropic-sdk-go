@@ -47,7 +47,8 @@ func NewBetaMessageService(opts ...option.RequestOption) (r BetaMessageService) 
 // The Messages API can be used for either single queries or stateless multi-turn
 // conversations.
 //
-// Learn more about the Messages API in our [user guide](/en/docs/initial-setup)
+// Learn more about the Messages API in our
+// [user guide](https://docs.claude.com/en/docs/initial-setup)
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParams, opts ...option.RequestOption) (res *BetaMessage, err error) {
@@ -66,7 +67,8 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 // The Messages API can be used for either single queries or stateless multi-turn
 // conversations.
 //
-// Learn more about the Messages API in our [user guide](/en/docs/initial-setup)
+// Learn more about the Messages API in our
+// [user guide](https://docs.claude.com/en/docs/initial-setup)
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[BetaRawMessageStreamEventUnion]) {
@@ -90,7 +92,7 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 // including tools, images, and documents, without creating it.
 //
 // Learn more about token counting in our
-// [user guide](/en/docs/build-with-claude/token-counting)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/token-counting)
 func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessageCountTokensParams, opts ...option.RequestOption) (res *BetaMessageTokensCount, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
@@ -1277,6 +1279,7 @@ func (r *BetaCodeExecutionResultBlockParam) UnmarshalJSON(data []byte) error {
 
 // The properties Name, Type are required.
 type BetaCodeExecutionTool20250522Param struct {
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -1301,6 +1304,7 @@ func (r *BetaCodeExecutionTool20250522Param) UnmarshalJSON(data []byte) error {
 
 // The properties Name, Type are required.
 type BetaCodeExecutionTool20250825Param struct {
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -3413,6 +3417,23 @@ func (r *BetaInputTokensTriggerParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Schema, Type are required.
+type BetaJSONOutputFormatParam struct {
+	// The JSON schema of the format
+	Schema map[string]any `json:"schema,omitzero,required"`
+	// This field can be elided, and will marshal its zero value as "json_schema".
+	Type constant.JSONSchema `json:"type,required"`
+	paramObj
+}
+
+func (r BetaJSONOutputFormatParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaJSONOutputFormatParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaJSONOutputFormatParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaMCPToolResultBlock struct {
 	Content   BetaMCPToolResultBlockContentUnion `json:"content,required"`
 	IsError   bool                               `json:"is_error,required"`
@@ -3522,6 +3543,7 @@ func (r *BetaMCPToolUseBlockParam) UnmarshalJSON(data []byte) error {
 
 // The properties Name, Type are required.
 type BetaMemoryTool20250818Param struct {
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -6336,6 +6358,7 @@ type BetaToolParam struct {
 	// perform. You can use natural language descriptions to reinforce important
 	// aspects of the tool input JSON schema.
 	Description param.Opt[string] `json:"description,omitzero"`
+	Strict      param.Opt[bool]   `json:"strict,omitzero"`
 	// Any of "custom".
 	Type BetaToolType `json:"type,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -6382,6 +6405,7 @@ const (
 
 // The properties Name, Type are required.
 type BetaToolBash20241022Param struct {
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -6405,6 +6429,7 @@ func (r *BetaToolBash20241022Param) UnmarshalJSON(data []byte) error {
 
 // The properties Name, Type are required.
 type BetaToolBash20250124Param struct {
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -6606,6 +6631,7 @@ type BetaToolComputerUse20241022Param struct {
 	DisplayWidthPx int64 `json:"display_width_px,required"`
 	// The X11 display number (e.g. 0, 1) for the display.
 	DisplayNumber param.Opt[int64] `json:"display_number,omitzero"`
+	Strict        param.Opt[bool]  `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -6636,6 +6662,7 @@ type BetaToolComputerUse20250124Param struct {
 	DisplayWidthPx int64 `json:"display_width_px,required"`
 	// The X11 display number (e.g. 0, 1) for the display.
 	DisplayNumber param.Opt[int64] `json:"display_number,omitzero"`
+	Strict        param.Opt[bool]  `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -6922,6 +6949,7 @@ func init() {
 
 // The properties Name, Type are required.
 type BetaToolTextEditor20241022Param struct {
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -6947,6 +6975,7 @@ func (r *BetaToolTextEditor20241022Param) UnmarshalJSON(data []byte) error {
 
 // The properties Name, Type are required.
 type BetaToolTextEditor20250124Param struct {
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -6972,6 +7001,7 @@ func (r *BetaToolTextEditor20250124Param) UnmarshalJSON(data []byte) error {
 
 // The properties Name, Type are required.
 type BetaToolTextEditor20250429Param struct {
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -7000,6 +7030,7 @@ type BetaToolTextEditor20250728Param struct {
 	// Maximum number of characters to display when viewing a file. If not specified,
 	// defaults to displaying the full file.
 	MaxCharacters param.Opt[int64] `json:"max_characters,omitzero"`
+	Strict        param.Opt[bool]  `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -7196,6 +7227,40 @@ func (u BetaToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfWebFetchTool20250910; vt != nil {
 		return (*string)(&vt.Name)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaToolUnionParam) GetStrict() *bool {
+	if vt := u.OfTool; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfBashTool20241022; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfBashTool20250124; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfCodeExecutionTool20250522; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfCodeExecutionTool20250825; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfComputerUseTool20241022; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfMemoryTool20250818; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfComputerUseTool20250124; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20241022; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250124; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250429; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250728; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfWebSearchTool20250305; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfWebFetchTool20250910; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
 	}
 	return nil
 }
@@ -7533,6 +7598,7 @@ type BetaWebFetchTool20250910Param struct {
 	MaxContentTokens param.Opt[int64] `json:"max_content_tokens,omitzero"`
 	// Maximum number of times the tool can be used in the API request.
 	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
+	Strict  param.Opt[bool]  `json:"strict,omitzero"`
 	// List of domains to allow fetching from
 	AllowedDomains []string `json:"allowed_domains,omitzero"`
 	// List of domains to block fetching from
@@ -7812,6 +7878,7 @@ func (r *BetaWebSearchResultBlockParam) UnmarshalJSON(data []byte) error {
 type BetaWebSearchTool20250305Param struct {
 	// Maximum number of times the tool can be used in the API request.
 	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
+	Strict  param.Opt[bool]  `json:"strict,omitzero"`
 	// If provided, only these domains will be included in results. Cannot be used
 	// alongside `blocked_domains`.
 	AllowedDomains []string `json:"allowed_domains,omitzero"`
@@ -8152,6 +8219,8 @@ type BetaMessageNewParams struct {
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.
 	Metadata BetaMetadataParam `json:"metadata,omitzero"`
+	// A schema to specify Claude's output format in responses.
+	OutputFormat BetaJSONOutputFormatParam `json:"output_format,omitzero"`
 	// Determines whether to use priority capacity (if available) or standard capacity
 	// for this request.
 	//
@@ -8403,6 +8472,8 @@ type BetaMessageCountTokensParams struct {
 	ContextManagement BetaContextManagementConfigParam `json:"context_management,omitzero"`
 	// MCP servers to be utilized in this request
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
+	// A schema to specify Claude's output format in responses.
+	OutputFormat BetaJSONOutputFormatParam `json:"output_format,omitzero"`
 	// System prompt.
 	//
 	// A system prompt is a way of providing context and instructions to Claude, such
@@ -8694,6 +8765,40 @@ func (u BetaMessageCountTokensParamsToolUnion) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfWebFetchTool20250910; vt != nil {
 		return (*string)(&vt.Name)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageCountTokensParamsToolUnion) GetStrict() *bool {
+	if vt := u.OfTool; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfBashTool20241022; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfBashTool20250124; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfCodeExecutionTool20250522; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfCodeExecutionTool20250825; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfComputerUseTool20241022; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfMemoryTool20250818; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfComputerUseTool20250124; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20241022; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250124; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250429; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250728; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfWebSearchTool20250305; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfWebFetchTool20250910; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
 	}
 	return nil
 }

@@ -72,6 +72,7 @@ type InputJSONDelta string                          // Always "input_json_delta"
 type InputTokens string                             // Always "input_tokens"
 type Insert string                                  // Always "insert"
 type InvalidRequestError string                     // Always "invalid_request_error"
+type JSONSchema string                              // Always "json_schema"
 type MCPToolResult string                           // Always "mcp_tool_result"
 type MCPToolUse string                              // Always "mcp_tool_use"
 type Memory string                                  // Always "memory"
@@ -200,6 +201,7 @@ func (c InputJSONDelta) Default() InputJSONDelta             { return "input_jso
 func (c InputTokens) Default() InputTokens                   { return "input_tokens" }
 func (c Insert) Default() Insert                             { return "insert" }
 func (c InvalidRequestError) Default() InvalidRequestError   { return "invalid_request_error" }
+func (c JSONSchema) Default() JSONSchema                     { return "json_schema" }
 func (c MCPToolResult) Default() MCPToolResult               { return "mcp_tool_result" }
 func (c MCPToolUse) Default() MCPToolUse                     { return "mcp_tool_use" }
 func (c Memory) Default() Memory                             { return "memory" }
@@ -334,6 +336,7 @@ func (c InputJSONDelta) MarshalJSON() ([]byte, error)                      { ret
 func (c InputTokens) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Insert) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c InvalidRequestError) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c JSONSchema) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c MCPToolResult) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c MCPToolUse) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Memory) MarshalJSON() ([]byte, error)                              { return marshalString(c) }

@@ -50,7 +50,7 @@ func NewMessageBatchService(opts ...option.RequestOption) (r MessageBatchService
 // can take up to 24 hours to complete.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) New(ctx context.Context, body MessageBatchNewParams, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/batches"
@@ -63,7 +63,7 @@ func (r *MessageBatchService) New(ctx context.Context, body MessageBatchNewParam
 // `results_url` field in the response.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
@@ -79,7 +79,7 @@ func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, op
 // returned first.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) List(ctx context.Context, query MessageBatchListParams, opts ...option.RequestOption) (res *pagination.Page[MessageBatch], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
@@ -101,7 +101,7 @@ func (r *MessageBatchService) List(ctx context.Context, query MessageBatchListPa
 // returned first.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) ListAutoPaging(ctx context.Context, query MessageBatchListParams, opts ...option.RequestOption) *pagination.PageAutoPager[MessageBatch] {
 	return pagination.NewPageAutoPager(r.List(ctx, query, opts...))
 }
@@ -112,7 +112,7 @@ func (r *MessageBatchService) ListAutoPaging(ctx context.Context, query MessageB
 // like to delete an in-progress batch, you must first cancel it.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *DeletedMessageBatch, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
@@ -135,7 +135,7 @@ func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string,
 // non-interruptible.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
@@ -154,7 +154,7 @@ func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string,
 // requests. Use the `custom_id` field to match results to requests.
 //
 // Learn more about the Message Batches API in our
-// [user guide](/en/docs/build-with-claude/batch-processing)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
 func (r *MessageBatchService) ResultsStreaming(ctx context.Context, messageBatchID string, opts ...option.RequestOption) (stream *jsonl.Stream[MessageBatchIndividualResponse]) {
 	var (
 		raw *http.Response

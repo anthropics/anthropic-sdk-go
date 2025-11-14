@@ -49,7 +49,8 @@ func NewMessageService(opts ...option.RequestOption) (r MessageService) {
 // The Messages API can be used for either single queries or stateless multi-turn
 // conversations.
 //
-// Learn more about the Messages API in our [user guide](/en/docs/initial-setup)
+// Learn more about the Messages API in our
+// [user guide](https://docs.claude.com/en/docs/initial-setup)
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *MessageService) New(ctx context.Context, body MessageNewParams, opts ...option.RequestOption) (res *Message, err error) {
@@ -74,7 +75,8 @@ func (r *MessageService) New(ctx context.Context, body MessageNewParams, opts ..
 // The Messages API can be used for either single queries or stateless multi-turn
 // conversations.
 //
-// Learn more about the Messages API in our [user guide](/en/docs/initial-setup)
+// Learn more about the Messages API in our
+// [user guide](https://docs.claude.com/en/docs/initial-setup)
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[MessageStreamEventUnion]) {
@@ -95,7 +97,7 @@ func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams
 // including tools, images, and documents, without creating it.
 //
 // Learn more about token counting in our
-// [user guide](/en/docs/build-with-claude/token-counting)
+// [user guide](https://docs.claude.com/en/docs/build-with-claude/token-counting)
 func (r *MessageService) CountTokens(ctx context.Context, body MessageCountTokensParams, opts ...option.RequestOption) (res *MessageTokensCount, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens"

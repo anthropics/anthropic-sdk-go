@@ -83,6 +83,11 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				Metadata: anthropic.BetaMetadataParam{
 					UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				},
+				OutputFormat: anthropic.BetaJSONOutputFormatParam{
+					Schema: map[string]any{
+						"foo": "bar",
+					},
+				},
 				ServiceTier:   "auto",
 				StopSequences: []string{"string"},
 				Stream:        anthropic.Bool(true),
@@ -114,6 +119,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 							TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 						},
 						Description: anthropic.String("Get the current weather in a given location"),
+						Strict:      anthropic.Bool(true),
 						Type:        anthropic.BetaToolTypeCustom,
 					},
 				}},

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.18.1 (2025-11-19)
+
+Full Changelog: [v1.18.0...v1.18.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.18.0...v1.18.1)
+
+### Bug Fixes
+
+* **structured outputs:** use correct beta header ([09ec0a6](https://github.com/anthropics/anthropic-sdk-go/commit/09ec0a647b1a108bb7c74e4c7b1016502ca781bb))
+
 ## 1.18.0 (2025-11-14)
 
 Full Changelog: [v1.17.0...v1.18.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.17.0...v1.18.0)

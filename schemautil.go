@@ -24,7 +24,7 @@ import (
 //	outputFormat := BetaJSONSchemaOutputFormat(schema)
 //
 //	msg, _ := client.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
-//	    Model: anthropic.Model("claude-sonnet-4-5-20250929-structured-outputs"),
+//	    Model: anthropic.Model("claude-sonnet-4-5"),
 //	    Messages: anthropic.F([]anthropic.BetaMessageParam{...}),
 //	    MaxTokens: 1024,
 //	    OutputFormat: outputFormat,

@@ -31,11 +31,11 @@ func main() {
 	}
 
 	msg, err := client.Beta.Messages.New(context.TODO(), anthropic.BetaMessageNewParams{
-		Model:        anthropic.Model("claude-sonnet-4-5-20250929-structured-outputs"),
+		Model:        anthropic.Model("claude-sonnet-4-5"),
 		MaxTokens:    1024,
 		Messages:     messages,
 		OutputFormat: anthropic.BetaJSONSchemaOutputFormat(schemaMap),
-		Betas:        []anthropic.AnthropicBeta{"structured-outputs-2025-09-17"},
+		Betas:        []anthropic.AnthropicBeta{"structured-outputs-2025-11-13"},
 	})
 
 	if err != nil {

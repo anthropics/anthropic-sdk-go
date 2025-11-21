@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -153,9 +154,7 @@ func (e *eventstreamDecoder) Event() ssestream.Event {
 	return e.evt
 }
 
-var (
-	_ ssestream.Decoder = &eventstreamDecoder{}
-)
+var _ ssestream.Decoder = &eventstreamDecoder{}
 
 func init() {
 	ssestream.RegisterDecoder("application/vnd.amazon.eventstream", func(rc io.ReadCloser) ssestream.Decoder {
@@ -240,15 +239,28 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 		}
 
 		ctx := r.Context()
-		credentials, err := cfg.Credentials.Retrieve(ctx)
-		if err != nil {
-			return nil, err
-		}
 
-		hash := sha256.Sum256(body)
-		err = signer.SignHTTP(ctx, credentials, r, hex.EncodeToString(hash[:]), "bedrock", cfg.Region, time.Now())
-		if err != nil {
-			return nil, err
+		switch {
+		case os.Getenv("AWS_BEARER_TOKEN_BEDROCK") != "":
+			r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv("AWS_BEARER_TOKEN_BEDROCK")))
+		case cfg.Credentials != nil:
+			credentials, err := cfg.Credentials.Retrieve(ctx)
+			if err != nil {
+				return nil, err
+			}
+			hash := sha256.Sum256(body)
+			err = signer.SignHTTP(ctx, credentials, r, hex.EncodeToString(hash[:]), "bedrock", cfg.Region, time.Now())
+			if err != nil {
+				return nil, err
+			}
+		case cfg.BearerAuthTokenProvider != nil:
+			token, err := cfg.BearerAuthTokenProvider.RetrieveBearerToken(ctx)
+			if err != nil {
+				return nil, err
+			}
+			r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token.Value))
+		default:
+			return nil, fmt.Errorf("no credentials or bearer token provider given")
 		}
 
 		return next(r)

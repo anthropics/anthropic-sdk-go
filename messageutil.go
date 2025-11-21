@@ -116,6 +116,16 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 
 // ToParam converters
 
+func (r Message) ToParam() MessageParam {
+	var p MessageParam
+	p.Role = MessageParamRole(r.Role)
+	p.Content = make([]ContentBlockParamUnion, len(r.Content))
+	for i, c := range r.Content {
+		p.Content[i] = c.ToParam()
+	}
+	return p
+}
+
 func (r ContentBlockUnion) ToParam() ContentBlockParamUnion {
 	switch variant := r.AsAny().(type) {
 	case TextBlock:
@@ -130,18 +140,15 @@ func (r ContentBlockUnion) ToParam() ContentBlockParamUnion {
 	case RedactedThinkingBlock:
 		p := variant.ToParam()
 		return ContentBlockParamUnion{OfRedactedThinking: &p}
+	case ServerToolUseBlock:
+		p := variant.ToParam()
+		return ContentBlockParamUnion{OfServerToolUse: &p}
+	case WebSearchToolResultBlock:
+		p := variant.ToParam()
+		return ContentBlockParamUnion{OfWebSearchToolResult: &p}
+	default:
+		panic(fmt.Sprintf("unexpected anthropic.anyContentBlock: %#v", variant))
 	}
-	return ContentBlockParamUnion{}
-}
-
-func (r Message) ToParam() MessageParam {
-	var p MessageParam
-	p.Role = MessageParamRole(r.Role)
-	p.Content = make([]ContentBlockParamUnion, len(r.Content))
-	for i, c := range r.Content {
-		p.Content[i] = c.ToParam()
-	}
-	return p
 }
 
 func (r RedactedThinkingBlock) ToParam() RedactedThinkingBlockParam {
@@ -195,10 +202,29 @@ func (r TextBlock) ToParam() TextBlockParam {
 			citationParam.Type = citationVariant.Type
 			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
 			citationParam.CitedText = citationVariant.CitedText
+
 			citationParam.DocumentIndex = citationVariant.DocumentIndex
 			citationParam.EndBlockIndex = citationVariant.EndBlockIndex
 			citationParam.StartBlockIndex = citationVariant.StartBlockIndex
 			p.Citations[i] = TextCitationParamUnion{OfContentBlockLocation: &citationParam}
+		case CitationsSearchResultLocation:
+			var citationParam CitationSearchResultLocationParam
+			citationParam.Type = citationVariant.Type
+			citationParam.CitedText = citationVariant.CitedText
+			citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
+
+			citationParam.EndBlockIndex = citationVariant.EndBlockIndex
+			citationParam.StartBlockIndex = citationVariant.StartBlockIndex
+			citationParam.Source = citationVariant.Source
+			p.Citations[i] = TextCitationParamUnion{OfSearchResultLocation: &citationParam}
+		case CitationsWebSearchResultLocation:
+			var citationParam CitationWebSearchResultLocationParam
+			citationParam.Type = citationVariant.Type
+			citationParam.CitedText = citationVariant.CitedText
+			citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
+			p.Citations[i] = TextCitationParamUnion{OfWebSearchResultLocation: &citationParam}
+		default:
+			panic(fmt.Sprintf("unexpected anthropic.anyTextCitation: %#v", citationVariant))
 		}
 	}
 	return p
@@ -209,5 +235,47 @@ func (r ThinkingBlock) ToParam() ThinkingBlockParam {
 	p.Type = r.Type
 	p.Signature = r.Signature
 	p.Thinking = r.Thinking
+	return p
+}
+
+func (r ServerToolUseBlock) ToParam() ServerToolUseBlockParam {
+	var p ServerToolUseBlockParam
+	p.Type = r.Type
+	p.ID = r.ID
+	p.Input = r.Input
+	return p
+}
+
+func (r WebSearchToolResultBlock) ToParam() WebSearchToolResultBlockParam {
+	var p WebSearchToolResultBlockParam
+	p.Type = r.Type
+	p.ToolUseID = r.ToolUseID
+	p.Content = r.Content.ToParam()
+	return p
+}
+
+func (r WebSearchResultBlock) ToParam() WebSearchResultBlockParam {
+	var p WebSearchResultBlockParam
+	p.Type = r.Type
+	p.EncryptedContent = r.EncryptedContent
+	p.Title = r.Title
+	p.URL = r.URL
+	p.PageAge = paramutil.ToOpt(r.PageAge, r.JSON.PageAge)
+	return p
+}
+
+func (r WebSearchToolResultBlockContentUnion) ToParam() WebSearchToolResultBlockParamContentUnion {
+	var p WebSearchToolResultBlockParamContentUnion
+
+	if len(r.OfWebSearchResultBlockArray) > 0 {
+		for _, block := range r.OfWebSearchResultBlockArray {
+			p.OfWebSearchToolResultBlockItem = append(p.OfWebSearchToolResultBlockItem, block.ToParam())
+		}
+		return p
+	}
+
+	p.OfRequestWebSearchToolResultError = &WebSearchToolRequestErrorParam{
+		ErrorCode: WebSearchToolRequestErrorErrorCode(r.ErrorCode),
+	}
 	return p
 }

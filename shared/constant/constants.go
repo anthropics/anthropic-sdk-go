@@ -51,6 +51,7 @@ type Completion string                              // Always "completion"
 type Computer string                                // Always "computer"
 type Computer20241022 string                        // Always "computer_20241022"
 type Computer20250124 string                        // Always "computer_20250124"
+type Computer20251124 string                        // Always "computer_20251124"
 type ContainerUpload string                         // Always "container_upload"
 type Content string                                 // Always "content"
 type ContentBlockDelta string                       // Always "content_block_delta"
@@ -59,6 +60,7 @@ type ContentBlockStart string                       // Always "content_block_sta
 type ContentBlockStop string                        // Always "content_block_stop"
 type Create string                                  // Always "create"
 type Delete string                                  // Always "delete"
+type Direct string                                  // Always "direct"
 type Disabled string                                // Always "disabled"
 type Document string                                // Always "document"
 type Enabled string                                 // Always "enabled"
@@ -75,6 +77,7 @@ type InvalidRequestError string                     // Always "invalid_request_e
 type JSONSchema string                              // Always "json_schema"
 type MCPToolResult string                           // Always "mcp_tool_result"
 type MCPToolUse string                              // Always "mcp_tool_use"
+type MCPToolset string                              // Always "mcp_toolset"
 type Memory string                                  // Always "memory"
 type Memory20250818 string                          // Always "memory_20250818"
 type Message string                                 // Always "message"
@@ -118,7 +121,13 @@ type ThinkingDelta string                           // Always "thinking_delta"
 type ThinkingTurns string                           // Always "thinking_turns"
 type TimeoutError string                            // Always "timeout_error"
 type Tool string                                    // Always "tool"
+type ToolReference string                           // Always "tool_reference"
 type ToolResult string                              // Always "tool_result"
+type ToolSearchToolBm25 string                      // Always "tool_search_tool_bm25"
+type ToolSearchToolRegex string                     // Always "tool_search_tool_regex"
+type ToolSearchToolResult string                    // Always "tool_search_tool_result"
+type ToolSearchToolResultError string               // Always "tool_search_tool_result_error"
+type ToolSearchToolSearchResult string              // Always "tool_search_tool_search_result"
 type ToolUse string                                 // Always "tool_use"
 type ToolUses string                                // Always "tool_uses"
 type URL string                                     // Always "url"
@@ -180,6 +189,7 @@ func (c Completion) Default() Completion                     { return "completio
 func (c Computer) Default() Computer                         { return "computer" }
 func (c Computer20241022) Default() Computer20241022         { return "computer_20241022" }
 func (c Computer20250124) Default() Computer20250124         { return "computer_20250124" }
+func (c Computer20251124) Default() Computer20251124         { return "computer_20251124" }
 func (c ContainerUpload) Default() ContainerUpload           { return "container_upload" }
 func (c Content) Default() Content                           { return "content" }
 func (c ContentBlockDelta) Default() ContentBlockDelta       { return "content_block_delta" }
@@ -188,6 +198,7 @@ func (c ContentBlockStart) Default() ContentBlockStart       { return "content_b
 func (c ContentBlockStop) Default() ContentBlockStop         { return "content_block_stop" }
 func (c Create) Default() Create                             { return "create" }
 func (c Delete) Default() Delete                             { return "delete" }
+func (c Direct) Default() Direct                             { return "direct" }
 func (c Disabled) Default() Disabled                         { return "disabled" }
 func (c Document) Default() Document                         { return "document" }
 func (c Enabled) Default() Enabled                           { return "enabled" }
@@ -204,6 +215,7 @@ func (c InvalidRequestError) Default() InvalidRequestError   { return "invalid_r
 func (c JSONSchema) Default() JSONSchema                     { return "json_schema" }
 func (c MCPToolResult) Default() MCPToolResult               { return "mcp_tool_result" }
 func (c MCPToolUse) Default() MCPToolUse                     { return "mcp_tool_use" }
+func (c MCPToolset) Default() MCPToolset                     { return "mcp_toolset" }
 func (c Memory) Default() Memory                             { return "memory" }
 func (c Memory20250818) Default() Memory20250818             { return "memory_20250818" }
 func (c Message) Default() Message                           { return "message" }
@@ -253,13 +265,23 @@ func (c TextEditorCodeExecutionToolResultError) Default() TextEditorCodeExecutio
 func (c TextEditorCodeExecutionViewResult) Default() TextEditorCodeExecutionViewResult {
 	return "text_editor_code_execution_view_result"
 }
-func (c TextPlain) Default() TextPlain                   { return "text/plain" }
-func (c Thinking) Default() Thinking                     { return "thinking" }
-func (c ThinkingDelta) Default() ThinkingDelta           { return "thinking_delta" }
-func (c ThinkingTurns) Default() ThinkingTurns           { return "thinking_turns" }
-func (c TimeoutError) Default() TimeoutError             { return "timeout_error" }
-func (c Tool) Default() Tool                             { return "tool" }
-func (c ToolResult) Default() ToolResult                 { return "tool_result" }
+func (c TextPlain) Default() TextPlain                       { return "text/plain" }
+func (c Thinking) Default() Thinking                         { return "thinking" }
+func (c ThinkingDelta) Default() ThinkingDelta               { return "thinking_delta" }
+func (c ThinkingTurns) Default() ThinkingTurns               { return "thinking_turns" }
+func (c TimeoutError) Default() TimeoutError                 { return "timeout_error" }
+func (c Tool) Default() Tool                                 { return "tool" }
+func (c ToolReference) Default() ToolReference               { return "tool_reference" }
+func (c ToolResult) Default() ToolResult                     { return "tool_result" }
+func (c ToolSearchToolBm25) Default() ToolSearchToolBm25     { return "tool_search_tool_bm25" }
+func (c ToolSearchToolRegex) Default() ToolSearchToolRegex   { return "tool_search_tool_regex" }
+func (c ToolSearchToolResult) Default() ToolSearchToolResult { return "tool_search_tool_result" }
+func (c ToolSearchToolResultError) Default() ToolSearchToolResultError {
+	return "tool_search_tool_result_error"
+}
+func (c ToolSearchToolSearchResult) Default() ToolSearchToolSearchResult {
+	return "tool_search_tool_search_result"
+}
 func (c ToolUse) Default() ToolUse                       { return "tool_use" }
 func (c ToolUses) Default() ToolUses                     { return "tool_uses" }
 func (c URL) Default() URL                               { return "url" }
@@ -315,6 +337,7 @@ func (c Completion) MarshalJSON() ([]byte, error)                          { ret
 func (c Computer) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Computer20241022) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Computer20250124) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c Computer20251124) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c ContainerUpload) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Content) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c ContentBlockDelta) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
@@ -323,6 +346,7 @@ func (c ContentBlockStart) MarshalJSON() ([]byte, error)                   { ret
 func (c ContentBlockStop) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Create) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Delete) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c Direct) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Disabled) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Document) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Enabled) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -339,6 +363,7 @@ func (c InvalidRequestError) MarshalJSON() ([]byte, error)                 { ret
 func (c JSONSchema) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c MCPToolResult) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c MCPToolUse) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c MCPToolset) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Memory) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Memory20250818) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Message) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -386,7 +411,13 @@ func (c ThinkingDelta) MarshalJSON() ([]byte, error)                     { retur
 func (c ThinkingTurns) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c TimeoutError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Tool) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c ToolReference) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c ToolResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c ToolSearchToolBm25) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c ToolSearchToolRegex) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c ToolSearchToolResult) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c ToolSearchToolResultError) MarshalJSON() ([]byte, error)         { return marshalString(c) }
+func (c ToolSearchToolSearchResult) MarshalJSON() ([]byte, error)        { return marshalString(c) }
 func (c ToolUse) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c ToolUses) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                               { return marshalString(c) }

@@ -534,8 +534,8 @@ type BetaMessageBatchNewParamsRequest struct {
 	CustomID string `json:"custom_id,required"`
 	// Messages API creation parameters for the individual request.
 	//
-	// See the [Messages API reference](/en/api/messages) for full documentation on
-	// available parameters.
+	// See the [Messages API reference](https://docs.claude.com/en/api/messages) for
+	// full documentation on available parameters.
 	Params BetaMessageBatchNewParamsRequestParams `json:"params,omitzero,required"`
 	paramObj
 }
@@ -550,8 +550,8 @@ func (r *BetaMessageBatchNewParamsRequest) UnmarshalJSON(data []byte) error {
 
 // Messages API creation parameters for the individual request.
 //
-// See the [Messages API reference](/en/api/messages) for full documentation on
-// available parameters.
+// See the [Messages API reference](https://docs.claude.com/en/api/messages) for
+// full documentation on available parameters.
 //
 // The properties MaxTokens, Messages, Model are required.
 type BetaMessageBatchNewParamsRequestParams struct {
@@ -679,6 +679,9 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.
 	Metadata BetaMetadataParam `json:"metadata,omitzero"`
+	// Configuration options for the model's output. Controls aspects like how much
+	// effort the model puts into its response.
+	OutputConfig BetaOutputConfigParam `json:"output_config,omitzero"`
 	// A schema to specify Claude's output format in responses.
 	OutputFormat BetaJSONOutputFormatParam `json:"output_format,omitzero"`
 	// Determines whether to use priority capacity (if available) or standard capacity

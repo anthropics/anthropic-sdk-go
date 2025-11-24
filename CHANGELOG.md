@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.19.0 (2025-11-24)
+
+Full Changelog: [v1.18.1...v1.19.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.18.1...v1.19.0)
+
+### Features
+
+* **api:** adds support for Claude Opus 4.5, Effort, Advance Tool Use Features, Autocompaction, and Computer Use v5 ([a03391c](https://github.com/anthropics/anthropic-sdk-go/commit/a03391cb00b8c78c79fd8bfe447f00d78f37db25))
+
 ## 1.18.1 (2025-11-19)
 
 Full Changelog: [v1.18.0...v1.18.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.18.0...v1.18.1)

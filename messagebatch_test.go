@@ -38,7 +38,7 @@ func TestMessageBatchNew(t *testing.T) {
 					}},
 					Role: anthropic.MessageParamRoleUser,
 				}},
-				Model: anthropic.ModelClaude3_7SonnetLatest,
+				Model: anthropic.ModelClaudeOpus4_5_20251101,
 				Metadata: anthropic.MetadataParam{
 					UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				},

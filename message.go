@@ -2081,6 +2081,8 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model string
 
 const (
+	ModelClaudeOpus4_5_20251101 Model = "claude-opus-4-5-20251101"
+	ModelClaudeOpus4_5          Model = "claude-opus-4-5"
 	// Deprecated: Will reach end-of-life on February 19th, 2026. Please migrate to a
 	// newer model. Visit
 	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more

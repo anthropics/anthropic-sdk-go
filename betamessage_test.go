@@ -37,7 +37,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.BetaMessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaude3_7SonnetLatest,
+		Model: anthropic.ModelClaudeOpus4_5_20251101,
 		Container: anthropic.BetaMessageNewParamsContainerUnion{
 			OfContainers: &anthropic.BetaContainerParams{
 				ID: anthropic.String("id"),
@@ -81,6 +81,9 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		Metadata: anthropic.BetaMetadataParam{
 			UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		},
+		OutputConfig: anthropic.BetaOutputConfigParam{
+			Effort: anthropic.BetaOutputConfigEffortLow,
+		},
 		OutputFormat: anthropic.BetaJSONOutputFormatParam{
 			Schema: map[string]any{
 				"foo": "bar",
@@ -111,13 +114,18 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 					},
 					Required: []string{"location"},
 				},
-				Name: "name",
+				Name:           "name",
+				AllowedCallers: []string{"direct"},
 				CacheControl: anthropic.BetaCacheControlEphemeralParam{
 					TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 				},
-				Description: anthropic.String("Get the current weather in a given location"),
-				Strict:      anthropic.Bool(true),
-				Type:        anthropic.BetaToolTypeCustom,
+				DeferLoading: anthropic.Bool(true),
+				Description:  anthropic.String("Get the current weather in a given location"),
+				InputExamples: []map[string]any{{
+					"foo": "bar",
+				}},
+				Strict: anthropic.Bool(true),
+				Type:   anthropic.BetaToolTypeCustom,
 			},
 		}},
 		TopK:  anthropic.Int(5),
@@ -155,7 +163,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.BetaMessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaude3_7SonnetLatest,
+		Model: anthropic.ModelClaudeOpus4_5_20251101,
 		ContextManagement: anthropic.BetaContextManagementConfigParam{
 			Edits: []anthropic.BetaContextManagementConfigEditUnionParam{{
 				OfClearToolUses20250919: &anthropic.BetaClearToolUses20250919EditParam{
@@ -186,6 +194,9 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 				Enabled:      anthropic.Bool(true),
 			},
 		}},
+		OutputConfig: anthropic.BetaOutputConfigParam{
+			Effort: anthropic.BetaOutputConfigEffortLow,
+		},
 		OutputFormat: anthropic.BetaJSONOutputFormatParam{
 			Schema: map[string]any{
 				"foo": "bar",
@@ -227,13 +238,18 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 					},
 					Required: []string{"location"},
 				},
-				Name: "name",
+				Name:           "name",
+				AllowedCallers: []string{"direct"},
 				CacheControl: anthropic.BetaCacheControlEphemeralParam{
 					TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 				},
-				Description: anthropic.String("Get the current weather in a given location"),
-				Strict:      anthropic.Bool(true),
-				Type:        anthropic.BetaToolTypeCustom,
+				DeferLoading: anthropic.Bool(true),
+				Description:  anthropic.String("Get the current weather in a given location"),
+				InputExamples: []map[string]any{{
+					"foo": "bar",
+				}},
+				Strict: anthropic.Bool(true),
+				Type:   anthropic.BetaToolTypeCustom,
 			},
 		}},
 		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},

@@ -511,8 +511,8 @@ type MessageBatchNewParamsRequest struct {
 	CustomID string `json:"custom_id,required"`
 	// Messages API creation parameters for the individual request.
 	//
-	// See the [Messages API reference](/en/api/messages) for full documentation on
-	// available parameters.
+	// See the [Messages API reference](https://docs.claude.com/en/api/messages) for
+	// full documentation on available parameters.
 	Params MessageBatchNewParamsRequestParams `json:"params,omitzero,required"`
 	paramObj
 }
@@ -527,8 +527,8 @@ func (r *MessageBatchNewParamsRequest) UnmarshalJSON(data []byte) error {
 
 // Messages API creation parameters for the individual request.
 //
-// See the [Messages API reference](/en/api/messages) for full documentation on
-// available parameters.
+// See the [Messages API reference](https://docs.claude.com/en/api/messages) for
+// full documentation on available parameters.
 //
 // The properties MaxTokens, Messages, Model are required.
 type MessageBatchNewParamsRequestParams struct {

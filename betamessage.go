@@ -1891,24 +1891,6 @@ type BetaContentBlockUnion struct {
 	} `json:"-"`
 }
 
-func (r BetaContentBlockUnion) ToParam() BetaContentBlockParamUnion {
-	switch variant := r.AsAny().(type) {
-	case BetaTextBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfText: &p}
-	case BetaToolUseBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfToolUse: &p}
-	case BetaThinkingBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfThinking: &p}
-	case BetaRedactedThinkingBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfRedactedThinking: &p}
-	}
-	return BetaContentBlockParamUnion{}
-}
-
 // anyBetaContentBlock is implemented by each variant of [BetaContentBlockUnion] to
 // add type safety for the return type of [BetaContentBlockUnion.AsAny]
 type anyBetaContentBlock interface {
@@ -2224,7 +2206,7 @@ func NewBetaTextBlock(text string) BetaContentBlockParamUnion {
 }
 
 func NewBetaImageBlock[
-T BetaBase64ImageSourceParam | BetaURLImageSourceParam | BetaFileImageSourceParam,
+	T BetaBase64ImageSourceParam | BetaURLImageSourceParam | BetaFileImageSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var image BetaImageBlockParam
 	switch v := any(source).(type) {
@@ -2239,7 +2221,7 @@ T BetaBase64ImageSourceParam | BetaURLImageSourceParam | BetaFileImageSourcePara
 }
 
 func NewBetaDocumentBlock[
-T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam | BetaFileDocumentSourceParam,
+	T BetaBase64PDFSourceParam | BetaPlainTextSourceParam | BetaContentBlockSourceParam | BetaURLPDFSourceParam | BetaFileDocumentSourceParam,
 ](source T) BetaContentBlockParamUnion {
 	var document BetaRequestDocumentBlockParam
 	switch v := any(source).(type) {
@@ -2301,7 +2283,7 @@ func NewBetaServerToolUseBlock(id string, input any, name BetaServerToolUseBlock
 }
 
 func NewBetaWebSearchToolResultBlock[
-T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
+	T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var webSearchToolResult BetaWebSearchToolResultBlockParam
 	switch v := any(content).(type) {
@@ -2315,7 +2297,7 @@ T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
 }
 
 func NewBetaWebFetchToolResultBlock[
-T BetaWebFetchToolResultErrorBlockParam | BetaWebFetchBlockParam,
+	T BetaWebFetchToolResultErrorBlockParam | BetaWebFetchBlockParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var webFetchToolResult BetaWebFetchToolResultBlockParam
 	switch v := any(content).(type) {
@@ -2329,7 +2311,7 @@ T BetaWebFetchToolResultErrorBlockParam | BetaWebFetchBlockParam,
 }
 
 func NewBetaCodeExecutionToolResultBlock[
-T BetaCodeExecutionToolResultErrorParam | BetaCodeExecutionResultBlockParam,
+	T BetaCodeExecutionToolResultErrorParam | BetaCodeExecutionResultBlockParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var codeExecutionToolResult BetaCodeExecutionToolResultBlockParam
 	switch v := any(content).(type) {
@@ -2343,7 +2325,7 @@ T BetaCodeExecutionToolResultErrorParam | BetaCodeExecutionResultBlockParam,
 }
 
 func NewBetaBashCodeExecutionToolResultBlock[
-T BetaBashCodeExecutionToolResultErrorParam | BetaBashCodeExecutionResultBlockParam,
+	T BetaBashCodeExecutionToolResultErrorParam | BetaBashCodeExecutionResultBlockParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var bashCodeExecutionToolResult BetaBashCodeExecutionToolResultBlockParam
 	switch v := any(content).(type) {
@@ -2357,7 +2339,7 @@ T BetaBashCodeExecutionToolResultErrorParam | BetaBashCodeExecutionResultBlockPa
 }
 
 func NewBetaTextEditorCodeExecutionToolResultBlock[
-T BetaTextEditorCodeExecutionToolResultErrorParam | BetaTextEditorCodeExecutionViewResultBlockParam | BetaTextEditorCodeExecutionCreateResultBlockParam | BetaTextEditorCodeExecutionStrReplaceResultBlockParam,
+	T BetaTextEditorCodeExecutionToolResultErrorParam | BetaTextEditorCodeExecutionViewResultBlockParam | BetaTextEditorCodeExecutionCreateResultBlockParam | BetaTextEditorCodeExecutionStrReplaceResultBlockParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var textEditorCodeExecutionToolResult BetaTextEditorCodeExecutionToolResultBlockParam
 	switch v := any(content).(type) {
@@ -2375,7 +2357,7 @@ T BetaTextEditorCodeExecutionToolResultErrorParam | BetaTextEditorCodeExecutionV
 }
 
 func NewBetaToolSearchToolResultBlock[
-T BetaToolSearchToolResultErrorParam | BetaToolSearchToolSearchResultBlockParam,
+	T BetaToolSearchToolResultErrorParam | BetaToolSearchToolSearchResultBlockParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var toolSearchToolResult BetaToolSearchToolResultBlockParam
 	switch v := any(content).(type) {
@@ -4404,17 +4386,6 @@ func (r *BetaMessage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r BetaMessage) ToParam() BetaMessageParam {
-	var p BetaMessageParam
-	p.Role = BetaMessageParamRole(r.Role)
-	p.Content = make([]BetaContentBlockParamUnion, len(r.Content))
-	for i, c := range r.Content {
-		contentParams := c.ToParam()
-		p.Content[i] = contentParams
-	}
-	return p
-}
-
 // The reason that we stopped.
 //
 // This may be one the following values:
@@ -5406,83 +5377,6 @@ func (r *BetaRawMessageStreamEventUnionDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Accumulate builds up the Message incrementally from a MessageStreamEvent. The Message then can be used as
-// any other Message, except with the caveat that the Message.JSON field which normally can be used to inspect
-// the JSON sent over the network may not be populated fully.
-//
-//	message := anthropic.Message{}
-//	for stream.Next() {
-//		event := stream.Current()
-//		message.Accumulate(event)
-//	}
-func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
-	if acc == nil {
-		return fmt.Errorf("accumulate: cannot accumlate into nil Message")
-	}
-
-	switch event := event.AsAny().(type) {
-	case BetaRawMessageStartEvent:
-		*acc = event.Message
-	case BetaRawMessageDeltaEvent:
-		acc.StopReason = event.Delta.StopReason
-		acc.StopSequence = event.Delta.StopSequence
-		acc.Usage.OutputTokens = event.Usage.OutputTokens
-		acc.ContextManagement = event.ContextManagement
-	case BetaRawMessageStopEvent:
-		accJson, err := json.Marshal(acc)
-		if err != nil {
-			return fmt.Errorf("error converting content block to JSON: %w", err)
-		}
-		acc.JSON.raw = string(accJson)
-	case BetaRawContentBlockStartEvent:
-		acc.Content = append(acc.Content, BetaContentBlockUnion{})
-		err := acc.Content[len(acc.Content)-1].UnmarshalJSON([]byte(event.ContentBlock.RawJSON()))
-		if err != nil {
-			return err
-		}
-	case BetaRawContentBlockDeltaEvent:
-		if len(acc.Content) == 0 {
-			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
-		}
-		cb := &acc.Content[len(acc.Content)-1]
-		switch delta := event.Delta.AsAny().(type) {
-		case BetaTextDelta:
-			cb.Text += delta.Text
-		case BetaInputJSONDelta:
-			if len(delta.PartialJSON) != 0 {
-				if string(cb.Input) == "{}" {
-					cb.Input = []byte(delta.PartialJSON)
-				} else {
-					cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
-				}
-			}
-		case BetaThinkingDelta:
-			cb.Thinking += delta.Thinking
-		case BetaSignatureDelta:
-			cb.Signature += delta.Signature
-		case BetaCitationsDelta:
-			citation := BetaTextCitationUnion{}
-			err := citation.UnmarshalJSON([]byte(delta.Citation.RawJSON()))
-			if err != nil {
-				return fmt.Errorf("could not unmarshal citation delta into citation type: %w", err)
-			}
-			cb.Citations = append(cb.Citations, citation)
-		}
-	case BetaRawContentBlockStopEvent:
-		if len(acc.Content) == 0 {
-			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
-		}
-		contentBlock := &acc.Content[len(acc.Content)-1]
-		cbJson, err := json.Marshal(contentBlock)
-		if err != nil {
-			return fmt.Errorf("error converting content block to JSON: %w", err)
-		}
-		contentBlock.JSON.raw = string(cbJson)
-	}
-
-	return nil
-}
-
 type BetaRedactedThinkingBlock struct {
 	Data string                    `json:"data,required"`
 	Type constant.RedactedThinking `json:"type,required"`
@@ -5499,13 +5393,6 @@ type BetaRedactedThinkingBlock struct {
 func (r BetaRedactedThinkingBlock) RawJSON() string { return r.JSON.raw }
 func (r *BetaRedactedThinkingBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r BetaRedactedThinkingBlock) ToParam() BetaRedactedThinkingBlockParam {
-	var p BetaRedactedThinkingBlockParam
-	p.Type = r.Type
-	p.Data = r.Data
-	return p
 }
 
 // The properties Data, Type are required.
@@ -6118,50 +6005,6 @@ type BetaTextBlock struct {
 func (r BetaTextBlock) RawJSON() string { return r.JSON.raw }
 func (r *BetaTextBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r BetaTextBlock) ToParam() BetaTextBlockParam {
-	var p BetaTextBlockParam
-	p.Type = r.Type
-	p.Text = r.Text
-
-	// Distinguish between a nil and zero length slice, since some compatible
-	// APIs may not require citations.
-	if r.Citations != nil {
-		p.Citations = make([]BetaTextCitationParamUnion, len(r.Citations))
-	}
-
-	for i, citation := range r.Citations {
-		switch citationVariant := citation.AsAny().(type) {
-		case BetaCitationCharLocation:
-			var citationParam BetaCitationCharLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
-			citationParam.CitedText = citationVariant.CitedText
-			citationParam.DocumentIndex = citationVariant.DocumentIndex
-			citationParam.EndCharIndex = citationVariant.EndCharIndex
-			citationParam.StartCharIndex = citationVariant.StartCharIndex
-			p.Citations[i] = BetaTextCitationParamUnion{OfCharLocation: &citationParam}
-		case BetaCitationPageLocation:
-			var citationParam BetaCitationPageLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
-			citationParam.DocumentIndex = citationVariant.DocumentIndex
-			citationParam.EndPageNumber = citationVariant.EndPageNumber
-			citationParam.StartPageNumber = citationVariant.StartPageNumber
-			p.Citations[i] = BetaTextCitationParamUnion{OfPageLocation: &citationParam}
-		case BetaCitationContentBlockLocation:
-			var citationParam BetaCitationContentBlockLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
-			citationParam.CitedText = citationVariant.CitedText
-			citationParam.DocumentIndex = citationVariant.DocumentIndex
-			citationParam.EndBlockIndex = citationVariant.EndBlockIndex
-			citationParam.StartBlockIndex = citationVariant.StartBlockIndex
-			p.Citations[i] = BetaTextCitationParamUnion{OfContentBlockLocation: &citationParam}
-		}
-	}
-	return p
 }
 
 // The properties Text, Type are required.
@@ -7013,14 +6856,6 @@ type BetaThinkingBlock struct {
 func (r BetaThinkingBlock) RawJSON() string { return r.JSON.raw }
 func (r *BetaThinkingBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r BetaThinkingBlock) ToParam() BetaThinkingBlockParam {
-	var p BetaThinkingBlockParam
-	p.Type = r.Type
-	p.Signature = r.Signature
-	p.Thinking = r.Thinking
-	return p
 }
 
 // The properties Signature, Thinking, Type are required.
@@ -8967,15 +8802,6 @@ func (u BetaToolUseBlockCallerUnion) RawJSON() string { return u.JSON.raw }
 
 func (r *BetaToolUseBlockCallerUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r BetaToolUseBlock) ToParam() BetaToolUseBlockParam {
-	var p BetaToolUseBlockParam
-	p.Type = r.Type
-	p.ID = r.ID
-	p.Input = r.Input
-	p.Name = r.Name
-	return p
 }
 
 // The properties ID, Input, Name, Type are required.

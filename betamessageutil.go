@@ -278,7 +278,14 @@ func (r BetaTextEditorCodeExecutionToolResultBlock) ToParam() BetaTextEditorCode
 	var p BetaTextEditorCodeExecutionToolResultBlockParam
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
-	p.Content = param.Override[BetaTextEditorCodeExecutionToolResultBlockParamContentUnion](r.Content.RawJSON())
+	if r.Content.JSON.ErrorCode.Valid() {
+		p.Content.OfRequestTextEditorCodeExecutionToolResultError = &BetaTextEditorCodeExecutionToolResultErrorParam{
+			ErrorCode:    BetaTextEditorCodeExecutionToolResultErrorParamErrorCode(r.Content.ErrorCode),
+			ErrorMessage: paramutil.ToOpt(r.Content.ErrorMessage, r.Content.JSON.ErrorMessage),
+		}
+	} else {
+		p.Content = param.Override[BetaTextEditorCodeExecutionToolResultBlockParamContentUnion](r.Content.RawJSON())
+	}
 	return p
 }
 
@@ -311,16 +318,12 @@ func (r BetaBashCodeExecutionToolResultBlock) ToParam() BetaBashCodeExecutionToo
 			Stderr:     r.Content.Stderr,
 			Stdout:     r.Content.Stdout,
 		}
-
 		for _, block := range r.Content.Content {
 			requestBashContentResult.Content = append(requestBashContentResult.Content, block.ToParam())
 		}
-
 		p.Content.OfRequestBashCodeExecutionResultBlock = requestBashContentResult
 	}
 
-	r.Content.AsResponseBashCodeExecutionResultBlock()
-	p.Content = param.Override[BetaBashCodeExecutionToolResultBlockParamContentUnion](r.Content.RawJSON())
 	return p
 }
 
@@ -335,9 +338,23 @@ func (r BetaCodeExecutionToolResultBlock) ToParam() BetaCodeExecutionToolResultB
 	var p BetaCodeExecutionToolResultBlockParam
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
-	p.Content = param.Override[BetaCodeExecutionToolResultBlockParamContentUnion](r.Content.RawJSON())
+	if r.Content.JSON.ErrorCode.Valid() {
+		p.Content.OfError = &BetaCodeExecutionToolResultErrorParam{
+			ErrorCode: r.Content.ErrorCode,
+		}
+	} else {
+		p.Content.OfResultBlock = &BetaCodeExecutionResultBlockParam{
+			ReturnCode: r.Content.ReturnCode,
+			Stderr:     r.Content.Stderr,
+			Stdout:     r.Content.Stdout,
+		}
+		for _, block := range r.Content.Content {
+			p.Content.OfResultBlock.Content = append(p.Content.OfResultBlock.Content, block.ToParam())
+		}
+	}
 	return p
 }
+
 func (r BetaCodeExecutionOutputBlock) ToParam() BetaCodeExecutionOutputBlockParam {
 	var p BetaCodeExecutionOutputBlockParam
 	p.Type = r.Type

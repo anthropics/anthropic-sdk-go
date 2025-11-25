@@ -1,42 +1,10 @@
 package anthropic
 
 import (
-	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
-
-// CalculateNonStreamingTimeout calculates the appropriate timeout for a non-streaming request
-// based on the maximum number of tokens and the model's non-streaming token limit
-func CalculateNonStreamingTimeout(maxTokens int, model Model, opts []option.RequestOption) (time.Duration, error) {
-	preCfg, err := requestconfig.PreRequestOptions(opts...)
-	if err != nil {
-		return 0, fmt.Errorf("error applying request options: %w", err)
-	}
-	// if the user has set a specific request timeout, use that
-	if preCfg.RequestTimeout != 0 {
-		return preCfg.RequestTimeout, nil
-	}
-
-	maximumTime := time.Hour // 1 hour
-	defaultTime := 10 * time.Minute
-
-	expectedTime := time.Duration(float64(maximumTime) * float64(maxTokens) / 128000.0)
-
-	// If the model has a non-streaming token limit and max_tokens exceeds it,
-	// or if the expected time exceeds default time, require streaming
-	maxNonStreamingTokens, hasLimit := constant.ModelNonStreamingTokens[string(model)]
-	if expectedTime > defaultTime || (hasLimit && maxTokens > maxNonStreamingTokens) {
-		return 0, fmt.Errorf("streaming is required for operations that may take longer than 10 minutes")
-	}
-
-	return defaultTime, nil
-}
 
 // Accumulate builds up the Message incrementally from a MessageStreamEvent. The Message then can be used as
 // any other Message, except with the caveat that the Message.JSON field which normally can be used to inspect
@@ -59,12 +27,6 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 		acc.StopReason = event.Delta.StopReason
 		acc.StopSequence = event.Delta.StopSequence
 		acc.Usage.OutputTokens = event.Usage.OutputTokens
-	case MessageStopEvent:
-		accJson, err := json.Marshal(acc)
-		if err != nil {
-			return fmt.Errorf("error converting content block to JSON: %w", err)
-		}
-		acc.JSON.raw = string(accJson)
 	case ContentBlockStartEvent:
 		acc.Content = append(acc.Content, ContentBlockUnion{})
 		err := acc.Content[len(acc.Content)-1].UnmarshalJSON([]byte(event.ContentBlock.RawJSON()))
@@ -99,16 +61,8 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 			}
 			cb.Citations = append(cb.Citations, citation)
 		}
-	case ContentBlockStopEvent:
-		if len(acc.Content) == 0 {
-			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
-		}
-		contentBlock := &acc.Content[len(acc.Content)-1]
-		cbJson, err := json.Marshal(contentBlock)
-		if err != nil {
-			return fmt.Errorf("error converting content block to JSON: %w", err)
-		}
-		contentBlock.JSON.raw = string(cbJson)
+	case MessageStopEvent, ContentBlockStopEvent:
+		break
 	}
 
 	return nil

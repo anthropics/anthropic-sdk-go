@@ -4,12 +4,15 @@ package anthropic
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"slices"
+	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 // Client creates a struct with services and top level methods that help with
@@ -124,4 +127,31 @@ func (r *Client) Patch(ctx context.Context, path string, params any, res any, op
 // response.
 func (r *Client) Delete(ctx context.Context, path string, params any, res any, opts ...option.RequestOption) error {
 	return r.Execute(ctx, http.MethodDelete, path, params, res, opts...)
+}
+
+// CalculateNonStreamingTimeout calculates the appropriate timeout for a non-streaming request
+// based on the maximum number of tokens and the model's non-streaming token limit
+func CalculateNonStreamingTimeout(maxTokens int, model Model, opts []option.RequestOption) (time.Duration, error) {
+	preCfg, err := requestconfig.PreRequestOptions(opts...)
+	if err != nil {
+		return 0, fmt.Errorf("error applying request options: %w", err)
+	}
+	// if the user has set a specific request timeout, use that
+	if preCfg.RequestTimeout != 0 {
+		return preCfg.RequestTimeout, nil
+	}
+
+	maximumTime := time.Hour // 1 hour
+	defaultTime := 10 * time.Minute
+
+	expectedTime := time.Duration(float64(maximumTime) * float64(maxTokens) / 128000.0)
+
+	// If the model has a non-streaming token limit and max_tokens exceeds it,
+	// or if the expected time exceeds default time, require streaming
+	maxNonStreamingTokens, hasLimit := constant.ModelNonStreamingTokens[string(model)]
+	if expectedTime > defaultTime || (hasLimit && maxTokens > maxNonStreamingTokens) {
+		return 0, fmt.Errorf("streaming is required for operations that may take longer than 10 minutes")
+	}
+
+	return defaultTime, nil
 }

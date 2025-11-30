@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.19.1 (2025-11-30)
+
+Full Changelog: [v1.19.0...v1.19.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.19.0...v1.19.1)
+
 ## 1.19.0 (2025-11-24)
 
 Full Changelog: [v1.18.1...v1.19.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.18.1...v1.19.0)

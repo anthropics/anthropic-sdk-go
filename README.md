@@ -835,7 +835,56 @@ func main() {
 
 If you already have an `aws.Config`, you can also use it directly with `bedrock.WithConfig(cfg)`.
 
-Read more about Anthropic and Amazon Bedrock [here](https://docs.anthropic.com/en/api/claude-on-amazon-bedrock).
+### Bearer Token Authentication
+
+You can also authenticate with Bedrock using bearer tokens instead of AWS credentials. This is useful in corporate environments where teams need access to Bedrock without managing AWS credentials, IAM roles, or account-level permissions.
+
+The simplest approach is to set the `AWS_BEARER_TOKEN_BEDROCK` environment variable:
+
+```go
+package main
+
+import (
+	"context"
+
+	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/bedrock"
+)
+
+func main() {
+	// Automatically uses AWS_BEARER_TOKEN_BEDROCK from the environment.
+	// Region defaults to us-east-1 or uses AWS_REGION if set.
+	client := anthropic.NewClient(
+		bedrock.WithLoadDefaultConfig(context.Background()),
+	)
+}
+```
+
+To provide a token programmatically, use `bedrock.WithConfig` with a `BearerAuthTokenProvider`:
+
+```go
+package main
+
+import (
+	"context"
+
+	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/bedrock"
+	"github.com/aws/aws-sdk-go-v2/aws"
+)
+
+func main() {
+	cfg := aws.Config{
+		Region:                  "us-west-2",
+		BearerAuthTokenProvider: bedrock.NewStaticBearerTokenProvider("your-bearer-token"),
+	}
+	client := anthropic.NewClient(
+		bedrock.WithConfig(cfg),
+	)
+}
+```
+
+Read more about Anthropic and Amazon Bedrock [here](https://docs.anthropic.com/en/api/claude-on-amazon-bedrock) and about Bedrock API keys [here](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys-use.html).
 
 ## Google Vertex AI
 

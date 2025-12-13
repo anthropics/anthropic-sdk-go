@@ -75,7 +75,7 @@ func TestBedrockURLEncoding(t *testing.T) {
 			middleware := bedrockMiddleware(signer, cfg)
 
 			// Create request body
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"model":  tc.model,
 				"stream": tc.stream,
 				"messages": []map[string]string{
@@ -192,6 +192,56 @@ func TestBedrockBetaHeadersReRoutedThroughBody(t *testing.T) {
 		}
 
 		// Return a dummy response
+		return &http.Response{
+			StatusCode: 200,
+			Body:       http.NoBody,
+		}, nil
+	})
+
+	if err != nil {
+		t.Fatalf("Middleware failed: %v", err)
+	}
+}
+
+func TestBedrockBearerToken(t *testing.T) {
+	token := "test-bearer-token"
+	region := "us-west-2"
+
+	cfg := aws.Config{
+		Region:                  region,
+		BearerAuthTokenProvider: NewStaticBearerTokenProvider(token),
+	}
+	middleware := bedrockMiddleware(nil, cfg)
+
+	requestBody := map[string]any{
+		"model": "claude-3-sonnet",
+		"messages": []map[string]string{
+			{"role": "user", "content": "Hello"},
+		},
+	}
+
+	bodyBytes, err := json.Marshal(requestBody)
+	if err != nil {
+		t.Fatalf("Failed to marshal request body: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", "https://bedrock-runtime.us-west-2.amazonaws.com/v1/messages", bytes.NewReader(bodyBytes))
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	_, err = middleware(req, func(r *http.Request) (*http.Response, error) {
+		authHeader := r.Header.Get("Authorization")
+		expectedAuth := "Bearer " + token
+		if authHeader != expectedAuth {
+			t.Errorf("Expected Authorization header %q, got %q", expectedAuth, authHeader)
+		}
+
+		if r.Header.Get("X-Amz-Date") != "" {
+			t.Error("Expected no AWS SigV4 headers when using bearer token")
+		}
+
 		return &http.Response{
 			StatusCode: 200,
 			Body:       http.NoBody,

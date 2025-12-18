@@ -637,7 +637,7 @@ Calling `.Messages.NewStreaming()` or [setting a custom timeout](#timeouts) disa
 Request parameters that correspond to file uploads in multipart requests are typed as
 `io.Reader`. The contents of the `io.Reader` will by default be sent as a multipart form
 part with the file name of "anonymous_file" and content-type of "application/octet-stream", so we
-recommend always specifyig a custom content-type with the `anthropic.File(reader io.Reader, filename string, contentType string)`
+recommend always specifying a custom content-type with the `anthropic.File(reader io.Reader, filename string, contentType string)`
 helper we provide to easily wrap any `io.Reader` with the appropriate file name and content type.
 
 ```go

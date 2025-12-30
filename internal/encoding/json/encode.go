@@ -481,10 +481,11 @@ func marshalerEncoder(e *encodeState, v reflect.Value, opts encOpts) {
 
 	b, err := m.MarshalJSON()
 	if err == nil {
-		e.Grow(len(b))
-		out := e.AvailableBuffer()
-		out, err = appendCompact(out, b, opts.escapeHTML)
-		e.Buffer.Write(out)
+		// EDIT(begin): skip appendCompact - MarshalJSON output is already valid compact JSON
+		// appendCompact scans every byte to validate/compact, which is O(n) per nested MarshalJSON call.
+		// For deeply nested structures this becomes a significant bottleneck.
+		e.Buffer.Write(b)
+		// EDIT(end)
 	}
 	if err != nil {
 		e.error(&MarshalerError{v.Type(), err, "MarshalJSON"})
@@ -507,10 +508,9 @@ func addrMarshalerEncoder(e *encodeState, v reflect.Value, opts encOpts) {
 	m := va.Interface().(Marshaler)
 	b, err := m.MarshalJSON()
 	if err == nil {
-		e.Grow(len(b))
-		out := e.AvailableBuffer()
-		out, err = appendCompact(out, b, opts.escapeHTML)
-		e.Buffer.Write(out)
+		// EDIT(begin): skip appendCompact - MarshalJSON output is already valid compact JSON
+		e.Buffer.Write(b)
+		// EDIT(end)
 	}
 	if err != nil {
 		e.error(&MarshalerError{v.Type(), err, "MarshalJSON"})

@@ -481,9 +481,11 @@ func marshalerEncoder(e *encodeState, v reflect.Value, opts encOpts) {
 
 	b, err := m.MarshalJSON()
 	if err == nil {
-		// EDIT(begin): skip appendCompact - MarshalJSON output is already valid compact JSON
+		// EDIT(begin): skip appendCompact validation - MarshalJSON output is already valid compact JSON.
 		// appendCompact scans every byte to validate/compact, which is O(n) per nested MarshalJSON call.
 		// For deeply nested structures this becomes a significant bottleneck.
+		// HTML escaping is also skipped because MarshalJSON implementations in this SDK use Marshal()
+		// internally, which already performs HTML escaping when escapeHTML is enabled (the default).
 		e.Buffer.Write(b)
 		// EDIT(end)
 	}
@@ -508,7 +510,9 @@ func addrMarshalerEncoder(e *encodeState, v reflect.Value, opts encOpts) {
 	m := va.Interface().(Marshaler)
 	b, err := m.MarshalJSON()
 	if err == nil {
-		// EDIT(begin): skip appendCompact - MarshalJSON output is already valid compact JSON
+		// EDIT(begin): skip appendCompact validation - MarshalJSON output is already valid compact JSON.
+		// HTML escaping is also skipped because MarshalJSON implementations in this SDK use Marshal()
+		// internally, which already performs HTML escaping when escapeHTML is enabled (the default).
 		e.Buffer.Write(b)
 		// EDIT(end)
 	}

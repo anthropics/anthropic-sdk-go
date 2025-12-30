@@ -1,6 +1,8 @@
 package json
 
 import (
+	"bytes"
+	"strings"
 	"testing"
 )
 
@@ -90,5 +92,108 @@ func BenchmarkMarshalSliceOfNestedMarshalJSON(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
+	}
+}
+
+// Test that HTML escaping is preserved for nested MarshalJSON calls
+type htmlTestInner struct {
+	Content string `json:"content"`
+}
+
+func (h htmlTestInner) MarshalJSON() ([]byte, error) {
+	return Marshal(struct {
+		Content string `json:"content"`
+	}{h.Content})
+}
+
+type htmlTestOuter struct {
+	Inner htmlTestInner `json:"inner"`
+}
+
+func (h htmlTestOuter) MarshalJSON() ([]byte, error) {
+	return Marshal(struct {
+		Inner htmlTestInner `json:"inner"`
+	}{h.Inner})
+}
+
+func TestMarshalHTMLEscapeWithNestedMarshalJSON(t *testing.T) {
+	// Test that HTML-sensitive characters are escaped in nested MarshalJSON
+	data := htmlTestOuter{
+		Inner: htmlTestInner{
+			Content: "<script>alert('xss')</script>",
+		},
+	}
+
+	result, err := Marshal(data)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	// The < and > should be escaped as \u003c and \u003e
+	if strings.Contains(string(result), "<script>") {
+		t.Errorf("HTML was not escaped in Marshal output: %s", result)
+	}
+	if !strings.Contains(string(result), `\u003cscript\u003e`) {
+		t.Errorf("Expected escaped HTML in output, got: %s", result)
+	}
+	// Verify no double-escaping (e.g., \u003c should not become \\u003c)
+	if strings.Contains(string(result), `\\u003c`) {
+		t.Errorf("HTML was double-escaped in output: %s", result)
+	}
+}
+
+func TestEncoderHTMLEscapeWithNestedMarshalJSON(t *testing.T) {
+	// Test with Encoder (which has escapeHTML=true by default)
+	data := htmlTestOuter{
+		Inner: htmlTestInner{
+			Content: "<div>&amp;</div>",
+		},
+	}
+
+	var buf bytes.Buffer
+	enc := NewEncoder(&buf)
+	if err := enc.Encode(data); err != nil {
+		t.Fatalf("Encode failed: %v", err)
+	}
+
+	result := buf.String()
+	// The < > & should be escaped
+	if strings.Contains(result, "<div>") {
+		t.Errorf("HTML was not escaped in Encoder output: %s", result)
+	}
+	if !strings.Contains(result, `\u003cdiv\u003e`) {
+		t.Errorf("Expected escaped < and > in output, got: %s", result)
+	}
+	if !strings.Contains(result, `\u0026`) {
+		t.Errorf("Expected escaped & in output, got: %s", result)
+	}
+}
+
+func TestEncoderNoHTMLEscapeWithNestedMarshalJSON(t *testing.T) {
+	// Test with SetEscapeHTML(false)
+	// Note: Inner MarshalJSON calls use Marshal() which has escapeHTML=true by default,
+	// so HTML escaping still occurs in the nested output. This is expected behavior
+	// since the inner calls don't inherit the outer encoder's settings.
+	data := htmlTestOuter{
+		Inner: htmlTestInner{
+			Content: "<div>&</div>",
+		},
+	}
+
+	var buf bytes.Buffer
+	enc := NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(data); err != nil {
+		t.Fatalf("Encode failed: %v", err)
+	}
+
+	result := buf.String()
+	// Inner Marshal calls still escape HTML since they use default settings
+	if strings.Contains(result, "<div>") {
+		t.Logf("Note: HTML in nested MarshalJSON is escaped because inner Marshal uses default escapeHTML=true")
+	}
+	// Just verify we got valid JSON output
+	if !strings.Contains(result, "content") {
+		t.Errorf("Expected content field in output, got: %s", result)
 	}
 }

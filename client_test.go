@@ -43,13 +43,13 @@ func TestUserAgentHeader(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-				}}},
+				OfText: &anthropic.TextBlockParam{
+					Text: "x",
+				},
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	})
 	if userAgent != fmt.Sprintf("Anthropic/Go %s", internal.PackageVersion) {
 		t.Errorf("Expected User-Agent to be correct, but got: %#v", userAgent)
@@ -78,13 +78,13 @@ func TestRetryAfter(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-				}}},
+				OfText: &anthropic.TextBlockParam{
+					Text: "x",
+				},
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -124,13 +124,13 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-				}}},
+				OfText: &anthropic.TextBlockParam{
+					Text: "x",
+				},
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -165,13 +165,13 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-				}}},
+				OfText: &anthropic.TextBlockParam{
+					Text: "x",
+				},
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -205,13 +205,13 @@ func TestRetryAfterMs(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-				}}},
+				OfText: &anthropic.TextBlockParam{
+					Text: "x",
+				},
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -239,13 +239,13 @@ func TestContextCancel(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-				}}},
+				OfText: &anthropic.TextBlockParam{
+					Text: "x",
+				},
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -270,13 +270,13 @@ func TestContextCancelDelay(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-				}}},
+				OfText: &anthropic.TextBlockParam{
+					Text: "x",
+				},
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	})
 	if err == nil {
 		t.Error("expected there to be a cancel error")
@@ -307,13 +307,13 @@ func TestContextDeadline(t *testing.T) {
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
 				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-						OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-					}}},
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
 				}},
 				Role: anthropic.MessageParamRoleUser,
 			}},
-			Model: anthropic.ModelClaudeOpus4_5_20251101,
+			Model: anthropic.ModelClaudeSonnet4_5_20250929,
 		})
 		if err == nil {
 			t.Error("expected there to be a deadline error")
@@ -363,13 +363,13 @@ func TestContextDeadlineStreaming(t *testing.T) {
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
 				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-						OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-					}}},
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
 				}},
 				Role: anthropic.MessageParamRoleUser,
 			}},
-			Model: anthropic.ModelClaudeOpus4_5_20251101,
+			Model: anthropic.ModelClaudeSonnet4_5_20250929,
 		})
 		for stream.Next() {
 			_ = stream.Current()
@@ -421,13 +421,13 @@ func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{{
 					Content: []anthropic.ContentBlockParamUnion{{
-						OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-							OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-						}}},
+						OfText: &anthropic.TextBlockParam{
+							Text: "x",
+						},
 					}},
 					Role: anthropic.MessageParamRoleUser,
 				}},
-				Model: anthropic.ModelClaudeOpus4_5_20251101,
+				Model: anthropic.ModelClaudeSonnet4_5_20250929,
 			},
 			option.WithRequestTimeout((100 * time.Millisecond)),
 		)

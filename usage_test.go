@@ -28,13 +28,13 @@ func TestUsage(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-				}}},
+				OfText: &anthropic.TextBlockParam{
+					Text: "x",
+				},
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 	})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())

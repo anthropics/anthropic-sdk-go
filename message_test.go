@@ -29,21 +29,45 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-				}}},
+				OfText: &anthropic.TextBlockParam{
+					Text: "x",
+					CacheControl: anthropic.CacheControlEphemeralParam{
+						TTL: anthropic.CacheControlEphemeralTTLTTL5m,
+					},
+					Citations: []anthropic.TextCitationParamUnion{{
+						OfCharLocation: &anthropic.CitationCharLocationParam{
+							CitedText:      "cited_text",
+							DocumentIndex:  0,
+							DocumentTitle:  anthropic.String("x"),
+							EndCharIndex:   0,
+							StartCharIndex: 0,
+						},
+					}},
+				},
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		Model: anthropic.ModelClaudeSonnet4_5_20250929,
 		Metadata: anthropic.MetadataParam{
 			UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		},
 		ServiceTier:   anthropic.MessageNewParamsServiceTierAuto,
 		StopSequences: []string{"string"},
-		System: []anthropic.TextBlockParam{{Text: "x", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-			OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-		}}}},
+		System: []anthropic.TextBlockParam{{
+			Text: "Today's date is 2024-06-01.",
+			CacheControl: anthropic.CacheControlEphemeralParam{
+				TTL: anthropic.CacheControlEphemeralTTLTTL5m,
+			},
+			Citations: []anthropic.TextCitationParamUnion{{
+				OfCharLocation: &anthropic.CitationCharLocationParam{
+					CitedText:      "cited_text",
+					DocumentIndex:  0,
+					DocumentTitle:  anthropic.String("x"),
+					EndCharIndex:   0,
+					StartCharIndex: 0,
+				},
+			}},
+		}},
 		Temperature: anthropic.Float(1),
 		Thinking: anthropic.ThinkingConfigParamUnion{
 			OfEnabled: &anthropic.ThinkingConfigEnabledParam{
@@ -99,9 +123,21 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 	_, err := client.Messages.CountTokens(context.TODO(), anthropic.MessageCountTokensParams{
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.CacheControlEphemeralParam{TTL: anthropic.CacheControlEphemeralTTLTTL5m}, Citations: []anthropic.TextCitationParamUnion{{
-					OfCharLocation: &anthropic.CitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-				}}},
+				OfText: &anthropic.TextBlockParam{
+					Text: "What is a quaternion?",
+					CacheControl: anthropic.CacheControlEphemeralParam{
+						TTL: anthropic.CacheControlEphemeralTTLTTL5m,
+					},
+					Citations: []anthropic.TextCitationParamUnion{{
+						OfCharLocation: &anthropic.CitationCharLocationParam{
+							CitedText:      "cited_text",
+							DocumentIndex:  0,
+							DocumentTitle:  anthropic.String("x"),
+							EndCharIndex:   0,
+							StartCharIndex: 0,
+						},
+					}},
+				},
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},

@@ -5,6 +5,7 @@ package jsonl
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -17,8 +18,12 @@ type Stream[T any] struct {
 }
 
 func NewStream[T any](res *http.Response, err error) *Stream[T] {
+	if err != nil {
+		return &Stream[T]{err: err}
+	}
+
 	if res == nil || res.Body == nil {
-		return nil
+		return &Stream[T]{err: fmt.Errorf("No streaming response body")}
 	}
 
 	return &Stream[T]{

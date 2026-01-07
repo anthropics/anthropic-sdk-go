@@ -33,13 +33,25 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				MaxTokens: 1024,
 				Messages: []anthropic.BetaMessageParam{{
 					Content: []anthropic.BetaContentBlockParamUnion{{
-						OfText: &anthropic.BetaTextBlockParam{Text: "What is a quaternion?", CacheControl: anthropic.BetaCacheControlEphemeralParam{TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m}, Citations: []anthropic.BetaTextCitationParamUnion{{
-							OfCharLocation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-						}}},
+						OfText: &anthropic.BetaTextBlockParam{
+							Text: "x",
+							CacheControl: anthropic.BetaCacheControlEphemeralParam{
+								TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
+							},
+							Citations: []anthropic.BetaTextCitationParamUnion{{
+								OfCharLocation: &anthropic.BetaCitationCharLocationParam{
+									CitedText:      "cited_text",
+									DocumentIndex:  0,
+									DocumentTitle:  anthropic.String("x"),
+									EndCharIndex:   0,
+									StartCharIndex: 0,
+								},
+							}},
+						},
 					}},
 					Role: anthropic.BetaMessageParamRoleUser,
 				}},
-				Model: anthropic.ModelClaudeOpus4_5_20251101,
+				Model: anthropic.ModelClaudeSonnet4_5_20250929,
 				Container: anthropic.BetaMessageBatchNewParamsRequestParamsContainerUnion{
 					OfContainers: &anthropic.BetaContainerParams{
 						ID: anthropic.String("id"),
@@ -94,9 +106,21 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				ServiceTier:   "auto",
 				StopSequences: []string{"string"},
 				Stream:        anthropic.Bool(true),
-				System: []anthropic.BetaTextBlockParam{{Text: "x", CacheControl: anthropic.BetaCacheControlEphemeralParam{TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m}, Citations: []anthropic.BetaTextCitationParamUnion{{
-					OfCharLocation: &anthropic.BetaCitationCharLocationParam{CitedText: "cited_text", DocumentIndex: 0, DocumentTitle: anthropic.String("x"), EndCharIndex: 0, StartCharIndex: 0},
-				}}}},
+				System: []anthropic.BetaTextBlockParam{{
+					Text: "Today's date is 2024-06-01.",
+					CacheControl: anthropic.BetaCacheControlEphemeralParam{
+						TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
+					},
+					Citations: []anthropic.BetaTextCitationParamUnion{{
+						OfCharLocation: &anthropic.BetaCitationCharLocationParam{
+							CitedText:      "cited_text",
+							DocumentIndex:  0,
+							DocumentTitle:  anthropic.String("x"),
+							EndCharIndex:   0,
+							StartCharIndex: 0,
+						},
+					}},
+				}},
 				Temperature: anthropic.Float(1),
 				Thinking: anthropic.BetaThinkingConfigParamUnion{
 					OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{
@@ -135,7 +159,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				TopP: anthropic.Float(0.7),
 			},
 		}},
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -162,7 +186,7 @@ func TestBetaMessageBatchGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"message_batch_id",
 		anthropic.BetaMessageBatchGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
 		},
 	)
 	if err != nil {
@@ -190,7 +214,7 @@ func TestBetaMessageBatchListWithOptionalParams(t *testing.T) {
 		AfterID:  anthropic.String("after_id"),
 		BeforeID: anthropic.String("before_id"),
 		Limit:    anthropic.Int(1),
-		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -217,7 +241,7 @@ func TestBetaMessageBatchDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"message_batch_id",
 		anthropic.BetaMessageBatchDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
 		},
 	)
 	if err != nil {
@@ -245,7 +269,7 @@ func TestBetaMessageBatchCancelWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"message_batch_id",
 		anthropic.BetaMessageBatchCancelParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
 		},
 	)
 	if err != nil {

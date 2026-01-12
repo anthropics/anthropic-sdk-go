@@ -1918,8 +1918,16 @@ const (
 	// newer model. Visit
 	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
 	// information.
-	ModelClaude3_7Sonnet20250219  Model = "claude-3-7-sonnet-20250219"
-	ModelClaude3_5HaikuLatest     Model = "claude-3-5-haiku-latest"
+	ModelClaude3_7Sonnet20250219 Model = "claude-3-7-sonnet-20250219"
+	// Deprecated: Will reach end-of-life on February 19th, 2026. Please migrate to a
+	// newer model. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
+	ModelClaude3_5HaikuLatest Model = "claude-3-5-haiku-latest"
+	// Deprecated: Will reach end-of-life on February 19th, 2026. Please migrate to a
+	// newer model. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
 	ModelClaude3_5Haiku20241022   Model = "claude-3-5-haiku-20241022"
 	ModelClaudeHaiku4_5           Model = "claude-haiku-4-5"
 	ModelClaudeHaiku4_5_20251001  Model = "claude-haiku-4-5-20251001"

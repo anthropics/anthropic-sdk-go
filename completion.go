@@ -75,7 +75,7 @@ func (r *CompletionService) NewStreaming(ctx context.Context, params CompletionN
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithJSONSet("stream", true)}, opts...)
+	opts = append(opts, option.WithJSONSet("stream", true))
 	path := "v1/complete"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &raw, opts...)
 	return ssestream.NewStream[Completion](ssestream.NewDecoder(raw), err)

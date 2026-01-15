@@ -679,10 +679,16 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.
 	Metadata BetaMetadataParam `json:"metadata,omitzero"`
-	// Configuration options for the model's output. Controls aspects like how much
-	// effort the model puts into its response.
+	// Configuration options for the model's output. Controls aspects like output
+	// format or how much effort the model puts into its response.
 	OutputConfig BetaOutputConfigParam `json:"output_config,omitzero"`
-	// A schema to specify Claude's output format in responses.
+	// Deprecated: Use `output_config.format` instead. See
+	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
+	//
+	// A schema to specify Claude's output format in responses. This parameter will be
+	// removed in a future release.
+	//
+	// Deprecated: deprecated
 	OutputFormat BetaJSONOutputFormatParam `json:"output_format,omitzero"`
 	// Determines whether to use priority capacity (if available) or standard capacity
 	// for this request.

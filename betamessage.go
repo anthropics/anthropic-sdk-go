@@ -4302,6 +4302,9 @@ type BetaOutputConfigParam struct {
 	//
 	// Any of "low", "medium", "high".
 	Effort BetaOutputConfigEffort `json:"effort,omitzero"`
+	// A schema to specify Claude's output format in responses. See
+	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
+	Format BetaJSONOutputFormatParam `json:"format,omitzero"`
 	paramObj
 }
 
@@ -5502,21 +5505,21 @@ func (r *BetaServerToolUsage) UnmarshalJSON(data []byte) error {
 }
 
 type BetaServerToolUseBlock struct {
-	ID string `json:"id,required"`
-	// Tool invocation directly from the model.
-	Caller BetaServerToolUseBlockCallerUnion `json:"caller,required"`
-	Input  map[string]any                    `json:"input,required"`
+	ID    string         `json:"id,required"`
+	Input map[string]any `json:"input,required"`
 	// Any of "web_search", "web_fetch", "code_execution", "bash_code_execution",
 	// "text_editor_code_execution", "tool_search_tool_regex", "tool_search_tool_bm25".
 	Name BetaServerToolUseBlockName `json:"name,required"`
 	Type constant.ServerToolUse     `json:"type,required"`
+	// Tool invocation directly from the model.
+	Caller BetaServerToolUseBlockCallerUnion `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
-		Caller      respjson.Field
 		Input       respjson.Field
 		Name        respjson.Field
 		Type        respjson.Field
+		Caller      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -5527,6 +5530,18 @@ func (r BetaServerToolUseBlock) RawJSON() string { return r.JSON.raw }
 func (r *BetaServerToolUseBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type BetaServerToolUseBlockName string
+
+const (
+	BetaServerToolUseBlockNameWebSearch               BetaServerToolUseBlockName = "web_search"
+	BetaServerToolUseBlockNameWebFetch                BetaServerToolUseBlockName = "web_fetch"
+	BetaServerToolUseBlockNameCodeExecution           BetaServerToolUseBlockName = "code_execution"
+	BetaServerToolUseBlockNameBashCodeExecution       BetaServerToolUseBlockName = "bash_code_execution"
+	BetaServerToolUseBlockNameTextEditorCodeExecution BetaServerToolUseBlockName = "text_editor_code_execution"
+	BetaServerToolUseBlockNameToolSearchToolRegex     BetaServerToolUseBlockName = "tool_search_tool_regex"
+	BetaServerToolUseBlockNameToolSearchToolBm25      BetaServerToolUseBlockName = "tool_search_tool_bm25"
+)
 
 // BetaServerToolUseBlockCallerUnion contains all possible properties and values
 // from [BetaDirectCaller], [BetaServerToolCaller].
@@ -5591,18 +5606,6 @@ func (u BetaServerToolUseBlockCallerUnion) RawJSON() string { return u.JSON.raw 
 func (r *BetaServerToolUseBlockCallerUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaServerToolUseBlockName string
-
-const (
-	BetaServerToolUseBlockNameWebSearch               BetaServerToolUseBlockName = "web_search"
-	BetaServerToolUseBlockNameWebFetch                BetaServerToolUseBlockName = "web_fetch"
-	BetaServerToolUseBlockNameCodeExecution           BetaServerToolUseBlockName = "code_execution"
-	BetaServerToolUseBlockNameBashCodeExecution       BetaServerToolUseBlockName = "bash_code_execution"
-	BetaServerToolUseBlockNameTextEditorCodeExecution BetaServerToolUseBlockName = "text_editor_code_execution"
-	BetaServerToolUseBlockNameToolSearchToolRegex     BetaServerToolUseBlockName = "tool_search_tool_regex"
-	BetaServerToolUseBlockNameToolSearchToolBm25      BetaServerToolUseBlockName = "tool_search_tool_bm25"
-)
 
 // The properties ID, Input, Name, Type are required.
 type BetaServerToolUseBlockParam struct {
@@ -9223,7 +9226,7 @@ func (r *BetaWebSearchTool20250305UserLocationParam) UnmarshalJSON(data []byte) 
 // The properties ErrorCode, Type are required.
 type BetaWebSearchToolRequestErrorParam struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
-	// "too_many_requests", "query_too_long".
+	// "too_many_requests", "query_too_long", "request_too_large".
 	ErrorCode BetaWebSearchToolResultErrorCode `json:"error_code,omitzero,required"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_tool_result_error".
@@ -9352,7 +9355,7 @@ func (u *BetaWebSearchToolResultBlockParamContentUnion) asAny() any {
 
 type BetaWebSearchToolResultError struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
-	// "too_many_requests", "query_too_long".
+	// "too_many_requests", "query_too_long", "request_too_large".
 	ErrorCode BetaWebSearchToolResultErrorCode  `json:"error_code,required"`
 	Type      constant.WebSearchToolResultError `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -9378,6 +9381,7 @@ const (
 	BetaWebSearchToolResultErrorCodeMaxUsesExceeded  BetaWebSearchToolResultErrorCode = "max_uses_exceeded"
 	BetaWebSearchToolResultErrorCodeTooManyRequests  BetaWebSearchToolResultErrorCode = "too_many_requests"
 	BetaWebSearchToolResultErrorCodeQueryTooLong     BetaWebSearchToolResultErrorCode = "query_too_long"
+	BetaWebSearchToolResultErrorCodeRequestTooLarge  BetaWebSearchToolResultErrorCode = "request_too_large"
 )
 
 type BetaMessageNewParams struct {
@@ -9501,10 +9505,14 @@ type BetaMessageNewParams struct {
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.
 	Metadata BetaMetadataParam `json:"metadata,omitzero"`
-	// Configuration options for the model's output. Controls aspects like how much
-	// effort the model puts into its response.
+	// Configuration options for the model's output. Controls aspects like output
+	// format or how much effort the model puts into its response.
 	OutputConfig BetaOutputConfigParam `json:"output_config,omitzero"`
-	// A schema to specify Claude's output format in responses.
+	// Deprecated: Use `output_config.format` instead. See
+	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
+	//
+	// A schema to specify Claude's output format in responses. This parameter will be
+	// removed in a future release.
 	OutputFormat BetaJSONOutputFormatParam `json:"output_format,omitzero"`
 	// Determines whether to use priority capacity (if available) or standard capacity
 	// for this request.
@@ -9757,10 +9765,14 @@ type BetaMessageCountTokensParams struct {
 	ContextManagement BetaContextManagementConfigParam `json:"context_management,omitzero"`
 	// MCP servers to be utilized in this request
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
-	// Configuration options for the model's output. Controls aspects like how much
-	// effort the model puts into its response.
+	// Configuration options for the model's output. Controls aspects like output
+	// format or how much effort the model puts into its response.
 	OutputConfig BetaOutputConfigParam `json:"output_config,omitzero"`
-	// A schema to specify Claude's output format in responses.
+	// Deprecated: Use `output_config.format` instead. See
+	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
+	//
+	// A schema to specify Claude's output format in responses. This parameter will be
+	// removed in a future release.
 	OutputFormat BetaJSONOutputFormatParam `json:"output_format,omitzero"`
 	// System prompt.
 	//

@@ -339,6 +339,73 @@ func init() {
 	)
 }
 
+func init() {
+	apijson.RegisterUnion[BetaClearToolUses20250919EditTriggerUnionParam](
+		"type",
+		apijson.Discriminator[BetaInputTokensTriggerParam]("input_tokens"),
+		apijson.Discriminator[BetaToolUsesTriggerParam]("tool_uses"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaContentBlockParamUnion](
+		"type",
+		apijson.Discriminator[BetaTextBlockParam]("text"),
+		apijson.Discriminator[BetaImageBlockParam]("image"),
+		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
+		apijson.Discriminator[BetaSearchResultBlockParam]("search_result"),
+		apijson.Discriminator[BetaThinkingBlockParam]("thinking"),
+		apijson.Discriminator[BetaRedactedThinkingBlockParam]("redacted_thinking"),
+		apijson.Discriminator[BetaToolUseBlockParam]("tool_use"),
+		apijson.Discriminator[BetaToolResultBlockParam]("tool_result"),
+		apijson.Discriminator[BetaServerToolUseBlockParam]("server_tool_use"),
+		apijson.Discriminator[BetaWebSearchToolResultBlockParam]("web_search_tool_result"),
+		apijson.Discriminator[BetaWebFetchToolResultBlockParam]("web_fetch_tool_result"),
+		apijson.Discriminator[BetaCodeExecutionToolResultBlockParam]("code_execution_tool_result"),
+		apijson.Discriminator[BetaBashCodeExecutionToolResultBlockParam]("bash_code_execution_tool_result"),
+		apijson.Discriminator[BetaTextEditorCodeExecutionToolResultBlockParam]("text_editor_code_execution_tool_result"),
+		apijson.Discriminator[BetaToolSearchToolResultBlockParam]("tool_search_tool_result"),
+		apijson.Discriminator[BetaMCPToolUseBlockParam]("mcp_tool_use"),
+		apijson.Discriminator[BetaRequestMCPToolResultBlockParam]("mcp_tool_result"),
+		apijson.Discriminator[BetaContainerUploadBlockParam]("container_upload"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaContextManagementConfigEditUnionParam](
+		"type",
+		apijson.Discriminator[BetaClearToolUses20250919EditParam]("clear_tool_uses_20250919"),
+		apijson.Discriminator[BetaClearThinking20251015EditParam]("clear_thinking_20251015"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaServerToolUseBlockParamCallerUnion](
+		"type",
+		apijson.Discriminator[BetaDirectCallerParam]("direct"),
+		apijson.Discriminator[BetaServerToolCallerParam]("code_execution_20250825"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaToolResultBlockParamContentUnion](
+		"type",
+		apijson.Discriminator[BetaTextBlockParam]("text"),
+		apijson.Discriminator[BetaImageBlockParam]("image"),
+		apijson.Discriminator[BetaSearchResultBlockParam]("search_result"),
+		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
+		apijson.Discriminator[BetaToolReferenceBlockParam]("tool_reference"),
+	)
+}
+
+func init() {
+	apijson.RegisterUnion[BetaToolUseBlockParamCallerUnion](
+		"type",
+		apijson.Discriminator[BetaDirectCallerParam]("direct"),
+		apijson.Discriminator[BetaServerToolCallerParam]("code_execution_20250825"),
+	)
+}
+
 type BetaBase64PDFSource struct {
 	Data      string                  `json:"data,required" format:"byte"`
 	MediaType constant.ApplicationPDF `json:"media_type,required"`
@@ -1353,14 +1420,6 @@ func (u BetaClearToolUses20250919EditTriggerUnionParam) GetValue() *int64 {
 		return (*int64)(&vt.Value)
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[BetaClearToolUses20250919EditTriggerUnionParam](
-		"type",
-		apijson.Discriminator[BetaInputTokensTriggerParam]("input_tokens"),
-		apijson.Discriminator[BetaToolUsesTriggerParam]("tool_uses"),
-	)
 }
 
 type BetaClearToolUses20250919EditResponse struct {
@@ -3172,30 +3231,6 @@ func (u betaContentBlockParamUnionCaller) GetToolID() *string {
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[BetaContentBlockParamUnion](
-		"type",
-		apijson.Discriminator[BetaTextBlockParam]("text"),
-		apijson.Discriminator[BetaImageBlockParam]("image"),
-		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
-		apijson.Discriminator[BetaSearchResultBlockParam]("search_result"),
-		apijson.Discriminator[BetaThinkingBlockParam]("thinking"),
-		apijson.Discriminator[BetaRedactedThinkingBlockParam]("redacted_thinking"),
-		apijson.Discriminator[BetaToolUseBlockParam]("tool_use"),
-		apijson.Discriminator[BetaToolResultBlockParam]("tool_result"),
-		apijson.Discriminator[BetaServerToolUseBlockParam]("server_tool_use"),
-		apijson.Discriminator[BetaWebSearchToolResultBlockParam]("web_search_tool_result"),
-		apijson.Discriminator[BetaWebFetchToolResultBlockParam]("web_fetch_tool_result"),
-		apijson.Discriminator[BetaCodeExecutionToolResultBlockParam]("code_execution_tool_result"),
-		apijson.Discriminator[BetaBashCodeExecutionToolResultBlockParam]("bash_code_execution_tool_result"),
-		apijson.Discriminator[BetaTextEditorCodeExecutionToolResultBlockParam]("text_editor_code_execution_tool_result"),
-		apijson.Discriminator[BetaToolSearchToolResultBlockParam]("tool_search_tool_result"),
-		apijson.Discriminator[BetaMCPToolUseBlockParam]("mcp_tool_use"),
-		apijson.Discriminator[BetaRequestMCPToolResultBlockParam]("mcp_tool_result"),
-		apijson.Discriminator[BetaContainerUploadBlockParam]("container_upload"),
-	)
-}
-
 // The properties Content, Type are required.
 type BetaContentBlockSourceParam struct {
 	Content BetaContentBlockSourceContentUnionParam `json:"content,omitzero,required"`
@@ -3363,14 +3398,6 @@ func (u betaContextManagementConfigEditUnionParamKeep) GetValue() *int64 {
 		return vt.GetValue()
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[BetaContextManagementConfigEditUnionParam](
-		"type",
-		apijson.Discriminator[BetaClearToolUses20250919EditParam]("clear_tool_uses_20250919"),
-		apijson.Discriminator[BetaClearThinking20251015EditParam]("clear_thinking_20251015"),
-	)
 }
 
 type BetaContextManagementResponse struct {
@@ -4509,6 +4536,9 @@ type BetaOutputConfigParam struct {
 	//
 	// Any of "low", "medium", "high".
 	Effort BetaOutputConfigEffort `json:"effort,omitzero"`
+	// A schema to specify Claude's output format in responses. See
+	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
+	Format BetaJSONOutputFormatParam `json:"format,omitzero"`
 	paramObj
 }
 
@@ -5698,21 +5728,21 @@ func (r *BetaServerToolUsage) UnmarshalJSON(data []byte) error {
 }
 
 type BetaServerToolUseBlock struct {
-	ID string `json:"id,required"`
-	// Tool invocation directly from the model.
-	Caller BetaServerToolUseBlockCallerUnion `json:"caller,required"`
+	ID    string         `json:"id,required"`
 	Input  any                               `json:"input,required"`
 	// Any of "web_search", "web_fetch", "code_execution", "bash_code_execution",
 	// "text_editor_code_execution", "tool_search_tool_regex", "tool_search_tool_bm25".
 	Name BetaServerToolUseBlockName `json:"name,required"`
 	Type constant.ServerToolUse     `json:"type,required"`
+	// Tool invocation directly from the model.
+	Caller BetaServerToolUseBlockCallerUnion `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
-		Caller      respjson.Field
 		Input       respjson.Field
 		Name        respjson.Field
 		Type        respjson.Field
+		Caller      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -5723,6 +5753,18 @@ func (r BetaServerToolUseBlock) RawJSON() string { return r.JSON.raw }
 func (r *BetaServerToolUseBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type BetaServerToolUseBlockName string
+
+const (
+	BetaServerToolUseBlockNameWebSearch               BetaServerToolUseBlockName = "web_search"
+	BetaServerToolUseBlockNameWebFetch                BetaServerToolUseBlockName = "web_fetch"
+	BetaServerToolUseBlockNameCodeExecution           BetaServerToolUseBlockName = "code_execution"
+	BetaServerToolUseBlockNameBashCodeExecution       BetaServerToolUseBlockName = "bash_code_execution"
+	BetaServerToolUseBlockNameTextEditorCodeExecution BetaServerToolUseBlockName = "text_editor_code_execution"
+	BetaServerToolUseBlockNameToolSearchToolRegex     BetaServerToolUseBlockName = "tool_search_tool_regex"
+	BetaServerToolUseBlockNameToolSearchToolBm25      BetaServerToolUseBlockName = "tool_search_tool_bm25"
+)
 
 // BetaServerToolUseBlockCallerUnion contains all possible properties and values
 // from [BetaDirectCaller], [BetaServerToolCaller].
@@ -5787,18 +5829,6 @@ func (u BetaServerToolUseBlockCallerUnion) RawJSON() string { return u.JSON.raw 
 func (r *BetaServerToolUseBlockCallerUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaServerToolUseBlockName string
-
-const (
-	BetaServerToolUseBlockNameWebSearch               BetaServerToolUseBlockName = "web_search"
-	BetaServerToolUseBlockNameWebFetch                BetaServerToolUseBlockName = "web_fetch"
-	BetaServerToolUseBlockNameCodeExecution           BetaServerToolUseBlockName = "code_execution"
-	BetaServerToolUseBlockNameBashCodeExecution       BetaServerToolUseBlockName = "bash_code_execution"
-	BetaServerToolUseBlockNameTextEditorCodeExecution BetaServerToolUseBlockName = "text_editor_code_execution"
-	BetaServerToolUseBlockNameToolSearchToolRegex     BetaServerToolUseBlockName = "tool_search_tool_regex"
-	BetaServerToolUseBlockNameToolSearchToolBm25      BetaServerToolUseBlockName = "tool_search_tool_bm25"
-)
 
 // The properties ID, Input, Name, Type are required.
 type BetaServerToolUseBlockParam struct {
@@ -5877,14 +5907,6 @@ func (u BetaServerToolUseBlockParamCallerUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	}
 	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[BetaServerToolUseBlockParamCallerUnion](
-		"type",
-		apijson.Discriminator[BetaDirectCallerParam]("direct"),
-		apijson.Discriminator[BetaServerToolCallerParam]("code_execution_20250825"),
-	)
 }
 
 type BetaSignatureDelta struct {
@@ -7717,17 +7739,6 @@ func (u betaToolResultBlockParamContentUnionSource) GetFileID() *string {
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[BetaToolResultBlockParamContentUnion](
-		"type",
-		apijson.Discriminator[BetaTextBlockParam]("text"),
-		apijson.Discriminator[BetaImageBlockParam]("image"),
-		apijson.Discriminator[BetaSearchResultBlockParam]("search_result"),
-		apijson.Discriminator[BetaRequestDocumentBlockParam]("document"),
-		apijson.Discriminator[BetaToolReferenceBlockParam]("tool_reference"),
-	)
-}
-
 // The properties Name, Type are required.
 type BetaToolSearchToolBm25_20251119Param struct {
 	// Any of "tool_search_tool_bm25_20251119", "tool_search_tool_bm25".
@@ -8869,14 +8880,6 @@ func (u BetaToolUseBlockParamCallerUnion) GetType() *string {
 	return nil
 }
 
-func init() {
-	apijson.RegisterUnion[BetaToolUseBlockParamCallerUnion](
-		"type",
-		apijson.Discriminator[BetaDirectCallerParam]("direct"),
-		apijson.Discriminator[BetaServerToolCallerParam]("code_execution_20250825"),
-	)
-}
-
 // The properties Type, Value are required.
 type BetaToolUsesKeepParam struct {
 	Value int64 `json:"value,required"`
@@ -9391,7 +9394,7 @@ func (r *BetaWebSearchTool20250305UserLocationParam) UnmarshalJSON(data []byte) 
 // The properties ErrorCode, Type are required.
 type BetaWebSearchToolRequestErrorParam struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
-	// "too_many_requests", "query_too_long".
+	// "too_many_requests", "query_too_long", "request_too_large".
 	ErrorCode BetaWebSearchToolResultErrorCode `json:"error_code,omitzero,required"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_tool_result_error".
@@ -9520,7 +9523,7 @@ func (u *BetaWebSearchToolResultBlockParamContentUnion) asAny() any {
 
 type BetaWebSearchToolResultError struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
-	// "too_many_requests", "query_too_long".
+	// "too_many_requests", "query_too_long", "request_too_large".
 	ErrorCode BetaWebSearchToolResultErrorCode  `json:"error_code,required"`
 	Type      constant.WebSearchToolResultError `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -9546,6 +9549,7 @@ const (
 	BetaWebSearchToolResultErrorCodeMaxUsesExceeded  BetaWebSearchToolResultErrorCode = "max_uses_exceeded"
 	BetaWebSearchToolResultErrorCodeTooManyRequests  BetaWebSearchToolResultErrorCode = "too_many_requests"
 	BetaWebSearchToolResultErrorCodeQueryTooLong     BetaWebSearchToolResultErrorCode = "query_too_long"
+	BetaWebSearchToolResultErrorCodeRequestTooLarge  BetaWebSearchToolResultErrorCode = "request_too_large"
 )
 
 type BetaMessageNewParams struct {
@@ -9669,10 +9673,14 @@ type BetaMessageNewParams struct {
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.
 	Metadata BetaMetadataParam `json:"metadata,omitzero"`
-	// Configuration options for the model's output. Controls aspects like how much
-	// effort the model puts into its response.
+	// Configuration options for the model's output. Controls aspects like output
+	// format or how much effort the model puts into its response.
 	OutputConfig BetaOutputConfigParam `json:"output_config,omitzero"`
-	// A schema to specify Claude's output format in responses.
+	// Deprecated: Use `output_config.format` instead. See
+	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
+	//
+	// A schema to specify Claude's output format in responses. This parameter will be
+	// removed in a future release.
 	OutputFormat BetaJSONOutputFormatParam `json:"output_format,omitzero"`
 	// Determines whether to use priority capacity (if available) or standard capacity
 	// for this request.
@@ -9925,10 +9933,14 @@ type BetaMessageCountTokensParams struct {
 	ContextManagement BetaContextManagementConfigParam `json:"context_management,omitzero"`
 	// MCP servers to be utilized in this request
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
-	// Configuration options for the model's output. Controls aspects like how much
-	// effort the model puts into its response.
+	// Configuration options for the model's output. Controls aspects like output
+	// format or how much effort the model puts into its response.
 	OutputConfig BetaOutputConfigParam `json:"output_config,omitzero"`
-	// A schema to specify Claude's output format in responses.
+	// Deprecated: Use `output_config.format` instead. See
+	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
+	//
+	// A schema to specify Claude's output format in responses. This parameter will be
+	// removed in a future release.
 	OutputFormat BetaJSONOutputFormatParam `json:"output_format,omitzero"`
 	// System prompt.
 	//

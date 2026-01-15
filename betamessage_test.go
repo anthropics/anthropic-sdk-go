@@ -95,6 +95,11 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		},
 		OutputConfig: anthropic.BetaOutputConfigParam{
 			Effort: anthropic.BetaOutputConfigEffortLow,
+			Format: anthropic.BetaJSONOutputFormatParam{
+				Schema: map[string]any{
+					"foo": "bar",
+				},
+			},
 		},
 		OutputFormat: anthropic.BetaJSONOutputFormatParam{
 			Schema: map[string]any{
@@ -232,6 +237,11 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 		}},
 		OutputConfig: anthropic.BetaOutputConfigParam{
 			Effort: anthropic.BetaOutputConfigEffortLow,
+			Format: anthropic.BetaJSONOutputFormatParam{
+				Schema: map[string]any{
+					"foo": "bar",
+				},
+			},
 		},
 		OutputFormat: anthropic.BetaJSONOutputFormatParam{
 			Schema: map[string]any{

@@ -4264,7 +4264,7 @@ func (r *WebSearchTool20250305UserLocationParam) UnmarshalJSON(data []byte) erro
 // The properties ErrorCode, Type are required.
 type WebSearchToolRequestErrorParam struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
-	// "too_many_requests", "query_too_long".
+	// "too_many_requests", "query_too_long", "request_too_large".
 	ErrorCode WebSearchToolRequestErrorErrorCode `json:"error_code,omitzero,required"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_tool_result_error".
@@ -4288,6 +4288,7 @@ const (
 	WebSearchToolRequestErrorErrorCodeMaxUsesExceeded  WebSearchToolRequestErrorErrorCode = "max_uses_exceeded"
 	WebSearchToolRequestErrorErrorCodeTooManyRequests  WebSearchToolRequestErrorErrorCode = "too_many_requests"
 	WebSearchToolRequestErrorErrorCodeQueryTooLong     WebSearchToolRequestErrorErrorCode = "query_too_long"
+	WebSearchToolRequestErrorErrorCodeRequestTooLarge  WebSearchToolRequestErrorErrorCode = "request_too_large"
 )
 
 type WebSearchToolResultBlock struct {
@@ -4403,7 +4404,7 @@ func (u *WebSearchToolResultBlockParamContentUnion) asAny() any {
 
 type WebSearchToolResultError struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
-	// "too_many_requests", "query_too_long".
+	// "too_many_requests", "query_too_long", "request_too_large".
 	ErrorCode WebSearchToolResultErrorErrorCode `json:"error_code,required"`
 	Type      constant.WebSearchToolResultError `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -4429,6 +4430,7 @@ const (
 	WebSearchToolResultErrorErrorCodeMaxUsesExceeded  WebSearchToolResultErrorErrorCode = "max_uses_exceeded"
 	WebSearchToolResultErrorErrorCodeTooManyRequests  WebSearchToolResultErrorErrorCode = "too_many_requests"
 	WebSearchToolResultErrorErrorCodeQueryTooLong     WebSearchToolResultErrorErrorCode = "query_too_long"
+	WebSearchToolResultErrorErrorCodeRequestTooLarge  WebSearchToolResultErrorErrorCode = "request_too_large"
 )
 
 type MessageNewParams struct {

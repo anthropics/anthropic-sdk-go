@@ -1954,6 +1954,7 @@ type BetaContentBlockUnion struct {
 // add type safety for the return type of [BetaContentBlockUnion.AsAny]
 type anyBetaContentBlock interface {
 	implBetaContentBlockUnion()
+	toParamUnion() BetaContentBlockParamUnion
 }
 
 func (BetaTextBlock) implBetaContentBlockUnion()                              {}
@@ -6108,6 +6109,7 @@ type BetaTextCitationUnion struct {
 // add type safety for the return type of [BetaTextCitationUnion.AsAny]
 type anyBetaTextCitation interface {
 	implBetaTextCitationUnion()
+	toParamUnion() BetaTextCitationParamUnion
 }
 
 func (BetaCitationCharLocation) implBetaTextCitationUnion()             {}

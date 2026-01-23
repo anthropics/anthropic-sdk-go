@@ -18,7 +18,7 @@ import (
 //	}
 func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 	if acc == nil {
-		return fmt.Errorf("accumulate: cannot accumlate into nil Message")
+		return fmt.Errorf("accumulate: cannot accumulate into nil Message")
 	}
 
 	switch event := event.AsAny().(type) {
@@ -73,48 +73,77 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 // Param converters
 
 func (r BetaContentBlockUnion) ToParam() BetaContentBlockParamUnion {
-	switch variant := r.AsAny().(type) {
-	case BetaTextBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfText: &p}
-	case BetaToolUseBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfToolUse: &p}
-	case BetaThinkingBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfThinking: &p}
-	case BetaRedactedThinkingBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfRedactedThinking: &p}
-	case BetaWebSearchToolResultBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfWebSearchToolResult: &p}
-	case BetaBashCodeExecutionToolResultBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfBashCodeExecutionToolResult: &p}
-	case BetaCodeExecutionToolResultBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfCodeExecutionToolResult: &p}
-	case BetaContainerUploadBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfContainerUpload: &p}
-	case BetaMCPToolResultBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfMCPToolResult: &p}
-	case BetaMCPToolUseBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfMCPToolUse: &p}
-	case BetaServerToolUseBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfServerToolUse: &p}
-	case BetaTextEditorCodeExecutionToolResultBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfTextEditorCodeExecutionToolResult: &p}
-	case BetaWebFetchToolResultBlock:
-		p := variant.ToParam()
-		return BetaContentBlockParamUnion{OfWebFetchToolResult: &p}
-	}
-	return BetaContentBlockParamUnion{}
+	return r.AsAny().toParamUnion()
+}
+
+func (variant BetaTextBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfText: &p}
+}
+
+func (variant BetaToolUseBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfToolUse: &p}
+}
+
+func (variant BetaThinkingBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfThinking: &p}
+}
+
+func (variant BetaRedactedThinkingBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfRedactedThinking: &p}
+}
+
+func (variant BetaWebSearchToolResultBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfWebSearchToolResult: &p}
+}
+
+func (variant BetaBashCodeExecutionToolResultBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfBashCodeExecutionToolResult: &p}
+}
+
+func (variant BetaCodeExecutionToolResultBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfCodeExecutionToolResult: &p}
+}
+
+func (variant BetaContainerUploadBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfContainerUpload: &p}
+}
+
+func (variant BetaMCPToolResultBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfMCPToolResult: &p}
+}
+
+func (variant BetaMCPToolUseBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfMCPToolUse: &p}
+}
+
+func (variant BetaServerToolUseBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfServerToolUse: &p}
+}
+
+func (variant BetaTextEditorCodeExecutionToolResultBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfTextEditorCodeExecutionToolResult: &p}
+}
+
+func (variant BetaWebFetchToolResultBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfWebFetchToolResult: &p}
+}
+
+func (variant BetaToolSearchToolResultBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfToolSearchToolResult: &p}
 }
 
 func (r BetaMessage) ToParam() BetaMessageParam {
@@ -143,57 +172,63 @@ func (r BetaTextBlock) ToParam() BetaTextBlockParam {
 	// Distinguish between a nil and zero length slice, since some compatible
 	// APIs may not require citations.
 	if r.Citations != nil {
-		p.Citations = make([]BetaTextCitationParamUnion, len(r.Citations))
+		p.Citations = make([]BetaTextCitationParamUnion, 0, len(r.Citations))
 	}
-
-	for i, citation := range r.Citations {
-		switch citationVariant := citation.AsAny().(type) {
-		case BetaCitationCharLocation:
-			var citationParam BetaCitationCharLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
-			citationParam.CitedText = citationVariant.CitedText
-			citationParam.DocumentIndex = citationVariant.DocumentIndex
-			citationParam.EndCharIndex = citationVariant.EndCharIndex
-			citationParam.StartCharIndex = citationVariant.StartCharIndex
-			p.Citations[i] = BetaTextCitationParamUnion{OfCharLocation: &citationParam}
-		case BetaCitationPageLocation:
-			var citationParam BetaCitationPageLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
-			citationParam.DocumentIndex = citationVariant.DocumentIndex
-			citationParam.EndPageNumber = citationVariant.EndPageNumber
-			citationParam.StartPageNumber = citationVariant.StartPageNumber
-			p.Citations[i] = BetaTextCitationParamUnion{OfPageLocation: &citationParam}
-		case BetaCitationContentBlockLocation:
-			var citationParam BetaCitationContentBlockLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
-			citationParam.CitedText = citationVariant.CitedText
-			citationParam.DocumentIndex = citationVariant.DocumentIndex
-			citationParam.EndBlockIndex = citationVariant.EndBlockIndex
-			citationParam.StartBlockIndex = citationVariant.StartBlockIndex
-			p.Citations[i] = BetaTextCitationParamUnion{OfContentBlockLocation: &citationParam}
-		case BetaCitationSearchResultLocation:
-			var citationParam BetaCitationSearchResultLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.CitedText = citationVariant.CitedText
-			citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
-			citationParam.EndBlockIndex = citationVariant.EndBlockIndex
-			citationParam.StartBlockIndex = citationVariant.StartBlockIndex
-			citationParam.Source = citationVariant.Source
-			p.Citations[i] = BetaTextCitationParamUnion{OfSearchResultLocation: &citationParam}
-		case BetaCitationsWebSearchResultLocation:
-			var citationParam BetaCitationWebSearchResultLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.CitedText = citationVariant.CitedText
-			citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
-			p.Citations[i] = BetaTextCitationParamUnion{OfWebSearchResultLocation: &citationParam}
-		default:
-			panic(fmt.Sprintf("unexpected anthropic.anyBetaTextCitation: %#v", citationVariant))
-		}
+	for _, citation := range r.Citations {
+		p.Citations = append(p.Citations, citation.AsAny().toParamUnion())
 	}
 	return p
+}
+
+func (r BetaCitationCharLocation) toParamUnion() BetaTextCitationParamUnion {
+	var citationParam BetaCitationCharLocationParam
+	citationParam.Type = r.Type
+	citationParam.DocumentTitle = paramutil.ToOpt(r.DocumentTitle, r.JSON.DocumentTitle)
+	citationParam.CitedText = r.CitedText
+	citationParam.DocumentIndex = r.DocumentIndex
+	citationParam.EndCharIndex = r.EndCharIndex
+	citationParam.StartCharIndex = r.StartCharIndex
+	return BetaTextCitationParamUnion{OfCharLocation: &citationParam}
+}
+
+func (citationVariant BetaCitationPageLocation) toParamUnion() BetaTextCitationParamUnion {
+	var citationParam BetaCitationPageLocationParam
+	citationParam.Type = citationVariant.Type
+	citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+	citationParam.DocumentIndex = citationVariant.DocumentIndex
+	citationParam.EndPageNumber = citationVariant.EndPageNumber
+	citationParam.StartPageNumber = citationVariant.StartPageNumber
+	return BetaTextCitationParamUnion{OfPageLocation: &citationParam}
+}
+
+func (citationVariant BetaCitationContentBlockLocation) toParamUnion() BetaTextCitationParamUnion {
+	var citationParam BetaCitationContentBlockLocationParam
+	citationParam.Type = citationVariant.Type
+	citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+	citationParam.CitedText = citationVariant.CitedText
+	citationParam.DocumentIndex = citationVariant.DocumentIndex
+	citationParam.EndBlockIndex = citationVariant.EndBlockIndex
+	citationParam.StartBlockIndex = citationVariant.StartBlockIndex
+	return BetaTextCitationParamUnion{OfContentBlockLocation: &citationParam}
+}
+
+func (citationVariant BetaCitationsWebSearchResultLocation) toParamUnion() BetaTextCitationParamUnion {
+	var citationParam BetaCitationWebSearchResultLocationParam
+	citationParam.Type = citationVariant.Type
+	citationParam.CitedText = citationVariant.CitedText
+	citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
+	return BetaTextCitationParamUnion{OfWebSearchResultLocation: &citationParam}
+}
+
+func (citationVariant BetaCitationSearchResultLocation) toParamUnion() BetaTextCitationParamUnion {
+	var citationParam BetaCitationSearchResultLocationParam
+	citationParam.Type = citationVariant.Type
+	citationParam.CitedText = citationVariant.CitedText
+	citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
+	citationParam.EndBlockIndex = citationVariant.EndBlockIndex
+	citationParam.StartBlockIndex = citationVariant.StartBlockIndex
+	citationParam.Source = citationVariant.Source
+	return BetaTextCitationParamUnion{OfSearchResultLocation: &citationParam}
 }
 
 func (r BetaThinkingBlock) ToParam() BetaThinkingBlockParam {
@@ -359,5 +394,32 @@ func (r BetaCodeExecutionOutputBlock) ToParam() BetaCodeExecutionOutputBlockPara
 	var p BetaCodeExecutionOutputBlockParam
 	p.Type = r.Type
 	p.FileID = r.FileID
+	return p
+}
+
+func (r BetaToolSearchToolResultBlock) ToParam() BetaToolSearchToolResultBlockParam {
+	var p BetaToolSearchToolResultBlockParam
+	p.Type = r.Type
+	p.ToolUseID = r.ToolUseID
+	if r.Content.JSON.ErrorCode.Valid() {
+		p.Content.OfRequestToolSearchToolResultError = &BetaToolSearchToolResultErrorParam{
+			ErrorCode: BetaToolSearchToolResultErrorParamErrorCode(r.Content.ErrorCode),
+		}
+	} else {
+		p.Content.OfRequestToolSearchToolSearchResultBlock = &BetaToolSearchToolSearchResultBlockParam{}
+		for _, block := range r.Content.ToolReferences {
+			p.Content.OfRequestToolSearchToolSearchResultBlock.ToolReferences = append(
+				p.Content.OfRequestToolSearchToolSearchResultBlock.ToolReferences,
+				block.ToParam(),
+			)
+		}
+	}
+	return p
+}
+
+func (r BetaToolReferenceBlock) ToParam() BetaToolReferenceBlockParam {
+	var p BetaToolReferenceBlockParam
+	p.Type = r.Type
+	p.ToolName = r.ToolName
 	return p
 }

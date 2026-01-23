@@ -665,6 +665,7 @@ type ContentBlockUnion struct {
 // type safety for the return type of [ContentBlockUnion.AsAny]
 type anyContentBlock interface {
 	implContentBlockUnion()
+	toParamUnion() ContentBlockParamUnion
 }
 
 func (TextBlock) implContentBlockUnion()                {}
@@ -2891,6 +2892,7 @@ type TextCitationUnion struct {
 // type safety for the return type of [TextCitationUnion.AsAny]
 type anyTextCitation interface {
 	implTextCitationUnion()
+	toParamUnion() TextCitationParamUnion
 }
 
 func (CitationCharLocation) implTextCitationUnion()             {}

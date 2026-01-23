@@ -17,7 +17,7 @@ import (
 //	}
 func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 	if acc == nil {
-		return fmt.Errorf("accumulate: cannot accumlate into nil Message")
+		return fmt.Errorf("accumulate: cannot accumulate into nil Message")
 	}
 
 	switch event := event.AsAny().(type) {
@@ -81,28 +81,37 @@ func (r Message) ToParam() MessageParam {
 }
 
 func (r ContentBlockUnion) ToParam() ContentBlockParamUnion {
-	switch variant := r.AsAny().(type) {
-	case TextBlock:
-		p := variant.ToParam()
-		return ContentBlockParamUnion{OfText: &p}
-	case ToolUseBlock:
-		p := variant.ToParam()
-		return ContentBlockParamUnion{OfToolUse: &p}
-	case ThinkingBlock:
-		p := variant.ToParam()
-		return ContentBlockParamUnion{OfThinking: &p}
-	case RedactedThinkingBlock:
-		p := variant.ToParam()
-		return ContentBlockParamUnion{OfRedactedThinking: &p}
-	case ServerToolUseBlock:
-		p := variant.ToParam()
-		return ContentBlockParamUnion{OfServerToolUse: &p}
-	case WebSearchToolResultBlock:
-		p := variant.ToParam()
-		return ContentBlockParamUnion{OfWebSearchToolResult: &p}
-	default:
-		panic(fmt.Sprintf("unexpected anthropic.anyContentBlock: %#v", variant))
-	}
+	return r.AsAny().toParamUnion()
+}
+
+func (variant TextBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfText: &p}
+}
+
+func (variant ToolUseBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfToolUse: &p}
+}
+
+func (variant WebSearchToolResultBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfWebSearchToolResult: &p}
+}
+
+func (variant ServerToolUseBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfServerToolUse: &p}
+}
+
+func (variant ThinkingBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfThinking: &p}
+}
+
+func (variant RedactedThinkingBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfRedactedThinking: &p}
 }
 
 func (r RedactedThinkingBlock) ToParam() RedactedThinkingBlockParam {
@@ -121,6 +130,54 @@ func (r ToolUseBlock) ToParam() ToolUseBlockParam {
 	return toolUse
 }
 
+func (citationVariant CitationCharLocation) toParamUnion() TextCitationParamUnion {
+	var citationParam CitationCharLocationParam
+	citationParam.Type = citationVariant.Type
+	citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+	citationParam.CitedText = citationVariant.CitedText
+	citationParam.DocumentIndex = citationVariant.DocumentIndex
+	citationParam.EndCharIndex = citationVariant.EndCharIndex
+	citationParam.StartCharIndex = citationVariant.StartCharIndex
+	return TextCitationParamUnion{OfCharLocation: &citationParam}
+}
+
+func (citationVariant CitationPageLocation) toParamUnion() TextCitationParamUnion {
+	var citationParam CitationPageLocationParam
+	citationParam.Type = citationVariant.Type
+	citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+	citationParam.DocumentIndex = citationVariant.DocumentIndex
+	citationParam.EndPageNumber = citationVariant.EndPageNumber
+	citationParam.StartPageNumber = citationVariant.StartPageNumber
+	return TextCitationParamUnion{OfPageLocation: &citationParam}
+}
+
+func (citationVariant CitationContentBlockLocation) toParamUnion() TextCitationParamUnion {
+	var citationParam CitationContentBlockLocationParam
+	citationParam.Type = citationVariant.Type
+	citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+	citationParam.CitedText = citationVariant.CitedText
+	citationParam.DocumentIndex = citationVariant.DocumentIndex
+	citationParam.EndBlockIndex = citationVariant.EndBlockIndex
+	citationParam.StartBlockIndex = citationVariant.StartBlockIndex
+	return TextCitationParamUnion{OfContentBlockLocation: &citationParam}
+}
+
+func (citationVariant CitationsSearchResultLocation) toParamUnion() TextCitationParamUnion {
+	var citationParam CitationSearchResultLocationParam
+	citationParam.Type = citationVariant.Type
+	citationParam.CitedText = citationVariant.CitedText
+	citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
+	return TextCitationParamUnion{OfSearchResultLocation: &citationParam}
+}
+
+func (citationVariant CitationsWebSearchResultLocation) toParamUnion() TextCitationParamUnion {
+	var citationParam CitationWebSearchResultLocationParam
+	citationParam.Type = citationVariant.Type
+	citationParam.CitedText = citationVariant.CitedText
+	citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
+	return TextCitationParamUnion{OfWebSearchResultLocation: &citationParam}
+}
+
 func (r TextBlock) ToParam() TextBlockParam {
 	var p TextBlockParam
 	p.Type = r.Type
@@ -129,58 +186,13 @@ func (r TextBlock) ToParam() TextBlockParam {
 	// Distinguish between a nil and zero length slice, since some compatible
 	// APIs may not require citations.
 	if r.Citations != nil {
-		p.Citations = make([]TextCitationParamUnion, len(r.Citations))
+		p.Citations = make([]TextCitationParamUnion, 0, len(r.Citations))
 	}
 
-	for i, citation := range r.Citations {
-		switch citationVariant := citation.AsAny().(type) {
-		case CitationCharLocation:
-			var citationParam CitationCharLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
-			citationParam.CitedText = citationVariant.CitedText
-			citationParam.DocumentIndex = citationVariant.DocumentIndex
-			citationParam.EndCharIndex = citationVariant.EndCharIndex
-			citationParam.StartCharIndex = citationVariant.StartCharIndex
-			p.Citations[i] = TextCitationParamUnion{OfCharLocation: &citationParam}
-		case CitationPageLocation:
-			var citationParam CitationPageLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
-			citationParam.DocumentIndex = citationVariant.DocumentIndex
-			citationParam.EndPageNumber = citationVariant.EndPageNumber
-			citationParam.StartPageNumber = citationVariant.StartPageNumber
-			p.Citations[i] = TextCitationParamUnion{OfPageLocation: &citationParam}
-		case CitationContentBlockLocation:
-			var citationParam CitationContentBlockLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
-			citationParam.CitedText = citationVariant.CitedText
-
-			citationParam.DocumentIndex = citationVariant.DocumentIndex
-			citationParam.EndBlockIndex = citationVariant.EndBlockIndex
-			citationParam.StartBlockIndex = citationVariant.StartBlockIndex
-			p.Citations[i] = TextCitationParamUnion{OfContentBlockLocation: &citationParam}
-		case CitationsSearchResultLocation:
-			var citationParam CitationSearchResultLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.CitedText = citationVariant.CitedText
-			citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
-
-			citationParam.EndBlockIndex = citationVariant.EndBlockIndex
-			citationParam.StartBlockIndex = citationVariant.StartBlockIndex
-			citationParam.Source = citationVariant.Source
-			p.Citations[i] = TextCitationParamUnion{OfSearchResultLocation: &citationParam}
-		case CitationsWebSearchResultLocation:
-			var citationParam CitationWebSearchResultLocationParam
-			citationParam.Type = citationVariant.Type
-			citationParam.CitedText = citationVariant.CitedText
-			citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
-			p.Citations[i] = TextCitationParamUnion{OfWebSearchResultLocation: &citationParam}
-		default:
-			panic(fmt.Sprintf("unexpected anthropic.anyTextCitation: %#v", citationVariant))
-		}
+	for _, citation := range r.Citations {
+		p.Citations = append(p.Citations, citation.AsAny().toParamUnion())
 	}
+
 	return p
 }
 

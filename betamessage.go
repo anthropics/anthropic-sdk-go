@@ -5729,8 +5729,8 @@ func (r *BetaServerToolUsage) UnmarshalJSON(data []byte) error {
 }
 
 type BetaServerToolUseBlock struct {
-	ID    string         `json:"id,required"`
-	Input  any                               `json:"input,required"`
+	ID    string `json:"id,required"`
+	Input any    `json:"input,required"`
 	// Any of "web_search", "web_fetch", "code_execution", "bash_code_execution",
 	// "text_editor_code_execution", "tool_search_tool_regex", "tool_search_tool_bm25".
 	Name BetaServerToolUseBlockName `json:"name,required"`

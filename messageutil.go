@@ -1,6 +1,7 @@
 package anthropic
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
@@ -61,8 +62,23 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 			}
 			cb.Citations = append(cb.Citations, citation)
 		}
-	case MessageStopEvent, ContentBlockStopEvent:
-		break
+	case MessageStopEvent:
+		accJson, err := json.Marshal(acc)
+		if err != nil {
+			return fmt.Errorf("error converting content block to JSON: %w", err)
+		}
+		acc.JSON.raw = string(accJson)
+
+	case ContentBlockStopEvent:
+		if len(acc.Content) == 0 {
+			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
+		}
+		contentBlock := &acc.Content[len(acc.Content)-1]
+		cbJson, err := json.Marshal(contentBlock)
+		if err != nil {
+			return fmt.Errorf("error converting content block to JSON: %w", err)
+		}
+		contentBlock.JSON.raw = string(cbJson)
 	}
 
 	return nil

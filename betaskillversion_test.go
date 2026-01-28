@@ -33,7 +33,7 @@ func TestBetaSkillVersionNewWithOptionalParams(t *testing.T) {
 		"skill_id",
 		anthropic.BetaSkillVersionNewParams{
 			Files: []io.Reader{io.Reader(bytes.NewBuffer([]byte("some file contents")))},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {
@@ -62,7 +62,7 @@ func TestBetaSkillVersionGetWithOptionalParams(t *testing.T) {
 		"version",
 		anthropic.BetaSkillVersionGetParams{
 			SkillID: "skill_id",
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {
@@ -92,7 +92,7 @@ func TestBetaSkillVersionListWithOptionalParams(t *testing.T) {
 		anthropic.BetaSkillVersionListParams{
 			Limit: anthropic.Int(0),
 			Page:  anthropic.String("page"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {
@@ -121,7 +121,7 @@ func TestBetaSkillVersionDeleteWithOptionalParams(t *testing.T) {
 		"version",
 		anthropic.BetaSkillVersionDeleteParams{
 			SkillID: "skill_id",
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {

@@ -158,7 +158,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		}},
 		TopK:  anthropic.Int(5),
 		TopP:  anthropic.Float(0.7),
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -186,7 +186,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 		Messages: []anthropic.BetaMessageParam{{
 			Content: []anthropic.BetaContentBlockParamUnion{{
 				OfText: &anthropic.BetaTextBlockParam{
-					Text: "What is a quaternion?",
+					Text: "x",
 					CacheControl: anthropic.BetaCacheControlEphemeralParam{
 						TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 					},
@@ -297,7 +297,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 				Type:   anthropic.BetaToolTypeCustom,
 			},
 		}},
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

@@ -33,7 +33,7 @@ func TestBetaFileListWithOptionalParams(t *testing.T) {
 		AfterID:  anthropic.String("after_id"),
 		BeforeID: anthropic.String("before_id"),
 		Limit:    anthropic.Int(1),
-		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -60,7 +60,7 @@ func TestBetaFileDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"file_id",
 		anthropic.BetaFileDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {
@@ -87,7 +87,7 @@ func TestBetaFileDownloadWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"file_id",
 		anthropic.BetaFileDownloadParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {
@@ -128,7 +128,7 @@ func TestBetaFileGetMetadataWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"file_id",
 		anthropic.BetaFileGetMetadataParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {
@@ -154,7 +154,7 @@ func TestBetaFileUploadWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Files.Upload(context.TODO(), anthropic.BetaFileUploadParams{
 		File:  io.Reader(bytes.NewBuffer([]byte("some file contents"))),
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

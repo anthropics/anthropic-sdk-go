@@ -31,7 +31,7 @@ func TestBetaSkillNewWithOptionalParams(t *testing.T) {
 	_, err := client.Beta.Skills.New(context.TODO(), anthropic.BetaSkillNewParams{
 		DisplayTitle: anthropic.String("display_title"),
 		Files:        []io.Reader{io.Reader(bytes.NewBuffer([]byte("some file contents")))},
-		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -58,7 +58,7 @@ func TestBetaSkillGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"skill_id",
 		anthropic.BetaSkillGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {
@@ -86,7 +86,7 @@ func TestBetaSkillListWithOptionalParams(t *testing.T) {
 		Limit:  anthropic.Int(0),
 		Page:   anthropic.String("page"),
 		Source: anthropic.String("source"),
-		Betas:  []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+		Betas:  []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -113,7 +113,7 @@ func TestBetaSkillDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"skill_id",
 		anthropic.BetaSkillDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {

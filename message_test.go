@@ -124,7 +124,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{
 				OfText: &anthropic.TextBlockParam{
-					Text: "What is a quaternion?",
+					Text: "x",
 					CacheControl: anthropic.CacheControlEphemeralParam{
 						TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 					},

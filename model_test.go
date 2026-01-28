@@ -29,7 +29,7 @@ func TestModelGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"model_id",
 		anthropic.ModelGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {
@@ -57,7 +57,7 @@ func TestModelListWithOptionalParams(t *testing.T) {
 		AfterID:  anthropic.String("after_id"),
 		BeforeID: anthropic.String("before_id"),
 		Limit:    anthropic.Int(1),
-		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

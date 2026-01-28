@@ -164,7 +164,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				TopP: anthropic.Float(0.7),
 			},
 		}},
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -191,7 +191,7 @@ func TestBetaMessageBatchGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"message_batch_id",
 		anthropic.BetaMessageBatchGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {
@@ -219,7 +219,7 @@ func TestBetaMessageBatchListWithOptionalParams(t *testing.T) {
 		AfterID:  anthropic.String("after_id"),
 		BeforeID: anthropic.String("before_id"),
 		Limit:    anthropic.Int(1),
-		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -246,7 +246,7 @@ func TestBetaMessageBatchDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"message_batch_id",
 		anthropic.BetaMessageBatchDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {
@@ -274,7 +274,7 @@ func TestBetaMessageBatchCancelWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"message_batch_id",
 		anthropic.BetaMessageBatchCancelParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBeta("string")},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {

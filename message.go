@@ -1652,6 +1652,23 @@ func (r *InputJSONDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Schema, Type are required.
+type JSONOutputFormatParam struct {
+	// The JSON schema of the format
+	Schema map[string]any `json:"schema,omitzero,required"`
+	// This field can be elided, and will marshal its zero value as "json_schema".
+	Type constant.JSONSchema `json:"type,required"`
+	paramObj
+}
+
+func (r JSONOutputFormatParam) MarshalJSON() (data []byte, err error) {
+	type shadow JSONOutputFormatParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *JSONOutputFormatParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type Message struct {
 	// Unique object identifier.
 	//
@@ -1909,6 +1926,24 @@ func (u MessageCountTokensToolUnionParam) GetName() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u MessageCountTokensToolUnionParam) GetStrict() *bool {
+	if vt := u.OfTool; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfBashTool20250124; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250124; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250429; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250728; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfWebSearchTool20250305; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u MessageCountTokensToolUnionParam) GetType() *string {
 	if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Type)
@@ -2097,6 +2132,21 @@ const (
 	ModelClaude_3_Opus_20240229  Model = "claude-3-opus-20240229"
 	ModelClaude_3_Haiku_20240307 Model = "claude-3-haiku-20240307"
 )
+
+type OutputConfigParam struct {
+	// A schema to specify Claude's output format in responses. See
+	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
+	Format JSONOutputFormatParam `json:"format,omitzero"`
+	paramObj
+}
+
+func (r OutputConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow OutputConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *OutputConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // The properties Data, MediaType, Type are required.
 type PlainTextSourceParam struct {
@@ -3334,6 +3384,8 @@ type ToolParam struct {
 	// perform. You can use natural language descriptions to reinforce important
 	// aspects of the tool input JSON schema.
 	Description param.Opt[string] `json:"description,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "custom".
 	Type ToolType `json:"type,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -3380,6 +3432,8 @@ const (
 
 // The properties Name, Type are required.
 type ToolBash20250124Param struct {
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -3800,6 +3854,8 @@ func (u toolResultBlockParamContentUnionSource) GetURL() *string {
 
 // The properties Name, Type are required.
 type ToolTextEditor20250124Param struct {
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -3825,6 +3881,8 @@ func (r *ToolTextEditor20250124Param) UnmarshalJSON(data []byte) error {
 
 // The properties Name, Type are required.
 type ToolTextEditor20250429Param struct {
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -3853,6 +3911,8 @@ type ToolTextEditor20250728Param struct {
 	// Maximum number of characters to display when viewing a file. If not specified,
 	// defaults to displaying the full file.
 	MaxCharacters param.Opt[int64] `json:"max_characters,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Name of the tool.
@@ -3995,6 +4055,24 @@ func (u ToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
 		return (*string)(&vt.Name)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ToolUnionParam) GetStrict() *bool {
+	if vt := u.OfTool; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfBashTool20250124; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250124; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250429; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfTextEditor20250728; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfWebSearchTool20250305; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
 	}
 	return nil
 }
@@ -4204,6 +4282,8 @@ func (r *WebSearchResultBlockParam) UnmarshalJSON(data []byte) error {
 type WebSearchTool20250305Param struct {
 	// Maximum number of times the tool can be used in the API request.
 	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// If provided, only these domains will be included in results. Cannot be used
 	// alongside `blocked_domains`.
 	AllowedDomains []string `json:"allowed_domains,omitzero"`
@@ -4547,6 +4627,8 @@ type MessageNewParams struct {
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
+	// Configuration options for the model's output, such as the output format.
+	OutputConfig OutputConfigParam `json:"output_config,omitzero"`
 	// Determines whether to use priority capacity (if available) or standard capacity
 	// for this request.
 	//
@@ -4764,6 +4846,8 @@ type MessageCountTokensParams struct {
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero,required"`
+	// Configuration options for the model's output, such as the output format.
+	OutputConfig OutputConfigParam `json:"output_config,omitzero"`
 	// System prompt.
 	//
 	// A system prompt is a way of providing context and instructions to Claude, such

@@ -54,6 +54,13 @@ func TestMessageBatchNew(t *testing.T) {
 				Metadata: anthropic.MetadataParam{
 					UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 				},
+				OutputConfig: anthropic.OutputConfigParam{
+					Format: anthropic.JSONOutputFormatParam{
+						Schema: map[string]any{
+							"foo": "bar",
+						},
+					},
+				},
 				ServiceTier:   "auto",
 				StopSequences: []string{"string"},
 				Stream:        anthropic.Bool(true),
@@ -97,6 +104,7 @@ func TestMessageBatchNew(t *testing.T) {
 							TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 						},
 						Description: anthropic.String("Get the current weather in a given location"),
+						Strict:      anthropic.Bool(true),
 						Type:        anthropic.ToolTypeCustom,
 					},
 				}},

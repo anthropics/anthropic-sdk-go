@@ -647,6 +647,8 @@ type MessageBatchNewParamsRequestParams struct {
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
+	// Configuration options for the model's output, such as the output format.
+	OutputConfig OutputConfigParam `json:"output_config,omitzero"`
 	// Determines whether to use priority capacity (if available) or standard capacity
 	// for this request.
 	//

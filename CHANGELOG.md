@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.20.0 (2026-01-29)
+
+Full Changelog: [v1.19.0...v1.20.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.19.0...v1.20.0)
+
+### Features
+
+* **api:** add support for Structured Outputs in the Messages API ([10c3821](https://github.com/anthropics/anthropic-sdk-go/commit/10c382188df98d7b045aec525bdc47f3df25d576))
+* **api:** migrate sending message format in output_config rather than output_format ([f996db4](https://github.com/anthropics/anthropic-sdk-go/commit/f996db402bc1f868b11d877014a6c51d977c557f))
+* **client:** add a convenient param.SetJSON helper ([427514e](https://github.com/anthropics/anthropic-sdk-go/commit/427514ea6dde81f4eb374967577b5a4cf380f627))
+* **encoder:** support bracket encoding form-data object members ([eaaeadf](https://github.com/anthropics/anthropic-sdk-go/commit/eaaeadf6dd67119ca4406f0fb0337c16d9011b8f))
+
+
+### Bug Fixes
+
+* **accumulator:** revert to marshal accumulator on stop events ([#563](https://github.com/anthropics/anthropic-sdk-go/issues/563)) ([096a8a8](https://github.com/anthropics/anthropic-sdk-go/commit/096a8a8b20b530359c214e06272938bcf8a98c59))
+* **client:** retain streaming when user sets request body ([6d073fe](https://github.com/anthropics/anthropic-sdk-go/commit/6d073fe49f351c26c7f3fa8337e661c6a3600c68))
+* **docs:** add missing pointer prefix to api.md return types ([23aaf6d](https://github.com/anthropics/anthropic-sdk-go/commit/23aaf6de59f0c13c79dbe4fc1d764b47cfd83834))
+* **mcp:** correct code tool API endpoint ([6c8a083](https://github.com/anthropics/anthropic-sdk-go/commit/6c8a0831e6f084d316179a9288c4fa1c5420ea59))
+* rename param to avoid collision ([6d1cf75](https://github.com/anthropics/anthropic-sdk-go/commit/6d1cf75d5a407d5eb19c70e3778ab82bca74d0d5))
+* streaming endpoints should pass through errors correctly ([e584c87](https://github.com/anthropics/anthropic-sdk-go/commit/e584c87ec001ee8991ca17b8236a6ef3deb78ea7))
+* **to-param:** remove panics and add cases ([#524](https://github.com/anthropics/anthropic-sdk-go/issues/524)) ([f689816](https://github.com/anthropics/anthropic-sdk-go/commit/f6898163047854d39cec7c08ec5ab993bab463fc))
+
+
+### Chores
+
+* add float64 to valid types for RegisterFieldValidator ([b6bec73](https://github.com/anthropics/anthropic-sdk-go/commit/b6bec73c5ed18698884b990fc3dc6398a3784177))
+* **ci:** Add Claude Code GitHub Workflow ([a151836](https://github.com/anthropics/anthropic-sdk-go/commit/a151836056343974d15eda64180fc776ba0f169d))
+* **client:** improve example values ([8af69b8](https://github.com/anthropics/anthropic-sdk-go/commit/8af69b851f4a60334ed75542c2eacbe69c01893c))
+* **client:** mark claude-3-5-haiku as deprecated ([dcac65c](https://github.com/anthropics/anthropic-sdk-go/commit/dcac65c8dd82f232c2997456319c16357874f37b))
+* elide duplicate aliases ([c8e2ee1](https://github.com/anthropics/anthropic-sdk-go/commit/c8e2ee14de53b5636eadccb2a890e4464e30b8d4))
+* **internal:** codegen related update ([931c976](https://github.com/anthropics/anthropic-sdk-go/commit/931c9769f1ff0557a8eff333463e1847b15f7953))
+* **internal:** update `actions/checkout` version ([3bd83ec](https://github.com/anthropics/anthropic-sdk-go/commit/3bd83eca53f1ec0b759c2568601286405821dcbc))
+* **internal:** use different example values for some enums ([f2d46b8](https://github.com/anthropics/anthropic-sdk-go/commit/f2d46b87de1a57ed1790cad3134b5e340f22fd73))
+
 ## 1.19.0 (2025-11-24)
 
 Full Changelog: [v1.18.1...v1.19.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.18.1...v1.19.0)

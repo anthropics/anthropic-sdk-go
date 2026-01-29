@@ -51,6 +51,13 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		Metadata: anthropic.MetadataParam{
 			UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		},
+		OutputConfig: anthropic.OutputConfigParam{
+			Format: anthropic.JSONOutputFormatParam{
+				Schema: map[string]any{
+					"foo": "bar",
+				},
+			},
+		},
 		ServiceTier:   anthropic.MessageNewParamsServiceTierAuto,
 		StopSequences: []string{"string"},
 		System: []anthropic.TextBlockParam{{
@@ -93,6 +100,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 					TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 				},
 				Description: anthropic.String("Get the current weather in a given location"),
+				Strict:      anthropic.Bool(true),
 				Type:        anthropic.ToolTypeCustom,
 			},
 		}},
@@ -142,6 +150,13 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 			Role: anthropic.MessageParamRoleUser,
 		}},
 		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		OutputConfig: anthropic.OutputConfigParam{
+			Format: anthropic.JSONOutputFormatParam{
+				Schema: map[string]any{
+					"foo": "bar",
+				},
+			},
+		},
 		System: anthropic.MessageCountTokensParamsSystemUnion{
 			OfTextBlockArray: []anthropic.TextBlockParam{{
 				Text: "Today's date is 2024-06-01.",
@@ -183,6 +198,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 					TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 				},
 				Description: anthropic.String("Get the current weather in a given location"),
+				Strict:      anthropic.Bool(true),
 				Type:        anthropic.ToolTypeCustom,
 			},
 		}},

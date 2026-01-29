@@ -1282,7 +1282,8 @@ type BetaCodeExecutionTool20250522Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -1312,7 +1313,8 @@ type BetaCodeExecutionTool20250825Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -3792,7 +3794,8 @@ type BetaMemoryTool20250818Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -4298,7 +4301,10 @@ func (r *BetaMetadataParam) UnmarshalJSON(data []byte) error {
 }
 
 type BetaOutputConfigParam struct {
-	// All possible effort levels.
+	// How much effort the model should put into its response. Higher effort levels may
+	// result in more thorough analysis but take longer.
+	//
+	// Valid values are `low`, `medium`, or `high`.
 	//
 	// Any of "low", "medium", "high".
 	Effort BetaOutputConfigEffort `json:"effort,omitzero"`
@@ -4316,7 +4322,10 @@ func (r *BetaOutputConfigParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// All possible effort levels.
+// How much effort the model should put into its response. Higher effort levels may
+// result in more thorough analysis but take longer.
+//
+// Valid values are `low`, `medium`, or `high`.
 type BetaOutputConfigEffort string
 
 const (
@@ -6851,7 +6860,8 @@ type BetaToolParam struct {
 	// perform. You can use natural language descriptions to reinforce important
 	// aspects of the tool input JSON schema.
 	Description param.Opt[string] `json:"description,omitzero"`
-	Strict      param.Opt[bool]   `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "custom".
 	Type BetaToolType `json:"type,omitzero"`
 	// Any of "direct", "code_execution_20250825".
@@ -6904,7 +6914,8 @@ type BetaToolBash20241022Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -6934,7 +6945,8 @@ type BetaToolBash20250124Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -7142,7 +7154,8 @@ type BetaToolComputerUse20241022Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -7179,7 +7192,8 @@ type BetaToolComputerUse20250124Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -7218,7 +7232,8 @@ type BetaToolComputerUse20251124Param struct {
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
 	// Whether to enable an action to take a zoomed-in screenshot of the screen.
 	EnableZoom param.Opt[bool] `json:"enable_zoom,omitzero"`
-	Strict     param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -7571,7 +7586,8 @@ type BetaToolSearchToolBm25_20251119Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -7608,7 +7624,8 @@ type BetaToolSearchToolRegex20251119Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -7867,7 +7884,8 @@ type BetaToolTextEditor20241022Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -7899,7 +7917,8 @@ type BetaToolTextEditor20250124Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -7931,7 +7950,8 @@ type BetaToolTextEditor20250429Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -7966,7 +7986,8 @@ type BetaToolTextEditor20250728Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "direct", "code_execution_20250825".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -8876,7 +8897,8 @@ type BetaWebFetchTool20250910Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// List of domains to allow fetching from
 	AllowedDomains []string `json:"allowed_domains,omitzero"`
 	// List of domains to block fetching from
@@ -9161,7 +9183,8 @@ type BetaWebSearchTool20250305Param struct {
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	Strict       param.Opt[bool] `json:"strict,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// If provided, only these domains will be included in results. Cannot be used
 	// alongside `blocked_domains`.
 	AllowedDomains []string `json:"allowed_domains,omitzero"`
@@ -9505,8 +9528,7 @@ type BetaMessageNewParams struct {
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.
 	Metadata BetaMetadataParam `json:"metadata,omitzero"`
-	// Configuration options for the model's output. Controls aspects like output
-	// format or how much effort the model puts into its response.
+	// Configuration options for the model's output, such as the output format.
 	OutputConfig BetaOutputConfigParam `json:"output_config,omitzero"`
 	// Deprecated: Use `output_config.format` instead. See
 	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
@@ -9765,8 +9787,7 @@ type BetaMessageCountTokensParams struct {
 	ContextManagement BetaContextManagementConfigParam `json:"context_management,omitzero"`
 	// MCP servers to be utilized in this request
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
-	// Configuration options for the model's output. Controls aspects like output
-	// format or how much effort the model puts into its response.
+	// Configuration options for the model's output, such as the output format.
 	OutputConfig BetaOutputConfigParam `json:"output_config,omitzero"`
 	// Deprecated: Use `output_config.format` instead. See
 	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)

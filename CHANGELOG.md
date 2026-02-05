@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.21.0 (2026-02-05)
+
+Full Changelog: [v1.20.0...v1.21.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.20.0...v1.21.0)
+
+### Features
+
+* **api:** manual updates ([e899e64](https://github.com/anthropics/anthropic-sdk-go/commit/e899e64cd402eb004909d632e68acc4b0587f53c))
+
+
+### Chores
+
+* **ci:** remove claude-code-review workflow ([31db702](https://github.com/anthropics/anthropic-sdk-go/commit/31db70249f691b161f326f550dc26cdcce54dd30))
+
 ## 1.20.0 (2026-01-29)
 
 Full Changelog: [v1.19.0...v1.20.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.19.0...v1.20.0)

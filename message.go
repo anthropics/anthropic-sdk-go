@@ -1737,6 +1737,14 @@ func (u MessageCountTokensToolUnionParam) GetDescription() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u MessageCountTokensToolUnionParam) GetEagerInputStreaming() *bool {
+	if vt := u.OfTool; vt != nil && vt.EagerInputStreaming.Valid() {
+		return &vt.EagerInputStreaming.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u MessageCountTokensToolUnionParam) GetMaxCharacters() *int64 {
 	if vt := u.OfTextEditor20250728; vt != nil && vt.MaxCharacters.Valid() {
 		return &vt.MaxCharacters.Value
@@ -1942,6 +1950,7 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model string
 
 const (
+	ModelClaudeOpus4_6          Model = "claude-opus-4-6"
 	ModelClaudeOpus4_5_20251101 Model = "claude-opus-4-5-20251101"
 	ModelClaudeOpus4_5          Model = "claude-opus-4-5"
 	// Deprecated: Will reach end-of-life on February 19th, 2026. Please migrate to a
@@ -1989,6 +1998,10 @@ const (
 )
 
 type OutputConfigParam struct {
+	// All possible effort levels.
+	//
+	// Any of "low", "medium", "high", "max".
+	Effort OutputConfigEffort `json:"effort,omitzero"`
 	// A schema to specify Claude's output format in responses. See
 	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
 	Format JSONOutputFormatParam `json:"format,omitzero"`
@@ -2002,6 +2015,16 @@ func (r OutputConfigParam) MarshalJSON() (data []byte, err error) {
 func (r *OutputConfigParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// All possible effort levels.
+type OutputConfigEffort string
+
+const (
+	OutputConfigEffortLow    OutputConfigEffort = "low"
+	OutputConfigEffortMedium OutputConfigEffort = "medium"
+	OutputConfigEffortHigh   OutputConfigEffort = "high"
+	OutputConfigEffortMax    OutputConfigEffort = "max"
+)
 
 // The properties Data, MediaType, Type are required.
 type PlainTextSourceParam struct {
@@ -3118,6 +3141,27 @@ func (r *ThinkingBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func NewThinkingConfigAdaptiveParam() ThinkingConfigAdaptiveParam {
+	return ThinkingConfigAdaptiveParam{
+		Type: "adaptive",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewThinkingConfigAdaptiveParam].
+type ThinkingConfigAdaptiveParam struct {
+	Type constant.Adaptive `json:"type,required"`
+	paramObj
+}
+
+func (r ThinkingConfigAdaptiveParam) MarshalJSON() (data []byte, err error) {
+	type shadow ThinkingConfigAdaptiveParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ThinkingConfigAdaptiveParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 func NewThinkingConfigDisabledParam() ThinkingConfigDisabledParam {
 	return ThinkingConfigDisabledParam{
 		Type: "disabled",
@@ -3176,11 +3220,12 @@ func ThinkingConfigParamOfEnabled(budgetTokens int64) ThinkingConfigParamUnion {
 type ThinkingConfigParamUnion struct {
 	OfEnabled  *ThinkingConfigEnabledParam  `json:",omitzero,inline"`
 	OfDisabled *ThinkingConfigDisabledParam `json:",omitzero,inline"`
+	OfAdaptive *ThinkingConfigAdaptiveParam `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled)
+	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled, u.OfAdaptive)
 }
 func (u *ThinkingConfigParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3191,6 +3236,8 @@ func (u *ThinkingConfigParamUnion) asAny() any {
 		return u.OfEnabled
 	} else if !param.IsOmitted(u.OfDisabled) {
 		return u.OfDisabled
+	} else if !param.IsOmitted(u.OfAdaptive) {
+		return u.OfAdaptive
 	}
 	return nil
 }
@@ -3209,6 +3256,8 @@ func (u ThinkingConfigParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAdaptive; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -3218,6 +3267,7 @@ func init() {
 		"type",
 		apijson.Discriminator[ThinkingConfigEnabledParam]("enabled"),
 		apijson.Discriminator[ThinkingConfigDisabledParam]("disabled"),
+		apijson.Discriminator[ThinkingConfigAdaptiveParam]("adaptive"),
 	)
 }
 
@@ -3250,6 +3300,12 @@ type ToolParam struct {
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	Name string `json:"name,required"`
+	// Enable eager input streaming for this tool. When true, tool input parameters
+	// will be streamed incrementally as they are generated, and types will be inferred
+	// on-the-fly rather than buffering the full JSON output. When false, streaming is
+	// disabled for this tool even if the fine-grained-tool-streaming beta is active.
+	// When null (default), uses the default behavior based on beta headers.
+	EagerInputStreaming param.Opt[bool] `json:"eager_input_streaming,omitzero"`
 	// Description of what this tool does.
 	//
 	// Tool descriptions should be as detailed as possible. The more information that
@@ -3895,6 +3951,14 @@ func (u ToolUnionParam) GetDescription() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u ToolUnionParam) GetEagerInputStreaming() *bool {
+	if vt := u.OfTool; vt != nil && vt.EagerInputStreaming.Valid() {
+		return &vt.EagerInputStreaming.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u ToolUnionParam) GetMaxCharacters() *int64 {
 	if vt := u.OfTextEditor20250728; vt != nil && vt.MaxCharacters.Valid() {
 		return &vt.MaxCharacters.Value
@@ -4087,6 +4151,8 @@ type Usage struct {
 	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens,required"`
 	// The number of input tokens read from the cache.
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens,required"`
+	// The geographic region where inference was performed for this request.
+	InferenceGeo string `json:"inference_geo,required"`
 	// The number of input tokens which were used.
 	InputTokens int64 `json:"input_tokens,required"`
 	// The number of output tokens which were used.
@@ -4102,6 +4168,7 @@ type Usage struct {
 		CacheCreation            respjson.Field
 		CacheCreationInputTokens respjson.Field
 		CacheReadInputTokens     respjson.Field
+		InferenceGeo             respjson.Field
 		InputTokens              respjson.Field
 		OutputTokens             respjson.Field
 		ServerToolUse            respjson.Field
@@ -4490,6 +4557,9 @@ type MessageNewParams struct {
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero,required"`
+	// Specifies the geographic region for inference processing. If not specified, the
+	// workspace's `default_inference_geo` is used.
+	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
 	// Amount of randomness injected into the response.
 	//
 	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`

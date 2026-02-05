@@ -637,6 +637,9 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero,required"`
+	// Specifies the geographic region for inference processing. If not specified, the
+	// workspace's `default_inference_geo` is used.
+	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
 	// Whether to incrementally stream the response using server-sent events.
 	//
 	// See [streaming](https://docs.claude.com/en/api/messages-streaming) for details.

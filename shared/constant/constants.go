@@ -18,6 +18,7 @@ func ValueOf[T Constant[T]]() T {
 	return t.Default()
 }
 
+type Adaptive string                                // Always "adaptive"
 type All string                                     // Always "all"
 type Any string                                     // Always "any"
 type APIError string                                // Always "api_error"
@@ -47,6 +48,9 @@ type CodeExecutionOutput string                     // Always "code_execution_ou
 type CodeExecutionResult string                     // Always "code_execution_result"
 type CodeExecutionToolResult string                 // Always "code_execution_tool_result"
 type CodeExecutionToolResultError string            // Always "code_execution_tool_result_error"
+type Compact20260112 string                         // Always "compact_20260112"
+type Compaction string                              // Always "compaction"
+type CompactionDelta string                         // Always "compaction_delta"
 type Completion string                              // Always "completion"
 type Computer string                                // Always "computer"
 type Computer20241022 string                        // Always "computer_20241022"
@@ -144,6 +148,7 @@ type WebSearchResultLocation string                 // Always "web_search_result
 type WebSearchToolResult string                     // Always "web_search_tool_result"
 type WebSearchToolResultError string                // Always "web_search_tool_result_error"
 
+func (c Adaptive) Default() Adaptive                       { return "adaptive" }
 func (c All) Default() All                                 { return "all" }
 func (c Any) Default() Any                                 { return "any" }
 func (c APIError) Default() APIError                       { return "api_error" }
@@ -185,6 +190,9 @@ func (c CodeExecutionToolResult) Default() CodeExecutionToolResult {
 func (c CodeExecutionToolResultError) Default() CodeExecutionToolResultError {
 	return "code_execution_tool_result_error"
 }
+func (c Compact20260112) Default() Compact20260112           { return "compact_20260112" }
+func (c Compaction) Default() Compaction                     { return "compaction" }
+func (c CompactionDelta) Default() CompactionDelta           { return "compaction_delta" }
 func (c Completion) Default() Completion                     { return "completion" }
 func (c Computer) Default() Computer                         { return "computer" }
 func (c Computer20241022) Default() Computer20241022         { return "computer_20241022" }
@@ -304,6 +312,7 @@ func (c WebSearchToolResultError) Default() WebSearchToolResultError {
 	return "web_search_tool_result_error"
 }
 
+func (c Adaptive) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c All) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Any) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c APIError) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
@@ -333,6 +342,9 @@ func (c CodeExecutionOutput) MarshalJSON() ([]byte, error)                 { ret
 func (c CodeExecutionResult) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c CodeExecutionToolResult) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c CodeExecutionToolResultError) MarshalJSON() ([]byte, error)        { return marshalString(c) }
+func (c Compact20260112) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c Compaction) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c CompactionDelta) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Completion) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Computer) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Computer20241022) MarshalJSON() ([]byte, error)                    { return marshalString(c) }

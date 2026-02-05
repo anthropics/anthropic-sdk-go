@@ -48,7 +48,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.BetaMessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeSonnet4_5_20250929,
+		Model: anthropic.ModelClaudeOpus4_6,
 		Container: anthropic.BetaMessageNewParamsContainerUnion{
 			OfContainers: &anthropic.BetaContainerParams{
 				ID: anthropic.String("id"),
@@ -80,6 +80,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 				},
 			}},
 		},
+		InferenceGeo: anthropic.String("inference_geo"),
 		MCPServers: []anthropic.BetaRequestMCPServerURLDefinitionParam{{
 			Name:               "name",
 			URL:                "url",
@@ -147,8 +148,9 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 				CacheControl: anthropic.BetaCacheControlEphemeralParam{
 					TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 				},
-				DeferLoading: anthropic.Bool(true),
-				Description:  anthropic.String("Get the current weather in a given location"),
+				DeferLoading:        anthropic.Bool(true),
+				Description:         anthropic.String("Get the current weather in a given location"),
+				EagerInputStreaming: anthropic.Bool(true),
 				InputExamples: []map[string]any{{
 					"foo": "bar",
 				}},
@@ -203,7 +205,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.BetaMessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		Model: anthropic.ModelClaudeOpus4_6,
 		ContextManagement: anthropic.BetaContextManagementConfigParam{
 			Edits: []anthropic.BetaContextManagementConfigEditUnionParam{{
 				OfClearToolUses20250919: &anthropic.BetaClearToolUses20250919EditParam{
@@ -288,8 +290,9 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 				CacheControl: anthropic.BetaCacheControlEphemeralParam{
 					TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 				},
-				DeferLoading: anthropic.Bool(true),
-				Description:  anthropic.String("Get the current weather in a given location"),
+				DeferLoading:        anthropic.Bool(true),
+				Description:         anthropic.String("Get the current weather in a given location"),
+				EagerInputStreaming: anthropic.Bool(true),
 				InputExamples: []map[string]any{{
 					"foo": "bar",
 				}},

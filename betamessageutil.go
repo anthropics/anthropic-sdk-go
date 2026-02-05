@@ -29,6 +29,7 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 		acc.StopReason = event.Delta.StopReason
 		acc.StopSequence = event.Delta.StopSequence
 		acc.Usage.OutputTokens = event.Usage.OutputTokens
+		acc.Usage.Iterations = event.Usage.Iterations
 		acc.ContextManagement = event.ContextManagement
 	case BetaRawContentBlockStartEvent:
 		acc.Content = append(acc.Content, BetaContentBlockUnion{})
@@ -63,6 +64,8 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 				return fmt.Errorf("could not unmarshal citation delta into citation type: %w", err)
 			}
 			cb.Citations = append(cb.Citations, citation)
+		case BetaCompactionContentBlockDelta:
+			cb.Content.OfString = delta.Content
 		}
 	case BetaRawMessageStopEvent:
 		accJson, err := json.Marshal(acc)
@@ -160,6 +163,11 @@ func (variant BetaWebFetchToolResultBlock) toParamUnion() BetaContentBlockParamU
 func (variant BetaToolSearchToolResultBlock) toParamUnion() BetaContentBlockParamUnion {
 	p := variant.ToParam()
 	return BetaContentBlockParamUnion{OfToolSearchToolResult: &p}
+}
+
+func (variant BetaCompactionBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfCompaction: &p}
 }
 
 func (r BetaMessage) ToParam() BetaMessageParam {
@@ -437,5 +445,12 @@ func (r BetaToolReferenceBlock) ToParam() BetaToolReferenceBlockParam {
 	var p BetaToolReferenceBlockParam
 	p.Type = r.Type
 	p.ToolName = r.ToolName
+	return p
+}
+
+func (r BetaCompactionBlock) ToParam() BetaCompactionBlockParam {
+	var p BetaCompactionBlockParam
+	p.Type = r.Type
+	p.Content = param.NewOpt(r.Content)
 	return p
 }

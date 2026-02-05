@@ -50,11 +50,13 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeSonnet4_5_20250929,
+		Model:        anthropic.ModelClaudeOpus4_6,
+		InferenceGeo: anthropic.String("inference_geo"),
 		Metadata: anthropic.MetadataParam{
 			UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
 		},
 		OutputConfig: anthropic.OutputConfigParam{
+			Effort: anthropic.OutputConfigEffortLow,
 			Format: anthropic.JSONOutputFormatParam{
 				Schema: map[string]any{
 					"foo": "bar",
@@ -102,9 +104,10 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 				CacheControl: anthropic.CacheControlEphemeralParam{
 					TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 				},
-				Description: anthropic.String("Get the current weather in a given location"),
-				Strict:      anthropic.Bool(true),
-				Type:        anthropic.ToolTypeCustom,
+				Description:         anthropic.String("Get the current weather in a given location"),
+				EagerInputStreaming: anthropic.Bool(true),
+				Strict:              anthropic.Bool(true),
+				Type:                anthropic.ToolTypeCustom,
 			},
 		}},
 		TopK: anthropic.Int(5),
@@ -152,8 +155,9 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_5_20251101,
+		Model: anthropic.ModelClaudeOpus4_6,
 		OutputConfig: anthropic.OutputConfigParam{
+			Effort: anthropic.OutputConfigEffortLow,
 			Format: anthropic.JSONOutputFormatParam{
 				Schema: map[string]any{
 					"foo": "bar",
@@ -200,9 +204,10 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 				CacheControl: anthropic.CacheControlEphemeralParam{
 					TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 				},
-				Description: anthropic.String("Get the current weather in a given location"),
-				Strict:      anthropic.Bool(true),
-				Type:        anthropic.ToolTypeCustom,
+				Description:         anthropic.String("Get the current weather in a given location"),
+				EagerInputStreaming: anthropic.Bool(true),
+				Strict:              anthropic.Bool(true),
+				Type:                anthropic.ToolTypeCustom,
 			},
 		}},
 	})

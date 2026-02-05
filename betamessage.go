@@ -1800,6 +1800,132 @@ func (r *BetaCodeExecutionToolResultErrorParam) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Automatically compact older context when reaching the configured trigger
+// threshold.
+//
+// The property Type is required.
+type BetaCompact20260112EditParam struct {
+	// Additional instructions for summarization.
+	Instructions param.Opt[string] `json:"instructions,omitzero"`
+	// Whether to pause after compaction and return the compaction block to the user.
+	PauseAfterCompaction param.Opt[bool] `json:"pause_after_compaction,omitzero"`
+	// When to trigger compaction. Defaults to 150000 input tokens.
+	Trigger BetaInputTokensTriggerParam `json:"trigger,omitzero"`
+	// This field can be elided, and will marshal its zero value as "compact_20260112".
+	Type constant.Compact20260112 `json:"type,required"`
+	paramObj
+}
+
+func (r BetaCompact20260112EditParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaCompact20260112EditParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaCompact20260112EditParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A compaction block returned when autocompact is triggered.
+//
+// When content is None, it indicates the compaction failed to produce a valid
+// summary (e.g., malformed output from the model). Clients may round-trip
+// compaction blocks with null content; the server treats them as no-ops.
+type BetaCompactionBlock struct {
+	// Summary of compacted content, or null if compaction failed
+	Content string              `json:"content,required"`
+	Type    constant.Compaction `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Content     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCompactionBlock) RawJSON() string { return r.JSON.raw }
+func (r *BetaCompactionBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A compaction block containing summary of previous context.
+//
+// Users should round-trip these blocks from responses to subsequent requests to
+// maintain context across compaction boundaries.
+//
+// When content is None, the block represents a failed compaction. The server
+// treats these as no-ops. Empty string content is not allowed.
+//
+// The properties Content, Type are required.
+type BetaCompactionBlockParam struct {
+	// Summary of previously compacted content, or null if compaction failed
+	Content param.Opt[string] `json:"content,omitzero,required"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// This field can be elided, and will marshal its zero value as "compaction".
+	Type constant.Compaction `json:"type,required"`
+	paramObj
+}
+
+func (r BetaCompactionBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaCompactionBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaCompactionBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaCompactionContentBlockDelta struct {
+	Content string                   `json:"content,required"`
+	Type    constant.CompactionDelta `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Content     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCompactionContentBlockDelta) RawJSON() string { return r.JSON.raw }
+func (r *BetaCompactionContentBlockDelta) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Token usage for a compaction iteration.
+type BetaCompactionIterationUsage struct {
+	// Breakdown of cached tokens by TTL
+	CacheCreation BetaCacheCreation `json:"cache_creation,required"`
+	// The number of input tokens used to create the cache entry.
+	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens,required"`
+	// The number of input tokens read from the cache.
+	CacheReadInputTokens int64 `json:"cache_read_input_tokens,required"`
+	// The number of input tokens which were used.
+	InputTokens int64 `json:"input_tokens,required"`
+	// The number of output tokens which were used.
+	OutputTokens int64 `json:"output_tokens,required"`
+	// Usage for a compaction iteration
+	Type constant.Compaction `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheCreation            respjson.Field
+		CacheCreationInputTokens respjson.Field
+		CacheReadInputTokens     respjson.Field
+		InputTokens              respjson.Field
+		OutputTokens             respjson.Field
+		Type                     respjson.Field
+		ExtraFields              map[string]respjson.Field
+		raw                      string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCompactionIterationUsage) RawJSON() string { return r.JSON.raw }
+func (r *BetaCompactionIterationUsage) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Information about the container used in the request (for the code execution
 // tool)
 type BetaContainer struct {
@@ -1888,7 +2014,8 @@ func (r *BetaContainerUploadBlockParam) UnmarshalJSON(data []byte) error {
 // [BetaWebFetchToolResultBlock], [BetaCodeExecutionToolResultBlock],
 // [BetaBashCodeExecutionToolResultBlock],
 // [BetaTextEditorCodeExecutionToolResultBlock], [BetaToolSearchToolResultBlock],
-// [BetaMCPToolUseBlock], [BetaMCPToolResultBlock], [BetaContainerUploadBlock].
+// [BetaMCPToolUseBlock], [BetaMCPToolResultBlock], [BetaContainerUploadBlock],
+// [BetaCompactionBlock].
 //
 // Use the [BetaContentBlockUnion.AsAny] method to switch on the variant.
 //
@@ -1902,7 +2029,7 @@ type BetaContentBlockUnion struct {
 	// "web_search_tool_result", "web_fetch_tool_result", "code_execution_tool_result",
 	// "bash_code_execution_tool_result", "text_editor_code_execution_tool_result",
 	// "tool_search_tool_result", "mcp_tool_use", "mcp_tool_result",
-	// "container_upload".
+	// "container_upload", "compaction".
 	Type string `json:"type"`
 	// This field is from variant [BetaThinkingBlock].
 	Signature string `json:"signature"`
@@ -1923,7 +2050,7 @@ type BetaContentBlockUnion struct {
 	// [BetaBashCodeExecutionToolResultBlockContentUnion],
 	// [BetaTextEditorCodeExecutionToolResultBlockContentUnion],
 	// [BetaToolSearchToolResultBlockContentUnion],
-	// [BetaMCPToolResultBlockContentUnion]
+	// [BetaMCPToolResultBlockContentUnion], [string]
 	Content   BetaContentBlockUnionContent `json:"content"`
 	ToolUseID string                       `json:"tool_use_id"`
 	// This field is from variant [BetaMCPToolUseBlock].
@@ -1973,6 +2100,7 @@ func (BetaToolSearchToolResultBlock) implBetaContentBlockUnion()              {}
 func (BetaMCPToolUseBlock) implBetaContentBlockUnion()                        {}
 func (BetaMCPToolResultBlock) implBetaContentBlockUnion()                     {}
 func (BetaContainerUploadBlock) implBetaContentBlockUnion()                   {}
+func (BetaCompactionBlock) implBetaContentBlockUnion()                        {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -1991,6 +2119,7 @@ func (BetaContainerUploadBlock) implBetaContentBlockUnion()                   {}
 //	case anthropic.BetaMCPToolUseBlock:
 //	case anthropic.BetaMCPToolResultBlock:
 //	case anthropic.BetaContainerUploadBlock:
+//	case anthropic.BetaCompactionBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -2024,6 +2153,8 @@ func (u BetaContentBlockUnion) AsAny() anyBetaContentBlock {
 		return u.AsMCPToolResult()
 	case "container_upload":
 		return u.AsContainerUpload()
+	case "compaction":
+		return u.AsCompaction()
 	}
 	return nil
 }
@@ -2094,6 +2225,11 @@ func (u BetaContentBlockUnion) AsMCPToolResult() (v BetaMCPToolResultBlock) {
 }
 
 func (u BetaContentBlockUnion) AsContainerUpload() (v BetaContainerUploadBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaContentBlockUnion) AsCompaction() (v BetaCompactionBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2444,6 +2580,12 @@ func NewBetaContainerUploadBlock(fileID string) BetaContentBlockParamUnion {
 	return BetaContentBlockParamUnion{OfContainerUpload: &containerUpload}
 }
 
+func NewBetaCompactionBlock(content string) BetaContentBlockParamUnion {
+	var compaction BetaCompactionBlockParam
+	compaction.Content = param.NewOpt(content)
+	return BetaContentBlockParamUnion{OfCompaction: &compaction}
+}
+
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
@@ -2466,6 +2608,7 @@ type BetaContentBlockParamUnion struct {
 	OfMCPToolUse                        *BetaMCPToolUseBlockParam                        `json:",omitzero,inline"`
 	OfMCPToolResult                     *BetaRequestMCPToolResultBlockParam              `json:",omitzero,inline"`
 	OfContainerUpload                   *BetaContainerUploadBlockParam                   `json:",omitzero,inline"`
+	OfCompaction                        *BetaCompactionBlockParam                        `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -2487,7 +2630,8 @@ func (u BetaContentBlockParamUnion) MarshalJSON() ([]byte, error) {
 		u.OfToolSearchToolResult,
 		u.OfMCPToolUse,
 		u.OfMCPToolResult,
-		u.OfContainerUpload)
+		u.OfContainerUpload,
+		u.OfCompaction)
 }
 func (u *BetaContentBlockParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -2530,6 +2674,8 @@ func (u *BetaContentBlockParamUnion) asAny() any {
 		return u.OfMCPToolResult
 	} else if !param.IsOmitted(u.OfContainerUpload) {
 		return u.OfContainerUpload
+	} else if !param.IsOmitted(u.OfCompaction) {
+		return u.OfCompaction
 	}
 	return nil
 }
@@ -2627,6 +2773,8 @@ func (u BetaContentBlockParamUnion) GetType() *string {
 	} else if vt := u.OfMCPToolResult; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfContainerUpload; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfCompaction; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -2731,6 +2879,8 @@ func (u BetaContentBlockParamUnion) GetCacheControl() *BetaCacheControlEphemeral
 	} else if vt := u.OfMCPToolResult; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfContainerUpload; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfCompaction; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil
@@ -2897,6 +3047,8 @@ func (u BetaContentBlockParamUnion) GetContent() (res betaContentBlockParamUnion
 		res.any = vt.Content.asAny()
 	} else if vt := u.OfMCPToolResult; vt != nil {
 		res.any = vt.Content.asAny()
+	} else if vt := u.OfCompaction; vt != nil && vt.Content.Valid() {
+		res.any = &vt.Content.Value
 	}
 	return
 }
@@ -3234,6 +3386,7 @@ func (u betaContentBlockParamUnionCaller) GetToolID() *string {
 	return nil
 }
 
+
 // The properties Content, Type are required.
 type BetaContentBlockSourceParam struct {
 	Content BetaContentBlockSourceContentUnionParam `json:"content,omitzero,required"`
@@ -3295,11 +3448,12 @@ func (r *BetaContextManagementConfigParam) UnmarshalJSON(data []byte) error {
 type BetaContextManagementConfigEditUnionParam struct {
 	OfClearToolUses20250919 *BetaClearToolUses20250919EditParam `json:",omitzero,inline"`
 	OfClearThinking20251015 *BetaClearThinking20251015EditParam `json:",omitzero,inline"`
+	OfCompact20260112       *BetaCompact20260112EditParam       `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaContextManagementConfigEditUnionParam) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfClearToolUses20250919, u.OfClearThinking20251015)
+	return param.MarshalUnion(u, u.OfClearToolUses20250919, u.OfClearThinking20251015, u.OfCompact20260112)
 }
 func (u *BetaContextManagementConfigEditUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3310,6 +3464,8 @@ func (u *BetaContextManagementConfigEditUnionParam) asAny() any {
 		return u.OfClearToolUses20250919
 	} else if !param.IsOmitted(u.OfClearThinking20251015) {
 		return u.OfClearThinking20251015
+	} else if !param.IsOmitted(u.OfCompact20260112) {
+		return u.OfCompact20260112
 	}
 	return nil
 }
@@ -3339,9 +3495,17 @@ func (u BetaContextManagementConfigEditUnionParam) GetExcludeTools() []string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaContextManagementConfigEditUnionParam) GetTrigger() *BetaClearToolUses20250919EditTriggerUnionParam {
-	if vt := u.OfClearToolUses20250919; vt != nil {
-		return &vt.Trigger
+func (u BetaContextManagementConfigEditUnionParam) GetInstructions() *string {
+	if vt := u.OfCompact20260112; vt != nil && vt.Instructions.Valid() {
+		return &vt.Instructions.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaContextManagementConfigEditUnionParam) GetPauseAfterCompaction() *bool {
+	if vt := u.OfCompact20260112; vt != nil && vt.PauseAfterCompaction.Valid() {
+		return &vt.PauseAfterCompaction.Value
 	}
 	return nil
 }
@@ -3351,6 +3515,8 @@ func (u BetaContextManagementConfigEditUnionParam) GetType() *string {
 	if vt := u.OfClearToolUses20250919; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfClearThinking20251015; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfCompact20260112; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -3402,6 +3568,7 @@ func (u betaContextManagementConfigEditUnionParamKeep) GetValue() *int64 {
 	}
 	return nil
 }
+
 
 type BetaContextManagementResponse struct {
 	// List of context management edits that were applied.
@@ -3812,6 +3979,48 @@ func (r BetaInputTokensTriggerParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *BetaInputTokensTriggerParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaIterationsUsage []BetaIterationsUsageItemUnion
+
+// BetaIterationsUsageItemUnion contains all possible properties and values from
+// [BetaMessageIterationUsage], [BetaCompactionIterationUsage].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaIterationsUsageItemUnion struct {
+	// This field is from variant [BetaMessageIterationUsage].
+	CacheCreation            BetaCacheCreation `json:"cache_creation"`
+	CacheCreationInputTokens int64             `json:"cache_creation_input_tokens"`
+	CacheReadInputTokens     int64             `json:"cache_read_input_tokens"`
+	InputTokens              int64             `json:"input_tokens"`
+	OutputTokens             int64             `json:"output_tokens"`
+	Type                     string            `json:"type"`
+	JSON                     struct {
+		CacheCreation            respjson.Field
+		CacheCreationInputTokens respjson.Field
+		CacheReadInputTokens     respjson.Field
+		InputTokens              respjson.Field
+		OutputTokens             respjson.Field
+		Type                     respjson.Field
+		raw                      string
+	} `json:"-"`
+}
+
+func (u BetaIterationsUsageItemUnion) AsMessageIterationUsage() (v BetaMessageIterationUsage) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaIterationsUsageItemUnion) AsCompactionIterationUsage() (v BetaCompactionIterationUsage) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaIterationsUsageItemUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaIterationsUsageItemUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -4367,7 +4576,7 @@ type BetaMessage struct {
 	// null in the `message_start` event and non-null otherwise.
 	//
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
-	// "refusal", "model_context_window_exceeded".
+	// "compaction", "refusal", "model_context_window_exceeded".
 	StopReason BetaStopReason `json:"stop_reason,required"`
 	// Which custom stop sequence was generated, if any.
 	//
@@ -4444,6 +4653,15 @@ type BetaMessageDeltaUsage struct {
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens,required"`
 	// The cumulative number of input tokens which were used.
 	InputTokens int64 `json:"input_tokens,required"`
+	// Per-iteration token usage breakdown.
+	//
+	// Each entry represents one sampling iteration, with its own input/output token
+	// counts and cache statistics. This allows you to:
+	//
+	// - Determine which iterations exceeded long context thresholds (>=200k tokens)
+	// - Calculate the true context window size from the last iteration
+	// - Understand token accumulation across server-side tool use loops
+	Iterations BetaIterationsUsage `json:"iterations,required"`
 	// The cumulative number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens,required"`
 	// The number of server tool requests.
@@ -4453,6 +4671,7 @@ type BetaMessageDeltaUsage struct {
 		CacheCreationInputTokens respjson.Field
 		CacheReadInputTokens     respjson.Field
 		InputTokens              respjson.Field
+		Iterations               respjson.Field
 		OutputTokens             respjson.Field
 		ServerToolUse            respjson.Field
 		ExtraFields              map[string]respjson.Field
@@ -4463,6 +4682,39 @@ type BetaMessageDeltaUsage struct {
 // Returns the unmodified JSON received from the API
 func (r BetaMessageDeltaUsage) RawJSON() string { return r.JSON.raw }
 func (r *BetaMessageDeltaUsage) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Token usage for a sampling iteration.
+type BetaMessageIterationUsage struct {
+	// Breakdown of cached tokens by TTL
+	CacheCreation BetaCacheCreation `json:"cache_creation,required"`
+	// The number of input tokens used to create the cache entry.
+	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens,required"`
+	// The number of input tokens read from the cache.
+	CacheReadInputTokens int64 `json:"cache_read_input_tokens,required"`
+	// The number of input tokens which were used.
+	InputTokens int64 `json:"input_tokens,required"`
+	// The number of output tokens which were used.
+	OutputTokens int64 `json:"output_tokens,required"`
+	// Usage for a sampling iteration
+	Type constant.Message `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheCreation            respjson.Field
+		CacheCreationInputTokens respjson.Field
+		CacheReadInputTokens     respjson.Field
+		InputTokens              respjson.Field
+		OutputTokens             respjson.Field
+		Type                     respjson.Field
+		ExtraFields              map[string]respjson.Field
+		raw                      string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaMessageIterationUsage) RawJSON() string { return r.JSON.raw }
+func (r *BetaMessageIterationUsage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -4536,12 +4788,9 @@ func (r *BetaMetadataParam) UnmarshalJSON(data []byte) error {
 }
 
 type BetaOutputConfigParam struct {
-	// How much effort the model should put into its response. Higher effort levels may
-	// result in more thorough analysis but take longer.
+	// All possible effort levels.
 	//
-	// Valid values are `low`, `medium`, or `high`.
-	//
-	// Any of "low", "medium", "high".
+	// Any of "low", "medium", "high", "max".
 	Effort BetaOutputConfigEffort `json:"effort,omitzero"`
 	// A schema to specify Claude's output format in responses. See
 	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
@@ -4557,16 +4806,14 @@ func (r *BetaOutputConfigParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// How much effort the model should put into its response. Higher effort levels may
-// result in more thorough analysis but take longer.
-//
-// Valid values are `low`, `medium`, or `high`.
+// All possible effort levels.
 type BetaOutputConfigEffort string
 
 const (
 	BetaOutputConfigEffortLow    BetaOutputConfigEffort = "low"
 	BetaOutputConfigEffortMedium BetaOutputConfigEffort = "medium"
 	BetaOutputConfigEffortHigh   BetaOutputConfigEffort = "high"
+	BetaOutputConfigEffortMax    BetaOutputConfigEffort = "max"
 )
 
 type BetaPlainTextSource struct {
@@ -4618,7 +4865,7 @@ func (r *BetaPlainTextSourceParam) UnmarshalJSON(data []byte) error {
 
 // BetaRawContentBlockDeltaUnion contains all possible properties and values from
 // [BetaTextDelta], [BetaInputJSONDelta], [BetaCitationsDelta],
-// [BetaThinkingDelta], [BetaSignatureDelta].
+// [BetaThinkingDelta], [BetaSignatureDelta], [BetaCompactionContentBlockDelta].
 //
 // Use the [BetaRawContentBlockDeltaUnion.AsAny] method to switch on the variant.
 //
@@ -4627,7 +4874,7 @@ type BetaRawContentBlockDeltaUnion struct {
 	// This field is from variant [BetaTextDelta].
 	Text string `json:"text"`
 	// Any of "text_delta", "input_json_delta", "citations_delta", "thinking_delta",
-	// "signature_delta".
+	// "signature_delta", "compaction_delta".
 	Type string `json:"type"`
 	// This field is from variant [BetaInputJSONDelta].
 	PartialJSON string `json:"partial_json"`
@@ -4637,13 +4884,16 @@ type BetaRawContentBlockDeltaUnion struct {
 	Thinking string `json:"thinking"`
 	// This field is from variant [BetaSignatureDelta].
 	Signature string `json:"signature"`
-	JSON      struct {
+	// This field is from variant [BetaCompactionContentBlockDelta].
+	Content string `json:"content"`
+	JSON    struct {
 		Text        respjson.Field
 		Type        respjson.Field
 		PartialJSON respjson.Field
 		Citation    respjson.Field
 		Thinking    respjson.Field
 		Signature   respjson.Field
+		Content     respjson.Field
 		raw         string
 	} `json:"-"`
 }
@@ -4655,11 +4905,12 @@ type anyBetaRawContentBlockDelta interface {
 	implBetaRawContentBlockDeltaUnion()
 }
 
-func (BetaTextDelta) implBetaRawContentBlockDeltaUnion()      {}
-func (BetaInputJSONDelta) implBetaRawContentBlockDeltaUnion() {}
-func (BetaCitationsDelta) implBetaRawContentBlockDeltaUnion() {}
-func (BetaThinkingDelta) implBetaRawContentBlockDeltaUnion()  {}
-func (BetaSignatureDelta) implBetaRawContentBlockDeltaUnion() {}
+func (BetaTextDelta) implBetaRawContentBlockDeltaUnion()                   {}
+func (BetaInputJSONDelta) implBetaRawContentBlockDeltaUnion()              {}
+func (BetaCitationsDelta) implBetaRawContentBlockDeltaUnion()              {}
+func (BetaThinkingDelta) implBetaRawContentBlockDeltaUnion()               {}
+func (BetaSignatureDelta) implBetaRawContentBlockDeltaUnion()              {}
+func (BetaCompactionContentBlockDelta) implBetaRawContentBlockDeltaUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -4669,6 +4920,7 @@ func (BetaSignatureDelta) implBetaRawContentBlockDeltaUnion() {}
 //	case anthropic.BetaCitationsDelta:
 //	case anthropic.BetaThinkingDelta:
 //	case anthropic.BetaSignatureDelta:
+//	case anthropic.BetaCompactionContentBlockDelta:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -4684,6 +4936,8 @@ func (u BetaRawContentBlockDeltaUnion) AsAny() anyBetaRawContentBlockDelta {
 		return u.AsThinkingDelta()
 	case "signature_delta":
 		return u.AsSignatureDelta()
+	case "compaction_delta":
+		return u.AsCompactionDelta()
 	}
 	return nil
 }
@@ -4709,6 +4963,11 @@ func (u BetaRawContentBlockDeltaUnion) AsThinkingDelta() (v BetaThinkingDelta) {
 }
 
 func (u BetaRawContentBlockDeltaUnion) AsSignatureDelta() (v BetaSignatureDelta) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaRawContentBlockDeltaUnion) AsCompactionDelta() (v BetaCompactionContentBlockDelta) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -4767,7 +5026,8 @@ func (r *BetaRawContentBlockStartEvent) UnmarshalJSON(data []byte) error {
 // [BetaWebSearchToolResultBlock], [BetaWebFetchToolResultBlock],
 // [BetaCodeExecutionToolResultBlock], [BetaBashCodeExecutionToolResultBlock],
 // [BetaTextEditorCodeExecutionToolResultBlock], [BetaToolSearchToolResultBlock],
-// [BetaMCPToolUseBlock], [BetaMCPToolResultBlock], [BetaContainerUploadBlock].
+// [BetaMCPToolUseBlock], [BetaMCPToolResultBlock], [BetaContainerUploadBlock],
+// [BetaCompactionBlock].
 //
 // Use the [BetaRawContentBlockStartEventContentBlockUnion.AsAny] method to switch
 // on the variant.
@@ -4782,7 +5042,7 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	// "web_search_tool_result", "web_fetch_tool_result", "code_execution_tool_result",
 	// "bash_code_execution_tool_result", "text_editor_code_execution_tool_result",
 	// "tool_search_tool_result", "mcp_tool_use", "mcp_tool_result",
-	// "container_upload".
+	// "container_upload", "compaction".
 	Type string `json:"type"`
 	// This field is from variant [BetaThinkingBlock].
 	Signature string `json:"signature"`
@@ -4802,7 +5062,7 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	// [BetaBashCodeExecutionToolResultBlockContentUnion],
 	// [BetaTextEditorCodeExecutionToolResultBlockContentUnion],
 	// [BetaToolSearchToolResultBlockContentUnion],
-	// [BetaMCPToolResultBlockContentUnion]
+	// [BetaMCPToolResultBlockContentUnion], [string]
 	Content   BetaRawContentBlockStartEventContentBlockUnionContent `json:"content"`
 	ToolUseID string                                                `json:"tool_use_id"`
 	// This field is from variant [BetaMCPToolUseBlock].
@@ -4853,6 +5113,7 @@ func (BetaToolSearchToolResultBlock) implBetaRawContentBlockStartEventContentBlo
 func (BetaMCPToolUseBlock) implBetaRawContentBlockStartEventContentBlockUnion()           {}
 func (BetaMCPToolResultBlock) implBetaRawContentBlockStartEventContentBlockUnion()        {}
 func (BetaContainerUploadBlock) implBetaRawContentBlockStartEventContentBlockUnion()      {}
+func (BetaCompactionBlock) implBetaRawContentBlockStartEventContentBlockUnion()           {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -4871,6 +5132,7 @@ func (BetaContainerUploadBlock) implBetaRawContentBlockStartEventContentBlockUni
 //	case anthropic.BetaMCPToolUseBlock:
 //	case anthropic.BetaMCPToolResultBlock:
 //	case anthropic.BetaContainerUploadBlock:
+//	case anthropic.BetaCompactionBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -4904,6 +5166,8 @@ func (u BetaRawContentBlockStartEventContentBlockUnion) AsAny() anyBetaRawConten
 		return u.AsMCPToolResult()
 	case "container_upload":
 		return u.AsContainerUpload()
+	case "compaction":
+		return u.AsCompaction()
 	}
 	return nil
 }
@@ -4974,6 +5238,11 @@ func (u BetaRawContentBlockStartEventContentBlockUnion) AsMCPToolResult() (v Bet
 }
 
 func (u BetaRawContentBlockStartEventContentBlockUnion) AsContainerUpload() (v BetaContainerUploadBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaRawContentBlockStartEventContentBlockUnion) AsCompaction() (v BetaCompactionBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5205,7 +5474,7 @@ type BetaRawMessageDeltaEventDelta struct {
 	// tool)
 	Container BetaContainer `json:"container,required"`
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
-	// "refusal", "model_context_window_exceeded".
+	// "compaction", "refusal", "model_context_window_exceeded".
 	StopReason   BetaStopReason `json:"stop_reason,required"`
 	StopSequence string         `json:"stop_sequence,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -5399,7 +5668,9 @@ type BetaRawMessageStreamEventUnionDelta struct {
 	Thinking string `json:"thinking"`
 	// This field is from variant [BetaRawContentBlockDeltaUnion].
 	Signature string `json:"signature"`
-	JSON      struct {
+	// This field is from variant [BetaRawContentBlockDeltaUnion].
+	Content string `json:"content"`
+	JSON    struct {
 		Container    respjson.Field
 		StopReason   respjson.Field
 		StopSequence respjson.Field
@@ -5409,6 +5680,7 @@ type BetaRawMessageStreamEventUnionDelta struct {
 		Citation     respjson.Field
 		Thinking     respjson.Field
 		Signature    respjson.Field
+		Content      respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -6010,6 +6282,7 @@ const (
 	BetaStopReasonStopSequence               BetaStopReason = "stop_sequence"
 	BetaStopReasonToolUse                    BetaStopReason = "tool_use"
 	BetaStopReasonPauseTurn                  BetaStopReason = "pause_turn"
+	BetaStopReasonCompaction                 BetaStopReason = "compaction"
 	BetaStopReasonRefusal                    BetaStopReason = "refusal"
 	BetaStopReasonModelContextWindowExceeded BetaStopReason = "model_context_window_exceeded"
 )
@@ -6908,6 +7181,27 @@ func (r *BetaThinkingBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+func NewBetaThinkingConfigAdaptiveParam() BetaThinkingConfigAdaptiveParam {
+	return BetaThinkingConfigAdaptiveParam{
+		Type: "adaptive",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewBetaThinkingConfigAdaptiveParam].
+type BetaThinkingConfigAdaptiveParam struct {
+	Type constant.Adaptive `json:"type,required"`
+	paramObj
+}
+
+func (r BetaThinkingConfigAdaptiveParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaThinkingConfigAdaptiveParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaThinkingConfigAdaptiveParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 func NewBetaThinkingConfigDisabledParam() BetaThinkingConfigDisabledParam {
 	return BetaThinkingConfigDisabledParam{
 		Type: "disabled",
@@ -6966,11 +7260,12 @@ func BetaThinkingConfigParamOfEnabled(budgetTokens int64) BetaThinkingConfigPara
 type BetaThinkingConfigParamUnion struct {
 	OfEnabled  *BetaThinkingConfigEnabledParam  `json:",omitzero,inline"`
 	OfDisabled *BetaThinkingConfigDisabledParam `json:",omitzero,inline"`
+	OfAdaptive *BetaThinkingConfigAdaptiveParam `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled)
+	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled, u.OfAdaptive)
 }
 func (u *BetaThinkingConfigParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -6981,6 +7276,8 @@ func (u *BetaThinkingConfigParamUnion) asAny() any {
 		return u.OfEnabled
 	} else if !param.IsOmitted(u.OfDisabled) {
 		return u.OfDisabled
+	} else if !param.IsOmitted(u.OfAdaptive) {
+		return u.OfAdaptive
 	}
 	return nil
 }
@@ -6999,9 +7296,12 @@ func (u BetaThinkingConfigParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAdaptive; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
+
 
 type BetaThinkingDelta struct {
 	Thinking string                 `json:"thinking,required"`
@@ -7048,6 +7348,12 @@ type BetaToolParam struct {
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	Name string `json:"name,required"`
+	// Enable eager input streaming for this tool. When true, tool input parameters
+	// will be streamed incrementally as they are generated, and types will be inferred
+	// on-the-fly rather than buffering the full JSON output. When false, streaming is
+	// disabled for this tool even if the fine-grained-tool-streaming beta is active.
+	// When null (default), uses the default behavior based on beta headers.
+	EagerInputStreaming param.Opt[bool] `json:"eager_input_streaming,omitzero"`
 	// If true, tool will not be included in initial system prompt. Only loaded when
 	// returned via tool_reference from tool search.
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
@@ -8345,6 +8651,14 @@ func (u BetaToolUnionParam) GetDescription() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u BetaToolUnionParam) GetEagerInputStreaming() *bool {
+	if vt := u.OfTool; vt != nil && vt.EagerInputStreaming.Valid() {
+		return &vt.EagerInputStreaming.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u BetaToolUnionParam) GetEnableZoom() *bool {
 	if vt := u.OfComputerUseTool20251124; vt != nil && vt.EnableZoom.Valid() {
 		return &vt.EnableZoom.Value
@@ -8974,8 +9288,19 @@ type BetaUsage struct {
 	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens,required"`
 	// The number of input tokens read from the cache.
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens,required"`
+	// The geographic region where inference was performed for this request.
+	InferenceGeo string `json:"inference_geo,required"`
 	// The number of input tokens which were used.
 	InputTokens int64 `json:"input_tokens,required"`
+	// Per-iteration token usage breakdown.
+	//
+	// Each entry represents one sampling iteration, with its own input/output token
+	// counts and cache statistics. This allows you to:
+	//
+	// - Determine which iterations exceeded long context thresholds (>=200k tokens)
+	// - Calculate the true context window size from the last iteration
+	// - Understand token accumulation across server-side tool use loops
+	Iterations BetaIterationsUsage `json:"iterations,required"`
 	// The number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens,required"`
 	// The number of server tool requests.
@@ -8989,7 +9314,9 @@ type BetaUsage struct {
 		CacheCreation            respjson.Field
 		CacheCreationInputTokens respjson.Field
 		CacheReadInputTokens     respjson.Field
+		InferenceGeo             respjson.Field
 		InputTokens              respjson.Field
+		Iterations               respjson.Field
 		OutputTokens             respjson.Field
 		ServerToolUse            respjson.Field
 		ServiceTier              respjson.Field
@@ -9660,6 +9987,9 @@ type BetaMessageNewParams struct {
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero,required"`
+	// Specifies the geographic region for inference processing. If not specified, the
+	// workspace's `default_inference_geo` is used.
+	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
 	// Amount of randomness injected into the response.
 	//
 	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`
@@ -10206,6 +10536,14 @@ func (u BetaMessageCountTokensParamsToolUnion) GetInputSchema() *BetaToolInputSc
 func (u BetaMessageCountTokensParamsToolUnion) GetDescription() *string {
 	if vt := u.OfTool; vt != nil && vt.Description.Valid() {
 		return &vt.Description.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageCountTokensParamsToolUnion) GetEagerInputStreaming() *bool {
+	if vt := u.OfTool; vt != nil && vt.EagerInputStreaming.Valid() {
+		return &vt.EagerInputStreaming.Value
 	}
 	return nil
 }

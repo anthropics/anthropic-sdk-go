@@ -6,7 +6,7 @@ Full Changelog: [v1.20.0...v1.21.0](https://github.com/anthropics/anthropic-sdk-
 
 ### Features
 
-* **api:** manual updates ([e899e64](https://github.com/anthropics/anthropic-sdk-go/commit/e899e64cd402eb004909d632e68acc4b0587f53c))
+* **api:** Release Claude Opus 4.6, adaptive thinking, and other features ([e899e64](https://github.com/anthropics/anthropic-sdk-go/commit/e899e64cd402eb004909d632e68acc4b0587f53c))
 
 
 ### Chores

@@ -1,3 +1,7 @@
+## Contributing to documentation
+
+The documentation for this SDK lives at [docs.anthropic.com/en/api/sdks/go](https://docs.anthropic.com/en/api/sdks/go). To suggest changes, hover over any paragraph on the docs site and click the pencil icon that appears to the right. You can then collaborate with Claude on an edit that we'll review and publish.
+
 ## Setting up the environment
 
 To set up the repository, run:

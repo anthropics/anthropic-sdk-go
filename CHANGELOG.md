@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.22.0 (2026-02-07)
+
+Full Changelog: [v1.21.0...v1.22.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.21.0...v1.22.0)
+
+### Features
+
+* **api:** enabling fast-mode in claude-opus-4-6 ([ebe6433](https://github.com/anthropics/anthropic-sdk-go/commit/ebe6433768cab86dcc02b71159aaa347a8d473ec))
+
 ## 1.21.0 (2026-02-05)
 
 Full Changelog: [v1.20.0...v1.21.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.20.0...v1.21.0)

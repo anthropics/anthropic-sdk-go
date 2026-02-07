@@ -9309,6 +9309,10 @@ type BetaUsage struct {
 	//
 	// Any of "standard", "priority", "batch".
 	ServiceTier BetaUsageServiceTier `json:"service_tier,required"`
+	// The inference speed mode used for this request.
+	//
+	// Any of "standard", "fast".
+	Speed BetaUsageSpeed `json:"speed,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CacheCreation            respjson.Field
@@ -9320,6 +9324,7 @@ type BetaUsage struct {
 		OutputTokens             respjson.Field
 		ServerToolUse            respjson.Field
 		ServiceTier              respjson.Field
+		Speed                    respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
@@ -9338,6 +9343,14 @@ const (
 	BetaUsageServiceTierStandard BetaUsageServiceTier = "standard"
 	BetaUsageServiceTierPriority BetaUsageServiceTier = "priority"
 	BetaUsageServiceTierBatch    BetaUsageServiceTier = "batch"
+)
+
+// The inference speed mode used for this request.
+type BetaUsageSpeed string
+
+const (
+	BetaUsageSpeedStandard BetaUsageSpeed = "standard"
+	BetaUsageSpeedFast     BetaUsageSpeed = "fast"
 )
 
 type BetaWebFetchBlock struct {
@@ -10019,6 +10032,11 @@ type BetaMessageNewParams struct {
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// Container identifier for reuse across requests.
 	Container BetaMessageNewParamsContainerUnion `json:"container,omitzero"`
+	// The inference speed mode for this request. `"fast"` enables high
+	// output-tokens-per-second inference.
+	//
+	// Any of "standard", "fast".
+	Speed BetaMessageNewParamsSpeed `json:"speed,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,
@@ -10205,6 +10223,15 @@ const (
 	BetaMessageNewParamsServiceTierStandardOnly BetaMessageNewParamsServiceTier = "standard_only"
 )
 
+// The inference speed mode for this request. `"fast"` enables high
+// output-tokens-per-second inference.
+type BetaMessageNewParamsSpeed string
+
+const (
+	BetaMessageNewParamsSpeedStandard BetaMessageNewParamsSpeed = "standard"
+	BetaMessageNewParamsSpeedFast     BetaMessageNewParamsSpeed = "fast"
+)
+
 type BetaMessageCountTokensParams struct {
 	// Input messages.
 	//
@@ -10280,6 +10307,11 @@ type BetaMessageCountTokensParams struct {
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero,required"`
+	// The inference speed mode for this request. `"fast"` enables high
+	// output-tokens-per-second inference.
+	//
+	// Any of "standard", "fast".
+	Speed BetaMessageCountTokensParamsSpeed `json:"speed,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,
@@ -10408,6 +10440,15 @@ func (r BetaMessageCountTokensParams) MarshalJSON() (data []byte, err error) {
 func (r *BetaMessageCountTokensParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// The inference speed mode for this request. `"fast"` enables high
+// output-tokens-per-second inference.
+type BetaMessageCountTokensParamsSpeed string
+
+const (
+	BetaMessageCountTokensParamsSpeedStandard BetaMessageCountTokensParamsSpeed = "standard"
+	BetaMessageCountTokensParamsSpeedFast     BetaMessageCountTokensParamsSpeed = "fast"
+)
 
 // Only one field can be non-zero.
 //

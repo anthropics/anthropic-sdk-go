@@ -673,6 +673,11 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// Container identifier for reuse across requests.
 	Container BetaMessageBatchNewParamsRequestParamsContainerUnion `json:"container,omitzero"`
+	// The inference speed mode for this request. `"fast"` enables high
+	// output-tokens-per-second inference.
+	//
+	// Any of "standard", "fast".
+	Speed string `json:"speed,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,
@@ -825,6 +830,9 @@ func (r *BetaMessageBatchNewParamsRequestParams) UnmarshalJSON(data []byte) erro
 func init() {
 	apijson.RegisterFieldValidator[BetaMessageBatchNewParamsRequestParams](
 		"service_tier", "auto", "standard_only",
+	)
+	apijson.RegisterFieldValidator[BetaMessageBatchNewParamsRequestParams](
+		"speed", "standard", "fast",
 	)
 }
 

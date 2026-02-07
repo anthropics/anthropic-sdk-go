@@ -110,6 +110,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					},
 				},
 				ServiceTier:   "auto",
+				Speed:         "standard",
 				StopSequences: []string{"string"},
 				Stream:        anthropic.Bool(true),
 				System: []anthropic.BetaTextBlockParam{{

@@ -108,6 +108,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 			},
 		},
 		ServiceTier:   anthropic.BetaMessageNewParamsServiceTierAuto,
+		Speed:         anthropic.BetaMessageNewParamsSpeedStandard,
 		StopSequences: []string{"string"},
 		System: []anthropic.BetaTextBlockParam{{
 			Text: "Today's date is 2024-06-01.",
@@ -250,6 +251,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 				"foo": "bar",
 			},
 		},
+		Speed: anthropic.BetaMessageCountTokensParamsSpeedStandard,
 		System: anthropic.BetaMessageCountTokensParamsSystemUnion{
 			OfBetaTextBlockArray: []anthropic.BetaTextBlockParam{{
 				Text: "Today's date is 2024-06-01.",

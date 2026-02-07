@@ -60,6 +60,7 @@ const (
 	AnthropicBetaContextManagement2025_06_27          AnthropicBeta = "context-management-2025-06-27"
 	AnthropicBetaModelContextWindowExceeded2025_08_26 AnthropicBeta = "model-context-window-exceeded-2025-08-26"
 	AnthropicBetaSkills2025_10_02                     AnthropicBeta = "skills-2025-10-02"
+	AnthropicBetaFastMode2026_02_01                   AnthropicBeta = "fast-mode-2026-02-01"
 )
 
 type BetaAPIError struct {

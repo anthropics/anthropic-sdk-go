@@ -1655,7 +1655,7 @@ func (r *InputJSONDelta) UnmarshalJSON(data []byte) error {
 // The properties Schema, Type are required.
 type JSONOutputFormatParam struct {
 	// The JSON schema of the format
-	Schema map[string]any `json:"schema,omitzero,required"`
+	Schema json.RawMessage `json:"schema,omitzero,required"`
 	// This field can be elided, and will marshal its zero value as "json_schema".
 	Type constant.JSONSchema `json:"type,required"`
 	paramObj
@@ -3396,7 +3396,6 @@ func (u ThinkingConfigParamUnion) GetType() *string {
 	}
 	return nil
 }
-
 
 type ThinkingDelta struct {
 	Thinking string                 `json:"thinking,required"`

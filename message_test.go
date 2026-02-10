@@ -58,9 +58,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		OutputConfig: anthropic.OutputConfigParam{
 			Effort: anthropic.OutputConfigEffortLow,
 			Format: anthropic.JSONOutputFormatParam{
-				Schema: map[string]any{
-					"foo": "bar",
-				},
+				Schema: json.RawMessage(`{"foo": "bar"}`),
 			},
 		},
 		ServiceTier:   anthropic.MessageNewParamsServiceTierAuto,
@@ -159,9 +157,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 		OutputConfig: anthropic.OutputConfigParam{
 			Effort: anthropic.OutputConfigEffortLow,
 			Format: anthropic.JSONOutputFormatParam{
-				Schema: map[string]any{
-					"foo": "bar",
-				},
+				Schema: json.RawMessage(`{"foo": "bar"}`),
 			},
 		},
 		System: anthropic.MessageCountTokensParamsSystemUnion{

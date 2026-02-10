@@ -4,6 +4,7 @@ package anthropic_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"testing"
@@ -58,9 +59,7 @@ func TestMessageBatchNew(t *testing.T) {
 				OutputConfig: anthropic.OutputConfigParam{
 					Effort: anthropic.OutputConfigEffortLow,
 					Format: anthropic.JSONOutputFormatParam{
-						Schema: map[string]any{
-							"foo": "bar",
-						},
+						Schema: json.RawMessage(`{"foo": "bar"}`),
 					},
 				},
 				ServiceTier:   "auto",

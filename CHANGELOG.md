@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.22.1 (2026-02-10)
+
+Full Changelog: [v1.22.0...v1.22.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.22.0...v1.22.1)
+
+### Bug Fixes
+
+* **encoder:** correctly serialize NullStruct ([1435f8a](https://github.com/anthropics/anthropic-sdk-go/commit/1435f8ac4d272561c7e689cc6bb4e3794414ba57))
+
 ## 1.22.0 (2026-02-07)
 
 Full Changelog: [v1.21.0...v1.22.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.21.0...v1.22.0)

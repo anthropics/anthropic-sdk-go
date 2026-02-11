@@ -7,9 +7,8 @@ import (
 	"io"
 	"net/http"
 
+	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
-	"google.golang.org/api/transport"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	sdkoption "github.com/anthropics/anthropic-sdk-go/option"
@@ -39,10 +38,7 @@ func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes
 // WithCredentials returns a request option which uses the provided credentials for Google Vertex AI and registers middleware that
 // intercepts request to the Messages API.
 func WithCredentials(ctx context.Context, region string, projectID string, creds *google.Credentials) sdkoption.RequestOption {
-	client, _, err := transport.NewHTTPClient(ctx, option.WithTokenSource(creds.TokenSource))
-	if err != nil {
-		panic(fmt.Errorf("failed to create HTTP client: %v", err))
-	}
+	client := oauth2.NewClient(ctx, creds.TokenSource)
 	middleware := vertexMiddleware(region, projectID)
 
 	var baseURL string

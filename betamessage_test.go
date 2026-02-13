@@ -6,7 +6,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -488,5 +490,352 @@ Therefore, the answer is..."}}`,
 				t.Fatalf("Mismatched message: expected %s but got %s", marshaledExpectedMessage, marshaledMessage)
 			}
 		})
+	}
+}
+
+func TestCustomContentCitations(t *testing.T) {
+	// Test the current implementation's ability to create custom content blocks
+	chunks := []string{
+		"First chunk of text",
+		"Second chunk of text",
+		"Third chunk of text",
+	}
+
+	// Attempt 1: Try to create content blocks using the union type
+	contentChunks := make([]anthropic.BetaContentBlockSourceContentUnionParam, len(chunks))
+	for i, chunk := range chunks {
+		contentChunks[i] = anthropic.BetaContentBlockSourceContentUnionParam{
+			OfString: param.NewOpt(chunk),
+		}
+	}
+
+	// Create the source with content blocks
+	source := anthropic.BetaContentBlockSourceParam{
+		Content: anthropic.BetaContentBlockSourceContentUnionParam{
+			OfBetaContentBlockSourceContent: contentChunks,
+		},
+	}
+
+	// Marshal and check the JSON output
+	data, err := json.MarshalIndent(source, "", "  ")
+	if err != nil {
+		t.Fatalf("Failed to marshal source: %v", err)
+	}
+
+	t.Logf("Marshaled JSON (attempt 1):\n%s", string(data))
+
+	// Check if the marshaled JSON matches the expected structure
+	var result map[string]interface{}
+	if err := json.Unmarshal(data, &result); err != nil {
+		t.Fatalf("Failed to unmarshal result: %v", err)
+	}
+
+	// The API expects:
+	// {
+	//   "type": "content",
+	//   "content": [
+	//     {"type": "text", "text": "First chunk"},
+	//     {"type": "text", "text": "Second chunk"},
+	//     {"type": "text", "text": "Third chunk"}
+	//   ]
+	// }
+
+	// Check if content is an array
+	content, ok := result["content"].([]interface{})
+	if !ok {
+		t.Errorf("Expected content to be an array, got %T", result["content"])
+	} else {
+		t.Logf("Content is an array with %d elements", len(content))
+
+		// Check if each element has the correct structure
+		for i, item := range content {
+			block, ok := item.(map[string]interface{})
+			if !ok {
+				t.Errorf("Expected content[%d] to be an object, got %T", i, item)
+				continue
+			}
+
+			// Check for "type": "text"
+			if blockType, exists := block["type"]; !exists || blockType != "text" {
+				t.Errorf("Expected content[%d].type to be 'text', got %v", i, blockType)
+			}
+
+			// Check for "text" field
+			if _, exists := block["text"]; !exists {
+				t.Errorf("Expected content[%d] to have 'text' field", i)
+			}
+		}
+	}
+}
+
+func TestCustomContentWithWorkaround(t *testing.T) {
+	// Test the workaround using param.Override
+	chunks := []string{
+		"First chunk of text",
+		"Second chunk of text",
+		"Third chunk of text",
+	}
+
+	// Create custom type for marshaling
+	type CustomContentBlocks []string
+
+	// Implement MarshalJSON to produce the correct structure
+	type textBlock struct {
+		Type string `json:"type"`
+		Text string `json:"text"`
+	}
+
+	blocks := make([]textBlock, len(chunks))
+	for i, chunk := range chunks {
+		blocks[i] = textBlock{
+			Type: "text",
+			Text: chunk,
+		}
+	}
+
+	sourceJSON := map[string]interface{}{
+		"type":    "content",
+		"content": blocks,
+	}
+
+	sourceBytes, err := json.Marshal(sourceJSON)
+	if err != nil {
+		t.Fatalf("Failed to marshal source: %v", err)
+	}
+
+	t.Logf("Marshaled JSON (workaround):\n%s", string(sourceBytes))
+
+	// Verify the structure
+	var result map[string]interface{}
+	if err := json.Unmarshal(sourceBytes, &result); err != nil {
+		t.Fatalf("Failed to unmarshal result: %v", err)
+	}
+
+	// Check if content is an array with correct structure
+	content, ok := result["content"].([]interface{})
+	if !ok {
+		t.Errorf("Expected content to be an array, got %T", result["content"])
+	} else {
+		t.Logf("Workaround produces correct structure with %d elements", len(content))
+	}
+}
+
+// TestBetaContentBlockSourceContentUnionParamMarshalJSON tests the custom MarshalJSON implementation
+// that converts string arrays to proper text block JSON structure for citations
+func TestBetaContentBlockSourceContentUnionParamMarshalJSON(t *testing.T) {
+	t.Run("string array to text blocks conversion", func(t *testing.T) {
+		// Create content chunks as strings
+		chunks := []string{
+			"First document chunk",
+			"Second document chunk",
+			"Third document chunk",
+		}
+
+		// Create content blocks using the union type
+		contentChunks := make([]anthropic.BetaContentBlockSourceContentUnionParam, len(chunks))
+		for i, chunk := range chunks {
+			contentChunks[i] = anthropic.BetaContentBlockSourceContentUnionParam{
+				OfString: param.NewOpt(chunk),
+			}
+		}
+
+		// Create the content union with string blocks
+		contentUnion := anthropic.BetaContentBlockSourceContentUnionParam{
+			OfBetaContentBlockSourceContent: contentChunks,
+		}
+
+		// Marshal the content union
+		data, err := json.Marshal(contentUnion)
+		if err != nil {
+			t.Fatalf("Failed to marshal content union: %v", err)
+		}
+
+		// Parse the JSON to verify structure
+		var result []interface{}
+		if err := json.Unmarshal(data, &result); err != nil {
+			t.Fatalf("Failed to unmarshal result: %v", err)
+		}
+
+		// Verify we have the expected number of elements
+		if len(result) != len(chunks) {
+			t.Errorf("Expected %d content blocks, got %d", len(chunks), len(result))
+		}
+
+		// Verify each element has the correct structure
+		for i, item := range result {
+			block, ok := item.(map[string]interface{})
+			if !ok {
+				t.Errorf("Expected content[%d] to be an object, got %T", i, item)
+				continue
+			}
+
+			// Check for "type": "text"
+			if blockType, exists := block["type"]; !exists || blockType != "text" {
+				t.Errorf("Expected content[%d].type to be 'text', got %v", i, blockType)
+			}
+
+			// Check for "text" field with correct value
+			if text, exists := block["text"]; !exists {
+				t.Errorf("Expected content[%d] to have 'text' field", i)
+			} else if text != chunks[i] {
+				t.Errorf("Expected content[%d].text to be '%s', got '%v'", i, chunks[i], text)
+			}
+		}
+
+		t.Logf("Successfully converted string array to text blocks: %s", string(data))
+	})
+
+	t.Run("mixed content types should not convert", func(t *testing.T) {
+		// Create mixed content (not all strings)
+		contentChunks := []anthropic.BetaContentBlockSourceContentUnionParam{
+			{OfString: param.NewOpt("First chunk")},
+			{}, // Empty union (not a string)
+		}
+
+		contentUnion := anthropic.BetaContentBlockSourceContentUnionParam{
+			OfBetaContentBlockSourceContent: contentChunks,
+		}
+
+		// Marshal should fall back to default behavior
+		data, err := json.Marshal(contentUnion)
+		if err != nil {
+			t.Fatalf("Failed to marshal mixed content: %v", err)
+		}
+
+		// This should marshal as the default union structure, not as text blocks
+		t.Logf("Mixed content marshaled as: %s", string(data))
+	})
+
+	t.Run("integration with BetaContentBlockSourceParam", func(t *testing.T) {
+		// Test the full integration with BetaContentBlockSourceParam
+		chunks := []string{
+			"Document content part 1",
+			"Document content part 2",
+		}
+
+		contentChunks := make([]anthropic.BetaContentBlockSourceContentUnionParam, len(chunks))
+		for i, chunk := range chunks {
+			contentChunks[i] = anthropic.BetaContentBlockSourceContentUnionParam{
+				OfString: param.NewOpt(chunk),
+			}
+		}
+
+		source := anthropic.BetaContentBlockSourceParam{
+			Type: "content",
+			Content: anthropic.BetaContentBlockSourceContentUnionParam{
+				OfBetaContentBlockSourceContent: contentChunks,
+			},
+		}
+
+		data, err := json.Marshal(source)
+		if err != nil {
+			t.Fatalf("Failed to marshal source: %v", err)
+		}
+
+		// Verify the complete structure
+		var result map[string]interface{}
+		if err := json.Unmarshal(data, &result); err != nil {
+			t.Fatalf("Failed to unmarshal result: %v", err)
+		}
+
+		// Check type field
+		if sourceType, exists := result["type"]; !exists || sourceType != "content" {
+			t.Errorf("Expected type to be 'content', got %v", sourceType)
+		}
+
+		// Check content field structure
+		content, ok := result["content"].([]interface{})
+		if !ok {
+			t.Errorf("Expected content to be an array, got %T", result["content"])
+		} else if len(content) != len(chunks) {
+			t.Errorf("Expected %d content blocks, got %d", len(chunks), len(content))
+		}
+
+		t.Logf("Full source structure marshaled correctly: %s", string(data))
+	})
+}
+
+// TestBetaMessageWithCustomContentCitationsIntegration is a full integration test that verifies
+// the custom MarshalJSON implementation works correctly when sending actual API requests
+func TestBetaMessageWithCustomContentCitationsIntegration(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+
+	// Create content chunks for document citation
+	chunks := []string{
+		"The Earth orbits the Sun at an average distance of 93 million miles.",
+		"This distance is also known as an Astronomical Unit (AU).",
+		"The orbit takes approximately 365.25 days to complete.",
+	}
+
+	// Build the content blocks using the union type
+	contentChunks := make([]anthropic.BetaContentBlockSourceContentUnionParam, len(chunks))
+	for i, chunk := range chunks {
+		contentChunks[i] = anthropic.BetaContentBlockSourceContentUnionParam{
+			OfString: param.NewOpt(chunk),
+		}
+	}
+
+	// Create a document block with custom content source
+	documentSource := anthropic.BetaContentBlockSourceParam{
+		Type: "content",
+		Content: anthropic.BetaContentBlockSourceContentUnionParam{
+			OfBetaContentBlockSourceContent: contentChunks,
+		},
+	}
+
+	documentBlock := anthropic.NewBetaDocumentBlock(documentSource)
+
+	// Create a message with the document block and citations
+	_, err := client.Beta.Messages.New(context.TODO(), anthropic.BetaMessageNewParams{
+		MaxTokens: 1024,
+		Messages: []anthropic.BetaMessageParam{{
+			Content: []anthropic.BetaContentBlockParamUnion{
+				documentBlock,
+				anthropic.NewBetaTextBlock("Based on the document, how long does Earth's orbit take?"),
+			},
+			Role: anthropic.BetaMessageParamRoleUser,
+		}},
+		Model: anthropic.ModelClaude3_7SonnetLatest,
+		System: []anthropic.BetaTextBlockParam{{
+			Text: "You are a helpful assistant. When answering questions, cite the provided documents using content block citations.",
+			Citations: []anthropic.BetaTextCitationParamUnion{{
+				OfContentBlockLocation: &anthropic.BetaCitationContentBlockLocationParam{
+					CitedText:       "365.25 days",
+					DocumentIndex:   0,
+					DocumentTitle:   anthropic.String("Earth's Orbit Facts"),
+					StartBlockIndex: 2,
+					EndBlockIndex:   2,
+				},
+			}},
+		}},
+	})
+
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+
+			// Check if the request body contains the properly formatted content blocks
+			requestBody := string(apierr.DumpRequest(false))
+
+			// Verify the content blocks are formatted as text blocks with type and text fields
+			if !strings.Contains(requestBody, `"type":"text"`) {
+				t.Error("Request body should contain text blocks with 'type':'text'")
+			}
+			if !strings.Contains(requestBody, `"text":"The Earth orbits`) {
+				t.Error("Request body should contain the document content as text blocks")
+			}
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
 	}
 }

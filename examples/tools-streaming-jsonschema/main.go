@@ -160,7 +160,7 @@ type GetTemperatureUnitInput struct {
 var GetTemperatureUnitInputSchema = GenerateSchema[GetTemperatureUnitInput]()
 
 func GetTemperatureUnit(country string) string {
-	return "farenheit"
+	return "fahrenheit"
 }
 
 // Get Weather
@@ -180,7 +180,7 @@ type GetWeatherResponse struct {
 
 func GetWeather(lat, long float64, unit string) GetWeatherResponse {
 	return GetWeatherResponse{
-		Unit:        "farenheit",
+		Unit:        "fahrenheit",
 		Temperature: 122,
 	}
 }

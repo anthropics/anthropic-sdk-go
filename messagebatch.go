@@ -614,6 +614,8 @@ type MessageBatchNewParamsRequestParams struct {
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero,required"`
+	// Container identifier for reuse across requests.
+	Container param.Opt[string] `json:"container,omitzero"`
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
@@ -648,6 +650,11 @@ type MessageBatchNewParamsRequestParams struct {
 	// Recommended for advanced use cases only. You usually only need to use
 	// `temperature`.
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
+	// The inference speed mode for this request. `"fast"` enables high
+	// output-tokens-per-second inference.
+	//
+	// Any of "standard", "fast".
+	Speed string `json:"speed,omitzero"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
 	// Configuration options for the model's output, such as the output format.
@@ -785,6 +792,9 @@ func (r *MessageBatchNewParamsRequestParams) UnmarshalJSON(data []byte) error {
 func init() {
 	apijson.RegisterFieldValidator[MessageBatchNewParamsRequestParams](
 		"service_tier", "auto", "standard_only",
+	)
+	apijson.RegisterFieldValidator[MessageBatchNewParamsRequestParams](
+		"speed", "standard", "fast",
 	)
 }
 

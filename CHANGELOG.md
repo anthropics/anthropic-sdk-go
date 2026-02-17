@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.23.0 (2026-02-17)
+
+Full Changelog: [v1.22.1...v1.23.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.22.1...v1.23.0)
+
+### Features
+
+* **api:** Releasing claude-sonnet-4-6 ([782d5a5](https://github.com/anthropics/anthropic-sdk-go/commit/782d5a5dc4c1f63cfef3afc5d257b08f8cf3fadc))
+
+
+### Bug Fixes
+
+* **api:** fix spec errors ([15e6a5a](https://github.com/anthropics/anthropic-sdk-go/commit/15e6a5a0b4fb426f126f7b26b087709ea7ba00ac))
+* remove duplicate ServerToolUseBlock struct declaration ([#595](https://github.com/anthropics/anthropic-sdk-go/issues/595)) ([d4ece8a](https://github.com/anthropics/anthropic-sdk-go/commit/d4ece8ae310dd0369a5ea05671295ae2c23a53d9))
+
 ## 1.22.1 (2026-02-10)
 
 Full Changelog: [v1.22.0...v1.22.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.22.0...v1.22.1)

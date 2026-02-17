@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 )
 
 // Accumulate builds up the Message incrementally from a MessageStreamEvent. The Message then can be used as
@@ -225,6 +226,7 @@ func (r ServerToolUseBlock) ToParam() ServerToolUseBlockParam {
 	p.Type = r.Type
 	p.ID = r.ID
 	p.Input = r.Input
+	p.Name = ServerToolUseBlockParamName(r.Name)
 	return p
 }
 
@@ -259,5 +261,150 @@ func (r WebSearchToolResultBlockContentUnion) ToParam() WebSearchToolResultBlock
 	p.OfRequestWebSearchToolResultError = &WebSearchToolRequestErrorParam{
 		ErrorCode: WebSearchToolRequestErrorErrorCode(r.ErrorCode),
 	}
+	return p
+}
+
+func (variant WebFetchToolResultBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfWebFetchToolResult: &p}
+}
+
+func (variant CodeExecutionToolResultBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfCodeExecutionToolResult: &p}
+}
+
+func (variant BashCodeExecutionToolResultBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfBashCodeExecutionToolResult: &p}
+}
+
+func (variant TextEditorCodeExecutionToolResultBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfTextEditorCodeExecutionToolResult: &p}
+}
+
+func (variant ToolSearchToolResultBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfToolSearchToolResult: &p}
+}
+
+func (variant ContainerUploadBlock) toParamUnion() ContentBlockParamUnion {
+	p := variant.ToParam()
+	return ContentBlockParamUnion{OfContainerUpload: &p}
+}
+
+func (r WebFetchToolResultBlock) ToParam() WebFetchToolResultBlockParam {
+	var p WebFetchToolResultBlockParam
+	p.Type = r.Type
+	p.ToolUseID = r.ToolUseID
+	return p
+}
+
+func (r ContainerUploadBlock) ToParam() ContainerUploadBlockParam {
+	var p ContainerUploadBlockParam
+	p.Type = r.Type
+	p.FileID = r.FileID
+	return p
+}
+
+func (r BashCodeExecutionToolResultBlock) ToParam() BashCodeExecutionToolResultBlockParam {
+	var p BashCodeExecutionToolResultBlockParam
+	p.Type = r.Type
+	p.ToolUseID = r.ToolUseID
+
+	if r.Content.JSON.ErrorCode.Valid() {
+		p.Content.OfRequestBashCodeExecutionToolResultError = &BashCodeExecutionToolResultErrorParam{
+			ErrorCode: BashCodeExecutionToolResultErrorCode(r.Content.ErrorCode),
+		}
+	} else {
+		requestBashContentResult := &BashCodeExecutionResultBlockParam{
+			ReturnCode: r.Content.ReturnCode,
+			Stderr:     r.Content.Stderr,
+			Stdout:     r.Content.Stdout,
+		}
+		for _, block := range r.Content.Content {
+			requestBashContentResult.Content = append(requestBashContentResult.Content, block.ToParam())
+		}
+		p.Content.OfRequestBashCodeExecutionResultBlock = requestBashContentResult
+	}
+
+	return p
+}
+
+func (r BashCodeExecutionOutputBlock) ToParam() BashCodeExecutionOutputBlockParam {
+	var p BashCodeExecutionOutputBlockParam
+	p.Type = r.Type
+	p.FileID = r.FileID
+	return p
+}
+
+func (r CodeExecutionToolResultBlock) ToParam() CodeExecutionToolResultBlockParam {
+	var p CodeExecutionToolResultBlockParam
+	p.Type = r.Type
+	p.ToolUseID = r.ToolUseID
+	if r.Content.JSON.ErrorCode.Valid() {
+		p.Content.OfRequestCodeExecutionToolResultError = &CodeExecutionToolResultErrorParam{
+			ErrorCode: r.Content.ErrorCode,
+		}
+	} else {
+		p.Content.OfRequestCodeExecutionResultBlock = &CodeExecutionResultBlockParam{
+			ReturnCode: r.Content.ReturnCode,
+			Stderr:     r.Content.Stderr,
+			Stdout:     r.Content.Stdout,
+		}
+		for _, block := range r.Content.Content {
+			p.Content.OfRequestCodeExecutionResultBlock.Content = append(p.Content.OfRequestCodeExecutionResultBlock.Content, block.ToParam())
+		}
+	}
+	return p
+}
+
+func (r CodeExecutionOutputBlock) ToParam() CodeExecutionOutputBlockParam {
+	var p CodeExecutionOutputBlockParam
+	p.Type = r.Type
+	p.FileID = r.FileID
+	return p
+}
+
+func (r TextEditorCodeExecutionToolResultBlock) ToParam() TextEditorCodeExecutionToolResultBlockParam {
+	var p TextEditorCodeExecutionToolResultBlockParam
+	p.Type = r.Type
+	p.ToolUseID = r.ToolUseID
+	if r.Content.JSON.ErrorCode.Valid() {
+		p.Content.OfRequestTextEditorCodeExecutionToolResultError = &TextEditorCodeExecutionToolResultErrorParam{
+			ErrorCode:    TextEditorCodeExecutionToolResultErrorCode(r.Content.ErrorCode),
+			ErrorMessage: paramutil.ToOpt(r.Content.ErrorMessage, r.Content.JSON.ErrorMessage),
+		}
+	} else {
+		p.Content = param.Override[TextEditorCodeExecutionToolResultBlockParamContentUnion](r.Content.RawJSON())
+	}
+	return p
+}
+
+func (r ToolSearchToolResultBlock) ToParam() ToolSearchToolResultBlockParam {
+	var p ToolSearchToolResultBlockParam
+	p.Type = r.Type
+	p.ToolUseID = r.ToolUseID
+	if r.Content.JSON.ErrorCode.Valid() {
+		p.Content.OfRequestToolSearchToolResultError = &ToolSearchToolResultErrorParam{
+			ErrorCode: ToolSearchToolResultErrorCode(r.Content.ErrorCode),
+		}
+	} else {
+		p.Content.OfRequestToolSearchToolSearchResultBlock = &ToolSearchToolSearchResultBlockParam{}
+		for _, block := range r.Content.ToolReferences {
+			p.Content.OfRequestToolSearchToolSearchResultBlock.ToolReferences = append(
+				p.Content.OfRequestToolSearchToolSearchResultBlock.ToolReferences,
+				block.ToParam(),
+			)
+		}
+	}
+	return p
+}
+
+func (r ToolReferenceBlock) ToParam() ToolReferenceBlockParam {
+	var p ToolReferenceBlockParam
+	p.Type = r.Type
+	p.ToolName = r.ToolName
 	return p
 }

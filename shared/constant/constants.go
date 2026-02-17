@@ -57,6 +57,7 @@ type ClearToolUses20250919 string                   // Always "clear_tool_uses_2
 type CodeExecution string                           // Always "code_execution"
 type CodeExecution20250522 string                   // Always "code_execution_20250522"
 type CodeExecution20250825 string                   // Always "code_execution_20250825"
+type CodeExecution20260120 string                   // Always "code_execution_20260120"
 type CodeExecutionOutput string                     // Always "code_execution_output"
 type CodeExecutionResult string                     // Always "code_execution_result"
 type CodeExecutionToolResult string                 // Always "code_execution_tool_result"
@@ -81,6 +82,7 @@ type Direct string                                  // Always "direct"
 type Disabled string                                // Always "disabled"
 type Document string                                // Always "document"
 type Enabled string                                 // Always "enabled"
+type EncryptedCodeExecutionResult string            // Always "encrypted_code_execution_result"
 type Ephemeral string                               // Always "ephemeral"
 type Error string                                   // Always "error"
 type Errored string                                 // Always "errored"
@@ -151,11 +153,13 @@ type URL string                                     // Always "url"
 type View string                                    // Always "view"
 type WebFetch string                                // Always "web_fetch"
 type WebFetch20250910 string                        // Always "web_fetch_20250910"
+type WebFetch20260209 string                        // Always "web_fetch_20260209"
 type WebFetchResult string                          // Always "web_fetch_result"
 type WebFetchToolResult string                      // Always "web_fetch_tool_result"
 type WebFetchToolResultError string                 // Always "web_fetch_tool_result_error"
 type WebSearch string                               // Always "web_search"
 type WebSearch20250305 string                       // Always "web_search_20250305"
+type WebSearch20260209 string                       // Always "web_search_20260209"
 type WebSearchResult string                         // Always "web_search_result"
 type WebSearchResultLocation string                 // Always "web_search_result_location"
 type WebSearchToolResult string                     // Always "web_search_tool_result"
@@ -195,6 +199,7 @@ func (c ClearToolUses20250919) Default() ClearToolUses20250919 { return "clear_t
 func (c CodeExecution) Default() CodeExecution                 { return "code_execution" }
 func (c CodeExecution20250522) Default() CodeExecution20250522 { return "code_execution_20250522" }
 func (c CodeExecution20250825) Default() CodeExecution20250825 { return "code_execution_20250825" }
+func (c CodeExecution20260120) Default() CodeExecution20260120 { return "code_execution_20260120" }
 func (c CodeExecutionOutput) Default() CodeExecutionOutput     { return "code_execution_output" }
 func (c CodeExecutionResult) Default() CodeExecutionResult     { return "code_execution_result" }
 func (c CodeExecutionToolResult) Default() CodeExecutionToolResult {
@@ -223,6 +228,9 @@ func (c Direct) Default() Direct                             { return "direct" }
 func (c Disabled) Default() Disabled                         { return "disabled" }
 func (c Document) Default() Document                         { return "document" }
 func (c Enabled) Default() Enabled                           { return "enabled" }
+func (c EncryptedCodeExecutionResult) Default() EncryptedCodeExecutionResult {
+	return "encrypted_code_execution_result"
+}
 func (c Ephemeral) Default() Ephemeral                       { return "ephemeral" }
 func (c Error) Default() Error                               { return "error" }
 func (c Errored) Default() Errored                           { return "errored" }
@@ -309,6 +317,7 @@ func (c URL) Default() URL                               { return "url" }
 func (c View) Default() View                             { return "view" }
 func (c WebFetch) Default() WebFetch                     { return "web_fetch" }
 func (c WebFetch20250910) Default() WebFetch20250910     { return "web_fetch_20250910" }
+func (c WebFetch20260209) Default() WebFetch20260209     { return "web_fetch_20260209" }
 func (c WebFetchResult) Default() WebFetchResult         { return "web_fetch_result" }
 func (c WebFetchToolResult) Default() WebFetchToolResult { return "web_fetch_tool_result" }
 func (c WebFetchToolResultError) Default() WebFetchToolResultError {
@@ -316,6 +325,7 @@ func (c WebFetchToolResultError) Default() WebFetchToolResultError {
 }
 func (c WebSearch) Default() WebSearch                 { return "web_search" }
 func (c WebSearch20250305) Default() WebSearch20250305 { return "web_search_20250305" }
+func (c WebSearch20260209) Default() WebSearch20260209 { return "web_search_20260209" }
 func (c WebSearchResult) Default() WebSearchResult     { return "web_search_result" }
 func (c WebSearchResultLocation) Default() WebSearchResultLocation {
 	return "web_search_result_location"
@@ -351,6 +361,7 @@ func (c ClearToolUses20250919) MarshalJSON() ([]byte, error)               { ret
 func (c CodeExecution) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c CodeExecution20250522) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c CodeExecution20250825) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c CodeExecution20260120) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c CodeExecutionOutput) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c CodeExecutionResult) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c CodeExecutionToolResult) MarshalJSON() ([]byte, error)             { return marshalString(c) }
@@ -375,6 +386,7 @@ func (c Direct) MarshalJSON() ([]byte, error)                              { ret
 func (c Disabled) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Document) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Enabled) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c EncryptedCodeExecutionResult) MarshalJSON() ([]byte, error)        { return marshalString(c) }
 func (c Ephemeral) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c Error) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Errored) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -449,11 +461,13 @@ func (c URL) MarshalJSON() ([]byte, error)                               { retur
 func (c View) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c WebFetch) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c WebFetch20250910) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c WebFetch20260209) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c WebFetchResult) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c WebFetchToolResult) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c WebFetchToolResultError) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c WebSearch) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c WebSearch20250305) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c WebSearch20260209) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c WebSearchResult) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c WebSearchResultLocation) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c WebSearchToolResult) MarshalJSON() ([]byte, error)               { return marshalString(c) }

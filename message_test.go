@@ -62,7 +62,6 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 			},
 		},
 		ServiceTier:   anthropic.MessageNewParamsServiceTierAuto,
-		Speed:         anthropic.MessageNewParamsSpeedStandard,
 		StopSequences: []string{"string"},
 		System: []anthropic.TextBlockParam{{
 			Text: "Today's date is 2024-06-01.",
@@ -168,7 +167,6 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 				},
 			},
 		},
-		Speed: anthropic.MessageCountTokensParamsSpeedStandard,
 		System: anthropic.MessageCountTokensParamsSystemUnion{
 			OfTextBlockArray: []anthropic.TextBlockParam{{
 				Text: "Today's date is 2024-06-01.",

@@ -8326,10 +8326,6 @@ type Usage struct {
 	//
 	// Any of "standard", "priority", "batch".
 	ServiceTier UsageServiceTier `json:"service_tier,required"`
-	// The inference speed mode used for this request.
-	//
-	// Any of "standard", "fast".
-	Speed UsageSpeed `json:"speed,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CacheCreation            respjson.Field
@@ -8340,7 +8336,6 @@ type Usage struct {
 		OutputTokens             respjson.Field
 		ServerToolUse            respjson.Field
 		ServiceTier              respjson.Field
-		Speed                    respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
@@ -8359,14 +8354,6 @@ const (
 	UsageServiceTierStandard UsageServiceTier = "standard"
 	UsageServiceTierPriority UsageServiceTier = "priority"
 	UsageServiceTierBatch    UsageServiceTier = "batch"
-)
-
-// The inference speed mode used for this request.
-type UsageSpeed string
-
-const (
-	UsageSpeedStandard UsageSpeed = "standard"
-	UsageSpeedFast     UsageSpeed = "fast"
 )
 
 type WebFetchBlock struct {
@@ -9404,11 +9391,6 @@ type MessageNewParams struct {
 	// Recommended for advanced use cases only. You usually only need to use
 	// `temperature`.
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
-	// The inference speed mode for this request. `"fast"` enables high
-	// output-tokens-per-second inference.
-	//
-	// Any of "standard", "fast".
-	Speed MessageNewParamsSpeed `json:"speed,omitzero"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
 	// Configuration options for the model's output, such as the output format.
@@ -9555,15 +9537,6 @@ const (
 	MessageNewParamsServiceTierStandardOnly MessageNewParamsServiceTier = "standard_only"
 )
 
-// The inference speed mode for this request. `"fast"` enables high
-// output-tokens-per-second inference.
-type MessageNewParamsSpeed string
-
-const (
-	MessageNewParamsSpeedStandard MessageNewParamsSpeed = "standard"
-	MessageNewParamsSpeedFast     MessageNewParamsSpeed = "fast"
-)
-
 type MessageCountTokensParams struct {
 	// Input messages.
 	//
@@ -9639,11 +9612,6 @@ type MessageCountTokensParams struct {
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero,required"`
-	// The inference speed mode for this request. `"fast"` enables high
-	// output-tokens-per-second inference.
-	//
-	// Any of "standard", "fast".
-	Speed MessageCountTokensParamsSpeed `json:"speed,omitzero"`
 	// Configuration options for the model's output, such as the output format.
 	OutputConfig OutputConfigParam `json:"output_config,omitzero"`
 	// System prompt.
@@ -9757,15 +9725,6 @@ func (r MessageCountTokensParams) MarshalJSON() (data []byte, err error) {
 func (r *MessageCountTokensParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// The inference speed mode for this request. `"fast"` enables high
-// output-tokens-per-second inference.
-type MessageCountTokensParamsSpeed string
-
-const (
-	MessageCountTokensParamsSpeedStandard MessageCountTokensParamsSpeed = "standard"
-	MessageCountTokensParamsSpeedFast     MessageCountTokensParamsSpeed = "fast"
-)
 
 // Only one field can be non-zero.
 //

@@ -5275,7 +5275,6 @@ func (r *ServerToolUsage) UnmarshalJSON(data []byte) error {
 }
 
 type ServerToolUseBlock struct {
-type ServerToolUseBlock struct {
 	ID string `json:"id,required"`
 	// Tool invocation directly from the model.
 	Caller ServerToolUseBlockCallerUnion `json:"caller,required"`
@@ -5412,6 +5411,9 @@ type ServerToolUseBlockParam struct {
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Tool invocation directly from the model.
 	Caller ServerToolUseBlockParamCallerUnion `json:"caller,omitzero"`
+	// Any of "web_search", "web_fetch", "code_execution", "bash_code_execution",
+	// "text_editor_code_execution", "tool_search_tool_regex", "tool_search_tool_bm25".
+	Name ServerToolUseBlockParamName `json:"name,required"`
 	// This field can be elided, and will marshal its zero value as "server_tool_use".
 	Type constant.ServerToolUse `json:"type,required"`
 	paramObj

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.24.0 (2026-02-18)
+
+Full Changelog: [v1.23.0...v1.24.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.23.0...v1.24.0)
+
+### Features
+
+* **api:** manual updates ([54d01f5](https://github.com/anthropics/anthropic-sdk-go/commit/54d01f5187ef9ec49f803edfe643bf1bf1e91072))
+
 ## 1.23.0 (2026-02-17)
 
 Full Changelog: [v1.22.1...v1.23.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.22.1...v1.23.0)

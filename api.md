@@ -95,6 +95,7 @@ Params Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#ToolUseBlockParam">ToolUseBlockParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#URLImageSourceParam">URLImageSourceParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#URLPDFSourceParam">URLPDFSourceParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#UserLocationParam">UserLocationParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WebFetchBlockParam">WebFetchBlockParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WebFetchTool20250910Param">WebFetchTool20250910Param</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WebFetchTool20260209Param">WebFetchTool20260209Param</a>
@@ -107,6 +108,7 @@ Params Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WebSearchToolRequestErrorParam">WebSearchToolRequestErrorParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WebSearchToolResultBlockParam">WebSearchToolResultBlockParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WebSearchToolResultBlockParamContentUnion">WebSearchToolResultBlockParamContentUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WebSearchToolResultErrorCode">WebSearchToolResultErrorCode</a>
 
 Response Types:
 
@@ -183,6 +185,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WebSearchToolResultBlock">WebSearchToolResultBlock</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WebSearchToolResultBlockContentUnion">WebSearchToolResultBlockContentUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WebSearchToolResultError">WebSearchToolResultError</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WebSearchToolResultErrorCode">WebSearchToolResultErrorCode</a>
 
 Methods:
 

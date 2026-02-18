@@ -3821,83 +3821,12 @@ func (u MessageCountTokensToolUnionParam) GetBlockedDomains() []string {
 	return nil
 }
 
-// Returns a subunion which exports methods to access subproperties
-//
-// Or use AsAny() to get the underlying value
-func (u MessageCountTokensToolUnionParam) GetUserLocation() (res messageCountTokensToolUnionParamUserLocation) {
+// Returns a pointer to the underlying variant's UserLocation property, if present.
+func (u MessageCountTokensToolUnionParam) GetUserLocation() *UserLocationParam {
 	if vt := u.OfWebSearchTool20250305; vt != nil {
-		res.any = &vt.UserLocation
+		return &vt.UserLocation
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
-		res.any = &vt.UserLocation
-	}
-	return
-}
-
-// Can have the runtime types [*WebSearchTool20250305UserLocationParam],
-// [*WebSearchTool20260209UserLocationParam]
-type messageCountTokensToolUnionParamUserLocation struct{ any }
-
-// Use the following switch statement to get the type of the union:
-//
-//	switch u.AsAny().(type) {
-//	case *anthropic.WebSearchTool20250305UserLocationParam:
-//	case *anthropic.WebSearchTool20260209UserLocationParam:
-//	default:
-//	    fmt.Errorf("not present")
-//	}
-func (u messageCountTokensToolUnionParamUserLocation) AsAny() any { return u.any }
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u messageCountTokensToolUnionParamUserLocation) GetType() *string {
-	switch vt := u.any.(type) {
-	case *WebSearchTool20250305UserLocationParam:
-		return (*string)(&vt.Type)
-	case *WebSearchTool20260209UserLocationParam:
-		return (*string)(&vt.Type)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u messageCountTokensToolUnionParamUserLocation) GetCity() *string {
-	switch vt := u.any.(type) {
-	case *WebSearchTool20250305UserLocationParam:
-		return paramutil.AddrIfPresent(vt.City)
-	case *WebSearchTool20260209UserLocationParam:
-		return paramutil.AddrIfPresent(vt.City)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u messageCountTokensToolUnionParamUserLocation) GetCountry() *string {
-	switch vt := u.any.(type) {
-	case *WebSearchTool20250305UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Country)
-	case *WebSearchTool20260209UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Country)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u messageCountTokensToolUnionParamUserLocation) GetRegion() *string {
-	switch vt := u.any.(type) {
-	case *WebSearchTool20250305UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Region)
-	case *WebSearchTool20260209UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Region)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u messageCountTokensToolUnionParamUserLocation) GetTimezone() *string {
-	switch vt := u.any.(type) {
-	case *WebSearchTool20250305UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Timezone)
-	case *WebSearchTool20260209UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Timezone)
+		return &vt.UserLocation
 	}
 	return nil
 }
@@ -7715,83 +7644,12 @@ func (u ToolUnionParam) GetBlockedDomains() []string {
 	return nil
 }
 
-// Returns a subunion which exports methods to access subproperties
-//
-// Or use AsAny() to get the underlying value
-func (u ToolUnionParam) GetUserLocation() (res toolUnionParamUserLocation) {
+// Returns a pointer to the underlying variant's UserLocation property, if present.
+func (u ToolUnionParam) GetUserLocation() *UserLocationParam {
 	if vt := u.OfWebSearchTool20250305; vt != nil {
-		res.any = &vt.UserLocation
+		return &vt.UserLocation
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
-		res.any = &vt.UserLocation
-	}
-	return
-}
-
-// Can have the runtime types [*WebSearchTool20250305UserLocationParam],
-// [*WebSearchTool20260209UserLocationParam]
-type toolUnionParamUserLocation struct{ any }
-
-// Use the following switch statement to get the type of the union:
-//
-//	switch u.AsAny().(type) {
-//	case *anthropic.WebSearchTool20250305UserLocationParam:
-//	case *anthropic.WebSearchTool20260209UserLocationParam:
-//	default:
-//	    fmt.Errorf("not present")
-//	}
-func (u toolUnionParamUserLocation) AsAny() any { return u.any }
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u toolUnionParamUserLocation) GetType() *string {
-	switch vt := u.any.(type) {
-	case *WebSearchTool20250305UserLocationParam:
-		return (*string)(&vt.Type)
-	case *WebSearchTool20260209UserLocationParam:
-		return (*string)(&vt.Type)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u toolUnionParamUserLocation) GetCity() *string {
-	switch vt := u.any.(type) {
-	case *WebSearchTool20250305UserLocationParam:
-		return paramutil.AddrIfPresent(vt.City)
-	case *WebSearchTool20260209UserLocationParam:
-		return paramutil.AddrIfPresent(vt.City)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u toolUnionParamUserLocation) GetCountry() *string {
-	switch vt := u.any.(type) {
-	case *WebSearchTool20250305UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Country)
-	case *WebSearchTool20260209UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Country)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u toolUnionParamUserLocation) GetRegion() *string {
-	switch vt := u.any.(type) {
-	case *WebSearchTool20250305UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Region)
-	case *WebSearchTool20260209UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Region)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u toolUnionParamUserLocation) GetTimezone() *string {
-	switch vt := u.any.(type) {
-	case *WebSearchTool20250305UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Timezone)
-	case *WebSearchTool20260209UserLocationParam:
-		return paramutil.AddrIfPresent(vt.Timezone)
+		return &vt.UserLocation
 	}
 	return nil
 }
@@ -8063,6 +7921,31 @@ const (
 	UsageServiceTierPriority UsageServiceTier = "priority"
 	UsageServiceTierBatch    UsageServiceTier = "batch"
 )
+
+// The property Type is required.
+type UserLocationParam struct {
+	// The city of the user.
+	City param.Opt[string] `json:"city,omitzero"`
+	// The two letter
+	// [ISO country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) of the
+	// user.
+	Country param.Opt[string] `json:"country,omitzero"`
+	// The region of the user.
+	Region param.Opt[string] `json:"region,omitzero"`
+	// The [IANA timezone](https://nodatime.org/TimeZones) of the user.
+	Timezone param.Opt[string] `json:"timezone,omitzero"`
+	// This field can be elided, and will marshal its zero value as "approximate".
+	Type constant.Approximate `json:"type,required"`
+	paramObj
+}
+
+func (r UserLocationParam) MarshalJSON() (data []byte, err error) {
+	type shadow UserLocationParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *UserLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type WebFetchBlock struct {
 	Content DocumentBlock `json:"content,required"`
@@ -8591,13 +8474,13 @@ type WebSearchTool20250305Param struct {
 	// If provided, these domains will never appear in results. Cannot be used
 	// alongside `allowed_domains`.
 	BlockedDomains []string `json:"blocked_domains,omitzero"`
-	// Parameters for the user's location. Used to provide more relevant search
-	// results.
-	UserLocation WebSearchTool20250305UserLocationParam `json:"user_location,omitzero"`
 	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Parameters for the user's location. Used to provide more relevant search
+	// results.
+	UserLocation UserLocationParam `json:"user_location,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -8618,34 +8501,6 @@ func (r *WebSearchTool20250305Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Parameters for the user's location. Used to provide more relevant search
-// results.
-//
-// The property Type is required.
-type WebSearchTool20250305UserLocationParam struct {
-	// The city of the user.
-	City param.Opt[string] `json:"city,omitzero"`
-	// The two letter
-	// [ISO country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) of the
-	// user.
-	Country param.Opt[string] `json:"country,omitzero"`
-	// The region of the user.
-	Region param.Opt[string] `json:"region,omitzero"`
-	// The [IANA timezone](https://nodatime.org/TimeZones) of the user.
-	Timezone param.Opt[string] `json:"timezone,omitzero"`
-	// This field can be elided, and will marshal its zero value as "approximate".
-	Type constant.Approximate `json:"type,required"`
-	paramObj
-}
-
-func (r WebSearchTool20250305UserLocationParam) MarshalJSON() (data []byte, err error) {
-	type shadow WebSearchTool20250305UserLocationParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *WebSearchTool20250305UserLocationParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // The properties Name, Type are required.
 type WebSearchTool20260209Param struct {
 	// Maximum number of times the tool can be used in the API request.
@@ -8661,13 +8516,13 @@ type WebSearchTool20260209Param struct {
 	// If provided, these domains will never appear in results. Cannot be used
 	// alongside `allowed_domains`.
 	BlockedDomains []string `json:"blocked_domains,omitzero"`
-	// Parameters for the user's location. Used to provide more relevant search
-	// results.
-	UserLocation WebSearchTool20260209UserLocationParam `json:"user_location,omitzero"`
 	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Parameters for the user's location. Used to provide more relevant search
+	// results.
+	UserLocation UserLocationParam `json:"user_location,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -8688,39 +8543,11 @@ func (r *WebSearchTool20260209Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Parameters for the user's location. Used to provide more relevant search
-// results.
-//
-// The property Type is required.
-type WebSearchTool20260209UserLocationParam struct {
-	// The city of the user.
-	City param.Opt[string] `json:"city,omitzero"`
-	// The two letter
-	// [ISO country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) of the
-	// user.
-	Country param.Opt[string] `json:"country,omitzero"`
-	// The region of the user.
-	Region param.Opt[string] `json:"region,omitzero"`
-	// The [IANA timezone](https://nodatime.org/TimeZones) of the user.
-	Timezone param.Opt[string] `json:"timezone,omitzero"`
-	// This field can be elided, and will marshal its zero value as "approximate".
-	Type constant.Approximate `json:"type,required"`
-	paramObj
-}
-
-func (r WebSearchTool20260209UserLocationParam) MarshalJSON() (data []byte, err error) {
-	type shadow WebSearchTool20260209UserLocationParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *WebSearchTool20260209UserLocationParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // The properties ErrorCode, Type are required.
 type WebSearchToolRequestErrorParam struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
 	// "too_many_requests", "query_too_long", "request_too_large".
-	ErrorCode WebSearchToolRequestErrorErrorCode `json:"error_code,omitzero,required"`
+	ErrorCode WebSearchToolResultErrorCode `json:"error_code,omitzero,required"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_tool_result_error".
 	Type constant.WebSearchToolResultError `json:"type,required"`
@@ -8734,17 +8561,6 @@ func (r WebSearchToolRequestErrorParam) MarshalJSON() (data []byte, err error) {
 func (r *WebSearchToolRequestErrorParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type WebSearchToolRequestErrorErrorCode string
-
-const (
-	WebSearchToolRequestErrorErrorCodeInvalidToolInput WebSearchToolRequestErrorErrorCode = "invalid_tool_input"
-	WebSearchToolRequestErrorErrorCodeUnavailable      WebSearchToolRequestErrorErrorCode = "unavailable"
-	WebSearchToolRequestErrorErrorCodeMaxUsesExceeded  WebSearchToolRequestErrorErrorCode = "max_uses_exceeded"
-	WebSearchToolRequestErrorErrorCodeTooManyRequests  WebSearchToolRequestErrorErrorCode = "too_many_requests"
-	WebSearchToolRequestErrorErrorCodeQueryTooLong     WebSearchToolRequestErrorErrorCode = "query_too_long"
-	WebSearchToolRequestErrorErrorCodeRequestTooLarge  WebSearchToolRequestErrorErrorCode = "request_too_large"
-)
 
 type WebSearchToolResultBlock struct {
 	// Tool invocation directly from the model.
@@ -8853,7 +8669,7 @@ type WebSearchToolResultBlockContentUnion struct {
 	// an object.
 	OfWebSearchResultBlockArray []WebSearchResultBlock `json:",inline"`
 	// This field is from variant [WebSearchToolResultError].
-	ErrorCode WebSearchToolResultErrorErrorCode `json:"error_code"`
+	ErrorCode WebSearchToolResultErrorCode `json:"error_code"`
 	// This field is from variant [WebSearchToolResultError].
 	Type constant.WebSearchToolResultError `json:"type"`
 	JSON struct {
@@ -8962,7 +8778,7 @@ func init() {
 	)
 }
 
-func NewWebSearchToolRequestError(errorCode WebSearchToolRequestErrorErrorCode) WebSearchToolResultBlockParamContentUnion {
+func NewWebSearchToolRequestError(errorCode WebSearchToolResultErrorCode) WebSearchToolResultBlockParamContentUnion {
 	var variant WebSearchToolRequestErrorParam
 	variant.ErrorCode = errorCode
 	return WebSearchToolResultBlockParamContentUnion{OfRequestWebSearchToolResultError: &variant}
@@ -8996,7 +8812,7 @@ func (u *WebSearchToolResultBlockParamContentUnion) asAny() any {
 type WebSearchToolResultError struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
 	// "too_many_requests", "query_too_long", "request_too_large".
-	ErrorCode WebSearchToolResultErrorErrorCode `json:"error_code,required"`
+	ErrorCode WebSearchToolResultErrorCode      `json:"error_code,required"`
 	Type      constant.WebSearchToolResultError `json:"type,required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -9013,15 +8829,15 @@ func (r *WebSearchToolResultError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type WebSearchToolResultErrorErrorCode string
+type WebSearchToolResultErrorCode string
 
 const (
-	WebSearchToolResultErrorErrorCodeInvalidToolInput WebSearchToolResultErrorErrorCode = "invalid_tool_input"
-	WebSearchToolResultErrorErrorCodeUnavailable      WebSearchToolResultErrorErrorCode = "unavailable"
-	WebSearchToolResultErrorErrorCodeMaxUsesExceeded  WebSearchToolResultErrorErrorCode = "max_uses_exceeded"
-	WebSearchToolResultErrorErrorCodeTooManyRequests  WebSearchToolResultErrorErrorCode = "too_many_requests"
-	WebSearchToolResultErrorErrorCodeQueryTooLong     WebSearchToolResultErrorErrorCode = "query_too_long"
-	WebSearchToolResultErrorErrorCodeRequestTooLarge  WebSearchToolResultErrorErrorCode = "request_too_large"
+	WebSearchToolResultErrorCodeInvalidToolInput WebSearchToolResultErrorCode = "invalid_tool_input"
+	WebSearchToolResultErrorCodeUnavailable      WebSearchToolResultErrorCode = "unavailable"
+	WebSearchToolResultErrorCodeMaxUsesExceeded  WebSearchToolResultErrorCode = "max_uses_exceeded"
+	WebSearchToolResultErrorCodeTooManyRequests  WebSearchToolResultErrorCode = "too_many_requests"
+	WebSearchToolResultErrorCodeQueryTooLong     WebSearchToolResultErrorCode = "query_too_long"
+	WebSearchToolResultErrorCodeRequestTooLarge  WebSearchToolResultErrorCode = "request_too_large"
 )
 
 type MessageNewParams struct {

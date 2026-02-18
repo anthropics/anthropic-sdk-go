@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.25.0 (2026-02-18)
+
+Full Changelog: [v1.24.0...v1.25.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.24.0...v1.25.0)
+
+### Features
+
+* **api:** fix shared UserLocation and error code types ([cb98cd0](https://github.com/anthropics/anthropic-sdk-go/commit/cb98cd00c359c0181d7b39bdb057e7b06015aa33))
+
 ## 1.24.0 (2026-02-18)
 
 Full Changelog: [v1.23.0...v1.24.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.23.0...v1.24.0)

@@ -1025,7 +1025,7 @@ type CodeExecutionTool20250522Param struct {
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -1056,7 +1056,7 @@ type CodeExecutionTool20250825Param struct {
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -1077,6 +1077,40 @@ func (r CodeExecutionTool20250825Param) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *CodeExecutionTool20250825Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Code execution tool with REPL state persistence (daemon mode + gVisor
+// checkpoint).
+//
+// The properties Name, Type are required.
+type CodeExecutionTool20260120Param struct {
+	// If true, tool will not be included in initial system prompt. Only loaded when
+	// returned via tool_reference from tool search.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
+	AllowedCallers []string `json:"allowed_callers,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as "code_execution".
+	Name constant.CodeExecution `json:"name,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "code_execution_20260120".
+	Type constant.CodeExecution20260120 `json:"type,required"`
+	paramObj
+}
+
+func (r CodeExecutionTool20260120Param) MarshalJSON() (data []byte, err error) {
+	type shadow CodeExecutionTool20260120Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CodeExecutionTool20260120Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2604,10 +2638,7 @@ func (u ContentBlockParamUnion) GetCaller() (res contentBlockParamUnionCaller) {
 }
 
 // Can have the runtime types [*DirectCallerParam], [*ServerToolCallerParam],
-// [*ToolUseBlockParamCallerCodeExecution20260120],
-// [*ServerToolUseBlockParamCallerCodeExecution20260120],
-// [*WebSearchToolResultBlockParamCallerCodeExecution20260120],
-// [*WebFetchToolResultBlockParamCallerCodeExecution20260120]
+// [*ServerToolCaller20260120Param]
 type contentBlockParamUnionCaller struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -2615,10 +2646,7 @@ type contentBlockParamUnionCaller struct{ any }
 //	switch u.AsAny().(type) {
 //	case *anthropic.DirectCallerParam:
 //	case *anthropic.ServerToolCallerParam:
-//	case *anthropic.ToolUseBlockParamCallerCodeExecution20260120:
-//	case *anthropic.ServerToolUseBlockParamCallerCodeExecution20260120:
-//	case *anthropic.WebSearchToolResultBlockParamCallerCodeExecution20260120:
-//	case *anthropic.WebFetchToolResultBlockParamCallerCodeExecution20260120:
+//	case *anthropic.ServerToolCaller20260120Param:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -3233,7 +3261,7 @@ type MemoryTool20250818Param struct {
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl  CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -3397,21 +3425,21 @@ func MessageCountTokensToolParamOfToolSearchToolRegex20251119(type_ ToolSearchTo
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type MessageCountTokensToolUnionParam struct {
-	OfTool                        *ToolParam                                            `json:",omitzero,inline"`
-	OfBashTool20250124            *ToolBash20250124Param                                `json:",omitzero,inline"`
-	OfCodeExecutionTool20250522   *CodeExecutionTool20250522Param                       `json:",omitzero,inline"`
-	OfCodeExecutionTool20250825   *CodeExecutionTool20250825Param                       `json:",omitzero,inline"`
-	OfCodeExecutionTool20260120   *MessageCountTokensToolCodeExecutionTool20260120Param `json:",omitzero,inline"`
-	OfMemoryTool20250818          *MemoryTool20250818Param                              `json:",omitzero,inline"`
-	OfTextEditor20250124          *ToolTextEditor20250124Param                          `json:",omitzero,inline"`
-	OfTextEditor20250429          *ToolTextEditor20250429Param                          `json:",omitzero,inline"`
-	OfTextEditor20250728          *ToolTextEditor20250728Param                          `json:",omitzero,inline"`
-	OfWebSearchTool20250305       *WebSearchTool20250305Param                           `json:",omitzero,inline"`
-	OfWebFetchTool20250910        *WebFetchTool20250910Param                            `json:",omitzero,inline"`
-	OfWebSearchTool20260209       *MessageCountTokensToolWebSearchTool20260209Param     `json:",omitzero,inline"`
-	OfWebFetchTool20260209        *MessageCountTokensToolWebFetchTool20260209Param      `json:",omitzero,inline"`
-	OfToolSearchToolBm25_20251119 *ToolSearchToolBm25_20251119Param                     `json:",omitzero,inline"`
-	OfToolSearchToolRegex20251119 *ToolSearchToolRegex20251119Param                     `json:",omitzero,inline"`
+	OfTool                        *ToolParam                        `json:",omitzero,inline"`
+	OfBashTool20250124            *ToolBash20250124Param            `json:",omitzero,inline"`
+	OfCodeExecutionTool20250522   *CodeExecutionTool20250522Param   `json:",omitzero,inline"`
+	OfCodeExecutionTool20250825   *CodeExecutionTool20250825Param   `json:",omitzero,inline"`
+	OfCodeExecutionTool20260120   *CodeExecutionTool20260120Param   `json:",omitzero,inline"`
+	OfMemoryTool20250818          *MemoryTool20250818Param          `json:",omitzero,inline"`
+	OfTextEditor20250124          *ToolTextEditor20250124Param      `json:",omitzero,inline"`
+	OfTextEditor20250429          *ToolTextEditor20250429Param      `json:",omitzero,inline"`
+	OfTextEditor20250728          *ToolTextEditor20250728Param      `json:",omitzero,inline"`
+	OfWebSearchTool20250305       *WebSearchTool20250305Param       `json:",omitzero,inline"`
+	OfWebFetchTool20250910        *WebFetchTool20250910Param        `json:",omitzero,inline"`
+	OfWebSearchTool20260209       *WebSearchTool20260209Param       `json:",omitzero,inline"`
+	OfWebFetchTool20260209        *WebFetchTool20260209Param        `json:",omitzero,inline"`
+	OfToolSearchToolBm25_20251119 *ToolSearchToolBm25_20251119Param `json:",omitzero,inline"`
+	OfToolSearchToolRegex20251119 *ToolSearchToolRegex20251119Param `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -3806,14 +3834,14 @@ func (u MessageCountTokensToolUnionParam) GetUserLocation() (res messageCountTok
 }
 
 // Can have the runtime types [*WebSearchTool20250305UserLocationParam],
-// [*MessageCountTokensToolWebSearchTool20260209UserLocationParam]
+// [*WebSearchTool20260209UserLocationParam]
 type messageCountTokensToolUnionParamUserLocation struct{ any }
 
 // Use the following switch statement to get the type of the union:
 //
 //	switch u.AsAny().(type) {
 //	case *anthropic.WebSearchTool20250305UserLocationParam:
-//	case *anthropic.MessageCountTokensToolWebSearchTool20260209UserLocationParam:
+//	case *anthropic.WebSearchTool20260209UserLocationParam:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -3824,7 +3852,7 @@ func (u messageCountTokensToolUnionParamUserLocation) GetType() *string {
 	switch vt := u.any.(type) {
 	case *WebSearchTool20250305UserLocationParam:
 		return (*string)(&vt.Type)
-	case *MessageCountTokensToolWebSearchTool20260209UserLocationParam:
+	case *WebSearchTool20260209UserLocationParam:
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -3835,7 +3863,7 @@ func (u messageCountTokensToolUnionParamUserLocation) GetCity() *string {
 	switch vt := u.any.(type) {
 	case *WebSearchTool20250305UserLocationParam:
 		return paramutil.AddrIfPresent(vt.City)
-	case *MessageCountTokensToolWebSearchTool20260209UserLocationParam:
+	case *WebSearchTool20260209UserLocationParam:
 		return paramutil.AddrIfPresent(vt.City)
 	}
 	return nil
@@ -3846,7 +3874,7 @@ func (u messageCountTokensToolUnionParamUserLocation) GetCountry() *string {
 	switch vt := u.any.(type) {
 	case *WebSearchTool20250305UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Country)
-	case *MessageCountTokensToolWebSearchTool20260209UserLocationParam:
+	case *WebSearchTool20260209UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Country)
 	}
 	return nil
@@ -3857,7 +3885,7 @@ func (u messageCountTokensToolUnionParamUserLocation) GetRegion() *string {
 	switch vt := u.any.(type) {
 	case *WebSearchTool20250305UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Region)
-	case *MessageCountTokensToolWebSearchTool20260209UserLocationParam:
+	case *WebSearchTool20260209UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Region)
 	}
 	return nil
@@ -3868,7 +3896,7 @@ func (u messageCountTokensToolUnionParamUserLocation) GetTimezone() *string {
 	switch vt := u.any.(type) {
 	case *WebSearchTool20250305UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Timezone)
-	case *MessageCountTokensToolWebSearchTool20260209UserLocationParam:
+	case *WebSearchTool20260209UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Timezone)
 	}
 	return nil
@@ -3882,153 +3910,6 @@ func (u MessageCountTokensToolUnionParam) GetCitations() *CitationsConfigParam {
 		return &vt.Citations
 	}
 	return nil
-}
-
-// Code execution tool with REPL state persistence (daemon mode + gVisor
-// checkpoint).
-//
-// The properties Name, Type are required.
-type MessageCountTokensToolCodeExecutionTool20260120Param struct {
-	// If true, tool will not be included in initial system prompt. Only loaded when
-	// returned via tool_reference from tool search.
-	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	// When true, guarantees schema validation on tool names and inputs
-	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// Any of "direct", "code_execution_20250825".
-	AllowedCallers []string `json:"allowed_callers,omitzero"`
-	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Name of the tool.
-	//
-	// This is how the tool will be called by the model and in `tool_use` blocks.
-	//
-	// This field can be elided, and will marshal its zero value as "code_execution".
-	Name constant.CodeExecution `json:"name,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "code_execution_20260120".
-	Type constant.CodeExecution20260120 `json:"type,required"`
-	paramObj
-}
-
-func (r MessageCountTokensToolCodeExecutionTool20260120Param) MarshalJSON() (data []byte, err error) {
-	type shadow MessageCountTokensToolCodeExecutionTool20260120Param
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *MessageCountTokensToolCodeExecutionTool20260120Param) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties Name, Type are required.
-type MessageCountTokensToolWebSearchTool20260209Param struct {
-	// Maximum number of times the tool can be used in the API request.
-	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
-	// If true, tool will not be included in initial system prompt. Only loaded when
-	// returned via tool_reference from tool search.
-	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	// When true, guarantees schema validation on tool names and inputs
-	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// If provided, only these domains will be included in results. Cannot be used
-	// alongside `blocked_domains`.
-	AllowedDomains []string `json:"allowed_domains,omitzero"`
-	// If provided, these domains will never appear in results. Cannot be used
-	// alongside `allowed_domains`.
-	BlockedDomains []string `json:"blocked_domains,omitzero"`
-	// Parameters for the user's location. Used to provide more relevant search
-	// results.
-	UserLocation MessageCountTokensToolWebSearchTool20260209UserLocationParam `json:"user_location,omitzero"`
-	// Any of "direct", "code_execution_20250825".
-	AllowedCallers []string `json:"allowed_callers,omitzero"`
-	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Name of the tool.
-	//
-	// This is how the tool will be called by the model and in `tool_use` blocks.
-	//
-	// This field can be elided, and will marshal its zero value as "web_search".
-	Name constant.WebSearch `json:"name,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "web_search_20260209".
-	Type constant.WebSearch20260209 `json:"type,required"`
-	paramObj
-}
-
-func (r MessageCountTokensToolWebSearchTool20260209Param) MarshalJSON() (data []byte, err error) {
-	type shadow MessageCountTokensToolWebSearchTool20260209Param
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *MessageCountTokensToolWebSearchTool20260209Param) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Parameters for the user's location. Used to provide more relevant search
-// results.
-//
-// The property Type is required.
-type MessageCountTokensToolWebSearchTool20260209UserLocationParam struct {
-	// The city of the user.
-	City param.Opt[string] `json:"city,omitzero"`
-	// The two letter
-	// [ISO country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) of the
-	// user.
-	Country param.Opt[string] `json:"country,omitzero"`
-	// The region of the user.
-	Region param.Opt[string] `json:"region,omitzero"`
-	// The [IANA timezone](https://nodatime.org/TimeZones) of the user.
-	Timezone param.Opt[string] `json:"timezone,omitzero"`
-	// This field can be elided, and will marshal its zero value as "approximate".
-	Type constant.Approximate `json:"type,required"`
-	paramObj
-}
-
-func (r MessageCountTokensToolWebSearchTool20260209UserLocationParam) MarshalJSON() (data []byte, err error) {
-	type shadow MessageCountTokensToolWebSearchTool20260209UserLocationParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *MessageCountTokensToolWebSearchTool20260209UserLocationParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties Name, Type are required.
-type MessageCountTokensToolWebFetchTool20260209Param struct {
-	// Maximum number of tokens used by including web page text content in the context.
-	// The limit is approximate and does not apply to binary content such as PDFs.
-	MaxContentTokens param.Opt[int64] `json:"max_content_tokens,omitzero"`
-	// Maximum number of times the tool can be used in the API request.
-	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
-	// If true, tool will not be included in initial system prompt. Only loaded when
-	// returned via tool_reference from tool search.
-	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	// When true, guarantees schema validation on tool names and inputs
-	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// List of domains to allow fetching from
-	AllowedDomains []string `json:"allowed_domains,omitzero"`
-	// List of domains to block fetching from
-	BlockedDomains []string `json:"blocked_domains,omitzero"`
-	// Any of "direct", "code_execution_20250825".
-	AllowedCallers []string `json:"allowed_callers,omitzero"`
-	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Citations configuration for fetched documents. Citations are disabled by
-	// default.
-	Citations CitationsConfigParam `json:"citations,omitzero"`
-	// Name of the tool.
-	//
-	// This is how the tool will be called by the model and in `tool_use` blocks.
-	//
-	// This field can be elided, and will marshal its zero value as "web_fetch".
-	Name constant.WebFetch `json:"name,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "web_fetch_20260209".
-	Type constant.WebFetch20260209 `json:"type,required"`
-	paramObj
-}
-
-func (r MessageCountTokensToolWebFetchTool20260209Param) MarshalJSON() (data []byte, err error) {
-	type shadow MessageCountTokensToolWebFetchTool20260209Param
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *MessageCountTokensToolWebFetchTool20260209Param) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 type MessageDeltaUsage struct {
@@ -5101,6 +4982,51 @@ func (r *ServerToolCallerParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type ServerToolCaller20260120 struct {
+	ToolID string                         `json:"tool_id,required"`
+	Type   constant.CodeExecution20260120 `json:"type,required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ToolID      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ServerToolCaller20260120) RawJSON() string { return r.JSON.raw }
+func (r *ServerToolCaller20260120) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this ServerToolCaller20260120 to a
+// ServerToolCaller20260120Param.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// ServerToolCaller20260120Param.Overrides()
+func (r ServerToolCaller20260120) ToParam() ServerToolCaller20260120Param {
+	return param.Override[ServerToolCaller20260120Param](json.RawMessage(r.RawJSON()))
+}
+
+// The properties ToolID, Type are required.
+type ServerToolCaller20260120Param struct {
+	ToolID string `json:"tool_id,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "code_execution_20260120".
+	Type constant.CodeExecution20260120 `json:"type,required"`
+	paramObj
+}
+
+func (r ServerToolCaller20260120Param) MarshalJSON() (data []byte, err error) {
+	type shadow ServerToolCaller20260120Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ServerToolCaller20260120Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ServerToolUsage struct {
 	// The number of web fetch tool requests.
 	WebFetchRequests int64 `json:"web_fetch_requests,required"`
@@ -5149,8 +5075,7 @@ func (r *ServerToolUseBlock) UnmarshalJSON(data []byte) error {
 }
 
 // ServerToolUseBlockCallerUnion contains all possible properties and values from
-// [DirectCaller], [ServerToolCaller],
-// [ServerToolUseBlockCallerCodeExecution20260120].
+// [DirectCaller], [ServerToolCaller], [ServerToolCaller20260120].
 //
 // Use the [ServerToolUseBlockCallerUnion.AsAny] method to switch on the variant.
 //
@@ -5173,16 +5098,16 @@ type anyServerToolUseBlockCaller interface {
 	implServerToolUseBlockCallerUnion()
 }
 
-func (DirectCaller) implServerToolUseBlockCallerUnion()                                  {}
-func (ServerToolCaller) implServerToolUseBlockCallerUnion()                              {}
-func (ServerToolUseBlockCallerCodeExecution20260120) implServerToolUseBlockCallerUnion() {}
+func (DirectCaller) implServerToolUseBlockCallerUnion()             {}
+func (ServerToolCaller) implServerToolUseBlockCallerUnion()         {}
+func (ServerToolCaller20260120) implServerToolUseBlockCallerUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ServerToolUseBlockCallerUnion.AsAny().(type) {
 //	case anthropic.DirectCaller:
 //	case anthropic.ServerToolCaller:
-//	case anthropic.ServerToolUseBlockCallerCodeExecution20260120:
+//	case anthropic.ServerToolCaller20260120:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -5208,7 +5133,7 @@ func (u ServerToolUseBlockCallerUnion) AsCodeExecution20250825() (v ServerToolCa
 	return
 }
 
-func (u ServerToolUseBlockCallerUnion) AsCodeExecution20260120() (v ServerToolUseBlockCallerCodeExecution20260120) {
+func (u ServerToolUseBlockCallerUnion) AsCodeExecution20260120() (v ServerToolCaller20260120) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5217,24 +5142,6 @@ func (u ServerToolUseBlockCallerUnion) AsCodeExecution20260120() (v ServerToolUs
 func (u ServerToolUseBlockCallerUnion) RawJSON() string { return u.JSON.raw }
 
 func (r *ServerToolUseBlockCallerUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type ServerToolUseBlockCallerCodeExecution20260120 struct {
-	ToolID string                         `json:"tool_id,required"`
-	Type   constant.CodeExecution20260120 `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ToolID      respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ServerToolUseBlockCallerCodeExecution20260120) RawJSON() string { return r.JSON.raw }
-func (r *ServerToolUseBlockCallerCodeExecution20260120) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -5290,9 +5197,9 @@ const (
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ServerToolUseBlockParamCallerUnion struct {
-	OfDirect                *DirectCallerParam                                  `json:",omitzero,inline"`
-	OfCodeExecution20250825 *ServerToolCallerParam                              `json:",omitzero,inline"`
-	OfCodeExecution20260120 *ServerToolUseBlockParamCallerCodeExecution20260120 `json:",omitzero,inline"`
+	OfDirect                *DirectCallerParam             `json:",omitzero,inline"`
+	OfCodeExecution20250825 *ServerToolCallerParam         `json:",omitzero,inline"`
+	OfCodeExecution20260120 *ServerToolCaller20260120Param `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -5341,25 +5248,8 @@ func init() {
 		"type",
 		apijson.Discriminator[DirectCallerParam]("direct"),
 		apijson.Discriminator[ServerToolCallerParam]("code_execution_20250825"),
-		apijson.Discriminator[ServerToolUseBlockParamCallerCodeExecution20260120]("code_execution_20260120"),
+		apijson.Discriminator[ServerToolCaller20260120Param]("code_execution_20260120"),
 	)
-}
-
-// The properties ToolID, Type are required.
-type ServerToolUseBlockParamCallerCodeExecution20260120 struct {
-	ToolID string `json:"tool_id,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "code_execution_20260120".
-	Type constant.CodeExecution20260120 `json:"type,required"`
-	paramObj
-}
-
-func (r ServerToolUseBlockParamCallerCodeExecution20260120) MarshalJSON() (data []byte, err error) {
-	type shadow ServerToolUseBlockParamCallerCodeExecution20260120
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ServerToolUseBlockParamCallerCodeExecution20260120) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 type SignatureDelta struct {
@@ -6463,7 +6353,7 @@ type ToolParam struct {
 	Strict param.Opt[bool] `json:"strict,omitzero"`
 	// Any of "custom".
 	Type ToolType `json:"type,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl  CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -6515,7 +6405,7 @@ type ToolBash20250124Param struct {
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl  CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -7023,7 +6913,7 @@ type ToolSearchToolBm25_20251119Param struct {
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -7061,7 +6951,7 @@ type ToolSearchToolRegex20251119Param struct {
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -7311,7 +7201,7 @@ type ToolTextEditor20250124Param struct {
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl  CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -7344,7 +7234,7 @@ type ToolTextEditor20250429Param struct {
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl  CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -7380,7 +7270,7 @@ type ToolTextEditor20250728Param struct {
 	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl  CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -7429,21 +7319,21 @@ func ToolUnionParamOfToolSearchToolRegex20251119(type_ ToolSearchToolRegex202511
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ToolUnionParam struct {
-	OfTool                        *ToolParam                               `json:",omitzero,inline"`
-	OfBashTool20250124            *ToolBash20250124Param                   `json:",omitzero,inline"`
-	OfCodeExecutionTool20250522   *CodeExecutionTool20250522Param          `json:",omitzero,inline"`
-	OfCodeExecutionTool20250825   *CodeExecutionTool20250825Param          `json:",omitzero,inline"`
-	OfCodeExecutionTool20260120   *ToolUnionCodeExecutionTool20260120Param `json:",omitzero,inline"`
-	OfMemoryTool20250818          *MemoryTool20250818Param                 `json:",omitzero,inline"`
-	OfTextEditor20250124          *ToolTextEditor20250124Param             `json:",omitzero,inline"`
-	OfTextEditor20250429          *ToolTextEditor20250429Param             `json:",omitzero,inline"`
-	OfTextEditor20250728          *ToolTextEditor20250728Param             `json:",omitzero,inline"`
-	OfWebSearchTool20250305       *WebSearchTool20250305Param              `json:",omitzero,inline"`
-	OfWebFetchTool20250910        *WebFetchTool20250910Param               `json:",omitzero,inline"`
-	OfWebSearchTool20260209       *ToolUnionWebSearchTool20260209Param     `json:",omitzero,inline"`
-	OfWebFetchTool20260209        *ToolUnionWebFetchTool20260209Param      `json:",omitzero,inline"`
-	OfToolSearchToolBm25_20251119 *ToolSearchToolBm25_20251119Param        `json:",omitzero,inline"`
-	OfToolSearchToolRegex20251119 *ToolSearchToolRegex20251119Param        `json:",omitzero,inline"`
+	OfTool                        *ToolParam                        `json:",omitzero,inline"`
+	OfBashTool20250124            *ToolBash20250124Param            `json:",omitzero,inline"`
+	OfCodeExecutionTool20250522   *CodeExecutionTool20250522Param   `json:",omitzero,inline"`
+	OfCodeExecutionTool20250825   *CodeExecutionTool20250825Param   `json:",omitzero,inline"`
+	OfCodeExecutionTool20260120   *CodeExecutionTool20260120Param   `json:",omitzero,inline"`
+	OfMemoryTool20250818          *MemoryTool20250818Param          `json:",omitzero,inline"`
+	OfTextEditor20250124          *ToolTextEditor20250124Param      `json:",omitzero,inline"`
+	OfTextEditor20250429          *ToolTextEditor20250429Param      `json:",omitzero,inline"`
+	OfTextEditor20250728          *ToolTextEditor20250728Param      `json:",omitzero,inline"`
+	OfWebSearchTool20250305       *WebSearchTool20250305Param       `json:",omitzero,inline"`
+	OfWebFetchTool20250910        *WebFetchTool20250910Param        `json:",omitzero,inline"`
+	OfWebSearchTool20260209       *WebSearchTool20260209Param       `json:",omitzero,inline"`
+	OfWebFetchTool20260209        *WebFetchTool20260209Param        `json:",omitzero,inline"`
+	OfToolSearchToolBm25_20251119 *ToolSearchToolBm25_20251119Param `json:",omitzero,inline"`
+	OfToolSearchToolRegex20251119 *ToolSearchToolRegex20251119Param `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -7838,14 +7728,14 @@ func (u ToolUnionParam) GetUserLocation() (res toolUnionParamUserLocation) {
 }
 
 // Can have the runtime types [*WebSearchTool20250305UserLocationParam],
-// [*ToolUnionWebSearchTool20260209UserLocationParam]
+// [*WebSearchTool20260209UserLocationParam]
 type toolUnionParamUserLocation struct{ any }
 
 // Use the following switch statement to get the type of the union:
 //
 //	switch u.AsAny().(type) {
 //	case *anthropic.WebSearchTool20250305UserLocationParam:
-//	case *anthropic.ToolUnionWebSearchTool20260209UserLocationParam:
+//	case *anthropic.WebSearchTool20260209UserLocationParam:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -7856,7 +7746,7 @@ func (u toolUnionParamUserLocation) GetType() *string {
 	switch vt := u.any.(type) {
 	case *WebSearchTool20250305UserLocationParam:
 		return (*string)(&vt.Type)
-	case *ToolUnionWebSearchTool20260209UserLocationParam:
+	case *WebSearchTool20260209UserLocationParam:
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -7867,7 +7757,7 @@ func (u toolUnionParamUserLocation) GetCity() *string {
 	switch vt := u.any.(type) {
 	case *WebSearchTool20250305UserLocationParam:
 		return paramutil.AddrIfPresent(vt.City)
-	case *ToolUnionWebSearchTool20260209UserLocationParam:
+	case *WebSearchTool20260209UserLocationParam:
 		return paramutil.AddrIfPresent(vt.City)
 	}
 	return nil
@@ -7878,7 +7768,7 @@ func (u toolUnionParamUserLocation) GetCountry() *string {
 	switch vt := u.any.(type) {
 	case *WebSearchTool20250305UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Country)
-	case *ToolUnionWebSearchTool20260209UserLocationParam:
+	case *WebSearchTool20260209UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Country)
 	}
 	return nil
@@ -7889,7 +7779,7 @@ func (u toolUnionParamUserLocation) GetRegion() *string {
 	switch vt := u.any.(type) {
 	case *WebSearchTool20250305UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Region)
-	case *ToolUnionWebSearchTool20260209UserLocationParam:
+	case *WebSearchTool20260209UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Region)
 	}
 	return nil
@@ -7900,7 +7790,7 @@ func (u toolUnionParamUserLocation) GetTimezone() *string {
 	switch vt := u.any.(type) {
 	case *WebSearchTool20250305UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Timezone)
-	case *ToolUnionWebSearchTool20260209UserLocationParam:
+	case *WebSearchTool20260209UserLocationParam:
 		return paramutil.AddrIfPresent(vt.Timezone)
 	}
 	return nil
@@ -7914,153 +7804,6 @@ func (u ToolUnionParam) GetCitations() *CitationsConfigParam {
 		return &vt.Citations
 	}
 	return nil
-}
-
-// Code execution tool with REPL state persistence (daemon mode + gVisor
-// checkpoint).
-//
-// The properties Name, Type are required.
-type ToolUnionCodeExecutionTool20260120Param struct {
-	// If true, tool will not be included in initial system prompt. Only loaded when
-	// returned via tool_reference from tool search.
-	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	// When true, guarantees schema validation on tool names and inputs
-	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// Any of "direct", "code_execution_20250825".
-	AllowedCallers []string `json:"allowed_callers,omitzero"`
-	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Name of the tool.
-	//
-	// This is how the tool will be called by the model and in `tool_use` blocks.
-	//
-	// This field can be elided, and will marshal its zero value as "code_execution".
-	Name constant.CodeExecution `json:"name,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "code_execution_20260120".
-	Type constant.CodeExecution20260120 `json:"type,required"`
-	paramObj
-}
-
-func (r ToolUnionCodeExecutionTool20260120Param) MarshalJSON() (data []byte, err error) {
-	type shadow ToolUnionCodeExecutionTool20260120Param
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ToolUnionCodeExecutionTool20260120Param) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties Name, Type are required.
-type ToolUnionWebSearchTool20260209Param struct {
-	// Maximum number of times the tool can be used in the API request.
-	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
-	// If true, tool will not be included in initial system prompt. Only loaded when
-	// returned via tool_reference from tool search.
-	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	// When true, guarantees schema validation on tool names and inputs
-	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// If provided, only these domains will be included in results. Cannot be used
-	// alongside `blocked_domains`.
-	AllowedDomains []string `json:"allowed_domains,omitzero"`
-	// If provided, these domains will never appear in results. Cannot be used
-	// alongside `allowed_domains`.
-	BlockedDomains []string `json:"blocked_domains,omitzero"`
-	// Parameters for the user's location. Used to provide more relevant search
-	// results.
-	UserLocation ToolUnionWebSearchTool20260209UserLocationParam `json:"user_location,omitzero"`
-	// Any of "direct", "code_execution_20250825".
-	AllowedCallers []string `json:"allowed_callers,omitzero"`
-	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Name of the tool.
-	//
-	// This is how the tool will be called by the model and in `tool_use` blocks.
-	//
-	// This field can be elided, and will marshal its zero value as "web_search".
-	Name constant.WebSearch `json:"name,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "web_search_20260209".
-	Type constant.WebSearch20260209 `json:"type,required"`
-	paramObj
-}
-
-func (r ToolUnionWebSearchTool20260209Param) MarshalJSON() (data []byte, err error) {
-	type shadow ToolUnionWebSearchTool20260209Param
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ToolUnionWebSearchTool20260209Param) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Parameters for the user's location. Used to provide more relevant search
-// results.
-//
-// The property Type is required.
-type ToolUnionWebSearchTool20260209UserLocationParam struct {
-	// The city of the user.
-	City param.Opt[string] `json:"city,omitzero"`
-	// The two letter
-	// [ISO country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) of the
-	// user.
-	Country param.Opt[string] `json:"country,omitzero"`
-	// The region of the user.
-	Region param.Opt[string] `json:"region,omitzero"`
-	// The [IANA timezone](https://nodatime.org/TimeZones) of the user.
-	Timezone param.Opt[string] `json:"timezone,omitzero"`
-	// This field can be elided, and will marshal its zero value as "approximate".
-	Type constant.Approximate `json:"type,required"`
-	paramObj
-}
-
-func (r ToolUnionWebSearchTool20260209UserLocationParam) MarshalJSON() (data []byte, err error) {
-	type shadow ToolUnionWebSearchTool20260209UserLocationParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ToolUnionWebSearchTool20260209UserLocationParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The properties Name, Type are required.
-type ToolUnionWebFetchTool20260209Param struct {
-	// Maximum number of tokens used by including web page text content in the context.
-	// The limit is approximate and does not apply to binary content such as PDFs.
-	MaxContentTokens param.Opt[int64] `json:"max_content_tokens,omitzero"`
-	// Maximum number of times the tool can be used in the API request.
-	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
-	// If true, tool will not be included in initial system prompt. Only loaded when
-	// returned via tool_reference from tool search.
-	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
-	// When true, guarantees schema validation on tool names and inputs
-	Strict param.Opt[bool] `json:"strict,omitzero"`
-	// List of domains to allow fetching from
-	AllowedDomains []string `json:"allowed_domains,omitzero"`
-	// List of domains to block fetching from
-	BlockedDomains []string `json:"blocked_domains,omitzero"`
-	// Any of "direct", "code_execution_20250825".
-	AllowedCallers []string `json:"allowed_callers,omitzero"`
-	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Citations configuration for fetched documents. Citations are disabled by
-	// default.
-	Citations CitationsConfigParam `json:"citations,omitzero"`
-	// Name of the tool.
-	//
-	// This is how the tool will be called by the model and in `tool_use` blocks.
-	//
-	// This field can be elided, and will marshal its zero value as "web_fetch".
-	Name constant.WebFetch `json:"name,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "web_fetch_20260209".
-	Type constant.WebFetch20260209 `json:"type,required"`
-	paramObj
-}
-
-func (r ToolUnionWebFetchTool20260209Param) MarshalJSON() (data []byte, err error) {
-	type shadow ToolUnionWebFetchTool20260209Param
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ToolUnionWebFetchTool20260209Param) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 type ToolUseBlock struct {
@@ -8089,7 +7832,7 @@ func (r *ToolUseBlock) UnmarshalJSON(data []byte) error {
 }
 
 // ToolUseBlockCallerUnion contains all possible properties and values from
-// [DirectCaller], [ServerToolCaller], [ToolUseBlockCallerCodeExecution20260120].
+// [DirectCaller], [ServerToolCaller], [ServerToolCaller20260120].
 //
 // Use the [ToolUseBlockCallerUnion.AsAny] method to switch on the variant.
 //
@@ -8112,16 +7855,16 @@ type anyToolUseBlockCaller interface {
 	implToolUseBlockCallerUnion()
 }
 
-func (DirectCaller) implToolUseBlockCallerUnion()                            {}
-func (ServerToolCaller) implToolUseBlockCallerUnion()                        {}
-func (ToolUseBlockCallerCodeExecution20260120) implToolUseBlockCallerUnion() {}
+func (DirectCaller) implToolUseBlockCallerUnion()             {}
+func (ServerToolCaller) implToolUseBlockCallerUnion()         {}
+func (ServerToolCaller20260120) implToolUseBlockCallerUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ToolUseBlockCallerUnion.AsAny().(type) {
 //	case anthropic.DirectCaller:
 //	case anthropic.ServerToolCaller:
-//	case anthropic.ToolUseBlockCallerCodeExecution20260120:
+//	case anthropic.ServerToolCaller20260120:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -8147,7 +7890,7 @@ func (u ToolUseBlockCallerUnion) AsCodeExecution20250825() (v ServerToolCaller) 
 	return
 }
 
-func (u ToolUseBlockCallerUnion) AsCodeExecution20260120() (v ToolUseBlockCallerCodeExecution20260120) {
+func (u ToolUseBlockCallerUnion) AsCodeExecution20260120() (v ServerToolCaller20260120) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -8156,24 +7899,6 @@ func (u ToolUseBlockCallerUnion) AsCodeExecution20260120() (v ToolUseBlockCaller
 func (u ToolUseBlockCallerUnion) RawJSON() string { return u.JSON.raw }
 
 func (r *ToolUseBlockCallerUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type ToolUseBlockCallerCodeExecution20260120 struct {
-	ToolID string                         `json:"tool_id,required"`
-	Type   constant.CodeExecution20260120 `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ToolID      respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ToolUseBlockCallerCodeExecution20260120) RawJSON() string { return r.JSON.raw }
-func (r *ToolUseBlockCallerCodeExecution20260120) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -8203,9 +7928,9 @@ func (r *ToolUseBlockParam) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ToolUseBlockParamCallerUnion struct {
-	OfDirect                *DirectCallerParam                            `json:",omitzero,inline"`
-	OfCodeExecution20250825 *ServerToolCallerParam                        `json:",omitzero,inline"`
-	OfCodeExecution20260120 *ToolUseBlockParamCallerCodeExecution20260120 `json:",omitzero,inline"`
+	OfDirect                *DirectCallerParam             `json:",omitzero,inline"`
+	OfCodeExecution20250825 *ServerToolCallerParam         `json:",omitzero,inline"`
+	OfCodeExecution20260120 *ServerToolCaller20260120Param `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -8254,25 +7979,8 @@ func init() {
 		"type",
 		apijson.Discriminator[DirectCallerParam]("direct"),
 		apijson.Discriminator[ServerToolCallerParam]("code_execution_20250825"),
-		apijson.Discriminator[ToolUseBlockParamCallerCodeExecution20260120]("code_execution_20260120"),
+		apijson.Discriminator[ServerToolCaller20260120Param]("code_execution_20260120"),
 	)
-}
-
-// The properties ToolID, Type are required.
-type ToolUseBlockParamCallerCodeExecution20260120 struct {
-	ToolID string `json:"tool_id,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "code_execution_20260120".
-	Type constant.CodeExecution20260120 `json:"type,required"`
-	paramObj
-}
-
-func (r ToolUseBlockParamCallerCodeExecution20260120) MarshalJSON() (data []byte, err error) {
-	type shadow ToolUseBlockParamCallerCodeExecution20260120
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *ToolUseBlockParamCallerCodeExecution20260120) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Type, URL are required.
@@ -8416,7 +8124,7 @@ type WebFetchTool20250910Param struct {
 	AllowedDomains []string `json:"allowed_domains,omitzero"`
 	// List of domains to block fetching from
 	BlockedDomains []string `json:"blocked_domains,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -8440,6 +8148,49 @@ func (r WebFetchTool20250910Param) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *WebFetchTool20250910Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Name, Type are required.
+type WebFetchTool20260209Param struct {
+	// Maximum number of tokens used by including web page text content in the context.
+	// The limit is approximate and does not apply to binary content such as PDFs.
+	MaxContentTokens param.Opt[int64] `json:"max_content_tokens,omitzero"`
+	// Maximum number of times the tool can be used in the API request.
+	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
+	// If true, tool will not be included in initial system prompt. Only loaded when
+	// returned via tool_reference from tool search.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
+	// List of domains to allow fetching from
+	AllowedDomains []string `json:"allowed_domains,omitzero"`
+	// List of domains to block fetching from
+	BlockedDomains []string `json:"blocked_domains,omitzero"`
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
+	AllowedCallers []string `json:"allowed_callers,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Citations configuration for fetched documents. Citations are disabled by
+	// default.
+	Citations CitationsConfigParam `json:"citations,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as "web_fetch".
+	Name constant.WebFetch `json:"name,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "web_fetch_20260209".
+	Type constant.WebFetch20260209 `json:"type,required"`
+	paramObj
+}
+
+func (r WebFetchTool20260209Param) MarshalJSON() (data []byte, err error) {
+	type shadow WebFetchTool20260209Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebFetchTool20260209Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -8467,8 +8218,7 @@ func (r *WebFetchToolResultBlock) UnmarshalJSON(data []byte) error {
 }
 
 // WebFetchToolResultBlockCallerUnion contains all possible properties and values
-// from [DirectCaller], [ServerToolCaller],
-// [WebFetchToolResultBlockCallerCodeExecution20260120].
+// from [DirectCaller], [ServerToolCaller], [ServerToolCaller20260120].
 //
 // Use the [WebFetchToolResultBlockCallerUnion.AsAny] method to switch on the
 // variant.
@@ -8492,16 +8242,16 @@ type anyWebFetchToolResultBlockCaller interface {
 	implWebFetchToolResultBlockCallerUnion()
 }
 
-func (DirectCaller) implWebFetchToolResultBlockCallerUnion()                                       {}
-func (ServerToolCaller) implWebFetchToolResultBlockCallerUnion()                                   {}
-func (WebFetchToolResultBlockCallerCodeExecution20260120) implWebFetchToolResultBlockCallerUnion() {}
+func (DirectCaller) implWebFetchToolResultBlockCallerUnion()             {}
+func (ServerToolCaller) implWebFetchToolResultBlockCallerUnion()         {}
+func (ServerToolCaller20260120) implWebFetchToolResultBlockCallerUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := WebFetchToolResultBlockCallerUnion.AsAny().(type) {
 //	case anthropic.DirectCaller:
 //	case anthropic.ServerToolCaller:
-//	case anthropic.WebFetchToolResultBlockCallerCodeExecution20260120:
+//	case anthropic.ServerToolCaller20260120:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -8527,7 +8277,7 @@ func (u WebFetchToolResultBlockCallerUnion) AsCodeExecution20250825() (v ServerT
 	return
 }
 
-func (u WebFetchToolResultBlockCallerUnion) AsCodeExecution20260120() (v WebFetchToolResultBlockCallerCodeExecution20260120) {
+func (u WebFetchToolResultBlockCallerUnion) AsCodeExecution20260120() (v ServerToolCaller20260120) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -8536,24 +8286,6 @@ func (u WebFetchToolResultBlockCallerUnion) AsCodeExecution20260120() (v WebFetc
 func (u WebFetchToolResultBlockCallerUnion) RawJSON() string { return u.JSON.raw }
 
 func (r *WebFetchToolResultBlockCallerUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type WebFetchToolResultBlockCallerCodeExecution20260120 struct {
-	ToolID string                         `json:"tool_id,required"`
-	Type   constant.CodeExecution20260120 `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ToolID      respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r WebFetchToolResultBlockCallerCodeExecution20260120) RawJSON() string { return r.JSON.raw }
-func (r *WebFetchToolResultBlockCallerCodeExecution20260120) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -8691,9 +8423,9 @@ func (u WebFetchToolResultBlockParamContentUnion) GetType() *string {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type WebFetchToolResultBlockParamCallerUnion struct {
-	OfDirect                *DirectCallerParam                                       `json:",omitzero,inline"`
-	OfCodeExecution20250825 *ServerToolCallerParam                                   `json:",omitzero,inline"`
-	OfCodeExecution20260120 *WebFetchToolResultBlockParamCallerCodeExecution20260120 `json:",omitzero,inline"`
+	OfDirect                *DirectCallerParam             `json:",omitzero,inline"`
+	OfCodeExecution20250825 *ServerToolCallerParam         `json:",omitzero,inline"`
+	OfCodeExecution20260120 *ServerToolCaller20260120Param `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -8742,25 +8474,8 @@ func init() {
 		"type",
 		apijson.Discriminator[DirectCallerParam]("direct"),
 		apijson.Discriminator[ServerToolCallerParam]("code_execution_20250825"),
-		apijson.Discriminator[WebFetchToolResultBlockParamCallerCodeExecution20260120]("code_execution_20260120"),
+		apijson.Discriminator[ServerToolCaller20260120Param]("code_execution_20260120"),
 	)
-}
-
-// The properties ToolID, Type are required.
-type WebFetchToolResultBlockParamCallerCodeExecution20260120 struct {
-	ToolID string `json:"tool_id,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "code_execution_20260120".
-	Type constant.CodeExecution20260120 `json:"type,required"`
-	paramObj
-}
-
-func (r WebFetchToolResultBlockParamCallerCodeExecution20260120) MarshalJSON() (data []byte, err error) {
-	type shadow WebFetchToolResultBlockParamCallerCodeExecution20260120
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *WebFetchToolResultBlockParamCallerCodeExecution20260120) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 type WebFetchToolResultErrorBlock struct {
@@ -8879,7 +8594,7 @@ type WebSearchTool20250305Param struct {
 	// Parameters for the user's location. Used to provide more relevant search
 	// results.
 	UserLocation WebSearchTool20250305UserLocationParam `json:"user_location,omitzero"`
-	// Any of "direct", "code_execution_20250825".
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
 	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -8928,6 +8643,76 @@ func (r WebSearchTool20250305UserLocationParam) MarshalJSON() (data []byte, err 
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *WebSearchTool20250305UserLocationParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Name, Type are required.
+type WebSearchTool20260209Param struct {
+	// Maximum number of times the tool can be used in the API request.
+	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
+	// If true, tool will not be included in initial system prompt. Only loaded when
+	// returned via tool_reference from tool search.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
+	// If provided, only these domains will be included in results. Cannot be used
+	// alongside `blocked_domains`.
+	AllowedDomains []string `json:"allowed_domains,omitzero"`
+	// If provided, these domains will never appear in results. Cannot be used
+	// alongside `allowed_domains`.
+	BlockedDomains []string `json:"blocked_domains,omitzero"`
+	// Parameters for the user's location. Used to provide more relevant search
+	// results.
+	UserLocation WebSearchTool20260209UserLocationParam `json:"user_location,omitzero"`
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
+	AllowedCallers []string `json:"allowed_callers,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as "web_search".
+	Name constant.WebSearch `json:"name,required"`
+	// This field can be elided, and will marshal its zero value as
+	// "web_search_20260209".
+	Type constant.WebSearch20260209 `json:"type,required"`
+	paramObj
+}
+
+func (r WebSearchTool20260209Param) MarshalJSON() (data []byte, err error) {
+	type shadow WebSearchTool20260209Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebSearchTool20260209Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Parameters for the user's location. Used to provide more relevant search
+// results.
+//
+// The property Type is required.
+type WebSearchTool20260209UserLocationParam struct {
+	// The city of the user.
+	City param.Opt[string] `json:"city,omitzero"`
+	// The two letter
+	// [ISO country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) of the
+	// user.
+	Country param.Opt[string] `json:"country,omitzero"`
+	// The region of the user.
+	Region param.Opt[string] `json:"region,omitzero"`
+	// The [IANA timezone](https://nodatime.org/TimeZones) of the user.
+	Timezone param.Opt[string] `json:"timezone,omitzero"`
+	// This field can be elided, and will marshal its zero value as "approximate".
+	Type constant.Approximate `json:"type,required"`
+	paramObj
+}
+
+func (r WebSearchTool20260209UserLocationParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebSearchTool20260209UserLocationParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebSearchTool20260209UserLocationParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -8985,8 +8770,7 @@ func (r *WebSearchToolResultBlock) UnmarshalJSON(data []byte) error {
 }
 
 // WebSearchToolResultBlockCallerUnion contains all possible properties and values
-// from [DirectCaller], [ServerToolCaller],
-// [WebSearchToolResultBlockCallerCodeExecution20260120].
+// from [DirectCaller], [ServerToolCaller], [ServerToolCaller20260120].
 //
 // Use the [WebSearchToolResultBlockCallerUnion.AsAny] method to switch on the
 // variant.
@@ -9010,17 +8794,16 @@ type anyWebSearchToolResultBlockCaller interface {
 	implWebSearchToolResultBlockCallerUnion()
 }
 
-func (DirectCaller) implWebSearchToolResultBlockCallerUnion()     {}
-func (ServerToolCaller) implWebSearchToolResultBlockCallerUnion() {}
-func (WebSearchToolResultBlockCallerCodeExecution20260120) implWebSearchToolResultBlockCallerUnion() {
-}
+func (DirectCaller) implWebSearchToolResultBlockCallerUnion()             {}
+func (ServerToolCaller) implWebSearchToolResultBlockCallerUnion()         {}
+func (ServerToolCaller20260120) implWebSearchToolResultBlockCallerUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := WebSearchToolResultBlockCallerUnion.AsAny().(type) {
 //	case anthropic.DirectCaller:
 //	case anthropic.ServerToolCaller:
-//	case anthropic.WebSearchToolResultBlockCallerCodeExecution20260120:
+//	case anthropic.ServerToolCaller20260120:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -9046,7 +8829,7 @@ func (u WebSearchToolResultBlockCallerUnion) AsCodeExecution20250825() (v Server
 	return
 }
 
-func (u WebSearchToolResultBlockCallerUnion) AsCodeExecution20260120() (v WebSearchToolResultBlockCallerCodeExecution20260120) {
+func (u WebSearchToolResultBlockCallerUnion) AsCodeExecution20260120() (v ServerToolCaller20260120) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -9055,24 +8838,6 @@ func (u WebSearchToolResultBlockCallerUnion) AsCodeExecution20260120() (v WebSea
 func (u WebSearchToolResultBlockCallerUnion) RawJSON() string { return u.JSON.raw }
 
 func (r *WebSearchToolResultBlockCallerUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type WebSearchToolResultBlockCallerCodeExecution20260120 struct {
-	ToolID string                         `json:"tool_id,required"`
-	Type   constant.CodeExecution20260120 `json:"type,required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ToolID      respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r WebSearchToolResultBlockCallerCodeExecution20260120) RawJSON() string { return r.JSON.raw }
-func (r *WebSearchToolResultBlockCallerCodeExecution20260120) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -9142,9 +8907,9 @@ func (r *WebSearchToolResultBlockParam) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type WebSearchToolResultBlockParamCallerUnion struct {
-	OfDirect                *DirectCallerParam                                        `json:",omitzero,inline"`
-	OfCodeExecution20250825 *ServerToolCallerParam                                    `json:",omitzero,inline"`
-	OfCodeExecution20260120 *WebSearchToolResultBlockParamCallerCodeExecution20260120 `json:",omitzero,inline"`
+	OfDirect                *DirectCallerParam             `json:",omitzero,inline"`
+	OfCodeExecution20250825 *ServerToolCallerParam         `json:",omitzero,inline"`
+	OfCodeExecution20260120 *ServerToolCaller20260120Param `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -9193,25 +8958,8 @@ func init() {
 		"type",
 		apijson.Discriminator[DirectCallerParam]("direct"),
 		apijson.Discriminator[ServerToolCallerParam]("code_execution_20250825"),
-		apijson.Discriminator[WebSearchToolResultBlockParamCallerCodeExecution20260120]("code_execution_20260120"),
+		apijson.Discriminator[ServerToolCaller20260120Param]("code_execution_20260120"),
 	)
-}
-
-// The properties ToolID, Type are required.
-type WebSearchToolResultBlockParamCallerCodeExecution20260120 struct {
-	ToolID string `json:"tool_id,required"`
-	// This field can be elided, and will marshal its zero value as
-	// "code_execution_20260120".
-	Type constant.CodeExecution20260120 `json:"type,required"`
-	paramObj
-}
-
-func (r WebSearchToolResultBlockParamCallerCodeExecution20260120) MarshalJSON() (data []byte, err error) {
-	type shadow WebSearchToolResultBlockParamCallerCodeExecution20260120
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *WebSearchToolResultBlockParamCallerCodeExecution20260120) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 func NewWebSearchToolRequestError(errorCode WebSearchToolRequestErrorErrorCode) WebSearchToolResultBlockParamContentUnion {

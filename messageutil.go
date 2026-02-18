@@ -259,7 +259,7 @@ func (r WebSearchToolResultBlockContentUnion) ToParam() WebSearchToolResultBlock
 	}
 
 	p.OfRequestWebSearchToolResultError = &WebSearchToolRequestErrorParam{
-		ErrorCode: WebSearchToolRequestErrorErrorCode(r.ErrorCode),
+		ErrorCode: WebSearchToolResultErrorCode(r.ErrorCode),
 	}
 	return p
 }

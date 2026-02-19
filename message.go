@@ -8955,6 +8955,9 @@ type MessageNewParams struct {
 	// Recommended for advanced use cases only. You usually only need to use
 	// `temperature`.
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
+	// Top-level cache control automatically applies a cache_control marker to the last
+	// cacheable block in the request.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
 	// Configuration options for the model's output, such as the output format.
@@ -9176,6 +9179,9 @@ type MessageCountTokensParams struct {
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero,required"`
+	// Top-level cache control automatically applies a cache_control marker to the last
+	// cacheable block in the request.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Configuration options for the model's output, such as the output format.
 	OutputConfig OutputConfigParam `json:"output_config,omitzero"`
 	// System prompt.

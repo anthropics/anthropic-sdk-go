@@ -49,6 +49,9 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 			Role: anthropic.BetaMessageParamRoleUser,
 		}},
 		Model: anthropic.ModelClaudeOpus4_6,
+		CacheControl: anthropic.BetaCacheControlEphemeralParam{
+			TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
+		},
 		Container: anthropic.BetaMessageNewParamsContainerUnion{
 			OfContainers: &anthropic.BetaContainerParams{
 				ID: anthropic.String("id"),
@@ -207,6 +210,9 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 			Role: anthropic.BetaMessageParamRoleUser,
 		}},
 		Model: anthropic.ModelClaudeOpus4_6,
+		CacheControl: anthropic.BetaCacheControlEphemeralParam{
+			TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
+		},
 		ContextManagement: anthropic.BetaContextManagementConfigParam{
 			Edits: []anthropic.BetaContextManagementConfigEditUnionParam{{
 				OfClearToolUses20250919: &anthropic.BetaClearToolUses20250919EditParam{

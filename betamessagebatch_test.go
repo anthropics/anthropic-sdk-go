@@ -52,6 +52,9 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					Role: anthropic.BetaMessageParamRoleUser,
 				}},
 				Model: anthropic.ModelClaudeOpus4_6,
+				CacheControl: anthropic.BetaCacheControlEphemeralParam{
+					TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
+				},
 				Container: anthropic.BetaMessageBatchNewParamsRequestParamsContainerUnion{
 					OfContainers: &anthropic.BetaContainerParams{
 						ID: anthropic.String("id"),

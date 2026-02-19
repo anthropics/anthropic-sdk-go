@@ -47,7 +47,10 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model:        anthropic.ModelClaudeOpus4_6,
+		Model: anthropic.ModelClaudeOpus4_6,
+		CacheControl: anthropic.CacheControlEphemeralParam{
+			TTL: anthropic.CacheControlEphemeralTTLTTL5m,
+		},
 		Container:    anthropic.String("container"),
 		InferenceGeo: anthropic.String("inference_geo"),
 		Metadata: anthropic.MetadataParam{
@@ -159,6 +162,9 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 			Role: anthropic.MessageParamRoleUser,
 		}},
 		Model: anthropic.ModelClaudeOpus4_6,
+		CacheControl: anthropic.CacheControlEphemeralParam{
+			TTL: anthropic.CacheControlEphemeralTTLTTL5m,
+		},
 		OutputConfig: anthropic.OutputConfigParam{
 			Effort: anthropic.OutputConfigEffortLow,
 			Format: anthropic.JSONOutputFormatParam{

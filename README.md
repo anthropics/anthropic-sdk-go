@@ -230,7 +230,7 @@ func main() {
 			case anthropic.ToolUseBlock:
 				print(color("[user (" + block.Name + ")]: "))
 
-				var response interface{}
+				var response any
 				switch block.Name {
 				case "get_coordinates":
 					var input struct {
@@ -299,6 +299,71 @@ func color(s string) string {
 	return fmt.Sprintf("\033[1;%sm%s\033[0m", "33", s)
 }
 ```
+
+</details>
+
+<details>
+<summary>Tool helpers</summary>
+
+The SDK provides helper functions for defining tools and running automatic conversation loops. Here's a basic example:
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/toolrunner"
+)
+
+// GetWeatherInput defines the tool input with jsonschema tags for automatic schema generation
+type GetWeatherInput struct {
+	City string `json:"city" jsonschema:"required,description=The city name"`
+}
+
+func main() {
+	client := anthropic.NewClient()
+
+	// Define a tool - the schema is generated automatically from the struct's jsonschema tags
+	weatherTool, err := toolrunner.NewBetaToolFromJSONSchema(
+		"get_weather",
+		"Get weather for a city",
+		func(ctx context.Context, input GetWeatherInput) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+			return anthropic.BetaToolResultBlockParamContentUnion{
+				OfText: &anthropic.BetaTextBlockParam{
+					Text: fmt.Sprintf("The weather in %s is sunny, 72°F", input.City),
+				},
+			}, nil
+		},
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	// Create a tool runner that automatically handles the conversation loop
+	runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{weatherTool}, anthropic.BetaToolRunnerParams{
+		BetaMessageNewParams: anthropic.BetaMessageNewParams{
+			Model:     anthropic.ModelClaudeSonnet4_20250514,
+			MaxTokens: 1024,
+			Messages: []anthropic.BetaMessageParam{
+				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather in Paris?")),
+			},
+		},
+		MaxIterations: 5,
+	})
+
+	// Run until Claude produces a final response
+	message, err := runner.RunToCompletion(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(message.Content[0].Text)
+}
+```
+
+For more details, see [tools.md](tools.md).
 
 </details>
 

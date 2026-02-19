@@ -2528,10 +2528,14 @@ func NewBetaToolUseBlock(id string, input any, name string) BetaContentBlockPara
 	return BetaContentBlockParamUnion{OfToolUse: &toolUse}
 }
 
-func NewBetaToolResultBlock(toolUseID string) BetaContentBlockParamUnion {
-	var toolResult BetaToolResultBlockParam
-	toolResult.ToolUseID = toolUseID
-	return BetaContentBlockParamUnion{OfToolResult: &toolResult}
+func NewBetaToolResultBlock(toolUseID string, content string, isError bool) BetaContentBlockParamUnion {
+	var toolBlock BetaToolResultBlockParam
+	toolBlock.ToolUseID = toolUseID
+	toolBlock.Content = []BetaToolResultBlockParamContentUnion{
+		{OfText: &BetaTextBlockParam{Text: content}},
+	}
+	toolBlock.IsError = Bool(isError)
+	return BetaContentBlockParamUnion{OfToolResult: &toolBlock}
 }
 
 func NewBetaServerToolUseBlock(id string, input any, name BetaServerToolUseBlockParamName) BetaContentBlockParamUnion {
@@ -8015,6 +8019,16 @@ func (r BetaToolResultBlockParam) MarshalJSON() (data []byte, err error) {
 }
 func (r *BetaToolResultBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewBetaToolResultTextBlockParam(toolUseID string, text string, isError bool) BetaToolResultBlockParam {
+	var p BetaToolResultBlockParam
+	p.ToolUseID = toolUseID
+	p.IsError = param.Opt[bool]{Value: isError}
+	p.Content = []BetaToolResultBlockParamContentUnion{
+		{OfText: &BetaTextBlockParam{Text: text}},
+	}
+	return p
 }
 
 // Only one field can be non-zero.

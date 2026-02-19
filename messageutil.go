@@ -64,22 +64,25 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 			cb.Citations = append(cb.Citations, citation)
 		}
 	case MessageStopEvent:
-		accJson, err := json.Marshal(acc)
+		// Re-marshal the accumulated message to update JSON.raw so that AsAny()
+		// returns the accumulated data rather than the original stream data
+		accJSON, err := json.Marshal(acc)
 		if err != nil {
-			return fmt.Errorf("error converting content block to JSON: %w", err)
+			return fmt.Errorf("error converting accumulated message to JSON: %w", err)
 		}
-		acc.JSON.raw = string(accJson)
-
+		acc.JSON.raw = string(accJSON)
 	case ContentBlockStopEvent:
+		// Re-marshal the content block to update JSON.raw so that AsAny()
+		// returns the accumulated data rather than the original stream data
 		if len(acc.Content) == 0 {
 			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
 		}
 		contentBlock := &acc.Content[len(acc.Content)-1]
-		cbJson, err := json.Marshal(contentBlock)
+		cbJSON, err := json.Marshal(contentBlock)
 		if err != nil {
 			return fmt.Errorf("error converting content block to JSON: %w", err)
 		}
-		contentBlock.JSON.raw = string(cbJson)
+		contentBlock.JSON.raw = string(cbJSON)
 	}
 
 	return nil

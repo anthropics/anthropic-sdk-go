@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.26.0 (2026-02-19)
+
+Full Changelog: [v1.25.1...v1.26.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.25.1...v1.26.0)
+
+### Features
+
+* **api:** Add top-level cache control (automatic caching) ([75f9f70](https://github.com/anthropics/anthropic-sdk-go/commit/75f9f70045587c458ec2e3491b4eb88bc3329e9e))
+* **client:** add BetaToolRunner for automatic tool use loops ([#603](https://github.com/anthropics/anthropic-sdk-go/issues/603)) ([e44128a](https://github.com/anthropics/anthropic-sdk-go/commit/e44128a1a3c1d9b4710b4a024ace8121258b32b6))
+
+
+### Chores
+
+* **internal:** codegen related update ([6247d2f](https://github.com/anthropics/anthropic-sdk-go/commit/6247d2febe87242ee9d3ba49875ff62a5be9a626))
+
 ## 1.25.1 (2026-02-19)
 
 Full Changelog: [v1.25.0...v1.25.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.25.0...v1.25.1)

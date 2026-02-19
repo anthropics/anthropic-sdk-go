@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.25.1 (2026-02-19)
+
+Full Changelog: [v1.25.0...v1.25.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.25.0...v1.25.1)
+
+### Bug Fixes
+
+* **client:** use correct format specifier for header serialization ([9115a61](https://github.com/anthropics/anthropic-sdk-go/commit/9115a6154d0b1ba94370911822986b2ef8584e9a))
+
 ## 1.25.0 (2026-02-18)
 
 Full Changelog: [v1.24.0...v1.25.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.24.0...v1.25.0)

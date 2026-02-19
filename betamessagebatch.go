@@ -678,6 +678,9 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// Any of "standard", "fast".
 	Speed string `json:"speed,omitzero"`
+	// Top-level cache control automatically applies a cache_control marker to the last
+	// cacheable block in the request.
+	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,

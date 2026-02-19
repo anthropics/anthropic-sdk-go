@@ -27,7 +27,7 @@ func TestAutoPagination(t *testing.T) {
 	iter := client.Beta.Messages.Batches.ListAutoPaging(context.TODO(), anthropic.BetaMessageBatchListParams{
 		Limit: anthropic.Int(20),
 	})
-	// Prism mock isn't going to give us real pagination
+	// The mock server isn't going to give us real pagination
 	for i := 0; i < 3 && iter.Next(); i++ {
 		batch := iter.Current()
 		t.Logf("%+v\n", batch.ID)

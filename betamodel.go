@@ -144,7 +144,7 @@ type BetaModelListParams struct {
 // URLQuery serializes [BetaModelListParams]'s query parameters as `url.Values`.
 func (r BetaModelListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
+		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }

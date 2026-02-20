@@ -221,7 +221,7 @@ type BetaFileListParams struct {
 // URLQuery serializes [BetaFileListParams]'s query parameters as `url.Values`.
 func (r BetaFileListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
+		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }

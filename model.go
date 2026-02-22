@@ -46,7 +46,7 @@ func NewModelService(opts ...option.RequestOption) (r ModelService) {
 // model or resolve a model alias to a model ID.
 func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetParams, opts ...option.RequestOption) (res *ModelInfo, err error) {
 	for _, v := range query.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if modelID == "" {
@@ -65,7 +65,7 @@ func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetPa
 func (r *ModelService) List(ctx context.Context, params ModelListParams, opts ...option.RequestOption) (res *pagination.Page[ModelInfo], err error) {
 	var raw *http.Response
 	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)

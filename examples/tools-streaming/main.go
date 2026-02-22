@@ -24,8 +24,8 @@ func main() {
 			Name:        "get_coordinates",
 			Description: anthropic.String("Accepts a place as an address, then returns the latitude and longitude coordinates."),
 			InputSchema: anthropic.ToolInputSchemaParam{
-				Properties: map[string]interface{}{
-					"location": map[string]interface{}{
+				Properties: map[string]any{
+					"location": map[string]any{
 						"type":        "string",
 						"description": "The location to look up.",
 					},
@@ -35,8 +35,8 @@ func main() {
 		{
 			Name: "get_temperature_unit",
 			InputSchema: anthropic.ToolInputSchemaParam{
-				Properties: map[string]interface{}{
-					"country": map[string]interface{}{
+				Properties: map[string]any{
+					"country": map[string]any{
 						"type":        "string",
 						"description": "The country",
 					},
@@ -47,16 +47,16 @@ func main() {
 			Name:        "get_weather",
 			Description: anthropic.String("Get the weather at a specific location"),
 			InputSchema: anthropic.ToolInputSchemaParam{
-				Properties: map[string]interface{}{
-					"lat": map[string]interface{}{
+				Properties: map[string]any{
+					"lat": map[string]any{
 						"type":        "number",
 						"description": "The lattitude of the location to check weather.",
 					},
-					"long": map[string]interface{}{
+					"long": map[string]any{
 						"type":        "number",
 						"description": "The longitude of the location to check weather.",
 					},
-					"unit": map[string]interface{}{
+					"unit": map[string]any{
 						"type":        "string",
 						"enum":        []string{"celsius", "fahrenheit"},
 						"description": "Unit for the output",
@@ -116,7 +116,7 @@ func main() {
 			case anthropic.ToolUseBlock:
 				print(color("[user (" + block.Name + ")]: "))
 
-				var response interface{}
+				var response any
 				switch block.Name {
 				case "get_coordinates":
 					var input struct {

@@ -8,7 +8,7 @@ toolchain go1.24.3
 
 require (
 	github.com/anthropics/anthropic-sdk-go v0.0.0-00010101000000-000000000000
-	github.com/invopop/jsonschema v0.12.0
+	github.com/invopop/jsonschema v0.13.0
 )
 
 require (

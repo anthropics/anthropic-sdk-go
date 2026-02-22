@@ -1,0 +1,177 @@
+---
+version: 1
+interactions:
+- request:
+    body: '{"max_tokens":512,"messages":[{"content":[{"text":"What''s the weather
+      in San Francisco? Use fahrenheit.","type":"text"}],"role":"user"}],"model":"claude-3-7-sonnet-latest","tools":[{"input_schema":{"properties":{"city":{"type":"string"},"units":{"enum":["celsius","fahrenheit"],"type":"string"}},"required":["city"],"type":"object"},"name":"get_weather","description":"Get
+      weather"}]}'
+    form: {}
+    headers:
+      Accept:
+      - application/json
+      Anthropic-Version:
+      - "2023-06-01"
+      Content-Type:
+      - application/json
+      User-Agent:
+      - Anthropic/Go 1.16.0
+      X-Api-Key:
+      - fake-api-key-for-testing-only
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Lang:
+      - go
+      X-Stainless-Os:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 1.16.0
+      X-Stainless-Retry-Count:
+      - "0"
+      X-Stainless-Runtime:
+      - go
+      X-Stainless-Runtime-Version:
+      - go1.24.5
+      X-Stainless-Timeout:
+      - "600"
+    url: https://api.anthropic.com/v1/messages?beta=true
+    method: POST
+  response:
+    body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_018ot5fJ8BmAG1WxW5B7WkJX","type":"message","role":"assistant","content":[{"type":"text","text":"I''ll
+      get the current weather in San Francisco for you using Fahrenheit units."},{"type":"tool_use","id":"toolu_01RspNj5YbBdaKwpEEcKirBJ","name":"get_weather","input":{"city":"San
+      Francisco","units":"fahrenheit"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":402,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":90,"service_tier":"standard"}}'
+    headers:
+      Anthropic-Organization-Id:
+      - 1577a8a6-174a-4705-916c-6b22ae7a49e6
+      Anthropic-Ratelimit-Input-Tokens-Limit:
+      - "200000"
+      Anthropic-Ratelimit-Input-Tokens-Remaining:
+      - "199000"
+      Anthropic-Ratelimit-Input-Tokens-Reset:
+      - "2025-10-30T16:17:36Z"
+      Anthropic-Ratelimit-Output-Tokens-Limit:
+      - "80000"
+      Anthropic-Ratelimit-Output-Tokens-Remaining:
+      - "80000"
+      Anthropic-Ratelimit-Output-Tokens-Reset:
+      - "2025-10-30T16:17:37Z"
+      Anthropic-Ratelimit-Requests-Limit:
+      - "4000"
+      Anthropic-Ratelimit-Requests-Remaining:
+      - "3998"
+      Anthropic-Ratelimit-Requests-Reset:
+      - "2025-10-30T16:17:35Z"
+      Anthropic-Ratelimit-Tokens-Limit:
+      - "280000"
+      Anthropic-Ratelimit-Tokens-Remaining:
+      - "279000"
+      Anthropic-Ratelimit-Tokens-Reset:
+      - "2025-10-30T16:17:36Z"
+      Cf-Cache-Status:
+      - DYNAMIC
+      Cf-Ray:
+      - 996c3946fe5d5e6a-EWR
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 30 Oct 2025 16:17:37 GMT
+      Request-Id:
+      - req_011CUdgeEZV6311MCdLraHEj
+      Server:
+      - cloudflare
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      X-Envoy-Upstream-Service-Time:
+      - "1535"
+      X-Robots-Tag:
+      - none
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: '{"max_tokens":512,"messages":[{"content":[{"text":"What''s the weather
+      in San Francisco? Use fahrenheit.","type":"text"}],"role":"user"},{"content":[{"text":"I''ll
+      get the current weather in San Francisco for you using Fahrenheit units.","type":"text"},{"id":"toolu_01RspNj5YbBdaKwpEEcKirBJ","input":{"city":"San
+      Francisco","units":"fahrenheit"},"name":"get_weather","type":"tool_use"}],"role":"assistant"},{"content":[{"tool_use_id":"toolu_01RspNj5YbBdaKwpEEcKirBJ","content":[{"text":"The
+      weather in San Francisco is 68 degrees fahrenheit.","type":"text"}],"type":"tool_result"}],"role":"user"}],"model":"claude-3-7-sonnet-latest","tools":[{"input_schema":{"properties":{"city":{"type":"string"},"units":{"enum":["celsius","fahrenheit"],"type":"string"}},"required":["city"],"type":"object"},"name":"get_weather","description":"Get
+      weather"}]}'
+    form: {}
+    headers:
+      Accept:
+      - application/json
+      Anthropic-Version:
+      - "2023-06-01"
+      Content-Type:
+      - application/json
+      User-Agent:
+      - Anthropic/Go 1.16.0
+      X-Api-Key:
+      - fake-api-key-for-testing-only
+      X-Stainless-Arch:
+      - arm64
+      X-Stainless-Lang:
+      - go
+      X-Stainless-Os:
+      - MacOS
+      X-Stainless-Package-Version:
+      - 1.16.0
+      X-Stainless-Retry-Count:
+      - "0"
+      X-Stainless-Runtime:
+      - go
+      X-Stainless-Runtime-Version:
+      - go1.24.5
+      X-Stainless-Timeout:
+      - "600"
+    url: https://api.anthropic.com/v1/messages?beta=true
+    method: POST
+  response:
+    body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_01D2irNnbwPJPt2d5D6B4ovq","type":"message","role":"assistant","content":[{"type":"text","text":"The
+      weather in San Francisco is currently 68 degrees Fahrenheit."}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":515,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":19,"service_tier":"standard"}}'
+    headers:
+      Anthropic-Organization-Id:
+      - 1577a8a6-174a-4705-916c-6b22ae7a49e6
+      Anthropic-Ratelimit-Input-Tokens-Limit:
+      - "200000"
+      Anthropic-Ratelimit-Input-Tokens-Remaining:
+      - "199000"
+      Anthropic-Ratelimit-Input-Tokens-Reset:
+      - "2025-10-30T16:17:38Z"
+      Anthropic-Ratelimit-Output-Tokens-Limit:
+      - "80000"
+      Anthropic-Ratelimit-Output-Tokens-Remaining:
+      - "80000"
+      Anthropic-Ratelimit-Output-Tokens-Reset:
+      - "2025-10-30T16:17:38Z"
+      Anthropic-Ratelimit-Requests-Limit:
+      - "4000"
+      Anthropic-Ratelimit-Requests-Remaining:
+      - "3999"
+      Anthropic-Ratelimit-Requests-Reset:
+      - "2025-10-30T16:17:37Z"
+      Anthropic-Ratelimit-Tokens-Limit:
+      - "280000"
+      Anthropic-Ratelimit-Tokens-Remaining:
+      - "279000"
+      Anthropic-Ratelimit-Tokens-Reset:
+      - "2025-10-30T16:17:38Z"
+      Cf-Cache-Status:
+      - DYNAMIC
+      Cf-Ray:
+      - 996c3950d98c5e6a-EWR
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 30 Oct 2025 16:17:38 GMT
+      Request-Id:
+      - req_011CUdgeMJ3okUzCzuFRSRcg
+      Server:
+      - cloudflare
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      X-Envoy-Upstream-Service-Time:
+      - "588"
+      X-Robots-Tag:
+      - none
+    status: 200 OK
+    code: 200
+    duration: ""

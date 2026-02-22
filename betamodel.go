@@ -46,7 +46,7 @@ func NewBetaModelService(opts ...option.RequestOption) (r BetaModelService) {
 // model or resolve a model alias to a model ID.
 func (r *BetaModelService) Get(ctx context.Context, modelID string, query BetaModelGetParams, opts ...option.RequestOption) (res *BetaModelInfo, err error) {
 	for _, v := range query.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if modelID == "" {
@@ -65,7 +65,7 @@ func (r *BetaModelService) Get(ctx context.Context, modelID string, query BetaMo
 func (r *BetaModelService) List(ctx context.Context, params BetaModelListParams, opts ...option.RequestOption) (res *pagination.Page[BetaModelInfo], err error) {
 	var raw *http.Response
 	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)

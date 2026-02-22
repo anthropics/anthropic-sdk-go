@@ -50,7 +50,11 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model:        anthropic.ModelClaudeOpus4_6,
+		Model: anthropic.ModelClaudeOpus4_6,
+		CacheControl: anthropic.CacheControlEphemeralParam{
+			TTL: anthropic.CacheControlEphemeralTTLTTL5m,
+		},
+		Container:    anthropic.String("container"),
 		InferenceGeo: anthropic.String("inference_geo"),
 		Metadata: anthropic.MetadataParam{
 			UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
@@ -98,14 +102,19 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 					},
 					Required: []string{"location"},
 				},
-				Name: "name",
+				Name:           "name",
+				AllowedCallers: []string{"direct"},
 				CacheControl: anthropic.CacheControlEphemeralParam{
 					TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 				},
+				DeferLoading:        anthropic.Bool(true),
 				Description:         anthropic.String("Get the current weather in a given location"),
 				EagerInputStreaming: anthropic.Bool(true),
-				Strict:              anthropic.Bool(true),
-				Type:                anthropic.ToolTypeCustom,
+				InputExamples: []map[string]any{{
+					"foo": "bar",
+				}},
+				Strict: anthropic.Bool(true),
+				Type:   anthropic.ToolTypeCustom,
 			},
 		}},
 		TopK: anthropic.Int(5),
@@ -154,6 +163,9 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 			Role: anthropic.MessageParamRoleUser,
 		}},
 		Model: anthropic.ModelClaudeOpus4_6,
+		CacheControl: anthropic.CacheControlEphemeralParam{
+			TTL: anthropic.CacheControlEphemeralTTLTTL5m,
+		},
 		OutputConfig: anthropic.OutputConfigParam{
 			Effort: anthropic.OutputConfigEffortLow,
 			Format: anthropic.JSONOutputFormatParam{
@@ -196,14 +208,19 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 					},
 					Required: []string{"location"},
 				},
-				Name: "name",
+				Name:           "name",
+				AllowedCallers: []string{"direct"},
 				CacheControl: anthropic.CacheControlEphemeralParam{
 					TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 				},
+				DeferLoading:        anthropic.Bool(true),
 				Description:         anthropic.String("Get the current weather in a given location"),
 				EagerInputStreaming: anthropic.Bool(true),
-				Strict:              anthropic.Bool(true),
-				Type:                anthropic.ToolTypeCustom,
+				InputExamples: []map[string]any{{
+					"foo": "bar",
+				}},
+				Strict: anthropic.Bool(true),
+				Type:   anthropic.ToolTypeCustom,
 			},
 		}},
 	})

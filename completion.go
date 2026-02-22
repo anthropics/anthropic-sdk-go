@@ -48,7 +48,7 @@ func NewCompletionService(opts ...option.RequestOption) (r CompletionService) {
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *CompletionService) New(ctx context.Context, params CompletionNewParams, opts ...option.RequestOption) (res *Completion, err error) {
 	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/complete"
@@ -72,7 +72,7 @@ func (r *CompletionService) NewStreaming(ctx context.Context, params CompletionN
 		err error
 	)
 	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%s", v)))
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append(opts, option.WithJSONSet("stream", true))

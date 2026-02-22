@@ -87,7 +87,7 @@ func main() {
 			case anthropic.ToolUseBlock:
 				print(color("[user (" + block.Name + ")]: "))
 
-				var response interface{}
+				var response any
 				switch block.Name {
 				case "get_coordinates":
 					input := GetCoordinatesInput{}

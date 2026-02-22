@@ -1,5 +1,65 @@
 # Changelog
 
+## 1.26.0 (2026-02-19)
+
+Full Changelog: [v1.25.1...v1.26.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.25.1...v1.26.0)
+
+### Features
+
+* **api:** Add top-level cache control (automatic caching) ([75f9f70](https://github.com/anthropics/anthropic-sdk-go/commit/75f9f70045587c458ec2e3491b4eb88bc3329e9e))
+* **client:** add BetaToolRunner for automatic tool use loops ([#603](https://github.com/anthropics/anthropic-sdk-go/issues/603)) ([e44128a](https://github.com/anthropics/anthropic-sdk-go/commit/e44128a1a3c1d9b4710b4a024ace8121258b32b6))
+
+
+### Chores
+
+* **internal:** codegen related update ([6247d2f](https://github.com/anthropics/anthropic-sdk-go/commit/6247d2febe87242ee9d3ba49875ff62a5be9a626))
+
+## 1.25.1 (2026-02-19)
+
+Full Changelog: [v1.25.0...v1.25.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.25.0...v1.25.1)
+
+### Bug Fixes
+
+* **client:** use correct format specifier for header serialization ([9115a61](https://github.com/anthropics/anthropic-sdk-go/commit/9115a6154d0b1ba94370911822986b2ef8584e9a))
+
+## 1.25.0 (2026-02-18)
+
+Full Changelog: [v1.24.0...v1.25.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.24.0...v1.25.0)
+
+### Features
+
+* **api:** fix shared UserLocation and error code types ([cb98cd0](https://github.com/anthropics/anthropic-sdk-go/commit/cb98cd00c359c0181d7b39bdb057e7b06015aa33))
+
+## 1.24.0 (2026-02-18)
+
+Full Changelog: [v1.23.0...v1.24.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.23.0...v1.24.0)
+
+### Features
+
+* **api:** manual updates ([54d01f5](https://github.com/anthropics/anthropic-sdk-go/commit/54d01f5187ef9ec49f803edfe643bf1bf1e91072))
+
+## 1.23.0 (2026-02-17)
+
+Full Changelog: [v1.22.1...v1.23.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.22.1...v1.23.0)
+
+### Features
+
+* **api:** Releasing claude-sonnet-4-6 ([782d5a5](https://github.com/anthropics/anthropic-sdk-go/commit/782d5a5dc4c1f63cfef3afc5d257b08f8cf3fadc))
+
+
+### Bug Fixes
+
+* **api:** fix spec errors ([15e6a5a](https://github.com/anthropics/anthropic-sdk-go/commit/15e6a5a0b4fb426f126f7b26b087709ea7ba00ac))
+* remove duplicate ServerToolUseBlock struct declaration ([#595](https://github.com/anthropics/anthropic-sdk-go/issues/595)) ([d4ece8a](https://github.com/anthropics/anthropic-sdk-go/commit/d4ece8ae310dd0369a5ea05671295ae2c23a53d9))
+
+## 1.22.1 (2026-02-10)
+
+Full Changelog: [v1.22.0...v1.22.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.22.0...v1.22.1)
+
+### Bug Fixes
+
+* **encoder:** correctly serialize NullStruct ([1435f8a](https://github.com/anthropics/anthropic-sdk-go/commit/1435f8ac4d272561c7e689cc6bb4e3794414ba57))
+
 ## 1.22.0 (2026-02-07)
 
 Full Changelog: [v1.21.0...v1.22.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.21.0...v1.22.0)

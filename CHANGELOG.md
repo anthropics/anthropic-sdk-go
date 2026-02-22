@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.27.0 (2026-02-22)
+
+Full Changelog: [v1.26.0...v1.27.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.26.0...v1.27.0)
+
+### Features
+
+* **api:** change array_format to brackets ([ca5ae6e](https://github.com/anthropics/anthropic-sdk-go/commit/ca5ae6eaf8243aece877d33eb88653db2e439a36))
+* **api:** remove publishing section from cli target ([514282e](https://github.com/anthropics/anthropic-sdk-go/commit/514282e1728881f7ef4c6782f3000ca0ec632d53))
+
+
+### Bug Fixes
+
+* allow canceling a request while it is waiting to retry ([32ee053](https://github.com/anthropics/anthropic-sdk-go/commit/32ee05317970d99df3147c65c2055efabe354472))
+
 ## 1.26.0 (2026-02-19)
 
 Full Changelog: [v1.25.1...v1.26.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.25.1...v1.26.0)

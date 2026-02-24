@@ -18,8 +18,8 @@ type paramUnion = param.APIUnion
 type paramObj = param.APIObject
 
 type APIErrorObject struct {
-	Message string            `json:"message,required"`
-	Type    constant.APIError `json:"type,required"`
+	Message string            `json:"message" api:"required"`
+	Type    constant.APIError `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -38,8 +38,8 @@ func (r *APIErrorObject) UnmarshalJSON(data []byte) error {
 func (APIErrorObject) ImplErrorObjectUnion() {}
 
 type AuthenticationError struct {
-	Message string                       `json:"message,required"`
-	Type    constant.AuthenticationError `json:"type,required"`
+	Message string                       `json:"message" api:"required"`
+	Type    constant.AuthenticationError `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -58,8 +58,8 @@ func (r *AuthenticationError) UnmarshalJSON(data []byte) error {
 func (AuthenticationError) ImplErrorObjectUnion() {}
 
 type BillingError struct {
-	Message string                `json:"message,required"`
-	Type    constant.BillingError `json:"type,required"`
+	Message string                `json:"message" api:"required"`
+	Type    constant.BillingError `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -196,9 +196,9 @@ func (r *ErrorObjectUnion) UnmarshalJSON(data []byte) error {
 }
 
 type ErrorResponse struct {
-	Error     ErrorObjectUnion `json:"error,required"`
-	RequestID string           `json:"request_id,required"`
-	Type      constant.Error   `json:"type,required"`
+	Error     ErrorObjectUnion `json:"error" api:"required"`
+	RequestID string           `json:"request_id" api:"required"`
+	Type      constant.Error   `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -216,8 +216,8 @@ func (r *ErrorResponse) UnmarshalJSON(data []byte) error {
 }
 
 type GatewayTimeoutError struct {
-	Message string                `json:"message,required"`
-	Type    constant.TimeoutError `json:"type,required"`
+	Message string                `json:"message" api:"required"`
+	Type    constant.TimeoutError `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -236,8 +236,8 @@ func (r *GatewayTimeoutError) UnmarshalJSON(data []byte) error {
 func (GatewayTimeoutError) ImplErrorObjectUnion() {}
 
 type InvalidRequestError struct {
-	Message string                       `json:"message,required"`
-	Type    constant.InvalidRequestError `json:"type,required"`
+	Message string                       `json:"message" api:"required"`
+	Type    constant.InvalidRequestError `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -256,8 +256,8 @@ func (r *InvalidRequestError) UnmarshalJSON(data []byte) error {
 func (InvalidRequestError) ImplErrorObjectUnion() {}
 
 type NotFoundError struct {
-	Message string                 `json:"message,required"`
-	Type    constant.NotFoundError `json:"type,required"`
+	Message string                 `json:"message" api:"required"`
+	Type    constant.NotFoundError `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -276,8 +276,8 @@ func (r *NotFoundError) UnmarshalJSON(data []byte) error {
 func (NotFoundError) ImplErrorObjectUnion() {}
 
 type OverloadedError struct {
-	Message string                   `json:"message,required"`
-	Type    constant.OverloadedError `json:"type,required"`
+	Message string                   `json:"message" api:"required"`
+	Type    constant.OverloadedError `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -296,8 +296,8 @@ func (r *OverloadedError) UnmarshalJSON(data []byte) error {
 func (OverloadedError) ImplErrorObjectUnion() {}
 
 type PermissionError struct {
-	Message string                   `json:"message,required"`
-	Type    constant.PermissionError `json:"type,required"`
+	Message string                   `json:"message" api:"required"`
+	Type    constant.PermissionError `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -316,8 +316,8 @@ func (r *PermissionError) UnmarshalJSON(data []byte) error {
 func (PermissionError) ImplErrorObjectUnion() {}
 
 type RateLimitError struct {
-	Message string                  `json:"message,required"`
-	Type    constant.RateLimitError `json:"type,required"`
+	Message string                  `json:"message" api:"required"`
+	Type    constant.RateLimitError `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field

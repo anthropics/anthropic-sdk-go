@@ -1,3 +1,7 @@
+## Contributing to documentation
+
+The documentation for this SDK lives at [platform.claude.com/docs/en/api/sdks/go](https://platform.claude.com/docs/en/api/sdks/go). To suggest changes, open an issue.
+
 ## Setting up the environment
 
 To set up the repository, run:

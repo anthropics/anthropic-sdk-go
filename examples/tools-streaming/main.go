@@ -50,7 +50,7 @@ func main() {
 				Properties: map[string]any{
 					"lat": map[string]any{
 						"type":        "number",
-						"description": "The lattitude of the location to check weather.",
+						"description": "The latitude of the location to check weather.",
 					},
 					"long": map[string]any{
 						"type":        "number",
@@ -181,7 +181,7 @@ func GetCoordinates(location string) CoordinateResponse {
 }
 
 func GetTemperatureUnit(country string) string {
-	return "farenheit"
+	return "fahrenheit"
 }
 
 type WeatherResponse struct {
@@ -191,7 +191,7 @@ type WeatherResponse struct {
 
 func GetWeather(lat, long float64, unit string) WeatherResponse {
 	return WeatherResponse{
-		Unit:        "farenheit",
+		Unit:        "fahrenheit",
 		Temperature: 122,
 	}
 }

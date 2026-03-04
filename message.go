@@ -3996,54 +3996,27 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 // The model that will complete your prompt.\n\nSee
 // [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 // details and options.
-type Model string
+type Model = string
 
 const (
-	ModelClaudeOpus4_6          Model = "claude-opus-4-6"
-	ModelClaudeSonnet4_6        Model = "claude-sonnet-4-6"
-	ModelClaudeOpus4_5_20251101 Model = "claude-opus-4-5-20251101"
-	ModelClaudeOpus4_5          Model = "claude-opus-4-5"
-	// Deprecated: Will reach end-of-life on February 19th, 2026. Please migrate to a
-	// newer model. Visit
-	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
-	// information.
-	ModelClaude3_7SonnetLatest Model = "claude-3-7-sonnet-latest"
-	// Deprecated: Will reach end-of-life on February 19th, 2026. Please migrate to a
-	// newer model. Visit
-	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
-	// information.
-	ModelClaude3_7Sonnet20250219 Model = "claude-3-7-sonnet-20250219"
-	// Deprecated: Will reach end-of-life on February 19th, 2026. Please migrate to a
-	// newer model. Visit
-	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
-	// information.
-	ModelClaude3_5HaikuLatest Model = "claude-3-5-haiku-latest"
-	// Deprecated: Will reach end-of-life on February 19th, 2026. Please migrate to a
-	// newer model. Visit
-	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
-	// information.
-	ModelClaude3_5Haiku20241022   Model = "claude-3-5-haiku-20241022"
+	ModelClaudeOpus4_6            Model = "claude-opus-4-6"
+	ModelClaudeSonnet4_6          Model = "claude-sonnet-4-6"
 	ModelClaudeHaiku4_5           Model = "claude-haiku-4-5"
 	ModelClaudeHaiku4_5_20251001  Model = "claude-haiku-4-5-20251001"
-	ModelClaudeSonnet4_20250514   Model = "claude-sonnet-4-20250514"
-	ModelClaudeSonnet4_0          Model = "claude-sonnet-4-0"
-	ModelClaude4Sonnet20250514    Model = "claude-4-sonnet-20250514"
+	ModelClaudeOpus4_5            Model = "claude-opus-4-5"
+	ModelClaudeOpus4_5_20251101   Model = "claude-opus-4-5-20251101"
 	ModelClaudeSonnet4_5          Model = "claude-sonnet-4-5"
 	ModelClaudeSonnet4_5_20250929 Model = "claude-sonnet-4-5-20250929"
+	ModelClaudeOpus4_1            Model = "claude-opus-4-1"
+	ModelClaudeOpus4_1_20250805   Model = "claude-opus-4-1-20250805"
 	ModelClaudeOpus4_0            Model = "claude-opus-4-0"
 	ModelClaudeOpus4_20250514     Model = "claude-opus-4-20250514"
-	ModelClaude4Opus20250514      Model = "claude-4-opus-20250514"
-	ModelClaudeOpus4_1_20250805   Model = "claude-opus-4-1-20250805"
-	// Deprecated: Will reach end-of-life on January 5th, 2026. Please migrate to a
-	// newer model. Visit
+	ModelClaudeSonnet4_0          Model = "claude-sonnet-4-0"
+	ModelClaudeSonnet4_20250514   Model = "claude-sonnet-4-20250514"
+	// Deprecated: Will reach end-of-life on April 20th, 2026. Please migrate to
+	// claude-haiku-4-5. Visit
 	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
 	// information.
-	ModelClaude3OpusLatest Model = "claude-3-opus-latest"
-	// Deprecated: Will reach end-of-life on January 5th, 2026. Please migrate to a
-	// newer model. Visit
-	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
-	// information.
-	ModelClaude_3_Opus_20240229  Model = "claude-3-opus-20240229"
 	ModelClaude_3_Haiku_20240307 Model = "claude-3-haiku-20240307"
 )
 

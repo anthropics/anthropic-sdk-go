@@ -14,7 +14,6 @@ import (
 )
 
 func TestBetaMessageNewWithOptionalParams(t *testing.T) {
-	t.Skip("prism validates based on the non-beta endpoint")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -176,7 +175,6 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 }
 
 func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
-	t.Skip("prism validates based on the non-beta endpoint")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL

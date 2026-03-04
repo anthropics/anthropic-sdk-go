@@ -86,7 +86,7 @@ func TestToolRunner_All_Basic(t *testing.T) {
 
 	runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{tool}, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_5,
 			MaxTokens: 512,
 			Messages: []anthropic.BetaMessageParam{
 				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather in San Francisco? Use fahrenheit.")),
@@ -119,7 +119,7 @@ func TestToolRunner_RunToCompletion(t *testing.T) {
 
 	runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{tool}, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_5,
 			MaxTokens: 512,
 			Messages: []anthropic.BetaMessageParam{
 				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather in San Francisco? Use fahrenheit.")),
@@ -148,7 +148,7 @@ func TestToolRunner_NextMessage_Step(t *testing.T) {
 
 	runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{tool}, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_5,
 			MaxTokens: 512,
 			Messages: []anthropic.BetaMessageParam{
 				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather in SF? Use celsius.")),
@@ -191,7 +191,7 @@ func TestToolRunner_AllStreaming(t *testing.T) {
 
 	runner := client.Beta.Messages.NewToolRunnerStreaming([]anthropic.BetaTool{tool}, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_5,
 			MaxTokens: 512,
 			Messages: []anthropic.BetaMessageParam{
 				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("Weather in SF in fahrenheit?")),
@@ -232,7 +232,7 @@ func TestToolRunner_NextStreaming_EventTypes(t *testing.T) {
 
 	runner := client.Beta.Messages.NewToolRunnerStreaming([]anthropic.BetaTool{tool}, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_5,
 			MaxTokens: 512,
 			Messages: []anthropic.BetaMessageParam{
 				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("Weather in SF?")),
@@ -275,7 +275,7 @@ func TestToolRunner_ToolCallError_ThenSuccess(t *testing.T) {
 
 	runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{tool}, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_5,
 			MaxTokens: 512,
 			Messages: []anthropic.BetaMessageParam{
 				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("Weather in San Francisco?")),
@@ -344,7 +344,7 @@ func TestToolRunner_CustomHandlingWithPushMessages(t *testing.T) {
 
 	runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{tool}, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_5,
 			MaxTokens: 512,
 			Messages: []anthropic.BetaMessageParam{
 				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather in SF in celsius?")),
@@ -379,7 +379,7 @@ func TestToolRunner_CustomHandlingWithPushMessages(t *testing.T) {
 	// No tools so the next turn is just the assistant producing final text
 	runner2 := client.Beta.Messages.NewToolRunner(nil, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_5,
 			MaxTokens: 512,
 			Messages:  msgs,
 		},
@@ -401,7 +401,7 @@ func TestToolRunner_MaxIterations(t *testing.T) {
 
 	runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{tool}, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_5,
 			MaxTokens: 512,
 			Messages: []anthropic.BetaMessageParam{
 				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("Check weather in SF and NY, step by step")),
@@ -452,7 +452,7 @@ func TestToolRunner_ConcurrentToolExecution(t *testing.T) {
 
 	runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{weatherTool}, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_5,
 			MaxTokens: 512,
 			Messages: []anthropic.BetaMessageParam{
 				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock(
@@ -523,7 +523,7 @@ func TestToolRunner_ContextCancellation(t *testing.T) {
 
 	runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{slowTool}, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaude3_7SonnetLatest,
+			Model:     anthropic.ModelClaudeSonnet4_5,
 			MaxTokens: 512,
 			Messages: []anthropic.BetaMessageParam{
 				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("Call the slow_tool with input 'test'")),

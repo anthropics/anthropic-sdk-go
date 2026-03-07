@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -52,8 +53,12 @@ func NewBetaMessageService(opts ...option.RequestOption) (r BetaMessageService) 
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParams, opts ...option.RequestOption) (res *BetaMessage, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		betaStrs := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			betaStrs[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(betaStrs, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 
@@ -85,8 +90,12 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 		raw *http.Response
 		err error
 	)
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		betaStrs := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			betaStrs[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(betaStrs, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append(opts, option.WithJSONSet("stream", true))
@@ -103,8 +112,12 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 // Learn more about token counting in our
 // [user guide](https://docs.claude.com/en/docs/build-with-claude/token-counting)
 func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessageCountTokensParams, opts ...option.RequestOption) (res *BetaMessageTokensCount, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		betaStrs := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			betaStrs[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(betaStrs, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens?beta=true"

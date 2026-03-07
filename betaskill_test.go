@@ -29,7 +29,7 @@ func TestBetaSkillNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Skills.New(context.TODO(), anthropic.BetaSkillNewParams{
 		DisplayTitle: anthropic.String("display_title"),
-		Files:        []io.Reader{io.Reader(bytes.NewBuffer([]byte("some file contents")))},
+		Files:        []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
 		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {

@@ -153,7 +153,7 @@ func TestBetaFileUploadWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.Files.Upload(context.TODO(), anthropic.BetaFileUploadParams{
-		File:  io.Reader(bytes.NewBuffer([]byte("some file contents"))),
+		File:  io.Reader(bytes.NewBuffer([]byte("Example data"))),
 		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {

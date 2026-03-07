@@ -31,7 +31,7 @@ func TestBetaSkillVersionNewWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"skill_id",
 		anthropic.BetaSkillVersionNewParams{
-			Files: []io.Reader{io.Reader(bytes.NewBuffer([]byte("some file contents")))},
+			Files: []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
 			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)

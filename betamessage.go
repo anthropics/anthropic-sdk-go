@@ -326,6 +326,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaThinkingConfigEnabledParam]("enabled"),
 		apijson.Discriminator[BetaThinkingConfigDisabledParam]("disabled"),
+		apijson.Discriminator[BetaThinkingConfigAdaptiveParam]("adaptive"),
 	)
 }
 

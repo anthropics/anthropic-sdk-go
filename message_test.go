@@ -599,3 +599,27 @@ func TestMessageParamArrayContent(t *testing.T) {
 		t.Errorf("Expected second block text 'second block', got '%s'", message.Content[1].OfText.Text)
 	}
 }
+
+func TestThinkingConfigAdaptiveUnmarshalJSON(t *testing.T) {
+	input := `{"messages":[{"role":"user","content":"hello"}],"model":"claude-opus-4-6","thinking":{"type":"adaptive"}}`
+	var msgParam anthropic.MessageNewParams
+	err := msgParam.UnmarshalJSON([]byte(input))
+	if err != nil {
+		t.Fatalf("UnmarshalJSON failed: %v", err)
+	}
+	if msgParam.Thinking.OfAdaptive == nil {
+		t.Fatal("Expected Thinking.OfAdaptive to be set, got nil")
+	}
+}
+
+func TestBetaThinkingConfigAdaptiveUnmarshalJSON(t *testing.T) {
+	input := `{"messages":[{"role":"user","content":"hello"}],"model":"claude-opus-4-6","thinking":{"type":"adaptive"}}`
+	var msgParam anthropic.BetaMessageNewParams
+	err := msgParam.UnmarshalJSON([]byte(input))
+	if err != nil {
+		t.Fatalf("UnmarshalJSON failed: %v", err)
+	}
+	if msgParam.Thinking.OfAdaptive == nil {
+		t.Fatal("Expected Thinking.OfAdaptive to be set, got nil")
+	}
+}

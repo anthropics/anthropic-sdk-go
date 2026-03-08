@@ -16,7 +16,6 @@ import (
 )
 
 func TestBetaSkillNewWithOptionalParams(t *testing.T) {
-	t.Skip("prism binary unsupported")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -30,7 +29,7 @@ func TestBetaSkillNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Skills.New(context.TODO(), anthropic.BetaSkillNewParams{
 		DisplayTitle: anthropic.String("display_title"),
-		Files:        []io.Reader{io.Reader(bytes.NewBuffer([]byte("some file contents")))},
+		Files:        []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
 		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {

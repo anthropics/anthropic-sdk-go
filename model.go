@@ -92,16 +92,16 @@ func (r *ModelService) ListAutoPaging(ctx context.Context, params ModelListParam
 
 type ModelInfo struct {
 	// Unique model identifier.
-	ID string `json:"id,required"`
+	ID string `json:"id" api:"required"`
 	// RFC 3339 datetime string representing the time at which the model was released.
 	// May be set to an epoch value if the release date is unknown.
-	CreatedAt time.Time `json:"created_at,required" format:"date-time"`
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// A human-readable name for the model.
-	DisplayName string `json:"display_name,required"`
+	DisplayName string `json:"display_name" api:"required"`
 	// Object type.
 	//
 	// For Models, this is always `"model"`.
-	Type constant.Model `json:"type,required"`
+	Type constant.Model `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field

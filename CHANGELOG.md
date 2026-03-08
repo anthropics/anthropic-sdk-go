@@ -1,5 +1,37 @@
 # Changelog
 
+## 1.27.0 (2026-03-08)
+
+Full Changelog: [v1.26.0...v1.27.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.26.0...v1.27.0)
+
+### Features
+
+* **api:** change array_format to brackets ([ca5ae6e](https://github.com/anthropics/anthropic-sdk-go/commit/ca5ae6eaf8243aece877d33eb88653db2e439a36))
+* **api:** chore(config): clean up model enum list ([#31](https://github.com/anthropics/anthropic-sdk-go/issues/31)) ([1db4ea7](https://github.com/anthropics/anthropic-sdk-go/commit/1db4ea7956259bb217bc2523a5244b6029c4bd15))
+* **api:** remove publishing section from cli target ([514282e](https://github.com/anthropics/anthropic-sdk-go/commit/514282e1728881f7ef4c6782f3000ca0ec632d53))
+* **tests:** update mock server ([cf24ced](https://github.com/anthropics/anthropic-sdk-go/commit/cf24ced2844da5d0f645e7a2afbabb936c891892))
+
+
+### Bug Fixes
+
+* allow canceling a request while it is waiting to retry ([32ee053](https://github.com/anthropics/anthropic-sdk-go/commit/32ee05317970d99df3147c65c2055efabe354472))
+* **client:** update model reference from claude-3-7-sonnet-latest to claude-sonnet-4-5 ([2f42e73](https://github.com/anthropics/anthropic-sdk-go/commit/2f42e7336295d898d18c66ddd6f9f70bab108cc6))
+
+
+### Chores
+
+* **client:** reorganize code in Messages files to lead to less conflicts ([c677bb5](https://github.com/anthropics/anthropic-sdk-go/commit/c677bb58a3da8f17f0dbc630b5b28faed995aa6b))
+* **internal:** codegen related update ([9678c6c](https://github.com/anthropics/anthropic-sdk-go/commit/9678c6c5d375f66cb569a537a0766a5ed4d8f7f0))
+* **internal:** codegen related update ([f6035d2](https://github.com/anthropics/anthropic-sdk-go/commit/f6035d2bb0c50cf97cea78fb3fe854289b11a34c))
+* **internal:** codegen related update ([9246bbb](https://github.com/anthropics/anthropic-sdk-go/commit/9246bbb15553cee531b5caef2c7876e84a8fe8f2))
+* **internal:** move custom custom `json` tags to `api` ([4392627](https://github.com/anthropics/anthropic-sdk-go/commit/4392627107c43726c242923c16b0f5ac2b432082))
+* **tests:** unskip tests that are now supported in steady ([b0ca374](https://github.com/anthropics/anthropic-sdk-go/commit/b0ca37403486c65ae171d2b330ff82c938fe9b58))
+
+
+### Documentation
+
+* streamline README, centralize documentation at docs.anthropic.com ([33f6943](https://github.com/anthropics/anthropic-sdk-go/commit/33f69431abd96025134d8967c20a1f313af3382d)), closes [#587](https://github.com/anthropics/anthropic-sdk-go/issues/587)
+
 ## 1.26.0 (2026-02-19)
 
 Full Changelog: [v1.25.1...v1.26.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.25.1...v1.26.0)

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"strings"
 )
@@ -25,8 +26,8 @@ func NewDecoder(res *http.Response) Decoder {
 	}
 
 	var decoder Decoder
-	contentType := res.Header.Get("content-type")
-	if t, ok := decoderTypes[contentType]; ok {
+	mediaType, _, _ := mime.ParseMediaType(res.Header.Get("content-type"))
+	if t, ok := decoderTypes[strings.ToLower(mediaType)]; ok {
 		decoder = t(res.Body)
 	} else {
 		scn := bufio.NewScanner(res.Body)

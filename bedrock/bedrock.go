@@ -198,9 +198,9 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 	if cfg.BearerAuthTokenProvider == nil {
 		if token := os.Getenv("AWS_BEARER_TOKEN_BEDROCK"); token != "" {
 			cfg.BearerAuthTokenProvider = NewStaticBearerTokenProvider(token)
+		} else if cfg.Credentials == nil {
+			credentialErr = fmt.Errorf("expected AWS credentials to be set")
 		}
-	} else if cfg.BearerAuthTokenProvider == nil && cfg.Credentials == nil {
-		credentialErr = fmt.Errorf("expected AWS credentials to be set")
 	}
 
 	signer := v4.NewSigner()

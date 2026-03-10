@@ -51,11 +51,11 @@ func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, param
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)
 	if skillID == "" {
 		err = errors.New("missing required skill_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions?beta=true", skillID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 // Get Skill Version
@@ -67,15 +67,15 @@ func (r *BetaSkillVersionService) Get(ctx context.Context, version string, param
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)
 	if params.SkillID == "" {
 		err = errors.New("missing required skill_id parameter")
-		return
+		return nil, err
 	}
 	if version == "" {
 		err = errors.New("missing required version parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions/%s?beta=true", params.SkillID, version)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // List Skill Versions
@@ -88,7 +88,7 @@ func (r *BetaSkillVersionService) List(ctx context.Context, skillID string, para
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02"), option.WithResponseInto(&raw)}, opts...)
 	if skillID == "" {
 		err = errors.New("missing required skill_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions?beta=true", skillID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -117,15 +117,15 @@ func (r *BetaSkillVersionService) Delete(ctx context.Context, version string, pa
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)
 	if params.SkillID == "" {
 		err = errors.New("missing required skill_id parameter")
-		return
+		return nil, err
 	}
 	if version == "" {
 		err = errors.New("missing required version parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions/%s?beta=true", params.SkillID, version)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 type BetaSkillVersionNewResponse struct {

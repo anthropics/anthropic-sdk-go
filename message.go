@@ -54,7 +54,7 @@ func (r *MessageService) New(ctx context.Context, body MessageNewParams, opts ..
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // Send a structured list of input messages with text and/or image content, and the
@@ -90,7 +90,7 @@ func (r *MessageService) CountTokens(ctx context.Context, body MessageCountToken
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // The properties Data, MediaType, Type are required.

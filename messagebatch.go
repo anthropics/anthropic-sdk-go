@@ -55,7 +55,7 @@ func (r *MessageBatchService) New(ctx context.Context, body MessageBatchNewParam
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/batches"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // This endpoint is idempotent and can be used to poll for Message Batch
@@ -68,11 +68,11 @@ func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, op
 	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // List all Message Batches within a Workspace. Most recently created batches are
@@ -117,11 +117,11 @@ func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string,
 	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Batches may be canceled any time before processing ends. Once cancellation is
@@ -140,11 +140,11 @@ func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string,
 	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/cancel", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Streams the results of a Message Batch as a `.jsonl` file.
@@ -164,7 +164,7 @@ func (r *MessageBatchService) ResultsStreaming(ctx context.Context, messageBatch
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "application/x-jsonl")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return jsonl.NewStream[MessageBatchIndividualResponse](nil, err)
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/results", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)

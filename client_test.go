@@ -39,7 +39,7 @@ func TestUserAgentHeader(t *testing.T) {
 			},
 		}),
 	)
-	client.Messages.New(context.Background(), anthropic.MessageNewParams{
+	_, _ = client.Messages.New(context.Background(), anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
 			Content: []anthropic.ContentBlockParamUnion{{

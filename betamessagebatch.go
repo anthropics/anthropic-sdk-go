@@ -58,7 +58,7 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	path := "v1/messages/batches?beta=true"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 // This endpoint is idempotent and can be used to poll for Message Batch
@@ -75,11 +75,11 @@ func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // List all Message Batches within a Workspace. Most recently created batches are
@@ -131,11 +131,11 @@ func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID str
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Batches may be canceled any time before processing ends. Once cancellation is
@@ -158,11 +158,11 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/cancel?beta=true", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Streams the results of a Message Batch as a `.jsonl` file.
@@ -185,7 +185,7 @@ func (r *BetaMessageBatchService) ResultsStreaming(ctx context.Context, messageB
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithHeader("Accept", "application/x-jsonl")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return jsonl.NewStream[BetaMessageBatchIndividualResponse](nil, err)
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/results?beta=true", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)

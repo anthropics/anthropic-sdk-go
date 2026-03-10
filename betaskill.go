@@ -53,7 +53,7 @@ func (r *BetaSkillService) New(ctx context.Context, params BetaSkillNewParams, o
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)
 	path := "v1/skills?beta=true"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 // Get Skill
@@ -65,11 +65,11 @@ func (r *BetaSkillService) Get(ctx context.Context, skillID string, query BetaSk
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)
 	if skillID == "" {
 		err = errors.New("missing required skill_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s?beta=true", skillID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // List Skills
@@ -107,11 +107,11 @@ func (r *BetaSkillService) Delete(ctx context.Context, skillID string, body Beta
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)
 	if skillID == "" {
 		err = errors.New("missing required skill_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s?beta=true", skillID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 type BetaSkillNewResponse struct {

@@ -67,7 +67,7 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 
 	path := "v1/messages?beta=true"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 // Send a structured list of input messages with text and/or image content, and the
@@ -109,7 +109,7 @@ func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessage
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens?beta=true"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 func NewBetaAllThinkingTurnsParam() BetaAllThinkingTurnsParam {

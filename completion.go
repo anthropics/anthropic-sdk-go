@@ -53,7 +53,7 @@ func (r *CompletionService) New(ctx context.Context, params CompletionNewParams,
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/complete"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 // [Legacy] Create a Text Completion.

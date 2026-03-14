@@ -2787,6 +2787,7 @@ func init() {
 		"type",
 		apijson.Discriminator[ThinkingConfigEnabledParam]("enabled"),
 		apijson.Discriminator[ThinkingConfigDisabledParam]("disabled"),
+		apijson.Discriminator[ThinkingConfigDisabledParam]("adaptive"),
 	)
 }
 

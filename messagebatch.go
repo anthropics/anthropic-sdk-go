@@ -55,7 +55,7 @@ func (r *MessageBatchService) New(ctx context.Context, body MessageBatchNewParam
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/batches"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // This endpoint is idempotent and can be used to poll for Message Batch
@@ -68,11 +68,11 @@ func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, op
 	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // List all Message Batches within a Workspace. Most recently created batches are
@@ -117,11 +117,11 @@ func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string,
 	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Batches may be canceled any time before processing ends. Once cancellation is
@@ -140,11 +140,11 @@ func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string,
 	opts = slices.Concat(r.Options, opts)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/cancel", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Streams the results of a Message Batch as a `.jsonl` file.
@@ -164,7 +164,7 @@ func (r *MessageBatchService) ResultsStreaming(ctx context.Context, messageBatch
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "application/x-jsonl")}, opts...)
 	if messageBatchID == "" {
 		err = errors.New("missing required message_batch_id parameter")
-		return
+		return jsonl.NewStream[MessageBatchIndividualResponse](nil, err)
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/results", messageBatchID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
@@ -173,11 +173,11 @@ func (r *MessageBatchService) ResultsStreaming(ctx context.Context, messageBatch
 
 type DeletedMessageBatch struct {
 	// ID of the Message Batch.
-	ID string `json:"id,required"`
+	ID string `json:"id" api:"required"`
 	// Deleted object type.
 	//
 	// For Message Batches, this is always `"message_batch_deleted"`.
-	Type constant.MessageBatchDeleted `json:"type,required"`
+	Type constant.MessageBatchDeleted `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -197,45 +197,45 @@ type MessageBatch struct {
 	// Unique object identifier.
 	//
 	// The format and length of IDs may change over time.
-	ID string `json:"id,required"`
+	ID string `json:"id" api:"required"`
 	// RFC 3339 datetime string representing the time at which the Message Batch was
 	// archived and its results became unavailable.
-	ArchivedAt time.Time `json:"archived_at,required" format:"date-time"`
+	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
 	// RFC 3339 datetime string representing the time at which cancellation was
 	// initiated for the Message Batch. Specified only if cancellation was initiated.
-	CancelInitiatedAt time.Time `json:"cancel_initiated_at,required" format:"date-time"`
+	CancelInitiatedAt time.Time `json:"cancel_initiated_at" api:"required" format:"date-time"`
 	// RFC 3339 datetime string representing the time at which the Message Batch was
 	// created.
-	CreatedAt time.Time `json:"created_at,required" format:"date-time"`
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// RFC 3339 datetime string representing the time at which processing for the
 	// Message Batch ended. Specified only once processing ends.
 	//
 	// Processing ends when every request in a Message Batch has either succeeded,
 	// errored, canceled, or expired.
-	EndedAt time.Time `json:"ended_at,required" format:"date-time"`
+	EndedAt time.Time `json:"ended_at" api:"required" format:"date-time"`
 	// RFC 3339 datetime string representing the time at which the Message Batch will
 	// expire and end processing, which is 24 hours after creation.
-	ExpiresAt time.Time `json:"expires_at,required" format:"date-time"`
+	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
 	// Processing status of the Message Batch.
 	//
 	// Any of "in_progress", "canceling", "ended".
-	ProcessingStatus MessageBatchProcessingStatus `json:"processing_status,required"`
+	ProcessingStatus MessageBatchProcessingStatus `json:"processing_status" api:"required"`
 	// Tallies requests within the Message Batch, categorized by their status.
 	//
 	// Requests start as `processing` and move to one of the other statuses only once
 	// processing of the entire batch ends. The sum of all values always matches the
 	// total number of requests in the batch.
-	RequestCounts MessageBatchRequestCounts `json:"request_counts,required"`
+	RequestCounts MessageBatchRequestCounts `json:"request_counts" api:"required"`
 	// URL to a `.jsonl` file containing the results of the Message Batch requests.
 	// Specified only once processing ends.
 	//
 	// Results in the file are not guaranteed to be in the same order as requests. Use
 	// the `custom_id` field to match results to requests.
-	ResultsURL string `json:"results_url,required"`
+	ResultsURL string `json:"results_url" api:"required"`
 	// Object type.
 	//
 	// For Message Batches, this is always `"message_batch"`.
-	Type constant.MessageBatch `json:"type,required"`
+	Type constant.MessageBatch `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                respjson.Field
@@ -269,7 +269,7 @@ const (
 )
 
 type MessageBatchCanceledResult struct {
-	Type constant.Canceled `json:"type,required"`
+	Type constant.Canceled `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -285,8 +285,8 @@ func (r *MessageBatchCanceledResult) UnmarshalJSON(data []byte) error {
 }
 
 type MessageBatchErroredResult struct {
-	Error shared.ErrorResponse `json:"error,required"`
-	Type  constant.Errored     `json:"type,required"`
+	Error shared.ErrorResponse `json:"error" api:"required"`
+	Type  constant.Errored     `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -303,7 +303,7 @@ func (r *MessageBatchErroredResult) UnmarshalJSON(data []byte) error {
 }
 
 type MessageBatchExpiredResult struct {
-	Type constant.Expired `json:"type,required"`
+	Type constant.Expired `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -325,13 +325,13 @@ type MessageBatchIndividualResponse struct {
 	// matching results to requests, as results may be given out of request order.
 	//
 	// Must be unique for each request within the Message Batch.
-	CustomID string `json:"custom_id,required"`
+	CustomID string `json:"custom_id" api:"required"`
 	// Processing result for this request.
 	//
 	// Contains a Message output if processing was successful, an error response if
 	// processing failed, or the reason why processing was not attempted, such as
 	// cancellation or expiration.
-	Result MessageBatchResultUnion `json:"result,required"`
+	Result MessageBatchResultUnion `json:"result" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CustomID    respjson.Field
@@ -351,21 +351,21 @@ type MessageBatchRequestCounts struct {
 	// Number of requests in the Message Batch that have been canceled.
 	//
 	// This is zero until processing of the entire Message Batch has ended.
-	Canceled int64 `json:"canceled,required"`
+	Canceled int64 `json:"canceled" api:"required"`
 	// Number of requests in the Message Batch that encountered an error.
 	//
 	// This is zero until processing of the entire Message Batch has ended.
-	Errored int64 `json:"errored,required"`
+	Errored int64 `json:"errored" api:"required"`
 	// Number of requests in the Message Batch that have expired.
 	//
 	// This is zero until processing of the entire Message Batch has ended.
-	Expired int64 `json:"expired,required"`
+	Expired int64 `json:"expired" api:"required"`
 	// Number of requests in the Message Batch that are processing.
-	Processing int64 `json:"processing,required"`
+	Processing int64 `json:"processing" api:"required"`
 	// Number of requests in the Message Batch that have completed successfully.
 	//
 	// This is zero until processing of the entire Message Batch has ended.
-	Succeeded int64 `json:"succeeded,required"`
+	Succeeded int64 `json:"succeeded" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Canceled    respjson.Field
@@ -470,8 +470,8 @@ func (r *MessageBatchResultUnion) UnmarshalJSON(data []byte) error {
 }
 
 type MessageBatchSucceededResult struct {
-	Message Message            `json:"message,required"`
-	Type    constant.Succeeded `json:"type,required"`
+	Message Message            `json:"message" api:"required"`
+	Type    constant.Succeeded `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -490,7 +490,7 @@ func (r *MessageBatchSucceededResult) UnmarshalJSON(data []byte) error {
 type MessageBatchNewParams struct {
 	// List of requests for prompt completion. Each is an individual request to create
 	// a Message.
-	Requests []MessageBatchNewParamsRequest `json:"requests,omitzero,required"`
+	Requests []MessageBatchNewParamsRequest `json:"requests,omitzero" api:"required"`
 	paramObj
 }
 
@@ -508,12 +508,12 @@ type MessageBatchNewParamsRequest struct {
 	// matching results to requests, as results may be given out of request order.
 	//
 	// Must be unique for each request within the Message Batch.
-	CustomID string `json:"custom_id,required"`
+	CustomID string `json:"custom_id" api:"required"`
 	// Messages API creation parameters for the individual request.
 	//
 	// See the [Messages API reference](https://docs.claude.com/en/api/messages) for
 	// full documentation on available parameters.
-	Params MessageBatchNewParamsRequestParams `json:"params,omitzero,required"`
+	Params MessageBatchNewParamsRequestParams `json:"params,omitzero" api:"required"`
 	paramObj
 }
 
@@ -539,7 +539,7 @@ type MessageBatchNewParamsRequestParams struct {
 	//
 	// Different models have different maximum values for this parameter. See
 	// [models](https://docs.claude.com/en/docs/models-overview) for details.
-	MaxTokens int64 `json:"max_tokens,required"`
+	MaxTokens int64 `json:"max_tokens" api:"required"`
 	// Input messages.
 	//
 	// Our models are trained to operate on alternating `user` and `assistant`
@@ -609,11 +609,11 @@ type MessageBatchNewParamsRequestParams struct {
 	// the Messages API.
 	//
 	// There is a limit of 100,000 messages in a single request.
-	Messages []MessageParam `json:"messages,omitzero,required"`
+	Messages []MessageParam `json:"messages,omitzero" api:"required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
-	Model Model `json:"model,omitzero,required"`
+	Model Model `json:"model,omitzero" api:"required"`
 	// Container identifier for reuse across requests.
 	Container param.Opt[string] `json:"container,omitzero"`
 	// Specifies the geographic region for inference processing. If not specified, the

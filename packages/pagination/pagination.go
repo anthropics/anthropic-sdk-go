@@ -21,8 +21,8 @@ type paramObj = param.APIObject
 type Page[T any] struct {
 	Data    []T    `json:"data"`
 	HasMore bool   `json:"has_more"`
-	FirstID string `json:"first_id,nullable"`
-	LastID  string `json:"last_id,nullable"`
+	FirstID string `json:"first_id" api:"nullable"`
+	LastID  string `json:"last_id" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
@@ -140,7 +140,7 @@ func (r *PageAutoPager[T]) Index() int {
 type TokenPage[T any] struct {
 	Data     []T    `json:"data"`
 	HasMore  bool   `json:"has_more"`
-	NextPage string `json:"next_page,nullable"`
+	NextPage string `json:"next_page" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
@@ -246,7 +246,7 @@ func (r *TokenPageAutoPager[T]) Index() int {
 type PageCursor[T any] struct {
 	Data     []T    `json:"data"`
 	HasMore  bool   `json:"has_more"`
-	NextPage string `json:"next_page,nullable"`
+	NextPage string `json:"next_page" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field

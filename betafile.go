@@ -79,11 +79,11 @@ func (r *BetaFileService) Delete(ctx context.Context, fileID string, body BetaFi
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "files-api-2025-04-14")}, opts...)
 	if fileID == "" {
 		err = errors.New("missing required file_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/files/%s?beta=true", fileID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Download File
@@ -95,11 +95,11 @@ func (r *BetaFileService) Download(ctx context.Context, fileID string, query Bet
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "files-api-2025-04-14"), option.WithHeader("Accept", "application/binary")}, opts...)
 	if fileID == "" {
 		err = errors.New("missing required file_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/files/%s/content?beta=true", fileID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Get File Metadata
@@ -111,11 +111,11 @@ func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query 
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "files-api-2025-04-14")}, opts...)
 	if fileID == "" {
 		err = errors.New("missing required file_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/files/%s?beta=true", fileID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Upload File
@@ -127,12 +127,12 @@ func (r *BetaFileService) Upload(ctx context.Context, params BetaFileUploadParam
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "files-api-2025-04-14")}, opts...)
 	path := "v1/files?beta=true"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 type DeletedFile struct {
 	// ID of the deleted file.
-	ID string `json:"id,required"`
+	ID string `json:"id" api:"required"`
 	// Deleted object type.
 	//
 	// For file deletion, this is always `"file_deleted"`.
@@ -167,19 +167,19 @@ type FileMetadata struct {
 	// Unique object identifier.
 	//
 	// The format and length of IDs may change over time.
-	ID string `json:"id,required"`
+	ID string `json:"id" api:"required"`
 	// RFC 3339 datetime string representing when the file was created.
-	CreatedAt time.Time `json:"created_at,required" format:"date-time"`
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Original filename of the uploaded file.
-	Filename string `json:"filename,required"`
+	Filename string `json:"filename" api:"required"`
 	// MIME type of the file.
-	MimeType string `json:"mime_type,required"`
+	MimeType string `json:"mime_type" api:"required"`
 	// Size of the file in bytes.
-	SizeBytes int64 `json:"size_bytes,required"`
+	SizeBytes int64 `json:"size_bytes" api:"required"`
 	// Object type.
 	//
 	// For files, this is always `"file"`.
-	Type constant.File `json:"type,required"`
+	Type constant.File `json:"type" api:"required"`
 	// Whether the file can be downloaded.
 	Downloadable bool `json:"downloadable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -246,7 +246,7 @@ type BetaFileGetMetadataParams struct {
 
 type BetaFileUploadParams struct {
 	// The file to upload
-	File io.Reader `json:"file,omitzero,required" format:"binary"`
+	File io.Reader `json:"file,omitzero" api:"required" format:"binary"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

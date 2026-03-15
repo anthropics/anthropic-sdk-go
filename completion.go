@@ -53,7 +53,7 @@ func (r *CompletionService) New(ctx context.Context, params CompletionNewParams,
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/complete"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 // [Legacy] Create a Text Completion.
@@ -85,13 +85,13 @@ type Completion struct {
 	// Unique object identifier.
 	//
 	// The format and length of IDs may change over time.
-	ID string `json:"id,required"`
+	ID string `json:"id" api:"required"`
 	// The resulting completion up to and excluding the stop sequences.
-	Completion string `json:"completion,required"`
+	Completion string `json:"completion" api:"required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
-	Model Model `json:"model,required"`
+	Model Model `json:"model" api:"required"`
 	// The reason that we stopped.
 	//
 	// This may be one the following values:
@@ -99,11 +99,11 @@ type Completion struct {
 	//   - `"stop_sequence"`: we reached a stop sequence — either provided by you via the
 	//     `stop_sequences` parameter, or a stop sequence built into the model
 	//   - `"max_tokens"`: we exceeded `max_tokens_to_sample` or the model's maximum
-	StopReason string `json:"stop_reason,required"`
+	StopReason string `json:"stop_reason" api:"required"`
 	// Object type.
 	//
 	// For Text Completions, this is always `"completion"`.
-	Type constant.Completion `json:"type,required"`
+	Type constant.Completion `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -127,11 +127,11 @@ type CompletionNewParams struct {
 	//
 	// Note that our models may stop _before_ reaching this maximum. This parameter
 	// only specifies the absolute maximum number of tokens to generate.
-	MaxTokensToSample int64 `json:"max_tokens_to_sample,required"`
+	MaxTokensToSample int64 `json:"max_tokens_to_sample" api:"required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
-	Model Model `json:"model,omitzero,required"`
+	Model Model `json:"model,omitzero" api:"required"`
 	// The prompt that you want Claude to complete.
 	//
 	// For proper response generation you will need to format your prompt using
@@ -144,7 +144,7 @@ type CompletionNewParams struct {
 	// See [prompt validation](https://docs.claude.com/en/api/prompt-validation) and
 	// our guide to [prompt design](https://docs.claude.com/en/docs/intro-to-prompting)
 	// for more details.
-	Prompt string `json:"prompt,required"`
+	Prompt string `json:"prompt" api:"required"`
 	// Amount of randomness injected into the response.
 	//
 	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`

@@ -51,11 +51,11 @@ func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, param
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)
 	if skillID == "" {
 		err = errors.New("missing required skill_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions?beta=true", skillID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 // Get Skill Version
@@ -67,15 +67,15 @@ func (r *BetaSkillVersionService) Get(ctx context.Context, version string, param
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)
 	if params.SkillID == "" {
 		err = errors.New("missing required skill_id parameter")
-		return
+		return nil, err
 	}
 	if version == "" {
 		err = errors.New("missing required version parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions/%s?beta=true", params.SkillID, version)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // List Skill Versions
@@ -88,7 +88,7 @@ func (r *BetaSkillVersionService) List(ctx context.Context, skillID string, para
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02"), option.WithResponseInto(&raw)}, opts...)
 	if skillID == "" {
 		err = errors.New("missing required skill_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions?beta=true", skillID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -117,46 +117,46 @@ func (r *BetaSkillVersionService) Delete(ctx context.Context, version string, pa
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)
 	if params.SkillID == "" {
 		err = errors.New("missing required skill_id parameter")
-		return
+		return nil, err
 	}
 	if version == "" {
 		err = errors.New("missing required version parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions/%s?beta=true", params.SkillID, version)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 type BetaSkillVersionNewResponse struct {
 	// Unique identifier for the skill version.
 	//
 	// The format and length of IDs may change over time.
-	ID string `json:"id,required"`
+	ID string `json:"id" api:"required"`
 	// ISO 8601 timestamp of when the skill version was created.
-	CreatedAt string `json:"created_at,required"`
+	CreatedAt string `json:"created_at" api:"required"`
 	// Description of the skill version.
 	//
 	// This is extracted from the SKILL.md file in the skill upload.
-	Description string `json:"description,required"`
+	Description string `json:"description" api:"required"`
 	// Directory name of the skill version.
 	//
 	// This is the top-level directory name that was extracted from the uploaded files.
-	Directory string `json:"directory,required"`
+	Directory string `json:"directory" api:"required"`
 	// Human-readable name of the skill version.
 	//
 	// This is extracted from the SKILL.md file in the skill upload.
-	Name string `json:"name,required"`
+	Name string `json:"name" api:"required"`
 	// Identifier for the skill that this version belongs to.
-	SkillID string `json:"skill_id,required"`
+	SkillID string `json:"skill_id" api:"required"`
 	// Object type.
 	//
 	// For Skill Versions, this is always `"skill_version"`.
-	Type string `json:"type,required"`
+	Type string `json:"type" api:"required"`
 	// Version identifier for the skill.
 	//
 	// Each version is identified by a Unix epoch timestamp (e.g., "1759178010641129").
-	Version string `json:"version,required"`
+	Version string `json:"version" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -182,31 +182,31 @@ type BetaSkillVersionGetResponse struct {
 	// Unique identifier for the skill version.
 	//
 	// The format and length of IDs may change over time.
-	ID string `json:"id,required"`
+	ID string `json:"id" api:"required"`
 	// ISO 8601 timestamp of when the skill version was created.
-	CreatedAt string `json:"created_at,required"`
+	CreatedAt string `json:"created_at" api:"required"`
 	// Description of the skill version.
 	//
 	// This is extracted from the SKILL.md file in the skill upload.
-	Description string `json:"description,required"`
+	Description string `json:"description" api:"required"`
 	// Directory name of the skill version.
 	//
 	// This is the top-level directory name that was extracted from the uploaded files.
-	Directory string `json:"directory,required"`
+	Directory string `json:"directory" api:"required"`
 	// Human-readable name of the skill version.
 	//
 	// This is extracted from the SKILL.md file in the skill upload.
-	Name string `json:"name,required"`
+	Name string `json:"name" api:"required"`
 	// Identifier for the skill that this version belongs to.
-	SkillID string `json:"skill_id,required"`
+	SkillID string `json:"skill_id" api:"required"`
 	// Object type.
 	//
 	// For Skill Versions, this is always `"skill_version"`.
-	Type string `json:"type,required"`
+	Type string `json:"type" api:"required"`
 	// Version identifier for the skill.
 	//
 	// Each version is identified by a Unix epoch timestamp (e.g., "1759178010641129").
-	Version string `json:"version,required"`
+	Version string `json:"version" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -232,31 +232,31 @@ type BetaSkillVersionListResponse struct {
 	// Unique identifier for the skill version.
 	//
 	// The format and length of IDs may change over time.
-	ID string `json:"id,required"`
+	ID string `json:"id" api:"required"`
 	// ISO 8601 timestamp of when the skill version was created.
-	CreatedAt string `json:"created_at,required"`
+	CreatedAt string `json:"created_at" api:"required"`
 	// Description of the skill version.
 	//
 	// This is extracted from the SKILL.md file in the skill upload.
-	Description string `json:"description,required"`
+	Description string `json:"description" api:"required"`
 	// Directory name of the skill version.
 	//
 	// This is the top-level directory name that was extracted from the uploaded files.
-	Directory string `json:"directory,required"`
+	Directory string `json:"directory" api:"required"`
 	// Human-readable name of the skill version.
 	//
 	// This is extracted from the SKILL.md file in the skill upload.
-	Name string `json:"name,required"`
+	Name string `json:"name" api:"required"`
 	// Identifier for the skill that this version belongs to.
-	SkillID string `json:"skill_id,required"`
+	SkillID string `json:"skill_id" api:"required"`
 	// Object type.
 	//
 	// For Skill Versions, this is always `"skill_version"`.
-	Type string `json:"type,required"`
+	Type string `json:"type" api:"required"`
 	// Version identifier for the skill.
 	//
 	// Each version is identified by a Unix epoch timestamp (e.g., "1759178010641129").
-	Version string `json:"version,required"`
+	Version string `json:"version" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -282,11 +282,11 @@ type BetaSkillVersionDeleteResponse struct {
 	// Version identifier for the skill.
 	//
 	// Each version is identified by a Unix epoch timestamp (e.g., "1759178010641129").
-	ID string `json:"id,required"`
+	ID string `json:"id" api:"required"`
 	// Deleted object type.
 	//
 	// For Skill Versions, this is always `"skill_version_deleted"`.
-	Type string `json:"type,required"`
+	Type string `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -335,7 +335,7 @@ type BetaSkillVersionGetParams struct {
 	// Unique identifier for the skill.
 	//
 	// The format and length of IDs may change over time.
-	SkillID string `path:"skill_id,required" json:"-"`
+	SkillID string `path:"skill_id" api:"required" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -366,7 +366,7 @@ type BetaSkillVersionDeleteParams struct {
 	// Unique identifier for the skill.
 	//
 	// The format and length of IDs may change over time.
-	SkillID string `path:"skill_id,required" json:"-"`
+	SkillID string `path:"skill_id" api:"required" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

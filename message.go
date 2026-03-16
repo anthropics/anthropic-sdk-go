@@ -3438,6 +3438,7 @@ type MessageCountTokensToolUnionParam struct {
 	OfWebFetchTool20250910        *WebFetchTool20250910Param        `json:",omitzero,inline"`
 	OfWebSearchTool20260209       *WebSearchTool20260209Param       `json:",omitzero,inline"`
 	OfWebFetchTool20260209        *WebFetchTool20260209Param        `json:",omitzero,inline"`
+	OfWebFetchTool20260309        *WebFetchTool20260309Param        `json:",omitzero,inline"`
 	OfToolSearchToolBm25_20251119 *ToolSearchToolBm25_20251119Param `json:",omitzero,inline"`
 	OfToolSearchToolRegex20251119 *ToolSearchToolRegex20251119Param `json:",omitzero,inline"`
 	paramUnion
@@ -3457,6 +3458,7 @@ func (u MessageCountTokensToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfWebFetchTool20250910,
 		u.OfWebSearchTool20260209,
 		u.OfWebFetchTool20260209,
+		u.OfWebFetchTool20260309,
 		u.OfToolSearchToolBm25_20251119,
 		u.OfToolSearchToolRegex20251119)
 }
@@ -3491,6 +3493,8 @@ func (u *MessageCountTokensToolUnionParam) asAny() any {
 		return u.OfWebSearchTool20260209
 	} else if !param.IsOmitted(u.OfWebFetchTool20260209) {
 		return u.OfWebFetchTool20260209
+	} else if !param.IsOmitted(u.OfWebFetchTool20260309) {
+		return u.OfWebFetchTool20260309
 	} else if !param.IsOmitted(u.OfToolSearchToolBm25_20251119) {
 		return u.OfToolSearchToolBm25_20251119
 	} else if !param.IsOmitted(u.OfToolSearchToolRegex20251119) {
@@ -3532,6 +3536,14 @@ func (u MessageCountTokensToolUnionParam) GetMaxCharacters() *int64 {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u MessageCountTokensToolUnionParam) GetUseCache() *bool {
+	if vt := u.OfWebFetchTool20260309; vt != nil && vt.UseCache.Valid() {
+		return &vt.UseCache.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u MessageCountTokensToolUnionParam) GetName() *string {
 	if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Name)
@@ -3558,6 +3570,8 @@ func (u MessageCountTokensToolUnionParam) GetName() *string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return (*string)(&vt.Name)
@@ -3595,6 +3609,8 @@ func (u MessageCountTokensToolUnionParam) GetDeferLoading() *bool {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.DeferLoading.Valid() {
+		return &vt.DeferLoading.Value
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil && vt.DeferLoading.Valid() {
@@ -3630,6 +3646,8 @@ func (u MessageCountTokensToolUnionParam) GetStrict() *bool {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
@@ -3667,6 +3685,8 @@ func (u MessageCountTokensToolUnionParam) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return (*string)(&vt.Type)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil {
@@ -3685,6 +3705,8 @@ func (u MessageCountTokensToolUnionParam) GetMaxUses() *int64 {
 		return &vt.MaxUses.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.MaxUses.Valid() {
 		return &vt.MaxUses.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxUses.Valid() {
+		return &vt.MaxUses.Value
 	}
 	return nil
 }
@@ -3694,6 +3716,8 @@ func (u MessageCountTokensToolUnionParam) GetMaxContentTokens() *int64 {
 	if vt := u.OfWebFetchTool20250910; vt != nil && vt.MaxContentTokens.Valid() {
 		return &vt.MaxContentTokens.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.MaxContentTokens.Valid() {
+		return &vt.MaxContentTokens.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxContentTokens.Valid() {
 		return &vt.MaxContentTokens.Value
 	}
 	return nil
@@ -3727,6 +3751,8 @@ func (u MessageCountTokensToolUnionParam) GetAllowedCallers() []string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return vt.AllowedCallers
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return vt.AllowedCallers
@@ -3763,6 +3789,8 @@ func (u MessageCountTokensToolUnionParam) GetCacheControl() *CacheControlEphemer
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return &vt.CacheControl
@@ -3802,6 +3830,8 @@ func (u MessageCountTokensToolUnionParam) GetAllowedDomains() []string {
 		return vt.AllowedDomains
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return vt.AllowedDomains
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return vt.AllowedDomains
 	}
 	return nil
 }
@@ -3816,6 +3846,8 @@ func (u MessageCountTokensToolUnionParam) GetBlockedDomains() []string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return vt.BlockedDomains
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return vt.BlockedDomains
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.BlockedDomains
 	}
 	return nil
@@ -3836,6 +3868,8 @@ func (u MessageCountTokensToolUnionParam) GetCitations() *CitationsConfigParam {
 	if vt := u.OfWebFetchTool20250910; vt != nil {
 		return &vt.Citations
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.Citations
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return &vt.Citations
 	}
 	return nil
@@ -6076,15 +6110,16 @@ func (r *ThinkingBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func NewThinkingConfigAdaptiveParam() ThinkingConfigAdaptiveParam {
-	return ThinkingConfigAdaptiveParam{
-		Type: "adaptive",
-	}
-}
-
-// This struct has a constant value, construct it with
-// [NewThinkingConfigAdaptiveParam].
+// The property Type is required.
 type ThinkingConfigAdaptiveParam struct {
+	// Controls how thinking content appears in the response. When set to `summarized`,
+	// thinking is returned normally. When set to `omitted`, thinking content is
+	// redacted but a signature is returned for multi-turn continuity. Defaults to
+	// `summarized`.
+	//
+	// Any of "summarized", "omitted".
+	Display ThinkingConfigAdaptiveDisplay `json:"display,omitzero"`
+	// This field can be elided, and will marshal its zero value as "adaptive".
 	Type constant.Adaptive `json:"type" api:"required"`
 	paramObj
 }
@@ -6096,6 +6131,17 @@ func (r ThinkingConfigAdaptiveParam) MarshalJSON() (data []byte, err error) {
 func (r *ThinkingConfigAdaptiveParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Controls how thinking content appears in the response. When set to `summarized`,
+// thinking is returned normally. When set to `omitted`, thinking content is
+// redacted but a signature is returned for multi-turn continuity. Defaults to
+// `summarized`.
+type ThinkingConfigAdaptiveDisplay string
+
+const (
+	ThinkingConfigAdaptiveDisplaySummarized ThinkingConfigAdaptiveDisplay = "summarized"
+	ThinkingConfigAdaptiveDisplayOmitted    ThinkingConfigAdaptiveDisplay = "omitted"
+)
 
 func NewThinkingConfigDisabledParam() ThinkingConfigDisabledParam {
 	return ThinkingConfigDisabledParam{
@@ -6130,6 +6176,13 @@ type ThinkingConfigEnabledParam struct {
 	// [extended thinking](https://docs.claude.com/en/docs/build-with-claude/extended-thinking)
 	// for details.
 	BudgetTokens int64 `json:"budget_tokens" api:"required"`
+	// Controls how thinking content appears in the response. When set to `summarized`,
+	// thinking is returned normally. When set to `omitted`, thinking content is
+	// redacted but a signature is returned for multi-turn continuity. Defaults to
+	// `summarized`.
+	//
+	// Any of "summarized", "omitted".
+	Display ThinkingConfigEnabledDisplay `json:"display,omitzero"`
 	// This field can be elided, and will marshal its zero value as "enabled".
 	Type constant.Enabled `json:"type" api:"required"`
 	paramObj
@@ -6142,6 +6195,17 @@ func (r ThinkingConfigEnabledParam) MarshalJSON() (data []byte, err error) {
 func (r *ThinkingConfigEnabledParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Controls how thinking content appears in the response. When set to `summarized`,
+// thinking is returned normally. When set to `omitted`, thinking content is
+// redacted but a signature is returned for multi-turn continuity. Defaults to
+// `summarized`.
+type ThinkingConfigEnabledDisplay string
+
+const (
+	ThinkingConfigEnabledDisplaySummarized ThinkingConfigEnabledDisplay = "summarized"
+	ThinkingConfigEnabledDisplayOmitted    ThinkingConfigEnabledDisplay = "omitted"
+)
 
 func ThinkingConfigParamOfEnabled(budgetTokens int64) ThinkingConfigParamUnion {
 	var enabled ThinkingConfigEnabledParam
@@ -6193,6 +6257,16 @@ func (u ThinkingConfigParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAdaptive; vt != nil {
 		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ThinkingConfigParamUnion) GetDisplay() *string {
+	if vt := u.OfEnabled; vt != nil {
+		return (*string)(&vt.Display)
+	} else if vt := u.OfAdaptive; vt != nil {
+		return (*string)(&vt.Display)
 	}
 	return nil
 }
@@ -7234,6 +7308,7 @@ type ToolUnionParam struct {
 	OfWebFetchTool20250910        *WebFetchTool20250910Param        `json:",omitzero,inline"`
 	OfWebSearchTool20260209       *WebSearchTool20260209Param       `json:",omitzero,inline"`
 	OfWebFetchTool20260209        *WebFetchTool20260209Param        `json:",omitzero,inline"`
+	OfWebFetchTool20260309        *WebFetchTool20260309Param        `json:",omitzero,inline"`
 	OfToolSearchToolBm25_20251119 *ToolSearchToolBm25_20251119Param `json:",omitzero,inline"`
 	OfToolSearchToolRegex20251119 *ToolSearchToolRegex20251119Param `json:",omitzero,inline"`
 	paramUnion
@@ -7253,6 +7328,7 @@ func (u ToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfWebFetchTool20250910,
 		u.OfWebSearchTool20260209,
 		u.OfWebFetchTool20260209,
+		u.OfWebFetchTool20260309,
 		u.OfToolSearchToolBm25_20251119,
 		u.OfToolSearchToolRegex20251119)
 }
@@ -7287,6 +7363,8 @@ func (u *ToolUnionParam) asAny() any {
 		return u.OfWebSearchTool20260209
 	} else if !param.IsOmitted(u.OfWebFetchTool20260209) {
 		return u.OfWebFetchTool20260209
+	} else if !param.IsOmitted(u.OfWebFetchTool20260309) {
+		return u.OfWebFetchTool20260309
 	} else if !param.IsOmitted(u.OfToolSearchToolBm25_20251119) {
 		return u.OfToolSearchToolBm25_20251119
 	} else if !param.IsOmitted(u.OfToolSearchToolRegex20251119) {
@@ -7328,6 +7406,14 @@ func (u ToolUnionParam) GetMaxCharacters() *int64 {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u ToolUnionParam) GetUseCache() *bool {
+	if vt := u.OfWebFetchTool20260309; vt != nil && vt.UseCache.Valid() {
+		return &vt.UseCache.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u ToolUnionParam) GetName() *string {
 	if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Name)
@@ -7354,6 +7440,8 @@ func (u ToolUnionParam) GetName() *string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return (*string)(&vt.Name)
@@ -7391,6 +7479,8 @@ func (u ToolUnionParam) GetDeferLoading() *bool {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.DeferLoading.Valid() {
+		return &vt.DeferLoading.Value
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil && vt.DeferLoading.Valid() {
@@ -7426,6 +7516,8 @@ func (u ToolUnionParam) GetStrict() *bool {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
@@ -7463,6 +7555,8 @@ func (u ToolUnionParam) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return (*string)(&vt.Type)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil {
@@ -7481,6 +7575,8 @@ func (u ToolUnionParam) GetMaxUses() *int64 {
 		return &vt.MaxUses.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.MaxUses.Valid() {
 		return &vt.MaxUses.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxUses.Valid() {
+		return &vt.MaxUses.Value
 	}
 	return nil
 }
@@ -7490,6 +7586,8 @@ func (u ToolUnionParam) GetMaxContentTokens() *int64 {
 	if vt := u.OfWebFetchTool20250910; vt != nil && vt.MaxContentTokens.Valid() {
 		return &vt.MaxContentTokens.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.MaxContentTokens.Valid() {
+		return &vt.MaxContentTokens.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxContentTokens.Valid() {
 		return &vt.MaxContentTokens.Value
 	}
 	return nil
@@ -7523,6 +7621,8 @@ func (u ToolUnionParam) GetAllowedCallers() []string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return vt.AllowedCallers
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return vt.AllowedCallers
@@ -7559,6 +7659,8 @@ func (u ToolUnionParam) GetCacheControl() *CacheControlEphemeralParam {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return &vt.CacheControl
@@ -7598,6 +7700,8 @@ func (u ToolUnionParam) GetAllowedDomains() []string {
 		return vt.AllowedDomains
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return vt.AllowedDomains
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return vt.AllowedDomains
 	}
 	return nil
 }
@@ -7612,6 +7716,8 @@ func (u ToolUnionParam) GetBlockedDomains() []string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return vt.BlockedDomains
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return vt.BlockedDomains
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.BlockedDomains
 	}
 	return nil
@@ -7632,6 +7738,8 @@ func (u ToolUnionParam) GetCitations() *CitationsConfigParam {
 	if vt := u.OfWebFetchTool20250910; vt != nil {
 		return &vt.Citations
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.Citations
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return &vt.Citations
 	}
 	return nil
@@ -8047,6 +8155,55 @@ func (r WebFetchTool20260209Param) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *WebFetchTool20260209Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Web fetch tool with use_cache parameter for bypassing cached content.
+//
+// The properties Name, Type are required.
+type WebFetchTool20260309Param struct {
+	// Maximum number of tokens used by including web page text content in the context.
+	// The limit is approximate and does not apply to binary content such as PDFs.
+	MaxContentTokens param.Opt[int64] `json:"max_content_tokens,omitzero"`
+	// Maximum number of times the tool can be used in the API request.
+	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
+	// If true, tool will not be included in initial system prompt. Only loaded when
+	// returned via tool_reference from tool search.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
+	// Whether to use cached content. Set to false to bypass the cache and fetch fresh
+	// content. Only set to false when the user explicitly requests fresh content or
+	// when fetching rapidly-changing sources.
+	UseCache param.Opt[bool] `json:"use_cache,omitzero"`
+	// List of domains to allow fetching from
+	AllowedDomains []string `json:"allowed_domains,omitzero"`
+	// List of domains to block fetching from
+	BlockedDomains []string `json:"blocked_domains,omitzero"`
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
+	AllowedCallers []string `json:"allowed_callers,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Citations configuration for fetched documents. Citations are disabled by
+	// default.
+	Citations CitationsConfigParam `json:"citations,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as "web_fetch".
+	Name constant.WebFetch `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as
+	// "web_fetch_20260309".
+	Type constant.WebFetch20260309 `json:"type" api:"required"`
+	paramObj
+}
+
+func (r WebFetchTool20260309Param) MarshalJSON() (data []byte, err error) {
+	type shadow WebFetchTool20260309Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebFetchTool20260309Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

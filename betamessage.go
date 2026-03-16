@@ -3962,6 +3962,8 @@ type BetaIterationsUsage []BetaIterationsUsageItemUnion
 // BetaIterationsUsageItemUnion contains all possible properties and values from
 // [BetaMessageIterationUsage], [BetaCompactionIterationUsage].
 //
+// Use the [BetaIterationsUsageItemUnion.AsAny] method to switch on the variant.
+//
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaIterationsUsageItemUnion struct {
 	// This field is from variant [BetaMessageIterationUsage].
@@ -3970,8 +3972,9 @@ type BetaIterationsUsageItemUnion struct {
 	CacheReadInputTokens     int64             `json:"cache_read_input_tokens"`
 	InputTokens              int64             `json:"input_tokens"`
 	OutputTokens             int64             `json:"output_tokens"`
-	Type                     string            `json:"type"`
-	JSON                     struct {
+	// Any of "message", "compaction".
+	Type string `json:"type"`
+	JSON struct {
 		CacheCreation            respjson.Field
 		CacheCreationInputTokens respjson.Field
 		CacheReadInputTokens     respjson.Field
@@ -3982,12 +3985,40 @@ type BetaIterationsUsageItemUnion struct {
 	} `json:"-"`
 }
 
-func (u BetaIterationsUsageItemUnion) AsMessageIterationUsage() (v BetaMessageIterationUsage) {
+// anyBetaIterationsUsageItem is implemented by each variant of
+// [BetaIterationsUsageItemUnion] to add type safety for the return type of
+// [BetaIterationsUsageItemUnion.AsAny]
+type anyBetaIterationsUsageItem interface {
+	implBetaIterationsUsageItemUnion()
+}
+
+func (BetaMessageIterationUsage) implBetaIterationsUsageItemUnion()    {}
+func (BetaCompactionIterationUsage) implBetaIterationsUsageItemUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaIterationsUsageItemUnion.AsAny().(type) {
+//	case anthropic.BetaMessageIterationUsage:
+//	case anthropic.BetaCompactionIterationUsage:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaIterationsUsageItemUnion) AsAny() anyBetaIterationsUsageItem {
+	switch u.Type {
+	case "message":
+		return u.AsMessage()
+	case "compaction":
+		return u.AsCompaction()
+	}
+	return nil
+}
+
+func (u BetaIterationsUsageItemUnion) AsMessage() (v BetaMessageIterationUsage) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaIterationsUsageItemUnion) AsCompactionIterationUsage() (v BetaCompactionIterationUsage) {
+func (u BetaIterationsUsageItemUnion) AsCompaction() (v BetaCompactionIterationUsage) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -7221,15 +7252,16 @@ func (r *BetaThinkingBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func NewBetaThinkingConfigAdaptiveParam() BetaThinkingConfigAdaptiveParam {
-	return BetaThinkingConfigAdaptiveParam{
-		Type: "adaptive",
-	}
-}
-
-// This struct has a constant value, construct it with
-// [NewBetaThinkingConfigAdaptiveParam].
+// The property Type is required.
 type BetaThinkingConfigAdaptiveParam struct {
+	// Controls how thinking content appears in the response. When set to `summarized`,
+	// thinking is returned normally. When set to `omitted`, thinking content is
+	// redacted but a signature is returned for multi-turn continuity. Defaults to
+	// `summarized`.
+	//
+	// Any of "summarized", "omitted".
+	Display BetaThinkingConfigAdaptiveDisplay `json:"display,omitzero"`
+	// This field can be elided, and will marshal its zero value as "adaptive".
 	Type constant.Adaptive `json:"type" api:"required"`
 	paramObj
 }
@@ -7241,6 +7273,17 @@ func (r BetaThinkingConfigAdaptiveParam) MarshalJSON() (data []byte, err error) 
 func (r *BetaThinkingConfigAdaptiveParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Controls how thinking content appears in the response. When set to `summarized`,
+// thinking is returned normally. When set to `omitted`, thinking content is
+// redacted but a signature is returned for multi-turn continuity. Defaults to
+// `summarized`.
+type BetaThinkingConfigAdaptiveDisplay string
+
+const (
+	BetaThinkingConfigAdaptiveDisplaySummarized BetaThinkingConfigAdaptiveDisplay = "summarized"
+	BetaThinkingConfigAdaptiveDisplayOmitted    BetaThinkingConfigAdaptiveDisplay = "omitted"
+)
 
 func NewBetaThinkingConfigDisabledParam() BetaThinkingConfigDisabledParam {
 	return BetaThinkingConfigDisabledParam{
@@ -7275,6 +7318,13 @@ type BetaThinkingConfigEnabledParam struct {
 	// [extended thinking](https://docs.claude.com/en/docs/build-with-claude/extended-thinking)
 	// for details.
 	BudgetTokens int64 `json:"budget_tokens" api:"required"`
+	// Controls how thinking content appears in the response. When set to `summarized`,
+	// thinking is returned normally. When set to `omitted`, thinking content is
+	// redacted but a signature is returned for multi-turn continuity. Defaults to
+	// `summarized`.
+	//
+	// Any of "summarized", "omitted".
+	Display BetaThinkingConfigEnabledDisplay `json:"display,omitzero"`
 	// This field can be elided, and will marshal its zero value as "enabled".
 	Type constant.Enabled `json:"type" api:"required"`
 	paramObj
@@ -7287,6 +7337,17 @@ func (r BetaThinkingConfigEnabledParam) MarshalJSON() (data []byte, err error) {
 func (r *BetaThinkingConfigEnabledParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Controls how thinking content appears in the response. When set to `summarized`,
+// thinking is returned normally. When set to `omitted`, thinking content is
+// redacted but a signature is returned for multi-turn continuity. Defaults to
+// `summarized`.
+type BetaThinkingConfigEnabledDisplay string
+
+const (
+	BetaThinkingConfigEnabledDisplaySummarized BetaThinkingConfigEnabledDisplay = "summarized"
+	BetaThinkingConfigEnabledDisplayOmitted    BetaThinkingConfigEnabledDisplay = "omitted"
+)
 
 func BetaThinkingConfigParamOfEnabled(budgetTokens int64) BetaThinkingConfigParamUnion {
 	var enabled BetaThinkingConfigEnabledParam
@@ -7338,6 +7399,16 @@ func (u BetaThinkingConfigParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAdaptive; vt != nil {
 		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaThinkingConfigParamUnion) GetDisplay() *string {
+	if vt := u.OfEnabled; vt != nil {
+		return (*string)(&vt.Display)
+	} else if vt := u.OfAdaptive; vt != nil {
+		return (*string)(&vt.Display)
 	}
 	return nil
 }
@@ -8634,6 +8705,7 @@ type BetaToolUnionParam struct {
 	OfWebFetchTool20250910        *BetaWebFetchTool20250910Param        `json:",omitzero,inline"`
 	OfWebSearchTool20260209       *BetaWebSearchTool20260209Param       `json:",omitzero,inline"`
 	OfWebFetchTool20260209        *BetaWebFetchTool20260209Param        `json:",omitzero,inline"`
+	OfWebFetchTool20260309        *BetaWebFetchTool20260309Param        `json:",omitzero,inline"`
 	OfToolSearchToolBm25_20251119 *BetaToolSearchToolBm25_20251119Param `json:",omitzero,inline"`
 	OfToolSearchToolRegex20251119 *BetaToolSearchToolRegex20251119Param `json:",omitzero,inline"`
 	OfMCPToolset                  *BetaMCPToolsetParam                  `json:",omitzero,inline"`
@@ -8659,6 +8731,7 @@ func (u BetaToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfWebFetchTool20250910,
 		u.OfWebSearchTool20260209,
 		u.OfWebFetchTool20260209,
+		u.OfWebFetchTool20260309,
 		u.OfToolSearchToolBm25_20251119,
 		u.OfToolSearchToolRegex20251119,
 		u.OfMCPToolset)
@@ -8704,6 +8777,8 @@ func (u *BetaToolUnionParam) asAny() any {
 		return u.OfWebSearchTool20260209
 	} else if !param.IsOmitted(u.OfWebFetchTool20260209) {
 		return u.OfWebFetchTool20260209
+	} else if !param.IsOmitted(u.OfWebFetchTool20260309) {
+		return u.OfWebFetchTool20260309
 	} else if !param.IsOmitted(u.OfToolSearchToolBm25_20251119) {
 		return u.OfToolSearchToolBm25_20251119
 	} else if !param.IsOmitted(u.OfToolSearchToolRegex20251119) {
@@ -8750,6 +8825,14 @@ func (u BetaToolUnionParam) GetEnableZoom() *bool {
 func (u BetaToolUnionParam) GetMaxCharacters() *int64 {
 	if vt := u.OfTextEditor20250728; vt != nil && vt.MaxCharacters.Valid() {
 		return &vt.MaxCharacters.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaToolUnionParam) GetUseCache() *bool {
+	if vt := u.OfWebFetchTool20260309; vt != nil && vt.UseCache.Valid() {
+		return &vt.UseCache.Value
 	}
 	return nil
 }
@@ -8816,6 +8899,8 @@ func (u BetaToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil {
@@ -8861,6 +8946,8 @@ func (u BetaToolUnionParam) GetDeferLoading() *bool {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.DeferLoading.Valid() {
+		return &vt.DeferLoading.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
@@ -8908,6 +8995,8 @@ func (u BetaToolUnionParam) GetStrict() *bool {
 		return &vt.Strict.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil && vt.Strict.Valid() {
@@ -8953,6 +9042,8 @@ func (u BetaToolUnionParam) GetType() *string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return (*string)(&vt.Type)
@@ -9010,6 +9101,8 @@ func (u BetaToolUnionParam) GetMaxUses() *int64 {
 		return &vt.MaxUses.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.MaxUses.Valid() {
 		return &vt.MaxUses.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxUses.Valid() {
+		return &vt.MaxUses.Value
 	}
 	return nil
 }
@@ -9019,6 +9112,8 @@ func (u BetaToolUnionParam) GetMaxContentTokens() *int64 {
 	if vt := u.OfWebFetchTool20250910; vt != nil && vt.MaxContentTokens.Valid() {
 		return &vt.MaxContentTokens.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.MaxContentTokens.Valid() {
+		return &vt.MaxContentTokens.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxContentTokens.Valid() {
 		return &vt.MaxContentTokens.Value
 	}
 	return nil
@@ -9062,6 +9157,8 @@ func (u BetaToolUnionParam) GetAllowedCallers() []string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return vt.AllowedCallers
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return vt.AllowedCallers
@@ -9108,6 +9205,8 @@ func (u BetaToolUnionParam) GetCacheControl() *BetaCacheControlEphemeralParam {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return &vt.CacheControl
@@ -9159,6 +9258,8 @@ func (u BetaToolUnionParam) GetAllowedDomains() []string {
 		return vt.AllowedDomains
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return vt.AllowedDomains
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return vt.AllowedDomains
 	}
 	return nil
 }
@@ -9173,6 +9274,8 @@ func (u BetaToolUnionParam) GetBlockedDomains() []string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return vt.BlockedDomains
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return vt.BlockedDomains
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.BlockedDomains
 	}
 	return nil
@@ -9193,6 +9296,8 @@ func (u BetaToolUnionParam) GetCitations() *BetaCitationsConfigParam {
 	if vt := u.OfWebFetchTool20250910; vt != nil {
 		return &vt.Citations
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.Citations
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return &vt.Citations
 	}
 	return nil
@@ -9663,6 +9768,55 @@ func (r BetaWebFetchTool20260209Param) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *BetaWebFetchTool20260209Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Web fetch tool with use_cache parameter for bypassing cached content.
+//
+// The properties Name, Type are required.
+type BetaWebFetchTool20260309Param struct {
+	// Maximum number of tokens used by including web page text content in the context.
+	// The limit is approximate and does not apply to binary content such as PDFs.
+	MaxContentTokens param.Opt[int64] `json:"max_content_tokens,omitzero"`
+	// Maximum number of times the tool can be used in the API request.
+	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
+	// If true, tool will not be included in initial system prompt. Only loaded when
+	// returned via tool_reference from tool search.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
+	// Whether to use cached content. Set to false to bypass the cache and fetch fresh
+	// content. Only set to false when the user explicitly requests fresh content or
+	// when fetching rapidly-changing sources.
+	UseCache param.Opt[bool] `json:"use_cache,omitzero"`
+	// List of domains to allow fetching from
+	AllowedDomains []string `json:"allowed_domains,omitzero"`
+	// List of domains to block fetching from
+	BlockedDomains []string `json:"blocked_domains,omitzero"`
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120".
+	AllowedCallers []string `json:"allowed_callers,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Citations configuration for fetched documents. Citations are disabled by
+	// default.
+	Citations BetaCitationsConfigParam `json:"citations,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as "web_fetch".
+	Name constant.WebFetch `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as
+	// "web_fetch_20260309".
+	Type constant.WebFetch20260309 `json:"type" api:"required"`
+	paramObj
+}
+
+func (r BetaWebFetchTool20260309Param) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchTool20260309Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchTool20260309Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -11017,6 +11171,7 @@ type BetaMessageCountTokensParamsToolUnion struct {
 	OfWebFetchTool20250910        *BetaWebFetchTool20250910Param        `json:",omitzero,inline"`
 	OfWebSearchTool20260209       *BetaWebSearchTool20260209Param       `json:",omitzero,inline"`
 	OfWebFetchTool20260209        *BetaWebFetchTool20260209Param        `json:",omitzero,inline"`
+	OfWebFetchTool20260309        *BetaWebFetchTool20260309Param        `json:",omitzero,inline"`
 	OfToolSearchToolBm25_20251119 *BetaToolSearchToolBm25_20251119Param `json:",omitzero,inline"`
 	OfToolSearchToolRegex20251119 *BetaToolSearchToolRegex20251119Param `json:",omitzero,inline"`
 	OfMCPToolset                  *BetaMCPToolsetParam                  `json:",omitzero,inline"`
@@ -11042,6 +11197,7 @@ func (u BetaMessageCountTokensParamsToolUnion) MarshalJSON() ([]byte, error) {
 		u.OfWebFetchTool20250910,
 		u.OfWebSearchTool20260209,
 		u.OfWebFetchTool20260209,
+		u.OfWebFetchTool20260309,
 		u.OfToolSearchToolBm25_20251119,
 		u.OfToolSearchToolRegex20251119,
 		u.OfMCPToolset)
@@ -11087,6 +11243,8 @@ func (u *BetaMessageCountTokensParamsToolUnion) asAny() any {
 		return u.OfWebSearchTool20260209
 	} else if !param.IsOmitted(u.OfWebFetchTool20260209) {
 		return u.OfWebFetchTool20260209
+	} else if !param.IsOmitted(u.OfWebFetchTool20260309) {
+		return u.OfWebFetchTool20260309
 	} else if !param.IsOmitted(u.OfToolSearchToolBm25_20251119) {
 		return u.OfToolSearchToolBm25_20251119
 	} else if !param.IsOmitted(u.OfToolSearchToolRegex20251119) {
@@ -11133,6 +11291,14 @@ func (u BetaMessageCountTokensParamsToolUnion) GetEnableZoom() *bool {
 func (u BetaMessageCountTokensParamsToolUnion) GetMaxCharacters() *int64 {
 	if vt := u.OfTextEditor20250728; vt != nil && vt.MaxCharacters.Valid() {
 		return &vt.MaxCharacters.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageCountTokensParamsToolUnion) GetUseCache() *bool {
+	if vt := u.OfWebFetchTool20260309; vt != nil && vt.UseCache.Valid() {
+		return &vt.UseCache.Value
 	}
 	return nil
 }
@@ -11199,6 +11365,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil {
@@ -11244,6 +11412,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetDeferLoading() *bool {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.DeferLoading.Valid() {
+		return &vt.DeferLoading.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
@@ -11291,6 +11461,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetStrict() *bool {
 		return &vt.Strict.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil && vt.Strict.Valid() {
@@ -11336,6 +11508,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetType() *string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return (*string)(&vt.Type)
@@ -11393,6 +11567,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetMaxUses() *int64 {
 		return &vt.MaxUses.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.MaxUses.Valid() {
 		return &vt.MaxUses.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxUses.Valid() {
+		return &vt.MaxUses.Value
 	}
 	return nil
 }
@@ -11402,6 +11578,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetMaxContentTokens() *int64 {
 	if vt := u.OfWebFetchTool20250910; vt != nil && vt.MaxContentTokens.Valid() {
 		return &vt.MaxContentTokens.Value
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.MaxContentTokens.Valid() {
+		return &vt.MaxContentTokens.Value
+	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxContentTokens.Valid() {
 		return &vt.MaxContentTokens.Value
 	}
 	return nil
@@ -11445,6 +11623,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetAllowedCallers() []string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return vt.AllowedCallers
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return vt.AllowedCallers
@@ -11491,6 +11671,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetCacheControl() *BetaCacheContr
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return &vt.CacheControl
@@ -11542,6 +11724,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetAllowedDomains() []string {
 		return vt.AllowedDomains
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return vt.AllowedDomains
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return vt.AllowedDomains
 	}
 	return nil
 }
@@ -11556,6 +11740,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetBlockedDomains() []string {
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
 		return vt.BlockedDomains
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return vt.BlockedDomains
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.BlockedDomains
 	}
 	return nil
@@ -11576,6 +11762,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetCitations() *BetaCitationsConf
 	if vt := u.OfWebFetchTool20250910; vt != nil {
 		return &vt.Citations
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.Citations
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return &vt.Citations
 	}
 	return nil

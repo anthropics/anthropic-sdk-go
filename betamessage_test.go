@@ -128,8 +128,8 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		}},
 		Temperature: anthropic.Float(1),
 		Thinking: anthropic.BetaThinkingConfigParamUnion{
-			OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{
-				BudgetTokens: 1024,
+			OfAdaptive: &anthropic.BetaThinkingConfigAdaptiveParam{
+				Display: anthropic.BetaThinkingConfigAdaptiveDisplaySummarized,
 			},
 		},
 		ToolChoice: anthropic.BetaToolChoiceUnionParam{
@@ -273,8 +273,8 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 			}},
 		},
 		Thinking: anthropic.BetaThinkingConfigParamUnion{
-			OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{
-				BudgetTokens: 1024,
+			OfAdaptive: &anthropic.BetaThinkingConfigAdaptiveParam{
+				Display: anthropic.BetaThinkingConfigAdaptiveDisplaySummarized,
 			},
 		},
 		ToolChoice: anthropic.BetaToolChoiceUnionParam{

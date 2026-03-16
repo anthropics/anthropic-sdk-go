@@ -154,6 +154,7 @@ type View string                                    // Always "view"
 type WebFetch string                                // Always "web_fetch"
 type WebFetch20250910 string                        // Always "web_fetch_20250910"
 type WebFetch20260209 string                        // Always "web_fetch_20260209"
+type WebFetch20260309 string                        // Always "web_fetch_20260309"
 type WebFetchResult string                          // Always "web_fetch_result"
 type WebFetchToolResult string                      // Always "web_fetch_tool_result"
 type WebFetchToolResultError string                 // Always "web_fetch_tool_result_error"
@@ -318,6 +319,7 @@ func (c View) Default() View                             { return "view" }
 func (c WebFetch) Default() WebFetch                     { return "web_fetch" }
 func (c WebFetch20250910) Default() WebFetch20250910     { return "web_fetch_20250910" }
 func (c WebFetch20260209) Default() WebFetch20260209     { return "web_fetch_20260209" }
+func (c WebFetch20260309) Default() WebFetch20260309     { return "web_fetch_20260309" }
 func (c WebFetchResult) Default() WebFetchResult         { return "web_fetch_result" }
 func (c WebFetchToolResult) Default() WebFetchToolResult { return "web_fetch_tool_result" }
 func (c WebFetchToolResultError) Default() WebFetchToolResultError {
@@ -462,6 +464,7 @@ func (c View) MarshalJSON() ([]byte, error)                              { retur
 func (c WebFetch) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c WebFetch20250910) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c WebFetch20260209) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c WebFetch20260309) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c WebFetchResult) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c WebFetchToolResult) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c WebFetchToolResultError) MarshalJSON() ([]byte, error)           { return marshalString(c) }

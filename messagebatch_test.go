@@ -87,8 +87,8 @@ func TestMessageBatchNew(t *testing.T) {
 				}},
 				Temperature: anthropic.Float(1),
 				Thinking: anthropic.ThinkingConfigParamUnion{
-					OfEnabled: &anthropic.ThinkingConfigEnabledParam{
-						BudgetTokens: 1024,
+					OfAdaptive: &anthropic.ThinkingConfigAdaptiveParam{
+						Display: anthropic.ThinkingConfigAdaptiveDisplaySummarized,
 					},
 				},
 				ToolChoice: anthropic.ToolChoiceUnionParam{

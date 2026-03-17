@@ -18,6 +18,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/tidwall/gjson"
 )
 
 // BetaMessageService contains methods and other services that help with
@@ -7943,16 +7944,61 @@ type BetaToolResultBlockParam struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam         `json:"cache_control,omitzero"`
 	Content      []BetaToolResultBlockParamContentUnion `json:"content,omitzero"`
+	// ContentString is an alternative to Content that allows setting a plain string
+	// value for the content field. Per the API docs, tool_result content can be
+	// either a string (e.g. "content": "15 degrees") or an array of content blocks.
+	// When ContentString is non-empty and Content is empty, it will be serialized as
+	// a plain string. This field is not serialized directly via struct tags.
+	ContentString string `json:"-"`
 	// This field can be elided, and will marshal its zero value as "tool_result".
 	Type constant.ToolResult `json:"type" api:"required"`
 	paramObj
 }
 
 func (r BetaToolResultBlockParam) MarshalJSON() (data []byte, err error) {
+	if r.ContentString != "" && len(r.Content) == 0 {
+		type shadow struct {
+			ToolUseID    string                            `json:"tool_use_id"`
+			IsError      param.Opt[bool]                   `json:"is_error,omitzero"`
+			CacheControl BetaCacheControlEphemeralParam    `json:"cache_control,omitzero"`
+			Content      string                            `json:"content"`
+			Type         constant.ToolResult               `json:"type"`
+		}
+		return json.Marshal(shadow{
+			ToolUseID:    r.ToolUseID,
+			IsError:      r.IsError,
+			CacheControl: r.CacheControl,
+			Content:      r.ContentString,
+			Type:         r.Type,
+		})
+	}
 	type shadow BetaToolResultBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *BetaToolResultBlockParam) UnmarshalJSON(data []byte) error {
+	// Check if the content field is a string (the API supports both string and array).
+	contentField := gjson.GetBytes(data, "content")
+	if contentField.Exists() && contentField.Type == gjson.String {
+		type stringContent struct {
+			ToolUseID    string                         `json:"tool_use_id"`
+			IsError      param.Opt[bool]                `json:"is_error,omitzero"`
+			CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+			Content      string                         `json:"content"`
+			Type         constant.ToolResult            `json:"type"`
+		}
+		var sc stringContent
+		if err := json.Unmarshal(data, &sc); err != nil {
+			return err
+		}
+		r.ToolUseID = sc.ToolUseID
+		r.IsError = sc.IsError
+		r.CacheControl = sc.CacheControl
+		r.Content = []BetaToolResultBlockParamContentUnion{
+			{OfText: &BetaTextBlockParam{Text: sc.Content}},
+		}
+		r.Type = sc.Type
+		return nil
+	}
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -7963,6 +8009,16 @@ func NewBetaToolResultTextBlockParam(toolUseID string, text string, isError bool
 	p.Content = []BetaToolResultBlockParamContentUnion{
 		{OfText: &BetaTextBlockParam{Text: text}},
 	}
+	return p
+}
+
+// NewBetaToolResultStringBlockParam creates a tool result block with content as a plain string.
+// Per the API docs, tool_result content can be either a string or an array of content blocks.
+func NewBetaToolResultStringBlockParam(toolUseID string, text string, isError bool) BetaToolResultBlockParam {
+	var p BetaToolResultBlockParam
+	p.ToolUseID = toolUseID
+	p.IsError = param.Opt[bool]{Value: isError}
+	p.ContentString = text
 	return p
 }
 

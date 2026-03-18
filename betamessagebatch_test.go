@@ -58,9 +58,9 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					OfContainers: &anthropic.BetaContainerParams{
 						ID: anthropic.String("id"),
 						Skills: []anthropic.BetaSkillParams{{
-							SkillID: "x",
+							SkillID: "pdf",
 							Type:    anthropic.BetaSkillParamsTypeAnthropic,
-							Version: anthropic.String("x"),
+							Version: anthropic.String("latest"),
 						}},
 					},
 				},

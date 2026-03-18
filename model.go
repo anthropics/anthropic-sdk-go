@@ -90,32 +90,200 @@ func (r *ModelService) ListAutoPaging(ctx context.Context, params ModelListParam
 	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }
 
-type ModelInfo struct {
-	// Unique model identifier.
-	ID string `json:"id" api:"required"`
-	// RFC 3339 datetime string representing the time at which the model was released.
-	// May be set to an epoch value if the release date is unknown.
-	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// A human-readable name for the model.
-	DisplayName string `json:"display_name" api:"required"`
-	// Object type.
-	//
-	// For Models, this is always `"model"`.
-	Type constant.Model `json:"type" api:"required"`
+// Indicates whether a capability is supported.
+type CapabilitySupport struct {
+	// Whether this capability is supported by the model.
+	Supported bool `json:"supported" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
-		CreatedAt   respjson.Field
-		DisplayName respjson.Field
-		Type        respjson.Field
+		Supported   respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
+func (r CapabilitySupport) RawJSON() string { return r.JSON.raw }
+func (r *CapabilitySupport) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Context management capability details.
+type ContextManagementCapability struct {
+	// Indicates whether a capability is supported.
+	ClearThinking20251015 CapabilitySupport `json:"clear_thinking_20251015" api:"required"`
+	// Indicates whether a capability is supported.
+	ClearToolUses20250919 CapabilitySupport `json:"clear_tool_uses_20250919" api:"required"`
+	// Indicates whether a capability is supported.
+	Compact20260112 CapabilitySupport `json:"compact_20260112" api:"required"`
+	// Whether this capability is supported by the model.
+	Supported bool `json:"supported" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ClearThinking20251015 respjson.Field
+		ClearToolUses20250919 respjson.Field
+		Compact20260112       respjson.Field
+		Supported             respjson.Field
+		ExtraFields           map[string]respjson.Field
+		raw                   string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ContextManagementCapability) RawJSON() string { return r.JSON.raw }
+func (r *ContextManagementCapability) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Effort (reasoning_effort) capability details.
+type EffortCapability struct {
+	// Whether the model supports high effort level.
+	High CapabilitySupport `json:"high" api:"required"`
+	// Whether the model supports low effort level.
+	Low CapabilitySupport `json:"low" api:"required"`
+	// Whether the model supports max effort level.
+	Max CapabilitySupport `json:"max" api:"required"`
+	// Whether the model supports medium effort level.
+	Medium CapabilitySupport `json:"medium" api:"required"`
+	// Whether this capability is supported by the model.
+	Supported bool `json:"supported" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		High        respjson.Field
+		Low         respjson.Field
+		Max         respjson.Field
+		Medium      respjson.Field
+		Supported   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r EffortCapability) RawJSON() string { return r.JSON.raw }
+func (r *EffortCapability) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Model capability information.
+type ModelCapabilities struct {
+	// Whether the model supports the Batch API.
+	Batch CapabilitySupport `json:"batch" api:"required"`
+	// Whether the model supports citation generation.
+	Citations CapabilitySupport `json:"citations" api:"required"`
+	// Whether the model supports code execution tools.
+	CodeExecution CapabilitySupport `json:"code_execution" api:"required"`
+	// Context management support and available strategies.
+	ContextManagement ContextManagementCapability `json:"context_management" api:"required"`
+	// Effort (reasoning_effort) support and available levels.
+	Effort EffortCapability `json:"effort" api:"required"`
+	// Whether the model accepts image content blocks.
+	ImageInput CapabilitySupport `json:"image_input" api:"required"`
+	// Whether the model accepts PDF content blocks.
+	PDFInput CapabilitySupport `json:"pdf_input" api:"required"`
+	// Whether the model supports structured output / JSON mode / strict tool schemas.
+	StructuredOutputs CapabilitySupport `json:"structured_outputs" api:"required"`
+	// Thinking capability and supported type configurations.
+	Thinking ThinkingCapability `json:"thinking" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Batch             respjson.Field
+		Citations         respjson.Field
+		CodeExecution     respjson.Field
+		ContextManagement respjson.Field
+		Effort            respjson.Field
+		ImageInput        respjson.Field
+		PDFInput          respjson.Field
+		StructuredOutputs respjson.Field
+		Thinking          respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ModelCapabilities) RawJSON() string { return r.JSON.raw }
+func (r *ModelCapabilities) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ModelInfo struct {
+	// Unique model identifier.
+	ID string `json:"id" api:"required"`
+	// Model capability information.
+	Capabilities ModelCapabilities `json:"capabilities" api:"required"`
+	// RFC 3339 datetime string representing the time at which the model was released.
+	// May be set to an epoch value if the release date is unknown.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// A human-readable name for the model.
+	DisplayName string `json:"display_name" api:"required"`
+	// Maximum input context window size in tokens for this model.
+	MaxInputTokens int64 `json:"max_input_tokens" api:"required"`
+	// Maximum value for the `max_tokens` parameter when using this model.
+	MaxTokens int64 `json:"max_tokens" api:"required"`
+	// Object type.
+	//
+	// For Models, this is always `"model"`.
+	Type constant.Model `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID             respjson.Field
+		Capabilities   respjson.Field
+		CreatedAt      respjson.Field
+		DisplayName    respjson.Field
+		MaxInputTokens respjson.Field
+		MaxTokens      respjson.Field
+		Type           respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
 func (r ModelInfo) RawJSON() string { return r.JSON.raw }
 func (r *ModelInfo) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Thinking capability details.
+type ThinkingCapability struct {
+	// Whether this capability is supported by the model.
+	Supported bool `json:"supported" api:"required"`
+	// Supported thinking type configurations.
+	Types ThinkingTypes `json:"types" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Supported   respjson.Field
+		Types       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ThinkingCapability) RawJSON() string { return r.JSON.raw }
+func (r *ThinkingCapability) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Supported thinking type configurations.
+type ThinkingTypes struct {
+	// Whether the model supports thinking with type 'adaptive' (auto).
+	Adaptive CapabilitySupport `json:"adaptive" api:"required"`
+	// Whether the model supports thinking with type 'enabled'.
+	Enabled CapabilitySupport `json:"enabled" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Adaptive    respjson.Field
+		Enabled     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ThinkingTypes) RawJSON() string { return r.JSON.raw }
+func (r *ThinkingTypes) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

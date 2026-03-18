@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.27.1 (2026-03-18)
+
+Full Changelog: [v1.27.0...v1.27.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.27.0...v1.27.1)
+
+### Chores
+
+* **internal:** regenerate SDK with no functional changes ([c963fd0](https://github.com/anthropics/anthropic-sdk-go/commit/c963fd0fd1e591bfd572f100a3a444ba40fe4ad4))
+* **internal:** tweak CI branches ([95e3410](https://github.com/anthropics/anthropic-sdk-go/commit/95e3410a6892afae8b1b4631d05b5bfd4bf12eb2))
+
 ## 1.27.0 (2026-03-16)
 
 Full Changelog: [v1.26.0...v1.27.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.26.0...v1.27.0)

@@ -73,6 +73,7 @@ func TestStream_LargeLineExceeding64KB(t *testing.T) {
 
 func TestStream_NilResponse(t *testing.T) {
 	stream := jsonl.NewStream[testItem](nil, nil)
+	defer stream.Close()
 	if stream.Next() {
 		t.Fatal("expected Next() to return false for nil response")
 	}
@@ -83,6 +84,7 @@ func TestStream_NilResponse(t *testing.T) {
 
 func TestStream_Error(t *testing.T) {
 	stream := jsonl.NewStream[testItem](nil, fmt.Errorf("request failed"))
+	defer stream.Close()
 	if stream.Next() {
 		t.Fatal("expected Next() to return false when error is set")
 	}

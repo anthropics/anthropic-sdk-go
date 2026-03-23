@@ -27,11 +27,15 @@ const DefaultVersion = "vertex-2023-10-16"
 // [Application Default Credentials]: https://cloud.google.com/docs/authentication/application-default-credentials
 func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes ...string) sdkoption.RequestOption {
 	if region == "" {
-		panic("region must be provided")
+		return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+			return fmt.Errorf("vertex: region must be provided")
+		})
 	}
 	creds, err := google.FindDefaultCredentials(ctx, scopes...)
 	if err != nil {
-		panic(fmt.Errorf("failed to find default credentials: %v", err))
+		return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+			return fmt.Errorf("vertex: failed to find default credentials: %v", err)
+		})
 	}
 	return WithCredentials(ctx, region, projectID, creds)
 }
@@ -41,7 +45,9 @@ func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes
 func WithCredentials(ctx context.Context, region string, projectID string, creds *google.Credentials) sdkoption.RequestOption {
 	client, _, err := transport.NewHTTPClient(ctx, option.WithTokenSource(creds.TokenSource))
 	if err != nil {
-		panic(fmt.Errorf("failed to create HTTP client: %v", err))
+		return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+			return fmt.Errorf("vertex: failed to create HTTP client: %v", err)
+		})
 	}
 	middleware := vertexMiddleware(region, projectID)
 

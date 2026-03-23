@@ -98,7 +98,9 @@ func WithMiddleware(middlewares ...Middleware) RequestOption {
 // WithMaxRetries panics when retries is negative.
 func WithMaxRetries(retries int) RequestOption {
 	if retries < 0 {
-		panic("option: cannot have fewer than 0 retries")
+		return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+			return fmt.Errorf("option: cannot have fewer than 0 retries, got %d", retries)
+		})
 	}
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		r.MaxRetries = retries

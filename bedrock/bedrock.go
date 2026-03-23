@@ -181,7 +181,9 @@ func init() {
 func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptions) error) option.RequestOption {
 	cfg, err := config.LoadDefaultConfig(ctx, optFns...)
 	if err != nil {
-		panic(err)
+		return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+			return fmt.Errorf("bedrock: failed to load default config: %w", err)
+		})
 	}
 	return WithConfig(cfg)
 }

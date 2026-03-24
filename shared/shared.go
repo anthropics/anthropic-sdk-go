@@ -215,6 +215,20 @@ func (r *ErrorResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type ErrorType string
+
+const (
+	ErrorTypeInvalidRequestError ErrorType = "invalid_request_error"
+	ErrorTypeAuthenticationError ErrorType = "authentication_error"
+	ErrorTypePermissionError     ErrorType = "permission_error"
+	ErrorTypeNotFoundError       ErrorType = "not_found_error"
+	ErrorTypeRateLimitError      ErrorType = "rate_limit_error"
+	ErrorTypeTimeoutError        ErrorType = "timeout_error"
+	ErrorTypeOverloadedError     ErrorType = "overloaded_error"
+	ErrorTypeAPIError            ErrorType = "api_error"
+	ErrorTypeBillingError        ErrorType = "billing_error"
+)
+
 type GatewayTimeoutError struct {
 	Message string                `json:"message" api:"required"`
 	Type    constant.TimeoutError `json:"type" api:"required"`

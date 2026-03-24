@@ -32,6 +32,36 @@ type ErrorObjectUnion = shared.ErrorObjectUnion
 type ErrorResponse = shared.ErrorResponse
 
 // This is an alias to an internal type.
+type ErrorType = shared.ErrorType
+
+// Equals "invalid_request_error"
+const ErrorTypeInvalidRequestError = shared.ErrorTypeInvalidRequestError
+
+// Equals "authentication_error"
+const ErrorTypeAuthenticationError = shared.ErrorTypeAuthenticationError
+
+// Equals "permission_error"
+const ErrorTypePermissionError = shared.ErrorTypePermissionError
+
+// Equals "not_found_error"
+const ErrorTypeNotFoundError = shared.ErrorTypeNotFoundError
+
+// Equals "rate_limit_error"
+const ErrorTypeRateLimitError = shared.ErrorTypeRateLimitError
+
+// Equals "timeout_error"
+const ErrorTypeTimeoutError = shared.ErrorTypeTimeoutError
+
+// Equals "overloaded_error"
+const ErrorTypeOverloadedError = shared.ErrorTypeOverloadedError
+
+// Equals "api_error"
+const ErrorTypeAPIError = shared.ErrorTypeAPIError
+
+// Equals "billing_error"
+const ErrorTypeBillingError = shared.ErrorTypeBillingError
+
+// This is an alias to an internal type.
 type GatewayTimeoutError = shared.GatewayTimeoutError
 
 // This is an alias to an internal type.

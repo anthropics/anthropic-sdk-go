@@ -1,3 +1,7 @@
+# Shared Params Types
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#ErrorType">ErrorType</a>
+
 # Shared Response Types
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#APIErrorObject">APIErrorObject</a>
@@ -5,6 +9,7 @@
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#BillingError">BillingError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#ErrorObjectUnion">ErrorObjectUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#ErrorResponse">ErrorResponse</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#ErrorType">ErrorType</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#GatewayTimeoutError">GatewayTimeoutError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#InvalidRequestError">InvalidRequestError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/shared#NotFoundError">NotFoundError</a>

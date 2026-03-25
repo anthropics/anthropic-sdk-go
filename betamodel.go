@@ -224,7 +224,7 @@ type BetaModelInfo struct {
 	// Object type.
 	//
 	// For Models, this is always `"model"`.
-	Type constant.Model `json:"type" api:"required"`
+	Type constant.Model `json:"type" default:"model"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID             respjson.Field

@@ -65,7 +65,7 @@ const (
 
 type BetaAPIError struct {
 	Message string            `json:"message" api:"required"`
-	Type    constant.APIError `json:"type" api:"required"`
+	Type    constant.APIError `json:"type" default:"api_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -83,7 +83,7 @@ func (r *BetaAPIError) UnmarshalJSON(data []byte) error {
 
 type BetaAuthenticationError struct {
 	Message string                       `json:"message" api:"required"`
-	Type    constant.AuthenticationError `json:"type" api:"required"`
+	Type    constant.AuthenticationError `json:"type" default:"authentication_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -101,7 +101,7 @@ func (r *BetaAuthenticationError) UnmarshalJSON(data []byte) error {
 
 type BetaBillingError struct {
 	Message string                `json:"message" api:"required"`
-	Type    constant.BillingError `json:"type" api:"required"`
+	Type    constant.BillingError `json:"type" default:"billing_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -248,7 +248,7 @@ func (r *BetaErrorUnion) UnmarshalJSON(data []byte) error {
 type BetaErrorResponse struct {
 	Error     BetaErrorUnion `json:"error" api:"required"`
 	RequestID string         `json:"request_id" api:"required"`
-	Type      constant.Error `json:"type" api:"required"`
+	Type      constant.Error `json:"type" default:"error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -267,7 +267,7 @@ func (r *BetaErrorResponse) UnmarshalJSON(data []byte) error {
 
 type BetaGatewayTimeoutError struct {
 	Message string                `json:"message" api:"required"`
-	Type    constant.TimeoutError `json:"type" api:"required"`
+	Type    constant.TimeoutError `json:"type" default:"timeout_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -285,7 +285,7 @@ func (r *BetaGatewayTimeoutError) UnmarshalJSON(data []byte) error {
 
 type BetaInvalidRequestError struct {
 	Message string                       `json:"message" api:"required"`
-	Type    constant.InvalidRequestError `json:"type" api:"required"`
+	Type    constant.InvalidRequestError `json:"type" default:"invalid_request_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -303,7 +303,7 @@ func (r *BetaInvalidRequestError) UnmarshalJSON(data []byte) error {
 
 type BetaNotFoundError struct {
 	Message string                 `json:"message" api:"required"`
-	Type    constant.NotFoundError `json:"type" api:"required"`
+	Type    constant.NotFoundError `json:"type" default:"not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -321,7 +321,7 @@ func (r *BetaNotFoundError) UnmarshalJSON(data []byte) error {
 
 type BetaOverloadedError struct {
 	Message string                   `json:"message" api:"required"`
-	Type    constant.OverloadedError `json:"type" api:"required"`
+	Type    constant.OverloadedError `json:"type" default:"overloaded_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -339,7 +339,7 @@ func (r *BetaOverloadedError) UnmarshalJSON(data []byte) error {
 
 type BetaPermissionError struct {
 	Message string                   `json:"message" api:"required"`
-	Type    constant.PermissionError `json:"type" api:"required"`
+	Type    constant.PermissionError `json:"type" default:"permission_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -357,7 +357,7 @@ func (r *BetaPermissionError) UnmarshalJSON(data []byte) error {
 
 type BetaRateLimitError struct {
 	Message string                  `json:"message" api:"required"`
-	Type    constant.RateLimitError `json:"type" api:"required"`
+	Type    constant.RateLimitError `json:"type" default:"rate_limit_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field

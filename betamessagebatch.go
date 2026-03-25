@@ -198,7 +198,7 @@ type BetaDeletedMessageBatch struct {
 	// Deleted object type.
 	//
 	// For Message Batches, this is always `"message_batch_deleted"`.
-	Type constant.MessageBatchDeleted `json:"type" api:"required"`
+	Type constant.MessageBatchDeleted `json:"type" default:"message_batch_deleted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -256,7 +256,7 @@ type BetaMessageBatch struct {
 	// Object type.
 	//
 	// For Message Batches, this is always `"message_batch"`.
-	Type constant.MessageBatch `json:"type" api:"required"`
+	Type constant.MessageBatch `json:"type" default:"message_batch"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                respjson.Field
@@ -290,7 +290,7 @@ const (
 )
 
 type BetaMessageBatchCanceledResult struct {
-	Type constant.Canceled `json:"type" api:"required"`
+	Type constant.Canceled `json:"type" default:"canceled"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -307,7 +307,7 @@ func (r *BetaMessageBatchCanceledResult) UnmarshalJSON(data []byte) error {
 
 type BetaMessageBatchErroredResult struct {
 	Error BetaErrorResponse `json:"error" api:"required"`
-	Type  constant.Errored  `json:"type" api:"required"`
+	Type  constant.Errored  `json:"type" default:"errored"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -324,7 +324,7 @@ func (r *BetaMessageBatchErroredResult) UnmarshalJSON(data []byte) error {
 }
 
 type BetaMessageBatchExpiredResult struct {
-	Type constant.Expired `json:"type" api:"required"`
+	Type constant.Expired `json:"type" default:"expired"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -492,7 +492,7 @@ func (r *BetaMessageBatchResultUnion) UnmarshalJSON(data []byte) error {
 
 type BetaMessageBatchSucceededResult struct {
 	Message BetaMessage        `json:"message" api:"required"`
-	Type    constant.Succeeded `json:"type" api:"required"`
+	Type    constant.Succeeded `json:"type" default:"succeeded"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field

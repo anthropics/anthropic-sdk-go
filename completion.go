@@ -103,7 +103,7 @@ type Completion struct {
 	// Object type.
 	//
 	// For Text Completions, this is always `"completion"`.
-	Type constant.Completion `json:"type" api:"required"`
+	Type constant.Completion `json:"type" default:"completion"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field

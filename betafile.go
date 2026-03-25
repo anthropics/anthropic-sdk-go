@@ -179,7 +179,7 @@ type FileMetadata struct {
 	// Object type.
 	//
 	// For files, this is always `"file"`.
-	Type constant.File `json:"type" api:"required"`
+	Type constant.File `json:"type" default:"file"`
 	// Whether the file can be downloaded.
 	Downloadable bool `json:"downloadable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].

@@ -121,7 +121,7 @@ func NewBetaAllThinkingTurnsParam() BetaAllThinkingTurnsParam {
 // This struct has a constant value, construct it with
 // [NewBetaAllThinkingTurnsParam].
 type BetaAllThinkingTurnsParam struct {
-	Type constant.All `json:"type" api:"required"`
+	Type constant.All `json:"type" default:"all"`
 	paramObj
 }
 
@@ -139,7 +139,7 @@ type BetaBase64ImageSourceParam struct {
 	// Any of "image/jpeg", "image/png", "image/gif", "image/webp".
 	MediaType BetaBase64ImageSourceMediaType `json:"media_type,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as "base64".
-	Type constant.Base64 `json:"type" api:"required"`
+	Type constant.Base64 `json:"type" default:"base64"`
 	paramObj
 }
 
@@ -162,8 +162,8 @@ const (
 
 type BetaBase64PDFSource struct {
 	Data      string                  `json:"data" api:"required" format:"byte"`
-	MediaType constant.ApplicationPDF `json:"media_type" api:"required"`
-	Type      constant.Base64         `json:"type" api:"required"`
+	MediaType constant.ApplicationPDF `json:"media_type" default:"application/pdf"`
+	Type      constant.Base64         `json:"type" default:"base64"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
@@ -193,9 +193,9 @@ func (r BetaBase64PDFSource) ToParam() BetaBase64PDFSourceParam {
 type BetaBase64PDFSourceParam struct {
 	Data string `json:"data" api:"required" format:"byte"`
 	// This field can be elided, and will marshal its zero value as "application/pdf".
-	MediaType constant.ApplicationPDF `json:"media_type" api:"required"`
+	MediaType constant.ApplicationPDF `json:"media_type" default:"application/pdf"`
 	// This field can be elided, and will marshal its zero value as "base64".
-	Type constant.Base64 `json:"type" api:"required"`
+	Type constant.Base64 `json:"type" default:"base64"`
 	paramObj
 }
 
@@ -209,7 +209,7 @@ func (r *BetaBase64PDFSourceParam) UnmarshalJSON(data []byte) error {
 
 type BetaBashCodeExecutionOutputBlock struct {
 	FileID string                           `json:"file_id" api:"required"`
-	Type   constant.BashCodeExecutionOutput `json:"type" api:"required"`
+	Type   constant.BashCodeExecutionOutput `json:"type" default:"bash_code_execution_output"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		FileID      respjson.Field
@@ -230,7 +230,7 @@ type BetaBashCodeExecutionOutputBlockParam struct {
 	FileID string `json:"file_id" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "bash_code_execution_output".
-	Type constant.BashCodeExecutionOutput `json:"type" api:"required"`
+	Type constant.BashCodeExecutionOutput `json:"type" default:"bash_code_execution_output"`
 	paramObj
 }
 
@@ -247,7 +247,7 @@ type BetaBashCodeExecutionResultBlock struct {
 	ReturnCode int64                              `json:"return_code" api:"required"`
 	Stderr     string                             `json:"stderr" api:"required"`
 	Stdout     string                             `json:"stdout" api:"required"`
-	Type       constant.BashCodeExecutionResult   `json:"type" api:"required"`
+	Type       constant.BashCodeExecutionResult   `json:"type" default:"bash_code_execution_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -274,7 +274,7 @@ type BetaBashCodeExecutionResultBlockParam struct {
 	Stdout     string                                  `json:"stdout" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "bash_code_execution_result".
-	Type constant.BashCodeExecutionResult `json:"type" api:"required"`
+	Type constant.BashCodeExecutionResult `json:"type" default:"bash_code_execution_result"`
 	paramObj
 }
 
@@ -289,7 +289,7 @@ func (r *BetaBashCodeExecutionResultBlockParam) UnmarshalJSON(data []byte) error
 type BetaBashCodeExecutionToolResultBlock struct {
 	Content   BetaBashCodeExecutionToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                           `json:"tool_use_id" api:"required"`
-	Type      constant.BashCodeExecutionToolResult             `json:"type" api:"required"`
+	Type      constant.BashCodeExecutionToolResult             `json:"type" default:"bash_code_execution_tool_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -359,7 +359,7 @@ type BetaBashCodeExecutionToolResultBlockParam struct {
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "bash_code_execution_tool_result".
-	Type constant.BashCodeExecutionToolResult `json:"type" api:"required"`
+	Type constant.BashCodeExecutionToolResult `json:"type" default:"bash_code_execution_tool_result"`
 	paramObj
 }
 
@@ -450,7 +450,7 @@ type BetaBashCodeExecutionToolResultError struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded", "output_file_too_large".
 	ErrorCode BetaBashCodeExecutionToolResultErrorErrorCode `json:"error_code" api:"required"`
-	Type      constant.BashCodeExecutionToolResultError     `json:"type" api:"required"`
+	Type      constant.BashCodeExecutionToolResultError     `json:"type" default:"bash_code_execution_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode   respjson.Field
@@ -483,7 +483,7 @@ type BetaBashCodeExecutionToolResultErrorParam struct {
 	ErrorCode BetaBashCodeExecutionToolResultErrorParamErrorCode `json:"error_code,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "bash_code_execution_tool_result_error".
-	Type constant.BashCodeExecutionToolResultError `json:"type" api:"required"`
+	Type constant.BashCodeExecutionToolResultError `json:"type" default:"bash_code_execution_tool_result_error"`
 	paramObj
 }
 
@@ -525,7 +525,7 @@ type BetaCacheControlEphemeralParam struct {
 	//
 	// Any of "5m", "1h".
 	TTL  BetaCacheControlEphemeralTTL `json:"ttl,omitzero"`
-	Type constant.Ephemeral           `json:"type" api:"required"`
+	Type constant.Ephemeral           `json:"type" default:"ephemeral"`
 	paramObj
 }
 
@@ -579,7 +579,7 @@ type BetaCitationCharLocation struct {
 	EndCharIndex   int64                 `json:"end_char_index" api:"required"`
 	FileID         string                `json:"file_id" api:"required"`
 	StartCharIndex int64                 `json:"start_char_index" api:"required"`
-	Type           constant.CharLocation `json:"type" api:"required"`
+	Type           constant.CharLocation `json:"type" default:"char_location"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CitedText      respjson.Field
@@ -609,7 +609,7 @@ type BetaCitationCharLocationParam struct {
 	EndCharIndex   int64             `json:"end_char_index" api:"required"`
 	StartCharIndex int64             `json:"start_char_index" api:"required"`
 	// This field can be elided, and will marshal its zero value as "char_location".
-	Type constant.CharLocation `json:"type" api:"required"`
+	Type constant.CharLocation `json:"type" default:"char_location"`
 	paramObj
 }
 
@@ -644,7 +644,7 @@ type BetaCitationContentBlockLocation struct {
 	EndBlockIndex   int64                         `json:"end_block_index" api:"required"`
 	FileID          string                        `json:"file_id" api:"required"`
 	StartBlockIndex int64                         `json:"start_block_index" api:"required"`
-	Type            constant.ContentBlockLocation `json:"type" api:"required"`
+	Type            constant.ContentBlockLocation `json:"type" default:"content_block_location"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CitedText       respjson.Field
@@ -675,7 +675,7 @@ type BetaCitationContentBlockLocationParam struct {
 	StartBlockIndex int64             `json:"start_block_index" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "content_block_location".
-	Type constant.ContentBlockLocation `json:"type" api:"required"`
+	Type constant.ContentBlockLocation `json:"type" default:"content_block_location"`
 	paramObj
 }
 
@@ -694,7 +694,7 @@ type BetaCitationPageLocation struct {
 	EndPageNumber   int64                 `json:"end_page_number" api:"required"`
 	FileID          string                `json:"file_id" api:"required"`
 	StartPageNumber int64                 `json:"start_page_number" api:"required"`
-	Type            constant.PageLocation `json:"type" api:"required"`
+	Type            constant.PageLocation `json:"type" default:"page_location"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CitedText       respjson.Field
@@ -724,7 +724,7 @@ type BetaCitationPageLocationParam struct {
 	EndPageNumber   int64             `json:"end_page_number" api:"required"`
 	StartPageNumber int64             `json:"start_page_number" api:"required"`
 	// This field can be elided, and will marshal its zero value as "page_location".
-	Type constant.PageLocation `json:"type" api:"required"`
+	Type constant.PageLocation `json:"type" default:"page_location"`
 	paramObj
 }
 
@@ -743,7 +743,7 @@ type BetaCitationSearchResultLocation struct {
 	Source            string                        `json:"source" api:"required"`
 	StartBlockIndex   int64                         `json:"start_block_index" api:"required"`
 	Title             string                        `json:"title" api:"required"`
-	Type              constant.SearchResultLocation `json:"type" api:"required"`
+	Type              constant.SearchResultLocation `json:"type" default:"search_result_location"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CitedText         respjson.Field
@@ -775,7 +775,7 @@ type BetaCitationSearchResultLocationParam struct {
 	StartBlockIndex   int64             `json:"start_block_index" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "search_result_location".
-	Type constant.SearchResultLocation `json:"type" api:"required"`
+	Type constant.SearchResultLocation `json:"type" default:"search_result_location"`
 	paramObj
 }
 
@@ -795,7 +795,7 @@ type BetaCitationWebSearchResultLocationParam struct {
 	URL            string            `json:"url" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_result_location".
-	Type constant.WebSearchResultLocation `json:"type" api:"required"`
+	Type constant.WebSearchResultLocation `json:"type" default:"web_search_result_location"`
 	paramObj
 }
 
@@ -822,7 +822,7 @@ func (r *BetaCitationsConfigParam) UnmarshalJSON(data []byte) error {
 
 type BetaCitationsDelta struct {
 	Citation BetaCitationsDeltaCitationUnion `json:"citation" api:"required"`
-	Type     constant.CitationsDelta         `json:"type" api:"required"`
+	Type     constant.CitationsDelta         `json:"type" default:"citations_delta"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Citation    respjson.Field
@@ -970,7 +970,7 @@ type BetaCitationsWebSearchResultLocation struct {
 	CitedText      string                           `json:"cited_text" api:"required"`
 	EncryptedIndex string                           `json:"encrypted_index" api:"required"`
 	Title          string                           `json:"title" api:"required"`
-	Type           constant.WebSearchResultLocation `json:"type" api:"required"`
+	Type           constant.WebSearchResultLocation `json:"type" default:"web_search_result_location"`
 	URL            string                           `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -997,7 +997,7 @@ type BetaClearThinking20251015EditParam struct {
 	Keep BetaClearThinking20251015EditKeepUnionParam `json:"keep,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "clear_thinking_20251015".
-	Type constant.ClearThinking20251015 `json:"type" api:"required"`
+	Type constant.ClearThinking20251015 `json:"type" default:"clear_thinking_20251015"`
 	paramObj
 }
 
@@ -1062,7 +1062,7 @@ type BetaClearThinking20251015EditResponse struct {
 	// Number of thinking turns that were cleared.
 	ClearedThinkingTurns int64 `json:"cleared_thinking_turns" api:"required"`
 	// The type of context management edit applied.
-	Type constant.ClearThinking20251015 `json:"type" api:"required"`
+	Type constant.ClearThinking20251015 `json:"type" default:"clear_thinking_20251015"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ClearedInputTokens   respjson.Field
@@ -1094,7 +1094,7 @@ type BetaClearToolUses20250919EditParam struct {
 	Trigger BetaClearToolUses20250919EditTriggerUnionParam `json:"trigger,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "clear_tool_uses_20250919".
-	Type constant.ClearToolUses20250919 `json:"type" api:"required"`
+	Type constant.ClearToolUses20250919 `json:"type" default:"clear_tool_uses_20250919"`
 	paramObj
 }
 
@@ -1323,7 +1323,7 @@ type BetaClearToolUses20250919EditResponse struct {
 	// Number of tool uses that were cleared.
 	ClearedToolUses int64 `json:"cleared_tool_uses" api:"required"`
 	// The type of context management edit applied.
-	Type constant.ClearToolUses20250919 `json:"type" api:"required"`
+	Type constant.ClearToolUses20250919 `json:"type" default:"clear_tool_uses_20250919"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ClearedInputTokens respjson.Field
@@ -1342,7 +1342,7 @@ func (r *BetaClearToolUses20250919EditResponse) UnmarshalJSON(data []byte) error
 
 type BetaCodeExecutionOutputBlock struct {
 	FileID string                       `json:"file_id" api:"required"`
-	Type   constant.CodeExecutionOutput `json:"type" api:"required"`
+	Type   constant.CodeExecutionOutput `json:"type" default:"code_execution_output"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		FileID      respjson.Field
@@ -1363,7 +1363,7 @@ type BetaCodeExecutionOutputBlockParam struct {
 	FileID string `json:"file_id" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "code_execution_output".
-	Type constant.CodeExecutionOutput `json:"type" api:"required"`
+	Type constant.CodeExecutionOutput `json:"type" default:"code_execution_output"`
 	paramObj
 }
 
@@ -1380,7 +1380,7 @@ type BetaCodeExecutionResultBlock struct {
 	ReturnCode int64                          `json:"return_code" api:"required"`
 	Stderr     string                         `json:"stderr" api:"required"`
 	Stdout     string                         `json:"stdout" api:"required"`
-	Type       constant.CodeExecutionResult   `json:"type" api:"required"`
+	Type       constant.CodeExecutionResult   `json:"type" default:"code_execution_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -1407,7 +1407,7 @@ type BetaCodeExecutionResultBlockParam struct {
 	Stdout     string                              `json:"stdout" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "code_execution_result".
-	Type constant.CodeExecutionResult `json:"type" api:"required"`
+	Type constant.CodeExecutionResult `json:"type" default:"code_execution_result"`
 	paramObj
 }
 
@@ -1435,10 +1435,10 @@ type BetaCodeExecutionTool20250522Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "code_execution".
-	Name constant.CodeExecution `json:"name" api:"required"`
+	Name constant.CodeExecution `json:"name" default:"code_execution"`
 	// This field can be elided, and will marshal its zero value as
 	// "code_execution_20250522".
-	Type constant.CodeExecution20250522 `json:"type" api:"required"`
+	Type constant.CodeExecution20250522 `json:"type" default:"code_execution_20250522"`
 	paramObj
 }
 
@@ -1466,10 +1466,10 @@ type BetaCodeExecutionTool20250825Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "code_execution".
-	Name constant.CodeExecution `json:"name" api:"required"`
+	Name constant.CodeExecution `json:"name" default:"code_execution"`
 	// This field can be elided, and will marshal its zero value as
 	// "code_execution_20250825".
-	Type constant.CodeExecution20250825 `json:"type" api:"required"`
+	Type constant.CodeExecution20250825 `json:"type" default:"code_execution_20250825"`
 	paramObj
 }
 
@@ -1500,10 +1500,10 @@ type BetaCodeExecutionTool20260120Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "code_execution".
-	Name constant.CodeExecution `json:"name" api:"required"`
+	Name constant.CodeExecution `json:"name" default:"code_execution"`
 	// This field can be elided, and will marshal its zero value as
 	// "code_execution_20260120".
-	Type constant.CodeExecution20260120 `json:"type" api:"required"`
+	Type constant.CodeExecution20260120 `json:"type" default:"code_execution_20260120"`
 	paramObj
 }
 
@@ -1519,7 +1519,7 @@ type BetaCodeExecutionToolResultBlock struct {
 	// Code execution result with encrypted stdout for PFC + web_search results.
 	Content   BetaCodeExecutionToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                       `json:"tool_use_id" api:"required"`
-	Type      constant.CodeExecutionToolResult             `json:"type" api:"required"`
+	Type      constant.CodeExecutionToolResult             `json:"type" default:"code_execution_tool_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -1595,7 +1595,7 @@ type BetaCodeExecutionToolResultBlockParam struct {
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "code_execution_tool_result".
-	Type constant.CodeExecutionToolResult `json:"type" api:"required"`
+	Type constant.CodeExecutionToolResult `json:"type" default:"code_execution_tool_result"`
 	paramObj
 }
 
@@ -1711,7 +1711,7 @@ type BetaCodeExecutionToolResultError struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded".
 	ErrorCode BetaCodeExecutionToolResultErrorCode  `json:"error_code" api:"required"`
-	Type      constant.CodeExecutionToolResultError `json:"type" api:"required"`
+	Type      constant.CodeExecutionToolResultError `json:"type" default:"code_execution_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode   respjson.Field
@@ -1743,7 +1743,7 @@ type BetaCodeExecutionToolResultErrorParam struct {
 	ErrorCode BetaCodeExecutionToolResultErrorCode `json:"error_code,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "code_execution_tool_result_error".
-	Type constant.CodeExecutionToolResultError `json:"type" api:"required"`
+	Type constant.CodeExecutionToolResultError `json:"type" default:"code_execution_tool_result_error"`
 	paramObj
 }
 
@@ -1767,7 +1767,7 @@ type BetaCompact20260112EditParam struct {
 	// When to trigger compaction. Defaults to 150000 input tokens.
 	Trigger BetaInputTokensTriggerParam `json:"trigger,omitzero"`
 	// This field can be elided, and will marshal its zero value as "compact_20260112".
-	Type constant.Compact20260112 `json:"type" api:"required"`
+	Type constant.Compact20260112 `json:"type" default:"compact_20260112"`
 	paramObj
 }
 
@@ -1787,7 +1787,7 @@ func (r *BetaCompact20260112EditParam) UnmarshalJSON(data []byte) error {
 type BetaCompactionBlock struct {
 	// Summary of compacted content, or null if compaction failed
 	Content string              `json:"content" api:"required"`
-	Type    constant.Compaction `json:"type" api:"required"`
+	Type    constant.Compaction `json:"type" default:"compaction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -1818,7 +1818,7 @@ type BetaCompactionBlockParam struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "compaction".
-	Type constant.Compaction `json:"type" api:"required"`
+	Type constant.Compaction `json:"type" default:"compaction"`
 	paramObj
 }
 
@@ -1832,7 +1832,7 @@ func (r *BetaCompactionBlockParam) UnmarshalJSON(data []byte) error {
 
 type BetaCompactionContentBlockDelta struct {
 	Content string                   `json:"content" api:"required"`
-	Type    constant.CompactionDelta `json:"type" api:"required"`
+	Type    constant.CompactionDelta `json:"type" default:"compaction_delta"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -1861,7 +1861,7 @@ type BetaCompactionIterationUsage struct {
 	// The number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens" api:"required"`
 	// Usage for a compaction iteration
-	Type constant.Compaction `json:"type" api:"required"`
+	Type constant.Compaction `json:"type" default:"compaction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CacheCreation            respjson.Field
@@ -1926,7 +1926,7 @@ func (r *BetaContainerParams) UnmarshalJSON(data []byte) error {
 // Response model for a file uploaded to the container.
 type BetaContainerUploadBlock struct {
 	FileID string                   `json:"file_id" api:"required"`
-	Type   constant.ContainerUpload `json:"type" api:"required"`
+	Type   constant.ContainerUpload `json:"type" default:"container_upload"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		FileID      respjson.Field
@@ -1951,7 +1951,7 @@ type BetaContainerUploadBlockParam struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "container_upload".
-	Type constant.ContainerUpload `json:"type" api:"required"`
+	Type constant.ContainerUpload `json:"type" default:"container_upload"`
 	paramObj
 }
 
@@ -3377,7 +3377,7 @@ func (u betaContentBlockParamUnionCaller) GetToolID() *string {
 type BetaContentBlockSourceParam struct {
 	Content BetaContentBlockSourceContentUnionParam `json:"content,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as "content".
-	Type constant.Content `json:"type" api:"required"`
+	Type constant.Content `json:"type" default:"content"`
 	paramObj
 }
 
@@ -3661,7 +3661,7 @@ func (r *BetaCountTokensContextManagementResponse) UnmarshalJSON(data []byte) er
 
 // Tool invocation directly from the model.
 type BetaDirectCaller struct {
-	Type constant.Direct `json:"type" api:"required"`
+	Type constant.Direct `json:"type" default:"direct"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -3695,7 +3695,7 @@ func NewBetaDirectCallerParam() BetaDirectCallerParam {
 //
 // This struct has a constant value, construct it with [NewBetaDirectCallerParam].
 type BetaDirectCallerParam struct {
-	Type constant.Direct `json:"type" api:"required"`
+	Type constant.Direct `json:"type" default:"direct"`
 	paramObj
 }
 
@@ -3713,7 +3713,7 @@ type BetaDocumentBlock struct {
 	Source    BetaDocumentBlockSourceUnion `json:"source" api:"required"`
 	// The title of the document
 	Title string            `json:"title" api:"required"`
-	Type  constant.Document `json:"type" api:"required"`
+	Type  constant.Document `json:"type" default:"document"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Citations   respjson.Field
@@ -3801,7 +3801,7 @@ type BetaEncryptedCodeExecutionResultBlock struct {
 	EncryptedStdout string                                `json:"encrypted_stdout" api:"required"`
 	ReturnCode      int64                                 `json:"return_code" api:"required"`
 	Stderr          string                                `json:"stderr" api:"required"`
-	Type            constant.EncryptedCodeExecutionResult `json:"type" api:"required"`
+	Type            constant.EncryptedCodeExecutionResult `json:"type" default:"encrypted_code_execution_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content         respjson.Field
@@ -3830,7 +3830,7 @@ type BetaEncryptedCodeExecutionResultBlockParam struct {
 	Stderr          string                              `json:"stderr" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "encrypted_code_execution_result".
-	Type constant.EncryptedCodeExecutionResult `json:"type" api:"required"`
+	Type constant.EncryptedCodeExecutionResult `json:"type" default:"encrypted_code_execution_result"`
 	paramObj
 }
 
@@ -3846,7 +3846,7 @@ func (r *BetaEncryptedCodeExecutionResultBlockParam) UnmarshalJSON(data []byte) 
 type BetaFileDocumentSourceParam struct {
 	FileID string `json:"file_id" api:"required"`
 	// This field can be elided, and will marshal its zero value as "file".
-	Type constant.File `json:"type" api:"required"`
+	Type constant.File `json:"type" default:"file"`
 	paramObj
 }
 
@@ -3862,7 +3862,7 @@ func (r *BetaFileDocumentSourceParam) UnmarshalJSON(data []byte) error {
 type BetaFileImageSourceParam struct {
 	FileID string `json:"file_id" api:"required"`
 	// This field can be elided, and will marshal its zero value as "file".
-	Type constant.File `json:"type" api:"required"`
+	Type constant.File `json:"type" default:"file"`
 	paramObj
 }
 
@@ -3880,7 +3880,7 @@ type BetaImageBlockParam struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "image".
-	Type constant.Image `json:"type" api:"required"`
+	Type constant.Image `json:"type" default:"image"`
 	paramObj
 }
 
@@ -3966,7 +3966,7 @@ func (u BetaImageBlockParamSourceUnion) GetType() *string {
 
 type BetaInputJSONDelta struct {
 	PartialJSON string                  `json:"partial_json" api:"required"`
-	Type        constant.InputJSONDelta `json:"type" api:"required"`
+	Type        constant.InputJSONDelta `json:"type" default:"input_json_delta"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		PartialJSON respjson.Field
@@ -3986,7 +3986,7 @@ func (r *BetaInputJSONDelta) UnmarshalJSON(data []byte) error {
 type BetaInputTokensClearAtLeastParam struct {
 	Value int64 `json:"value" api:"required"`
 	// This field can be elided, and will marshal its zero value as "input_tokens".
-	Type constant.InputTokens `json:"type" api:"required"`
+	Type constant.InputTokens `json:"type" default:"input_tokens"`
 	paramObj
 }
 
@@ -4002,7 +4002,7 @@ func (r *BetaInputTokensClearAtLeastParam) UnmarshalJSON(data []byte) error {
 type BetaInputTokensTriggerParam struct {
 	Value int64 `json:"value" api:"required"`
 	// This field can be elided, and will marshal its zero value as "input_tokens".
-	Type constant.InputTokens `json:"type" api:"required"`
+	Type constant.InputTokens `json:"type" default:"input_tokens"`
 	paramObj
 }
 
@@ -4092,7 +4092,7 @@ type BetaJSONOutputFormatParam struct {
 	// The JSON schema of the format
 	Schema map[string]any `json:"schema,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as "json_schema".
-	Type constant.JSONSchema `json:"type" api:"required"`
+	Type constant.JSONSchema `json:"type" default:"json_schema"`
 	paramObj
 }
 
@@ -4138,7 +4138,7 @@ type BetaMCPToolResultBlock struct {
 	Content   BetaMCPToolResultBlockContentUnion `json:"content" api:"required"`
 	IsError   bool                               `json:"is_error" api:"required"`
 	ToolUseID string                             `json:"tool_use_id" api:"required"`
-	Type      constant.MCPToolResult             `json:"type" api:"required"`
+	Type      constant.MCPToolResult             `json:"type" default:"mcp_tool_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -4200,7 +4200,7 @@ type BetaMCPToolUseBlock struct {
 	Name string `json:"name" api:"required"`
 	// The name of the MCP server
 	ServerName string              `json:"server_name" api:"required"`
-	Type       constant.MCPToolUse `json:"type" api:"required"`
+	Type       constant.MCPToolUse `json:"type" default:"mcp_tool_use"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -4229,7 +4229,7 @@ type BetaMCPToolUseBlockParam struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "mcp_tool_use".
-	Type constant.MCPToolUse `json:"type" api:"required"`
+	Type constant.MCPToolUse `json:"type" default:"mcp_tool_use"`
 	paramObj
 }
 
@@ -4257,7 +4257,7 @@ type BetaMCPToolsetParam struct {
 	// Default configuration applied to all tools from this server
 	DefaultConfig BetaMCPToolDefaultConfigParam `json:"default_config,omitzero"`
 	// This field can be elided, and will marshal its zero value as "mcp_toolset".
-	Type constant.MCPToolset `json:"type" api:"required"`
+	Type constant.MCPToolset `json:"type" default:"mcp_toolset"`
 	paramObj
 }
 
@@ -4286,9 +4286,9 @@ type BetaMemoryTool20250818Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "memory".
-	Name constant.Memory `json:"name" api:"required"`
+	Name constant.Memory `json:"name" default:"memory"`
 	// This field can be elided, and will marshal its zero value as "memory_20250818".
-	Type constant.Memory20250818 `json:"type" api:"required"`
+	Type constant.Memory20250818 `json:"type" default:"memory_20250818"`
 	paramObj
 }
 
@@ -4428,7 +4428,7 @@ func (r *BetaMemoryTool20250818CommandUnion) UnmarshalJSON(data []byte) error {
 
 type BetaMemoryTool20250818CreateCommand struct {
 	// Command type identifier
-	Command constant.Create `json:"command" api:"required"`
+	Command constant.Create `json:"command" default:"create"`
 	// Content to write to the file
 	FileText string `json:"file_text" api:"required"`
 	// Path where the file should be created
@@ -4451,7 +4451,7 @@ func (r *BetaMemoryTool20250818CreateCommand) UnmarshalJSON(data []byte) error {
 
 type BetaMemoryTool20250818DeleteCommand struct {
 	// Command type identifier
-	Command constant.Delete `json:"command" api:"required"`
+	Command constant.Delete `json:"command" default:"delete"`
 	// Path to the file or directory to delete
 	Path string `json:"path" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -4471,7 +4471,7 @@ func (r *BetaMemoryTool20250818DeleteCommand) UnmarshalJSON(data []byte) error {
 
 type BetaMemoryTool20250818InsertCommand struct {
 	// Command type identifier
-	Command constant.Insert `json:"command" api:"required"`
+	Command constant.Insert `json:"command" default:"insert"`
 	// Line number where text should be inserted
 	InsertLine int64 `json:"insert_line" api:"required"`
 	// Text to insert at the specified line
@@ -4497,7 +4497,7 @@ func (r *BetaMemoryTool20250818InsertCommand) UnmarshalJSON(data []byte) error {
 
 type BetaMemoryTool20250818RenameCommand struct {
 	// Command type identifier
-	Command constant.Rename `json:"command" api:"required"`
+	Command constant.Rename `json:"command" default:"rename"`
 	// New path for the file or directory
 	NewPath string `json:"new_path" api:"required"`
 	// Current path of the file or directory
@@ -4520,7 +4520,7 @@ func (r *BetaMemoryTool20250818RenameCommand) UnmarshalJSON(data []byte) error {
 
 type BetaMemoryTool20250818StrReplaceCommand struct {
 	// Command type identifier
-	Command constant.StrReplace `json:"command" api:"required"`
+	Command constant.StrReplace `json:"command" default:"str_replace"`
 	// Text to replace with
 	NewStr string `json:"new_str" api:"required"`
 	// Text to search for and replace
@@ -4546,7 +4546,7 @@ func (r *BetaMemoryTool20250818StrReplaceCommand) UnmarshalJSON(data []byte) err
 
 type BetaMemoryTool20250818ViewCommand struct {
 	// Command type identifier
-	Command constant.View `json:"command" api:"required"`
+	Command constant.View `json:"command" default:"view"`
 	// Path to directory or file to view
 	Path string `json:"path" api:"required"`
 	// Optional line range for viewing specific lines
@@ -4621,7 +4621,7 @@ type BetaMessage struct {
 	// Conversational role of the generated message.
 	//
 	// This will always be `"assistant"`.
-	Role constant.Assistant `json:"role" api:"required"`
+	Role constant.Assistant `json:"role" default:"assistant"`
 	// The reason that we stopped.
 	//
 	// This may be one the following values:
@@ -4649,7 +4649,7 @@ type BetaMessage struct {
 	// Object type.
 	//
 	// For Messages, this is always `"message"`.
-	Type constant.Message `json:"type" api:"required"`
+	Type constant.Message `json:"type" default:"message"`
 	// Billing and rate-limit usage.
 	//
 	// Anthropic's API bills and rate-limits by token counts, as tokens represent the
@@ -4742,7 +4742,7 @@ type BetaMessageIterationUsage struct {
 	// The number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens" api:"required"`
 	// Usage for a sampling iteration
-	Type constant.Message `json:"type" api:"required"`
+	Type constant.Message `json:"type" default:"message"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CacheCreation            respjson.Field
@@ -4862,8 +4862,8 @@ const (
 
 type BetaPlainTextSource struct {
 	Data      string             `json:"data" api:"required"`
-	MediaType constant.TextPlain `json:"media_type" api:"required"`
-	Type      constant.Text      `json:"type" api:"required"`
+	MediaType constant.TextPlain `json:"media_type" default:"text/plain"`
+	Type      constant.Text      `json:"type" default:"text"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
@@ -4893,9 +4893,9 @@ func (r BetaPlainTextSource) ToParam() BetaPlainTextSourceParam {
 type BetaPlainTextSourceParam struct {
 	Data string `json:"data" api:"required"`
 	// This field can be elided, and will marshal its zero value as "text/plain".
-	MediaType constant.TextPlain `json:"media_type" api:"required"`
+	MediaType constant.TextPlain `json:"media_type" default:"text/plain"`
 	// This field can be elided, and will marshal its zero value as "text".
-	Type constant.Text `json:"type" api:"required"`
+	Type constant.Text `json:"type" default:"text"`
 	paramObj
 }
 
@@ -5026,7 +5026,7 @@ func (r *BetaRawContentBlockDeltaUnion) UnmarshalJSON(data []byte) error {
 type BetaRawContentBlockDeltaEvent struct {
 	Delta BetaRawContentBlockDeltaUnion `json:"delta" api:"required"`
 	Index int64                         `json:"index" api:"required"`
-	Type  constant.ContentBlockDelta    `json:"type" api:"required"`
+	Type  constant.ContentBlockDelta    `json:"type" default:"content_block_delta"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Delta       respjson.Field
@@ -5047,7 +5047,7 @@ type BetaRawContentBlockStartEvent struct {
 	// Response model for a file uploaded to the container.
 	ContentBlock BetaRawContentBlockStartEventContentBlockUnion `json:"content_block" api:"required"`
 	Index        int64                                          `json:"index" api:"required"`
-	Type         constant.ContentBlockStart                     `json:"type" api:"required"`
+	Type         constant.ContentBlockStart                     `json:"type" default:"content_block_start"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ContentBlock respjson.Field
@@ -5461,7 +5461,7 @@ func (r *BetaRawContentBlockStartEventContentBlockUnionContentContent) Unmarshal
 
 type BetaRawContentBlockStopEvent struct {
 	Index int64                     `json:"index" api:"required"`
-	Type  constant.ContentBlockStop `json:"type" api:"required"`
+	Type  constant.ContentBlockStop `json:"type" default:"content_block_stop"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Index       respjson.Field
@@ -5481,7 +5481,7 @@ type BetaRawMessageDeltaEvent struct {
 	// Information about context management strategies applied during the request
 	ContextManagement BetaContextManagementResponse `json:"context_management" api:"required"`
 	Delta             BetaRawMessageDeltaEventDelta `json:"delta" api:"required"`
-	Type              constant.MessageDelta         `json:"type" api:"required"`
+	Type              constant.MessageDelta         `json:"type" default:"message_delta"`
 	// Billing and rate-limit usage.
 	//
 	// Anthropic's API bills and rate-limits by token counts, as tokens represent the
@@ -5541,7 +5541,7 @@ func (r *BetaRawMessageDeltaEventDelta) UnmarshalJSON(data []byte) error {
 
 type BetaRawMessageStartEvent struct {
 	Message BetaMessage           `json:"message" api:"required"`
-	Type    constant.MessageStart `json:"type" api:"required"`
+	Type    constant.MessageStart `json:"type" default:"message_start"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -5558,7 +5558,7 @@ func (r *BetaRawMessageStartEvent) UnmarshalJSON(data []byte) error {
 }
 
 type BetaRawMessageStopEvent struct {
-	Type constant.MessageStop `json:"type" api:"required"`
+	Type constant.MessageStop `json:"type" default:"message_stop"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -5737,7 +5737,7 @@ func (r *BetaRawMessageStreamEventUnionDelta) UnmarshalJSON(data []byte) error {
 
 type BetaRedactedThinkingBlock struct {
 	Data string                    `json:"data" api:"required"`
-	Type constant.RedactedThinking `json:"type" api:"required"`
+	Type constant.RedactedThinking `json:"type" default:"redacted_thinking"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
@@ -5758,7 +5758,7 @@ type BetaRedactedThinkingBlockParam struct {
 	Data string `json:"data" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "redacted_thinking".
-	Type constant.RedactedThinking `json:"type" api:"required"`
+	Type constant.RedactedThinking `json:"type" default:"redacted_thinking"`
 	paramObj
 }
 
@@ -5779,7 +5779,7 @@ type BetaRequestDocumentBlockParam struct {
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	Citations    BetaCitationsConfigParam       `json:"citations,omitzero"`
 	// This field can be elided, and will marshal its zero value as "document".
-	Type constant.Document `json:"type" api:"required"`
+	Type constant.Document `json:"type" default:"document"`
 	paramObj
 }
 
@@ -5910,7 +5910,7 @@ type BetaRequestMCPServerURLDefinitionParam struct {
 	AuthorizationToken param.Opt[string]                          `json:"authorization_token,omitzero"`
 	ToolConfiguration  BetaRequestMCPServerToolConfigurationParam `json:"tool_configuration,omitzero"`
 	// This field can be elided, and will marshal its zero value as "url".
-	Type constant.URL `json:"type" api:"required"`
+	Type constant.URL `json:"type" default:"url"`
 	paramObj
 }
 
@@ -5930,7 +5930,7 @@ type BetaRequestMCPToolResultBlockParam struct {
 	CacheControl BetaCacheControlEphemeralParam                 `json:"cache_control,omitzero"`
 	Content      BetaRequestMCPToolResultBlockParamContentUnion `json:"content,omitzero"`
 	// This field can be elided, and will marshal its zero value as "mcp_tool_result".
-	Type constant.MCPToolResult `json:"type" api:"required"`
+	Type constant.MCPToolResult `json:"type" default:"mcp_tool_result"`
 	paramObj
 }
 
@@ -5976,7 +5976,7 @@ type BetaSearchResultBlockParam struct {
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	Citations    BetaCitationsConfigParam       `json:"citations,omitzero"`
 	// This field can be elided, and will marshal its zero value as "search_result".
-	Type constant.SearchResult `json:"type" api:"required"`
+	Type constant.SearchResult `json:"type" default:"search_result"`
 	paramObj
 }
 
@@ -5991,7 +5991,7 @@ func (r *BetaSearchResultBlockParam) UnmarshalJSON(data []byte) error {
 // Tool invocation generated by a server-side tool.
 type BetaServerToolCaller struct {
 	ToolID string                         `json:"tool_id" api:"required"`
-	Type   constant.CodeExecution20250825 `json:"type" api:"required"`
+	Type   constant.CodeExecution20250825 `json:"type" default:"code_execution_20250825"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ToolID      respjson.Field
@@ -6023,7 +6023,7 @@ type BetaServerToolCallerParam struct {
 	ToolID string `json:"tool_id" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "code_execution_20250825".
-	Type constant.CodeExecution20250825 `json:"type" api:"required"`
+	Type constant.CodeExecution20250825 `json:"type" default:"code_execution_20250825"`
 	paramObj
 }
 
@@ -6037,7 +6037,7 @@ func (r *BetaServerToolCallerParam) UnmarshalJSON(data []byte) error {
 
 type BetaServerToolCaller20260120 struct {
 	ToolID string                         `json:"tool_id" api:"required"`
-	Type   constant.CodeExecution20260120 `json:"type" api:"required"`
+	Type   constant.CodeExecution20260120 `json:"type" default:"code_execution_20260120"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ToolID      respjson.Field
@@ -6068,7 +6068,7 @@ type BetaServerToolCaller20260120Param struct {
 	ToolID string `json:"tool_id" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "code_execution_20260120".
-	Type constant.CodeExecution20260120 `json:"type" api:"required"`
+	Type constant.CodeExecution20260120 `json:"type" default:"code_execution_20260120"`
 	paramObj
 }
 
@@ -6106,7 +6106,7 @@ type BetaServerToolUseBlock struct {
 	// Any of "web_search", "web_fetch", "code_execution", "bash_code_execution",
 	// "text_editor_code_execution", "tool_search_tool_regex", "tool_search_tool_bm25".
 	Name BetaServerToolUseBlockName `json:"name" api:"required"`
-	Type constant.ServerToolUse     `json:"type" api:"required"`
+	Type constant.ServerToolUse     `json:"type" default:"server_tool_use"`
 	// Tool invocation directly from the model.
 	Caller BetaServerToolUseBlockCallerUnion `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -6223,7 +6223,7 @@ type BetaServerToolUseBlockParam struct {
 	// Tool invocation directly from the model.
 	Caller BetaServerToolUseBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as "server_tool_use".
-	Type constant.ServerToolUse `json:"type" api:"required"`
+	Type constant.ServerToolUse `json:"type" default:"server_tool_use"`
 	paramObj
 }
 
@@ -6299,7 +6299,7 @@ func (u BetaServerToolUseBlockParamCallerUnion) GetToolID() *string {
 
 type BetaSignatureDelta struct {
 	Signature string                  `json:"signature" api:"required"`
-	Type      constant.SignatureDelta `json:"type" api:"required"`
+	Type      constant.SignatureDelta `json:"type" default:"signature_delta"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Signature   respjson.Field
@@ -6401,7 +6401,7 @@ type BetaTextBlock struct {
 	// and content document results in `content_block_location`.
 	Citations []BetaTextCitationUnion `json:"citations" api:"required"`
 	Text      string                  `json:"text" api:"required"`
-	Type      constant.Text           `json:"type" api:"required"`
+	Type      constant.Text           `json:"type" default:"text"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Citations   respjson.Field
@@ -6425,7 +6425,7 @@ type BetaTextBlockParam struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "text".
-	Type constant.Text `json:"type" api:"required"`
+	Type constant.Text `json:"type" default:"text"`
 	paramObj
 }
 
@@ -6755,7 +6755,7 @@ func (u BetaTextCitationParamUnion) GetTitle() *string {
 
 type BetaTextDelta struct {
 	Text string             `json:"text" api:"required"`
-	Type constant.TextDelta `json:"type" api:"required"`
+	Type constant.TextDelta `json:"type" default:"text_delta"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Text        respjson.Field
@@ -6773,7 +6773,7 @@ func (r *BetaTextDelta) UnmarshalJSON(data []byte) error {
 
 type BetaTextEditorCodeExecutionCreateResultBlock struct {
 	IsFileUpdate bool                                         `json:"is_file_update" api:"required"`
-	Type         constant.TextEditorCodeExecutionCreateResult `json:"type" api:"required"`
+	Type         constant.TextEditorCodeExecutionCreateResult `json:"type" default:"text_editor_code_execution_create_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		IsFileUpdate respjson.Field
@@ -6794,7 +6794,7 @@ type BetaTextEditorCodeExecutionCreateResultBlockParam struct {
 	IsFileUpdate bool `json:"is_file_update" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "text_editor_code_execution_create_result".
-	Type constant.TextEditorCodeExecutionCreateResult `json:"type" api:"required"`
+	Type constant.TextEditorCodeExecutionCreateResult `json:"type" default:"text_editor_code_execution_create_result"`
 	paramObj
 }
 
@@ -6812,7 +6812,7 @@ type BetaTextEditorCodeExecutionStrReplaceResultBlock struct {
 	NewStart int64                                            `json:"new_start" api:"required"`
 	OldLines int64                                            `json:"old_lines" api:"required"`
 	OldStart int64                                            `json:"old_start" api:"required"`
-	Type     constant.TextEditorCodeExecutionStrReplaceResult `json:"type" api:"required"`
+	Type     constant.TextEditorCodeExecutionStrReplaceResult `json:"type" default:"text_editor_code_execution_str_replace_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Lines       respjson.Field
@@ -6841,7 +6841,7 @@ type BetaTextEditorCodeExecutionStrReplaceResultBlockParam struct {
 	Lines    []string         `json:"lines,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "text_editor_code_execution_str_replace_result".
-	Type constant.TextEditorCodeExecutionStrReplaceResult `json:"type" api:"required"`
+	Type constant.TextEditorCodeExecutionStrReplaceResult `json:"type" default:"text_editor_code_execution_str_replace_result"`
 	paramObj
 }
 
@@ -6856,7 +6856,7 @@ func (r *BetaTextEditorCodeExecutionStrReplaceResultBlockParam) UnmarshalJSON(da
 type BetaTextEditorCodeExecutionToolResultBlock struct {
 	Content   BetaTextEditorCodeExecutionToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                                 `json:"tool_use_id" api:"required"`
-	Type      constant.TextEditorCodeExecutionToolResult             `json:"type" api:"required"`
+	Type      constant.TextEditorCodeExecutionToolResult             `json:"type" default:"text_editor_code_execution_tool_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -6962,7 +6962,7 @@ type BetaTextEditorCodeExecutionToolResultBlockParam struct {
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "text_editor_code_execution_tool_result".
-	Type constant.TextEditorCodeExecutionToolResult `json:"type" api:"required"`
+	Type constant.TextEditorCodeExecutionToolResult `json:"type" default:"text_editor_code_execution_tool_result"`
 	paramObj
 }
 
@@ -7128,7 +7128,7 @@ type BetaTextEditorCodeExecutionToolResultError struct {
 	// "execution_time_exceeded", "file_not_found".
 	ErrorCode    BetaTextEditorCodeExecutionToolResultErrorErrorCode `json:"error_code" api:"required"`
 	ErrorMessage string                                              `json:"error_message" api:"required"`
-	Type         constant.TextEditorCodeExecutionToolResultError     `json:"type" api:"required"`
+	Type         constant.TextEditorCodeExecutionToolResultError     `json:"type" default:"text_editor_code_execution_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode    respjson.Field
@@ -7163,7 +7163,7 @@ type BetaTextEditorCodeExecutionToolResultErrorParam struct {
 	ErrorMessage param.Opt[string]                                        `json:"error_message,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "text_editor_code_execution_tool_result_error".
-	Type constant.TextEditorCodeExecutionToolResultError `json:"type" api:"required"`
+	Type constant.TextEditorCodeExecutionToolResultError `json:"type" default:"text_editor_code_execution_tool_result_error"`
 	paramObj
 }
 
@@ -7192,7 +7192,7 @@ type BetaTextEditorCodeExecutionViewResultBlock struct {
 	NumLines   int64                                              `json:"num_lines" api:"required"`
 	StartLine  int64                                              `json:"start_line" api:"required"`
 	TotalLines int64                                              `json:"total_lines" api:"required"`
-	Type       constant.TextEditorCodeExecutionViewResult         `json:"type" api:"required"`
+	Type       constant.TextEditorCodeExecutionViewResult         `json:"type" default:"text_editor_code_execution_view_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -7230,7 +7230,7 @@ type BetaTextEditorCodeExecutionViewResultBlockParam struct {
 	TotalLines param.Opt[int64]                                        `json:"total_lines,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "text_editor_code_execution_view_result".
-	Type constant.TextEditorCodeExecutionViewResult `json:"type" api:"required"`
+	Type constant.TextEditorCodeExecutionViewResult `json:"type" default:"text_editor_code_execution_view_result"`
 	paramObj
 }
 
@@ -7253,7 +7253,7 @@ const (
 type BetaThinkingBlock struct {
 	Signature string            `json:"signature" api:"required"`
 	Thinking  string            `json:"thinking" api:"required"`
-	Type      constant.Thinking `json:"type" api:"required"`
+	Type      constant.Thinking `json:"type" default:"thinking"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Signature   respjson.Field
@@ -7275,7 +7275,7 @@ type BetaThinkingBlockParam struct {
 	Signature string `json:"signature" api:"required"`
 	Thinking  string `json:"thinking" api:"required"`
 	// This field can be elided, and will marshal its zero value as "thinking".
-	Type constant.Thinking `json:"type" api:"required"`
+	Type constant.Thinking `json:"type" default:"thinking"`
 	paramObj
 }
 
@@ -7297,7 +7297,7 @@ type BetaThinkingConfigAdaptiveParam struct {
 	// Any of "summarized", "omitted".
 	Display BetaThinkingConfigAdaptiveDisplay `json:"display,omitzero"`
 	// This field can be elided, and will marshal its zero value as "adaptive".
-	Type constant.Adaptive `json:"type" api:"required"`
+	Type constant.Adaptive `json:"type" default:"adaptive"`
 	paramObj
 }
 
@@ -7329,7 +7329,7 @@ func NewBetaThinkingConfigDisabledParam() BetaThinkingConfigDisabledParam {
 // This struct has a constant value, construct it with
 // [NewBetaThinkingConfigDisabledParam].
 type BetaThinkingConfigDisabledParam struct {
-	Type constant.Disabled `json:"type" api:"required"`
+	Type constant.Disabled `json:"type" default:"disabled"`
 	paramObj
 }
 
@@ -7361,7 +7361,7 @@ type BetaThinkingConfigEnabledParam struct {
 	// Any of "summarized", "omitted".
 	Display BetaThinkingConfigEnabledDisplay `json:"display,omitzero"`
 	// This field can be elided, and will marshal its zero value as "enabled".
-	Type constant.Enabled `json:"type" api:"required"`
+	Type constant.Enabled `json:"type" default:"enabled"`
 	paramObj
 }
 
@@ -7450,7 +7450,7 @@ func (u BetaThinkingConfigParamUnion) GetDisplay() *string {
 
 type BetaThinkingDelta struct {
 	Thinking string                 `json:"thinking" api:"required"`
-	Type     constant.ThinkingDelta `json:"type" api:"required"`
+	Type     constant.ThinkingDelta `json:"type" default:"thinking_delta"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Thinking    respjson.Field
@@ -7470,7 +7470,7 @@ func (r *BetaThinkingDelta) UnmarshalJSON(data []byte) error {
 type BetaThinkingTurnsParam struct {
 	Value int64 `json:"value" api:"required"`
 	// This field can be elided, and will marshal its zero value as "thinking_turns".
-	Type constant.ThinkingTurns `json:"type" api:"required"`
+	Type constant.ThinkingTurns `json:"type" default:"thinking_turns"`
 	paramObj
 }
 
@@ -7539,7 +7539,7 @@ type BetaToolInputSchemaParam struct {
 	Properties any      `json:"properties,omitzero"`
 	Required   []string `json:"required,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
-	Type        constant.Object `json:"type" api:"required"`
+	Type        constant.Object `json:"type" default:"object"`
 	ExtraFields map[string]any  `json:"-"`
 	paramObj
 }
@@ -7575,9 +7575,9 @@ type BetaToolBash20241022Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "bash".
-	Name constant.Bash `json:"name" api:"required"`
+	Name constant.Bash `json:"name" default:"bash"`
 	// This field can be elided, and will marshal its zero value as "bash_20241022".
-	Type constant.Bash20241022 `json:"type" api:"required"`
+	Type constant.Bash20241022 `json:"type" default:"bash_20241022"`
 	paramObj
 }
 
@@ -7606,9 +7606,9 @@ type BetaToolBash20250124Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "bash".
-	Name constant.Bash `json:"name" api:"required"`
+	Name constant.Bash `json:"name" default:"bash"`
 	// This field can be elided, and will marshal its zero value as "bash_20250124".
-	Type constant.Bash20250124 `json:"type" api:"required"`
+	Type constant.Bash20250124 `json:"type" default:"bash_20250124"`
 	paramObj
 }
 
@@ -7701,7 +7701,7 @@ type BetaToolChoiceAnyParam struct {
 	// use.
 	DisableParallelToolUse param.Opt[bool] `json:"disable_parallel_tool_use,omitzero"`
 	// This field can be elided, and will marshal its zero value as "any".
-	Type constant.Any `json:"type" api:"required"`
+	Type constant.Any `json:"type" default:"any"`
 	paramObj
 }
 
@@ -7723,7 +7723,7 @@ type BetaToolChoiceAutoParam struct {
 	// use.
 	DisableParallelToolUse param.Opt[bool] `json:"disable_parallel_tool_use,omitzero"`
 	// This field can be elided, and will marshal its zero value as "auto".
-	Type constant.Auto `json:"type" api:"required"`
+	Type constant.Auto `json:"type" default:"auto"`
 	paramObj
 }
 
@@ -7746,7 +7746,7 @@ func NewBetaToolChoiceNoneParam() BetaToolChoiceNoneParam {
 // This struct has a constant value, construct it with
 // [NewBetaToolChoiceNoneParam].
 type BetaToolChoiceNoneParam struct {
-	Type constant.None `json:"type" api:"required"`
+	Type constant.None `json:"type" default:"none"`
 	paramObj
 }
 
@@ -7770,7 +7770,7 @@ type BetaToolChoiceToolParam struct {
 	// use.
 	DisableParallelToolUse param.Opt[bool] `json:"disable_parallel_tool_use,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool".
-	Type constant.Tool `json:"type" api:"required"`
+	Type constant.Tool `json:"type" default:"tool"`
 	paramObj
 }
 
@@ -7805,10 +7805,10 @@ type BetaToolComputerUse20241022Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "computer".
-	Name constant.Computer `json:"name" api:"required"`
+	Name constant.Computer `json:"name" default:"computer"`
 	// This field can be elided, and will marshal its zero value as
 	// "computer_20241022".
-	Type constant.Computer20241022 `json:"type" api:"required"`
+	Type constant.Computer20241022 `json:"type" default:"computer_20241022"`
 	paramObj
 }
 
@@ -7843,10 +7843,10 @@ type BetaToolComputerUse20250124Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "computer".
-	Name constant.Computer `json:"name" api:"required"`
+	Name constant.Computer `json:"name" default:"computer"`
 	// This field can be elided, and will marshal its zero value as
 	// "computer_20250124".
-	Type constant.Computer20250124 `json:"type" api:"required"`
+	Type constant.Computer20250124 `json:"type" default:"computer_20250124"`
 	paramObj
 }
 
@@ -7883,10 +7883,10 @@ type BetaToolComputerUse20251124Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "computer".
-	Name constant.Computer `json:"name" api:"required"`
+	Name constant.Computer `json:"name" default:"computer"`
 	// This field can be elided, and will marshal its zero value as
 	// "computer_20251124".
-	Type constant.Computer20251124 `json:"type" api:"required"`
+	Type constant.Computer20251124 `json:"type" default:"computer_20251124"`
 	paramObj
 }
 
@@ -7900,7 +7900,7 @@ func (r *BetaToolComputerUse20251124Param) UnmarshalJSON(data []byte) error {
 
 type BetaToolReferenceBlock struct {
 	ToolName string                 `json:"tool_name" api:"required"`
-	Type     constant.ToolReference `json:"type" api:"required"`
+	Type     constant.ToolReference `json:"type" default:"tool_reference"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ToolName    respjson.Field
@@ -7924,7 +7924,7 @@ type BetaToolReferenceBlockParam struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_reference".
-	Type constant.ToolReference `json:"type" api:"required"`
+	Type constant.ToolReference `json:"type" default:"tool_reference"`
 	paramObj
 }
 
@@ -7944,7 +7944,7 @@ type BetaToolResultBlockParam struct {
 	CacheControl BetaCacheControlEphemeralParam         `json:"cache_control,omitzero"`
 	Content      []BetaToolResultBlockParamContentUnion `json:"content,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_result".
-	Type constant.ToolResult `json:"type" api:"required"`
+	Type constant.ToolResult `json:"type" default:"tool_result"`
 	paramObj
 }
 
@@ -8237,7 +8237,7 @@ type BetaToolSearchToolBm25_20251119Param struct {
 	//
 	// This field can be elided, and will marshal its zero value as
 	// "tool_search_tool_bm25".
-	Name constant.ToolSearchToolBm25 `json:"name" api:"required"`
+	Name constant.ToolSearchToolBm25 `json:"name" default:"tool_search_tool_bm25"`
 	paramObj
 }
 
@@ -8275,7 +8275,7 @@ type BetaToolSearchToolRegex20251119Param struct {
 	//
 	// This field can be elided, and will marshal its zero value as
 	// "tool_search_tool_regex".
-	Name constant.ToolSearchToolRegex `json:"name" api:"required"`
+	Name constant.ToolSearchToolRegex `json:"name" default:"tool_search_tool_regex"`
 	paramObj
 }
 
@@ -8297,7 +8297,7 @@ const (
 type BetaToolSearchToolResultBlock struct {
 	Content   BetaToolSearchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                    `json:"tool_use_id" api:"required"`
-	Type      constant.ToolSearchToolResult             `json:"type" api:"required"`
+	Type      constant.ToolSearchToolResult             `json:"type" default:"tool_search_tool_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -8361,7 +8361,7 @@ type BetaToolSearchToolResultBlockParam struct {
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "tool_search_tool_result".
-	Type constant.ToolSearchToolResult `json:"type" api:"required"`
+	Type constant.ToolSearchToolResult `json:"type" default:"tool_search_tool_result"`
 	paramObj
 }
 
@@ -8429,7 +8429,7 @@ type BetaToolSearchToolResultError struct {
 	// "execution_time_exceeded".
 	ErrorCode    BetaToolSearchToolResultErrorErrorCode `json:"error_code" api:"required"`
 	ErrorMessage string                                 `json:"error_message" api:"required"`
-	Type         constant.ToolSearchToolResultError     `json:"type" api:"required"`
+	Type         constant.ToolSearchToolResultError     `json:"type" default:"tool_search_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode    respjson.Field
@@ -8462,7 +8462,7 @@ type BetaToolSearchToolResultErrorParam struct {
 	ErrorCode BetaToolSearchToolResultErrorParamErrorCode `json:"error_code,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "tool_search_tool_result_error".
-	Type constant.ToolSearchToolResultError `json:"type" api:"required"`
+	Type constant.ToolSearchToolResultError `json:"type" default:"tool_search_tool_result_error"`
 	paramObj
 }
 
@@ -8485,7 +8485,7 @@ const (
 
 type BetaToolSearchToolSearchResultBlock struct {
 	ToolReferences []BetaToolReferenceBlock            `json:"tool_references" api:"required"`
-	Type           constant.ToolSearchToolSearchResult `json:"type" api:"required"`
+	Type           constant.ToolSearchToolSearchResult `json:"type" default:"tool_search_tool_search_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ToolReferences respjson.Field
@@ -8506,7 +8506,7 @@ type BetaToolSearchToolSearchResultBlockParam struct {
 	ToolReferences []BetaToolReferenceBlockParam `json:"tool_references,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "tool_search_tool_search_result".
-	Type constant.ToolSearchToolSearchResult `json:"type" api:"required"`
+	Type constant.ToolSearchToolSearchResult `json:"type" default:"tool_search_tool_search_result"`
 	paramObj
 }
 
@@ -8536,10 +8536,10 @@ type BetaToolTextEditor20241022Param struct {
 	//
 	// This field can be elided, and will marshal its zero value as
 	// "str_replace_editor".
-	Name constant.StrReplaceEditor `json:"name" api:"required"`
+	Name constant.StrReplaceEditor `json:"name" default:"str_replace_editor"`
 	// This field can be elided, and will marshal its zero value as
 	// "text_editor_20241022".
-	Type constant.TextEditor20241022 `json:"type" api:"required"`
+	Type constant.TextEditor20241022 `json:"type" default:"text_editor_20241022"`
 	paramObj
 }
 
@@ -8569,10 +8569,10 @@ type BetaToolTextEditor20250124Param struct {
 	//
 	// This field can be elided, and will marshal its zero value as
 	// "str_replace_editor".
-	Name constant.StrReplaceEditor `json:"name" api:"required"`
+	Name constant.StrReplaceEditor `json:"name" default:"str_replace_editor"`
 	// This field can be elided, and will marshal its zero value as
 	// "text_editor_20250124".
-	Type constant.TextEditor20250124 `json:"type" api:"required"`
+	Type constant.TextEditor20250124 `json:"type" default:"text_editor_20250124"`
 	paramObj
 }
 
@@ -8602,10 +8602,10 @@ type BetaToolTextEditor20250429Param struct {
 	//
 	// This field can be elided, and will marshal its zero value as
 	// "str_replace_based_edit_tool".
-	Name constant.StrReplaceBasedEditTool `json:"name" api:"required"`
+	Name constant.StrReplaceBasedEditTool `json:"name" default:"str_replace_based_edit_tool"`
 	// This field can be elided, and will marshal its zero value as
 	// "text_editor_20250429".
-	Type constant.TextEditor20250429 `json:"type" api:"required"`
+	Type constant.TextEditor20250429 `json:"type" default:"text_editor_20250429"`
 	paramObj
 }
 
@@ -8638,10 +8638,10 @@ type BetaToolTextEditor20250728Param struct {
 	//
 	// This field can be elided, and will marshal its zero value as
 	// "str_replace_based_edit_tool".
-	Name constant.StrReplaceBasedEditTool `json:"name" api:"required"`
+	Name constant.StrReplaceBasedEditTool `json:"name" default:"str_replace_based_edit_tool"`
 	// This field can be elided, and will marshal its zero value as
 	// "text_editor_20250728".
-	Type constant.TextEditor20250728 `json:"type" api:"required"`
+	Type constant.TextEditor20250728 `json:"type" default:"text_editor_20250728"`
 	paramObj
 }
 
@@ -9323,7 +9323,7 @@ type BetaToolUseBlock struct {
 	ID    string           `json:"id" api:"required"`
 	Input any              `json:"input" api:"required"`
 	Name  string           `json:"name" api:"required"`
-	Type  constant.ToolUse `json:"type" api:"required"`
+	Type  constant.ToolUse `json:"type" default:"tool_use"`
 	// Tool invocation directly from the model.
 	Caller BetaToolUseBlockCallerUnion `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -9425,7 +9425,7 @@ type BetaToolUseBlockParam struct {
 	// Tool invocation directly from the model.
 	Caller BetaToolUseBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_use".
-	Type constant.ToolUse `json:"type" api:"required"`
+	Type constant.ToolUse `json:"type" default:"tool_use"`
 	paramObj
 }
 
@@ -9491,7 +9491,7 @@ func (u BetaToolUseBlockParamCallerUnion) GetToolID() *string {
 type BetaToolUsesKeepParam struct {
 	Value int64 `json:"value" api:"required"`
 	// This field can be elided, and will marshal its zero value as "tool_uses".
-	Type constant.ToolUses `json:"type" api:"required"`
+	Type constant.ToolUses `json:"type" default:"tool_uses"`
 	paramObj
 }
 
@@ -9507,7 +9507,7 @@ func (r *BetaToolUsesKeepParam) UnmarshalJSON(data []byte) error {
 type BetaToolUsesTriggerParam struct {
 	Value int64 `json:"value" api:"required"`
 	// This field can be elided, and will marshal its zero value as "tool_uses".
-	Type constant.ToolUses `json:"type" api:"required"`
+	Type constant.ToolUses `json:"type" default:"tool_uses"`
 	paramObj
 }
 
@@ -9523,7 +9523,7 @@ func (r *BetaToolUsesTriggerParam) UnmarshalJSON(data []byte) error {
 type BetaURLImageSourceParam struct {
 	URL string `json:"url" api:"required"`
 	// This field can be elided, and will marshal its zero value as "url".
-	Type constant.URL `json:"type" api:"required"`
+	Type constant.URL `json:"type" default:"url"`
 	paramObj
 }
 
@@ -9539,7 +9539,7 @@ func (r *BetaURLImageSourceParam) UnmarshalJSON(data []byte) error {
 type BetaURLPDFSourceParam struct {
 	URL string `json:"url" api:"required"`
 	// This field can be elided, and will marshal its zero value as "url".
-	Type constant.URL `json:"type" api:"required"`
+	Type constant.URL `json:"type" default:"url"`
 	paramObj
 }
 
@@ -9636,7 +9636,7 @@ type BetaUserLocationParam struct {
 	// The [IANA timezone](https://nodatime.org/TimeZones) of the user.
 	Timezone param.Opt[string] `json:"timezone,omitzero"`
 	// This field can be elided, and will marshal its zero value as "approximate".
-	Type constant.Approximate `json:"type" api:"required"`
+	Type constant.Approximate `json:"type" default:"approximate"`
 	paramObj
 }
 
@@ -9652,7 +9652,7 @@ type BetaWebFetchBlock struct {
 	Content BetaDocumentBlock `json:"content" api:"required"`
 	// ISO 8601 timestamp when the content was retrieved
 	RetrievedAt string                  `json:"retrieved_at" api:"required"`
-	Type        constant.WebFetchResult `json:"type" api:"required"`
+	Type        constant.WebFetchResult `json:"type" default:"web_fetch_result"`
 	// Fetched content URL
 	URL string `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -9680,7 +9680,7 @@ type BetaWebFetchBlockParam struct {
 	// ISO 8601 timestamp when the content was retrieved
 	RetrievedAt param.Opt[string] `json:"retrieved_at,omitzero"`
 	// This field can be elided, and will marshal its zero value as "web_fetch_result".
-	Type constant.WebFetchResult `json:"type" api:"required"`
+	Type constant.WebFetchResult `json:"type" default:"web_fetch_result"`
 	paramObj
 }
 
@@ -9720,10 +9720,10 @@ type BetaWebFetchTool20250910Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "web_fetch".
-	Name constant.WebFetch `json:"name" api:"required"`
+	Name constant.WebFetch `json:"name" default:"web_fetch"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_fetch_20250910".
-	Type constant.WebFetch20250910 `json:"type" api:"required"`
+	Type constant.WebFetch20250910 `json:"type" default:"web_fetch_20250910"`
 	paramObj
 }
 
@@ -9763,10 +9763,10 @@ type BetaWebFetchTool20260209Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "web_fetch".
-	Name constant.WebFetch `json:"name" api:"required"`
+	Name constant.WebFetch `json:"name" default:"web_fetch"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_fetch_20260209".
-	Type constant.WebFetch20260209 `json:"type" api:"required"`
+	Type constant.WebFetch20260209 `json:"type" default:"web_fetch_20260209"`
 	paramObj
 }
 
@@ -9812,10 +9812,10 @@ type BetaWebFetchTool20260309Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "web_fetch".
-	Name constant.WebFetch `json:"name" api:"required"`
+	Name constant.WebFetch `json:"name" default:"web_fetch"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_fetch_20260309".
-	Type constant.WebFetch20260309 `json:"type" api:"required"`
+	Type constant.WebFetch20260309 `json:"type" default:"web_fetch_20260309"`
 	paramObj
 }
 
@@ -9830,7 +9830,7 @@ func (r *BetaWebFetchTool20260309Param) UnmarshalJSON(data []byte) error {
 type BetaWebFetchToolResultBlock struct {
 	Content   BetaWebFetchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                  `json:"tool_use_id" api:"required"`
-	Type      constant.WebFetchToolResult             `json:"type" api:"required"`
+	Type      constant.WebFetchToolResult             `json:"type" default:"web_fetch_tool_result"`
 	// Tool invocation directly from the model.
 	Caller BetaWebFetchToolResultBlockCallerUnion `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -9974,7 +9974,7 @@ type BetaWebFetchToolResultBlockParam struct {
 	Caller BetaWebFetchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_fetch_tool_result".
-	Type constant.WebFetchToolResult `json:"type" api:"required"`
+	Type constant.WebFetchToolResult `json:"type" default:"web_fetch_tool_result"`
 	paramObj
 }
 
@@ -10108,7 +10108,7 @@ type BetaWebFetchToolResultErrorBlock struct {
 	// "url_not_accessible", "unsupported_content_type", "too_many_requests",
 	// "max_uses_exceeded", "unavailable".
 	ErrorCode BetaWebFetchToolResultErrorCode  `json:"error_code" api:"required"`
-	Type      constant.WebFetchToolResultError `json:"type" api:"required"`
+	Type      constant.WebFetchToolResultError `json:"type" default:"web_fetch_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode   respjson.Field
@@ -10132,7 +10132,7 @@ type BetaWebFetchToolResultErrorBlockParam struct {
 	ErrorCode BetaWebFetchToolResultErrorCode `json:"error_code,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_fetch_tool_result_error".
-	Type constant.WebFetchToolResultError `json:"type" api:"required"`
+	Type constant.WebFetchToolResultError `json:"type" default:"web_fetch_tool_result_error"`
 	paramObj
 }
 
@@ -10161,7 +10161,7 @@ type BetaWebSearchResultBlock struct {
 	EncryptedContent string                   `json:"encrypted_content" api:"required"`
 	PageAge          string                   `json:"page_age" api:"required"`
 	Title            string                   `json:"title" api:"required"`
-	Type             constant.WebSearchResult `json:"type" api:"required"`
+	Type             constant.WebSearchResult `json:"type" default:"web_search_result"`
 	URL              string                   `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -10189,7 +10189,7 @@ type BetaWebSearchResultBlockParam struct {
 	PageAge          param.Opt[string] `json:"page_age,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_result".
-	Type constant.WebSearchResult `json:"type" api:"required"`
+	Type constant.WebSearchResult `json:"type" default:"web_search_result"`
 	paramObj
 }
 
@@ -10228,10 +10228,10 @@ type BetaWebSearchTool20250305Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "web_search".
-	Name constant.WebSearch `json:"name" api:"required"`
+	Name constant.WebSearch `json:"name" default:"web_search"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_20250305".
-	Type constant.WebSearch20250305 `json:"type" api:"required"`
+	Type constant.WebSearch20250305 `json:"type" default:"web_search_20250305"`
 	paramObj
 }
 
@@ -10270,10 +10270,10 @@ type BetaWebSearchTool20260209Param struct {
 	// This is how the tool will be called by the model and in `tool_use` blocks.
 	//
 	// This field can be elided, and will marshal its zero value as "web_search".
-	Name constant.WebSearch `json:"name" api:"required"`
+	Name constant.WebSearch `json:"name" default:"web_search"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_20260209".
-	Type constant.WebSearch20260209 `json:"type" api:"required"`
+	Type constant.WebSearch20260209 `json:"type" default:"web_search_20260209"`
 	paramObj
 }
 
@@ -10292,7 +10292,7 @@ type BetaWebSearchToolRequestErrorParam struct {
 	ErrorCode BetaWebSearchToolResultErrorCode `json:"error_code,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_tool_result_error".
-	Type constant.WebSearchToolResultError `json:"type" api:"required"`
+	Type constant.WebSearchToolResultError `json:"type" default:"web_search_tool_result_error"`
 	paramObj
 }
 
@@ -10307,7 +10307,7 @@ func (r *BetaWebSearchToolRequestErrorParam) UnmarshalJSON(data []byte) error {
 type BetaWebSearchToolResultBlock struct {
 	Content   BetaWebSearchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                   `json:"tool_use_id" api:"required"`
-	Type      constant.WebSearchToolResult             `json:"type" api:"required"`
+	Type      constant.WebSearchToolResult             `json:"type" default:"web_search_tool_result"`
 	// Tool invocation directly from the model.
 	Caller BetaWebSearchToolResultBlockCallerUnion `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -10450,7 +10450,7 @@ type BetaWebSearchToolResultBlockParam struct {
 	Caller BetaWebSearchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_tool_result".
-	Type constant.WebSearchToolResult `json:"type" api:"required"`
+	Type constant.WebSearchToolResult `json:"type" default:"web_search_tool_result"`
 	paramObj
 }
 
@@ -10547,7 +10547,7 @@ type BetaWebSearchToolResultError struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
 	// "too_many_requests", "query_too_long", "request_too_large".
 	ErrorCode BetaWebSearchToolResultErrorCode  `json:"error_code" api:"required"`
-	Type      constant.WebSearchToolResultError `json:"type" api:"required"`
+	Type      constant.WebSearchToolResultError `json:"type" default:"web_search_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode   respjson.Field

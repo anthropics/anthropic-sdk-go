@@ -583,6 +583,314 @@ func TestEnumCrossTypeMismatch(t *testing.T) {
 	})
 }
 
+// TestNullAndUnionTypeValidation verifies support for the JSON Schema `null`
+// type and type arrays like ["string", "null"].
+func TestNullAndUnionTypeValidation(t *testing.T) {
+	t.Parallel()
+
+	type Input struct {
+		Value any `json:"value"`
+	}
+
+	t.Run("null type accepts null and rejects non-null", func(t *testing.T) {
+		schema := map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"value": map[string]any{"type": "null"},
+			},
+			"required": []string{"value"},
+		}
+
+		handlerCalled := false
+		tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema),
+			func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+				handlerCalled = true
+				return anthropic.BetaToolResultBlockParamContentUnion{
+					OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+				}, nil
+			})
+		if err != nil {
+			t.Fatalf("create: %v", err)
+		}
+
+		handlerCalled = false
+		_, err = tool.Execute(context.Background(), json.RawMessage(`{"value":null}`))
+		if err != nil {
+			t.Fatalf("unexpected error for null value: %v", err)
+		}
+		if !handlerCalled {
+			t.Fatal("handler was not called")
+		}
+
+		handlerCalled = false
+		_, err = tool.Execute(context.Background(), json.RawMessage(`{"value":"x"}`))
+		if err == nil {
+			t.Fatal("expected error for non-null value")
+		}
+		if handlerCalled {
+			t.Fatal("handler should NOT be called")
+		}
+	})
+
+	t.Run("type array accepts allowed variants and rejects others", func(t *testing.T) {
+		schema := map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"value": map[string]any{"type": []any{"string", "null"}},
+			},
+			"required": []string{"value"},
+		}
+
+		handlerCalled := false
+		tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema),
+			func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+				handlerCalled = true
+				return anthropic.BetaToolResultBlockParamContentUnion{
+					OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+				}, nil
+			})
+		if err != nil {
+			t.Fatalf("create: %v", err)
+		}
+
+		for _, raw := range []string{`{"value":"ok"}`, `{"value":null}`} {
+			handlerCalled = false
+			_, err = tool.Execute(context.Background(), json.RawMessage(raw))
+			if err != nil {
+				t.Fatalf("unexpected error for %s: %v", raw, err)
+			}
+			if !handlerCalled {
+				t.Fatal("handler was not called")
+			}
+		}
+
+		handlerCalled = false
+		_, err = tool.Execute(context.Background(), json.RawMessage(`{"value":123}`))
+		if err == nil {
+			t.Fatal("expected error for disallowed union variant")
+		}
+		if handlerCalled {
+			t.Fatal("handler should NOT be called")
+		}
+	})
+}
+
+// TestAnyOfValidation verifies anyOf unions are enforced recursively.
+func TestAnyOfValidation(t *testing.T) {
+	t.Parallel()
+
+	type Input struct {
+		Value any `json:"value"`
+	}
+
+	schema := map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"value": map[string]any{
+				"anyOf": []any{
+					map[string]any{"type": "string"},
+					map[string]any{"type": "null"},
+				},
+			},
+		},
+		"required": []string{"value"},
+	}
+
+	handlerCalled := false
+	tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema),
+		func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+			handlerCalled = true
+			return anthropic.BetaToolResultBlockParamContentUnion{
+				OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+			}, nil
+		})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	for _, raw := range []string{`{"value":"ok"}`, `{"value":null}`} {
+		handlerCalled = false
+		_, err = tool.Execute(context.Background(), json.RawMessage(raw))
+		if err != nil {
+			t.Fatalf("unexpected error for %s: %v", raw, err)
+		}
+		if !handlerCalled {
+			t.Fatal("handler was not called")
+		}
+	}
+
+	handlerCalled = false
+	_, err = tool.Execute(context.Background(), json.RawMessage(`{"value":123}`))
+	if err == nil {
+		t.Fatal("expected error for anyOf mismatch")
+	}
+	if handlerCalled {
+		t.Fatal("handler should NOT be called")
+	}
+}
+
+// TestNestedObjectValidation verifies that nested object schemas are validated recursively.
+func TestNestedObjectValidation(t *testing.T) {
+	t.Parallel()
+
+	type Input struct {
+		Child map[string]any `json:"child"`
+	}
+
+	schema := map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"child": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"name": map[string]any{"type": "string"},
+				},
+				"required": []string{"name"},
+			},
+		},
+		"required": []string{"child"},
+	}
+
+	handlerCalled := false
+	tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema),
+		func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+			handlerCalled = true
+			return anthropic.BetaToolResultBlockParamContentUnion{
+				OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+			}, nil
+		})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	handlerCalled = false
+	_, err = tool.Execute(context.Background(), json.RawMessage(`{"child":{"name":"ok"}}`))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !handlerCalled {
+		t.Fatal("handler was not called")
+	}
+
+	for _, raw := range []string{`{"child":{}}`, `{"child":{"name":123}}`} {
+		handlerCalled = false
+		_, err = tool.Execute(context.Background(), json.RawMessage(raw))
+		if err == nil {
+			t.Fatalf("expected nested validation error for %s", raw)
+		}
+		if handlerCalled {
+			t.Fatal("handler should NOT be called")
+		}
+	}
+}
+
+// TestArrayItemValidation verifies array item schemas are enforced recursively.
+func TestArrayItemValidation(t *testing.T) {
+	t.Parallel()
+
+	type Input struct {
+		Tags []any `json:"tags"`
+	}
+
+	schema := map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"tags": map[string]any{
+				"type":  "array",
+				"items": map[string]any{"type": "integer"},
+			},
+		},
+		"required": []string{"tags"},
+	}
+
+	handlerCalled := false
+	tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema),
+		func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+			handlerCalled = true
+			return anthropic.BetaToolResultBlockParamContentUnion{
+				OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+			}, nil
+		})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	handlerCalled = false
+	_, err = tool.Execute(context.Background(), json.RawMessage(`{"tags":[1,2,3]}`))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !handlerCalled {
+		t.Fatal("handler was not called")
+	}
+
+	handlerCalled = false
+	_, err = tool.Execute(context.Background(), json.RawMessage(`{"tags":[1,"x"]}`))
+	if err == nil {
+		t.Fatal("expected array item validation error")
+	}
+	if handlerCalled {
+		t.Fatal("handler should NOT be called")
+	}
+}
+
+// TestRefSchemaValidation verifies helper-generated schemas with $defs/$ref are
+// validated recursively through the direct NewBetaTool constructor path.
+func TestRefSchemaValidation(t *testing.T) {
+	t.Parallel()
+
+	type Input struct {
+		Child map[string]any `json:"child"`
+	}
+
+	rawSchema := map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"child": map[string]any{
+				"$ref": "#/$defs/Child",
+			},
+		},
+		"required": []string{"child"},
+		"$defs": map[string]any{
+			"Child": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"name": map[string]any{"type": "string"},
+				},
+				"required": []string{"name"},
+			},
+		},
+	}
+
+	schema := anthropic.BetaToolInputSchema(rawSchema)
+	handlerCalled := false
+	tool := toolrunner.NewBetaTool("t", "t", schema,
+		func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+			handlerCalled = true
+			return anthropic.BetaToolResultBlockParamContentUnion{
+				OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+			}, nil
+		})
+
+	handlerCalled = false
+	_, err := tool.Execute(context.Background(), json.RawMessage(`{"child":{"name":"ok"}}`))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !handlerCalled {
+		t.Fatal("handler was not called")
+	}
+
+	handlerCalled = false
+	_, err = tool.Execute(context.Background(), json.RawMessage(`{"child":{}}`))
+	if err == nil {
+		t.Fatal("expected nested $ref validation error")
+	}
+	if handlerCalled {
+		t.Fatal("handler should NOT be called")
+	}
+}
+
 // TestInvalidRegexPatternFromBytesFailsAtConstruction verifies that invalid
 // regex patterns are rejected during construction for constructors that return an error.
 func TestInvalidRegexPatternFromBytesFailsAtConstruction(t *testing.T) {

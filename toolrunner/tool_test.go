@@ -375,6 +375,184 @@ func TestNumericBoundsValidation(t *testing.T) {
 	})
 }
 
+// TestMissingTypeInference verifies that schemas without an explicit "type" field
+// are still treated as object schemas when they contain object-specific keywords.
+func TestMissingTypeInference(t *testing.T) {
+	t.Parallel()
+
+	type Input struct {
+		Name string `json:"name"`
+	}
+	handler := func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+		return anthropic.BetaToolResultBlockParamContentUnion{
+			OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+		}, nil
+	}
+
+	t.Run("no type with required only", func(t *testing.T) {
+		schema := map[string]any{
+			"required": []string{"name"},
+		}
+		tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema), handler)
+		if err != nil {
+			t.Fatalf("create: %v", err)
+		}
+		_, err = tool.Execute(context.Background(), json.RawMessage(`{}`))
+		if err == nil {
+			t.Fatal("expected error for missing required field in schema without type")
+		}
+	})
+
+	t.Run("no type with properties only", func(t *testing.T) {
+		schema := map[string]any{
+			"properties": map[string]any{
+				"name": map[string]any{"type": "string"},
+			},
+		}
+		tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema), handler)
+		if err != nil {
+			t.Fatalf("create: %v", err)
+		}
+		// Should validate type even without top-level "type"
+		_, err = tool.Execute(context.Background(), json.RawMessage(`{"name": 123}`))
+		if err == nil {
+			t.Fatal("expected type error in schema without type field")
+		}
+	})
+
+	t.Run("no type with additionalProperties false only", func(t *testing.T) {
+		schema := map[string]any{
+			"additionalProperties": false,
+		}
+		tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema), handler)
+		if err != nil {
+			t.Fatalf("create: %v", err)
+		}
+		_, err = tool.Execute(context.Background(), json.RawMessage(`{"x": 1}`))
+		if err == nil {
+			t.Fatal("expected error for additional property in schema with only additionalProperties:false")
+		}
+		if !strings.Contains(err.Error(), "additional property") {
+			t.Fatalf("error should mention additional property, got: %v", err)
+		}
+	})
+}
+
+// TestAdditionalPropertiesNoPropsField verifies that additionalProperties:false
+// rejects all keys when the properties field is absent entirely (not just empty).
+func TestAdditionalPropertiesNoPropsField(t *testing.T) {
+	t.Parallel()
+
+	type Input struct{}
+	schema := map[string]any{
+		"type":                 "object",
+		"additionalProperties": false,
+	}
+	tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema),
+		func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+			return anthropic.BetaToolResultBlockParamContentUnion{
+				OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+			}, nil
+		})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	t.Run("empty object accepted", func(t *testing.T) {
+		_, err := tool.Execute(context.Background(), json.RawMessage(`{}`))
+		if err != nil {
+			t.Fatalf("unexpected error for empty object: %v", err)
+		}
+	})
+
+	t.Run("any key rejected", func(t *testing.T) {
+		_, err := tool.Execute(context.Background(), json.RawMessage(`{"x": 1}`))
+		if err == nil {
+			t.Fatal("expected error for additional property with no properties defined")
+		}
+		if !strings.Contains(err.Error(), "additional property") {
+			t.Fatalf("error should mention additional property, got: %v", err)
+		}
+	})
+}
+
+// TestEnumCrossTypeMismatch verifies that enum matching is type-strict:
+// string "1" must not match numeric enum value 1.
+func TestEnumCrossTypeMismatch(t *testing.T) {
+	t.Parallel()
+
+	type Input struct {
+		Code any `json:"code"`
+	}
+	schema := map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"code": map[string]any{"enum": []any{1, 2, 3}},
+		},
+		"required": []string{"code"},
+	}
+	tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema),
+		func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+			return anthropic.BetaToolResultBlockParamContentUnion{
+				OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+			}, nil
+		})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	t.Run("numeric value matches numeric enum", func(t *testing.T) {
+		_, err := tool.Execute(context.Background(), json.RawMessage(`{"code": 1}`))
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("string value does not match numeric enum", func(t *testing.T) {
+		_, err := tool.Execute(context.Background(), json.RawMessage(`{"code": "1"}`))
+		if err == nil {
+			t.Fatal("expected error: string '1' should not match numeric enum value 1")
+		}
+	})
+}
+
+// TestInvalidRegexPattern verifies that an invalid regex pattern in the schema
+// causes validation to fail with an error instead of silently passing.
+func TestInvalidRegexPattern(t *testing.T) {
+	t.Parallel()
+
+	type Input struct {
+		Value string `json:"value"`
+	}
+	schema := map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"value": map[string]any{
+				"type":    "string",
+				"pattern": "[invalid(regex",
+			},
+		},
+		"required": []string{"value"},
+	}
+	tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema),
+		func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+			return anthropic.BetaToolResultBlockParamContentUnion{
+				OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+			}, nil
+		})
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	_, err = tool.Execute(context.Background(), json.RawMessage(`{"value": "anything"}`))
+	if err == nil {
+		t.Fatal("expected error for invalid regex pattern, got nil")
+	}
+	if !strings.Contains(err.Error(), "invalid pattern") {
+		t.Fatalf("error should mention invalid pattern, got: %v", err)
+	}
+}
+
 // mustMarshal is a test helper that marshals a value to JSON bytes or fails the test.
 func mustMarshal(t *testing.T, v any) []byte {
 	t.Helper()

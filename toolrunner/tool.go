@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -14,19 +15,70 @@ import (
 // schemaValidator holds a parsed JSON Schema for runtime validation.
 // It is compiled once at tool creation time from the tool's schema definition.
 type schemaValidator struct {
-	raw map[string]any
+	raw              map[string]any
+	compiledPatterns map[string]*regexp.Regexp // Pre-compiled regex patterns per property
+	patternErrors    map[string]error          // Compile errors for invalid patterns
 }
 
 // newSchemaValidator creates a validator from a raw schema map.
-// Returns nil if the schema is not an object type (validation will be skipped).
+// Returns nil if the schema is not an object-type schema (validation will be skipped).
+// Recognizes object schemas by: type "object", type array containing "object",
+// or missing type with properties, required, or additionalProperties present.
 func newSchemaValidator(raw map[string]any) *schemaValidator {
 	if raw == nil {
 		return nil
 	}
-	if t, _ := raw["type"].(string); t != "object" {
+
+	isObject := false
+	if typeVal, ok := raw["type"]; ok {
+		switch t := typeVal.(type) {
+		case string:
+			isObject = t == "object"
+		case []any:
+			for _, v := range t {
+				if s, ok := v.(string); ok && s == "object" {
+					isObject = true
+					break
+				}
+			}
+		}
+	} else {
+		// No type field: infer object from object-specific keywords
+		_, hasProps := raw["properties"]
+		_, hasReq := raw["required"]
+		_, hasAdditional := raw["additionalProperties"]
+		isObject = hasProps || hasReq || hasAdditional
+	}
+
+	if !isObject {
 		return nil
 	}
-	return &schemaValidator{raw: raw}
+
+	v := &schemaValidator{
+		raw:              raw,
+		compiledPatterns: make(map[string]*regexp.Regexp),
+		patternErrors:    make(map[string]error),
+	}
+
+	// Pre-compile regex patterns from property schemas
+	if props, ok := raw["properties"].(map[string]any); ok {
+		for name, propRaw := range props {
+			propSchema, ok := propRaw.(map[string]any)
+			if !ok {
+				continue
+			}
+			if pattern, ok := propSchema["pattern"].(string); ok {
+				re, err := regexp.Compile(pattern)
+				if err != nil {
+					v.patternErrors[name] = fmt.Errorf("invalid pattern '%s' for property '%s': %v", pattern, name, err)
+				} else {
+					v.compiledPatterns[name] = re
+				}
+			}
+		}
+	}
+
+	return v
 }
 
 // validate checks an unmarshaled JSON value against the schema.
@@ -58,8 +110,11 @@ func (v *schemaValidator) validate(input any) error {
 
 	// Check additionalProperties
 	if additional, ok := v.raw["additionalProperties"]; ok {
-		if val, isBool := additional.(bool); isBool && !val && props != nil {
+		if val, isBool := additional.(bool); isBool && !val {
 			for key := range obj {
+				if props == nil {
+					return fmt.Errorf("additional property '%s' is not allowed", key)
+				}
 				if _, defined := props[key]; !defined {
 					return fmt.Errorf("additional property '%s' is not allowed", key)
 				}
@@ -76,7 +131,7 @@ func (v *schemaValidator) validate(input any) error {
 		if !ok {
 			continue
 		}
-		if err := validateProperty(key, val, propSchema); err != nil {
+		if err := v.validateProperty(key, val, propSchema); err != nil {
 			return err
 		}
 	}
@@ -84,9 +139,9 @@ func (v *schemaValidator) validate(input any) error {
 }
 
 // validateProperty checks a single property value against its schema definition.
-// Enforces: type, enum, pattern, minLength, maxLength, minimum, maximum,
-// minItems, maxItems.
-func validateProperty(name string, value any, propSchema map[string]any) error {
+// Enforces: type, enum, pattern (pre-compiled), minLength, maxLength, minimum,
+// maximum, minItems, maxItems.
+func (v *schemaValidator) validateProperty(name string, value any, propSchema map[string]any) error {
 	// Type check
 	if expectedType, ok := propSchema["type"].(string); ok {
 		if err := checkType(name, value, expectedType); err != nil {
@@ -94,11 +149,11 @@ func validateProperty(name string, value any, propSchema map[string]any) error {
 		}
 	}
 
-	// Enum check
+	// Enum check (type-strict: string "1" does not match number 1)
 	if enumVals, ok := propSchema["enum"].([]any); ok {
 		found := false
 		for _, e := range enumVals {
-			if fmt.Sprintf("%v", e) == fmt.Sprintf("%v", value) {
+			if reflect.DeepEqual(e, value) {
 				found = true
 				break
 			}
@@ -114,10 +169,14 @@ func validateProperty(name string, value any, propSchema map[string]any) error {
 
 	// String constraints
 	if s, ok := value.(string); ok {
-		if pattern, ok := propSchema["pattern"].(string); ok {
-			re, err := regexp.Compile(pattern)
-			if err == nil && !re.MatchString(s) {
-				return fmt.Errorf("property '%s' value does not match pattern '%s'", name, pattern)
+		if _, hasPattern := propSchema["pattern"].(string); hasPattern {
+			// Check for pre-compiled pattern error (invalid regex in schema)
+			if err, hasFail := v.patternErrors[name]; hasFail {
+				return err
+			}
+			// Use pre-compiled regex
+			if re, ok := v.compiledPatterns[name]; ok && !re.MatchString(s) {
+				return fmt.Errorf("property '%s' value does not match pattern '%s'", name, propSchema["pattern"])
 			}
 		}
 		if minLen, ok := toFloat64(propSchema["minLength"]); ok {

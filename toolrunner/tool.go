@@ -3,10 +3,13 @@ package toolrunner
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
+	"unicode/utf8"
 
 	anthropic "github.com/anthropics/anthropic-sdk-go"
 	"github.com/invopop/jsonschema"
@@ -18,6 +21,24 @@ type schemaValidator struct {
 	raw              map[string]any
 	compiledPatterns map[string]*regexp.Regexp // Pre-compiled regex patterns per property
 	patternErrors    map[string]error          // Compile errors for invalid patterns
+}
+
+func (v *schemaValidator) schemaDefinitionError() error {
+	if v == nil || len(v.patternErrors) == 0 {
+		return nil
+	}
+
+	names := make([]string, 0, len(v.patternErrors))
+	for name := range v.patternErrors {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	errs := make([]error, 0, len(names))
+	for _, name := range names {
+		errs = append(errs, v.patternErrors[name])
+	}
+	return errors.Join(errs...)
 }
 
 // newSchemaValidator creates a validator from a raw schema map.
@@ -60,7 +81,8 @@ func newSchemaValidator(raw map[string]any) *schemaValidator {
 		patternErrors:    make(map[string]error),
 	}
 
-	// Pre-compile regex patterns from property schemas
+	// Pre-compile regex patterns from property schemas.
+	// JSON Schema's `pattern` keyword is enforced using Go's regexp engine (RE2).
 	if props, ok := raw["properties"].(map[string]any); ok {
 		for name, propRaw := range props {
 			propSchema, ok := propRaw.(map[string]any)
@@ -179,14 +201,15 @@ func (v *schemaValidator) validateProperty(name string, value any, propSchema ma
 				return fmt.Errorf("property '%s' value does not match pattern '%s'", name, propSchema["pattern"])
 			}
 		}
+		charCount := utf8.RuneCountInString(s)
 		if minLen, ok := toFloat64(propSchema["minLength"]); ok {
-			if float64(len(s)) < minLen {
-				return fmt.Errorf("property '%s' length %d is less than minimum %d", name, len(s), int(minLen))
+			if float64(charCount) < minLen {
+				return fmt.Errorf("property '%s' length %d is less than minimum %d", name, charCount, int(minLen))
 			}
 		}
 		if maxLen, ok := toFloat64(propSchema["maxLength"]); ok {
-			if float64(len(s)) > maxLen {
-				return fmt.Errorf("property '%s' length %d exceeds maximum %d", name, len(s), int(maxLen))
+			if float64(charCount) > maxLen {
+				return fmt.Errorf("property '%s' length %d exceeds maximum %d", name, charCount, int(maxLen))
 			}
 		}
 	}
@@ -372,7 +395,11 @@ func NewBetaToolFromBytes[T any](
 	if err := json.Unmarshal(schemaJSON, &rawSchema); err != nil {
 		return nil, fmt.Errorf("failed to parse raw schema: %w", err)
 	}
-	return newBetaTool(name, description, schema, rawSchema, handler), nil
+	validator := newSchemaValidator(rawSchema)
+	if err := validator.schemaDefinitionError(); err != nil {
+		return nil, fmt.Errorf("invalid tool schema: %w", err)
+	}
+	return newBetaToolWithValidator(name, description, schema, rawSchema, validator, handler), nil
 }
 
 // NewBetaToolFromJSONSchema creates a BetaTool by inferring the schema from struct type T using reflection.
@@ -404,7 +431,11 @@ func NewBetaToolFromJSONSchema[T any](
 		return nil, err
 	}
 
-	return newBetaTool(name, description, inputSchema, schemaMap, handler), nil
+	validator := newSchemaValidator(schemaMap)
+	if err := validator.schemaDefinitionError(); err != nil {
+		return nil, fmt.Errorf("invalid tool schema: %w", err)
+	}
+	return newBetaToolWithValidator(name, description, inputSchema, schemaMap, validator, handler), nil
 }
 
 // newBetaTool is the internal constructor that accepts both the typed schema param
@@ -415,12 +446,22 @@ func newBetaTool[T any](
 	rawSchema map[string]any,
 	handler func(context.Context, T) (anthropic.BetaToolResultBlockParamContentUnion, error),
 ) anthropic.BetaTool {
+	return newBetaToolWithValidator(name, description, schema, rawSchema, newSchemaValidator(rawSchema), handler)
+}
+
+func newBetaToolWithValidator[T any](
+	name, description string,
+	schema anthropic.BetaToolInputSchemaParam,
+	rawSchema map[string]any,
+	validator *schemaValidator,
+	handler func(context.Context, T) (anthropic.BetaToolResultBlockParamContentUnion, error),
+) anthropic.BetaTool {
 	return &betaTool[T]{
 		name:        name,
 		description: description,
 		schema:      schema,
 		rawSchema:   rawSchema,
-		validator:   newSchemaValidator(rawSchema),
+		validator:   validator,
 		handler:     handler,
 	}
 }

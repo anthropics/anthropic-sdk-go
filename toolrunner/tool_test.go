@@ -309,6 +309,73 @@ func TestStringLengthValidation(t *testing.T) {
 	})
 }
 
+// TestStringLengthCountsUnicodeCodePoints verifies that minLength and maxLength
+// are evaluated in Unicode code points rather than raw UTF-8 byte length.
+func TestStringLengthCountsUnicodeCodePoints(t *testing.T) {
+	t.Parallel()
+
+	type Input struct {
+		Name string `json:"name"`
+	}
+
+	schema := map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"name": map[string]any{
+				"type":      "string",
+				"minLength": 1,
+				"maxLength": 1,
+			},
+		},
+		"required": []string{"name"},
+	}
+
+	handlerCalled := false
+	tool, err := toolrunner.NewBetaToolFromBytes("unicode_name_tool", "Unicode name tool", mustMarshal(t, schema),
+		func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+			handlerCalled = true
+			return anthropic.BetaToolResultBlockParamContentUnion{
+				OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+			}, nil
+		})
+	if err != nil {
+		t.Fatalf("create tool: %v", err)
+	}
+
+	t.Run("single accented rune accepted", func(t *testing.T) {
+		handlerCalled = false
+		_, err := tool.Execute(context.Background(), json.RawMessage(`{"name": "é"}`))
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !handlerCalled {
+			t.Fatal("handler was not called")
+		}
+	})
+
+	t.Run("single emoji accepted", func(t *testing.T) {
+		handlerCalled = false
+		_, err := tool.Execute(context.Background(), json.RawMessage(`{"name": "😀"}`))
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !handlerCalled {
+			t.Fatal("handler was not called")
+		}
+	})
+
+	t.Run("two runes rejected", func(t *testing.T) {
+		handlerCalled = false
+		_, err := tool.Execute(context.Background(), json.RawMessage(`{"name": "😀😀"}`))
+		if err == nil {
+			t.Fatal("expected error for maxLength violation")
+		}
+		if handlerCalled {
+			t.Fatal("handler should NOT be called")
+		}
+	})
+}
+
 // TestNumericBoundsValidation verifies minimum and maximum enforcement.
 func TestNumericBoundsValidation(t *testing.T) {
 	t.Parallel()
@@ -516,9 +583,9 @@ func TestEnumCrossTypeMismatch(t *testing.T) {
 	})
 }
 
-// TestInvalidRegexPattern verifies that an invalid regex pattern in the schema
-// causes validation to fail with an error instead of silently passing.
-func TestInvalidRegexPattern(t *testing.T) {
+// TestInvalidRegexPatternFromBytesFailsAtConstruction verifies that invalid
+// regex patterns are rejected during construction for constructors that return an error.
+func TestInvalidRegexPatternFromBytesFailsAtConstruction(t *testing.T) {
 	t.Parallel()
 
 	type Input struct {
@@ -534,19 +601,78 @@ func TestInvalidRegexPattern(t *testing.T) {
 		},
 		"required": []string{"value"},
 	}
-	tool, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema),
+	_, err := toolrunner.NewBetaToolFromBytes("t", "t", mustMarshal(t, schema),
 		func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
 			return anthropic.BetaToolResultBlockParamContentUnion{
 				OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
 			}, nil
 		})
-	if err != nil {
-		t.Fatalf("create: %v", err)
+	if err == nil {
+		t.Fatal("expected constructor error for invalid regex pattern, got nil")
+	}
+	if !strings.Contains(err.Error(), "invalid pattern") {
+		t.Fatalf("error should mention invalid pattern, got: %v", err)
+	}
+}
+
+// TestInvalidRegexPatternFromJSONSchemaFailsAtConstruction verifies the reflected
+// constructor also fails fast on invalid developer-supplied patterns.
+func TestInvalidRegexPatternFromJSONSchemaFailsAtConstruction(t *testing.T) {
+	t.Parallel()
+
+	type Input struct {
+		Value string `json:"value" jsonschema:"pattern=[invalid(regex"`
 	}
 
-	_, err = tool.Execute(context.Background(), json.RawMessage(`{"value": "anything"}`))
+	_, err := toolrunner.NewBetaToolFromJSONSchema("t", "t",
+		func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+			return anthropic.BetaToolResultBlockParamContentUnion{
+				OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+			}, nil
+		})
 	if err == nil {
-		t.Fatal("expected error for invalid regex pattern, got nil")
+		t.Fatal("expected constructor error for invalid regex pattern, got nil")
+	}
+	if !strings.Contains(err.Error(), "invalid pattern") {
+		t.Fatalf("error should mention invalid pattern, got: %v", err)
+	}
+}
+
+// TestInvalidRegexPatternDirectConstructorDefersToExecution verifies the direct
+// constructor still surfaces invalid patterns at execution time because it cannot return an error.
+func TestInvalidRegexPatternDirectConstructorDefersToExecution(t *testing.T) {
+	t.Parallel()
+
+	type Input struct {
+		Value string `json:"value"`
+	}
+
+	schemaMap := map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"value": map[string]any{
+				"type":    "string",
+				"pattern": "[invalid(regex",
+			},
+		},
+		"required": []string{"value"},
+	}
+
+	var schema anthropic.BetaToolInputSchemaParam
+	if err := schema.UnmarshalJSON(mustMarshal(t, schemaMap)); err != nil {
+		t.Fatalf("unmarshal schema: %v", err)
+	}
+
+	tool := toolrunner.NewBetaTool("t", "t", schema,
+		func(ctx context.Context, input Input) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+			return anthropic.BetaToolResultBlockParamContentUnion{
+				OfText: &anthropic.BetaTextBlockParam{Text: "ok"},
+			}, nil
+		})
+
+	_, err := tool.Execute(context.Background(), json.RawMessage(`{"value": "anything"}`))
+	if err == nil {
+		t.Fatal("expected execution-time error for invalid regex pattern, got nil")
 	}
 	if !strings.Contains(err.Error(), "invalid pattern") {
 		t.Fatalf("error should mention invalid pattern, got: %v", err)

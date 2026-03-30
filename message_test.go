@@ -348,6 +348,30 @@ Therefore, the answer is..."}}`,
 				{Type: "redacted_thinking", Data: "Redacted"},
 			}},
 		},
+		"tool use block with truncated input json": {
+			events: []string{
+				`{"type": "message_start", "message": {}}`,
+				`{"type": "content_block_start", "index": 0, "content_block": {"type": "tool_use", "id": "toolu_id", "name": "tool_name", "input": {}}}`,
+				`{"type": "content_block_delta", "index": 0, "delta": {"type": "input_json_delta", "partial_json": "{\"argument\":"}}`,
+				`{"type": "content_block_stop", "index": 0}`,
+				`{"type": "message_stop"}`,
+			},
+			expected: anthropic.Message{Content: []anthropic.ContentBlockUnion{
+				{Type: "tool_use", ID: "toolu_id", Name: "tool_name", Input: json.RawMessage("null")},
+			}},
+		},
+		"tool use block with malformed input json": {
+			events: []string{
+				`{"type": "message_start", "message": {}}`,
+				`{"type": "content_block_start", "index": 0, "content_block": {"type": "tool_use", "id": "toolu_id", "name": "tool_name", "input": {}}}`,
+				`{"type": "content_block_delta", "index": 0, "delta": {"type": "input_json_delta", "partial_json": "{\"key s"}}`,
+				`{"type": "content_block_stop", "index": 0}`,
+				`{"type": "message_stop"}`,
+			},
+			expected: anthropic.Message{Content: []anthropic.ContentBlockUnion{
+				{Type: "tool_use", ID: "toolu_id", Name: "tool_name", Input: json.RawMessage("null")},
+			}},
+		},
 		"multiple content blocks": {
 			events: []string{
 				`{"type": "message_start", "message": {}}`,

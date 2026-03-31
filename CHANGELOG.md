@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.28.0 (2026-03-31)
+
+Full Changelog: [v1.27.1...v1.28.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.27.1...v1.28.0)
+
+### Features
+
+* **internal:** support comma format in multipart form encoding ([97ed8a1](https://github.com/anthropics/anthropic-sdk-go/commit/97ed8a14ccbe7e37464a2932a57ce986da967f08))
+
+
+### Bug Fixes
+
+* bump buger/jsonparser to v1.1.2 (GO-2026-4514) ([#665](https://github.com/anthropics/anthropic-sdk-go/issues/665)) ([96565eb](https://github.com/anthropics/anthropic-sdk-go/commit/96565ebd58e078a60eacd4437dfc3f1f599a7a1e))
+* prevent duplicate ? in query params ([0afa75c](https://github.com/anthropics/anthropic-sdk-go/commit/0afa75c82abdf5a34f4ca129457f8078c0c483a4))
+* **types:** generate shared enum types that are not referenced by other schemas ([5dc86f2](https://github.com/anthropics/anthropic-sdk-go/commit/5dc86f2b8369ff472a9bbbc6c4ff701006f1f72f))
+
+
+### Chores
+
+* **ci:** run builds on CI even if only spec metadata changed ([010a16f](https://github.com/anthropics/anthropic-sdk-go/commit/010a16f68d58c7d1187393f77a3c26cc92d5af65))
+* **ci:** skip lint on metadata-only changes ([8cc7cec](https://github.com/anthropics/anthropic-sdk-go/commit/8cc7cec0512d4b1298beacf11b23d0eebdabe468))
+* **ci:** support opting out of skipping builds on metadata-only commits ([adc7184](https://github.com/anthropics/anthropic-sdk-go/commit/adc71844b3b3e5773d213ec0751fdbe48976a537))
+* **client:** fix multipart serialisation of Default() fields ([3fc3613](https://github.com/anthropics/anthropic-sdk-go/commit/3fc36133b89aa264b2c94407e10596d20251695a))
+* **internal:** bump go toolchain to go1.25.8 to address std lib vulnerabilities ([e3feecb](https://github.com/anthropics/anthropic-sdk-go/commit/e3feecb7d0bf74892dd5a4fd13911bda38fead2a))
+* **internal:** support default value struct tag ([fc68556](https://github.com/anthropics/anthropic-sdk-go/commit/fc68556dad8696182ebb519be3bc2cba598bd9a8))
+* **internal:** update gitignore ([e2a5dd1](https://github.com/anthropics/anthropic-sdk-go/commit/e2a5dd16ed98b30e2b08c3856f8255c5653adac1))
+* remove unnecessary error check for url parsing ([6d42216](https://github.com/anthropics/anthropic-sdk-go/commit/6d422163c7e240045339b16a0b9b2a6d6231a123))
+* **tests:** bump steady to v0.19.4 ([3ca1569](https://github.com/anthropics/anthropic-sdk-go/commit/3ca1569b286f1e138b4517a77ee25b379707ce35))
+* **tests:** bump steady to v0.19.5 ([7364e49](https://github.com/anthropics/anthropic-sdk-go/commit/7364e49eeeb34e4750dbdad7bd5d50e518025355))
+* **tests:** bump steady to v0.19.6 ([28ebd01](https://github.com/anthropics/anthropic-sdk-go/commit/28ebd015e3eb072f571937322b938dd0ea39713d))
+* **tests:** bump steady to v0.19.7 ([77fc869](https://github.com/anthropics/anthropic-sdk-go/commit/77fc869429038406b543b60d8c39fee09f2aa5c7))
+* **tests:** bump steady to v0.20.1 ([e52beb5](https://github.com/anthropics/anthropic-sdk-go/commit/e52beb539f44912d839ba9f95b407c5bb9a42bd8))
+* **tests:** bump steady to v0.20.2 ([3a20191](https://github.com/anthropics/anthropic-sdk-go/commit/3a20191368126e38d1cb47cd737cd8642c311a33))
+* update docs for api:"required" ([aa0a03a](https://github.com/anthropics/anthropic-sdk-go/commit/aa0a03aa573cc1565dcffae2d079bbd18aa4c69b))
+
 ## 1.27.1 (2026-03-18)
 
 Full Changelog: [v1.27.0...v1.27.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.27.0...v1.27.1)

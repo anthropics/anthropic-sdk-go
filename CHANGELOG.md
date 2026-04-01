@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.29.0 (2026-04-01)
+
+Full Changelog: [v1.28.0...v1.29.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.28.0...v1.29.0)
+
+### Features
+
+* **api:** add structured stop_details to message responses ([1053799](https://github.com/anthropics/anthropic-sdk-go/commit/1053799aca55f0986a2e7728a4490e0cc0b99f50))
+
+
+### Chores
+
+* **internal:** client updates ([531283d](https://github.com/anthropics/anthropic-sdk-go/commit/531283d7a49e249062dd5e095774ce163550c3ae))
+
 ## 1.28.0 (2026-03-31)
 
 Full Changelog: [v1.27.1...v1.28.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.27.1...v1.28.0)

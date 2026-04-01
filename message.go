@@ -3336,6 +3336,8 @@ type Message struct {
 	//
 	// This will always be `"assistant"`.
 	Role constant.Assistant `json:"role" default:"assistant"`
+	// Structured information about a refusal.
+	StopDetails RefusalStopDetails `json:"stop_details" api:"required"`
 	// The reason that we stopped.
 	//
 	// This may be one the following values:
@@ -3387,6 +3389,7 @@ type Message struct {
 		Content      respjson.Field
 		Model        respjson.Field
 		Role         respjson.Field
+		StopDetails  respjson.Field
 		StopReason   respjson.Field
 		StopSequence respjson.Field
 		Type         respjson.Field
@@ -4607,6 +4610,8 @@ type MessageDeltaEventDelta struct {
 	// Information about the container used in the request (for the code execution
 	// tool)
 	Container Container `json:"container" api:"required"`
+	// Structured information about a refusal.
+	StopDetails RefusalStopDetails `json:"stop_details" api:"required"`
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
 	// "refusal".
 	StopReason   StopReason `json:"stop_reason" api:"required"`
@@ -4614,6 +4619,7 @@ type MessageDeltaEventDelta struct {
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Container    respjson.Field
+		StopDetails  respjson.Field
 		StopReason   respjson.Field
 		StopSequence respjson.Field
 		ExtraFields  map[string]respjson.Field
@@ -4783,6 +4789,8 @@ type MessageStreamEventUnionDelta struct {
 	// This field is from variant [MessageDeltaEventDelta].
 	Container Container `json:"container"`
 	// This field is from variant [MessageDeltaEventDelta].
+	StopDetails RefusalStopDetails `json:"stop_details"`
+	// This field is from variant [MessageDeltaEventDelta].
 	StopReason StopReason `json:"stop_reason"`
 	// This field is from variant [MessageDeltaEventDelta].
 	StopSequence string `json:"stop_sequence"`
@@ -4799,6 +4807,7 @@ type MessageStreamEventUnionDelta struct {
 	Signature string `json:"signature"`
 	JSON      struct {
 		Container    respjson.Field
+		StopDetails  respjson.Field
 		StopReason   respjson.Field
 		StopSequence respjson.Field
 		Text         respjson.Field
@@ -4849,6 +4858,46 @@ func (r RedactedThinkingBlockParam) MarshalJSON() (data []byte, err error) {
 func (r *RedactedThinkingBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Structured information about a refusal.
+type RefusalStopDetails struct {
+	// The policy category that triggered the refusal.
+	//
+	// `null` when the refusal doesn't map to a named category.
+	//
+	// Any of "cyber", "bio".
+	Category RefusalStopDetailsCategory `json:"category" api:"required"`
+	// Human-readable explanation of the refusal.
+	//
+	// This text is not guaranteed to be stable. `null` when no explanation is
+	// available for the category.
+	Explanation string           `json:"explanation" api:"required"`
+	Type        constant.Refusal `json:"type" default:"refusal"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Category    respjson.Field
+		Explanation respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RefusalStopDetails) RawJSON() string { return r.JSON.raw }
+func (r *RefusalStopDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The policy category that triggered the refusal.
+//
+// `null` when the refusal doesn't map to a named category.
+type RefusalStopDetailsCategory string
+
+const (
+	RefusalStopDetailsCategoryCyber RefusalStopDetailsCategory = "cyber"
+	RefusalStopDetailsCategoryBio   RefusalStopDetailsCategory = "bio"
+)
 
 // The properties Content, Source, Title, Type are required.
 type SearchResultBlockParam struct {

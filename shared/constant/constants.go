@@ -101,6 +101,7 @@ type PageLocation string                            // Always "page_location"
 type PermissionError string                         // Always "permission_error"
 type RateLimitError string                          // Always "rate_limit_error"
 type RedactedThinking string                        // Always "redacted_thinking"
+type Refusal string                                 // Always "refusal"
 type Rename string                                  // Always "rename"
 type SearchResult string                            // Always "search_result"
 type SearchResultLocation string                    // Always "search_result_location"
@@ -250,6 +251,7 @@ func (c PageLocation) Default() PageLocation                 { return "page_loca
 func (c PermissionError) Default() PermissionError           { return "permission_error" }
 func (c RateLimitError) Default() RateLimitError             { return "rate_limit_error" }
 func (c RedactedThinking) Default() RedactedThinking         { return "redacted_thinking" }
+func (c Refusal) Default() Refusal                           { return "refusal" }
 func (c Rename) Default() Rename                             { return "rename" }
 func (c SearchResult) Default() SearchResult                 { return "search_result" }
 func (c SearchResultLocation) Default() SearchResultLocation { return "search_result_location" }
@@ -407,6 +409,7 @@ func (c PageLocation) MarshalJSON() ([]byte, error)                        { ret
 func (c PermissionError) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c RateLimitError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c RedactedThinking) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c Refusal) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Rename) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c SearchResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c SearchResultLocation) MarshalJSON() ([]byte, error)                { return marshalString(c) }

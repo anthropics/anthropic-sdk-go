@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.30.0 (2026-04-03)
+
+Full Changelog: [v1.29.0...v1.30.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.29.0...v1.30.0)
+
+### Features
+
+* **vertex:** add support for US multi-region endpoint ([6f40457](https://github.com/anthropics/anthropic-sdk-go/commit/6f404579492f3502a818118797557678b703cefa))
+
 ## 1.29.0 (2026-04-01)
 
 Full Changelog: [v1.28.0...v1.29.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.28.0...v1.29.0)

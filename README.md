@@ -26,7 +26,7 @@ Or to pin the version:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/anthropics/anthropic-sdk-go@v1.29.0'
+go get -u 'github.com/anthropics/anthropic-sdk-go@v1.30.0'
 ```
 
 <!-- x-release-please-end -->

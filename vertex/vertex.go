@@ -46,9 +46,12 @@ func WithCredentials(ctx context.Context, region string, projectID string, creds
 	middleware := vertexMiddleware(region, projectID)
 
 	var baseURL string
-	if region == "global" {
+	switch region {
+	case "global":
 		baseURL = "https://aiplatform.googleapis.com/"
-	} else {
+	case "us":
+		baseURL = "https://aiplatform.us.rep.googleapis.com/"
+	default:
 		baseURL = fmt.Sprintf("https://%s-aiplatform.googleapis.com/", region)
 	}
 

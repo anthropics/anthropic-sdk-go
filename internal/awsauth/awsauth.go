@@ -95,7 +95,7 @@ func ResolveConfig(cfg ClientConfig, params ResolveParams) (ResolvedConfig, erro
 
 	rc.SkipAuth = cfg.SkipAuth
 
-	// Workspace ID: arg > primary env > fallback env, required unless skipAuth
+	// Workspace ID: arg > primary env > fallback env
 	rc.WorkspaceID = cfg.WorkspaceID
 	if rc.WorkspaceID == "" && params.EnvWorkspaceID != "" {
 		rc.WorkspaceID = os.Getenv(params.EnvWorkspaceID)
@@ -103,7 +103,8 @@ func ResolveConfig(cfg ClientConfig, params ResolveParams) (ResolvedConfig, erro
 	if rc.WorkspaceID == "" && params.EnvWorkspaceIDFallback != "" {
 		rc.WorkspaceID = os.Getenv(params.EnvWorkspaceIDFallback)
 	}
-	if rc.WorkspaceID == "" && !rc.SkipAuth {
+	// Workspace ID is required when env var names are configured (i.e. the caller expects it)
+	if rc.WorkspaceID == "" && !rc.SkipAuth && (params.EnvWorkspaceID != "" || cfg.WorkspaceID != "") {
 		envHint := params.EnvWorkspaceID
 		if envHint == "" {
 			envHint = "ANTHROPIC_AWS_WORKSPACE_ID"

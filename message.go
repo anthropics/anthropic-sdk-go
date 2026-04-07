@@ -4036,6 +4036,7 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model = string
 
 const (
+	ModelClaudeMythosPreview      Model = "claude-mythos-preview"
 	ModelClaudeOpus4_6            Model = "claude-opus-4-6"
 	ModelClaudeSonnet4_6          Model = "claude-sonnet-4-6"
 	ModelClaudeHaiku4_5           Model = "claude-haiku-4-5"

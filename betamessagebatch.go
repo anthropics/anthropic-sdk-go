@@ -652,6 +652,10 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// Note that even with `temperature` of `0.0`, the results will not be fully
 	// deterministic.
+	//
+	// Deprecated: Deprecated. Models released after Claude Opus 4.6 do not support
+	// setting temperature. A value of 1.0 of will be accepted for backwards
+	// compatibility, all other values will be rejected with a 400 error.
 	Temperature param.Opt[float64] `json:"temperature,omitzero"`
 	// Only sample from the top K options for each subsequent token.
 	//
@@ -660,6 +664,9 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// Recommended for advanced use cases only. You usually only need to use
 	// `temperature`.
+	//
+	// Deprecated: Deprecated. Models released after Claude Opus 4.6 do not accept
+	// top_k; any value will be rejected with a 400 error.
 	TopK param.Opt[int64] `json:"top_k,omitzero"`
 	// Use nucleus sampling.
 	//
@@ -670,6 +677,10 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// Recommended for advanced use cases only. You usually only need to use
 	// `temperature`.
+	//
+	// Deprecated: Deprecated. Models released after Claude Opus 4.6 do not support
+	// setting top_p. A value >= 0.99 will be accepted for backwards compatibility, all
+	// other values will be rejected with a 400 error.
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// Container identifier for reuse across requests.
 	Container BetaMessageBatchNewParamsRequestParamsContainerUnion `json:"container,omitzero"`

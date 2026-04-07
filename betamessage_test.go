@@ -207,7 +207,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.BetaMessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_6,
+		Model: anthropic.ModelClaudeMythosPreview,
 		CacheControl: anthropic.BetaCacheControlEphemeralParam{
 			TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 		},

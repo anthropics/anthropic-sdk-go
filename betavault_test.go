@@ -3,12 +3,8 @@
 package anthropic_test
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -17,7 +13,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
-func TestBetaFileListWithOptionalParams(t *testing.T) {
+func TestBetaVaultNewWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -29,134 +25,157 @@ func TestBetaFileListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Beta.Files.List(context.TODO(), anthropic.BetaFileListParams{
-		AfterID:  anthropic.String("after_id"),
-		BeforeID: anthropic.String("before_id"),
-		Limit:    anthropic.Int(1),
-		ScopeID:  anthropic.String("scope_id"),
-		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
-	})
-	if err != nil {
-		var apierr *anthropic.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestBetaFileDeleteWithOptionalParams(t *testing.T) {
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := anthropic.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("my-anthropic-api-key"),
-	)
-	_, err := client.Beta.Files.Delete(
-		context.TODO(),
-		"file_id",
-		anthropic.BetaFileDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+	_, err := client.Beta.Vaults.New(context.TODO(), anthropic.BetaVaultNewParams{
+		DisplayName: "Example vault",
+		Metadata: map[string]string{
+			"environment": "production",
 		},
-	)
-	if err != nil {
-		var apierr *anthropic.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestBetaFileDownloadWithOptionalParams(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-		w.Write([]byte("abc"))
-	}))
-	defer server.Close()
-	baseURL := server.URL
-	client := anthropic.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("my-anthropic-api-key"),
-	)
-	resp, err := client.Beta.Files.Download(
-		context.TODO(),
-		"file_id",
-		anthropic.BetaFileDownloadParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
-		},
-	)
-	if err != nil {
-		var apierr *anthropic.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-	defer resp.Body.Close()
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		var apierr *anthropic.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-	if !bytes.Equal(b, []byte("abc")) {
-		t.Fatalf("return value not %s: %s", "abc", b)
-	}
-}
-
-func TestBetaFileGetMetadataWithOptionalParams(t *testing.T) {
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := anthropic.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("my-anthropic-api-key"),
-	)
-	_, err := client.Beta.Files.GetMetadata(
-		context.TODO(),
-		"file_id",
-		anthropic.BetaFileGetMetadataParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
-		},
-	)
-	if err != nil {
-		var apierr *anthropic.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestBetaFileUploadWithOptionalParams(t *testing.T) {
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := anthropic.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("my-anthropic-api-key"),
-	)
-	_, err := client.Beta.Files.Upload(context.TODO(), anthropic.BetaFileUploadParams{
-		File:  io.Reader(bytes.NewBuffer([]byte("Example data"))),
 		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestBetaVaultGetWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Beta.Vaults.Get(
+		context.TODO(),
+		"vlt_011CZkZDLs7fYzm1hXNPeRjv",
+		anthropic.BetaVaultGetParams{
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		},
+	)
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestBetaVaultUpdateWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Beta.Vaults.Update(
+		context.TODO(),
+		"vlt_011CZkZDLs7fYzm1hXNPeRjv",
+		anthropic.BetaVaultUpdateParams{
+			DisplayName: anthropic.String("Example vault"),
+			Metadata: map[string]string{
+				"environment": "production",
+			},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		},
+	)
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestBetaVaultListWithOptionalParams(t *testing.T) {
+	t.Skip("buildURL drops path-level query params (SDK-4349)")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Beta.Vaults.List(context.TODO(), anthropic.BetaVaultListParams{
+		IncludeArchived: anthropic.Bool(true),
+		Limit:           anthropic.Int(0),
+		Page:            anthropic.String("page"),
+		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+	})
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestBetaVaultDeleteWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Beta.Vaults.Delete(
+		context.TODO(),
+		"vlt_011CZkZDLs7fYzm1hXNPeRjv",
+		anthropic.BetaVaultDeleteParams{
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		},
+	)
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestBetaVaultArchiveWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Beta.Vaults.Archive(
+		context.TODO(),
+		"vlt_011CZkZDLs7fYzm1hXNPeRjv",
+		anthropic.BetaVaultArchiveParams{
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {

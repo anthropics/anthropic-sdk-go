@@ -54,6 +54,7 @@ type CharLocation string                            // Always "char_location"
 type CitationsDelta string                          // Always "citations_delta"
 type ClearThinking20251015 string                   // Always "clear_thinking_20251015"
 type ClearToolUses20250919 string                   // Always "clear_tool_uses_20250919"
+type Cloud string                                   // Always "cloud"
 type CodeExecution string                           // Always "code_execution"
 type CodeExecution20250522 string                   // Always "code_execution_20250522"
 type CodeExecution20250825 string                   // Always "code_execution_20250825"
@@ -83,6 +84,8 @@ type Disabled string                                // Always "disabled"
 type Document string                                // Always "document"
 type Enabled string                                 // Always "enabled"
 type EncryptedCodeExecutionResult string            // Always "encrypted_code_execution_result"
+type Environment string                             // Always "environment"
+type EnvironmentDeleted string                      // Always "environment_deleted"
 type Ephemeral string                               // Always "ephemeral"
 type Error string                                   // Always "error"
 type Errored string                                 // Always "errored"
@@ -94,6 +97,7 @@ type InputTokens string                             // Always "input_tokens"
 type Insert string                                  // Always "insert"
 type InvalidRequestError string                     // Always "invalid_request_error"
 type JSONSchema string                              // Always "json_schema"
+type Limited string                                 // Always "limited"
 type MCPToolResult string                           // Always "mcp_tool_result"
 type MCPToolUse string                              // Always "mcp_tool_use"
 type MCPToolset string                              // Always "mcp_toolset"
@@ -119,6 +123,7 @@ type Rename string                                  // Always "rename"
 type SearchResult string                            // Always "search_result"
 type SearchResultLocation string                    // Always "search_result_location"
 type ServerToolUse string                           // Always "server_tool_use"
+type Session string                                 // Always "session"
 type SignatureDelta string                          // Always "signature_delta"
 type StrReplace string                              // Always "str_replace"
 type StrReplaceBasedEditTool string                 // Always "str_replace_based_edit_tool"
@@ -150,6 +155,7 @@ type ToolSearchToolResultError string               // Always "tool_search_tool_
 type ToolSearchToolSearchResult string              // Always "tool_search_tool_search_result"
 type ToolUse string                                 // Always "tool_use"
 type ToolUses string                                // Always "tool_uses"
+type Unrestricted string                            // Always "unrestricted"
 type URL string                                     // Always "url"
 type View string                                    // Always "view"
 type WebFetch string                                // Always "web_fetch"
@@ -198,6 +204,7 @@ func (c CharLocation) Default() CharLocation                   { return "char_lo
 func (c CitationsDelta) Default() CitationsDelta               { return "citations_delta" }
 func (c ClearThinking20251015) Default() ClearThinking20251015 { return "clear_thinking_20251015" }
 func (c ClearToolUses20250919) Default() ClearToolUses20250919 { return "clear_tool_uses_20250919" }
+func (c Cloud) Default() Cloud                                 { return "cloud" }
 func (c CodeExecution) Default() CodeExecution                 { return "code_execution" }
 func (c CodeExecution20250522) Default() CodeExecution20250522 { return "code_execution_20250522" }
 func (c CodeExecution20250825) Default() CodeExecution20250825 { return "code_execution_20250825" }
@@ -233,6 +240,8 @@ func (c Enabled) Default() Enabled                           { return "enabled" 
 func (c EncryptedCodeExecutionResult) Default() EncryptedCodeExecutionResult {
 	return "encrypted_code_execution_result"
 }
+func (c Environment) Default() Environment                   { return "environment" }
+func (c EnvironmentDeleted) Default() EnvironmentDeleted     { return "environment_deleted" }
 func (c Ephemeral) Default() Ephemeral                       { return "ephemeral" }
 func (c Error) Default() Error                               { return "error" }
 func (c Errored) Default() Errored                           { return "errored" }
@@ -244,6 +253,7 @@ func (c InputTokens) Default() InputTokens                   { return "input_tok
 func (c Insert) Default() Insert                             { return "insert" }
 func (c InvalidRequestError) Default() InvalidRequestError   { return "invalid_request_error" }
 func (c JSONSchema) Default() JSONSchema                     { return "json_schema" }
+func (c Limited) Default() Limited                           { return "limited" }
 func (c MCPToolResult) Default() MCPToolResult               { return "mcp_tool_result" }
 func (c MCPToolUse) Default() MCPToolUse                     { return "mcp_tool_use" }
 func (c MCPToolset) Default() MCPToolset                     { return "mcp_toolset" }
@@ -269,6 +279,7 @@ func (c Rename) Default() Rename                             { return "rename" }
 func (c SearchResult) Default() SearchResult                 { return "search_result" }
 func (c SearchResultLocation) Default() SearchResultLocation { return "search_result_location" }
 func (c ServerToolUse) Default() ServerToolUse               { return "server_tool_use" }
+func (c Session) Default() Session                           { return "session" }
 func (c SignatureDelta) Default() SignatureDelta             { return "signature_delta" }
 func (c StrReplace) Default() StrReplace                     { return "str_replace" }
 func (c StrReplaceBasedEditTool) Default() StrReplaceBasedEditTool {
@@ -316,6 +327,7 @@ func (c ToolSearchToolSearchResult) Default() ToolSearchToolSearchResult {
 }
 func (c ToolUse) Default() ToolUse                       { return "tool_use" }
 func (c ToolUses) Default() ToolUses                     { return "tool_uses" }
+func (c Unrestricted) Default() Unrestricted             { return "unrestricted" }
 func (c URL) Default() URL                               { return "url" }
 func (c View) Default() View                             { return "view" }
 func (c WebFetch) Default() WebFetch                     { return "web_fetch" }
@@ -362,6 +374,7 @@ func (c CharLocation) MarshalJSON() ([]byte, error)                        { ret
 func (c CitationsDelta) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c ClearThinking20251015) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c ClearToolUses20250919) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c Cloud) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c CodeExecution) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c CodeExecution20250522) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c CodeExecution20250825) MarshalJSON() ([]byte, error)               { return marshalString(c) }
@@ -391,6 +404,8 @@ func (c Disabled) MarshalJSON() ([]byte, error)                            { ret
 func (c Document) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Enabled) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c EncryptedCodeExecutionResult) MarshalJSON() ([]byte, error)        { return marshalString(c) }
+func (c Environment) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c EnvironmentDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Ephemeral) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c Error) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Errored) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -402,6 +417,7 @@ func (c InputTokens) MarshalJSON() ([]byte, error)                         { ret
 func (c Insert) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c InvalidRequestError) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c JSONSchema) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Limited) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c MCPToolResult) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c MCPToolUse) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c MCPToolset) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
@@ -427,6 +443,7 @@ func (c Rename) MarshalJSON() ([]byte, error)                              { ret
 func (c SearchResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c SearchResultLocation) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c ServerToolUse) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c Session) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c SignatureDelta) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c StrReplace) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c StrReplaceBasedEditTool) MarshalJSON() ([]byte, error)             { return marshalString(c) }
@@ -462,6 +479,7 @@ func (c ToolSearchToolResultError) MarshalJSON() ([]byte, error)         { retur
 func (c ToolSearchToolSearchResult) MarshalJSON() ([]byte, error)        { return marshalString(c) }
 func (c ToolUse) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c ToolUses) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Unrestricted) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c View) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c WebFetch) MarshalJSON() ([]byte, error)                          { return marshalString(c) }

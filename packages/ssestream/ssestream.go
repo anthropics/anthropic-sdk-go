@@ -159,7 +159,7 @@ func (s *Stream[T]) Next() bool {
 			}
 			s.cur = nxt
 			return true
-		case "message_start", "message_delta", "message_stop", "content_block_start", "content_block_delta", "content_block_stop":
+		case "message_start", "message_delta", "message_stop", "content_block_start", "content_block_delta", "content_block_stop", "message":
 			var nxt T
 			s.err = json.Unmarshal(s.decoder.Event().Data, &nxt)
 			if s.err != nil {

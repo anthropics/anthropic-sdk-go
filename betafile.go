@@ -130,6 +130,26 @@ func (r *BetaFileService) Upload(ctx context.Context, params BetaFileUploadParam
 	return res, err
 }
 
+type BetaFileScope struct {
+	// The ID of the scoping resource (e.g., the session ID).
+	ID string `json:"id" api:"required"`
+	// The type of scope (e.g., `"session"`).
+	Type constant.Session `json:"type" default:"session"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaFileScope) RawJSON() string { return r.JSON.raw }
+func (r *BetaFileScope) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type DeletedFile struct {
 	// ID of the deleted file.
 	ID string `json:"id" api:"required"`
@@ -182,6 +202,9 @@ type FileMetadata struct {
 	Type constant.File `json:"type" default:"file"`
 	// Whether the file can be downloaded.
 	Downloadable bool `json:"downloadable"`
+	// The scope of this file, indicating the context in which it was created (e.g., a
+	// session).
+	Scope BetaFileScope `json:"scope" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID           respjson.Field
@@ -191,6 +214,7 @@ type FileMetadata struct {
 		SizeBytes    respjson.Field
 		Type         respjson.Field
 		Downloadable respjson.Field
+		Scope        respjson.Field
 		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
@@ -213,6 +237,9 @@ type BetaFileListParams struct {
 	//
 	// Defaults to `20`. Ranges from `1` to `1000`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Filter by scope ID. Only returns files associated with the specified scope
+	// (e.g., a session ID).
+	ScopeID param.Opt[string] `query:"scope_id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

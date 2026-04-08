@@ -245,12 +245,10 @@ func (r *TokenPageAutoPager[T]) Index() int {
 
 type PageCursor[T any] struct {
 	Data     []T    `json:"data"`
-	HasMore  bool   `json:"has_more"`
 	NextPage string `json:"next_page" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
-		HasMore     respjson.Field
 		NextPage    respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -270,10 +268,6 @@ func (r *PageCursor[T]) UnmarshalJSON(data []byte) error {
 // will not return an error
 func (r *PageCursor[T]) GetNextPage() (res *PageCursor[T], err error) {
 	if len(r.Data) == 0 {
-		return nil, nil
-	}
-
-	if r.JSON.HasMore.Valid() && r.HasMore == false {
 		return nil, nil
 	}
 	next := r.NextPage

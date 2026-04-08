@@ -15,6 +15,14 @@ TEST_PATHS=(
 	betamodel_test.go
 	betamessage_test.go
 	betamessagebatch_test.go
+	betaagent_test.go
+	betaagentversion_test.go
+	betaenvironment_test.go
+	betasession_test.go
+	betasessionevent_test.go
+	betasessionresource_test.go
+	betavault_test.go
+	betavaultcredential_test.go
 	betafile_test.go
 	betaskill_test.go
 	betaskillversion_test.go

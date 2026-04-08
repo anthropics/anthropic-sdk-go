@@ -29,7 +29,7 @@ Or explicitly add the dependency:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/anthropics/anthropic-sdk-go@v1.32.0'
+go get -u 'github.com/anthropics/anthropic-sdk-go@v1.33.0'
 ```
 
 <!-- x-release-please-end -->

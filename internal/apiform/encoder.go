@@ -21,7 +21,7 @@ var encoders sync.Map // map[encoderEntry]encoderFunc
 func Marshal(value any, writer *multipart.Writer) error {
 	e := &encoder{
 		dateFormat: time.RFC3339,
-		arrayFmt:   "comma",
+		arrayFmt:   "brackets",
 	}
 	return e.marshal(value, writer)
 }
@@ -30,7 +30,7 @@ func MarshalRoot(value any, writer *multipart.Writer) error {
 	e := &encoder{
 		root:       true,
 		dateFormat: time.RFC3339,
-		arrayFmt:   "comma",
+		arrayFmt:   "brackets",
 	}
 	return e.marshal(value, writer)
 }

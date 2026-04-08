@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.33.0 (2026-04-08)
+
+Full Changelog: [v1.32.0...v1.33.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.32.0...v1.33.0)
+
+### Features
+
+* **api:** add support for Claude Managed Agents ([722b2ac](https://github.com/anthropics/anthropic-sdk-go/commit/722b2accb2ad73715639dd03339e14345304d5fc))
+
 ## 1.32.0 (2026-04-07)
 
 Full Changelog: [v1.31.0...v1.32.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.31.0...v1.32.0)

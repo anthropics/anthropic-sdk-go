@@ -19,6 +19,13 @@ func ValueOf[T Constant[T]]() T {
 }
 
 type Adaptive string                                // Always "adaptive"
+type Advisor string                                 // Always "advisor"
+type Advisor20260301 string                         // Always "advisor_20260301"
+type AdvisorMessage string                          // Always "advisor_message"
+type AdvisorRedactedResult string                   // Always "advisor_redacted_result"
+type AdvisorResult string                           // Always "advisor_result"
+type AdvisorToolResult string                       // Always "advisor_tool_result"
+type AdvisorToolResultError string                  // Always "advisor_tool_result_error"
 type All string                                     // Always "all"
 type Any string                                     // Always "any"
 type APIError string                                // Always "api_error"
@@ -160,19 +167,26 @@ type WebSearchResultLocation string                 // Always "web_search_result
 type WebSearchToolResult string                     // Always "web_search_tool_result"
 type WebSearchToolResultError string                // Always "web_search_tool_result_error"
 
-func (c Adaptive) Default() Adaptive                       { return "adaptive" }
-func (c All) Default() All                                 { return "all" }
-func (c Any) Default() Any                                 { return "any" }
-func (c APIError) Default() APIError                       { return "api_error" }
-func (c ApplicationPDF) Default() ApplicationPDF           { return "application/pdf" }
-func (c Approximate) Default() Approximate                 { return "approximate" }
-func (c Assistant) Default() Assistant                     { return "assistant" }
-func (c AuthenticationError) Default() AuthenticationError { return "authentication_error" }
-func (c Auto) Default() Auto                               { return "auto" }
-func (c Base64) Default() Base64                           { return "base64" }
-func (c Bash) Default() Bash                               { return "bash" }
-func (c Bash20241022) Default() Bash20241022               { return "bash_20241022" }
-func (c Bash20250124) Default() Bash20250124               { return "bash_20250124" }
+func (c Adaptive) Default() Adaptive                             { return "adaptive" }
+func (c Advisor) Default() Advisor                               { return "advisor" }
+func (c Advisor20260301) Default() Advisor20260301               { return "advisor_20260301" }
+func (c AdvisorMessage) Default() AdvisorMessage                 { return "advisor_message" }
+func (c AdvisorRedactedResult) Default() AdvisorRedactedResult   { return "advisor_redacted_result" }
+func (c AdvisorResult) Default() AdvisorResult                   { return "advisor_result" }
+func (c AdvisorToolResult) Default() AdvisorToolResult           { return "advisor_tool_result" }
+func (c AdvisorToolResultError) Default() AdvisorToolResultError { return "advisor_tool_result_error" }
+func (c All) Default() All                                       { return "all" }
+func (c Any) Default() Any                                       { return "any" }
+func (c APIError) Default() APIError                             { return "api_error" }
+func (c ApplicationPDF) Default() ApplicationPDF                 { return "application/pdf" }
+func (c Approximate) Default() Approximate                       { return "approximate" }
+func (c Assistant) Default() Assistant                           { return "assistant" }
+func (c AuthenticationError) Default() AuthenticationError       { return "authentication_error" }
+func (c Auto) Default() Auto                                     { return "auto" }
+func (c Base64) Default() Base64                                 { return "base64" }
+func (c Bash) Default() Bash                                     { return "bash" }
+func (c Bash20241022) Default() Bash20241022                     { return "bash_20241022" }
+func (c Bash20250124) Default() Bash20250124                     { return "bash_20250124" }
 func (c BashCodeExecutionOutput) Default() BashCodeExecutionOutput {
 	return "bash_code_execution_output"
 }
@@ -339,6 +353,13 @@ func (c WebSearchToolResultError) Default() WebSearchToolResultError {
 }
 
 func (c Adaptive) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c Advisor) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c Advisor20260301) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c AdvisorMessage) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c AdvisorRedactedResult) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c AdvisorResult) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c AdvisorToolResult) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c AdvisorToolResultError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c All) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Any) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c APIError) MarshalJSON() ([]byte, error)                            { return marshalString(c) }

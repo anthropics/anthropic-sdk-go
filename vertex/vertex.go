@@ -51,6 +51,8 @@ func WithCredentials(ctx context.Context, region string, projectID string, creds
 		baseURL = "https://aiplatform.googleapis.com/"
 	case "us":
 		baseURL = "https://aiplatform.us.rep.googleapis.com/"
+	case "eu":
+		baseURL = "https://aiplatform.eu.rep.googleapis.com/"
 	default:
 		baseURL = fmt.Sprintf("https://%s-aiplatform.googleapis.com/", region)
 	}

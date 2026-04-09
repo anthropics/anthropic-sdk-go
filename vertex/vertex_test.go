@@ -32,7 +32,12 @@ func TestBaseURLForRegion(t *testing.T) {
 			expectedURL: "https://us-central1-aiplatform.googleapis.com/",
 		},
 		{
-			name:        "europe region",
+			name:        "eu region",
+			region:      "eu",
+			expectedURL: "https://aiplatform.eu.rep.googleapis.com/",
+		},
+		{
+			name:        "specific european region",
 			region:      "europe-west1",
 			expectedURL: "https://europe-west1-aiplatform.googleapis.com/",
 		},

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.34.0 (2026-04-09)
+
+Full Changelog: [v1.33.0...v1.34.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.33.0...v1.34.0)
+
+### Features
+
+* **api:** Add beta advisor tool ([3a6ddba](https://github.com/anthropics/anthropic-sdk-go/commit/3a6ddba23f7763d502c0bdd0842f0f90bb662c7e))
+
 ## 1.33.0 (2026-04-08)
 
 Full Changelog: [v1.32.0...v1.33.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.32.0...v1.33.0)

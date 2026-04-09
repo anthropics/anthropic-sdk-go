@@ -138,6 +138,18 @@ func (variant BetaContainerUploadBlock) toParamUnion() BetaContentBlockParamUnio
 	return BetaContentBlockParamUnion{OfContainerUpload: &p}
 }
 
+func (variant BetaAdvisorToolResultBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfAdvisorToolResult: &p}
+}
+
+func (r BetaAdvisorToolResultBlock) ToParam() BetaAdvisorToolResultBlockParam {
+	var p BetaAdvisorToolResultBlockParam
+	p.Type = r.Type
+	p.ToolUseID = r.ToolUseID
+	return p
+}
+
 func (variant BetaMCPToolResultBlock) toParamUnion() BetaContentBlockParamUnion {
 	p := variant.ToParam()
 	return BetaContentBlockParamUnion{OfMCPToolResult: &p}

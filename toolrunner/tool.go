@@ -23,12 +23,16 @@ func (t *betaTool[T]) Name() string                                    { return 
 func (t *betaTool[T]) Description() string                             { return t.description }
 func (t *betaTool[T]) InputSchema() anthropic.BetaToolInputSchemaParam { return t.schema }
 
-func (t *betaTool[T]) Execute(ctx context.Context, input json.RawMessage) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+func (t *betaTool[T]) Execute(ctx context.Context, input json.RawMessage) ([]anthropic.BetaToolResultBlockParamContentUnion, error) {
 	parsed, err := t.parse(input)
 	if err != nil {
-		return anthropic.BetaToolResultBlockParamContentUnion{}, fmt.Errorf("failed to parse tool input: %w", err)
+		return nil, fmt.Errorf("failed to parse tool input: %w", err)
 	}
-	return t.handler(ctx, parsed)
+	result, err := t.handler(ctx, parsed)
+	if err != nil {
+		return nil, err
+	}
+	return []anthropic.BetaToolResultBlockParamContentUnion{result}, nil
 }
 
 // parse validates and parses the input according to the tool's schema.

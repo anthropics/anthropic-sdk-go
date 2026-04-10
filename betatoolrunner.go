@@ -18,8 +18,8 @@ type BetaTool interface {
 	Description() string
 	// InputSchema returns the JSON schema for the tool's input
 	InputSchema() BetaToolInputSchemaParam
-	// Execute runs the tool with raw JSON input and returns the result
-	Execute(ctx context.Context, input json.RawMessage) (BetaToolResultBlockParamContentUnion, error)
+	// Execute runs the tool with raw JSON input and returns one or more result blocks.
+	Execute(ctx context.Context, input json.RawMessage) ([]BetaToolResultBlockParamContentUnion, error)
 }
 
 // BetaToolRunnerParams contains parameters for creating a BetaToolRunner or BetaToolRunnerStreaming.
@@ -180,7 +180,7 @@ func (b *betaToolRunnerBase) executeToolUse(ctx context.Context, toolUse BetaToo
 		)
 	}
 
-	result, err := tool.Execute(ctx, inputBytes)
+	content, err := tool.Execute(ctx, inputBytes)
 	if err != nil {
 		return newBetaToolResultErrorBlockParam(
 			toolUse.ID,
@@ -190,7 +190,7 @@ func (b *betaToolRunnerBase) executeToolUse(ctx context.Context, toolUse BetaToo
 
 	return BetaToolResultBlockParam{
 		ToolUseID: toolUse.ID,
-		Content:   []BetaToolResultBlockParamContentUnion{result},
+		Content:   content,
 	}
 }
 

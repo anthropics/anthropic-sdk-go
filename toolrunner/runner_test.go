@@ -591,12 +591,12 @@ func TestToolRunner_MalformedJSONInput(t *testing.T) {
 
 	// Test Execute with valid JSON
 	validJSON := json.RawMessage(`{"required_field": "test", "number_field": 42}`)
-	result, err := tool.Execute(context.Background(), validJSON)
+	results, err := tool.Execute(context.Background(), validJSON)
 	if err != nil {
 		t.Fatalf("Execute valid JSON failed: %v", err)
 	}
-	if result.OfText == nil || result.OfText.Text != "success" {
-		t.Fatalf("Execute returned unexpected result: %+v", result)
+	if len(results) != 1 || results[0].OfText == nil || results[0].OfText.Text != "success" {
+		t.Fatalf("Execute returned unexpected result: %+v", results)
 	}
 
 	// Test Execute with malformed JSON (invalid syntax)

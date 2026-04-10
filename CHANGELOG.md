@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.35.0 (2026-04-10)
+
+Full Changelog: [v1.34.0...v1.35.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.34.0...v1.35.0)
+
+### Features
+
+* vertex eu region ([#740](https://github.com/anthropics/anthropic-sdk-go/issues/740)) ([e8bda03](https://github.com/anthropics/anthropic-sdk-go/commit/e8bda03b9488abe87a9bc819dfb090fa3d72f554))
+
+
+### Bug Fixes
+
+* **tools:** convert tool response type to array ([#748](https://github.com/anthropics/anthropic-sdk-go/issues/748)) ([3a18787](https://github.com/anthropics/anthropic-sdk-go/commit/3a18787a46fb9188752240a4730a17eb3eb72cb8))
+
+
+### Documentation
+
+* update examples ([aff7b24](https://github.com/anthropics/anthropic-sdk-go/commit/aff7b24064036f9b8c069f3587d4992aaecd685a))
+
 ## 1.34.0 (2026-04-09)
 
 Full Changelog: [v1.33.0...v1.34.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.33.0...v1.34.0)

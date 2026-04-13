@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.35.1 (2026-04-13)
+
+Full Changelog: [v1.35.0...v1.35.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.35.0...v1.35.1)
+
+### Bug Fixes
+
+* **streaming:** add missing events ([227b83e](https://github.com/anthropics/anthropic-sdk-go/commit/227b83eeb617185d16547f466e1a0b8c120d2f79))
+
 ## 1.35.0 (2026-04-10)
 
 Full Changelog: [v1.34.0...v1.35.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.34.0...v1.35.0)

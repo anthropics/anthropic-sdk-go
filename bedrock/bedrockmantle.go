@@ -109,6 +109,7 @@ func mantleResolveParams() awsauth.ResolveParams {
 		EnvBaseURL:        "ANTHROPIC_BEDROCK_MANTLE_BASE_URL",
 		DeriveBaseURL:     func(region string) string { return fmt.Sprintf("https://bedrock-mantle.%s.api.aws/anthropic", region) },
 		ServiceName:       mantleServiceName,
+		UseBearerAuth:     true,
 	}
 }
 

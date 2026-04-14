@@ -123,11 +123,11 @@ func TestMantleAPIKeyModeHeaders(t *testing.T) {
 	})
 	sendTestMantleRequest(t, client)
 
-	if got := captured.Headers.Get("X-Api-Key"); got != "my-api-key" {
-		t.Errorf("expected x-api-key %q, got %q", "my-api-key", got)
+	if got := captured.Headers.Get("Authorization"); got != "Bearer my-api-key" {
+		t.Errorf("expected Authorization %q, got %q", "Bearer my-api-key", got)
 	}
-	if captured.Headers.Get("Authorization") != "" {
-		t.Error("expected no Authorization header in API key mode")
+	if captured.Headers.Get("X-Api-Key") != "" {
+		t.Error("expected no X-Api-Key header in bearer auth mode")
 	}
 }
 
@@ -200,8 +200,8 @@ func TestMantleAPIKeyFallbackToAWSEnv(t *testing.T) {
 	client, captured := newTestMantleClient(t, MantleClientConfig{})
 	sendTestMantleRequest(t, client)
 
-	if got := captured.Headers.Get("X-Api-Key"); got != "aws-fallback-key" {
-		t.Errorf("expected x-api-key %q (AWS fallback), got %q", "aws-fallback-key", got)
+	if got := captured.Headers.Get("Authorization"); got != "Bearer aws-fallback-key" {
+		t.Errorf("expected Authorization %q (AWS fallback), got %q", "Bearer aws-fallback-key", got)
 	}
 }
 
@@ -213,8 +213,8 @@ func TestMantleAPIKeyMantleEnvOverridesAWSEnv(t *testing.T) {
 	client, captured := newTestMantleClient(t, MantleClientConfig{})
 	sendTestMantleRequest(t, client)
 
-	if got := captured.Headers.Get("X-Api-Key"); got != "mantle-key" {
-		t.Errorf("expected x-api-key %q (mantle-specific), got %q", "mantle-key", got)
+	if got := captured.Headers.Get("Authorization"); got != "Bearer mantle-key" {
+		t.Errorf("expected Authorization %q (mantle-specific), got %q", "Bearer mantle-key", got)
 	}
 }
 
@@ -314,8 +314,8 @@ func TestNewMantleClientMessages(t *testing.T) {
 	})
 	sendTestMantleRequest(t, client)
 
-	if got := captured.Headers.Get("X-Api-Key"); got != "test-key" {
-		t.Errorf("expected x-api-key %q, got %q", "test-key", got)
+	if got := captured.Headers.Get("Authorization"); got != "Bearer test-key" {
+		t.Errorf("expected Authorization %q, got %q", "Bearer test-key", got)
 	}
 }
 
@@ -369,15 +369,15 @@ func TestMantleClientRequestOptionsOverrideInternal(t *testing.T) {
 	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
 	t.Setenv("ANTHROPIC_AWS_API_KEY", "")
 
-	// User-provided opts should override internal opts (e.g. override the API key header)
+	// User-provided opts should override internal opts (e.g. override the Authorization header)
 	client, captured := newTestMantleClient(t, MantleClientConfig{
 		APIKey:    "internal-key",
 		AWSRegion: "us-east-1",
-	}, option.WithAPIKey("override-key"))
+	}, option.WithHeader("Authorization", "Bearer override-key"))
 	sendTestMantleRequest(t, client)
 
-	if got := captured.Headers.Get("X-Api-Key"); got != "override-key" {
-		t.Errorf("expected X-Api-Key %q (from RequestOption override), got %q", "override-key", got)
+	if got := captured.Headers.Get("Authorization"); got != "Bearer override-key" {
+		t.Errorf("expected Authorization %q (from RequestOption override), got %q", "Bearer override-key", got)
 	}
 }
 
@@ -447,6 +447,10 @@ func TestMantleDoesNotLeakAnthropicAPIKey(t *testing.T) {
 	sendTestMantleRequest(t, client)
 
 	if got := captured.Headers.Get("X-Api-Key"); got != "" {
-		t.Errorf("expected no x-api-key header when using SigV4, got %q", got)
+		t.Errorf("expected no X-Api-Key header when using SigV4, got %q", got)
+	}
+	// Authorization header should be SigV4, not Bearer
+	if auth := captured.Headers.Get("Authorization"); !strings.HasPrefix(auth, "AWS4-HMAC-SHA256") {
+		t.Errorf("expected SigV4 Authorization header, got %q", auth)
 	}
 }

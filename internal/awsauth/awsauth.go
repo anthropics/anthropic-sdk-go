@@ -58,6 +58,10 @@ type ResolveParams struct {
 
 	// ServiceName is the AWS service name used in SigV4 signing.
 	ServiceName string
+
+	// UseBearerAuth, when true, sends the API key as an Authorization: Bearer header
+	// instead of the default X-Api-Key header.
+	UseBearerAuth bool
 }
 
 // ResolvedConfig holds the fully resolved configuration after applying defaults and env vars.
@@ -253,7 +257,11 @@ func CreateClientOptions(ctx context.Context, cfg ClientConfig, params ResolvePa
 	}
 
 	if resolved.APIKey != "" {
-		opts = append(opts, option.WithAPIKey(resolved.APIKey))
+		if params.UseBearerAuth {
+			opts = append(opts, option.WithHeader("Authorization", "Bearer "+resolved.APIKey))
+		} else {
+			opts = append(opts, option.WithAPIKey(resolved.APIKey))
+		}
 	}
 	if resolved.WorkspaceID != "" {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", resolved.WorkspaceID))

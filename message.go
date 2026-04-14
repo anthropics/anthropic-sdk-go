@@ -4047,10 +4047,22 @@ const (
 	ModelClaudeSonnet4_5_20250929 Model = "claude-sonnet-4-5-20250929"
 	ModelClaudeOpus4_1            Model = "claude-opus-4-1"
 	ModelClaudeOpus4_1_20250805   Model = "claude-opus-4-1-20250805"
-	ModelClaudeOpus4_0            Model = "claude-opus-4-0"
-	ModelClaudeOpus4_20250514     Model = "claude-opus-4-20250514"
-	ModelClaudeSonnet4_0          Model = "claude-sonnet-4-0"
-	ModelClaudeSonnet4_20250514   Model = "claude-sonnet-4-20250514"
+	// Deprecated: Will reach end-of-life on June 15th, 2026. Please migrate to a newer
+	// model. Visit https://docs.anthropic.com/en/docs/resources/model-deprecations for
+	// more information.
+	ModelClaudeOpus4_0 Model = "claude-opus-4-0"
+	// Deprecated: Will reach end-of-life on June 15th, 2026. Please migrate to a newer
+	// model. Visit https://docs.anthropic.com/en/docs/resources/model-deprecations for
+	// more information.
+	ModelClaudeOpus4_20250514 Model = "claude-opus-4-20250514"
+	// Deprecated: Will reach end-of-life on June 15th, 2026. Please migrate to a newer
+	// model. Visit https://docs.anthropic.com/en/docs/resources/model-deprecations for
+	// more information.
+	ModelClaudeSonnet4_0 Model = "claude-sonnet-4-0"
+	// Deprecated: Will reach end-of-life on June 15th, 2026. Please migrate to a newer
+	// model. Visit https://docs.anthropic.com/en/docs/resources/model-deprecations for
+	// more information.
+	ModelClaudeSonnet4_20250514 Model = "claude-sonnet-4-20250514"
 	// Deprecated: Will reach end-of-life on April 20th, 2026. Please migrate to
 	// claude-haiku-4-5. Visit
 	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more

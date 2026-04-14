@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.36.0 (2026-04-14)
+
+Full Changelog: [v1.35.1...v1.36.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.35.1...v1.36.0)
+
+### Features
+
+* **api:** mark Sonnet and Opus 4 as deprecated ([fc49d21](https://github.com/anthropics/anthropic-sdk-go/commit/fc49d213a3de80dd37836ef3ede4199943a81b12))
+* **bedrock:** use auth header for mantle client ([#734](https://github.com/anthropics/anthropic-sdk-go/issues/734)) ([629eec1](https://github.com/anthropics/anthropic-sdk-go/commit/629eec1290d19ccfb529eca411324bc9a8673e00))
+
 ## 1.35.1 (2026-04-13)
 
 Full Changelog: [v1.35.0...v1.35.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.35.0...v1.35.1)

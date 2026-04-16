@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.37.0 (2026-04-16)
+
+Full Changelog: [v1.36.0...v1.37.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.36.0...v1.37.0)
+
+### Features
+
+* **api:** add claude-opus-4-7, token budgets and user_profiles ([6e758a9](https://github.com/anthropics/anthropic-sdk-go/commit/6e758a9e9ebde8298100869e9fb60c276aeb2572))
+
 ## 1.36.0 (2026-04-14)
 
 Full Changelog: [v1.35.1...v1.36.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.35.1...v1.36.0)

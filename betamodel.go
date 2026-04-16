@@ -147,6 +147,8 @@ type BetaEffortCapability struct {
 	Medium BetaCapabilitySupport `json:"medium" api:"required"`
 	// Whether this capability is supported by the model.
 	Supported bool `json:"supported" api:"required"`
+	// Indicates whether a capability is supported.
+	Xhigh BetaCapabilitySupport `json:"xhigh" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		High        respjson.Field
@@ -154,6 +156,7 @@ type BetaEffortCapability struct {
 		Max         respjson.Field
 		Medium      respjson.Field
 		Supported   respjson.Field
+		Xhigh       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`

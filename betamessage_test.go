@@ -103,6 +103,10 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 					"foo": "bar",
 				},
 			},
+			TaskBudget: anthropic.BetaTokenTaskBudgetParam{
+				Total:     1024,
+				Remaining: anthropic.Int(0),
+			},
 		},
 		OutputFormat: anthropic.BetaJSONOutputFormatParam{
 			Schema: map[string]any{
@@ -162,9 +166,10 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 				Type:   anthropic.BetaToolTypeCustom,
 			},
 		}},
-		TopK:  anthropic.Int(5),
-		TopP:  anthropic.Float(0.7),
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		TopK:          anthropic.Int(5),
+		TopP:          anthropic.Float(0.7),
+		UserProfileID: anthropic.String("user_profile_id"),
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -248,6 +253,10 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 				Schema: map[string]any{
 					"foo": "bar",
 				},
+			},
+			TaskBudget: anthropic.BetaTokenTaskBudgetParam{
+				Total:     1024,
+				Remaining: anthropic.Int(0),
 			},
 		},
 		OutputFormat: anthropic.BetaJSONOutputFormatParam{

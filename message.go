@@ -54,6 +54,7 @@ func NewMessageService(opts ...option.RequestOption) (r MessageService) {
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *MessageService) New(ctx context.Context, body MessageNewParams, opts ...option.RequestOption) (res *Message, err error) {
 	opts = slices.Concat(r.Options, opts)
+	warnIfThinkingEnabled(body.Model, body.Thinking.OfEnabled != nil)
 
 	// For non-streaming requests, calculate the appropriate timeout based on maxTokens
 	// and check against model-specific limits
@@ -84,6 +85,7 @@ func (r *MessageService) NewStreaming(ctx context.Context, body MessageNewParams
 		err error
 	)
 	opts = slices.Concat(r.Options, opts)
+	warnIfThinkingEnabled(body.Model, body.Thinking.OfEnabled != nil)
 	opts = append(opts, option.WithJSONSet("stream", true))
 	path := "v1/messages"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &raw, opts...)
@@ -4036,6 +4038,7 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model = string
 
 const (
+	ModelClaudeOpus4_7            Model = "claude-opus-4-7"
 	ModelClaudeMythosPreview      Model = "claude-mythos-preview"
 	ModelClaudeOpus4_6            Model = "claude-opus-4-6"
 	ModelClaudeSonnet4_6          Model = "claude-sonnet-4-6"
@@ -4073,7 +4076,7 @@ const (
 type OutputConfigParam struct {
 	// All possible effort levels.
 	//
-	// Any of "low", "medium", "high", "max".
+	// Any of "low", "medium", "high", "xhigh", "max".
 	Effort OutputConfigEffort `json:"effort,omitzero"`
 	// A schema to specify Claude's output format in responses. See
 	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
@@ -4096,6 +4099,7 @@ const (
 	OutputConfigEffortLow    OutputConfigEffort = "low"
 	OutputConfigEffortMedium OutputConfigEffort = "medium"
 	OutputConfigEffortHigh   OutputConfigEffort = "high"
+	OutputConfigEffortXhigh  OutputConfigEffort = "xhigh"
 	OutputConfigEffortMax    OutputConfigEffort = "max"
 )
 

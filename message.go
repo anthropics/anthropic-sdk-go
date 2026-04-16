@@ -3972,6 +3972,7 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model = string
 
 const (
+	ModelClaudeOpus4_7            Model = "claude-opus-4-7"
 	ModelClaudeMythosPreview      Model = "claude-mythos-preview"
 	ModelClaudeOpus4_6            Model = "claude-opus-4-6"
 	ModelClaudeSonnet4_6          Model = "claude-sonnet-4-6"
@@ -4009,7 +4010,7 @@ const (
 type OutputConfigParam struct {
 	// All possible effort levels.
 	//
-	// Any of "low", "medium", "high", "max".
+	// Any of "low", "medium", "high", "xhigh", "max".
 	Effort OutputConfigEffort `json:"effort,omitzero"`
 	// A schema to specify Claude's output format in responses. See
 	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
@@ -4032,6 +4033,7 @@ const (
 	OutputConfigEffortLow    OutputConfigEffort = "low"
 	OutputConfigEffortMedium OutputConfigEffort = "medium"
 	OutputConfigEffortHigh   OutputConfigEffort = "high"
+	OutputConfigEffortXhigh  OutputConfigEffort = "xhigh"
 	OutputConfigEffortMax    OutputConfigEffort = "max"
 )
 

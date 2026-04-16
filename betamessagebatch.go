@@ -640,6 +640,9 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
+	// The user profile ID to attribute this request to. Use when acting on behalf of a
+	// party other than your organization.
+	UserProfileID param.Opt[string] `json:"user_profile_id,omitzero"`
 	// Whether to incrementally stream the response using server-sent events.
 	//
 	// See [streaming](https://docs.claude.com/en/api/messages-streaming) for details.

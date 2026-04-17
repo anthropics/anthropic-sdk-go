@@ -68,6 +68,14 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 
 	path := "v1/messages?beta=true"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
+	if err != nil {
+		return nil, err
+	}
+	if dest, ok := outputFormatDest(params); ok {
+		if parseErr := parseOutputContent(res, dest); parseErr != nil {
+			return res, parseErr
+		}
+	}
 	return res, err
 }
 
@@ -4462,16 +4470,54 @@ func (r *BetaIterationsUsageItemUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// BetaJSONOutputFormatParam configures JSON structured output for a message request.
+// The preferred usage is to pass a pointer to a Go struct as Schema. The SDK will
+// auto-generate the JSON schema on the wire and auto-parse the response back into
+// the struct after the request completes:
+//
+//	var result MyStruct
+//	msg, _ := client.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
+//	    OutputFormat: anthropic.BetaJSONOutputFormatParam{Schema: &result},
+//	    ...
+//	})
+//
+// For streaming, call ParseOutput after accumulating the message:
+//
+//	msg.ParseOutput(&result)
+//
 // The properties Schema, Type are required.
 type BetaJSONOutputFormatParam struct {
-	// The JSON schema of the format
-	Schema map[string]any `json:"schema,omitzero" api:"required"`
+	// The JSON schema of the format.
+	//
+	// This can be a map[string]any, json.RawMessage, or a pointer to a Go struct.
+	// When a struct pointer is provided, the SDK automatically generates the JSON
+	// schema on the wire and can auto-parse the response back into the struct.
+	// A struct pointer is preferred over map[string]any because it provides
+	// auto-parsing and type safety. If you already have a JSON schema as bytes,
+	// use json.RawMessage to avoid unnecessary marshaling overhead.
+	//
+	// Set the schema on either BetaMessageNewParams.OutputFormat or
+	// BetaMessageNewParams.OutputConfig.Format, not both. If both carry a struct
+	// pointer, OutputFormat wins for auto-parse.
+	Schema any `json:"schema,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as "json_schema".
 	Type constant.JSONSchema `json:"type" default:"json_schema"`
 	paramObj
 }
 
 func (r BetaJSONOutputFormatParam) MarshalJSON() (data []byte, err error) {
+	// Convert struct pointers and maps to json.RawMessage so the wire
+	// payload contains a JSON schema, not the struct's field values.
+	// Value receiver keeps the caller's Schema intact for auto-parse.
+	if r.Schema != nil {
+		raw, e := schemaToRaw(r.Schema)
+		if e != nil {
+			return nil, e
+		}
+		if raw != nil {
+			r.Schema = raw
+		}
+	}
 	type shadow BetaJSONOutputFormatParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
@@ -5066,7 +5112,6 @@ func (r BetaMessage) RawJSON() string { return r.JSON.raw }
 func (r *BetaMessage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
 
 type BetaMessageDeltaUsage struct {
 	// The cumulative number of input tokens used to create the cache entry.

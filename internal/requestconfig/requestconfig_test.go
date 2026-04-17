@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
+	"github.com/anthropics/anthropic-sdk-go/shared"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -58,4 +59,56 @@ func TestErrorWithRequestID(t *testing.T) {
 	// Verify that the error message includes the RequestID
 	errorMsg := apiErr.Error()
 	assert.Contains(t, errorMsg, "Request-ID: req_123456789", "Error message should contain request ID")
+}
+
+func TestErrorType(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("request-id", "req_test123")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"type":"error","error":{"type":"invalid_request_error","message":"Bad request"}}`))
+	}))
+	defer server.Close()
+
+	req, err := http.NewRequest("GET", "/test", nil)
+	require.NoError(t, err)
+
+	cfg := &RequestConfig{
+		Context:    context.Background(),
+		Request:    req,
+		BaseURL:    mockBaseURL(server),
+		HTTPClient: http.DefaultClient,
+	}
+	err = cfg.Execute()
+	require.Error(t, err)
+
+	apiErr, ok := err.(*apierror.Error)
+	require.True(t, ok, "Expected *apierror.Error, got %T", err)
+	assert.Equal(t, shared.ErrorTypeInvalidRequestError, apiErr.Type())
+	assert.Equal(t, 400, apiErr.StatusCode)
+	assert.Equal(t, "req_test123", apiErr.RequestID)
+}
+
+func TestErrorTypeAbsent(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"message":"Internal error"}`))
+	}))
+	defer server.Close()
+
+	req, err := http.NewRequest("GET", "/test", nil)
+	require.NoError(t, err)
+
+	cfg := &RequestConfig{
+		Context:    context.Background(),
+		Request:    req,
+		BaseURL:    mockBaseURL(server),
+		HTTPClient: http.DefaultClient,
+	}
+	err = cfg.Execute()
+	require.Error(t, err)
+
+	apiErr, ok := err.(*apierror.Error)
+	require.True(t, ok, "Expected *apierror.Error, got %T", err)
+	assert.Equal(t, shared.ErrorType(""), apiErr.Type())
+	assert.Equal(t, 500, apiErr.StatusCode)
 }

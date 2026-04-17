@@ -92,6 +92,17 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 	return nil
 }
 
+// ParseOutput finds the first text content block in the message and unmarshals it
+// into dest. This is useful for streaming workflows where you accumulate the message
+// first and then parse the structured output.
+//
+//	var msg anthropic.BetaMessage
+//	for stream.Next() { msg.Accumulate(stream.Current()) }
+//	msg.ParseOutput(&myStruct)
+func (r *BetaMessage) ParseOutput(dest any) error {
+	return parseOutputContent(r, dest)
+}
+
 // Param converters
 
 func (r BetaContentBlockUnion) ToParam() BetaContentBlockParamUnion {

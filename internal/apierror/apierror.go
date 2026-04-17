@@ -3,12 +3,14 @@
 package apierror
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/shared"
 )
 
 // Error represents an error that originates from the API, i.e. when a request is
@@ -24,12 +26,31 @@ type Error struct {
 	Request    *http.Request
 	Response   *http.Response
 	RequestID  string
+
+	errorType shared.ErrorType
 }
+
+// Type returns the error type from the API response body, e.g.
+// "rate_limit_error" or "overloaded_error". Returns "" if the
+// response body did not contain a recognized error type.
+func (r *Error) Type() shared.ErrorType { return r.errorType }
 
 // Returns the unmodified JSON received from the API
 func (r Error) RawJSON() string { return r.JSON.raw }
 func (r *Error) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
+	if err := apijson.UnmarshalRoot(data, r); err != nil {
+		return err
+	}
+	// Extract error type from the standard {"error":{"type":"..."}} envelope.
+	var envelope struct {
+		Error struct {
+			Type shared.ErrorType `json:"type"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(data, &envelope) == nil {
+		r.errorType = envelope.Error.Type
+	}
+	return nil
 }
 
 func (r *Error) Error() string {

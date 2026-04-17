@@ -10,6 +10,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
 )
 
 type Decoder interface {
@@ -33,7 +35,42 @@ func NewDecoder(res *http.Response) Decoder {
 		scn.Buffer(nil, bufio.MaxScanTokenSize<<9)
 		decoder = &eventStreamDecoder{rc: res.Body, scn: scn}
 	}
+
+	// richDecoder needs the http request to provide helpful errors
+	// Aside from the error case there should be no difference
+	// from the underlying decoder.
+	if res.Request != nil {
+		return richErrorDecoder{Decoder: decoder, resp: res}
+	}
+
 	return decoder
+}
+
+// richErrorDecoder wraps a Decoder and carries the original [*http.Response]
+// so that it can construct rich API errors from SSE error events.
+//
+// A richErrorDecoder is used by [Stream] to construct errors whenever possible.
+// [Stream] needs to rely on the underlying decoder, because the [Stream] has
+// no access to the original http request.
+//
+// There should be no other differences from the underlying decoder.
+type richErrorDecoder struct {
+	Decoder
+	resp *http.Response
+}
+
+func (d *richErrorDecoder) newAPIError(errorJSON []byte) error {
+	aerr := &apierror.Error{}
+	if d.resp != nil {
+		aerr.Request = d.resp.Request
+		aerr.Response = d.resp
+		aerr.StatusCode = d.resp.StatusCode
+		aerr.RequestID = d.resp.Header.Get("request-id")
+	}
+	if aerr.UnmarshalJSON(errorJSON) != nil {
+		return fmt.Errorf("received error while streaming: %s", string(errorJSON))
+	}
+	return aerr
 }
 
 var decoderTypes = map[string](func(io.ReadCloser) Decoder){}
@@ -170,7 +207,12 @@ func (s *Stream[T]) Next() bool {
 		case "ping":
 			continue
 		case "error":
-			s.err = fmt.Errorf("received error while streaming: %s", string(s.decoder.Event().Data))
+			data := s.decoder.Event().Data
+			if ed, ok := s.decoder.(richErrorDecoder); ok {
+				s.err = ed.newAPIError(data)
+			} else {
+				s.err = fmt.Errorf("received error while streaming: %s", string(data))
+			}
 			return false
 		}
 	}

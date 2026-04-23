@@ -445,6 +445,47 @@ func init() {
 	)
 }
 
+// Parameters for attaching a memory store to an agent session.
+//
+// The properties MemoryStoreID, Type are required.
+type BetaManagedAgentsMemoryStoreResourceParam struct {
+	// The memory store ID (memstore\_...). Must belong to the caller's organization
+	// and workspace.
+	MemoryStoreID string `json:"memory_store_id" api:"required"`
+	// Any of "memory_store".
+	Type BetaManagedAgentsMemoryStoreResourceParamType `json:"type,omitzero" api:"required"`
+	// Per-attachment guidance for the agent on how to use this store. Rendered into
+	// the memory section of the system prompt. Max 4096 chars.
+	Instructions param.Opt[string] `json:"instructions,omitzero"`
+	// Access mode for an attached memory store.
+	//
+	// Any of "read_write", "read_only".
+	Access BetaManagedAgentsMemoryStoreResourceParamAccess `json:"access,omitzero"`
+	paramObj
+}
+
+func (r BetaManagedAgentsMemoryStoreResourceParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsMemoryStoreResourceParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsMemoryStoreResourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsMemoryStoreResourceParamType string
+
+const (
+	BetaManagedAgentsMemoryStoreResourceParamTypeMemoryStore BetaManagedAgentsMemoryStoreResourceParamType = "memory_store"
+)
+
+// Access mode for an attached memory store.
+type BetaManagedAgentsMemoryStoreResourceParamAccess string
+
+const (
+	BetaManagedAgentsMemoryStoreResourceParamAccessReadWrite BetaManagedAgentsMemoryStoreResourceParamAccess = "read_write"
+	BetaManagedAgentsMemoryStoreResourceParamAccessReadOnly  BetaManagedAgentsMemoryStoreResourceParamAccess = "read_only"
+)
+
 // A Managed Agents `session`.
 type BetaManagedAgentsSession struct {
 	ID string `json:"id" api:"required"`
@@ -898,11 +939,12 @@ func (u *BetaSessionNewParamsAgentUnion) asAny() any {
 type BetaSessionNewParamsResourceUnion struct {
 	OfGitHubRepository *BetaManagedAgentsGitHubRepositoryResourceParams `json:",omitzero,inline"`
 	OfFile             *BetaManagedAgentsFileResourceParams             `json:",omitzero,inline"`
+	OfMemoryStore      *BetaManagedAgentsMemoryStoreResourceParam       `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaSessionNewParamsResourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfGitHubRepository, u.OfFile)
+	return param.MarshalUnion(u, u.OfGitHubRepository, u.OfFile, u.OfMemoryStore)
 }
 func (u *BetaSessionNewParamsResourceUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -913,6 +955,8 @@ func (u *BetaSessionNewParamsResourceUnion) asAny() any {
 		return u.OfGitHubRepository
 	} else if !param.IsOmitted(u.OfFile) {
 		return u.OfFile
+	} else if !param.IsOmitted(u.OfMemoryStore) {
+		return u.OfMemoryStore
 	}
 	return nil
 }
@@ -950,10 +994,36 @@ func (u BetaSessionNewParamsResourceUnion) GetFileID() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u BetaSessionNewParamsResourceUnion) GetMemoryStoreID() *string {
+	if vt := u.OfMemoryStore; vt != nil {
+		return &vt.MemoryStoreID
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaSessionNewParamsResourceUnion) GetAccess() *string {
+	if vt := u.OfMemoryStore; vt != nil {
+		return (*string)(&vt.Access)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaSessionNewParamsResourceUnion) GetInstructions() *string {
+	if vt := u.OfMemoryStore; vt != nil && vt.Instructions.Valid() {
+		return &vt.Instructions.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u BetaSessionNewParamsResourceUnion) GetType() *string {
 	if vt := u.OfGitHubRepository; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfFile; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfMemoryStore; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -974,6 +1044,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsGitHubRepositoryResourceParams]("github_repository"),
 		apijson.Discriminator[BetaManagedAgentsFileResourceParams]("file"),
+		apijson.Discriminator[BetaManagedAgentsMemoryStoreResourceParam]("memory_store"),
 	)
 }
 

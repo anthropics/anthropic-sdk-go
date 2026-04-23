@@ -4010,7 +4010,7 @@ const (
 type OutputConfigParam struct {
 	// All possible effort levels.
 	//
-	// Any of "low", "medium", "high", "max".
+	// Any of "low", "medium", "high", "xhigh", "max".
 	Effort OutputConfigEffort `json:"effort,omitzero"`
 	// A schema to specify Claude's output format in responses. See
 	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
@@ -4033,6 +4033,7 @@ const (
 	OutputConfigEffortLow    OutputConfigEffort = "low"
 	OutputConfigEffortMedium OutputConfigEffort = "medium"
 	OutputConfigEffortHigh   OutputConfigEffort = "high"
+	OutputConfigEffortXhigh  OutputConfigEffort = "xhigh"
 	OutputConfigEffortMax    OutputConfigEffort = "max"
 )
 

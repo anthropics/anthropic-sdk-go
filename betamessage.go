@@ -5235,7 +5235,7 @@ func (r *BetaMetadataParam) UnmarshalJSON(data []byte) error {
 type BetaOutputConfigParam struct {
 	// All possible effort levels.
 	//
-	// Any of "low", "medium", "high", "max".
+	// Any of "low", "medium", "high", "xhigh", "max".
 	Effort BetaOutputConfigEffort `json:"effort,omitzero"`
 	// A schema to specify Claude's output format in responses. See
 	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
@@ -5260,6 +5260,7 @@ const (
 	BetaOutputConfigEffortLow    BetaOutputConfigEffort = "low"
 	BetaOutputConfigEffortMedium BetaOutputConfigEffort = "medium"
 	BetaOutputConfigEffortHigh   BetaOutputConfigEffort = "high"
+	BetaOutputConfigEffortXhigh  BetaOutputConfigEffort = "xhigh"
 	BetaOutputConfigEffortMax    BetaOutputConfigEffort = "max"
 )
 

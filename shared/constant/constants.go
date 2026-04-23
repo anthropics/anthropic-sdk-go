@@ -152,6 +152,7 @@ type Thinking string                                // Always "thinking"
 type ThinkingDelta string                           // Always "thinking_delta"
 type ThinkingTurns string                           // Always "thinking_turns"
 type TimeoutError string                            // Always "timeout_error"
+type Tokens string                                  // Always "tokens"
 type Tool string                                    // Always "tool"
 type ToolReference string                           // Always "tool_reference"
 type ToolResult string                              // Always "tool_result"
@@ -327,6 +328,7 @@ func (c Thinking) Default() Thinking                         { return "thinking"
 func (c ThinkingDelta) Default() ThinkingDelta               { return "thinking_delta" }
 func (c ThinkingTurns) Default() ThinkingTurns               { return "thinking_turns" }
 func (c TimeoutError) Default() TimeoutError                 { return "timeout_error" }
+func (c Tokens) Default() Tokens                             { return "tokens" }
 func (c Tool) Default() Tool                                 { return "tool" }
 func (c ToolReference) Default() ToolReference               { return "tool_reference" }
 func (c ToolResult) Default() ToolResult                     { return "tool_result" }
@@ -490,6 +492,7 @@ func (c Thinking) MarshalJSON() ([]byte, error)                          { retur
 func (c ThinkingDelta) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c ThinkingTurns) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c TimeoutError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c Tokens) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Tool) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c ToolReference) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c ToolResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }

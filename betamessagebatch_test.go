@@ -105,6 +105,10 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 							"foo": "bar",
 						},
 					},
+					TaskBudget: anthropic.BetaTokenTaskBudgetParam{
+						Total:     1024,
+						Remaining: anthropic.Int(0),
+					},
 				},
 				OutputFormat: anthropic.BetaJSONOutputFormatParam{
 					Schema: map[string]any{
@@ -165,8 +169,9 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type:   anthropic.BetaToolTypeCustom,
 					},
 				}},
-				TopK: anthropic.Int(5),
-				TopP: anthropic.Float(0.7),
+				TopK:          anthropic.Int(5),
+				TopP:          anthropic.Float(0.7),
+				UserProfileID: anthropic.String("user_profile_id"),
 			},
 		}},
 		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},

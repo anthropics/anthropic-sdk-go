@@ -2003,14 +2003,17 @@ func (r *BetaCompact20260112EditParam) UnmarshalJSON(data []byte) error {
 // compaction blocks with null content; the server treats them as no-ops.
 type BetaCompactionBlock struct {
 	// Summary of compacted content, or null if compaction failed
-	Content string              `json:"content" api:"required"`
-	Type    constant.Compaction `json:"type" default:"compaction"`
+	Content string `json:"content" api:"required"`
+	// Opaque metadata from prior compaction, to be round-tripped verbatim
+	EncryptedContent string              `json:"encrypted_content" api:"required"`
+	Type             constant.Compaction `json:"type" default:"compaction"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Content     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Content          respjson.Field
+		EncryptedContent respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -2032,6 +2035,8 @@ func (r *BetaCompactionBlock) UnmarshalJSON(data []byte) error {
 type BetaCompactionBlockParam struct {
 	// Summary of previously compacted content, or null if compaction failed
 	Content param.Opt[string] `json:"content,omitzero" api:"required"`
+	// Opaque metadata from prior compaction, to be round-tripped verbatim
+	EncryptedContent param.Opt[string] `json:"encrypted_content,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "compaction".
@@ -2048,14 +2053,17 @@ func (r *BetaCompactionBlockParam) UnmarshalJSON(data []byte) error {
 }
 
 type BetaCompactionContentBlockDelta struct {
-	Content string                   `json:"content" api:"required"`
-	Type    constant.CompactionDelta `json:"type" default:"compaction_delta"`
+	Content string `json:"content" api:"required"`
+	// Opaque metadata from prior compaction, to be round-tripped verbatim
+	EncryptedContent string                   `json:"encrypted_content" api:"required"`
+	Type             constant.CompactionDelta `json:"type" default:"compaction_delta"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Content     respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Content          respjson.Field
+		EncryptedContent respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -2232,23 +2240,26 @@ type BetaContentBlockUnion struct {
 	IsError bool `json:"is_error"`
 	// This field is from variant [BetaContainerUploadBlock].
 	FileID string `json:"file_id"`
-	JSON   struct {
-		Citations  respjson.Field
-		Text       respjson.Field
-		Type       respjson.Field
-		Signature  respjson.Field
-		Thinking   respjson.Field
-		Data       respjson.Field
-		ID         respjson.Field
-		Input      respjson.Field
-		Name       respjson.Field
-		Caller     respjson.Field
-		Content    respjson.Field
-		ToolUseID  respjson.Field
-		ServerName respjson.Field
-		IsError    respjson.Field
-		FileID     respjson.Field
-		raw        string
+	// This field is from variant [BetaCompactionBlock].
+	EncryptedContent string `json:"encrypted_content"`
+	JSON             struct {
+		Citations        respjson.Field
+		Text             respjson.Field
+		Type             respjson.Field
+		Signature        respjson.Field
+		Thinking         respjson.Field
+		Data             respjson.Field
+		ID               respjson.Field
+		Input            respjson.Field
+		Name             respjson.Field
+		Caller           respjson.Field
+		Content          respjson.Field
+		ToolUseID        respjson.Field
+		ServerName       respjson.Field
+		IsError          respjson.Field
+		FileID           respjson.Field
+		EncryptedContent respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -2942,6 +2953,14 @@ func (u BetaContentBlockParamUnion) GetServerName() *string {
 func (u BetaContentBlockParamUnion) GetFileID() *string {
 	if vt := u.OfContainerUpload; vt != nil {
 		return &vt.FileID
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaContentBlockParamUnion) GetEncryptedContent() *string {
+	if vt := u.OfCompaction; vt != nil && vt.EncryptedContent.Valid() {
+		return &vt.EncryptedContent.Value
 	}
 	return nil
 }
@@ -5221,6 +5240,8 @@ type BetaOutputConfigParam struct {
 	// A schema to specify Claude's output format in responses. See
 	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
 	Format BetaJSONOutputFormatParam `json:"format,omitzero"`
+	// User-configurable total token budget across contexts.
+	TaskBudget BetaTokenTaskBudgetParam `json:"task_budget,omitzero"`
 	paramObj
 }
 
@@ -5312,15 +5333,18 @@ type BetaRawContentBlockDeltaUnion struct {
 	Signature string `json:"signature"`
 	// This field is from variant [BetaCompactionContentBlockDelta].
 	Content string `json:"content"`
-	JSON    struct {
-		Text        respjson.Field
-		Type        respjson.Field
-		PartialJSON respjson.Field
-		Citation    respjson.Field
-		Thinking    respjson.Field
-		Signature   respjson.Field
-		Content     respjson.Field
-		raw         string
+	// This field is from variant [BetaCompactionContentBlockDelta].
+	EncryptedContent string `json:"encrypted_content"`
+	JSON             struct {
+		Text             respjson.Field
+		Type             respjson.Field
+		PartialJSON      respjson.Field
+		Citation         respjson.Field
+		Thinking         respjson.Field
+		Signature        respjson.Field
+		Content          respjson.Field
+		EncryptedContent respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -5500,23 +5524,26 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	IsError bool `json:"is_error"`
 	// This field is from variant [BetaContainerUploadBlock].
 	FileID string `json:"file_id"`
-	JSON   struct {
-		Citations  respjson.Field
-		Text       respjson.Field
-		Type       respjson.Field
-		Signature  respjson.Field
-		Thinking   respjson.Field
-		Data       respjson.Field
-		ID         respjson.Field
-		Input      respjson.Field
-		Name       respjson.Field
-		Caller     respjson.Field
-		Content    respjson.Field
-		ToolUseID  respjson.Field
-		ServerName respjson.Field
-		IsError    respjson.Field
-		FileID     respjson.Field
-		raw        string
+	// This field is from variant [BetaCompactionBlock].
+	EncryptedContent string `json:"encrypted_content"`
+	JSON             struct {
+		Citations        respjson.Field
+		Text             respjson.Field
+		Type             respjson.Field
+		Signature        respjson.Field
+		Thinking         respjson.Field
+		Data             respjson.Field
+		ID               respjson.Field
+		Input            respjson.Field
+		Name             respjson.Field
+		Caller           respjson.Field
+		Content          respjson.Field
+		ToolUseID        respjson.Field
+		ServerName       respjson.Field
+		IsError          respjson.Field
+		FileID           respjson.Field
+		EncryptedContent respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -6120,19 +6147,22 @@ type BetaRawMessageStreamEventUnionDelta struct {
 	Signature string `json:"signature"`
 	// This field is from variant [BetaRawContentBlockDeltaUnion].
 	Content string `json:"content"`
-	JSON    struct {
-		Container    respjson.Field
-		StopDetails  respjson.Field
-		StopReason   respjson.Field
-		StopSequence respjson.Field
-		Text         respjson.Field
-		Type         respjson.Field
-		PartialJSON  respjson.Field
-		Citation     respjson.Field
-		Thinking     respjson.Field
-		Signature    respjson.Field
-		Content      respjson.Field
-		raw          string
+	// This field is from variant [BetaRawContentBlockDeltaUnion].
+	EncryptedContent string `json:"encrypted_content"`
+	JSON             struct {
+		Container        respjson.Field
+		StopDetails      respjson.Field
+		StopReason       respjson.Field
+		StopSequence     respjson.Field
+		Text             respjson.Field
+		Type             respjson.Field
+		PartialJSON      respjson.Field
+		Citation         respjson.Field
+		Thinking         respjson.Field
+		Signature        respjson.Field
+		Content          respjson.Field
+		EncryptedContent respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -7967,6 +7997,30 @@ func (r BetaThinkingTurnsParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *BetaThinkingTurnsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// User-configurable total token budget across contexts.
+//
+// The properties Total, Type are required.
+type BetaTokenTaskBudgetParam struct {
+	// Total token budget across all contexts in the session.
+	Total int64 `json:"total" api:"required"`
+	// Remaining tokens in the budget. Use this to track usage across contexts when
+	// implementing compaction client-side. Defaults to total if not provided.
+	Remaining param.Opt[int64] `json:"remaining,omitzero"`
+	// The budget type. Currently only 'tokens' is supported.
+	//
+	// This field can be elided, and will marshal its zero value as "tokens".
+	Type constant.Tokens `json:"type" default:"tokens"`
+	paramObj
+}
+
+func (r BetaTokenTaskBudgetParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaTokenTaskBudgetParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaTokenTaskBudgetParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -11225,6 +11279,9 @@ type BetaMessageNewParams struct {
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
+	// The user profile ID to attribute this request to. Use when acting on behalf of a
+	// party other than your organization.
+	UserProfileID param.Opt[string] `json:"user_profile_id,omitzero"`
 	// Amount of randomness injected into the response.
 	//
 	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`

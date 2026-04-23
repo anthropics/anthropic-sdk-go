@@ -314,9 +314,66 @@ func (r *BetaManagedAgentsGitHubRepositoryResourceCheckoutUnion) UnmarshalJSON(d
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A memory store attached to an agent session.
+type BetaManagedAgentsMemoryStoreResource struct {
+	// The memory store ID (memstore\_...). Must belong to the caller's organization
+	// and workspace.
+	MemoryStoreID string `json:"memory_store_id" api:"required"`
+	// Any of "memory_store".
+	Type BetaManagedAgentsMemoryStoreResourceType `json:"type" api:"required"`
+	// Access mode for an attached memory store.
+	//
+	// Any of "read_write", "read_only".
+	Access BetaManagedAgentsMemoryStoreResourceAccess `json:"access" api:"nullable"`
+	// Description of the memory store, snapshotted at attach time. Rendered into the
+	// agent's system prompt. Empty string when the store has no description.
+	Description string `json:"description"`
+	// Per-attachment guidance for the agent on how to use this store. Rendered into
+	// the memory section of the system prompt. Max 4096 chars.
+	Instructions string `json:"instructions" api:"nullable"`
+	// Filesystem path where the store is mounted in the session container, e.g.
+	// /mnt/memory/user-preferences. Derived from the store's name. Output-only.
+	MountPath string `json:"mount_path" api:"nullable"`
+	// Display name of the memory store, snapshotted at attach time. Later edits to the
+	// store's name do not propagate to this resource.
+	Name string `json:"name" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		MemoryStoreID respjson.Field
+		Type          respjson.Field
+		Access        respjson.Field
+		Description   respjson.Field
+		Instructions  respjson.Field
+		MountPath     respjson.Field
+		Name          respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsMemoryStoreResource) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsMemoryStoreResource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsMemoryStoreResourceType string
+
+const (
+	BetaManagedAgentsMemoryStoreResourceTypeMemoryStore BetaManagedAgentsMemoryStoreResourceType = "memory_store"
+)
+
+// Access mode for an attached memory store.
+type BetaManagedAgentsMemoryStoreResourceAccess string
+
+const (
+	BetaManagedAgentsMemoryStoreResourceAccessReadWrite BetaManagedAgentsMemoryStoreResourceAccess = "read_write"
+	BetaManagedAgentsMemoryStoreResourceAccessReadOnly  BetaManagedAgentsMemoryStoreResourceAccess = "read_only"
+)
+
 // BetaManagedAgentsSessionResourceUnion contains all possible properties and
 // values from [BetaManagedAgentsGitHubRepositoryResource],
-// [BetaManagedAgentsFileResource].
+// [BetaManagedAgentsFileResource], [BetaManagedAgentsMemoryStoreResource].
 //
 // Use the [BetaManagedAgentsSessionResourceUnion.AsAny] method to switch on the
 // variant.
@@ -326,7 +383,7 @@ type BetaManagedAgentsSessionResourceUnion struct {
 	ID        string    `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	MountPath string    `json:"mount_path"`
-	// Any of "github_repository", "file".
+	// Any of "github_repository", "file", "memory_store".
 	Type      string    `json:"type"`
 	UpdatedAt time.Time `json:"updated_at"`
 	// This field is from variant [BetaManagedAgentsGitHubRepositoryResource].
@@ -335,16 +392,31 @@ type BetaManagedAgentsSessionResourceUnion struct {
 	Checkout BetaManagedAgentsGitHubRepositoryResourceCheckoutUnion `json:"checkout"`
 	// This field is from variant [BetaManagedAgentsFileResource].
 	FileID string `json:"file_id"`
-	JSON   struct {
-		ID        respjson.Field
-		CreatedAt respjson.Field
-		MountPath respjson.Field
-		Type      respjson.Field
-		UpdatedAt respjson.Field
-		URL       respjson.Field
-		Checkout  respjson.Field
-		FileID    respjson.Field
-		raw       string
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	MemoryStoreID string `json:"memory_store_id"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Access BetaManagedAgentsMemoryStoreResourceAccess `json:"access"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Description string `json:"description"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Instructions string `json:"instructions"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Name string `json:"name"`
+	JSON struct {
+		ID            respjson.Field
+		CreatedAt     respjson.Field
+		MountPath     respjson.Field
+		Type          respjson.Field
+		UpdatedAt     respjson.Field
+		URL           respjson.Field
+		Checkout      respjson.Field
+		FileID        respjson.Field
+		MemoryStoreID respjson.Field
+		Access        respjson.Field
+		Description   respjson.Field
+		Instructions  respjson.Field
+		Name          respjson.Field
+		raw           string
 	} `json:"-"`
 }
 
@@ -357,12 +429,14 @@ type anyBetaManagedAgentsSessionResource interface {
 
 func (BetaManagedAgentsGitHubRepositoryResource) implBetaManagedAgentsSessionResourceUnion() {}
 func (BetaManagedAgentsFileResource) implBetaManagedAgentsSessionResourceUnion()             {}
+func (BetaManagedAgentsMemoryStoreResource) implBetaManagedAgentsSessionResourceUnion()      {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsSessionResourceUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsGitHubRepositoryResource:
 //	case anthropic.BetaManagedAgentsFileResource:
+//	case anthropic.BetaManagedAgentsMemoryStoreResource:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -372,6 +446,8 @@ func (u BetaManagedAgentsSessionResourceUnion) AsAny() anyBetaManagedAgentsSessi
 		return u.AsGitHubRepository()
 	case "file":
 		return u.AsFile()
+	case "memory_store":
+		return u.AsMemoryStore()
 	}
 	return nil
 }
@@ -386,6 +462,11 @@ func (u BetaManagedAgentsSessionResourceUnion) AsFile() (v BetaManagedAgentsFile
 	return
 }
 
+func (u BetaManagedAgentsSessionResourceUnion) AsMemoryStore() (v BetaManagedAgentsMemoryStoreResource) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaManagedAgentsSessionResourceUnion) RawJSON() string { return u.JSON.raw }
 
@@ -395,7 +476,7 @@ func (r *BetaManagedAgentsSessionResourceUnion) UnmarshalJSON(data []byte) error
 
 // BetaSessionResourceGetResponseUnion contains all possible properties and values
 // from [BetaManagedAgentsGitHubRepositoryResource],
-// [BetaManagedAgentsFileResource].
+// [BetaManagedAgentsFileResource], [BetaManagedAgentsMemoryStoreResource].
 //
 // Use the [BetaSessionResourceGetResponseUnion.AsAny] method to switch on the
 // variant.
@@ -405,7 +486,7 @@ type BetaSessionResourceGetResponseUnion struct {
 	ID        string    `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	MountPath string    `json:"mount_path"`
-	// Any of "github_repository", "file".
+	// Any of "github_repository", "file", "memory_store".
 	Type      string    `json:"type"`
 	UpdatedAt time.Time `json:"updated_at"`
 	// This field is from variant [BetaManagedAgentsGitHubRepositoryResource].
@@ -414,16 +495,31 @@ type BetaSessionResourceGetResponseUnion struct {
 	Checkout BetaManagedAgentsGitHubRepositoryResourceCheckoutUnion `json:"checkout"`
 	// This field is from variant [BetaManagedAgentsFileResource].
 	FileID string `json:"file_id"`
-	JSON   struct {
-		ID        respjson.Field
-		CreatedAt respjson.Field
-		MountPath respjson.Field
-		Type      respjson.Field
-		UpdatedAt respjson.Field
-		URL       respjson.Field
-		Checkout  respjson.Field
-		FileID    respjson.Field
-		raw       string
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	MemoryStoreID string `json:"memory_store_id"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Access BetaManagedAgentsMemoryStoreResourceAccess `json:"access"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Description string `json:"description"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Instructions string `json:"instructions"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Name string `json:"name"`
+	JSON struct {
+		ID            respjson.Field
+		CreatedAt     respjson.Field
+		MountPath     respjson.Field
+		Type          respjson.Field
+		UpdatedAt     respjson.Field
+		URL           respjson.Field
+		Checkout      respjson.Field
+		FileID        respjson.Field
+		MemoryStoreID respjson.Field
+		Access        respjson.Field
+		Description   respjson.Field
+		Instructions  respjson.Field
+		Name          respjson.Field
+		raw           string
 	} `json:"-"`
 }
 
@@ -436,12 +532,14 @@ type anyBetaSessionResourceGetResponse interface {
 
 func (BetaManagedAgentsGitHubRepositoryResource) implBetaSessionResourceGetResponseUnion() {}
 func (BetaManagedAgentsFileResource) implBetaSessionResourceGetResponseUnion()             {}
+func (BetaManagedAgentsMemoryStoreResource) implBetaSessionResourceGetResponseUnion()      {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaSessionResourceGetResponseUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsGitHubRepositoryResource:
 //	case anthropic.BetaManagedAgentsFileResource:
+//	case anthropic.BetaManagedAgentsMemoryStoreResource:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -451,6 +549,8 @@ func (u BetaSessionResourceGetResponseUnion) AsAny() anyBetaSessionResourceGetRe
 		return u.AsGitHubRepository()
 	case "file":
 		return u.AsFile()
+	case "memory_store":
+		return u.AsMemoryStore()
 	}
 	return nil
 }
@@ -465,6 +565,11 @@ func (u BetaSessionResourceGetResponseUnion) AsFile() (v BetaManagedAgentsFileRe
 	return
 }
 
+func (u BetaSessionResourceGetResponseUnion) AsMemoryStore() (v BetaManagedAgentsMemoryStoreResource) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaSessionResourceGetResponseUnion) RawJSON() string { return u.JSON.raw }
 
@@ -474,7 +579,7 @@ func (r *BetaSessionResourceGetResponseUnion) UnmarshalJSON(data []byte) error {
 
 // BetaSessionResourceUpdateResponseUnion contains all possible properties and
 // values from [BetaManagedAgentsGitHubRepositoryResource],
-// [BetaManagedAgentsFileResource].
+// [BetaManagedAgentsFileResource], [BetaManagedAgentsMemoryStoreResource].
 //
 // Use the [BetaSessionResourceUpdateResponseUnion.AsAny] method to switch on the
 // variant.
@@ -484,7 +589,7 @@ type BetaSessionResourceUpdateResponseUnion struct {
 	ID        string    `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	MountPath string    `json:"mount_path"`
-	// Any of "github_repository", "file".
+	// Any of "github_repository", "file", "memory_store".
 	Type      string    `json:"type"`
 	UpdatedAt time.Time `json:"updated_at"`
 	// This field is from variant [BetaManagedAgentsGitHubRepositoryResource].
@@ -493,16 +598,31 @@ type BetaSessionResourceUpdateResponseUnion struct {
 	Checkout BetaManagedAgentsGitHubRepositoryResourceCheckoutUnion `json:"checkout"`
 	// This field is from variant [BetaManagedAgentsFileResource].
 	FileID string `json:"file_id"`
-	JSON   struct {
-		ID        respjson.Field
-		CreatedAt respjson.Field
-		MountPath respjson.Field
-		Type      respjson.Field
-		UpdatedAt respjson.Field
-		URL       respjson.Field
-		Checkout  respjson.Field
-		FileID    respjson.Field
-		raw       string
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	MemoryStoreID string `json:"memory_store_id"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Access BetaManagedAgentsMemoryStoreResourceAccess `json:"access"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Description string `json:"description"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Instructions string `json:"instructions"`
+	// This field is from variant [BetaManagedAgentsMemoryStoreResource].
+	Name string `json:"name"`
+	JSON struct {
+		ID            respjson.Field
+		CreatedAt     respjson.Field
+		MountPath     respjson.Field
+		Type          respjson.Field
+		UpdatedAt     respjson.Field
+		URL           respjson.Field
+		Checkout      respjson.Field
+		FileID        respjson.Field
+		MemoryStoreID respjson.Field
+		Access        respjson.Field
+		Description   respjson.Field
+		Instructions  respjson.Field
+		Name          respjson.Field
+		raw           string
 	} `json:"-"`
 }
 
@@ -515,12 +635,14 @@ type anyBetaSessionResourceUpdateResponse interface {
 
 func (BetaManagedAgentsGitHubRepositoryResource) implBetaSessionResourceUpdateResponseUnion() {}
 func (BetaManagedAgentsFileResource) implBetaSessionResourceUpdateResponseUnion()             {}
+func (BetaManagedAgentsMemoryStoreResource) implBetaSessionResourceUpdateResponseUnion()      {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaSessionResourceUpdateResponseUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsGitHubRepositoryResource:
 //	case anthropic.BetaManagedAgentsFileResource:
+//	case anthropic.BetaManagedAgentsMemoryStoreResource:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -530,6 +652,8 @@ func (u BetaSessionResourceUpdateResponseUnion) AsAny() anyBetaSessionResourceUp
 		return u.AsGitHubRepository()
 	case "file":
 		return u.AsFile()
+	case "memory_store":
+		return u.AsMemoryStore()
 	}
 	return nil
 }
@@ -540,6 +664,11 @@ func (u BetaSessionResourceUpdateResponseUnion) AsGitHubRepository() (v BetaMana
 }
 
 func (u BetaSessionResourceUpdateResponseUnion) AsFile() (v BetaManagedAgentsFileResource) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaSessionResourceUpdateResponseUnion) AsMemoryStore() (v BetaManagedAgentsMemoryStoreResource) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }

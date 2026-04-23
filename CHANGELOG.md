@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.38.0 (2026-04-23)
+
+Full Changelog: [v1.37.0...v1.38.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.37.0...v1.38.0)
+
+### Features
+
+* add Type() method to API errors for error kind identification ([#676](https://github.com/anthropics/anthropic-sdk-go/issues/676)) ([0db1712](https://github.com/anthropics/anthropic-sdk-go/commit/0db1712b237930416461c2411d263e6d1150d957))
+* **api:** CMA Memory public beta ([180e00c](https://github.com/anthropics/anthropic-sdk-go/commit/180e00cdc4863a6a64986e03fed9eb4a04117f40))
+* structured outputs via Schema any with auto-parse ([#759](https://github.com/anthropics/anthropic-sdk-go/issues/759)) ([46073d8](https://github.com/anthropics/anthropic-sdk-go/commit/46073d8f489a88fdf5ebf33163e4f0d364759eae))
+
+
+### Bug Fixes
+
+* **api:** fix errors in api spec ([e47c178](https://github.com/anthropics/anthropic-sdk-go/commit/e47c178b3ee1b5c47834239635b5a3abdff9a432))
+* **api:** restore missing features ([0fc6fac](https://github.com/anthropics/anthropic-sdk-go/commit/0fc6fac141980cfce023ce2d0b30175980741db0))
+
+
+### Chores
+
+* **internal:** more robust bootstrap script ([5bde204](https://github.com/anthropics/anthropic-sdk-go/commit/5bde204d267187622a5228330235c9c048abeae1))
+* **tests:** bump steady to v0.22.1 ([4578c15](https://github.com/anthropics/anthropic-sdk-go/commit/4578c15e9a2f6ed05a05acfa608083c3a893d6dd))
+
 ## 1.37.0 (2026-04-16)
 
 Full Changelog: [v1.36.0...v1.37.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.36.0...v1.37.0)

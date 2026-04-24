@@ -1,3 +1,5 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
 package anthropic
 
 import (
@@ -9,8 +11,6 @@ import (
 // and the server's response headers. It does not apply to the response body,
 // so long-running streams are unaffected. Without this, a server that accepts
 // the connection but never responds would hang the request indefinitely.
-//
-// The value matches the Python SDK's default request timeout of 10 minutes.
 const defaultResponseHeaderTimeout = 10 * time.Minute
 
 // defaultHTTPClient returns an [*http.Client] used when the caller does not

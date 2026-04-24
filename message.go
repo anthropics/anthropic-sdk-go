@@ -9190,6 +9190,10 @@ type MessageNewParams struct {
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
+	// Whether to incrementally stream the response using server-sent events.
+	//
+	// See [streaming](https://docs.claude.com/en/api/messages-streaming) for details.
+	Stream param.Opt[bool] `json:"stream,omitzero"`
 	// Amount of randomness injected into the response.
 	//
 	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`

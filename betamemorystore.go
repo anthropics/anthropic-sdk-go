@@ -43,7 +43,7 @@ func NewBetaMemoryStoreService(opts ...option.RequestOption) (r BetaMemoryStoreS
 	return
 }
 
-// CreateMemoryStore
+// Create a memory store
 func (r *BetaMemoryStoreService) New(ctx context.Context, params BetaMemoryStoreNewParams, opts ...option.RequestOption) (res *BetaManagedAgentsMemoryStore, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
@@ -55,7 +55,7 @@ func (r *BetaMemoryStoreService) New(ctx context.Context, params BetaMemoryStore
 	return res, err
 }
 
-// GetMemoryStore
+// Retrieve a memory store
 func (r *BetaMemoryStoreService) Get(ctx context.Context, memoryStoreID string, query BetaMemoryStoreGetParams, opts ...option.RequestOption) (res *BetaManagedAgentsMemoryStore, err error) {
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
@@ -71,7 +71,7 @@ func (r *BetaMemoryStoreService) Get(ctx context.Context, memoryStoreID string, 
 	return res, err
 }
 
-// UpdateMemoryStore
+// Update a memory store
 func (r *BetaMemoryStoreService) Update(ctx context.Context, memoryStoreID string, params BetaMemoryStoreUpdateParams, opts ...option.RequestOption) (res *BetaManagedAgentsMemoryStore, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
@@ -87,7 +87,7 @@ func (r *BetaMemoryStoreService) Update(ctx context.Context, memoryStoreID strin
 	return res, err
 }
 
-// ListMemoryStores
+// List memory stores
 func (r *BetaMemoryStoreService) List(ctx context.Context, params BetaMemoryStoreListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaManagedAgentsMemoryStore], err error) {
 	var raw *http.Response
 	for _, v := range params.Betas {
@@ -108,12 +108,12 @@ func (r *BetaMemoryStoreService) List(ctx context.Context, params BetaMemoryStor
 	return res, nil
 }
 
-// ListMemoryStores
+// List memory stores
 func (r *BetaMemoryStoreService) ListAutoPaging(ctx context.Context, params BetaMemoryStoreListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaManagedAgentsMemoryStore] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
-// DeleteMemoryStore
+// Delete a memory store
 func (r *BetaMemoryStoreService) Delete(ctx context.Context, memoryStoreID string, body BetaMemoryStoreDeleteParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeletedMemoryStore, err error) {
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
@@ -129,7 +129,7 @@ func (r *BetaMemoryStoreService) Delete(ctx context.Context, memoryStoreID strin
 	return res, err
 }
 
-// ArchiveMemoryStore
+// Archive a memory store
 func (r *BetaMemoryStoreService) Archive(ctx context.Context, memoryStoreID string, body BetaMemoryStoreArchiveParams, opts ...option.RequestOption) (res *BetaManagedAgentsMemoryStore, err error) {
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
@@ -145,7 +145,10 @@ func (r *BetaMemoryStoreService) Archive(ctx context.Context, memoryStoreID stri
 	return res, err
 }
 
+// Confirmation that a `memory_store` was deleted.
 type BetaManagedAgentsDeletedMemoryStore struct {
+	// ID of the deleted memory store (a `memstore_...` identifier). The store and all
+	// its memories and versions are no longer retrievable.
 	ID string `json:"id" api:"required"`
 	// Any of "memory_store_deleted".
 	Type BetaManagedAgentsDeletedMemoryStoreType `json:"type" api:"required"`
@@ -170,19 +173,33 @@ const (
 	BetaManagedAgentsDeletedMemoryStoreTypeMemoryStoreDeleted BetaManagedAgentsDeletedMemoryStoreType = "memory_store_deleted"
 )
 
+// A `memory_store`: a named container for agent memories, scoped to a workspace.
+// Attach a store to a session via `resources[]` to mount it as a directory the
+// agent can read and write.
 type BetaManagedAgentsMemoryStore struct {
+	// Unique identifier for the memory store (a `memstore_...` tagged ID). Use this
+	// when attaching the store to a session, or in the `{memory_store_id}` path
+	// parameter of subsequent calls.
 	ID string `json:"id" api:"required"`
 	// A timestamp in RFC 3339 format
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	Name      string    `json:"name" api:"required"`
+	// Human-readable name for the store. 1–255 characters. The store's mount-path slug
+	// under `/mnt/memory/` is derived from this name.
+	Name string `json:"name" api:"required"`
 	// Any of "memory_store".
 	Type BetaManagedAgentsMemoryStoreType `json:"type" api:"required"`
 	// A timestamp in RFC 3339 format
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// A timestamp in RFC 3339 format
-	ArchivedAt  time.Time         `json:"archived_at" api:"nullable" format:"date-time"`
-	Description string            `json:"description"`
-	Metadata    map[string]string `json:"metadata"`
+	ArchivedAt time.Time `json:"archived_at" api:"nullable" format:"date-time"`
+	// Free-text description of what the store contains, up to 1024 characters.
+	// Included in the agent's system prompt when the store is attached, so word it to
+	// be useful to the agent. Empty string when unset.
+	Description string `json:"description"`
+	// Arbitrary key-value tags for your own bookkeeping (such as the end user a store
+	// belongs to). Up to 16 pairs; keys 1–64 characters; values up to 512 characters.
+	// Returned on retrieve/list but not filterable.
+	Metadata map[string]string `json:"metadata"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -211,9 +228,19 @@ const (
 )
 
 type BetaMemoryStoreNewParams struct {
-	Name        string            `json:"name" api:"required"`
+	// Human-readable name for the store. Required; 1–255 characters; no control
+	// characters. The mount-path slug under `/mnt/memory/` is derived from this name
+	// (lowercased, non-alphanumeric runs collapsed to a hyphen). Names need not be
+	// unique within a workspace.
+	Name string `json:"name" api:"required"`
+	// Free-text description of what the store contains, up to 1024 characters.
+	// Included in the agent's system prompt when the store is attached, so word it to
+	// be useful to the agent.
 	Description param.Opt[string] `json:"description,omitzero"`
-	Metadata    map[string]string `json:"metadata,omitzero"`
+	// Arbitrary key-value tags for your own bookkeeping (such as the end user a store
+	// belongs to). Up to 16 pairs; keys 1–64 characters; values up to 512 characters.
+	// Not visible to the agent.
+	Metadata map[string]string `json:"metadata,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -234,8 +261,13 @@ type BetaMemoryStoreGetParams struct {
 }
 
 type BetaMemoryStoreUpdateParams struct {
+	// New description for the store, up to 1024 characters. Pass an empty string to
+	// clear it.
 	Description param.Opt[string] `json:"description,omitzero"`
-	Name        param.Opt[string] `json:"name,omitzero"`
+	// New human-readable name for the store. 1–255 characters; no control characters.
+	// Renaming changes the slug used for the store's `mount_path` in sessions created
+	// after the update.
+	Name param.Opt[string] `json:"name,omitzero"`
 	// Metadata patch. Set a key to a string to upsert it, or to null to delete it.
 	// Omit the field to preserve. The stored bag is limited to 16 keys (up to 64 chars
 	// each) with values up to 512 chars.
@@ -254,15 +286,20 @@ func (r *BetaMemoryStoreUpdateParams) UnmarshalJSON(data []byte) error {
 }
 
 type BetaMemoryStoreListParams struct {
-	// Return stores created at or after this time (inclusive).
+	// Return only stores whose `created_at` is at or after this time (inclusive). Sent
+	// on the wire as `created_at[gte]`.
 	CreatedAtGte param.Opt[time.Time] `query:"created_at[gte],omitzero" format:"date-time" json:"-"`
-	// Return stores created at or before this time (inclusive).
+	// Return only stores whose `created_at` is at or before this time (inclusive).
+	// Sent on the wire as `created_at[lte]`.
 	CreatedAtLte param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
-	// Query parameter for include_archived
+	// When `true`, archived stores are included in the results. Defaults to `false`
+	// (archived stores are excluded).
 	IncludeArchived param.Opt[bool] `query:"include_archived,omitzero" json:"-"`
-	// Query parameter for limit
+	// Maximum number of stores to return per page. Must be between 1 and 100. Defaults
+	// to 20 when omitted.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Query parameter for page
+	// Opaque pagination cursor (a `page_...` value). Pass the `next_page` value from a
+	// previous response to fetch the next page; omit for the first page.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

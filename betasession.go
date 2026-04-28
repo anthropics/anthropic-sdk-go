@@ -1093,6 +1093,9 @@ type BetaSessionListParams struct {
 	IncludeArchived param.Opt[bool] `query:"include_archived,omitzero" json:"-"`
 	// Maximum number of results to return.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Filter sessions whose resources contain a memory_store with this memory store
+	// ID.
+	MemoryStoreID param.Opt[string] `query:"memory_store_id,omitzero" json:"-"`
 	// Opaque pagination cursor from a previous response's next_page.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
 	// Sort direction for results, ordered by created_at. Defaults to desc (newest

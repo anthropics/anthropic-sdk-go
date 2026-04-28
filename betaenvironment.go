@@ -332,7 +332,7 @@ func init() {
 	)
 }
 
-// Unified Environment resource for both cloud and BYOC environments.
+// Unified Environment resource for both cloud and self-hosted environments.
 type BetaEnvironment struct {
 	// Environment identifier (e.g., 'env\_...')
 	ID string `json:"id" api:"required"`

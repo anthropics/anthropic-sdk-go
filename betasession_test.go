@@ -137,6 +137,7 @@ func TestBetaSessionListWithOptionalParams(t *testing.T) {
 		CreatedAtLte:    anthropic.Time(time.Now()),
 		IncludeArchived: anthropic.Bool(true),
 		Limit:           anthropic.Int(0),
+		MemoryStoreID:   anthropic.String("memory_store_id"),
 		Order:           anthropic.BetaSessionListParamsOrderAsc,
 		Page:            anthropic.String("page"),
 		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},

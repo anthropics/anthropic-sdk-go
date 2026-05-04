@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.39.0 (2026-05-04)
+
+Full Changelog: [v1.38.0...v1.39.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.38.0...v1.39.0)
+
+### Features
+
+* **api:** improve Managed Agents APIs ([eadf509](https://github.com/anthropics/anthropic-sdk-go/commit/eadf509d8ea79d3f0db7cbdbf3ade6f24aaeb76f))
+* **client:** add Workload Identity Federation, interactive OAuth, and auth profiles ([0f0cc01](https://github.com/anthropics/anthropic-sdk-go/commit/0f0cc0191f3bc059f22939644a0584662c469305))
+* **go:** add default http client with timeout ([b81c287](https://github.com/anthropics/anthropic-sdk-go/commit/b81c28758ee76db006216b771ff3803adf4cbefb))
+* support setting headers via env ([641015d](https://github.com/anthropics/anthropic-sdk-go/commit/641015da9ea17c4ef2696857d6b4eb4cdb4f854e))
+
+
+### Bug Fixes
+
+* **client:** add 10 min timeout ([#770](https://github.com/anthropics/anthropic-sdk-go/issues/770)) ([917fe19](https://github.com/anthropics/anthropic-sdk-go/commit/917fe19c2591586d9c14fd5916bb95f713ab0c8f))
+
+
+### Chores
+
+* avoid embedding reflect.Type for dead code elimination ([11168b4](https://github.com/anthropics/anthropic-sdk-go/commit/11168b403a3b3ab2d7b3edc023faf214d9eededd))
+
 ## 1.38.0 (2026-04-23)
 
 Full Changelog: [v1.37.0...v1.38.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.37.0...v1.38.0)

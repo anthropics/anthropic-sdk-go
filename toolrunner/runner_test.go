@@ -74,7 +74,10 @@ func weatherTool(t *testing.T) anthropic.BetaTool {
 func newClientWithVCR(t *testing.T, cassette string) anthropic.Client {
 	t.Helper()
 	httpClient, _ := testutil.NewVCRHTTPClient(t, cassette)
-	return anthropic.NewClient(option.WithHTTPClient(httpClient))
+	return anthropic.NewClient(
+		option.WithHTTPClient(httpClient),
+		option.WithAPIKey("test-key"),
+	)
 }
 
 // Test All() end-to-end

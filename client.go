@@ -4,13 +4,16 @@ package anthropic
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"slices"
-	"time"
 	"strings"
+	"time"
 
+	"github.com/anthropics/anthropic-sdk-go/config"
+	"github.com/anthropics/anthropic-sdk-go/internal/auth"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
@@ -27,9 +30,25 @@ type Client struct {
 	Beta        BetaService
 }
 
-// DefaultClientOptions read from the environment (ANTHROPIC_API_KEY,
-// ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL). This should be used to initialize new
-// clients.
+// DefaultClientOptions walks the default credential chain per the
+// cross-SDK credential precedence spec:
+//
+//  1. ANTHROPIC_API_KEY
+//  2. ANTHROPIC_AUTH_TOKEN
+//  3. Explicit profile via ANTHROPIC_PROFILE (surfaces the error if the
+//     named profile is missing — the user explicitly selected it)
+//  4. Env-var federation (ANTHROPIC_FEDERATION_RULE_ID +
+//     ANTHROPIC_ORGANIZATION_ID + ANTHROPIC_IDENTITY_TOKEN_FILE / _TOKEN)
+//  5. Fallback profile (active_config file or literal "default" — a
+//     quiet miss when absent, so a WIF-configured machine with a
+//     leftover default profile still uses WIF)
+//
+// When no source produces a credential, the first request fails with an
+// [auth.NoCredentialsError]. If ANTHROPIC_PROFILE points at a missing or
+// invalid profile, the first request instead fails with a wrapped
+// profile-load error naming the profile. An explicit credential option
+// passed to [NewClient] (e.g. [option.WithAPIKey] or [option.WithAuthToken])
+// suppresses both paths. Also honors ANTHROPIC_BASE_URL.
 func DefaultClientOptions() []option.RequestOption {
 	defaults := []option.RequestOption{
 		option.WithHTTPClient(defaultHTTPClient()),
@@ -38,11 +57,58 @@ func DefaultClientOptions() []option.RequestOption {
 	if o, ok := os.LookupEnv("ANTHROPIC_BASE_URL"); ok {
 		defaults = append(defaults, option.WithBaseURL(o))
 	}
-	if o, ok := os.LookupEnv("ANTHROPIC_API_KEY"); ok {
-		defaults = append(defaults, option.WithAPIKey(o))
+
+	statuses := []auth.CredentialSourceStatus{}
+
+	if v, ok := os.LookupEnv("ANTHROPIC_API_KEY"); ok && v != "" {
+		defaults = append(defaults, option.WithAPIKey(v))
+		return defaults
 	}
-	if o, ok := os.LookupEnv("ANTHROPIC_AUTH_TOKEN"); ok {
-		defaults = append(defaults, option.WithAuthToken(o))
+	statuses = append(statuses, auth.CredentialSourceStatus{
+		Name:  "ANTHROPIC_API_KEY env var",
+		State: auth.CredentialSourceNotSet,
+	})
+
+	if v, ok := os.LookupEnv("ANTHROPIC_AUTH_TOKEN"); ok && v != "" {
+		defaults = append(defaults, option.WithAuthToken(v))
+		return defaults
+	}
+	statuses = append(statuses, auth.CredentialSourceStatus{
+		Name:  "ANTHROPIC_AUTH_TOKEN env var",
+		State: auth.CredentialSourceNotSet,
+	})
+
+	// Step 3: explicit profile via ANTHROPIC_PROFILE. The user named a
+	// specific profile, so a load failure is surfaced immediately — do
+	// not fall through to env federation or the fallback profile.
+	if profile, ok := os.LookupEnv("ANTHROPIC_PROFILE"); ok && profile != "" {
+		cfg, err := config.LoadProfile(config.DefaultDir(), profile)
+		if err != nil {
+			return append(defaults, explicitProfileErrorOption(profile, err))
+		}
+		return append(defaults, option.WithConfig(cfg))
+	}
+
+	// Step 4: env-var federation. Beats the fallback profile so a
+	// WIF-configured machine with a leftover default profile file still
+	// uses WIF.
+	envResult, envDetail, envState := auth.EnvCredentials()
+	if envResult != nil {
+		defaults = append(defaults, auth.WithAuthMiddleware(envResult.Provider))
+		return defaults
+	}
+	envFederationStatus := auth.CredentialSourceStatus{
+		Name:   "env federation (ANTHROPIC_FEDERATION_RULE_ID + ANTHROPIC_ORGANIZATION_ID + ANTHROPIC_IDENTITY_TOKEN_FILE)",
+		State:  envState,
+		Detail: envDetail,
+	}
+
+	// Step 5: fallback profile (active_config or literal "default"). A
+	// missing profile here is a quiet miss — fall through to the no-
+	// credentials aggregate.
+	fallbackStatus, fallbackOpt := tryLoadFallbackProfile()
+	if fallbackOpt != nil {
+		return append(defaults, fallbackOpt)
 	}
 	if o, ok := os.LookupEnv("ANTHROPIC_CUSTOM_HEADERS"); ok {
 		for _, line := range strings.Split(o, "\n") {
@@ -52,15 +118,96 @@ func DefaultClientOptions() []option.RequestOption {
 			}
 		}
 	}
+
+	statuses = append(statuses, envFederationStatus, fallbackStatus)
+	defaults = append(defaults, noCredentialsSentinel(statuses))
 	return defaults
+}
+
+// tryLoadFallbackProfile attempts the step-5 fallback profile lookup:
+// active_config file, otherwise literal "default". A missing profile is
+// reported as a silent-miss status (the caller will fall through to the
+// no-credentials aggregate); any other load error is reported as a
+// load-failure status so the user sees the specific OS error.
+func tryLoadFallbackProfile() (auth.CredentialSourceStatus, option.RequestOption) {
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return auth.CredentialSourceStatus{
+				Name:   "profile config file",
+				State:  auth.CredentialSourceNotFound,
+				Detail: "run `anthropic auth login` to create one",
+			}, nil
+		}
+		return auth.CredentialSourceStatus{
+			Name:   "profile config file",
+			State:  auth.CredentialSourceLoadFailed,
+			Detail: err.Error(),
+		}, nil
+	}
+	return auth.CredentialSourceStatus{Name: "profile config file"}, option.WithConfig(cfg)
+}
+
+// explicitProfileErrorOption installs a middleware that fails the request
+// with the underlying load error, unless a caller-supplied credential
+// option preempts the profile. Used when ANTHROPIC_PROFILE names a profile
+// whose config file cannot be loaded.
+func explicitProfileErrorOption(profile string, loadErr error) option.RequestOption {
+	profileErr := fmt.Errorf("ANTHROPIC_PROFILE=%q: %w", profile, loadErr)
+	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+		cfg := r
+		check := func(req *http.Request, next func(*http.Request) (*http.Response, error)) (*http.Response, error) {
+			if cfg.APIKey != "" || cfg.AuthToken != "" {
+				return next(req)
+			}
+			if req.Header.Get("Authorization") != "" || req.Header.Get("X-Api-Key") != "" {
+				return next(req)
+			}
+			return nil, profileErr
+		}
+		r.Middlewares = append(r.Middlewares, check)
+		return nil
+	})
+}
+
+func noCredentialsSentinel(statuses []auth.CredentialSourceStatus) option.RequestOption {
+	preBuiltErr := &auth.NoCredentialsError{Sources: statuses}
+	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+		cfg := r
+		check := func(req *http.Request, next func(*http.Request) (*http.Response, error)) (*http.Response, error) {
+			if cfg.APIKey != "" || cfg.AuthToken != "" {
+				return next(req)
+			}
+			if len(cfg.Middlewares) > 1 {
+				return next(req)
+			}
+			if req.Header.Get("Authorization") != "" || req.Header.Get("X-Api-Key") != "" {
+				return next(req)
+			}
+			return nil, preBuiltErr
+		}
+		r.Middlewares = append(r.Middlewares, check)
+		return nil
+	})
 }
 
 // NewClient generates a new client with the default option read from the
 // environment (ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL). The
 // option passed in as arguments are applied after these default arguments, and all
 // option will be passed down to the services and requests that this client makes.
+//
+// Pass [option.WithoutEnvironmentDefaults] to skip the environment-based
+// credential autoload entirely (only the hardcoded production base-URL
+// default is kept). Use this when the caller does its own credential
+// resolution and wants the SDK to contribute nothing from the environment.
 func NewClient(opts ...option.RequestOption) (r Client) {
-	opts = append(DefaultClientOptions(), opts...)
+	var defaults []option.RequestOption
+	if option.HasWithoutEnvironmentDefaults(opts) {
+		defaults = []option.RequestOption{option.WithEnvironmentProduction()}
+	} else {
+		defaults = DefaultClientOptions()
+	}
+	opts = append(defaults, opts...)
 
 	r = Client{Options: opts}
 

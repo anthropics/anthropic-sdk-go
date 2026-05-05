@@ -1,6 +1,6 @@
 module github.com/anthropics/anthropic-sdk-go
 
-go 1.23.0
+go 1.24
 
 toolchain go1.25.8
 
@@ -11,11 +11,11 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.27
 	github.com/aws/smithy-go v1.20.3
 	github.com/dnaeon/go-vcr v1.2.0
-	github.com/invopop/jsonschema v0.13.0
-	github.com/stretchr/testify v1.8.4
+	github.com/invopop/jsonschema v0.14.0
+	github.com/pb33f/ordered-map/v2 v2.3.1
+	github.com/stretchr/testify v1.11.1
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
-	github.com/wk8/go-ordered-map/v2 v2.1.8
 	golang.org/x/oauth2 v0.30.0
 	golang.org/x/sync v0.16.0
 	google.golang.org/api v0.189.0
@@ -44,7 +44,6 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
-	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
@@ -54,6 +53,7 @@ require (
 	go.opentelemetry.io/otel v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
+	go.yaml.in/yaml/v4 v4.0.0-rc.2 // indirect
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect

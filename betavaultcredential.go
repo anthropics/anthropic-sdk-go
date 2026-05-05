@@ -166,6 +166,26 @@ func (r *BetaVaultCredentialService) Archive(ctx context.Context, credentialID s
 	return res, err
 }
 
+// Validate Credential
+func (r *BetaVaultCredentialService) MCPOAuthValidate(ctx context.Context, credentialID string, params BetaVaultCredentialMCPOAuthValidateParams, opts ...option.RequestOption) (res *BetaManagedAgentsCredentialValidation, err error) {
+	for _, v := range params.Betas {
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
+	if params.VaultID == "" {
+		err = errors.New("missing required vault_id parameter")
+		return nil, err
+	}
+	if credentialID == "" {
+		err = errors.New("missing required credential_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/vaults/%s/credentials/%s/mcp_oauth_validate?beta=true", params.VaultID, credentialID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
+	return res, err
+}
+
 // A credential stored in a vault. Sensitive fields are never returned in
 // responses.
 type BetaManagedAgentsCredential struct {
@@ -283,6 +303,62 @@ type BetaManagedAgentsCredentialType string
 
 const (
 	BetaManagedAgentsCredentialTypeVaultCredential BetaManagedAgentsCredentialType = "vault_credential"
+)
+
+// Result of live-probing a credential against its configured MCP server.
+type BetaManagedAgentsCredentialValidation struct {
+	// Unique identifier of the credential that was validated.
+	CredentialID string `json:"credential_id" api:"required"`
+	// Whether the credential has a refresh token configured.
+	HasRefreshToken bool `json:"has_refresh_token" api:"required"`
+	// The failing step of an MCP validation probe.
+	MCPProbe BetaManagedAgentsMCPProbe `json:"mcp_probe" api:"required"`
+	// Outcome of a refresh-token exchange attempted during credential validation.
+	Refresh BetaManagedAgentsRefreshObject `json:"refresh" api:"required"`
+	// Overall verdict of a credential validation probe.
+	//
+	// Any of "valid", "invalid", "unknown".
+	Status BetaManagedAgentsCredentialValidationStatus `json:"status" api:"required"`
+	// Any of "vault_credential_validation".
+	Type BetaManagedAgentsCredentialValidationType `json:"type" api:"required"`
+	// A timestamp in RFC 3339 format
+	ValidatedAt time.Time `json:"validated_at" api:"required" format:"date-time"`
+	// Identifier of the vault containing the credential.
+	VaultID string `json:"vault_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CredentialID    respjson.Field
+		HasRefreshToken respjson.Field
+		MCPProbe        respjson.Field
+		Refresh         respjson.Field
+		Status          respjson.Field
+		Type            respjson.Field
+		ValidatedAt     respjson.Field
+		VaultID         respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsCredentialValidation) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsCredentialValidation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsCredentialValidationType string
+
+const (
+	BetaManagedAgentsCredentialValidationTypeVaultCredentialValidation BetaManagedAgentsCredentialValidationType = "vault_credential_validation"
+)
+
+// Overall verdict of a credential validation probe.
+type BetaManagedAgentsCredentialValidationStatus string
+
+const (
+	BetaManagedAgentsCredentialValidationStatusValid   BetaManagedAgentsCredentialValidationStatus = "valid"
+	BetaManagedAgentsCredentialValidationStatusInvalid BetaManagedAgentsCredentialValidationStatus = "invalid"
+	BetaManagedAgentsCredentialValidationStatusUnknown BetaManagedAgentsCredentialValidationStatus = "unknown"
 )
 
 // Confirmation of a deleted credential.
@@ -672,6 +748,87 @@ type BetaManagedAgentsMCPOAuthUpdateParamsType string
 
 const (
 	BetaManagedAgentsMCPOAuthUpdateParamsTypeMCPOAuth BetaManagedAgentsMCPOAuthUpdateParamsType = "mcp_oauth"
+)
+
+// The failing step of an MCP validation probe.
+type BetaManagedAgentsMCPProbe struct {
+	// An HTTP response captured during a credential validation probe.
+	HTTPResponse BetaManagedAgentsRefreshHTTPResponse `json:"http_response" api:"required"`
+	// The MCP method that failed (for example `initialize` or `tools/list`).
+	Method string `json:"method" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		HTTPResponse respjson.Field
+		Method       respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsMCPProbe) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsMCPProbe) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// An HTTP response captured during a credential validation probe.
+type BetaManagedAgentsRefreshHTTPResponse struct {
+	// Response body. May be truncated and has sensitive values scrubbed.
+	Body string `json:"body" api:"required"`
+	// Whether `body` was truncated.
+	BodyTruncated bool `json:"body_truncated" api:"required"`
+	// Value of the `Content-Type` response header.
+	ContentType string `json:"content_type" api:"required"`
+	// HTTP status code.
+	StatusCode int64 `json:"status_code" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Body          respjson.Field
+		BodyTruncated respjson.Field
+		ContentType   respjson.Field
+		StatusCode    respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsRefreshHTTPResponse) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRefreshHTTPResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Outcome of a refresh-token exchange attempted during credential validation.
+type BetaManagedAgentsRefreshObject struct {
+	// An HTTP response captured during a credential validation probe.
+	HTTPResponse BetaManagedAgentsRefreshHTTPResponse `json:"http_response" api:"required"`
+	// Outcome of a refresh-token exchange attempted during credential validation.
+	//
+	// Any of "succeeded", "failed", "connect_error", "no_refresh_token".
+	Status BetaManagedAgentsRefreshObjectStatus `json:"status" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		HTTPResponse respjson.Field
+		Status       respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsRefreshObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRefreshObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Outcome of a refresh-token exchange attempted during credential validation.
+type BetaManagedAgentsRefreshObjectStatus string
+
+const (
+	BetaManagedAgentsRefreshObjectStatusSucceeded      BetaManagedAgentsRefreshObjectStatus = "succeeded"
+	BetaManagedAgentsRefreshObjectStatusFailed         BetaManagedAgentsRefreshObjectStatus = "failed"
+	BetaManagedAgentsRefreshObjectStatusConnectError   BetaManagedAgentsRefreshObjectStatus = "connect_error"
+	BetaManagedAgentsRefreshObjectStatusNoRefreshToken BetaManagedAgentsRefreshObjectStatus = "no_refresh_token"
 )
 
 // Static bearer token credential details for an MCP server.
@@ -1175,7 +1332,7 @@ type BetaVaultCredentialListParams struct {
 // `url.Values`.
 func (r BetaVaultCredentialListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
@@ -1188,6 +1345,13 @@ type BetaVaultCredentialDeleteParams struct {
 }
 
 type BetaVaultCredentialArchiveParams struct {
+	VaultID string `path:"vault_id" api:"required" json:"-"`
+	// Optional header to specify the beta version(s) you want to use.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
+	paramObj
+}
+
+type BetaVaultCredentialMCPOAuthValidateParams struct {
 	VaultID string `path:"vault_id" api:"required" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

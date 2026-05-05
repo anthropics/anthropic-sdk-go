@@ -7,6 +7,7 @@ import (
 	"errors"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
@@ -30,10 +31,15 @@ func TestBetaSessionEventListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"sesn_011CZkZAtmR3yMPDzynEDxu7",
 		anthropic.BetaSessionEventListParams{
-			Limit: anthropic.Int(0),
-			Order: anthropic.BetaSessionEventListParamsOrderAsc,
-			Page:  anthropic.String("page"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			CreatedAtGt:  anthropic.Time(time.Now()),
+			CreatedAtGte: anthropic.Time(time.Now()),
+			CreatedAtLt:  anthropic.Time(time.Now()),
+			CreatedAtLte: anthropic.Time(time.Now()),
+			Limit:        anthropic.Int(0),
+			Order:        anthropic.BetaSessionEventListParamsOrderAsc,
+			Page:         anthropic.String("page"),
+			Types:        []string{"string"},
+			Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {

@@ -140,6 +140,7 @@ func TestBetaSessionListWithOptionalParams(t *testing.T) {
 		MemoryStoreID:   anthropic.String("memory_store_id"),
 		Order:           anthropic.BetaSessionListParamsOrderAsc,
 		Page:            anthropic.String("page"),
+		Statuses:        []string{"rescheduling"},
 		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {

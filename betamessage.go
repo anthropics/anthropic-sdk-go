@@ -1007,11 +1007,23 @@ func (r *BetaCitationConfig) UnmarshalJSON(data []byte) error {
 }
 
 type BetaCitationContentBlockLocation struct {
-	CitedText       string                        `json:"cited_text" api:"required"`
-	DocumentIndex   int64                         `json:"document_index" api:"required"`
-	DocumentTitle   string                        `json:"document_title" api:"required"`
-	EndBlockIndex   int64                         `json:"end_block_index" api:"required"`
-	FileID          string                        `json:"file_id" api:"required"`
+	// The full text of the cited block range, concatenated.
+	//
+	// Always equals the contents of `content[start_block_index:end_block_index]`
+	// joined together. The text block is the minimal citable unit; this field is never
+	// a substring of a single block. Not counted toward output tokens, and not counted
+	// toward input tokens when sent back in subsequent turns.
+	CitedText     string `json:"cited_text" api:"required"`
+	DocumentIndex int64  `json:"document_index" api:"required"`
+	DocumentTitle string `json:"document_title" api:"required"`
+	// Exclusive 0-based end index of the cited block range in the source's `content`
+	// array.
+	//
+	// Always greater than `start_block_index`; a single-block citation has
+	// `end_block_index = start_block_index + 1`.
+	EndBlockIndex int64  `json:"end_block_index" api:"required"`
+	FileID        string `json:"file_id" api:"required"`
+	// 0-based index of the first cited block in the source's `content` array.
 	StartBlockIndex int64                         `json:"start_block_index" api:"required"`
 	Type            constant.ContentBlockLocation `json:"type" default:"content_block_location"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -1037,11 +1049,23 @@ func (r *BetaCitationContentBlockLocation) UnmarshalJSON(data []byte) error {
 // The properties CitedText, DocumentIndex, DocumentTitle, EndBlockIndex,
 // StartBlockIndex, Type are required.
 type BetaCitationContentBlockLocationParam struct {
-	DocumentTitle   param.Opt[string] `json:"document_title,omitzero" api:"required"`
-	CitedText       string            `json:"cited_text" api:"required"`
-	DocumentIndex   int64             `json:"document_index" api:"required"`
-	EndBlockIndex   int64             `json:"end_block_index" api:"required"`
-	StartBlockIndex int64             `json:"start_block_index" api:"required"`
+	DocumentTitle param.Opt[string] `json:"document_title,omitzero" api:"required"`
+	// The full text of the cited block range, concatenated.
+	//
+	// Always equals the contents of `content[start_block_index:end_block_index]`
+	// joined together. The text block is the minimal citable unit; this field is never
+	// a substring of a single block. Not counted toward output tokens, and not counted
+	// toward input tokens when sent back in subsequent turns.
+	CitedText     string `json:"cited_text" api:"required"`
+	DocumentIndex int64  `json:"document_index" api:"required"`
+	// Exclusive 0-based end index of the cited block range in the source's `content`
+	// array.
+	//
+	// Always greater than `start_block_index`; a single-block citation has
+	// `end_block_index = start_block_index + 1`.
+	EndBlockIndex int64 `json:"end_block_index" api:"required"`
+	// 0-based index of the first cited block in the source's `content` array.
+	StartBlockIndex int64 `json:"start_block_index" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "content_block_location".
 	Type constant.ContentBlockLocation `json:"type" default:"content_block_location"`
@@ -1106,13 +1130,31 @@ func (r *BetaCitationPageLocationParam) UnmarshalJSON(data []byte) error {
 }
 
 type BetaCitationSearchResultLocation struct {
-	CitedText         string                        `json:"cited_text" api:"required"`
-	EndBlockIndex     int64                         `json:"end_block_index" api:"required"`
-	SearchResultIndex int64                         `json:"search_result_index" api:"required"`
-	Source            string                        `json:"source" api:"required"`
-	StartBlockIndex   int64                         `json:"start_block_index" api:"required"`
-	Title             string                        `json:"title" api:"required"`
-	Type              constant.SearchResultLocation `json:"type" default:"search_result_location"`
+	// The full text of the cited block range, concatenated.
+	//
+	// Always equals the contents of `content[start_block_index:end_block_index]`
+	// joined together. The text block is the minimal citable unit; this field is never
+	// a substring of a single block. Not counted toward output tokens, and not counted
+	// toward input tokens when sent back in subsequent turns.
+	CitedText string `json:"cited_text" api:"required"`
+	// Exclusive 0-based end index of the cited block range in the source's `content`
+	// array.
+	//
+	// Always greater than `start_block_index`; a single-block citation has
+	// `end_block_index = start_block_index + 1`.
+	EndBlockIndex int64 `json:"end_block_index" api:"required"`
+	// 0-based index of the cited search result among all `search_result` content
+	// blocks in the request, in the order they appear across messages and tool
+	// results.
+	//
+	// Counted separately from `document_index`; server-side web search results are not
+	// included in this count.
+	SearchResultIndex int64  `json:"search_result_index" api:"required"`
+	Source            string `json:"source" api:"required"`
+	// 0-based index of the first cited block in the source's `content` array.
+	StartBlockIndex int64                         `json:"start_block_index" api:"required"`
+	Title           string                        `json:"title" api:"required"`
+	Type            constant.SearchResultLocation `json:"type" default:"search_result_location"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CitedText         respjson.Field
@@ -1136,12 +1178,30 @@ func (r *BetaCitationSearchResultLocation) UnmarshalJSON(data []byte) error {
 // The properties CitedText, EndBlockIndex, SearchResultIndex, Source,
 // StartBlockIndex, Title, Type are required.
 type BetaCitationSearchResultLocationParam struct {
-	Title             param.Opt[string] `json:"title,omitzero" api:"required"`
-	CitedText         string            `json:"cited_text" api:"required"`
-	EndBlockIndex     int64             `json:"end_block_index" api:"required"`
-	SearchResultIndex int64             `json:"search_result_index" api:"required"`
-	Source            string            `json:"source" api:"required"`
-	StartBlockIndex   int64             `json:"start_block_index" api:"required"`
+	Title param.Opt[string] `json:"title,omitzero" api:"required"`
+	// The full text of the cited block range, concatenated.
+	//
+	// Always equals the contents of `content[start_block_index:end_block_index]`
+	// joined together. The text block is the minimal citable unit; this field is never
+	// a substring of a single block. Not counted toward output tokens, and not counted
+	// toward input tokens when sent back in subsequent turns.
+	CitedText string `json:"cited_text" api:"required"`
+	// Exclusive 0-based end index of the cited block range in the source's `content`
+	// array.
+	//
+	// Always greater than `start_block_index`; a single-block citation has
+	// `end_block_index = start_block_index + 1`.
+	EndBlockIndex int64 `json:"end_block_index" api:"required"`
+	// 0-based index of the cited search result among all `search_result` content
+	// blocks in the request, in the order they appear across messages and tool
+	// results.
+	//
+	// Counted separately from `document_index`; server-side web search results are not
+	// included in this count.
+	SearchResultIndex int64  `json:"search_result_index" api:"required"`
+	Source            string `json:"source" api:"required"`
+	// 0-based index of the first cited block in the source's `content` array.
+	StartBlockIndex int64 `json:"start_block_index" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "search_result_location".
 	Type constant.SearchResultLocation `json:"type" default:"search_result_location"`

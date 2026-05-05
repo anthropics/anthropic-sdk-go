@@ -26,9 +26,11 @@ func TestBetaUserProfileNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.UserProfiles.New(context.TODO(), anthropic.BetaUserProfileNewParams{
-		ExternalID: anthropic.String("user_12345"),
-		Metadata:   map[string]string{},
-		Betas:      []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		ExternalID:   anthropic.String("user_12345"),
+		Metadata:     map[string]string{},
+		Name:         anthropic.String("x"),
+		Relationship: anthropic.BetaUserProfileNewParamsRelationshipExternal,
+		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -87,7 +89,9 @@ func TestBetaUserProfileUpdateWithOptionalParams(t *testing.T) {
 			Metadata: map[string]string{
 				"foo": "string",
 			},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Name:         anthropic.String("x"),
+			Relationship: anthropic.BetaUserProfileUpdateParamsRelationshipExternal,
+			Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {

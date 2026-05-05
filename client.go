@@ -110,6 +110,9 @@ func DefaultClientOptions() []option.RequestOption {
 	if fallbackOpt != nil {
 		return append(defaults, fallbackOpt)
 	}
+	if o, ok := os.LookupEnv("ANTHROPIC_WEBHOOK_SIGNING_KEY"); ok {
+		defaults = append(defaults, option.WithWebhookKey(o))
+	}
 	if o, ok := os.LookupEnv("ANTHROPIC_CUSTOM_HEADERS"); ok {
 		for _, line := range strings.Split(o, "\n") {
 			colon := strings.Index(line, ":")
@@ -192,9 +195,10 @@ func noCredentialsSentinel(statuses []auth.CredentialSourceStatus) option.Reques
 }
 
 // NewClient generates a new client with the default option read from the
-// environment (ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL). The
-// option passed in as arguments are applied after these default arguments, and all
-// option will be passed down to the services and requests that this client makes.
+// environment (ANTHROPIC_API_KEY, ANTHROPIC_WEBHOOK_SIGNING_KEY, ANTHROPIC_AUTH_TOKEN,
+// ANTHROPIC_BASE_URL). The option passed in as arguments are applied after these 
+// default arguments, and all option will be passed down to the services and requests 
+// that this client makes.
 //
 // Pass [option.WithoutEnvironmentDefaults] to skip the environment-based
 // credential autoload entirely (only the hardcoded production base-URL

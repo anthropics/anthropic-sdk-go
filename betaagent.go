@@ -140,11 +140,13 @@ type BetaManagedAgentsAgent struct {
 	MCPServers  []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
 	Metadata    map[string]string                         `json:"metadata" api:"required"`
 	// Model identifier and configuration.
-	Model  BetaManagedAgentsModelConfig       `json:"model" api:"required"`
-	Name   string                             `json:"name" api:"required"`
-	Skills []BetaManagedAgentsAgentSkillUnion `json:"skills" api:"required"`
-	System string                             `json:"system" api:"required"`
-	Tools  []BetaManagedAgentsAgentToolUnion  `json:"tools" api:"required"`
+	Model BetaManagedAgentsModelConfig `json:"model" api:"required"`
+	// Resolved coordinator topology with a concrete agent roster.
+	Multiagent BetaManagedAgentsMultiagent        `json:"multiagent" api:"required"`
+	Name       string                             `json:"name" api:"required"`
+	Skills     []BetaManagedAgentsAgentSkillUnion `json:"skills" api:"required"`
+	System     string                             `json:"system" api:"required"`
+	Tools      []BetaManagedAgentsAgentToolUnion  `json:"tools" api:"required"`
 	// Any of "agent".
 	Type BetaManagedAgentsAgentType `json:"type" api:"required"`
 	// A timestamp in RFC 3339 format
@@ -161,6 +163,7 @@ type BetaManagedAgentsAgent struct {
 		MCPServers  respjson.Field
 		Metadata    respjson.Field
 		Model       respjson.Field
+		Multiagent  respjson.Field
 		Name        respjson.Field
 		Skills      respjson.Field
 		System      respjson.Field
@@ -408,6 +411,34 @@ type BetaManagedAgentsAgentType string
 
 const (
 	BetaManagedAgentsAgentTypeAgent BetaManagedAgentsAgentType = "agent"
+)
+
+// A resolved agent reference with a concrete version.
+type BetaManagedAgentsAgentReference struct {
+	ID string `json:"id" api:"required"`
+	// Any of "agent".
+	Type    BetaManagedAgentsAgentReferenceType `json:"type" api:"required"`
+	Version int64                               `json:"version" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Type        respjson.Field
+		Version     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsAgentReference) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsAgentReference) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsAgentReferenceType string
+
+const (
+	BetaManagedAgentsAgentReferenceTypeAgent BetaManagedAgentsAgentReferenceType = "agent"
 )
 
 // Configuration for a specific agent tool.
@@ -1614,6 +1645,30 @@ const (
 	BetaManagedAgentsModelConfigParamsSpeedFast     BetaManagedAgentsModelConfigParamsSpeed = "fast"
 )
 
+// Sentinel roster entry meaning "the agent that owns this configuration". Resolved
+// server-side to a concrete agent reference.
+//
+// The property Type is required.
+type BetaManagedAgentsMultiagentSelfParams struct {
+	// Any of "self".
+	Type BetaManagedAgentsMultiagentSelfParamsType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsMultiagentSelfParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsMultiagentSelfParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsMultiagentSelfParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsMultiagentSelfParamsType string
+
+const (
+	BetaManagedAgentsMultiagentSelfParamsTypeSelf BetaManagedAgentsMultiagentSelfParamsType = "self"
+)
+
 func BetaManagedAgentsSkillParamsOfAnthropic(skillID string) BetaManagedAgentsSkillParamsUnion {
 	var anthropic BetaManagedAgentsAnthropicSkillParams
 	anthropic.SkillID = skillID
@@ -1735,6 +1790,9 @@ type BetaAgentNewParams struct {
 	// Arbitrary key-value metadata. Maximum 16 pairs, keys up to 64 chars, values up
 	// to 512 chars.
 	Metadata map[string]string `json:"metadata,omitzero"`
+	// A coordinator topology: the session's primary thread orchestrates work by
+	// spawning session threads, each running an agent drawn from the `agents` roster.
+	Multiagent BetaManagedAgentsMultiagentParams `json:"multiagent,omitzero"`
 	// Skills available to the agent. Maximum 20.
 	Skills []BetaManagedAgentsSkillParamsUnion `json:"skills,omitzero"`
 	// Tool configurations available to the agent. Maximum of 128 tools across all
@@ -1947,7 +2005,7 @@ type BetaAgentGetParams struct {
 // URLQuery serializes [BetaAgentGetParams]'s query parameters as `url.Values`.
 func (r BetaAgentGetParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
@@ -1984,6 +2042,9 @@ type BetaAgentUpdateParams struct {
 	// e.g. `claude-opus-4-6`, or a `model_config` object for additional configuration
 	// control. Omit to preserve. Cannot be cleared.
 	Model BetaManagedAgentsModelConfigParams `json:"model,omitzero"`
+	// A coordinator topology: the session's primary thread orchestrates work by
+	// spawning session threads, each running an agent drawn from the `agents` roster.
+	Multiagent BetaManagedAgentsMultiagentParams `json:"multiagent,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -2198,7 +2259,7 @@ type BetaAgentListParams struct {
 // URLQuery serializes [BetaAgentListParams]'s query parameters as `url.Values`.
 func (r BetaAgentListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }

@@ -25,8 +25,8 @@ type Client struct {
 }
 
 // DefaultClientOptions read from the environment (ANTHROPIC_API_KEY,
-// ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL). This should be used to initialize new
-// clients.
+// ANTHROPIC_WEBHOOK_SIGNING_KEY, ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL). This
+// should be used to initialize new clients.
 func DefaultClientOptions() []option.RequestOption {
 	defaults := []option.RequestOption{option.WithHTTPClient(defaultHTTPClient()), option.WithEnvironmentProduction()}
 	if o, ok := os.LookupEnv("ANTHROPIC_BASE_URL"); ok {
@@ -37,6 +37,9 @@ func DefaultClientOptions() []option.RequestOption {
 	}
 	if o, ok := os.LookupEnv("ANTHROPIC_AUTH_TOKEN"); ok {
 		defaults = append(defaults, option.WithAuthToken(o))
+	}
+	if o, ok := os.LookupEnv("ANTHROPIC_WEBHOOK_SIGNING_KEY"); ok {
+		defaults = append(defaults, option.WithWebhookKey(o))
 	}
 	if o, ok := os.LookupEnv("ANTHROPIC_CUSTOM_HEADERS"); ok {
 		for _, line := range strings.Split(o, "\n") {
@@ -50,9 +53,10 @@ func DefaultClientOptions() []option.RequestOption {
 }
 
 // NewClient generates a new client with the default option read from the
-// environment (ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL). The
-// option passed in as arguments are applied after these default arguments, and all
-// option will be passed down to the services and requests that this client makes.
+// environment (ANTHROPIC_API_KEY, ANTHROPIC_WEBHOOK_SIGNING_KEY,
+// ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL). The option passed in as arguments are
+// applied after these default arguments, and all option will be passed down to the
+// services and requests that this client makes.
 func NewClient(opts ...option.RequestOption) (r Client) {
 	opts = append(DefaultClientOptions(), opts...)
 

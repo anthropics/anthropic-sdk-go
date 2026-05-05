@@ -133,6 +133,12 @@ type BetaUserProfile struct {
 	// Arbitrary key-value metadata. Maximum 16 pairs, keys up to 64 chars, values up
 	// to 512 chars.
 	Metadata map[string]string `json:"metadata" api:"required"`
+	// How the entity behind a user profile relates to the platform that owns the API
+	// key. `external`: an individual end-user of the platform. `resold`: a company the
+	// platform resells Claude access to. `internal`: the platform's own usage.
+	//
+	// Any of "external", "resold", "internal".
+	Relationship BetaUserProfileRelationship `json:"relationship" api:"required"`
 	// Trust grants for this profile, keyed by grant name. Key omitted when no grant is
 	// active or in flight.
 	TrustGrants map[string]BetaUserProfileTrustGrant `json:"trust_grants" api:"required"`
@@ -144,17 +150,22 @@ type BetaUserProfile struct {
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// Platform's own identifier for this user. Not enforced unique.
 	ExternalID string `json:"external_id" api:"nullable"`
+	// Display name of the entity this profile represents. For `resold` this is the
+	// resold-to company's name.
+	Name string `json:"name" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
-		CreatedAt   respjson.Field
-		Metadata    respjson.Field
-		TrustGrants respjson.Field
-		Type        respjson.Field
-		UpdatedAt   respjson.Field
-		ExternalID  respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		ID           respjson.Field
+		CreatedAt    respjson.Field
+		Metadata     respjson.Field
+		Relationship respjson.Field
+		TrustGrants  respjson.Field
+		Type         respjson.Field
+		UpdatedAt    respjson.Field
+		ExternalID   respjson.Field
+		Name         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
 	} `json:"-"`
 }
 
@@ -163,6 +174,17 @@ func (r BetaUserProfile) RawJSON() string { return r.JSON.raw }
 func (r *BetaUserProfile) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// How the entity behind a user profile relates to the platform that owns the API
+// key. `external`: an individual end-user of the platform. `resold`: a company the
+// platform resells Claude access to. `internal`: the platform's own usage.
+type BetaUserProfileRelationship string
+
+const (
+	BetaUserProfileRelationshipExternal BetaUserProfileRelationship = "external"
+	BetaUserProfileRelationshipResold   BetaUserProfileRelationship = "resold"
+	BetaUserProfileRelationshipInternal BetaUserProfileRelationship = "internal"
+)
 
 // Object type. Always `user_profile`.
 type BetaUserProfileType string
@@ -235,10 +257,20 @@ type BetaUserProfileNewParams struct {
 	// Platform's own identifier for this user. Not enforced unique. Maximum 255
 	// characters.
 	ExternalID param.Opt[string] `json:"external_id,omitzero"`
+	// Display name of the entity this profile represents. Required when relationship
+	// is `resold` (the resold-to company's name); optional otherwise. Maximum 255
+	// characters.
+	Name param.Opt[string] `json:"name,omitzero"`
 	// Free-form key-value data to attach to this user profile. Maximum 16 keys, with
 	// keys up to 64 characters and values up to 512 characters. Values must be
 	// non-empty strings.
 	Metadata map[string]string `json:"metadata,omitzero"`
+	// How the entity behind a user profile relates to the platform that owns the API
+	// key. `external`: an individual end-user of the platform. `resold`: a company the
+	// platform resells Claude access to. `internal`: the platform's own usage.
+	//
+	// Any of "external", "resold", "internal".
+	Relationship BetaUserProfileNewParamsRelationship `json:"relationship,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -252,6 +284,17 @@ func (r *BetaUserProfileNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// How the entity behind a user profile relates to the platform that owns the API
+// key. `external`: an individual end-user of the platform. `resold`: a company the
+// platform resells Claude access to. `internal`: the platform's own usage.
+type BetaUserProfileNewParamsRelationship string
+
+const (
+	BetaUserProfileNewParamsRelationshipExternal BetaUserProfileNewParamsRelationship = "external"
+	BetaUserProfileNewParamsRelationshipResold   BetaUserProfileNewParamsRelationship = "resold"
+	BetaUserProfileNewParamsRelationshipInternal BetaUserProfileNewParamsRelationship = "internal"
+)
+
 type BetaUserProfileGetParams struct {
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -262,6 +305,15 @@ type BetaUserProfileUpdateParams struct {
 	// If present, replaces the stored external_id. Omit to leave unchanged. Maximum
 	// 255 characters.
 	ExternalID param.Opt[string] `json:"external_id,omitzero"`
+	// If present, replaces the stored name. Omit to leave unchanged. Maximum 255
+	// characters.
+	Name param.Opt[string] `json:"name,omitzero"`
+	// How the entity behind a user profile relates to the platform that owns the API
+	// key. `external`: an individual end-user of the platform. `resold`: a company the
+	// platform resells Claude access to. `internal`: the platform's own usage.
+	//
+	// Any of "external", "resold", "internal".
+	Relationship BetaUserProfileUpdateParamsRelationship `json:"relationship,omitzero"`
 	// Key-value pairs to merge into the stored metadata. Keys provided overwrite
 	// existing values. To remove a key, set its value to an empty string. Keys not
 	// provided are left unchanged. Maximum 16 keys, with keys up to 64 characters and
@@ -279,6 +331,17 @@ func (r BetaUserProfileUpdateParams) MarshalJSON() (data []byte, err error) {
 func (r *BetaUserProfileUpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// How the entity behind a user profile relates to the platform that owns the API
+// key. `external`: an individual end-user of the platform. `resold`: a company the
+// platform resells Claude access to. `internal`: the platform's own usage.
+type BetaUserProfileUpdateParamsRelationship string
+
+const (
+	BetaUserProfileUpdateParamsRelationshipExternal BetaUserProfileUpdateParamsRelationship = "external"
+	BetaUserProfileUpdateParamsRelationshipResold   BetaUserProfileUpdateParamsRelationship = "resold"
+	BetaUserProfileUpdateParamsRelationshipInternal BetaUserProfileUpdateParamsRelationship = "internal"
+)
 
 type BetaUserProfileListParams struct {
 	// Query parameter for limit
@@ -298,7 +361,7 @@ type BetaUserProfileListParams struct {
 // `url.Values`.
 func (r BetaUserProfileListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }

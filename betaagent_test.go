@@ -41,6 +41,16 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 		Metadata: map[string]string{
 			"foo": "bar",
 		},
+		Multiagent: anthropic.BetaManagedAgentsMultiagentParams{
+			Agents: []anthropic.BetaManagedAgentsMultiagentRosterEntryParamsUnion{{
+				OfString: anthropic.String("agent_011CZkYqphY8vELVzwCUpqiQ"),
+			}, {
+				OfBetaManagedAgentsMultiagentSelfs: &anthropic.BetaManagedAgentsMultiagentSelfParams{
+					Type: anthropic.BetaManagedAgentsMultiagentSelfParamsTypeSelf,
+				},
+			}},
+			Type: anthropic.BetaManagedAgentsMultiagentParamsTypeCoordinator,
+		},
 		Skills: []anthropic.BetaManagedAgentsSkillParamsUnion{{
 			OfAnthropic: &anthropic.BetaManagedAgentsAnthropicSkillParams{
 				SkillID: "xlsx",
@@ -141,6 +151,16 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 			Model: anthropic.BetaManagedAgentsModelConfigParams{
 				ID:    anthropic.BetaManagedAgentsModelClaudeOpus4_6,
 				Speed: anthropic.BetaManagedAgentsModelConfigParamsSpeedStandard,
+			},
+			Multiagent: anthropic.BetaManagedAgentsMultiagentParams{
+				Agents: []anthropic.BetaManagedAgentsMultiagentRosterEntryParamsUnion{{
+					OfString: anthropic.String("agent_011CZkYqphY8vELVzwCUpqiQ"),
+				}, {
+					OfBetaManagedAgentsMultiagentSelfs: &anthropic.BetaManagedAgentsMultiagentSelfParams{
+						Type: anthropic.BetaManagedAgentsMultiagentSelfParamsTypeSelf,
+					},
+				}},
+				Type: anthropic.BetaManagedAgentsMultiagentParamsTypeCoordinator,
 			},
 			Name: anthropic.String("name"),
 			Skills: []anthropic.BetaManagedAgentsSkillParamsUnion{{

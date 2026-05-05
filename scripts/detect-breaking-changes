@@ -21,6 +21,8 @@ TEST_PATHS=(
 	betasession_test.go
 	betasessionevent_test.go
 	betasessionresource_test.go
+	betasessionthread_test.go
+	betasessionthreadevent_test.go
 	betavault_test.go
 	betavaultcredential_test.go
 	betamemorystore_test.go
@@ -29,6 +31,7 @@ TEST_PATHS=(
 	betafile_test.go
 	betaskill_test.go
 	betaskillversion_test.go
+	betawebhook_test.go
 	betauserprofile_test.go
 	usage_test.go
 	paginationauto_test.go

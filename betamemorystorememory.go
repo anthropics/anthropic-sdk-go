@@ -441,7 +441,7 @@ func (r *BetaMemoryStoreMemoryNewParams) UnmarshalJSON(data []byte) error {
 // `url.Values`.
 func (r BetaMemoryStoreMemoryNewParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
@@ -461,7 +461,7 @@ type BetaMemoryStoreMemoryGetParams struct {
 // `url.Values`.
 func (r BetaMemoryStoreMemoryGetParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
@@ -505,7 +505,7 @@ func (r *BetaMemoryStoreMemoryUpdateParams) UnmarshalJSON(data []byte) error {
 // `url.Values`.
 func (r BetaMemoryStoreMemoryUpdateParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
@@ -540,7 +540,7 @@ type BetaMemoryStoreMemoryListParams struct {
 // `url.Values`.
 func (r BetaMemoryStoreMemoryListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
@@ -566,7 +566,7 @@ type BetaMemoryStoreMemoryDeleteParams struct {
 // `url.Values`.
 func (r BetaMemoryStoreMemoryDeleteParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }

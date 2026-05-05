@@ -22,7 +22,11 @@ func writeCredentials(t *testing.T, path string, data map[string]any) {
 }
 
 func TestResolveCredentials_OIDCFederation(t *testing.T) {
+	var receivedBody tokenExchangeRequest
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := json.NewDecoder(r.Body).Decode(&receivedBody); err != nil {
+			t.Fatal(err)
+		}
 		expiresIn := 3600
 		json.NewEncoder(w).Encode(tokenExchangeResponse{
 			AccessToken: "exchanged-tok",
@@ -37,6 +41,7 @@ func TestResolveCredentials_OIDCFederation(t *testing.T) {
 
 	result, err := ResolveCredentials(&config.Config{
 		OrganizationID: "org-1",
+		WorkspaceID:    "wrkspc_x",
 		AuthenticationInfo: &config.AuthenticationInfo{
 			Type:            config.AuthenticationTypeOIDCFederation,
 			CredentialsPath: filepath.Join(dir, "credentials", "creds.json"),
@@ -52,12 +57,20 @@ func TestResolveCredentials_OIDCFederation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// For federation profiles workspace_id is sent in the exchange body, not
+	// as a request header — the result must not surface a header value.
+	if result.WorkspaceID != "" {
+		t.Fatalf("federation result should not carry a header workspace_id, got %q", result.WorkspaceID)
+	}
 	tok, err := result.Provider(context.Background(), server.URL, http.DefaultClient.Do)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if tok.Token != "exchanged-tok" {
 		t.Fatalf("got %q, want %q", tok.Token, "exchanged-tok")
+	}
+	if receivedBody.WorkspaceID != "wrkspc_x" {
+		t.Fatalf("got exchange-body workspace_id %q, want %q", receivedBody.WorkspaceID, "wrkspc_x")
 	}
 }
 

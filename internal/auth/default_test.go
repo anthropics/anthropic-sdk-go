@@ -135,6 +135,55 @@ func TestLoadConfig_NothingSetReturnsError(t *testing.T) {
 	}
 }
 
+// TestLoadConfig_EnvFillsMissingWorkspaceID verifies that ANTHROPIC_WORKSPACE_ID
+// fills the top-level workspace_id config key when the profile omits it, and
+// that the fill propagates through ResolveCredentials into the jwt-bearer
+// exchange body.
+func TestLoadConfig_EnvFillsMissingWorkspaceID(t *testing.T) {
+	var receivedBody tokenExchangeRequest
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := json.NewDecoder(r.Body).Decode(&receivedBody); err != nil {
+			t.Fatal(err)
+		}
+		json.NewEncoder(w).Encode(tokenExchangeResponse{AccessToken: "tok"})
+	}))
+	defer server.Close()
+
+	tokenDir := t.TempDir()
+	tokenPath := filepath.Join(tokenDir, "tok")
+	os.WriteFile(tokenPath, []byte("jwt"), 0600)
+
+	// Profile has oidc_federation auth with no workspace_id at any level.
+	dir := setupProfile(t, "default", map[string]any{
+		"organization_id": "org_x",
+		"authentication": map[string]any{
+			"type":               "oidc_federation",
+			"federation_rule_id": "fdrl_01abc",
+		},
+	}, nil)
+	t.Setenv("ANTHROPIC_CONFIG_DIR", dir)
+	t.Setenv(EnvIdentityTokenFile, tokenPath)
+	t.Setenv(EnvWorkspaceID, "wrkspc_from_env")
+
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.WorkspaceID != "wrkspc_from_env" {
+		t.Fatalf("got workspace_id %q, want env fill-in", cfg.WorkspaceID)
+	}
+	result, err := ResolveCredentials(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := result.Provider(context.Background(), server.URL, http.DefaultClient.Do); err != nil {
+		t.Fatal(err)
+	}
+	if receivedBody.WorkspaceID != "wrkspc_from_env" {
+		t.Fatalf("got exchange-body workspace_id %q, want %q", receivedBody.WorkspaceID, "wrkspc_from_env")
+	}
+}
+
 func TestEnvCredentials_WorkloadIdentity(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(tokenExchangeResponse{AccessToken: "wi-tok"})
@@ -189,6 +238,74 @@ func TestEnvCredentials_LiteralToken(t *testing.T) {
 	}
 }
 
+// TestEnvCredentials_WorkspaceID verifies that ANTHROPIC_WORKSPACE_ID is
+// read in the env-var federation chain and forwarded as workspace_id in
+// the jwt-bearer exchange body.
+func TestEnvCredentials_WorkspaceID(t *testing.T) {
+	var receivedBody tokenExchangeRequest
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := json.NewDecoder(r.Body).Decode(&receivedBody); err != nil {
+			t.Fatal(err)
+		}
+		json.NewEncoder(w).Encode(tokenExchangeResponse{AccessToken: "wi-tok"})
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	t.Setenv("ANTHROPIC_CONFIG_DIR", dir)
+	t.Setenv(EnvIdentityToken, "literal-jwt")
+	t.Setenv(EnvFederationRuleID, "fdrl_01abc")
+	t.Setenv(EnvOrganizationID, "org-uuid")
+	t.Setenv(EnvWorkspaceID, "wrkspc_01abc")
+
+	result, _, _ := EnvCredentials()
+	if result == nil {
+		t.Fatal("expected non-nil")
+	}
+	if _, err := result.Provider(context.Background(), server.URL, http.DefaultClient.Do); err != nil {
+		t.Fatal(err)
+	}
+	if receivedBody.WorkspaceID != "wrkspc_01abc" {
+		t.Fatalf("got workspace_id %q, want %q", receivedBody.WorkspaceID, "wrkspc_01abc")
+	}
+}
+
+// TestEnvCredentials_WorkspaceIDEmptyTreatedUnset pins the empty-string
+// behavior: ANTHROPIC_WORKSPACE_ID="" (a defaulted-but-empty CI variable)
+// must be treated as unset — never put `"workspace_id": ""` on the wire.
+// In Go this falls out of os.Getenv returning "" plus the
+// json:"workspace_id,omitempty" tag on tokenExchangeRequest, but the test
+// exists as a regression pin so neither side of that pair regresses
+// silently.
+func TestEnvCredentials_WorkspaceIDEmptyTreatedUnset(t *testing.T) {
+	var receivedRaw map[string]any
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := json.NewDecoder(r.Body).Decode(&receivedRaw); err != nil {
+			t.Fatal(err)
+		}
+		json.NewEncoder(w).Encode(tokenExchangeResponse{AccessToken: "wi-tok"})
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	t.Setenv("ANTHROPIC_CONFIG_DIR", dir)
+	t.Setenv(EnvIdentityToken, "literal-jwt")
+	t.Setenv(EnvFederationRuleID, "fdrl_01abc")
+	t.Setenv(EnvOrganizationID, "org-uuid")
+	t.Setenv(EnvWorkspaceID, "") // explicitly set, but empty
+
+	result, _, _ := EnvCredentials()
+	if result == nil {
+		t.Fatal("expected non-nil")
+	}
+	if _, err := result.Provider(context.Background(), server.URL, http.DefaultClient.Do); err != nil {
+		t.Fatal(err)
+	}
+	if _, present := receivedRaw["workspace_id"]; present {
+		t.Fatalf("workspace_id must be omitted when ANTHROPIC_WORKSPACE_ID is empty, body=%v", receivedRaw)
+	}
+}
+
 func TestEnvCredentials_RequiresAllThree(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("ANTHROPIC_CONFIG_DIR", dir)
@@ -208,6 +325,7 @@ func TestEnvCredentials_NothingSetReturnsNil(t *testing.T) {
 	unsetEnv(t, EnvIdentityToken)
 	unsetEnv(t, EnvFederationRuleID)
 	unsetEnv(t, EnvOrganizationID)
+	unsetEnv(t, EnvWorkspaceID)
 
 	result, _, _ := EnvCredentials()
 	if result != nil {

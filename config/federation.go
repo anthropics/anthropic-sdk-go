@@ -74,6 +74,18 @@ type FederationExchangeParams struct {
 	// user-targeted rules.
 	ServiceAccountID string
 
+	// WorkspaceID is an optional `wrkspc_*` tagged ID, or the literal
+	// "default" to scope the token to the organization's default workspace.
+	// When omitted the server picks the rule's sole enabled workspace, else
+	// the org default if the rule covers it. Required when the rule enables
+	// more than one non-default workspace, or to target a specific workspace
+	// other than the one the server would pick. The minted token is
+	// workspace-scoped: per-request workspace selection (the
+	// anthropic-workspace-id header) is not supported for federation
+	// tokens — switching workspaces requires a new token exchange with a
+	// different WorkspaceID.
+	WorkspaceID string
+
 	// BaseURL overrides the Anthropic API base URL. Defaults to
 	// https://api.anthropic.com. A trailing slash is tolerated.
 	BaseURL string
@@ -103,6 +115,7 @@ type federationExchangeRequest struct {
 	FederationRuleID string `json:"federation_rule_id"`
 	OrganizationID   string `json:"organization_id"`
 	ServiceAccountID string `json:"service_account_id,omitempty"`
+	WorkspaceID      string `json:"workspace_id,omitempty"`
 }
 
 // FederationExchangeError is returned by [ExchangeFederationAssertion] when
@@ -157,6 +170,7 @@ func ExchangeFederationAssertion(ctx context.Context, params FederationExchangeP
 		FederationRuleID: params.FederationRuleID,
 		OrganizationID:   params.OrganizationID,
 		ServiceAccountID: params.ServiceAccountID,
+		WorkspaceID:      params.WorkspaceID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("ExchangeFederationAssertion: marshal body: %w", err)

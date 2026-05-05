@@ -39,6 +39,17 @@ type FederationOptions struct {
 	// "svac_" prefix. Omit for target_type=USER rules, where the principal
 	// is derived from the JWT claims.
 	ServiceAccountID string
+	// WorkspaceID is an optional `wrkspc_*` tagged ID, or the literal
+	// "default" to scope the token to the organization's default workspace.
+	// When omitted the server picks the rule's sole enabled workspace, else
+	// the org default if the rule covers it. Required when the rule enables
+	// more than one non-default workspace, or to target a specific workspace
+	// other than the one the server would pick. The minted token is
+	// workspace-scoped: per-request workspace selection (the
+	// anthropic-workspace-id header) is not supported for federation
+	// tokens — switching workspaces requires a new token exchange with a
+	// different WorkspaceID.
+	WorkspaceID string
 }
 
 // identityTokenFuncAdapter adapts an [IdentityTokenFunc] to the internal
@@ -119,6 +130,7 @@ func WithFederationTokenProvider(provider IdentityTokenFunc, opts FederationOpti
 		FederationRuleID: opts.FederationRuleID,
 		OrganizationID:   opts.OrganizationID,
 		ServiceAccountID: opts.ServiceAccountID,
+		WorkspaceID:      opts.WorkspaceID,
 	})
 	return auth.WithAuthMiddleware(tokenProvider)
 }
@@ -502,7 +514,12 @@ func withConfig(cfg *config.Config, quiet bool) RequestOption {
 				return err
 			}
 		}
-		if cfg.WorkspaceID != "" {
+		// For federation profiles workspace_id is sent in the jwt-bearer
+		// exchange body, not as a request header (the minted token is
+		// already workspace-scoped, so the header would be ignored).
+		isFederation := cfg.AuthenticationInfo != nil &&
+			cfg.AuthenticationInfo.Type == config.AuthenticationTypeOIDCFederation
+		if cfg.WorkspaceID != "" && !isFederation {
 			if err := WithHeader("anthropic-workspace-id", cfg.WorkspaceID).Apply(r); err != nil {
 				return err
 			}

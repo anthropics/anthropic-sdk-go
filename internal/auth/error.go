@@ -24,6 +24,18 @@ type OAuthTokenError struct {
 	// any. Empty when the response had no such header. Included in the
 	// formatted error so support can correlate user reports with server logs.
 	RequestID string
+	// Hint is an optional caller-supplied diagnostic appended verbatim to
+	// the error message. Callers gate it on the response status and their
+	// own state — Error does not inspect StatusCode or Body to decide
+	// whether to include it.
+	Hint string
+	// WorkloadIdentity is set by the OIDC federation (jwt-bearer) flow to
+	// suppress the "re-run `anthropic auth login`" remediation suffix.
+	// That suffix only makes sense for the interactive user_oauth flow;
+	// machine credentials have no browser login to re-run, and suggesting
+	// one sends operators down the wrong path. The zero value keeps the
+	// suffix so the user_oauth flow needs no change at its call site.
+	WorkloadIdentity bool
 }
 
 // rfc6749ErrorBody is the subset of the RFC 6749 OAuth error response the SDK
@@ -51,8 +63,11 @@ func (e *OAuthTokenError) Error() string {
 	}
 
 	msg := strings.Join(parts, "; ")
-	if shouldSuggestRelogin(e.StatusCode, parsed.Error) {
+	if !e.WorkloadIdentity && shouldSuggestRelogin(e.StatusCode, parsed.Error) {
 		msg += " — re-run `anthropic auth login` to re-authenticate"
+	}
+	if e.Hint != "" {
+		msg += ". " + e.Hint
 	}
 	return msg
 }

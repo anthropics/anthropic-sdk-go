@@ -143,6 +143,7 @@ func loadOIDCFederationProfile(cfg *config.Config) (*CredentialsResult, error) {
 		FederationRuleID: oidc.FederationRuleID,
 		OrganizationID:   cfg.OrganizationID,
 		ServiceAccountID: oidc.ServiceAccountID,
+		WorkspaceID:      cfg.WorkspaceID,
 		BaseURL:          cfg.BaseURL,
 	})
 
@@ -185,6 +186,10 @@ func loadOIDCFederationProfile(cfg *config.Config) (*CredentialsResult, error) {
 		return token, nil
 	}
 
+	// For federation profiles workspace_id is sent in the jwt-bearer
+	// exchange body, not as a request header (the minted token is already
+	// workspace-scoped, so the header would be ignored). WorkspaceID is
+	// therefore intentionally omitted from the CredentialsResult here.
 	return &CredentialsResult{
 		Provider: provider,
 		BaseURL:  cfg.BaseURL,

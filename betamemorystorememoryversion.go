@@ -384,7 +384,7 @@ type BetaMemoryStoreMemoryVersionGetParams struct {
 // as `url.Values`.
 func (r BetaMemoryStoreMemoryVersionGetParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
@@ -421,7 +421,7 @@ type BetaMemoryStoreMemoryVersionListParams struct {
 // as `url.Values`.
 func (r BetaMemoryStoreMemoryVersionListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }

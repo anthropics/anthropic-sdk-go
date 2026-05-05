@@ -96,6 +96,7 @@ type EnvironmentDeleted string                      // Always "environment_delet
 type Ephemeral string                               // Always "ephemeral"
 type Error string                                   // Always "error"
 type Errored string                                 // Always "errored"
+type Event string                                   // Always "event"
 type Expired string                                 // Always "expired"
 type File string                                    // Always "file"
 type Image string                                   // Always "image"
@@ -131,6 +132,21 @@ type SearchResult string                            // Always "search_result"
 type SearchResultLocation string                    // Always "search_result_location"
 type ServerToolUse string                           // Always "server_tool_use"
 type Session string                                 // Always "session"
+type SessionArchived string                         // Always "session.archived"
+type SessionCreated string                          // Always "session.created"
+type SessionDeleted string                          // Always "session.deleted"
+type SessionIdled string                            // Always "session.idled"
+type SessionOutcomeEvaluationEnded string           // Always "session.outcome_evaluation_ended"
+type SessionPending string                          // Always "session.pending"
+type SessionRequiresAction string                   // Always "session.requires_action"
+type SessionRunning string                          // Always "session.running"
+type SessionStatusIdled string                      // Always "session.status_idled"
+type SessionStatusRunStarted string                 // Always "session.status_run_started"
+type SessionStatusScheduled string                  // Always "session.status_scheduled"
+type SessionStatusTerminated string                 // Always "session.status_terminated"
+type SessionThreadCreated string                    // Always "session.thread_created"
+type SessionThreadIdled string                      // Always "session.thread_idled"
+type SessionThreadTerminated string                 // Always "session.thread_terminated"
 type SignatureDelta string                          // Always "signature_delta"
 type StrReplace string                              // Always "str_replace"
 type StrReplaceBasedEditTool string                 // Always "str_replace_based_edit_tool"
@@ -165,6 +181,13 @@ type ToolUse string                                 // Always "tool_use"
 type ToolUses string                                // Always "tool_uses"
 type Unrestricted string                            // Always "unrestricted"
 type URL string                                     // Always "url"
+type VaultCredentialArchived string                 // Always "vault_credential.archived"
+type VaultCredentialCreated string                  // Always "vault_credential.created"
+type VaultCredentialDeleted string                  // Always "vault_credential.deleted"
+type VaultCredentialRefreshFailed string            // Always "vault_credential.refresh_failed"
+type VaultArchived string                           // Always "vault.archived"
+type VaultCreated string                            // Always "vault.created"
+type VaultDeleted string                            // Always "vault.deleted"
 type View string                                    // Always "view"
 type WebFetch string                                // Always "web_fetch"
 type WebFetch20250910 string                        // Always "web_fetch_20250910"
@@ -260,6 +283,7 @@ func (c EnvironmentDeleted) Default() EnvironmentDeleted     { return "environme
 func (c Ephemeral) Default() Ephemeral                       { return "ephemeral" }
 func (c Error) Default() Error                               { return "error" }
 func (c Errored) Default() Errored                           { return "errored" }
+func (c Event) Default() Event                               { return "event" }
 func (c Expired) Default() Expired                           { return "expired" }
 func (c File) Default() File                                 { return "file" }
 func (c Image) Default() Image                               { return "image" }
@@ -295,8 +319,31 @@ func (c SearchResult) Default() SearchResult                 { return "search_re
 func (c SearchResultLocation) Default() SearchResultLocation { return "search_result_location" }
 func (c ServerToolUse) Default() ServerToolUse               { return "server_tool_use" }
 func (c Session) Default() Session                           { return "session" }
-func (c SignatureDelta) Default() SignatureDelta             { return "signature_delta" }
-func (c StrReplace) Default() StrReplace                     { return "str_replace" }
+func (c SessionArchived) Default() SessionArchived           { return "session.archived" }
+func (c SessionCreated) Default() SessionCreated             { return "session.created" }
+func (c SessionDeleted) Default() SessionDeleted             { return "session.deleted" }
+func (c SessionIdled) Default() SessionIdled                 { return "session.idled" }
+func (c SessionOutcomeEvaluationEnded) Default() SessionOutcomeEvaluationEnded {
+	return "session.outcome_evaluation_ended"
+}
+func (c SessionPending) Default() SessionPending               { return "session.pending" }
+func (c SessionRequiresAction) Default() SessionRequiresAction { return "session.requires_action" }
+func (c SessionRunning) Default() SessionRunning               { return "session.running" }
+func (c SessionStatusIdled) Default() SessionStatusIdled       { return "session.status_idled" }
+func (c SessionStatusRunStarted) Default() SessionStatusRunStarted {
+	return "session.status_run_started"
+}
+func (c SessionStatusScheduled) Default() SessionStatusScheduled { return "session.status_scheduled" }
+func (c SessionStatusTerminated) Default() SessionStatusTerminated {
+	return "session.status_terminated"
+}
+func (c SessionThreadCreated) Default() SessionThreadCreated { return "session.thread_created" }
+func (c SessionThreadIdled) Default() SessionThreadIdled     { return "session.thread_idled" }
+func (c SessionThreadTerminated) Default() SessionThreadTerminated {
+	return "session.thread_terminated"
+}
+func (c SignatureDelta) Default() SignatureDelta { return "signature_delta" }
+func (c StrReplace) Default() StrReplace         { return "str_replace" }
 func (c StrReplaceBasedEditTool) Default() StrReplaceBasedEditTool {
 	return "str_replace_based_edit_tool"
 }
@@ -341,10 +388,21 @@ func (c ToolSearchToolResultError) Default() ToolSearchToolResultError {
 func (c ToolSearchToolSearchResult) Default() ToolSearchToolSearchResult {
 	return "tool_search_tool_search_result"
 }
-func (c ToolUse) Default() ToolUse                       { return "tool_use" }
-func (c ToolUses) Default() ToolUses                     { return "tool_uses" }
-func (c Unrestricted) Default() Unrestricted             { return "unrestricted" }
-func (c URL) Default() URL                               { return "url" }
+func (c ToolUse) Default() ToolUse           { return "tool_use" }
+func (c ToolUses) Default() ToolUses         { return "tool_uses" }
+func (c Unrestricted) Default() Unrestricted { return "unrestricted" }
+func (c URL) Default() URL                   { return "url" }
+func (c VaultCredentialArchived) Default() VaultCredentialArchived {
+	return "vault_credential.archived"
+}
+func (c VaultCredentialCreated) Default() VaultCredentialCreated { return "vault_credential.created" }
+func (c VaultCredentialDeleted) Default() VaultCredentialDeleted { return "vault_credential.deleted" }
+func (c VaultCredentialRefreshFailed) Default() VaultCredentialRefreshFailed {
+	return "vault_credential.refresh_failed"
+}
+func (c VaultArchived) Default() VaultArchived           { return "vault.archived" }
+func (c VaultCreated) Default() VaultCreated             { return "vault.created" }
+func (c VaultDeleted) Default() VaultDeleted             { return "vault.deleted" }
 func (c View) Default() View                             { return "view" }
 func (c WebFetch) Default() WebFetch                     { return "web_fetch" }
 func (c WebFetch20250910) Default() WebFetch20250910     { return "web_fetch_20250910" }
@@ -432,6 +490,7 @@ func (c EnvironmentDeleted) MarshalJSON() ([]byte, error)                  { ret
 func (c Ephemeral) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c Error) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Errored) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c Event) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Expired) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c File) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Image) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
@@ -467,6 +526,21 @@ func (c SearchResult) MarshalJSON() ([]byte, error)                        { ret
 func (c SearchResultLocation) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c ServerToolUse) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Session) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c SessionArchived) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c SessionCreated) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c SessionDeleted) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c SessionIdled) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c SessionOutcomeEvaluationEnded) MarshalJSON() ([]byte, error)       { return marshalString(c) }
+func (c SessionPending) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c SessionRequiresAction) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c SessionRunning) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c SessionStatusIdled) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c SessionStatusRunStarted) MarshalJSON() ([]byte, error)             { return marshalString(c) }
+func (c SessionStatusScheduled) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c SessionStatusTerminated) MarshalJSON() ([]byte, error)             { return marshalString(c) }
+func (c SessionThreadCreated) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c SessionThreadIdled) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c SessionThreadTerminated) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c SignatureDelta) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c StrReplace) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c StrReplaceBasedEditTool) MarshalJSON() ([]byte, error)             { return marshalString(c) }
@@ -505,6 +579,13 @@ func (c ToolUse) MarshalJSON() ([]byte, error)                           { retur
 func (c ToolUses) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Unrestricted) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c VaultCredentialArchived) MarshalJSON() ([]byte, error)           { return marshalString(c) }
+func (c VaultCredentialCreated) MarshalJSON() ([]byte, error)            { return marshalString(c) }
+func (c VaultCredentialDeleted) MarshalJSON() ([]byte, error)            { return marshalString(c) }
+func (c VaultCredentialRefreshFailed) MarshalJSON() ([]byte, error)      { return marshalString(c) }
+func (c VaultArchived) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c VaultCreated) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c VaultDeleted) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c View) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c WebFetch) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c WebFetch20250910) MarshalJSON() ([]byte, error)                  { return marshalString(c) }

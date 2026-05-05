@@ -31,6 +31,7 @@ type BetaSessionService struct {
 	Options   []option.RequestOption
 	Events    BetaSessionEventService
 	Resources BetaSessionResourceService
+	Threads   BetaSessionThreadService
 }
 
 // NewBetaSessionService generates a new service that applies the given options to
@@ -41,6 +42,7 @@ func NewBetaSessionService(opts ...option.RequestOption) (r BetaSessionService) 
 	r.Options = opts
 	r.Events = NewBetaSessionEventService(opts...)
 	r.Resources = NewBetaSessionResourceService(opts...)
+	r.Threads = NewBetaSessionThreadService(opts...)
 	return
 }
 
@@ -486,6 +488,178 @@ const (
 	BetaManagedAgentsMemoryStoreResourceParamAccessReadOnly  BetaManagedAgentsMemoryStoreResourceParamAccess = "read_only"
 )
 
+// Resolved coordinator topology with a concrete agent roster.
+type BetaManagedAgentsMultiagent struct {
+	// Agents the coordinator may spawn as session threads, each resolved to a specific
+	// version.
+	Agents []BetaManagedAgentsAgentReference `json:"agents" api:"required"`
+	// Any of "coordinator".
+	Type BetaManagedAgentsMultiagentType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Agents      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsMultiagent) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsMultiagent) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsMultiagentType string
+
+const (
+	BetaManagedAgentsMultiagentTypeCoordinator BetaManagedAgentsMultiagentType = "coordinator"
+)
+
+// A coordinator topology: the session's primary thread orchestrates work by
+// spawning session threads, each running an agent drawn from the `agents` roster.
+//
+// The properties Agents, Type are required.
+type BetaManagedAgentsMultiagentParams struct {
+	// Agents the coordinator may spawn as session threads. 1–20 entries. Each entry is
+	// an agent ID string, a versioned `{"type":"agent","id","version"}` reference, or
+	// `{"type":"self"}` to allow recursive self-invocation. Entries must reference
+	// distinct agents (after resolving `self` and string forms); at most one `self`.
+	// Referenced agents must exist, must not be archived, and must not themselves have
+	// `multiagent` set (depth limit 1).
+	Agents []BetaManagedAgentsMultiagentRosterEntryParamsUnion `json:"agents,omitzero" api:"required"`
+	// Any of "coordinator".
+	Type BetaManagedAgentsMultiagentParamsType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsMultiagentParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsMultiagentParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsMultiagentParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsMultiagentParamsType string
+
+const (
+	BetaManagedAgentsMultiagentParamsTypeCoordinator BetaManagedAgentsMultiagentParamsType = "coordinator"
+)
+
+func BetaManagedAgentsMultiagentRosterEntryParamsOfBetaManagedAgentsAgents(id string, type_ BetaManagedAgentsAgentParamsType) BetaManagedAgentsMultiagentRosterEntryParamsUnion {
+	var variant BetaManagedAgentsAgentParams
+	variant.ID = id
+	variant.Type = type_
+	return BetaManagedAgentsMultiagentRosterEntryParamsUnion{OfBetaManagedAgentsAgents: &variant}
+}
+
+func BetaManagedAgentsMultiagentRosterEntryParamsOfBetaManagedAgentsMultiagentSelfs(type_ BetaManagedAgentsMultiagentSelfParamsType) BetaManagedAgentsMultiagentRosterEntryParamsUnion {
+	var variant BetaManagedAgentsMultiagentSelfParams
+	variant.Type = type_
+	return BetaManagedAgentsMultiagentRosterEntryParamsUnion{OfBetaManagedAgentsMultiagentSelfs: &variant}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaManagedAgentsMultiagentRosterEntryParamsUnion struct {
+	OfString                           param.Opt[string]                      `json:",omitzero,inline"`
+	OfBetaManagedAgentsAgents          *BetaManagedAgentsAgentParams          `json:",omitzero,inline"`
+	OfBetaManagedAgentsMultiagentSelfs *BetaManagedAgentsMultiagentSelfParams `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaManagedAgentsMultiagentRosterEntryParamsUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfBetaManagedAgentsAgents, u.OfBetaManagedAgentsMultiagentSelfs)
+}
+func (u *BetaManagedAgentsMultiagentRosterEntryParamsUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaManagedAgentsMultiagentRosterEntryParamsUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfBetaManagedAgentsAgents) {
+		return u.OfBetaManagedAgentsAgents
+	} else if !param.IsOmitted(u.OfBetaManagedAgentsMultiagentSelfs) {
+		return u.OfBetaManagedAgentsMultiagentSelfs
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsMultiagentRosterEntryParamsUnion) GetID() *string {
+	if vt := u.OfBetaManagedAgentsAgents; vt != nil {
+		return &vt.ID
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsMultiagentRosterEntryParamsUnion) GetVersion() *int64 {
+	if vt := u.OfBetaManagedAgentsAgents; vt != nil && vt.Version.Valid() {
+		return &vt.Version.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsMultiagentRosterEntryParamsUnion) GetType() *string {
+	if vt := u.OfBetaManagedAgentsAgents; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfBetaManagedAgentsMultiagentSelfs; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Evaluation state for a single outcome defined via a define_outcome event.
+type BetaManagedAgentsOutcomeEvaluationResource struct {
+	// A timestamp in RFC 3339 format
+	CompletedAt time.Time `json:"completed_at" api:"required" format:"date-time"`
+	// What the agent should produce.
+	Description string `json:"description" api:"required"`
+	// Grader's verdict text from the most recent evaluation. For satisfied, explains
+	// why criteria are met; for needs_revision (intermediate), what's missing; for
+	// failed, why unrecoverable.
+	Explanation string `json:"explanation" api:"required"`
+	// 0-indexed revision cycle the outcome is currently on.
+	Iteration int64 `json:"iteration" api:"required"`
+	// Server-generated outc\_ ID for this outcome.
+	OutcomeID string `json:"outcome_id" api:"required"`
+	// Current evaluation state. 'pending' before the agent begins work; 'running'
+	// while producing or revising; 'evaluating' while the grader scores;
+	// 'satisfied'/'max_iterations_reached'/'failed'/'interrupted' are terminal.
+	Result string `json:"result" api:"required"`
+	// Any of "outcome_evaluation".
+	Type BetaManagedAgentsOutcomeEvaluationResourceType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CompletedAt respjson.Field
+		Description respjson.Field
+		Explanation respjson.Field
+		Iteration   respjson.Field
+		OutcomeID   respjson.Field
+		Result      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsOutcomeEvaluationResource) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsOutcomeEvaluationResource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsOutcomeEvaluationResourceType string
+
+const (
+	BetaManagedAgentsOutcomeEvaluationResourceTypeOutcomeEvaluation BetaManagedAgentsOutcomeEvaluationResourceType = "outcome_evaluation"
+)
+
 // A Managed Agents `session`.
 type BetaManagedAgentsSession struct {
 	ID string `json:"id" api:"required"`
@@ -495,10 +669,13 @@ type BetaManagedAgentsSession struct {
 	// A timestamp in RFC 3339 format
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
 	// A timestamp in RFC 3339 format
-	CreatedAt     time.Time                               `json:"created_at" api:"required" format:"date-time"`
-	EnvironmentID string                                  `json:"environment_id" api:"required"`
-	Metadata      map[string]string                       `json:"metadata" api:"required"`
-	Resources     []BetaManagedAgentsSessionResourceUnion `json:"resources" api:"required"`
+	CreatedAt     time.Time         `json:"created_at" api:"required" format:"date-time"`
+	EnvironmentID string            `json:"environment_id" api:"required"`
+	Metadata      map[string]string `json:"metadata" api:"required"`
+	// Per-outcome evaluation state. One entry per define_outcome event sent to the
+	// session.
+	OutcomeEvaluations []BetaManagedAgentsOutcomeEvaluationResource `json:"outcome_evaluations" api:"required"`
+	Resources          []BetaManagedAgentsSessionResourceUnion      `json:"resources" api:"required"`
 	// Timing statistics for a session.
 	Stats BetaManagedAgentsSessionStats `json:"stats" api:"required"`
 	// SessionStatus enum
@@ -517,22 +694,23 @@ type BetaManagedAgentsSession struct {
 	VaultIDs []string `json:"vault_ids" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID            respjson.Field
-		Agent         respjson.Field
-		ArchivedAt    respjson.Field
-		CreatedAt     respjson.Field
-		EnvironmentID respjson.Field
-		Metadata      respjson.Field
-		Resources     respjson.Field
-		Stats         respjson.Field
-		Status        respjson.Field
-		Title         respjson.Field
-		Type          respjson.Field
-		UpdatedAt     respjson.Field
-		Usage         respjson.Field
-		VaultIDs      respjson.Field
-		ExtraFields   map[string]respjson.Field
-		raw           string
+		ID                 respjson.Field
+		Agent              respjson.Field
+		ArchivedAt         respjson.Field
+		CreatedAt          respjson.Field
+		EnvironmentID      respjson.Field
+		Metadata           respjson.Field
+		OutcomeEvaluations respjson.Field
+		Resources          respjson.Field
+		Stats              respjson.Field
+		Status             respjson.Field
+		Title              respjson.Field
+		Type               respjson.Field
+		UpdatedAt          respjson.Field
+		Usage              respjson.Field
+		VaultIDs           respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
 	} `json:"-"`
 }
 
@@ -565,11 +743,14 @@ type BetaManagedAgentsSessionAgent struct {
 	Description string                                    `json:"description" api:"required"`
 	MCPServers  []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
 	// Model identifier and configuration.
-	Model  BetaManagedAgentsModelConfig              `json:"model" api:"required"`
-	Name   string                                    `json:"name" api:"required"`
-	Skills []BetaManagedAgentsSessionAgentSkillUnion `json:"skills" api:"required"`
-	System string                                    `json:"system" api:"required"`
-	Tools  []BetaManagedAgentsSessionAgentToolUnion  `json:"tools" api:"required"`
+	Model BetaManagedAgentsModelConfig `json:"model" api:"required"`
+	// Resolved coordinator topology with full agent definitions for each roster
+	// member.
+	Multiagent BetaManagedAgentsSessionMultiagentCoordinator `json:"multiagent" api:"required"`
+	Name       string                                        `json:"name" api:"required"`
+	Skills     []BetaManagedAgentsSessionAgentSkillUnion     `json:"skills" api:"required"`
+	System     string                                        `json:"system" api:"required"`
+	Tools      []BetaManagedAgentsSessionAgentToolUnion      `json:"tools" api:"required"`
 	// Any of "agent".
 	Type    BetaManagedAgentsSessionAgentType `json:"type" api:"required"`
 	Version int64                             `json:"version" api:"required"`
@@ -579,6 +760,7 @@ type BetaManagedAgentsSessionAgent struct {
 		Description respjson.Field
 		MCPServers  respjson.Field
 		Model       respjson.Field
+		Multiagent  respjson.Field
 		Name        respjson.Field
 		Skills      respjson.Field
 		System      respjson.Field
@@ -828,6 +1010,34 @@ type BetaManagedAgentsSessionAgentType string
 
 const (
 	BetaManagedAgentsSessionAgentTypeAgent BetaManagedAgentsSessionAgentType = "agent"
+)
+
+// Resolved coordinator topology with full agent definitions for each roster
+// member.
+type BetaManagedAgentsSessionMultiagentCoordinator struct {
+	// Full `agent` definitions the coordinator may spawn as session threads.
+	Agents []BetaManagedAgentsSessionThreadAgent `json:"agents" api:"required"`
+	// Any of "coordinator".
+	Type BetaManagedAgentsSessionMultiagentCoordinatorType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Agents      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSessionMultiagentCoordinator) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSessionMultiagentCoordinator) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsSessionMultiagentCoordinatorType string
+
+const (
+	BetaManagedAgentsSessionMultiagentCoordinatorTypeCoordinator BetaManagedAgentsSessionMultiagentCoordinatorType = "coordinator"
 )
 
 // Timing statistics for a session.
@@ -1103,6 +1313,11 @@ type BetaSessionListParams struct {
 	//
 	// Any of "asc", "desc".
 	Order BetaSessionListParamsOrder `query:"order,omitzero" json:"-"`
+	// Filter by session status. Repeat the parameter to match any of multiple
+	// statuses.
+	//
+	// Any of "rescheduling", "running", "idle", "terminated".
+	Statuses []string `query:"statuses,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -1111,7 +1326,7 @@ type BetaSessionListParams struct {
 // URLQuery serializes [BetaSessionListParams]'s query parameters as `url.Values`.
 func (r BetaSessionListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }

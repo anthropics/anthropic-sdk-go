@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.40.0 (2026-05-05)
+
+Full Changelog: [v1.39.0...v1.40.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.39.0...v1.40.0)
+
+### Features
+
+* **client:** allow targeting a workspace for OIDC federation token exchange ([6bf66ac](https://github.com/anthropics/anthropic-sdk-go/commit/6bf66ac19fa598800549ea188e849d0d45f632ea))
+
 ## 1.39.0 (2026-05-04)
 
 Full Changelog: [v1.38.0...v1.39.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.38.0...v1.39.0)

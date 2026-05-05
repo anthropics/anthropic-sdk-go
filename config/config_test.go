@@ -622,6 +622,7 @@ func TestLoadConfig_EnvDoesNotOverrideProfileFields(t *testing.T) {
 	body := oidcFederationProfile()
 	body["base_url"] = "https://file.example.com"
 	body["organization_id"] = "org_from_file"
+	body["workspace_id"] = "wrkspc_from_file"
 	auth := body["authentication"].(map[string]any)
 	auth["federation_rule_id"] = "fdrl_from_file"
 	auth["service_account_id"] = "svac_from_file"
@@ -636,6 +637,7 @@ func TestLoadConfig_EnvDoesNotOverrideProfileFields(t *testing.T) {
 	unsetEnv(t, "ANTHROPIC_PROFILE")
 	t.Setenv("ANTHROPIC_BASE_URL", "https://env.example.com")
 	t.Setenv("ANTHROPIC_ORGANIZATION_ID", "org_from_env")
+	t.Setenv("ANTHROPIC_WORKSPACE_ID", "wrkspc_from_env")
 	t.Setenv("ANTHROPIC_FEDERATION_RULE_ID", "fdrl_from_env")
 	t.Setenv("ANTHROPIC_SERVICE_ACCOUNT_ID", "svac_from_env")
 	t.Setenv("ANTHROPIC_SCOPE", "scope_from_env")
@@ -650,6 +652,9 @@ func TestLoadConfig_EnvDoesNotOverrideProfileFields(t *testing.T) {
 	}
 	if cfg.OrganizationID != "org_from_file" {
 		t.Errorf("organization_id: got %q, want file value", cfg.OrganizationID)
+	}
+	if cfg.WorkspaceID != "wrkspc_from_file" {
+		t.Errorf("workspace_id: got %q, want file value", cfg.WorkspaceID)
 	}
 	oidc := cfg.AuthenticationInfo.OIDCFederation
 	if oidc.FederationRuleID != "fdrl_from_file" {
@@ -681,6 +686,7 @@ func TestLoadConfig_EnvFillsMissingFields(t *testing.T) {
 	t.Setenv("ANTHROPIC_CONFIG_DIR", dir)
 	unsetEnv(t, "ANTHROPIC_PROFILE")
 	t.Setenv("ANTHROPIC_ORGANIZATION_ID", "org_from_env")
+	t.Setenv("ANTHROPIC_WORKSPACE_ID", "wrkspc_from_env")
 	t.Setenv("ANTHROPIC_FEDERATION_RULE_ID", "fdrl_from_env")
 	t.Setenv("ANTHROPIC_SERVICE_ACCOUNT_ID", "svac_from_env")
 	t.Setenv("ANTHROPIC_SCOPE", "scope_from_env")
@@ -692,6 +698,9 @@ func TestLoadConfig_EnvFillsMissingFields(t *testing.T) {
 	}
 	if cfg.OrganizationID != "org_from_env" {
 		t.Errorf("organization_id: got %q, want env fill-in", cfg.OrganizationID)
+	}
+	if cfg.WorkspaceID != "wrkspc_from_env" {
+		t.Errorf("workspace_id: got %q, want env fill-in", cfg.WorkspaceID)
 	}
 	oidc := cfg.AuthenticationInfo.OIDCFederation
 	if oidc.FederationRuleID != "fdrl_from_env" {

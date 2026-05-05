@@ -42,6 +42,7 @@ func isolateAuthEnv(t *testing.T) {
 	unsetEnv(t, "ANTHROPIC_ORGANIZATION_ID")
 	unsetEnv(t, "ANTHROPIC_IDENTITY_TOKEN")
 	unsetEnv(t, "ANTHROPIC_IDENTITY_TOKEN_FILE")
+	unsetEnv(t, "ANTHROPIC_WORKSPACE_ID")
 }
 
 var defaultParams = anthropic.MessageNewParams{
@@ -113,6 +114,9 @@ func TestIntegration_WithFederationTokenProvider(t *testing.T) {
 			if body["assertion"] != "custom-jwt" {
 				t.Errorf("got assertion %v, want %q", body["assertion"], "custom-jwt")
 			}
+			if body["workspace_id"] != "wrkspc_x" {
+				t.Errorf("got workspace_id %v, want %q", body["workspace_id"], "wrkspc_x")
+			}
 			json.NewEncoder(w).Encode(map[string]any{"access_token": "exchanged-tok"})
 			return
 		}
@@ -137,6 +141,7 @@ func TestIntegration_WithFederationTokenProvider(t *testing.T) {
 			option.FederationOptions{
 				FederationRuleID: "rule-1",
 				OrganizationID:   "org-1",
+				WorkspaceID:      "wrkspc_x",
 			},
 		),
 	)
@@ -212,6 +217,161 @@ func TestIntegration_TokenCachedAcrossRequests(t *testing.T) {
 
 	if n := tokenCalls.Load(); n != 1 {
 		t.Fatalf("expected 1 token exchange call, got %d", n)
+	}
+}
+
+// TestIntegration_InMemoryFederationConfigSendsWorkspaceID verifies that an
+// in-memory federation config passed via option.WithConfig forwards the
+// top-level workspace_id into the jwt-bearer exchange body — and ONLY there.
+// The anthropic-workspace-id header must be suppressed on API requests for
+// federation profiles (the minted token is already workspace-scoped, so the
+// header would be ignored). This mirrors the file-loaded path in
+// loadOIDCFederationProfile, which omits WorkspaceID from CredentialsResult.
+func TestIntegration_InMemoryFederationConfigSendsWorkspaceID(t *testing.T) {
+	unsetEnv(t, "ANTHROPIC_API_KEY")
+	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
+	isolateAuthEnv(t)
+
+	var exchangeBody map[string]any
+	var apiWorkspaceHeader string
+	var apiWorkspaceHeaderPresent bool
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/v1/oauth/token" {
+			_ = json.NewDecoder(r.Body).Decode(&exchangeBody)
+			json.NewEncoder(w).Encode(map[string]any{"access_token": "exchanged-tok"})
+			return
+		}
+		apiWorkspaceHeader = r.Header.Get("anthropic-workspace-id")
+		_, apiWorkspaceHeaderPresent = r.Header[http.CanonicalHeaderKey("anthropic-workspace-id")]
+		w.Write([]byte(successResponse))
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	tokenPath := filepath.Join(dir, "token")
+	os.WriteFile(tokenPath, []byte("my-jwt"), 0600)
+
+	client := anthropic.NewClient(
+		option.WithConfig(&config.Config{
+			BaseURL:        server.URL,
+			OrganizationID: "org-1",
+			WorkspaceID:    "wrkspc_x",
+			AuthenticationInfo: &config.AuthenticationInfo{
+				Type:            config.AuthenticationTypeOIDCFederation,
+				CredentialsPath: filepath.Join(dir, "credentials.json"),
+				OIDCFederation: &config.OIDCFederation{
+					FederationRuleID: "rule-1",
+					IdentityToken: &config.IdentityTokenConfig{
+						Source: config.IdentityTokenSourceFile,
+						Path:   tokenPath,
+					},
+				},
+			},
+		}),
+	)
+	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
+		t.Fatal(err)
+	}
+	if exchangeBody["workspace_id"] != "wrkspc_x" {
+		t.Fatalf("got exchange-body workspace_id %v, want %q", exchangeBody["workspace_id"], "wrkspc_x")
+	}
+	if apiWorkspaceHeaderPresent {
+		t.Fatalf("anthropic-workspace-id header should be suppressed for in-memory federation config, got %q", apiWorkspaceHeader)
+	}
+}
+
+// TestIntegration_InMemoryNonFederationConfigSendsWorkspaceIDHeader is the
+// regression counterpart to the federation test above: a non-federation
+// in-memory config (user_oauth) with a top-level workspace_id must still
+// emit the anthropic-workspace-id header on API requests. The federation
+// suppression is gated on AuthenticationInfo.Type, not on whether the
+// config is in-memory.
+func TestIntegration_InMemoryNonFederationConfigSendsWorkspaceIDHeader(t *testing.T) {
+	unsetEnv(t, "ANTHROPIC_API_KEY")
+	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
+	isolateAuthEnv(t)
+
+	var apiWorkspaceHeader string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		apiWorkspaceHeader = r.Header.Get("anthropic-workspace-id")
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(successResponse))
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	credPath := filepath.Join(dir, "credentials.json")
+	os.WriteFile(credPath, []byte(`{"type":"oauth_token","access_token":"my-access-tok"}`), 0600)
+
+	client := anthropic.NewClient(
+		option.WithConfig(&config.Config{
+			BaseURL:     server.URL,
+			WorkspaceID: "wrkspc_y",
+			AuthenticationInfo: &config.AuthenticationInfo{
+				Type:            config.AuthenticationTypeUserOAuth,
+				CredentialsPath: credPath,
+				UserOAuth:       &config.UserOAuth{},
+			},
+		}),
+	)
+	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
+		t.Fatal(err)
+	}
+	if apiWorkspaceHeader != "wrkspc_y" {
+		t.Fatalf("got anthropic-workspace-id header %q, want %q", apiWorkspaceHeader, "wrkspc_y")
+	}
+}
+
+// TestIntegration_EnvWorkspaceIDFillsUserOAuthHeader verifies that
+// ANTHROPIC_WORKSPACE_ID fills workspace_id uniformly across profile types —
+// not just federation. This pins the precedence model: explicit config >
+// env var > profile, regardless of authentication.type. For user_oauth the
+// filled value surfaces as the anthropic-workspace-id request header
+// (federation routes it into the exchange body instead).
+func TestIntegration_EnvWorkspaceIDFillsUserOAuthHeader(t *testing.T) {
+	unsetEnv(t, "ANTHROPIC_API_KEY")
+	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
+	isolateAuthEnv(t)
+
+	var apiWorkspaceHeader string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		apiWorkspaceHeader = r.Header.Get("anthropic-workspace-id")
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(successResponse))
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	configsDir := filepath.Join(dir, "configs")
+	credsDir := filepath.Join(dir, "credentials")
+	os.MkdirAll(configsDir, 0755)
+	os.MkdirAll(credsDir, 0700)
+	// user_oauth profile with NO workspace_id; ANTHROPIC_WORKSPACE_ID
+	// fills the missing top-level config key.
+	os.WriteFile(filepath.Join(configsDir, "default.json"), []byte(`{
+		"base_url": "`+server.URL+`",
+		"authentication": {"type": "user_oauth"}
+	}`), 0644)
+	os.WriteFile(filepath.Join(credsDir, "default.json"),
+		[]byte(`{"type":"oauth_token","access_token":"tok"}`), 0600)
+	t.Setenv("ANTHROPIC_CONFIG_DIR", dir)
+	t.Setenv("ANTHROPIC_WORKSPACE_ID", "wrkspc_env")
+
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.WorkspaceID != "wrkspc_env" {
+		t.Fatalf("got cfg.WorkspaceID %q, want env fill-in", cfg.WorkspaceID)
+	}
+
+	client := anthropic.NewClient(option.WithConfig(cfg))
+	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
+		t.Fatal(err)
+	}
+	if apiWorkspaceHeader != "wrkspc_env" {
+		t.Fatalf("got anthropic-workspace-id header %q, want %q", apiWorkspaceHeader, "wrkspc_env")
 	}
 }
 

@@ -60,7 +60,10 @@ type Config struct {
 	// OrganizationID is the Anthropic organization the profile targets.
 	OrganizationID string `json:"organization_id,omitempty"`
 
-	// WorkspaceID scopes requests to a specific workspace.
+	// WorkspaceID scopes requests to a specific workspace. For non-federation
+	// profiles it is sent as the anthropic-workspace-id request header; for
+	// oidc_federation profiles it is sent as workspace_id in the jwt-bearer
+	// exchange body instead (the minted token is already workspace-scoped).
 	WorkspaceID string `json:"workspace_id,omitempty"`
 }
 
@@ -478,6 +481,7 @@ func loadProfile(configDir, profile string) (*Config, error) {
 const (
 	envBaseURL           = "ANTHROPIC_BASE_URL"
 	envOrganizationID    = "ANTHROPIC_ORGANIZATION_ID"
+	envWorkspaceID       = "ANTHROPIC_WORKSPACE_ID"
 	envFederationRuleID  = "ANTHROPIC_FEDERATION_RULE_ID"
 	envServiceAccountID  = "ANTHROPIC_SERVICE_ACCOUNT_ID"
 	envScope             = "ANTHROPIC_SCOPE"
@@ -504,6 +508,11 @@ func fillMissingFromEnv(cfg *Config) {
 	if cfg.OrganizationID == "" {
 		if v, ok := lookupNonEmpty(envOrganizationID); ok {
 			cfg.OrganizationID = v
+		}
+	}
+	if cfg.WorkspaceID == "" {
+		if v, ok := lookupNonEmpty(envWorkspaceID); ok {
+			cfg.WorkspaceID = v
 		}
 	}
 

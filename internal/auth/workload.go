@@ -25,7 +25,18 @@ type OIDCFederationConfig struct {
 	FederationRuleID string
 	OrganizationID   string
 	ServiceAccountID string // optional
-	BaseURL          string // optional override; if empty, uses baseURL from TokenCache
+	// WorkspaceID is an optional `wrkspc_*` tagged ID, or the literal
+	// "default" to scope the token to the organization's default workspace.
+	// When omitted the server picks the rule's sole enabled workspace, else
+	// the org default if the rule covers it. Required when the rule enables
+	// more than one non-default workspace, or to target a specific workspace
+	// other than the one the server would pick. The minted token is
+	// workspace-scoped: per-request workspace selection (the
+	// anthropic-workspace-id header) is not supported for federation
+	// tokens — switching workspaces requires a new token exchange with a
+	// different WorkspaceID.
+	WorkspaceID string
+	BaseURL     string // optional override; if empty, uses baseURL from TokenCache
 }
 
 type tokenExchangeRequest struct {
@@ -34,6 +45,7 @@ type tokenExchangeRequest struct {
 	FederationRuleID string `json:"federation_rule_id"`
 	OrganizationID   string `json:"organization_id"`
 	ServiceAccountID string `json:"service_account_id,omitempty"`
+	WorkspaceID      string `json:"workspace_id,omitempty"`
 }
 
 type tokenExchangeResponse struct {
@@ -69,6 +81,7 @@ func NewOIDCFederationCredentials(cfg OIDCFederationConfig) TokenProvider {
 			FederationRuleID: cfg.FederationRuleID,
 			OrganizationID:   cfg.OrganizationID,
 			ServiceAccountID: cfg.ServiceAccountID,
+			WorkspaceID:      cfg.WorkspaceID,
 		}
 		bodyJSON, err := json.Marshal(body)
 		if err != nil {
@@ -98,10 +111,35 @@ func NewOIDCFederationCredentials(cfg OIDCFederationConfig) TokenProvider {
 		}
 
 		if resp.StatusCode != http.StatusOK {
+			// A 401 is the auth-failure case worth a hint: point the operator
+			// at the federation rule and the authentication-events log in
+			// Claude Console. When no WorkspaceID is configured, also surface
+			// the most common ambiguous-401 cause — a federation rule spanning
+			// multiple workspaces — so the operator doesn't have to dig
+			// through docs. Other statuses (5xx, non-401 4xx) get no hint:
+			// they don't indicate a config problem this guidance would fix.
+			var hint string
+			if resp.StatusCode == http.StatusUnauthorized {
+				hintParts := []string{
+					"Ensure your federation rule matches your identity token",
+				}
+				if cfg.WorkspaceID == "" {
+					hintParts = append(hintParts,
+						"If your federation rule is scoped to multiple workspaces, set the "+
+							"ANTHROPIC_WORKSPACE_ID environment variable, the 'workspace_id' "+
+							"config key, or the WorkspaceID field on option.FederationOptions")
+				}
+				hintParts = append(hintParts,
+					"View your authentication events in the Workload identity page of "+
+						"Claude Console for more details")
+				hint = strings.Join(hintParts, ". ") + "."
+			}
 			return nil, &OAuthTokenError{
-				StatusCode: resp.StatusCode,
-				Body:       string(respBody),
-				RequestID:  resp.Header.Get("Request-Id"),
+				StatusCode:       resp.StatusCode,
+				Body:             string(respBody),
+				RequestID:        resp.Header.Get("Request-Id"),
+				Hint:             hint,
+				WorkloadIdentity: true,
 			}
 		}
 

@@ -57,6 +57,13 @@ func EnvCredentials() (*CredentialsResult, string, CredentialSourceState) {
 	if sa, ok := os.LookupEnv(EnvServiceAccountID); ok {
 		cfg.ServiceAccountID = sa
 	}
+	if ws, ok := os.LookupEnv(EnvWorkspaceID); ok {
+		// An empty ANTHROPIC_WORKSPACE_ID (a defaulted-but-empty CI variable)
+		// is treated as unset: WorkspaceID stays "" and the wire field has
+		// json:"workspace_id,omitempty", so `"workspace_id": ""` is never
+		// serialized. No coercion needed — Go's Getenv + omitempty handle it.
+		cfg.WorkspaceID = ws
+	}
 
 	return &CredentialsResult{
 		Provider: NewOIDCFederationCredentials(cfg),

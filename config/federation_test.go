@@ -35,6 +35,7 @@ func TestExchangeFederationAssertion_Success(t *testing.T) {
 		FederationRuleID: "fdrl_abc",
 		OrganizationID:   "org_123",
 		ServiceAccountID: "svac_def",
+		WorkspaceID:      "wrkspc_x",
 		BaseURL:          server.URL,
 	})
 	if err != nil {
@@ -63,8 +64,9 @@ func TestExchangeFederationAssertion_Success(t *testing.T) {
 
 	// The JSON body's field names must match the REST gateway's alias
 	// transformation exactly — grant_type, assertion, federation_rule_id,
-	// organization_id, service_account_id. Anything else is silently
-	// dropped by the gateway and produces an empty-field error downstream.
+	// organization_id, service_account_id, workspace_id. Anything else is
+	// silently dropped by the gateway and produces an empty-field error
+	// downstream.
 	var decoded map[string]any
 	if err := json.Unmarshal(gotBody, &decoded); err != nil {
 		t.Fatalf("body must be JSON: %v, got=%q", err, gotBody)
@@ -75,6 +77,7 @@ func TestExchangeFederationAssertion_Success(t *testing.T) {
 		"federation_rule_id": "fdrl_abc",
 		"organization_id":    "org_123",
 		"service_account_id": "svac_def",
+		"workspace_id":       "wrkspc_x",
 	}
 	for k, v := range want {
 		if decoded[k] != v {
@@ -156,6 +159,9 @@ func TestExchangeFederationAssertion_OmitsServiceAccountWhenEmpty(t *testing.T) 
 	}
 	if _, present := decoded["service_account_id"]; present {
 		t.Errorf("service_account_id must be omitted when empty, body=%q", gotBody)
+	}
+	if _, present := decoded["workspace_id"]; present {
+		t.Errorf("workspace_id must be omitted when empty, body=%q", gotBody)
 	}
 }
 

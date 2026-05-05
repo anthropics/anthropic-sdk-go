@@ -34,4 +34,5 @@ const (
 	EnvFederationRuleID  = "ANTHROPIC_FEDERATION_RULE_ID"
 	EnvOrganizationID    = "ANTHROPIC_ORGANIZATION_ID"
 	EnvServiceAccountID  = "ANTHROPIC_SERVICE_ACCOUNT_ID"
+	EnvWorkspaceID       = "ANTHROPIC_WORKSPACE_ID"
 )

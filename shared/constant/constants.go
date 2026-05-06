@@ -141,8 +141,8 @@ type SessionPending string                          // Always "session.pending"
 type SessionRequiresAction string                   // Always "session.requires_action"
 type SessionRunning string                          // Always "session.running"
 type SessionStatusIdled string                      // Always "session.status_idled"
+type SessionStatusRescheduled string                // Always "session.status_rescheduled"
 type SessionStatusRunStarted string                 // Always "session.status_run_started"
-type SessionStatusScheduled string                  // Always "session.status_scheduled"
 type SessionStatusTerminated string                 // Always "session.status_terminated"
 type SessionThreadCreated string                    // Always "session.thread_created"
 type SessionThreadIdled string                      // Always "session.thread_idled"
@@ -330,10 +330,12 @@ func (c SessionPending) Default() SessionPending               { return "session
 func (c SessionRequiresAction) Default() SessionRequiresAction { return "session.requires_action" }
 func (c SessionRunning) Default() SessionRunning               { return "session.running" }
 func (c SessionStatusIdled) Default() SessionStatusIdled       { return "session.status_idled" }
+func (c SessionStatusRescheduled) Default() SessionStatusRescheduled {
+	return "session.status_rescheduled"
+}
 func (c SessionStatusRunStarted) Default() SessionStatusRunStarted {
 	return "session.status_run_started"
 }
-func (c SessionStatusScheduled) Default() SessionStatusScheduled { return "session.status_scheduled" }
 func (c SessionStatusTerminated) Default() SessionStatusTerminated {
 	return "session.status_terminated"
 }
@@ -535,8 +537,8 @@ func (c SessionPending) MarshalJSON() ([]byte, error)                      { ret
 func (c SessionRequiresAction) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c SessionRunning) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c SessionStatusIdled) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c SessionStatusRescheduled) MarshalJSON() ([]byte, error)            { return marshalString(c) }
 func (c SessionStatusRunStarted) MarshalJSON() ([]byte, error)             { return marshalString(c) }
-func (c SessionStatusScheduled) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c SessionStatusTerminated) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c SessionThreadCreated) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c SessionThreadIdled) MarshalJSON() ([]byte, error)                  { return marshalString(c) }

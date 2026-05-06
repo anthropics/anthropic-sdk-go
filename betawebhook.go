@@ -67,7 +67,7 @@ func (r *BetaWebhookService) Unwrap(payload []byte, headers http.Header, opts ..
 // [BetaWebhookSessionRunningEventData], [BetaWebhookSessionIdledEventData],
 // [BetaWebhookSessionRequiresActionEventData],
 // [BetaWebhookSessionArchivedEventData], [BetaWebhookSessionDeletedEventData],
-// [BetaWebhookSessionStatusScheduledEventData],
+// [BetaWebhookSessionStatusRescheduledEventData],
 // [BetaWebhookSessionStatusRunStartedEventData],
 // [BetaWebhookSessionStatusIdledEventData],
 // [BetaWebhookSessionStatusTerminatedEventData],
@@ -90,7 +90,7 @@ type BetaWebhookEventDataUnion struct {
 	OrganizationID string `json:"organization_id"`
 	// Any of "session.created", "session.pending", "session.running", "session.idled",
 	// "session.requires_action", "session.archived", "session.deleted",
-	// "session.status_scheduled", "session.status_run_started",
+	// "session.status_rescheduled", "session.status_run_started",
 	// "session.status_idled", "session.status_terminated", "session.thread_created",
 	// "session.thread_idled", "session.thread_terminated",
 	// "session.outcome_evaluation_ended", "vault.created", "vault.archived",
@@ -123,7 +123,7 @@ func (BetaWebhookSessionIdledEventData) implBetaWebhookEventDataUnion()         
 func (BetaWebhookSessionRequiresActionEventData) implBetaWebhookEventDataUnion()         {}
 func (BetaWebhookSessionArchivedEventData) implBetaWebhookEventDataUnion()               {}
 func (BetaWebhookSessionDeletedEventData) implBetaWebhookEventDataUnion()                {}
-func (BetaWebhookSessionStatusScheduledEventData) implBetaWebhookEventDataUnion()        {}
+func (BetaWebhookSessionStatusRescheduledEventData) implBetaWebhookEventDataUnion()      {}
 func (BetaWebhookSessionStatusRunStartedEventData) implBetaWebhookEventDataUnion()       {}
 func (BetaWebhookSessionStatusIdledEventData) implBetaWebhookEventDataUnion()            {}
 func (BetaWebhookSessionStatusTerminatedEventData) implBetaWebhookEventDataUnion()       {}
@@ -149,7 +149,7 @@ func (BetaWebhookVaultCredentialRefreshFailedEventData) implBetaWebhookEventData
 //	case anthropic.BetaWebhookSessionRequiresActionEventData:
 //	case anthropic.BetaWebhookSessionArchivedEventData:
 //	case anthropic.BetaWebhookSessionDeletedEventData:
-//	case anthropic.BetaWebhookSessionStatusScheduledEventData:
+//	case anthropic.BetaWebhookSessionStatusRescheduledEventData:
 //	case anthropic.BetaWebhookSessionStatusRunStartedEventData:
 //	case anthropic.BetaWebhookSessionStatusIdledEventData:
 //	case anthropic.BetaWebhookSessionStatusTerminatedEventData:
@@ -183,8 +183,8 @@ func (u BetaWebhookEventDataUnion) AsAny() anyBetaWebhookEventData {
 		return u.AsSessionArchived()
 	case "session.deleted":
 		return u.AsSessionDeleted()
-	case "session.status_scheduled":
-		return u.AsSessionStatusScheduled()
+	case "session.status_rescheduled":
+		return u.AsSessionStatusRescheduled()
 	case "session.status_run_started":
 		return u.AsSessionStatusRunStarted()
 	case "session.status_idled":
@@ -252,7 +252,7 @@ func (u BetaWebhookEventDataUnion) AsSessionDeleted() (v BetaWebhookSessionDelet
 	return
 }
 
-func (u BetaWebhookEventDataUnion) AsSessionStatusScheduled() (v BetaWebhookSessionStatusScheduledEventData) {
+func (u BetaWebhookEventDataUnion) AsSessionStatusRescheduled() (v BetaWebhookSessionStatusRescheduledEventData) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -541,6 +541,29 @@ func (r *BetaWebhookSessionStatusIdledEventData) UnmarshalJSON(data []byte) erro
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type BetaWebhookSessionStatusRescheduledEventData struct {
+	// ID of the resource that triggered the event.
+	ID             string                            `json:"id" api:"required"`
+	OrganizationID string                            `json:"organization_id" api:"required"`
+	Type           constant.SessionStatusRescheduled `json:"type" default:"session.status_rescheduled"`
+	WorkspaceID    string                            `json:"workspace_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID             respjson.Field
+		OrganizationID respjson.Field
+		Type           respjson.Field
+		WorkspaceID    respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWebhookSessionStatusRescheduledEventData) RawJSON() string { return r.JSON.raw }
+func (r *BetaWebhookSessionStatusRescheduledEventData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaWebhookSessionStatusRunStartedEventData struct {
 	// ID of the resource that triggered the event.
 	ID             string                           `json:"id" api:"required"`
@@ -561,29 +584,6 @@ type BetaWebhookSessionStatusRunStartedEventData struct {
 // Returns the unmodified JSON received from the API
 func (r BetaWebhookSessionStatusRunStartedEventData) RawJSON() string { return r.JSON.raw }
 func (r *BetaWebhookSessionStatusRunStartedEventData) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type BetaWebhookSessionStatusScheduledEventData struct {
-	// ID of the resource that triggered the event.
-	ID             string                          `json:"id" api:"required"`
-	OrganizationID string                          `json:"organization_id" api:"required"`
-	Type           constant.SessionStatusScheduled `json:"type" default:"session.status_scheduled"`
-	WorkspaceID    string                          `json:"workspace_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaWebhookSessionStatusScheduledEventData) RawJSON() string { return r.JSON.raw }
-func (r *BetaWebhookSessionStatusScheduledEventData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

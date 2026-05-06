@@ -13,7 +13,7 @@ require (
 	github.com/dnaeon/go-vcr v1.2.0
 	github.com/invopop/jsonschema v0.13.0
 	github.com/modelcontextprotocol/go-sdk v1.3.1
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20260427160145-3afa6683f8b2
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20260506201837-c65c3eb7723a
 	github.com/stretchr/testify v1.8.4
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5

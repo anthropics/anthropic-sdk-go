@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apiform"
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -46,8 +47,12 @@ func NewBetaSkillService(opts ...option.RequestOption) (r BetaSkillService) {
 
 // Create Skill
 func (r *BetaSkillService) New(ctx context.Context, params BetaSkillNewParams, opts ...option.RequestOption) (res *BetaSkillNewResponse, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		betaStrs := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			betaStrs[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(betaStrs, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)
@@ -58,8 +63,12 @@ func (r *BetaSkillService) New(ctx context.Context, params BetaSkillNewParams, o
 
 // Get Skill
 func (r *BetaSkillService) Get(ctx context.Context, skillID string, query BetaSkillGetParams, opts ...option.RequestOption) (res *BetaSkillGetResponse, err error) {
-	for _, v := range query.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(query.Betas) > 0 {
+		betaStrs := make([]string, len(query.Betas))
+		for i, v := range query.Betas {
+			betaStrs[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(betaStrs, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)
@@ -75,8 +84,12 @@ func (r *BetaSkillService) Get(ctx context.Context, skillID string, query BetaSk
 // List Skills
 func (r *BetaSkillService) List(ctx context.Context, params BetaSkillListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSkillListResponse], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		betaStrs := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			betaStrs[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(betaStrs, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02"), option.WithResponseInto(&raw)}, opts...)
@@ -100,8 +113,12 @@ func (r *BetaSkillService) ListAutoPaging(ctx context.Context, params BetaSkillL
 
 // Delete Skill
 func (r *BetaSkillService) Delete(ctx context.Context, skillID string, body BetaSkillDeleteParams, opts ...option.RequestOption) (res *BetaSkillDeleteResponse, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		betaStrs := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			betaStrs[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(betaStrs, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02")}, opts...)

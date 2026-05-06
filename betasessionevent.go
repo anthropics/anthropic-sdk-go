@@ -1452,6 +1452,7 @@ func init() {
 func BetaManagedAgentsEventParamsOfUserMessage(content []BetaManagedAgentsUserMessageEventParamsContentUnion) BetaManagedAgentsEventParamsUnion {
 	var userMessage BetaManagedAgentsUserMessageEventParams
 	userMessage.Content = content
+	userMessage.Type = BetaManagedAgentsUserMessageEventParamsTypeUserMessage
 	return BetaManagedAgentsEventParamsUnion{OfUserMessage: &userMessage}
 }
 
@@ -1472,6 +1473,7 @@ func BetaManagedAgentsEventParamsOfUserToolConfirmation(result BetaManagedAgents
 func BetaManagedAgentsEventParamsOfUserCustomToolResult(customToolUseID string) BetaManagedAgentsEventParamsUnion {
 	var userCustomToolResult BetaManagedAgentsUserCustomToolResultEventParams
 	userCustomToolResult.CustomToolUseID = customToolUseID
+	userCustomToolResult.Type = BetaManagedAgentsUserCustomToolResultEventParamsTypeUserCustomToolResult
 	return BetaManagedAgentsEventParamsUnion{OfUserCustomToolResult: &userCustomToolResult}
 }
 

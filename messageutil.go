@@ -65,7 +65,13 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 		}
 	case MessageStopEvent:
 		// Re-marshal the accumulated message to update JSON.raw so that AsAny()
-		// returns the accumulated data rather than the original stream data
+		// returns the accumulated data rather than the original stream data.
+		// Sanitize any invalid json.RawMessage fields first — partial JSON
+		// accumulated from InputJSONDelta events would cause json.Marshal to
+		// fail (see https://github.com/anthropics/anthropic-sdk-go/issues/255).
+		for i := range acc.Content {
+			sanitizeInputJSON(&acc.Content[i].Input)
+		}
 		accJSON, err := json.Marshal(acc)
 		if err != nil {
 			return fmt.Errorf("error converting accumulated message to JSON: %w", err)
@@ -78,6 +84,7 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
 		}
 		contentBlock := &acc.Content[len(acc.Content)-1]
+		sanitizeInputJSON(&contentBlock.Input)
 		cbJSON, err := json.Marshal(contentBlock)
 		if err != nil {
 			return fmt.Errorf("error converting content block to JSON: %w", err)
@@ -86,6 +93,21 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 	}
 
 	return nil
+}
+
+// sanitizeInputJSON replaces the contents of input with null if it
+// contains invalid JSON. InputJSONDelta events accumulate partial
+// JSON strings into a json.RawMessage by byte concatenation. If the
+// stream is interrupted or the API sends malformed chunks, the
+// accumulated bytes may not form valid JSON. json.Marshal validates
+// json.RawMessage contents via json.Compact, so marshaling a content
+// block with invalid Input would fail. Replacing with null allows
+// the marshal to succeed — callers can detect the issue by checking
+// for a null Input on tool_use blocks.
+func sanitizeInputJSON(input *json.RawMessage) {
+	if len(*input) > 0 && !json.Valid(*input) {
+		*input = json.RawMessage("null")
+	}
 }
 
 // ToParam converters

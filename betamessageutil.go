@@ -69,7 +69,13 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 		}
 	case BetaRawMessageStopEvent:
 		// Re-marshal the accumulated message to update JSON.raw so that AsAny()
-		// returns the accumulated data rather than the original stream data
+		// returns the accumulated data rather than the original stream data.
+		// Sanitize any invalid json.RawMessage fields first — partial JSON
+		// accumulated from InputJSONDelta events would cause json.Marshal to
+		// fail (see https://github.com/anthropics/anthropic-sdk-go/issues/255).
+		for i := range acc.Content {
+			sanitizeInputJSON(&acc.Content[i].Input)
+		}
 		accJSON, err := json.Marshal(acc)
 		if err != nil {
 			return fmt.Errorf("error converting accumulated message to JSON: %w", err)
@@ -82,6 +88,7 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
 		}
 		contentBlock := &acc.Content[len(acc.Content)-1]
+		sanitizeInputJSON(&contentBlock.Input)
 		cbJSON, err := json.Marshal(contentBlock)
 		if err != nil {
 			return fmt.Errorf("error converting content block to JSON: %w", err)

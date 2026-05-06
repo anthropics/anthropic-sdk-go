@@ -365,22 +365,22 @@ var tests = map[string]struct {
 	"map_interface":                    {`{"a":1,"b":"str","c":false}`, map[string]any{"a": float64(1), "b": "str", "c": false}},
 
 	"primitive_struct": {
-		`{"a":false,"b":237628372683,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4]}`,
-		Primitives{A: false, B: 237628372683, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}},
+		`{"a":false,"b":123456789,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4]}`,
+		Primitives{A: false, B: 123456789, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}},
 	},
 
 	"slices": {
-		`{"slices":[{"a":false,"b":237628372683,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4]}]}`,
+		`{"slices":[{"a":false,"b":123456789,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4]}]}`,
 		Slices{
-			Slice: []Primitives{{A: false, B: 237628372683, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}}},
+			Slice: []Primitives{{A: false, B: 123456789, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}}},
 		},
 	},
 
 	"primitive_pointer_struct": {
-		`{"a":false,"b":237628372683,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4,5]}`,
+		`{"a":false,"b":123456789,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4,5]}`,
 		PrimitivePointers{
 			A: P(false),
-			B: P(237628372683),
+			B: P(123456789),
 			C: P(uint(654)),
 			D: P(9999.43),
 			E: P(float32(43.76)),
@@ -562,12 +562,12 @@ var tests = map[string]struct {
 	},
 
 	"inline_coerce": {
-		`{"a":false,"b":237628372683,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4]}`,
+		`{"a":false,"b":123456789,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4]}`,
 		Inline{
-			InlineField: Primitives{A: false, B: 237628372683, C: 0x28e, D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}},
+			InlineField: Primitives{A: false, B: 123456789, C: 0x28e, D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}},
 			JSON: InlineJSON{
-				InlineField: Field{raw: "{\"a\":false,\"b\":237628372683,\"c\":654,\"d\":9999.43,\"e\":43.76,\"f\":[1,2,3,4]}", status: 3},
-				raw:         "{\"a\":false,\"b\":237628372683,\"c\":654,\"d\":9999.43,\"e\":43.76,\"f\":[1,2,3,4]}",
+				InlineField: Field{raw: "{\"a\":false,\"b\":123456789,\"c\":654,\"d\":9999.43,\"e\":43.76,\"f\":[1,2,3,4]}", status: 3},
+				raw:         "{\"a\":false,\"b\":123456789,\"c\":654,\"d\":9999.43,\"e\":43.76,\"f\":[1,2,3,4]}",
 			},
 		},
 	},

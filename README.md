@@ -12,6 +12,10 @@ The Claude SDK for Go provides access to the [Claude API](https://docs.anthropic
 
 Full documentation is available at **[platform.claude.com/docs/en/api/sdks/go](https://platform.claude.com/docs/en/api/sdks/go)**.
 
+> **Note:** Managed agent outcome events (e.g., `user.define_outcome`) are not yet supported in the Go SDK.
+> The Go example in the managed agents documentation currently references types that do not exist in `anthropic-sdk-go`.
+> Please use the Python or TypeScript SDKs for this feature until Go support is added.
+
 ## Installation
 
 <!-- x-release-please-start-version -->

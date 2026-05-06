@@ -196,8 +196,8 @@ func noCredentialsSentinel(statuses []auth.CredentialSourceStatus) option.Reques
 
 // NewClient generates a new client with the default option read from the
 // environment (ANTHROPIC_API_KEY, ANTHROPIC_WEBHOOK_SIGNING_KEY, ANTHROPIC_AUTH_TOKEN,
-// ANTHROPIC_BASE_URL). The option passed in as arguments are applied after these 
-// default arguments, and all option will be passed down to the services and requests 
+// ANTHROPIC_BASE_URL). The option passed in as arguments are applied after these
+// default arguments, and all option will be passed down to the services and requests
 // that this client makes.
 //
 // Pass [option.WithoutEnvironmentDefaults] to skip the environment-based

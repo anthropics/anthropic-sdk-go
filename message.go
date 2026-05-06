@@ -3516,7 +3516,6 @@ func (r *Message) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-
 func MessageCountTokensToolParamOfTool(inputSchema ToolInputSchemaParam, name string) MessageCountTokensToolUnionParam {
 	var variant ToolParam
 	variant.InputSchema = inputSchema
@@ -5285,8 +5284,8 @@ const (
 
 // The properties ID, Input, Name, Type are required.
 type ServerToolUseBlockParam struct {
-	ID    string         `json:"id" api:"required"`
-	Input any            `json:"input,omitzero" api:"required"`
+	ID    string `json:"id" api:"required"`
+	Input any    `json:"input,omitzero" api:"required"`
 	// Any of "web_search", "web_fetch", "code_execution", "bash_code_execution",
 	// "text_editor_code_execution", "tool_search_tool_regex", "tool_search_tool_bm25".
 	Name ServerToolUseBlockParamName `json:"name,omitzero" api:"required"`
@@ -7941,9 +7940,9 @@ type ToolUseBlock struct {
 	// Tool invocation directly from the model.
 	Caller ToolUseBlockCallerUnion `json:"caller" api:"required"`
 	// necessary custom code modification
-	Input json.RawMessage          `json:"input,required"`
-	Name   string                  `json:"name" api:"required"`
-	Type   constant.ToolUse        `json:"type" default:"tool_use"`
+	Input json.RawMessage  `json:"input,required"`
+	Name  string           `json:"name" api:"required"`
+	Type  constant.ToolUse `json:"type" default:"tool_use"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field

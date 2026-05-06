@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.41.0 (2026-05-06)
+
+Full Changelog: [v1.40.0...v1.41.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.40.0...v1.41.0)
+
+### Features
+
+* **api:** add support for Managed Agents multiagents and outcomes, webhooks, vault validation ([33762b0](https://github.com/anthropics/anthropic-sdk-go/commit/33762b055b2ef20d09a3764bb69d183fcf283b18))
+* **mcp:** add mcp tool helpers ([#752](https://github.com/anthropics/anthropic-sdk-go/issues/752)) ([4edf9f5](https://github.com/anthropics/anthropic-sdk-go/commit/4edf9f5cbc10f0acc7e11ae6b248c20be606ac63))
+
+
+### Bug Fixes
+
+* **api:** Adjust webhook configuration ([8b2f194](https://github.com/anthropics/anthropic-sdk-go/commit/8b2f194315cc5bc9d723ea682e94a2a216ed57cd))
+
 ## 1.40.0 (2026-05-05)
 
 Full Changelog: [v1.39.0...v1.40.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.39.0...v1.40.0)

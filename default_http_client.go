@@ -14,11 +14,21 @@ import (
 const defaultResponseHeaderTimeout = 10 * time.Minute
 
 // defaultHTTPClient returns an [*http.Client] used when the caller does not
-// supply one via [option.WithHTTPClient]. It clones [http.DefaultTransport]
-// and adds a [http.Transport.ResponseHeaderTimeout] so stuck connections
-// fail fast instead of compounding across retries.
+// supply one via [option.WithHTTPClient]. When [http.DefaultTransport] is the
+// stdlib [*http.Transport], it clones it and adds a
+// [http.Transport.ResponseHeaderTimeout] so stuck connections fail fast
+// instead of compounding across retries. When [http.DefaultTransport] has
+// been replaced (for example, wrapped by otelhttp.NewTransport for
+// distributed tracing), the wrapped transport is used as-is — preserving the
+// caller's instrumentation, with the tradeoff that the default
+// ResponseHeaderTimeout does not apply.
 func defaultHTTPClient() *http.Client {
-	transport := http.DefaultTransport.(*http.Transport).Clone()
-	transport.ResponseHeaderTimeout = defaultResponseHeaderTimeout
-	return &http.Client{Transport: transport}
+	if t, ok := http.DefaultTransport.(*http.Transport); ok {
+		cloned := t.Clone()
+		cloned.ResponseHeaderTimeout = defaultResponseHeaderTimeout
+		return &http.Client{Transport: cloned}
+	}
+	// http.DefaultTransport has been replaced with a wrapped/custom
+	// RoundTripper. Preserve the caller's transport rather than panicking.
+	return &http.Client{Transport: http.DefaultTransport}
 }

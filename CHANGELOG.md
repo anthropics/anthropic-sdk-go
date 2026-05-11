@@ -1,5 +1,30 @@
 # Changelog
 
+## 1.42.0 (2026-05-11)
+
+Full Changelog: [v1.41.0...v1.42.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.41.0...v1.42.0)
+
+### Features
+
+* **aws:** Add AWS client for Claude Platform on AWS ([596baf4](https://github.com/anthropics/anthropic-sdk-go/commit/596baf4d3811bc48d24f3e298573581c861384b1))
+
+
+### Bug Fixes
+
+* **examples:** update examples dependencies ([e832b79](https://github.com/anthropics/anthropic-sdk-go/commit/e832b79299ddee8c48cc8f77c83203f58e17b9ec))
+* **go:** avoid panic when http.DefaultTransport is wrapped ([6b75bef](https://github.com/anthropics/anthropic-sdk-go/commit/6b75bef5a2cd15a969b5d787498e550f6f039719))
+
+
+### Chores
+
+* **client:** update dependency checksums ([64c1d95](https://github.com/anthropics/anthropic-sdk-go/commit/64c1d9502775801539ea492f29784a89535226bd))
+* go mod tidy ([#816](https://github.com/anthropics/anthropic-sdk-go/issues/816)) ([09b5f9c](https://github.com/anthropics/anthropic-sdk-go/commit/09b5f9cc4965ed3ca5b458996db3c030d66482c4))
+* **internal:** codegen related update ([6e83495](https://github.com/anthropics/anthropic-sdk-go/commit/6e83495da8dfb2efb905213204627483b4afc3e2))
+* **internal:** codegen related update ([34d1379](https://github.com/anthropics/anthropic-sdk-go/commit/34d1379207570fd26f7a262a960c424adf8d265d))
+* **internal:** codegen related update ([c068475](https://github.com/anthropics/anthropic-sdk-go/commit/c068475a5c67c7b0d544195b4a62187c4e35c578))
+* redact api-key headers in debug logs ([46a074f](https://github.com/anthropics/anthropic-sdk-go/commit/46a074f588c30c2a88e6f46093be606b37dd3fef))
+* redact api-key headers in debug logs ([1fe2ebb](https://github.com/anthropics/anthropic-sdk-go/commit/1fe2ebbb5d1f458f7013aec5c61e31ae2b52e619))
+
 ## 1.41.0 (2026-05-06)
 
 Full Changelog: [v1.40.0...v1.41.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.40.0...v1.41.0)
@@ -879,4 +904,3 @@ Full Changelog: [v0.2.0-alpha.13...v0.2.0-beta.1](https://github.com/anthropics/
 ### Refactors
 
 * tidy up dependencies ([#140](https://github.com/anthropics/anthropic-sdk-go/issues/140)) ([289cc1b](https://github.com/anthropics/anthropic-sdk-go/commit/289cc1b007094421305dfc4ef01ae68bb2d50ee5))
-

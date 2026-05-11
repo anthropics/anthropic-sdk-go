@@ -1893,11 +1893,20 @@ func NewToolUseBlock(id string, input any, name string) ContentBlockParamUnion {
 
 func NewToolResultBlock(toolUseID string, content string, isError bool) ContentBlockParamUnion {
 	toolBlock := ToolResultBlockParam{
+		ToolUseID:     toolUseID,
+		ContentString: content,
+		IsError:       Bool(isError),
+	}
+	return ContentBlockParamUnion{OfToolResult: &toolBlock}
+}
+
+// NewToolResultBlockFromArray creates a tool result block with content as an array of content
+// blocks. Use this when you need to pass structured content (e.g., text + images).
+func NewToolResultBlockFromArray(toolUseID string, content []ToolResultBlockParamContentUnion, isError bool) ContentBlockParamUnion {
+	toolBlock := ToolResultBlockParam{
 		ToolUseID: toolUseID,
-		Content: []ToolResultBlockParamContentUnion{
-			{OfText: &TextBlockParam{Text: content}},
-		},
-		IsError: Bool(isError),
+		Content:   content,
+		IsError:   Bool(isError),
 	}
 	return ContentBlockParamUnion{OfToolResult: &toolBlock}
 }
@@ -6811,16 +6820,65 @@ type ToolResultBlockParam struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam         `json:"cache_control,omitzero"`
 	Content      []ToolResultBlockParamContentUnion `json:"content,omitzero"`
+	// ContentString is an alternative to Content that allows setting a plain string
+	// value for the content field. Per the API docs, tool_result content can be
+	// either a string (e.g. "content": "15 degrees") or an array of content blocks.
+	// When ContentString is non-empty and Content is empty, it will be serialized as
+	// a plain string. This field is not serialized directly via struct tags.
+	ContentString string `json:"-"`
 	// This field can be elided, and will marshal its zero value as "tool_result".
 	Type constant.ToolResult `json:"type" default:"tool_result"`
 	paramObj
 }
 
 func (r ToolResultBlockParam) MarshalJSON() (data []byte, err error) {
+	// If ContentString is set and Content array is empty, serialize content as a
+	// plain string instead of an array, matching the API's support for both formats.
+	if r.ContentString != "" && len(r.Content) == 0 {
+		type shadow struct {
+			ToolUseID    string                        `json:"tool_use_id"`
+			IsError      param.Opt[bool]               `json:"is_error,omitzero"`
+			CacheControl CacheControlEphemeralParam    `json:"cache_control,omitzero"`
+			Content      string                        `json:"content"`
+			Type         constant.ToolResult           `json:"type"`
+		}
+		return json.Marshal(shadow{
+			ToolUseID:    r.ToolUseID,
+			IsError:      r.IsError,
+			CacheControl: r.CacheControl,
+			Content:      r.ContentString,
+			Type:         r.Type,
+		})
+	}
 	type shadow ToolResultBlockParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ToolResultBlockParam) UnmarshalJSON(data []byte) error {
+	// Check if the content field is a string (the API supports both string and array).
+	contentField := gjson.GetBytes(data, "content")
+	if contentField.Exists() && contentField.Type == gjson.String {
+		// Content is a plain string — deserialize other fields normally, then
+		// normalize the string into a Content array with a single TextBlock.
+		type stringContent struct {
+			ToolUseID    string                     `json:"tool_use_id"`
+			IsError      param.Opt[bool]            `json:"is_error,omitzero"`
+			CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+			Content      string                     `json:"content"`
+			Type         constant.ToolResult        `json:"type"`
+		}
+		var sc stringContent
+		if err := json.Unmarshal(data, &sc); err != nil {
+			return err
+		}
+		r.ToolUseID = sc.ToolUseID
+		r.IsError = sc.IsError
+		r.CacheControl = sc.CacheControl
+		r.Content = []ToolResultBlockParamContentUnion{
+			{OfText: &TextBlockParam{Text: sc.Content}},
+		}
+		r.Type = sc.Type
+		return nil
+	}
 	return apijson.UnmarshalRoot(data, r)
 }
 

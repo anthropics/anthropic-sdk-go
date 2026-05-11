@@ -879,3 +879,4 @@ Full Changelog: [v0.2.0-alpha.13...v0.2.0-beta.1](https://github.com/anthropics/
 ### Refactors
 
 * tidy up dependencies ([#140](https://github.com/anthropics/anthropic-sdk-go/issues/140)) ([289cc1b](https://github.com/anthropics/anthropic-sdk-go/commit/289cc1b007094421305dfc4ef01ae68bb2d50ee5))
+

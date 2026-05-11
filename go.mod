@@ -3,7 +3,7 @@ module github.com/anthropics/anthropic-sdk-go
 go 1.22
 
 require (
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20260508151727-1282bb917829
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20260511213917-61f39ec18da9
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 )

@@ -26,9 +26,15 @@ func NewStream[T any](res *http.Response, err error) *Stream[T] {
 		return &Stream[T]{err: fmt.Errorf("No streaming response body")}
 	}
 
+	scn := bufio.NewScanner(res.Body)
+	// Increase the scanner buffer to match the SSE stream decoder (32 MiB).
+	// The default 64 KB limit silently truncates MessageBatch result lines
+	// that exceed it — scn.Scan() returns false and scn.Err() returns
+	// "bufio.Scanner: token too long", causing the stream to appear empty.
+	scn.Buffer(nil, bufio.MaxScanTokenSize<<9)
 	return &Stream[T]{
 		rc:  res.Body,
-		scn: bufio.NewScanner(res.Body),
+		scn: scn,
 		err: err,
 	}
 }
@@ -39,6 +45,9 @@ func (s *Stream[T]) Next() bool {
 	}
 
 	if !s.scn.Scan() {
+		if s.scn.Err() != nil {
+			s.err = s.scn.Err()
+		}
 		return false
 	}
 
@@ -58,5 +67,8 @@ func (s *Stream[T]) Err() error {
 }
 
 func (s *Stream[T]) Close() error {
+	if s.rc == nil {
+		return nil
+	}
 	return s.rc.Close()
 }

@@ -6,7 +6,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -501,5 +503,53 @@ Therefore, the answer is..."}}`,
 				t.Fatalf("Mismatched message: expected %s but got %s", marshaledExpectedMessage, marshaledMessage)
 			}
 		})
+	}
+}
+
+func TestMultipleBetaHeadersJoinedWithCommas(t *testing.T) {
+	var capturedHeaders http.Header
+	middleware := option.WithMiddleware(func(req *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+		capturedHeaders = req.Header.Clone()
+		return &http.Response{StatusCode: 200, Body: http.NoBody}, nil
+	})
+	client := anthropic.NewClient(
+		option.WithAPIKey("test-key"),
+		middleware,
+	)
+
+	_, _ = client.Beta.Messages.New(context.TODO(), anthropic.BetaMessageNewParams{
+		MaxTokens: 1024,
+		Messages: []anthropic.BetaMessageParam{{
+			Content: []anthropic.BetaContentBlockParamUnion{{
+				OfText: &anthropic.BetaTextBlockParam{Text: "hello"},
+			}},
+			Role: anthropic.BetaMessageParamRoleUser,
+		}},
+		Model: anthropic.ModelClaudeOpus4_6,
+		Betas: []anthropic.AnthropicBeta{
+			anthropic.AnthropicBetaMessageBatches2024_09_24,
+			anthropic.AnthropicBetaPromptCaching2024_07_31,
+		},
+	})
+
+	if capturedHeaders == nil {
+		t.Fatal("Expected middleware to capture headers")
+	}
+
+	betaValues := capturedHeaders.Values("Anthropic-Beta")
+	// The user-specified betas should be joined with commas in a single header entry
+	// (not sent as multiple separate header entries)
+	joined := false
+	for _, v := range betaValues {
+		if strings.Contains(v, ",") {
+			joined = true
+			parts := strings.Split(v, ",")
+			if len(parts) < 2 {
+				t.Fatalf("Expected at least 2 comma-separated values, got: %s", v)
+			}
+		}
+	}
+	if !joined {
+		t.Fatalf("Expected beta headers to be comma-separated, but got separate entries: %v", betaValues)
 	}
 }

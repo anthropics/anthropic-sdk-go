@@ -26,8 +26,8 @@ var supportedSchemaKeySet = func() map[string]bool {
 //
 // The transformation process:
 //   - Preserves $ref references
-//   - Transforms $defs recursively
-//   - Handles anyOf/oneOf by converting oneOf to anyOf
+//   - Transforms $defs, anyOf, and allOf recursively
+//   - Handles oneOf by converting it to anyOf
 //   - Ensures objects have additionalProperties: false
 //   - Filters string formats to only supported ones
 //   - Limits array minItems to 0 or 1
@@ -71,12 +71,19 @@ func transformSchema(s *jsonschema.Schema) {
 		s.AnyOf = kept
 	}
 
-	// Bail if no type and no anyOf — schema is invalid or a boolean schema.
+	// Recurse into allOf variants. Unlike anyOf, a zeroed-out (`true`) variant
+	// adds no constraint to a conjunction, so there's no need to prune.
+	for _, variant := range s.AllOf {
+		transformSchema(variant)
+	}
+
+	// Bail if the schema carries no shape information — schema is invalid or a
+	// boolean schema. enum/const/allOf can all stand in for an explicit type.
 	// Boolean schemas (JSON true/false) carry meaning in an unexported field
 	// that zeroing would clear, flipping false→true. Detect them by checking
 	// whether any exported field is non-zero: if not, the schema is either
 	// boolean (preserve) or truly empty (zeroing is a no-op anyway).
-	if s.Type == "" && len(s.AnyOf) == 0 {
+	if s.Type == "" && len(s.AnyOf) == 0 && len(s.AllOf) == 0 && len(s.Enum) == 0 && s.Const == nil {
 		if !hasExportedContent(s) {
 			return
 		}
@@ -300,8 +307,13 @@ var supportedSchemaKeys = []string{
 	"type",
 	"anyOf",
 	"oneOf",
+	"allOf",
 	"description",
 	"title",
+
+	// Value constraints
+	"enum",
+	"const",
 
 	// Object-specific keys
 	"properties",
@@ -314,4 +326,5 @@ var supportedSchemaKeys = []string{
 
 	// String-specific keys
 	"format",
+	"pattern",
 }

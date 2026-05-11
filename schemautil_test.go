@@ -203,23 +203,60 @@ func TestTransformSchema(t *testing.T) {
 			expected: `{"anyOf":[{"type":"number"}]}`,
 		},
 		{
-			name: "unsupported allOf field renders as JSON in description",
-			input: &jsonschema.Schema{
-				Type: "object",
-				AllOf: []*jsonschema.Schema{
-					{Type: "string"},
-				},
-				Properties: props("x", &jsonschema.Schema{Type: "integer"}),
-			},
-			expected: `{"type":"object","properties":{"x":{"type":"integer"}},"additionalProperties":false,"description":"{allOf: [{\"type\":\"string\"}]}"}`,
-		},
-		{
 			name: "unsupported not field renders as JSON in description",
 			input: &jsonschema.Schema{
 				Type: "string",
 				Not:  &jsonschema.Schema{Type: "number"},
 			},
 			expected: `{"type":"string","description":"{not: {\"type\":\"number\"}}"}`,
+		},
+		{
+			name: "enum is preserved",
+			input: &jsonschema.Schema{
+				Type: "string",
+				Enum: []any{"red", "green", "blue"},
+			},
+			expected: `{"type":"string","enum":["red","green","blue"]}`,
+		},
+		{
+			name: "enum without type is preserved",
+			input: &jsonschema.Schema{
+				Enum: []any{"a", "b"},
+			},
+			expected: `{"enum":["a","b"]}`,
+		},
+		{
+			name: "const is preserved",
+			input: &jsonschema.Schema{
+				Type:  "string",
+				Const: "fixed",
+			},
+			expected: `{"type":"string","const":"fixed"}`,
+		},
+		{
+			name: "const without type is preserved",
+			input: &jsonschema.Schema{
+				Const: 42,
+			},
+			expected: `{"const":42}`,
+		},
+		{
+			name: "string pattern is preserved",
+			input: &jsonschema.Schema{
+				Type:    "string",
+				Pattern: "^[a-z]+$",
+			},
+			expected: `{"type":"string","pattern":"^[a-z]+$"}`,
+		},
+		{
+			name: "allOf variants are preserved and recursively transformed",
+			input: &jsonschema.Schema{
+				AllOf: []*jsonschema.Schema{
+					{Type: "object", Properties: props("a", &jsonschema.Schema{Type: "string"})},
+					{Type: "object", Properties: props("b", &jsonschema.Schema{Type: "integer"}), Required: []string{"b"}},
+				},
+			},
+			expected: `{"allOf":[{"type":"object","properties":{"a":{"type":"string"}},"additionalProperties":false},{"type":"object","properties":{"b":{"type":"integer"}},"additionalProperties":false,"required":["b"]}]}`,
 		},
 	}
 

@@ -190,7 +190,8 @@ const (
 
 // BetaManagedAgentsAgentMCPToolResultEventContentUnion contains all possible
 // properties and values from [BetaManagedAgentsTextBlock],
-// [BetaManagedAgentsImageBlock], [BetaManagedAgentsDocumentBlock].
+// [BetaManagedAgentsImageBlock], [BetaManagedAgentsDocumentBlock],
+// [BetaManagedAgentsSearchResultBlock].
 //
 // Use the [BetaManagedAgentsAgentMCPToolResultEventContentUnion.AsAny] method to
 // switch on the variant.
@@ -199,22 +200,30 @@ const (
 type BetaManagedAgentsAgentMCPToolResultEventContentUnion struct {
 	// This field is from variant [BetaManagedAgentsTextBlock].
 	Text string `json:"text"`
-	// Any of "text", "image", "document".
+	// Any of "text", "image", "document", "search_result".
 	Type string `json:"type"`
 	// This field is a union of [BetaManagedAgentsImageBlockSourceUnion],
-	// [BetaManagedAgentsDocumentBlockSourceUnion]
+	// [BetaManagedAgentsDocumentBlockSourceUnion], [string]
 	Source BetaManagedAgentsAgentMCPToolResultEventContentUnionSource `json:"source"`
 	// This field is from variant [BetaManagedAgentsDocumentBlock].
 	Context string `json:"context"`
-	// This field is from variant [BetaManagedAgentsDocumentBlock].
-	Title string `json:"title"`
-	JSON  struct {
-		Text    respjson.Field
-		Type    respjson.Field
-		Source  respjson.Field
-		Context respjson.Field
-		Title   respjson.Field
-		raw     string
+	Title   string `json:"title"`
+	// This field is from variant [BetaManagedAgentsSearchResultBlock].
+	Citations BetaManagedAgentsSearchResultCitations `json:"citations"`
+	// This field is from variant [BetaManagedAgentsSearchResultBlock].
+	Content []BetaManagedAgentsSearchResultContent `json:"content"`
+	// This field is from variant [BetaManagedAgentsSearchResultBlock].
+	ToolUseID string `json:"tool_use_id"`
+	JSON      struct {
+		Text      respjson.Field
+		Type      respjson.Field
+		Source    respjson.Field
+		Context   respjson.Field
+		Title     respjson.Field
+		Citations respjson.Field
+		Content   respjson.Field
+		ToolUseID respjson.Field
+		raw       string
 	} `json:"-"`
 }
 
@@ -229,6 +238,8 @@ type anyBetaManagedAgentsAgentMCPToolResultEventContent interface {
 func (BetaManagedAgentsTextBlock) implBetaManagedAgentsAgentMCPToolResultEventContentUnion()     {}
 func (BetaManagedAgentsImageBlock) implBetaManagedAgentsAgentMCPToolResultEventContentUnion()    {}
 func (BetaManagedAgentsDocumentBlock) implBetaManagedAgentsAgentMCPToolResultEventContentUnion() {}
+func (BetaManagedAgentsSearchResultBlock) implBetaManagedAgentsAgentMCPToolResultEventContentUnion() {
+}
 
 // Use the following switch statement to find the correct variant
 //
@@ -236,6 +247,7 @@ func (BetaManagedAgentsDocumentBlock) implBetaManagedAgentsAgentMCPToolResultEve
 //	case anthropic.BetaManagedAgentsTextBlock:
 //	case anthropic.BetaManagedAgentsImageBlock:
 //	case anthropic.BetaManagedAgentsDocumentBlock:
+//	case anthropic.BetaManagedAgentsSearchResultBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -247,6 +259,8 @@ func (u BetaManagedAgentsAgentMCPToolResultEventContentUnion) AsAny() anyBetaMan
 		return u.AsImage()
 	case "document":
 		return u.AsDocument()
+	case "search_result":
+		return u.AsSearchResult()
 	}
 	return nil
 }
@@ -266,6 +280,11 @@ func (u BetaManagedAgentsAgentMCPToolResultEventContentUnion) AsDocument() (v Be
 	return
 }
 
+func (u BetaManagedAgentsAgentMCPToolResultEventContentUnion) AsSearchResult() (v BetaManagedAgentsSearchResultBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaManagedAgentsAgentMCPToolResultEventContentUnion) RawJSON() string { return u.JSON.raw }
 
@@ -280,13 +299,19 @@ func (r *BetaManagedAgentsAgentMCPToolResultEventContentUnion) UnmarshalJSON(dat
 //
 // For type safety it is recommended to directly use a variant of the
 // [BetaManagedAgentsAgentMCPToolResultEventContentUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString]
 type BetaManagedAgentsAgentMCPToolResultEventContentUnionSource struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString  string `json:",inline"`
 	Data      string `json:"data"`
 	MediaType string `json:"media_type"`
 	Type      string `json:"type"`
 	URL       string `json:"url"`
 	FileID    string `json:"file_id"`
 	JSON      struct {
+		OfString  respjson.Field
 		Data      respjson.Field
 		MediaType respjson.Field
 		Type      respjson.Field
@@ -807,7 +832,8 @@ const (
 
 // BetaManagedAgentsAgentToolResultEventContentUnion contains all possible
 // properties and values from [BetaManagedAgentsTextBlock],
-// [BetaManagedAgentsImageBlock], [BetaManagedAgentsDocumentBlock].
+// [BetaManagedAgentsImageBlock], [BetaManagedAgentsDocumentBlock],
+// [BetaManagedAgentsSearchResultBlock].
 //
 // Use the [BetaManagedAgentsAgentToolResultEventContentUnion.AsAny] method to
 // switch on the variant.
@@ -816,22 +842,30 @@ const (
 type BetaManagedAgentsAgentToolResultEventContentUnion struct {
 	// This field is from variant [BetaManagedAgentsTextBlock].
 	Text string `json:"text"`
-	// Any of "text", "image", "document".
+	// Any of "text", "image", "document", "search_result".
 	Type string `json:"type"`
 	// This field is a union of [BetaManagedAgentsImageBlockSourceUnion],
-	// [BetaManagedAgentsDocumentBlockSourceUnion]
+	// [BetaManagedAgentsDocumentBlockSourceUnion], [string]
 	Source BetaManagedAgentsAgentToolResultEventContentUnionSource `json:"source"`
 	// This field is from variant [BetaManagedAgentsDocumentBlock].
 	Context string `json:"context"`
-	// This field is from variant [BetaManagedAgentsDocumentBlock].
-	Title string `json:"title"`
-	JSON  struct {
-		Text    respjson.Field
-		Type    respjson.Field
-		Source  respjson.Field
-		Context respjson.Field
-		Title   respjson.Field
-		raw     string
+	Title   string `json:"title"`
+	// This field is from variant [BetaManagedAgentsSearchResultBlock].
+	Citations BetaManagedAgentsSearchResultCitations `json:"citations"`
+	// This field is from variant [BetaManagedAgentsSearchResultBlock].
+	Content []BetaManagedAgentsSearchResultContent `json:"content"`
+	// This field is from variant [BetaManagedAgentsSearchResultBlock].
+	ToolUseID string `json:"tool_use_id"`
+	JSON      struct {
+		Text      respjson.Field
+		Type      respjson.Field
+		Source    respjson.Field
+		Context   respjson.Field
+		Title     respjson.Field
+		Citations respjson.Field
+		Content   respjson.Field
+		ToolUseID respjson.Field
+		raw       string
 	} `json:"-"`
 }
 
@@ -842,9 +876,10 @@ type anyBetaManagedAgentsAgentToolResultEventContent interface {
 	implBetaManagedAgentsAgentToolResultEventContentUnion()
 }
 
-func (BetaManagedAgentsTextBlock) implBetaManagedAgentsAgentToolResultEventContentUnion()     {}
-func (BetaManagedAgentsImageBlock) implBetaManagedAgentsAgentToolResultEventContentUnion()    {}
-func (BetaManagedAgentsDocumentBlock) implBetaManagedAgentsAgentToolResultEventContentUnion() {}
+func (BetaManagedAgentsTextBlock) implBetaManagedAgentsAgentToolResultEventContentUnion()         {}
+func (BetaManagedAgentsImageBlock) implBetaManagedAgentsAgentToolResultEventContentUnion()        {}
+func (BetaManagedAgentsDocumentBlock) implBetaManagedAgentsAgentToolResultEventContentUnion()     {}
+func (BetaManagedAgentsSearchResultBlock) implBetaManagedAgentsAgentToolResultEventContentUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -852,6 +887,7 @@ func (BetaManagedAgentsDocumentBlock) implBetaManagedAgentsAgentToolResultEventC
 //	case anthropic.BetaManagedAgentsTextBlock:
 //	case anthropic.BetaManagedAgentsImageBlock:
 //	case anthropic.BetaManagedAgentsDocumentBlock:
+//	case anthropic.BetaManagedAgentsSearchResultBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -863,6 +899,8 @@ func (u BetaManagedAgentsAgentToolResultEventContentUnion) AsAny() anyBetaManage
 		return u.AsImage()
 	case "document":
 		return u.AsDocument()
+	case "search_result":
+		return u.AsSearchResult()
 	}
 	return nil
 }
@@ -882,6 +920,11 @@ func (u BetaManagedAgentsAgentToolResultEventContentUnion) AsDocument() (v BetaM
 	return
 }
 
+func (u BetaManagedAgentsAgentToolResultEventContentUnion) AsSearchResult() (v BetaManagedAgentsSearchResultBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaManagedAgentsAgentToolResultEventContentUnion) RawJSON() string { return u.JSON.raw }
 
@@ -896,13 +939,19 @@ func (r *BetaManagedAgentsAgentToolResultEventContentUnion) UnmarshalJSON(data [
 //
 // For type safety it is recommended to directly use a variant of the
 // [BetaManagedAgentsAgentToolResultEventContentUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString]
 type BetaManagedAgentsAgentToolResultEventContentUnionSource struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString  string `json:",inline"`
 	Data      string `json:"data"`
 	MediaType string `json:"media_type"`
 	Type      string `json:"type"`
 	URL       string `json:"url"`
 	FileID    string `json:"file_id"`
 	JSON      struct {
+		OfString  respjson.Field
 		Data      respjson.Field
 		MediaType respjson.Field
 		Type      respjson.Field
@@ -2721,6 +2770,183 @@ type BetaManagedAgentsRetryStatusTerminalType string
 const (
 	BetaManagedAgentsRetryStatusTerminalTypeTerminal BetaManagedAgentsRetryStatusTerminalType = "terminal"
 )
+
+// A block containing a web search result.
+type BetaManagedAgentsSearchResultBlock struct {
+	// Citation settings for a search result.
+	Citations BetaManagedAgentsSearchResultCitations `json:"citations" api:"required"`
+	// Array of text content blocks from the search result.
+	Content []BetaManagedAgentsSearchResultContent `json:"content" api:"required"`
+	// The URL source of the search result.
+	Source string `json:"source" api:"required"`
+	// The title of the search result.
+	Title string `json:"title" api:"required"`
+	// The ID of the tool use that produced this search result.
+	ToolUseID string `json:"tool_use_id" api:"required"`
+	// Any of "search_result".
+	Type BetaManagedAgentsSearchResultBlockType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Citations   respjson.Field
+		Content     respjson.Field
+		Source      respjson.Field
+		Title       respjson.Field
+		ToolUseID   respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSearchResultBlock) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSearchResultBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsSearchResultBlock to a
+// BetaManagedAgentsSearchResultBlockParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsSearchResultBlockParam.Overrides()
+func (r BetaManagedAgentsSearchResultBlock) ToParam() BetaManagedAgentsSearchResultBlockParam {
+	return param.Override[BetaManagedAgentsSearchResultBlockParam](json.RawMessage(r.RawJSON()))
+}
+
+type BetaManagedAgentsSearchResultBlockType string
+
+const (
+	BetaManagedAgentsSearchResultBlockTypeSearchResult BetaManagedAgentsSearchResultBlockType = "search_result"
+)
+
+// A block containing a web search result.
+//
+// The properties Citations, Content, Source, Title, ToolUseID, Type are required.
+type BetaManagedAgentsSearchResultBlockParam struct {
+	// Citation settings for a search result.
+	Citations BetaManagedAgentsSearchResultCitationsParam `json:"citations,omitzero" api:"required"`
+	// Array of text content blocks from the search result.
+	Content []BetaManagedAgentsSearchResultContentParam `json:"content,omitzero" api:"required"`
+	// The URL source of the search result.
+	Source string `json:"source" api:"required"`
+	// The title of the search result.
+	Title string `json:"title" api:"required"`
+	// The ID of the tool use that produced this search result.
+	ToolUseID string `json:"tool_use_id" api:"required"`
+	// Any of "search_result".
+	Type BetaManagedAgentsSearchResultBlockType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsSearchResultBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsSearchResultBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsSearchResultBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Citation settings for a search result.
+type BetaManagedAgentsSearchResultCitations struct {
+	// Whether citations are enabled for this search result.
+	Enabled bool `json:"enabled" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Enabled     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSearchResultCitations) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSearchResultCitations) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsSearchResultCitations to a
+// BetaManagedAgentsSearchResultCitationsParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsSearchResultCitationsParam.Overrides()
+func (r BetaManagedAgentsSearchResultCitations) ToParam() BetaManagedAgentsSearchResultCitationsParam {
+	return param.Override[BetaManagedAgentsSearchResultCitationsParam](json.RawMessage(r.RawJSON()))
+}
+
+// Citation settings for a search result.
+//
+// The property Enabled is required.
+type BetaManagedAgentsSearchResultCitationsParam struct {
+	// Whether citations are enabled for this search result.
+	Enabled bool `json:"enabled" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsSearchResultCitationsParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsSearchResultCitationsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsSearchResultCitationsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Text content within a search result.
+type BetaManagedAgentsSearchResultContent struct {
+	// The text content.
+	Text string `json:"text" api:"required"`
+	// Any of "text".
+	Type BetaManagedAgentsSearchResultContentType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Text        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSearchResultContent) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSearchResultContent) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsSearchResultContent to a
+// BetaManagedAgentsSearchResultContentParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsSearchResultContentParam.Overrides()
+func (r BetaManagedAgentsSearchResultContent) ToParam() BetaManagedAgentsSearchResultContentParam {
+	return param.Override[BetaManagedAgentsSearchResultContentParam](json.RawMessage(r.RawJSON()))
+}
+
+type BetaManagedAgentsSearchResultContentType string
+
+const (
+	BetaManagedAgentsSearchResultContentTypeText BetaManagedAgentsSearchResultContentType = "text"
+)
+
+// Text content within a search result.
+//
+// The properties Text, Type are required.
+type BetaManagedAgentsSearchResultContentParam struct {
+	// The text content.
+	Text string `json:"text" api:"required"`
+	// Any of "text".
+	Type BetaManagedAgentsSearchResultContentType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsSearchResultContentParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsSearchResultContentParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsSearchResultContentParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Events that were successfully sent to the session.
 type BetaManagedAgentsSendSessionEvents struct {
@@ -5354,7 +5580,8 @@ const (
 
 // BetaManagedAgentsUserCustomToolResultEventContentUnion contains all possible
 // properties and values from [BetaManagedAgentsTextBlock],
-// [BetaManagedAgentsImageBlock], [BetaManagedAgentsDocumentBlock].
+// [BetaManagedAgentsImageBlock], [BetaManagedAgentsDocumentBlock],
+// [BetaManagedAgentsSearchResultBlock].
 //
 // Use the [BetaManagedAgentsUserCustomToolResultEventContentUnion.AsAny] method to
 // switch on the variant.
@@ -5363,22 +5590,30 @@ const (
 type BetaManagedAgentsUserCustomToolResultEventContentUnion struct {
 	// This field is from variant [BetaManagedAgentsTextBlock].
 	Text string `json:"text"`
-	// Any of "text", "image", "document".
+	// Any of "text", "image", "document", "search_result".
 	Type string `json:"type"`
 	// This field is a union of [BetaManagedAgentsImageBlockSourceUnion],
-	// [BetaManagedAgentsDocumentBlockSourceUnion]
+	// [BetaManagedAgentsDocumentBlockSourceUnion], [string]
 	Source BetaManagedAgentsUserCustomToolResultEventContentUnionSource `json:"source"`
 	// This field is from variant [BetaManagedAgentsDocumentBlock].
 	Context string `json:"context"`
-	// This field is from variant [BetaManagedAgentsDocumentBlock].
-	Title string `json:"title"`
-	JSON  struct {
-		Text    respjson.Field
-		Type    respjson.Field
-		Source  respjson.Field
-		Context respjson.Field
-		Title   respjson.Field
-		raw     string
+	Title   string `json:"title"`
+	// This field is from variant [BetaManagedAgentsSearchResultBlock].
+	Citations BetaManagedAgentsSearchResultCitations `json:"citations"`
+	// This field is from variant [BetaManagedAgentsSearchResultBlock].
+	Content []BetaManagedAgentsSearchResultContent `json:"content"`
+	// This field is from variant [BetaManagedAgentsSearchResultBlock].
+	ToolUseID string `json:"tool_use_id"`
+	JSON      struct {
+		Text      respjson.Field
+		Type      respjson.Field
+		Source    respjson.Field
+		Context   respjson.Field
+		Title     respjson.Field
+		Citations respjson.Field
+		Content   respjson.Field
+		ToolUseID respjson.Field
+		raw       string
 	} `json:"-"`
 }
 
@@ -5393,6 +5628,8 @@ type anyBetaManagedAgentsUserCustomToolResultEventContent interface {
 func (BetaManagedAgentsTextBlock) implBetaManagedAgentsUserCustomToolResultEventContentUnion()     {}
 func (BetaManagedAgentsImageBlock) implBetaManagedAgentsUserCustomToolResultEventContentUnion()    {}
 func (BetaManagedAgentsDocumentBlock) implBetaManagedAgentsUserCustomToolResultEventContentUnion() {}
+func (BetaManagedAgentsSearchResultBlock) implBetaManagedAgentsUserCustomToolResultEventContentUnion() {
+}
 
 // Use the following switch statement to find the correct variant
 //
@@ -5400,6 +5637,7 @@ func (BetaManagedAgentsDocumentBlock) implBetaManagedAgentsUserCustomToolResultE
 //	case anthropic.BetaManagedAgentsTextBlock:
 //	case anthropic.BetaManagedAgentsImageBlock:
 //	case anthropic.BetaManagedAgentsDocumentBlock:
+//	case anthropic.BetaManagedAgentsSearchResultBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -5411,6 +5649,8 @@ func (u BetaManagedAgentsUserCustomToolResultEventContentUnion) AsAny() anyBetaM
 		return u.AsImage()
 	case "document":
 		return u.AsDocument()
+	case "search_result":
+		return u.AsSearchResult()
 	}
 	return nil
 }
@@ -5430,6 +5670,11 @@ func (u BetaManagedAgentsUserCustomToolResultEventContentUnion) AsDocument() (v 
 	return
 }
 
+func (u BetaManagedAgentsUserCustomToolResultEventContentUnion) AsSearchResult() (v BetaManagedAgentsSearchResultBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaManagedAgentsUserCustomToolResultEventContentUnion) RawJSON() string { return u.JSON.raw }
 
@@ -5444,13 +5689,19 @@ func (r *BetaManagedAgentsUserCustomToolResultEventContentUnion) UnmarshalJSON(d
 //
 // For type safety it is recommended to directly use a variant of the
 // [BetaManagedAgentsUserCustomToolResultEventContentUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfString]
 type BetaManagedAgentsUserCustomToolResultEventContentUnionSource struct {
+	// This field will be present if the value is a [string] instead of an object.
+	OfString  string `json:",inline"`
 	Data      string `json:"data"`
 	MediaType string `json:"media_type"`
 	Type      string `json:"type"`
 	URL       string `json:"url"`
 	FileID    string `json:"file_id"`
 	JSON      struct {
+		OfString  respjson.Field
 		Data      respjson.Field
 		MediaType respjson.Field
 		Type      respjson.Field
@@ -5500,14 +5751,15 @@ const (
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaManagedAgentsUserCustomToolResultEventParamsContentUnion struct {
-	OfText     *BetaManagedAgentsTextBlockParam     `json:",omitzero,inline"`
-	OfImage    *BetaManagedAgentsImageBlockParam    `json:",omitzero,inline"`
-	OfDocument *BetaManagedAgentsDocumentBlockParam `json:",omitzero,inline"`
+	OfText         *BetaManagedAgentsTextBlockParam         `json:",omitzero,inline"`
+	OfImage        *BetaManagedAgentsImageBlockParam        `json:",omitzero,inline"`
+	OfDocument     *BetaManagedAgentsDocumentBlockParam     `json:",omitzero,inline"`
+	OfSearchResult *BetaManagedAgentsSearchResultBlockParam `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfText, u.OfImage, u.OfDocument)
+	return param.MarshalUnion(u, u.OfText, u.OfImage, u.OfDocument, u.OfSearchResult)
 }
 func (u *BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -5520,6 +5772,8 @@ func (u *BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) asAny() a
 		return u.OfImage
 	} else if !param.IsOmitted(u.OfDocument) {
 		return u.OfDocument
+	} else if !param.IsOmitted(u.OfSearchResult) {
+		return u.OfSearchResult
 	}
 	return nil
 }
@@ -5541,9 +5795,25 @@ func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetContext
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetTitle() *string {
-	if vt := u.OfDocument; vt != nil && vt.Title.Valid() {
-		return &vt.Title.Value
+func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetCitations() *BetaManagedAgentsSearchResultCitationsParam {
+	if vt := u.OfSearchResult; vt != nil {
+		return &vt.Citations
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetContent() []BetaManagedAgentsSearchResultContentParam {
+	if vt := u.OfSearchResult; vt != nil {
+		return vt.Content
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetToolUseID() *string {
+	if vt := u.OfSearchResult; vt != nil {
+		return &vt.ToolUseID
 	}
 	return nil
 }
@@ -5556,6 +5826,18 @@ func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetType() 
 		return (*string)(&vt.Type)
 	} else if vt := u.OfDocument; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfSearchResult; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetTitle() *string {
+	if vt := u.OfDocument; vt != nil && vt.Title.Valid() {
+		return &vt.Title.Value
+	} else if vt := u.OfSearchResult; vt != nil {
+		return (*string)(&vt.Title)
 	}
 	return nil
 }
@@ -5568,6 +5850,8 @@ func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetSource(
 		res.any = vt.Source.asAny()
 	} else if vt := u.OfDocument; vt != nil {
 		res.any = vt.Source.asAny()
+	} else if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Source
 	}
 	return
 }
@@ -5578,7 +5862,7 @@ func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetSource(
 // [*BetaManagedAgentsBase64DocumentSourceParam],
 // [*BetaManagedAgentsPlainTextDocumentSourceParam],
 // [*BetaManagedAgentsURLDocumentSourceParam],
-// [*BetaManagedAgentsFileDocumentSourceParam]
+// [*BetaManagedAgentsFileDocumentSourceParam], [*string]
 type betaManagedAgentsUserCustomToolResultEventParamsContentUnionSource struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -5591,6 +5875,7 @@ type betaManagedAgentsUserCustomToolResultEventParamsContentUnionSource struct{ 
 //	case *anthropic.BetaManagedAgentsPlainTextDocumentSourceParam:
 //	case *anthropic.BetaManagedAgentsURLDocumentSourceParam:
 //	case *anthropic.BetaManagedAgentsFileDocumentSourceParam:
+//	case *string:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -5657,6 +5942,7 @@ func init() {
 		apijson.Discriminator[BetaManagedAgentsTextBlockParam]("text"),
 		apijson.Discriminator[BetaManagedAgentsImageBlockParam]("image"),
 		apijson.Discriminator[BetaManagedAgentsDocumentBlockParam]("document"),
+		apijson.Discriminator[BetaManagedAgentsSearchResultBlockParam]("search_result"),
 	)
 }
 

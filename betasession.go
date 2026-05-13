@@ -628,9 +628,9 @@ type BetaManagedAgentsOutcomeEvaluationResource struct {
 	Iteration int64 `json:"iteration" api:"required"`
 	// Server-generated outc\_ ID for this outcome.
 	OutcomeID string `json:"outcome_id" api:"required"`
-	// Current evaluation state. 'pending' before the agent begins work; 'running'
-	// while producing or revising; 'evaluating' while the grader scores;
-	// 'satisfied'/'max_iterations_reached'/'failed'/'interrupted' are terminal.
+	// Current evaluation state. `pending` before the agent begins work; `running`
+	// while producing or revising; `evaluating` while the grader scores;
+	// `satisfied`/`max_iterations_reached`/`failed`/`interrupted` are terminal.
 	Result string `json:"result" api:"required"`
 	// Any of "outcome_evaluation".
 	Type BetaManagedAgentsOutcomeEvaluationResourceType `json:"type" api:"required"`

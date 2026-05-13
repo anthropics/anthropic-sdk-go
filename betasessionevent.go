@@ -212,9 +212,7 @@ type BetaManagedAgentsAgentMCPToolResultEventContentUnion struct {
 	Citations BetaManagedAgentsSearchResultCitations `json:"citations"`
 	// This field is from variant [BetaManagedAgentsSearchResultBlock].
 	Content []BetaManagedAgentsSearchResultContent `json:"content"`
-	// This field is from variant [BetaManagedAgentsSearchResultBlock].
-	ToolUseID string `json:"tool_use_id"`
-	JSON      struct {
+	JSON    struct {
 		Text      respjson.Field
 		Type      respjson.Field
 		Source    respjson.Field
@@ -222,7 +220,6 @@ type BetaManagedAgentsAgentMCPToolResultEventContentUnion struct {
 		Title     respjson.Field
 		Citations respjson.Field
 		Content   respjson.Field
-		ToolUseID respjson.Field
 		raw       string
 	} `json:"-"`
 }
@@ -854,9 +851,7 @@ type BetaManagedAgentsAgentToolResultEventContentUnion struct {
 	Citations BetaManagedAgentsSearchResultCitations `json:"citations"`
 	// This field is from variant [BetaManagedAgentsSearchResultBlock].
 	Content []BetaManagedAgentsSearchResultContent `json:"content"`
-	// This field is from variant [BetaManagedAgentsSearchResultBlock].
-	ToolUseID string `json:"tool_use_id"`
-	JSON      struct {
+	JSON    struct {
 		Text      respjson.Field
 		Type      respjson.Field
 		Source    respjson.Field
@@ -864,7 +859,6 @@ type BetaManagedAgentsAgentToolResultEventContentUnion struct {
 		Title     respjson.Field
 		Citations respjson.Field
 		Content   respjson.Field
-		ToolUseID respjson.Field
 		raw       string
 	} `json:"-"`
 }
@@ -2781,8 +2775,6 @@ type BetaManagedAgentsSearchResultBlock struct {
 	Source string `json:"source" api:"required"`
 	// The title of the search result.
 	Title string `json:"title" api:"required"`
-	// The ID of the tool use that produced this search result.
-	ToolUseID string `json:"tool_use_id" api:"required"`
 	// Any of "search_result".
 	Type BetaManagedAgentsSearchResultBlockType `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -2791,7 +2783,6 @@ type BetaManagedAgentsSearchResultBlock struct {
 		Content     respjson.Field
 		Source      respjson.Field
 		Title       respjson.Field
-		ToolUseID   respjson.Field
 		Type        respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -2822,7 +2813,7 @@ const (
 
 // A block containing a web search result.
 //
-// The properties Citations, Content, Source, Title, ToolUseID, Type are required.
+// The properties Citations, Content, Source, Title, Type are required.
 type BetaManagedAgentsSearchResultBlockParam struct {
 	// Citation settings for a search result.
 	Citations BetaManagedAgentsSearchResultCitationsParam `json:"citations,omitzero" api:"required"`
@@ -2832,8 +2823,6 @@ type BetaManagedAgentsSearchResultBlockParam struct {
 	Source string `json:"source" api:"required"`
 	// The title of the search result.
 	Title string `json:"title" api:"required"`
-	// The ID of the tool use that produced this search result.
-	ToolUseID string `json:"tool_use_id" api:"required"`
 	// Any of "search_result".
 	Type BetaManagedAgentsSearchResultBlockType `json:"type,omitzero" api:"required"`
 	paramObj
@@ -5602,9 +5591,7 @@ type BetaManagedAgentsUserCustomToolResultEventContentUnion struct {
 	Citations BetaManagedAgentsSearchResultCitations `json:"citations"`
 	// This field is from variant [BetaManagedAgentsSearchResultBlock].
 	Content []BetaManagedAgentsSearchResultContent `json:"content"`
-	// This field is from variant [BetaManagedAgentsSearchResultBlock].
-	ToolUseID string `json:"tool_use_id"`
-	JSON      struct {
+	JSON    struct {
 		Text      respjson.Field
 		Type      respjson.Field
 		Source    respjson.Field
@@ -5612,7 +5599,6 @@ type BetaManagedAgentsUserCustomToolResultEventContentUnion struct {
 		Title     respjson.Field
 		Citations respjson.Field
 		Content   respjson.Field
-		ToolUseID respjson.Field
 		raw       string
 	} `json:"-"`
 }
@@ -5806,14 +5792,6 @@ func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetCitatio
 func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetContent() []BetaManagedAgentsSearchResultContentParam {
 	if vt := u.OfSearchResult; vt != nil {
 		return vt.Content
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetToolUseID() *string {
-	if vt := u.OfSearchResult; vt != nil {
-		return &vt.ToolUseID
 	}
 	return nil
 }

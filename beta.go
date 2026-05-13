@@ -79,6 +79,7 @@ const (
 	AnthropicBetaUserProfiles2026_03_24               AnthropicBeta = "user-profiles-2026-03-24"
 	AnthropicBetaAdvisorTool2026_03_01                AnthropicBeta = "advisor-tool-2026-03-01"
 	AnthropicBetaManagedAgents2026_04_01              AnthropicBeta = "managed-agents-2026-04-01"
+	AnthropicBetaCacheDiagnosis2026_04_07             AnthropicBeta = "cache-diagnosis-2026-04-07"
 )
 
 type BetaAPIError struct {

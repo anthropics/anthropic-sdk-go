@@ -941,6 +941,118 @@ func (r *BetaCacheCreation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type BetaCacheMissMessagesChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                    `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.MessagesChanged `json:"type" default:"messages_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCacheMissMessagesChanged) RawJSON() string { return r.JSON.raw }
+func (r *BetaCacheMissMessagesChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaCacheMissModelChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                 `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.ModelChanged `json:"type" default:"model_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCacheMissModelChanged) RawJSON() string { return r.JSON.raw }
+func (r *BetaCacheMissModelChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaCacheMissPreviousMessageNotFound struct {
+	Type constant.PreviousMessageNotFound `json:"type" default:"previous_message_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCacheMissPreviousMessageNotFound) RawJSON() string { return r.JSON.raw }
+func (r *BetaCacheMissPreviousMessageNotFound) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaCacheMissSystemChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                  `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.SystemChanged `json:"type" default:"system_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCacheMissSystemChanged) RawJSON() string { return r.JSON.raw }
+func (r *BetaCacheMissSystemChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaCacheMissToolsChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                 `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.ToolsChanged `json:"type" default:"tools_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCacheMissToolsChanged) RawJSON() string { return r.JSON.raw }
+func (r *BetaCacheMissToolsChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaCacheMissUnavailable struct {
+	Type constant.Unavailable `json:"type" default:"unavailable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCacheMissUnavailable) RawJSON() string { return r.JSON.raw }
+func (r *BetaCacheMissUnavailable) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaCitationCharLocation struct {
 	CitedText      string                `json:"cited_text" api:"required"`
 	DocumentIndex  int64                 `json:"document_index" api:"required"`
@@ -4080,6 +4192,150 @@ func (r *BetaCountTokensContextManagementResponse) UnmarshalJSON(data []byte) er
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Response envelope for request-level diagnostics. Present (possibly null)
+// whenever the caller supplied `diagnostics` on the request.
+type BetaDiagnostics struct {
+	// Explains why the prompt cache could not fully reuse the prefix from the request
+	// identified by `diagnostics.previous_message_id`. `null` means diagnosis is still
+	// pending — the response was serialized before the background comparison
+	// completed.
+	CacheMissReason BetaDiagnosticsCacheMissReasonUnion `json:"cache_miss_reason" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissReason respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaDiagnostics) RawJSON() string { return r.JSON.raw }
+func (r *BetaDiagnostics) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaDiagnosticsCacheMissReasonUnion contains all possible properties and values
+// from [BetaCacheMissModelChanged], [BetaCacheMissSystemChanged],
+// [BetaCacheMissToolsChanged], [BetaCacheMissMessagesChanged],
+// [BetaCacheMissPreviousMessageNotFound], [BetaCacheMissUnavailable].
+//
+// Use the [BetaDiagnosticsCacheMissReasonUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaDiagnosticsCacheMissReasonUnion struct {
+	CacheMissedInputTokens int64 `json:"cache_missed_input_tokens"`
+	// Any of "model_changed", "system_changed", "tools_changed", "messages_changed",
+	// "previous_message_not_found", "unavailable".
+	Type string `json:"type"`
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// anyBetaDiagnosticsCacheMissReason is implemented by each variant of
+// [BetaDiagnosticsCacheMissReasonUnion] to add type safety for the return type of
+// [BetaDiagnosticsCacheMissReasonUnion.AsAny]
+type anyBetaDiagnosticsCacheMissReason interface {
+	implBetaDiagnosticsCacheMissReasonUnion()
+}
+
+func (BetaCacheMissModelChanged) implBetaDiagnosticsCacheMissReasonUnion()            {}
+func (BetaCacheMissSystemChanged) implBetaDiagnosticsCacheMissReasonUnion()           {}
+func (BetaCacheMissToolsChanged) implBetaDiagnosticsCacheMissReasonUnion()            {}
+func (BetaCacheMissMessagesChanged) implBetaDiagnosticsCacheMissReasonUnion()         {}
+func (BetaCacheMissPreviousMessageNotFound) implBetaDiagnosticsCacheMissReasonUnion() {}
+func (BetaCacheMissUnavailable) implBetaDiagnosticsCacheMissReasonUnion()             {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaDiagnosticsCacheMissReasonUnion.AsAny().(type) {
+//	case anthropic.BetaCacheMissModelChanged:
+//	case anthropic.BetaCacheMissSystemChanged:
+//	case anthropic.BetaCacheMissToolsChanged:
+//	case anthropic.BetaCacheMissMessagesChanged:
+//	case anthropic.BetaCacheMissPreviousMessageNotFound:
+//	case anthropic.BetaCacheMissUnavailable:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaDiagnosticsCacheMissReasonUnion) AsAny() anyBetaDiagnosticsCacheMissReason {
+	switch u.Type {
+	case "model_changed":
+		return u.AsModelChanged()
+	case "system_changed":
+		return u.AsSystemChanged()
+	case "tools_changed":
+		return u.AsToolsChanged()
+	case "messages_changed":
+		return u.AsMessagesChanged()
+	case "previous_message_not_found":
+		return u.AsPreviousMessageNotFound()
+	case "unavailable":
+		return u.AsUnavailable()
+	}
+	return nil
+}
+
+func (u BetaDiagnosticsCacheMissReasonUnion) AsModelChanged() (v BetaCacheMissModelChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaDiagnosticsCacheMissReasonUnion) AsSystemChanged() (v BetaCacheMissSystemChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaDiagnosticsCacheMissReasonUnion) AsToolsChanged() (v BetaCacheMissToolsChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaDiagnosticsCacheMissReasonUnion) AsMessagesChanged() (v BetaCacheMissMessagesChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaDiagnosticsCacheMissReasonUnion) AsPreviousMessageNotFound() (v BetaCacheMissPreviousMessageNotFound) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaDiagnosticsCacheMissReasonUnion) AsUnavailable() (v BetaCacheMissUnavailable) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaDiagnosticsCacheMissReasonUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaDiagnosticsCacheMissReasonUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level diagnostics. Currently carries the previous response id for
+// prompt-cache divergence reporting.
+type BetaDiagnosticsParam struct {
+	// The `id` (`msg_...`) from this client's previous /v1/messages response. The
+	// server compares that request's prompt fingerprint against this one and returns
+	// `diagnostics.cache_miss_reason` when the prompt-cache prefix could not be
+	// reused. Pass `null` on the first turn to opt in without a prior message to
+	// compare.
+	PreviousMessageID param.Opt[string] `json:"previous_message_id,omitzero"`
+	paramObj
+}
+
+func (r BetaDiagnosticsParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaDiagnosticsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaDiagnosticsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Tool invocation directly from the model.
 type BetaDirectCaller struct {
 	Type constant.Direct `json:"type" default:"direct"`
@@ -5095,6 +5351,9 @@ type BetaMessage struct {
 	//
 	// Information about context management strategies applied during the request.
 	ContextManagement BetaContextManagementResponse `json:"context_management" api:"required"`
+	// Response envelope for request-level diagnostics. Present (possibly null)
+	// whenever the caller supplied `diagnostics` on the request.
+	Diagnostics BetaDiagnostics `json:"diagnostics" api:"required"`
 	// The model that will complete your prompt.\n\nSee
 	// [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
@@ -5155,6 +5414,7 @@ type BetaMessage struct {
 		Container         respjson.Field
 		Content           respjson.Field
 		ContextManagement respjson.Field
+		Diagnostics       respjson.Field
 		Model             respjson.Field
 		Role              respjson.Field
 		StopDetails       respjson.Field
@@ -11420,6 +11680,9 @@ type BetaMessageNewParams struct {
 	// This allows you to control how Claude manages context across multiple requests,
 	// such as whether to clear function results or not.
 	ContextManagement BetaContextManagementConfigParam `json:"context_management,omitzero"`
+	// Request-level diagnostics. Currently carries the previous response id for
+	// prompt-cache divergence reporting.
+	Diagnostics BetaDiagnosticsParam `json:"diagnostics,omitzero"`
 	// MCP servers to be utilized in this request
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.

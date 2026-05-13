@@ -701,6 +701,9 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// This allows you to control how Claude manages context across multiple requests,
 	// such as whether to clear function results or not.
 	ContextManagement BetaContextManagementConfigParam `json:"context_management,omitzero"`
+	// Request-level diagnostics. Currently carries the previous response id for
+	// prompt-cache divergence reporting.
+	Diagnostics BetaDiagnosticsParam `json:"diagnostics,omitzero"`
 	// MCP servers to be utilized in this request
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
 	// An object describing metadata about the request.

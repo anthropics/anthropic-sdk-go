@@ -117,13 +117,16 @@ type MessageBatchDeleted string                     // Always "message_batch_del
 type MessageDelta string                            // Always "message_delta"
 type MessageStart string                            // Always "message_start"
 type MessageStop string                             // Always "message_stop"
+type MessagesChanged string                         // Always "messages_changed"
 type Model string                                   // Always "model"
+type ModelChanged string                            // Always "model_changed"
 type None string                                    // Always "none"
 type NotFoundError string                           // Always "not_found_error"
 type Object string                                  // Always "object"
 type OverloadedError string                         // Always "overloaded_error"
 type PageLocation string                            // Always "page_location"
 type PermissionError string                         // Always "permission_error"
+type PreviousMessageNotFound string                 // Always "previous_message_not_found"
 type RateLimitError string                          // Always "rate_limit_error"
 type RedactedThinking string                        // Always "redacted_thinking"
 type Refusal string                                 // Always "refusal"
@@ -152,6 +155,7 @@ type StrReplace string                              // Always "str_replace"
 type StrReplaceBasedEditTool string                 // Always "str_replace_based_edit_tool"
 type StrReplaceEditor string                        // Always "str_replace_editor"
 type Succeeded string                               // Always "succeeded"
+type SystemChanged string                           // Always "system_changed"
 type Text string                                    // Always "text"
 type TextDelta string                               // Always "text_delta"
 type TextEditor20241022 string                      // Always "text_editor_20241022"
@@ -179,6 +183,8 @@ type ToolSearchToolResultError string               // Always "tool_search_tool_
 type ToolSearchToolSearchResult string              // Always "tool_search_tool_search_result"
 type ToolUse string                                 // Always "tool_use"
 type ToolUses string                                // Always "tool_uses"
+type ToolsChanged string                            // Always "tools_changed"
+type Unavailable string                             // Always "unavailable"
 type Unrestricted string                            // Always "unrestricted"
 type URL string                                     // Always "url"
 type VaultCredentialArchived string                 // Always "vault_credential.archived"
@@ -278,39 +284,44 @@ func (c Enabled) Default() Enabled                           { return "enabled" 
 func (c EncryptedCodeExecutionResult) Default() EncryptedCodeExecutionResult {
 	return "encrypted_code_execution_result"
 }
-func (c Environment) Default() Environment                   { return "environment" }
-func (c EnvironmentDeleted) Default() EnvironmentDeleted     { return "environment_deleted" }
-func (c Ephemeral) Default() Ephemeral                       { return "ephemeral" }
-func (c Error) Default() Error                               { return "error" }
-func (c Errored) Default() Errored                           { return "errored" }
-func (c Event) Default() Event                               { return "event" }
-func (c Expired) Default() Expired                           { return "expired" }
-func (c File) Default() File                                 { return "file" }
-func (c Image) Default() Image                               { return "image" }
-func (c InputJSONDelta) Default() InputJSONDelta             { return "input_json_delta" }
-func (c InputTokens) Default() InputTokens                   { return "input_tokens" }
-func (c Insert) Default() Insert                             { return "insert" }
-func (c InvalidRequestError) Default() InvalidRequestError   { return "invalid_request_error" }
-func (c JSONSchema) Default() JSONSchema                     { return "json_schema" }
-func (c Limited) Default() Limited                           { return "limited" }
-func (c MCPToolResult) Default() MCPToolResult               { return "mcp_tool_result" }
-func (c MCPToolUse) Default() MCPToolUse                     { return "mcp_tool_use" }
-func (c MCPToolset) Default() MCPToolset                     { return "mcp_toolset" }
-func (c Memory) Default() Memory                             { return "memory" }
-func (c Memory20250818) Default() Memory20250818             { return "memory_20250818" }
-func (c Message) Default() Message                           { return "message" }
-func (c MessageBatch) Default() MessageBatch                 { return "message_batch" }
-func (c MessageBatchDeleted) Default() MessageBatchDeleted   { return "message_batch_deleted" }
-func (c MessageDelta) Default() MessageDelta                 { return "message_delta" }
-func (c MessageStart) Default() MessageStart                 { return "message_start" }
-func (c MessageStop) Default() MessageStop                   { return "message_stop" }
-func (c Model) Default() Model                               { return "model" }
-func (c None) Default() None                                 { return "none" }
-func (c NotFoundError) Default() NotFoundError               { return "not_found_error" }
-func (c Object) Default() Object                             { return "object" }
-func (c OverloadedError) Default() OverloadedError           { return "overloaded_error" }
-func (c PageLocation) Default() PageLocation                 { return "page_location" }
-func (c PermissionError) Default() PermissionError           { return "permission_error" }
+func (c Environment) Default() Environment                 { return "environment" }
+func (c EnvironmentDeleted) Default() EnvironmentDeleted   { return "environment_deleted" }
+func (c Ephemeral) Default() Ephemeral                     { return "ephemeral" }
+func (c Error) Default() Error                             { return "error" }
+func (c Errored) Default() Errored                         { return "errored" }
+func (c Event) Default() Event                             { return "event" }
+func (c Expired) Default() Expired                         { return "expired" }
+func (c File) Default() File                               { return "file" }
+func (c Image) Default() Image                             { return "image" }
+func (c InputJSONDelta) Default() InputJSONDelta           { return "input_json_delta" }
+func (c InputTokens) Default() InputTokens                 { return "input_tokens" }
+func (c Insert) Default() Insert                           { return "insert" }
+func (c InvalidRequestError) Default() InvalidRequestError { return "invalid_request_error" }
+func (c JSONSchema) Default() JSONSchema                   { return "json_schema" }
+func (c Limited) Default() Limited                         { return "limited" }
+func (c MCPToolResult) Default() MCPToolResult             { return "mcp_tool_result" }
+func (c MCPToolUse) Default() MCPToolUse                   { return "mcp_tool_use" }
+func (c MCPToolset) Default() MCPToolset                   { return "mcp_toolset" }
+func (c Memory) Default() Memory                           { return "memory" }
+func (c Memory20250818) Default() Memory20250818           { return "memory_20250818" }
+func (c Message) Default() Message                         { return "message" }
+func (c MessageBatch) Default() MessageBatch               { return "message_batch" }
+func (c MessageBatchDeleted) Default() MessageBatchDeleted { return "message_batch_deleted" }
+func (c MessageDelta) Default() MessageDelta               { return "message_delta" }
+func (c MessageStart) Default() MessageStart               { return "message_start" }
+func (c MessageStop) Default() MessageStop                 { return "message_stop" }
+func (c MessagesChanged) Default() MessagesChanged         { return "messages_changed" }
+func (c Model) Default() Model                             { return "model" }
+func (c ModelChanged) Default() ModelChanged               { return "model_changed" }
+func (c None) Default() None                               { return "none" }
+func (c NotFoundError) Default() NotFoundError             { return "not_found_error" }
+func (c Object) Default() Object                           { return "object" }
+func (c OverloadedError) Default() OverloadedError         { return "overloaded_error" }
+func (c PageLocation) Default() PageLocation               { return "page_location" }
+func (c PermissionError) Default() PermissionError         { return "permission_error" }
+func (c PreviousMessageNotFound) Default() PreviousMessageNotFound {
+	return "previous_message_not_found"
+}
 func (c RateLimitError) Default() RateLimitError             { return "rate_limit_error" }
 func (c RedactedThinking) Default() RedactedThinking         { return "redacted_thinking" }
 func (c Refusal) Default() Refusal                           { return "refusal" }
@@ -351,6 +362,7 @@ func (c StrReplaceBasedEditTool) Default() StrReplaceBasedEditTool {
 }
 func (c StrReplaceEditor) Default() StrReplaceEditor     { return "str_replace_editor" }
 func (c Succeeded) Default() Succeeded                   { return "succeeded" }
+func (c SystemChanged) Default() SystemChanged           { return "system_changed" }
 func (c Text) Default() Text                             { return "text" }
 func (c TextDelta) Default() TextDelta                   { return "text_delta" }
 func (c TextEditor20241022) Default() TextEditor20241022 { return "text_editor_20241022" }
@@ -392,6 +404,8 @@ func (c ToolSearchToolSearchResult) Default() ToolSearchToolSearchResult {
 }
 func (c ToolUse) Default() ToolUse           { return "tool_use" }
 func (c ToolUses) Default() ToolUses         { return "tool_uses" }
+func (c ToolsChanged) Default() ToolsChanged { return "tools_changed" }
+func (c Unavailable) Default() Unavailable   { return "unavailable" }
 func (c Unrestricted) Default() Unrestricted { return "unrestricted" }
 func (c URL) Default() URL                   { return "url" }
 func (c VaultCredentialArchived) Default() VaultCredentialArchived {
@@ -513,13 +527,16 @@ func (c MessageBatchDeleted) MarshalJSON() ([]byte, error)                 { ret
 func (c MessageDelta) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c MessageStart) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c MessageStop) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c MessagesChanged) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Model) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c ModelChanged) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c None) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c NotFoundError) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Object) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c OverloadedError) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c PageLocation) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c PermissionError) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c PreviousMessageNotFound) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c RateLimitError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c RedactedThinking) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Refusal) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -548,6 +565,7 @@ func (c StrReplace) MarshalJSON() ([]byte, error)                          { ret
 func (c StrReplaceBasedEditTool) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c StrReplaceEditor) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Succeeded) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c SystemChanged) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Text) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c TextDelta) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c TextEditor20241022) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
@@ -579,6 +597,8 @@ func (c ToolSearchToolResultError) MarshalJSON() ([]byte, error)         { retur
 func (c ToolSearchToolSearchResult) MarshalJSON() ([]byte, error)        { return marshalString(c) }
 func (c ToolUse) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c ToolUses) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c ToolsChanged) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c Unavailable) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Unrestricted) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c VaultCredentialArchived) MarshalJSON() ([]byte, error)           { return marshalString(c) }

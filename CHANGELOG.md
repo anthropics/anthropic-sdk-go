@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.43.0 (2026-05-13)
+
+Full Changelog: [v1.42.0...v1.43.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.42.0...v1.43.0)
+
+### Features
+
+* **api:** Add BetaManagedAgentsSearchResultBlock types ([498fafc](https://github.com/anthropics/anthropic-sdk-go/commit/498fafcadd46be3a53e24ca2e7c40d00da6361bd))
+* **api:** Add support for cache diagnostics beta ([eac032f](https://github.com/anthropics/anthropic-sdk-go/commit/eac032f440e19fe9407d856dc4494029c606cd3d))
+* **client:** add compatibility aliases for old type names ([38e1f89](https://github.com/anthropics/anthropic-sdk-go/commit/38e1f89eeffeb40295a5796c97d9966ab1a8703b))
+* **client:** add compatibility aliases for old type names ([a98b0fb](https://github.com/anthropics/anthropic-sdk-go/commit/a98b0fb44693ee6c4bcd7575414b1cab0fc114c7))
+* **client:** optimize json encoder for internal types ([f379c42](https://github.com/anthropics/anthropic-sdk-go/commit/f379c4255c6485a02afb8136d84f1cf995794a08))
+
+
+### Bug Fixes
+
+* **structured outputs:** allowlist enum, const, pattern, allOf in transformSchema ([#823](https://github.com/anthropics/anthropic-sdk-go/issues/823)) ([d368786](https://github.com/anthropics/anthropic-sdk-go/commit/d3687868eb9c40427c731b12e9291ddeeb74f557))
+
+
+### Chores
+
+* **api:** spec updates ([502b9f1](https://github.com/anthropics/anthropic-sdk-go/commit/502b9f13f72a691c3b440c66d964a25caf2db8e1))
+* fix standard webhooks version ([#842](https://github.com/anthropics/anthropic-sdk-go/issues/842)) ([1fdda46](https://github.com/anthropics/anthropic-sdk-go/commit/1fdda46d63004bfec8c977319554cb609a0b4041))
+* **internal:** simplify release-please config ([69da3d6](https://github.com/anthropics/anthropic-sdk-go/commit/69da3d60e46540256c75fc2a0d1b1814ed608dfc))
+
 ## 1.42.0 (2026-05-11)
 
 Full Changelog: [v1.41.0...v1.42.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.41.0...v1.42.0)

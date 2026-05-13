@@ -85,6 +85,9 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						},
 					}},
 				},
+				Diagnostics: anthropic.BetaDiagnosticsParam{
+					PreviousMessageID: anthropic.String("previous_message_id"),
+				},
 				InferenceGeo: anthropic.String("inference_geo"),
 				MCPServers: []anthropic.BetaRequestMCPServerURLDefinitionParam{{
 					Name:               "name",

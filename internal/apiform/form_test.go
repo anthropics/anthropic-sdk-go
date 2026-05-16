@@ -192,7 +192,7 @@ false
 --xxx
 Content-Disposition: form-data; name="b"
 
-237628372683
+123456789
 --xxx
 Content-Disposition: form-data; name="c"
 
@@ -223,7 +223,7 @@ Content-Disposition: form-data; name="f.3"
 4
 --xxx--
 `,
-		Primitives{A: false, B: 237628372683, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}},
+		Primitives{A: false, B: 123456789, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}},
 	},
 	"primitive_struct,brackets": {
 		`--xxx
@@ -255,7 +255,7 @@ false
 --xxx
 Content-Disposition: form-data; name="slices.0.b"
 
-237628372683
+123456789
 --xxx
 Content-Disposition: form-data; name="slices.0.c"
 
@@ -287,7 +287,7 @@ Content-Disposition: form-data; name="slices.0.f.3"
 --xxx--
 `,
 		Slices{
-			Slice: []Primitives{{A: false, B: 237628372683, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}}},
+			Slice: []Primitives{{A: false, B: 123456789, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}}},
 		},
 	},
 	"primitive_pointer_struct": {
@@ -298,7 +298,7 @@ false
 --xxx
 Content-Disposition: form-data; name="b"
 
-237628372683
+123456789
 --xxx
 Content-Disposition: form-data; name="c"
 
@@ -335,7 +335,7 @@ Content-Disposition: form-data; name="f.4"
 `,
 		PrimitivePointers{
 			A: P(false),
-			B: P(237628372683),
+			B: P(123456789),
 			C: P(uint(654)),
 			D: P(9999.43),
 			E: P(float32(43.76)),

@@ -551,3 +551,56 @@ func TestAppendCompact(t *testing.T) {
 		})
 	}
 }
+
+// TestDefaultStructTag verifies the shimmed JSON encoder honors the
+// `default:"..."` tag on string-kinded fields. Generated SDK types rely on
+// this contract to ensure constant discriminators (e.g. the `type` field on
+// JSONOutputFormatParam) appear in marshaled request bodies even when the
+// caller leaves them at their zero value. Regression for
+// https://github.com/anthropics/anthropic-sdk-go/issues/328.
+func TestDefaultStructTag(t *testing.T) {
+	type defaulted struct {
+		Type string `json:"type" default:"json_schema"`
+	}
+	type named string
+	type namedDefaulted struct {
+		Type named `json:"type" default:"json_schema"`
+	}
+	type noDefault struct {
+		Type string `json:"type"`
+	}
+
+	tests := map[string]struct {
+		value    any
+		expected string
+	}{
+		"zero/plain-string": {
+			defaulted{},
+			`{"type":"json_schema"}`,
+		},
+		"zero/named-string": {
+			namedDefaulted{},
+			`{"type":"json_schema"}`,
+		},
+		"non-zero/preserves-value": {
+			defaulted{Type: "override"},
+			`{"type":"override"}`,
+		},
+		"no-default-tag/zero-stays-empty": {
+			noDefault{},
+			`{"type":""}`,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			b, err := shimjson.Marshal(test.value)
+			if err != nil {
+				t.Fatalf("marshal: %v", err)
+			}
+			if string(b) != test.expected {
+				t.Fatalf("expected %s, got %s", test.expected, b)
+			}
+		})
+	}
+}

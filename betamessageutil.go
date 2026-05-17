@@ -452,9 +452,19 @@ func (r BetaToolSearchToolResultBlock) ToParam() BetaToolSearchToolResultBlockPa
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
 	if r.Content.JSON.ErrorCode.Valid() {
-		p.Content.OfRequestToolSearchToolResultError = &BetaToolSearchToolResultErrorParam{
+		errParam := &BetaToolSearchToolResultErrorParam{
 			ErrorCode: BetaToolSearchToolResultErrorParamErrorCode(r.Content.ErrorCode),
 		}
+		// error_code is required by the API but is tagged `omitzero`, so an
+		// empty string (e.g. an enum value the SDK does not recognize yet)
+		// would otherwise be dropped during marshaling. Force the field to be
+		// emitted using the raw value received from the server.
+		if string(errParam.ErrorCode) == "" {
+			errParam.SetExtraFields(map[string]any{
+				"error_code": string(r.Content.ErrorCode),
+			})
+		}
+		p.Content.OfRequestToolSearchToolResultError = errParam
 	} else {
 		p.Content.OfRequestToolSearchToolSearchResultBlock = &BetaToolSearchToolSearchResultBlockParam{}
 		for _, block := range r.Content.ToolReferences {

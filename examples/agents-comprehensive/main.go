@@ -202,14 +202,14 @@ func main() {
 		data, _ := json.MarshalIndent(event, "", "  ")
 		fmt.Println(string(data))
 
-		if event.Type == "agent.custom_tool_use" && event.Name == "get_weather" {
+		if event.Type == "agent.tool_use" && event.Name == "get_weather" {
 			_, err = client.Beta.Sessions.Events.Send(ctx, session.ID, anthropic.BetaSessionEventSendParams{
 				Events: []anthropic.BetaManagedAgentsEventParamsUnion{
 					{
-						OfUserCustomToolResult: &anthropic.BetaManagedAgentsUserCustomToolResultEventParams{
-							Type:            anthropic.BetaManagedAgentsUserCustomToolResultEventParamsTypeUserCustomToolResult,
-							CustomToolUseID: event.ID,
-							Content: []anthropic.BetaManagedAgentsUserCustomToolResultEventParamsContentUnion{
+						OfUserToolResult: &anthropic.BetaManagedAgentsUserToolResultEventParams{
+							Type:      anthropic.BetaManagedAgentsUserToolResultEventParamsTypeUserToolResult,
+							ToolUseID: event.ID,
+							Content: []anthropic.BetaManagedAgentsUserToolResultEventParamsContentUnion{
 								{
 									OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 										Text: `{"temperature_c": 14}`,

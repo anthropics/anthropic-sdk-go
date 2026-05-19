@@ -10,6 +10,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.27
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.27
 	github.com/aws/smithy-go v1.20.3
+	github.com/bmatcuk/doublestar/v4 v4.10.0
+	github.com/creack/pty v1.1.24
 	github.com/dnaeon/go-vcr v1.2.0
 	github.com/invopop/jsonschema v0.13.0
 	github.com/modelcontextprotocol/go-sdk v1.3.1

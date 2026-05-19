@@ -2222,10 +2222,10 @@ func (r *BetaCompactionBlock) UnmarshalJSON(data []byte) error {
 // When content is None, the block represents a failed compaction. The server
 // treats these as no-ops. Empty string content is not allowed.
 //
-// The properties Content, Type are required.
+// The property Type is required.
 type BetaCompactionBlockParam struct {
 	// Summary of previously compacted content, or null if compaction failed
-	Content param.Opt[string] `json:"content,omitzero" api:"required"`
+	Content param.Opt[string] `json:"content,omitzero"`
 	// Opaque metadata from prior compaction, to be round-tripped verbatim
 	EncryptedContent param.Opt[string] `json:"encrypted_content,omitzero"`
 	// Create a cache control breakpoint at this content block.
@@ -2992,12 +2992,6 @@ func NewBetaContainerUploadBlock(fileID string) BetaContentBlockParamUnion {
 	var containerUpload BetaContainerUploadBlockParam
 	containerUpload.FileID = fileID
 	return BetaContentBlockParamUnion{OfContainerUpload: &containerUpload}
-}
-
-func NewBetaCompactionBlock(content string) BetaContentBlockParamUnion {
-	var compaction BetaCompactionBlockParam
-	compaction.Content = param.NewOpt(content)
-	return BetaContentBlockParamUnion{OfCompaction: &compaction}
 }
 
 // Only one field can be non-zero.

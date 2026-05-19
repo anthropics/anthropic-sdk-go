@@ -128,6 +128,26 @@ func (r *BetaSkillVersionService) Delete(ctx context.Context, version string, pa
 	return res, err
 }
 
+// Download a skill version's content as a zip archive.
+func (r *BetaSkillVersionService) Download(ctx context.Context, version string, params BetaSkillVersionDownloadParams, opts ...option.RequestOption) (res *http.Response, err error) {
+	for _, v := range params.Betas {
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "skills-2025-10-02"), option.WithHeader("Accept", "application/binary")}, opts...)
+	if params.SkillID == "" {
+		err = errors.New("missing required skill_id parameter")
+		return nil, err
+	}
+	if version == "" {
+		err = errors.New("missing required version parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/skills/%s/versions/%s/content?beta=true", params.SkillID, version)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
+	return res, err
+}
+
 type BetaSkillVersionNewResponse struct {
 	// Unique identifier for the skill version.
 	//
@@ -363,6 +383,16 @@ func (r BetaSkillVersionListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaSkillVersionDeleteParams struct {
+	// Unique identifier for the skill.
+	//
+	// The format and length of IDs may change over time.
+	SkillID string `path:"skill_id" api:"required" json:"-"`
+	// Optional header to specify the beta version(s) you want to use.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
+	paramObj
+}
+
+type BetaSkillVersionDownloadParams struct {
 	// Unique identifier for the skill.
 	//
 	// The format and length of IDs may change over time.

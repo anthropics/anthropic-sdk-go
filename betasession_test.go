@@ -98,6 +98,35 @@ func TestBetaSessionUpdateWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"sesn_011CZkZAtmR3yMPDzynEDxu7",
 		anthropic.BetaSessionUpdateParams{
+			Agent: anthropic.BetaManagedAgentsSessionAgentUpdateParam{
+				MCPServers: []anthropic.BetaManagedAgentsURLMCPServerParams{{
+					Name: "example-mcp",
+					Type: anthropic.BetaManagedAgentsURLMCPServerParamsTypeURL,
+					URL:  "https://example-server.modelcontextprotocol.io/sse",
+				}},
+				Tools: []anthropic.BetaManagedAgentsSessionAgentUpdateToolUnionParam{{
+					OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{
+						Type: anthropic.BetaManagedAgentsAgentToolset20260401ParamsTypeAgentToolset20260401,
+						Configs: []anthropic.BetaManagedAgentsAgentToolConfigParams{{
+							Name:    anthropic.BetaManagedAgentsAgentToolConfigParamsNameBash,
+							Enabled: anthropic.Bool(true),
+							PermissionPolicy: anthropic.BetaManagedAgentsAgentToolConfigParamsPermissionPolicyUnion{
+								OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
+									Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
+								},
+							},
+						}},
+						DefaultConfig: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParams{
+							Enabled: anthropic.Bool(true),
+							PermissionPolicy: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion{
+								OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
+									Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
+								},
+							},
+						},
+					},
+				}},
+			},
 			Metadata: map[string]string{
 				"foo": "string",
 			},

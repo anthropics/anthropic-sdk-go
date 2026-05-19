@@ -29,6 +29,7 @@ import (
 // the [NewBetaEnvironmentService] method instead.
 type BetaEnvironmentService struct {
 	Options []option.RequestOption
+	Work    BetaEnvironmentWorkService
 }
 
 // NewBetaEnvironmentService generates a new service that applies the given options
@@ -37,6 +38,7 @@ type BetaEnvironmentService struct {
 func NewBetaEnvironmentService(opts ...option.RequestOption) (r BetaEnvironmentService) {
 	r = BetaEnvironmentService{}
 	r.Options = opts
+	r.Work = NewBetaEnvironmentWorkService(opts...)
 	return
 }
 
@@ -338,8 +340,8 @@ type BetaEnvironment struct {
 	ID string `json:"id" api:"required"`
 	// RFC 3339 timestamp when environment was archived, or null if not archived
 	ArchivedAt string `json:"archived_at" api:"required"`
-	// `cloud` environment configuration.
-	Config BetaCloudConfig `json:"config" api:"required"`
+	// Environment configuration (either Anthropic Cloud or self-hosted)
+	Config BetaEnvironmentConfigUnion `json:"config" api:"required"`
 	// RFC 3339 timestamp when environment was created
 	CreatedAt string `json:"created_at" api:"required"`
 	// User-provided description for the environment
@@ -352,6 +354,11 @@ type BetaEnvironment struct {
 	Type constant.Environment `json:"type" default:"environment"`
 	// RFC 3339 timestamp when environment was last updated
 	UpdatedAt string `json:"updated_at" api:"required"`
+	// The visibility scope for this environment. 'organization' means visible to all
+	// accounts. 'account' means visible only to the owning account.
+	//
+	// Any of "organization", "account".
+	Scope BetaEnvironmentScope `json:"scope"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -363,6 +370,7 @@ type BetaEnvironment struct {
 		Name        respjson.Field
 		Type        respjson.Field
 		UpdatedAt   respjson.Field
+		Scope       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -373,6 +381,81 @@ func (r BetaEnvironment) RawJSON() string { return r.JSON.raw }
 func (r *BetaEnvironment) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// BetaEnvironmentConfigUnion contains all possible properties and values from
+// [BetaCloudConfig], [BetaSelfHostedConfig].
+//
+// Use the [BetaEnvironmentConfigUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaEnvironmentConfigUnion struct {
+	// This field is from variant [BetaCloudConfig].
+	Networking BetaCloudConfigNetworkingUnion `json:"networking"`
+	// This field is from variant [BetaCloudConfig].
+	Packages BetaPackages `json:"packages"`
+	// Any of "cloud", "self_hosted".
+	Type string `json:"type"`
+	JSON struct {
+		Networking respjson.Field
+		Packages   respjson.Field
+		Type       respjson.Field
+		raw        string
+	} `json:"-"`
+}
+
+// anyBetaEnvironmentConfig is implemented by each variant of
+// [BetaEnvironmentConfigUnion] to add type safety for the return type of
+// [BetaEnvironmentConfigUnion.AsAny]
+type anyBetaEnvironmentConfig interface {
+	implBetaEnvironmentConfigUnion()
+}
+
+func (BetaCloudConfig) implBetaEnvironmentConfigUnion()      {}
+func (BetaSelfHostedConfig) implBetaEnvironmentConfigUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaEnvironmentConfigUnion.AsAny().(type) {
+//	case anthropic.BetaCloudConfig:
+//	case anthropic.BetaSelfHostedConfig:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaEnvironmentConfigUnion) AsAny() anyBetaEnvironmentConfig {
+	switch u.Type {
+	case "cloud":
+		return u.AsCloud()
+	case "self_hosted":
+		return u.AsSelfHosted()
+	}
+	return nil
+}
+
+func (u BetaEnvironmentConfigUnion) AsCloud() (v BetaCloudConfig) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaEnvironmentConfigUnion) AsSelfHosted() (v BetaSelfHostedConfig) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaEnvironmentConfigUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaEnvironmentConfigUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The visibility scope for this environment. 'organization' means visible to all
+// accounts. 'account' means visible only to the owning account.
+type BetaEnvironmentScope string
+
+const (
+	BetaEnvironmentScopeOrganization BetaEnvironmentScope = "organization"
+	BetaEnvironmentScopeAccount      BetaEnvironmentScope = "account"
+)
 
 // Response after deleting an environment.
 type BetaEnvironmentDeleteResponse struct {
@@ -538,6 +621,48 @@ const (
 	BetaPackagesParamsTypePackages BetaPackagesParamsType = "packages"
 )
 
+// Configuration for self-hosted environments.
+type BetaSelfHostedConfig struct {
+	// Environment type
+	Type constant.SelfHosted `json:"type" default:"self_hosted"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaSelfHostedConfig) RawJSON() string { return r.JSON.raw }
+func (r *BetaSelfHostedConfig) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewBetaSelfHostedConfigParams() BetaSelfHostedConfigParams {
+	return BetaSelfHostedConfigParams{
+		Type: "self_hosted",
+	}
+}
+
+// Request params for `self_hosted` environment configuration.
+//
+// This struct has a constant value, construct it with
+// [NewBetaSelfHostedConfigParams].
+type BetaSelfHostedConfigParams struct {
+	// Environment type
+	Type constant.SelfHosted `json:"type" default:"self_hosted"`
+	paramObj
+}
+
+func (r BetaSelfHostedConfigParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaSelfHostedConfigParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaSelfHostedConfigParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Unrestricted network access.
 type BetaUnrestrictedNetwork struct {
 	// Network policy type
@@ -594,10 +719,15 @@ type BetaEnvironmentNewParams struct {
 	Name string `json:"name" api:"required"`
 	// Optional description of the environment
 	Description param.Opt[string] `json:"description,omitzero"`
-	// Request params for `cloud` environment configuration.
+	// Environment configuration
+	Config BetaEnvironmentNewParamsConfigUnion `json:"config,omitzero"`
+	// The visibility scope for this environment. 'organization' makes the environment
+	// visible to all accounts. 'account' restricts visibility to the owning account
+	// only. Only applicable for self-hosted environments. If not specified, defaults
+	// based on organization type.
 	//
-	// Fields default to null; on update, omitted fields preserve the existing value.
-	Config BetaCloudConfigParams `json:"config,omitzero"`
+	// Any of "organization", "account".
+	Scope BetaEnvironmentNewParamsScope `json:"scope,omitzero"`
 	// User-provided metadata key-value pairs
 	Metadata map[string]string `json:"metadata,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
@@ -613,6 +743,76 @@ func (r *BetaEnvironmentNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaEnvironmentNewParamsConfigUnion struct {
+	OfCloud      *BetaCloudConfigParams      `json:",omitzero,inline"`
+	OfSelfHosted *BetaSelfHostedConfigParams `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaEnvironmentNewParamsConfigUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCloud, u.OfSelfHosted)
+}
+func (u *BetaEnvironmentNewParamsConfigUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaEnvironmentNewParamsConfigUnion) asAny() any {
+	if !param.IsOmitted(u.OfCloud) {
+		return u.OfCloud
+	} else if !param.IsOmitted(u.OfSelfHosted) {
+		return u.OfSelfHosted
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaEnvironmentNewParamsConfigUnion) GetNetworking() *BetaCloudConfigParamsNetworkingUnion {
+	if vt := u.OfCloud; vt != nil {
+		return &vt.Networking
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaEnvironmentNewParamsConfigUnion) GetPackages() *BetaPackagesParams {
+	if vt := u.OfCloud; vt != nil {
+		return &vt.Packages
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaEnvironmentNewParamsConfigUnion) GetType() *string {
+	if vt := u.OfCloud; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfSelfHosted; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaEnvironmentNewParamsConfigUnion](
+		"type",
+		apijson.Discriminator[BetaCloudConfigParams]("cloud"),
+		apijson.Discriminator[BetaSelfHostedConfigParams]("self_hosted"),
+	)
+}
+
+// The visibility scope for this environment. 'organization' makes the environment
+// visible to all accounts. 'account' restricts visibility to the owning account
+// only. Only applicable for self-hosted environments. If not specified, defaults
+// based on organization type.
+type BetaEnvironmentNewParamsScope string
+
+const (
+	BetaEnvironmentNewParamsScopeOrganization BetaEnvironmentNewParamsScope = "organization"
+	BetaEnvironmentNewParamsScopeAccount      BetaEnvironmentNewParamsScope = "account"
+)
+
 type BetaEnvironmentGetParams struct {
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -624,10 +824,14 @@ type BetaEnvironmentUpdateParams struct {
 	Description param.Opt[string] `json:"description,omitzero"`
 	// Updated name for the environment
 	Name param.Opt[string] `json:"name,omitzero"`
-	// Request params for `cloud` environment configuration.
+	// Updated environment configuration
+	Config BetaEnvironmentUpdateParamsConfigUnion `json:"config,omitzero"`
+	// The visibility scope for this environment. 'organization' makes the environment
+	// visible to all accounts. 'account' restricts visibility to the owning account
+	// only.
 	//
-	// Fields default to null; on update, omitted fields preserve the existing value.
-	Config BetaCloudConfigParams `json:"config,omitzero"`
+	// Any of "organization", "account".
+	Scope BetaEnvironmentUpdateParamsScope `json:"scope,omitzero"`
 	// User-provided metadata key-value pairs. Set a value to null or empty string to
 	// delete the key.
 	Metadata map[string]string `json:"metadata,omitzero"`
@@ -643,6 +847,75 @@ func (r BetaEnvironmentUpdateParams) MarshalJSON() (data []byte, err error) {
 func (r *BetaEnvironmentUpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaEnvironmentUpdateParamsConfigUnion struct {
+	OfCloud      *BetaCloudConfigParams      `json:",omitzero,inline"`
+	OfSelfHosted *BetaSelfHostedConfigParams `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaEnvironmentUpdateParamsConfigUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCloud, u.OfSelfHosted)
+}
+func (u *BetaEnvironmentUpdateParamsConfigUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaEnvironmentUpdateParamsConfigUnion) asAny() any {
+	if !param.IsOmitted(u.OfCloud) {
+		return u.OfCloud
+	} else if !param.IsOmitted(u.OfSelfHosted) {
+		return u.OfSelfHosted
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaEnvironmentUpdateParamsConfigUnion) GetNetworking() *BetaCloudConfigParamsNetworkingUnion {
+	if vt := u.OfCloud; vt != nil {
+		return &vt.Networking
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaEnvironmentUpdateParamsConfigUnion) GetPackages() *BetaPackagesParams {
+	if vt := u.OfCloud; vt != nil {
+		return &vt.Packages
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaEnvironmentUpdateParamsConfigUnion) GetType() *string {
+	if vt := u.OfCloud; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfSelfHosted; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaEnvironmentUpdateParamsConfigUnion](
+		"type",
+		apijson.Discriminator[BetaCloudConfigParams]("cloud"),
+		apijson.Discriminator[BetaSelfHostedConfigParams]("self_hosted"),
+	)
+}
+
+// The visibility scope for this environment. 'organization' makes the environment
+// visible to all accounts. 'account' restricts visibility to the owning account
+// only.
+type BetaEnvironmentUpdateParamsScope string
+
+const (
+	BetaEnvironmentUpdateParamsScopeOrganization BetaEnvironmentUpdateParamsScope = "organization"
+	BetaEnvironmentUpdateParamsScopeAccount      BetaEnvironmentUpdateParamsScope = "account"
+)
 
 type BetaEnvironmentListParams struct {
 	// Opaque cursor from previous response for pagination. Pass the `next_page` value

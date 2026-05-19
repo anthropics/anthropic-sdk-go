@@ -27,28 +27,31 @@ func TestBetaEnvironmentNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Environments.New(context.TODO(), anthropic.BetaEnvironmentNewParams{
 		Name: "python-data-analysis",
-		Config: anthropic.BetaCloudConfigParams{
-			Networking: anthropic.BetaCloudConfigParamsNetworkingUnion{
-				OfLimited: &anthropic.BetaLimitedNetworkParams{
-					AllowMCPServers:      anthropic.Bool(true),
-					AllowPackageManagers: anthropic.Bool(true),
-					AllowedHosts:         []string{"api.example.com"},
+		Config: anthropic.BetaEnvironmentNewParamsConfigUnion{
+			OfCloud: &anthropic.BetaCloudConfigParams{
+				Networking: anthropic.BetaCloudConfigParamsNetworkingUnion{
+					OfLimited: &anthropic.BetaLimitedNetworkParams{
+						AllowMCPServers:      anthropic.Bool(true),
+						AllowPackageManagers: anthropic.Bool(true),
+						AllowedHosts:         []string{"api.example.com"},
+					},
 				},
-			},
-			Packages: anthropic.BetaPackagesParams{
-				Apt:   []string{"string"},
-				Cargo: []string{"string"},
-				Gem:   []string{"string"},
-				Go:    []string{"string"},
-				Npm:   []string{"string"},
-				Pip:   []string{"pandas", "numpy"},
-				Type:  anthropic.BetaPackagesParamsTypePackages,
+				Packages: anthropic.BetaPackagesParams{
+					Apt:   []string{"string"},
+					Cargo: []string{"string"},
+					Gem:   []string{"string"},
+					Go:    []string{"string"},
+					Npm:   []string{"string"},
+					Pip:   []string{"pandas", "numpy"},
+					Type:  anthropic.BetaPackagesParamsTypePackages,
+				},
 			},
 		},
 		Description: anthropic.String("Python environment with data-analysis packages."),
 		Metadata: map[string]string{
 			"foo": "string",
 		},
+		Scope: anthropic.BetaEnvironmentNewParamsScopeOrganization,
 		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
@@ -104,22 +107,24 @@ func TestBetaEnvironmentUpdateWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"env_011CZkZ9X2dpNyB7HsEFoRfW",
 		anthropic.BetaEnvironmentUpdateParams{
-			Config: anthropic.BetaCloudConfigParams{
-				Networking: anthropic.BetaCloudConfigParamsNetworkingUnion{
-					OfLimited: &anthropic.BetaLimitedNetworkParams{
-						AllowMCPServers:      anthropic.Bool(true),
-						AllowPackageManagers: anthropic.Bool(true),
-						AllowedHosts:         []string{"api.example.com"},
+			Config: anthropic.BetaEnvironmentUpdateParamsConfigUnion{
+				OfCloud: &anthropic.BetaCloudConfigParams{
+					Networking: anthropic.BetaCloudConfigParamsNetworkingUnion{
+						OfLimited: &anthropic.BetaLimitedNetworkParams{
+							AllowMCPServers:      anthropic.Bool(true),
+							AllowPackageManagers: anthropic.Bool(true),
+							AllowedHosts:         []string{"api.example.com"},
+						},
 					},
-				},
-				Packages: anthropic.BetaPackagesParams{
-					Apt:   []string{"string"},
-					Cargo: []string{"string"},
-					Gem:   []string{"string"},
-					Go:    []string{"string"},
-					Npm:   []string{"string"},
-					Pip:   []string{"pandas", "numpy"},
-					Type:  anthropic.BetaPackagesParamsTypePackages,
+					Packages: anthropic.BetaPackagesParams{
+						Apt:   []string{"string"},
+						Cargo: []string{"string"},
+						Gem:   []string{"string"},
+						Go:    []string{"string"},
+						Npm:   []string{"string"},
+						Pip:   []string{"pandas", "numpy"},
+						Type:  anthropic.BetaPackagesParamsTypePackages,
+					},
 				},
 			},
 			Description: anthropic.String("Python environment with data-analysis packages."),
@@ -127,6 +132,7 @@ func TestBetaEnvironmentUpdateWithOptionalParams(t *testing.T) {
 				"foo": "string",
 			},
 			Name:  anthropic.String("x"),
+			Scope: anthropic.BetaEnvironmentUpdateParamsScopeOrganization,
 			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)

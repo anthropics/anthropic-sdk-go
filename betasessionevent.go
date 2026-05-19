@@ -1533,6 +1533,12 @@ func BetaManagedAgentsEventParamsOfUserDefineOutcome[
 	return BetaManagedAgentsEventParamsUnion{OfUserDefineOutcome: &userDefineOutcome}
 }
 
+func BetaManagedAgentsEventParamsOfUserToolResult(toolUseID string) BetaManagedAgentsEventParamsUnion {
+	var userToolResult BetaManagedAgentsUserToolResultEventParams
+	userToolResult.ToolUseID = toolUseID
+	return BetaManagedAgentsEventParamsUnion{OfUserToolResult: &userToolResult}
+}
+
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
@@ -1542,6 +1548,7 @@ type BetaManagedAgentsEventParamsUnion struct {
 	OfUserToolConfirmation *BetaManagedAgentsUserToolConfirmationEventParams `json:",omitzero,inline"`
 	OfUserCustomToolResult *BetaManagedAgentsUserCustomToolResultEventParams `json:",omitzero,inline"`
 	OfUserDefineOutcome    *BetaManagedAgentsUserDefineOutcomeEventParams    `json:",omitzero,inline"`
+	OfUserToolResult       *BetaManagedAgentsUserToolResultEventParams       `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -1550,7 +1557,8 @@ func (u BetaManagedAgentsEventParamsUnion) MarshalJSON() ([]byte, error) {
 		u.OfUserInterrupt,
 		u.OfUserToolConfirmation,
 		u.OfUserCustomToolResult,
-		u.OfUserDefineOutcome)
+		u.OfUserDefineOutcome,
+		u.OfUserToolResult)
 }
 func (u *BetaManagedAgentsEventParamsUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -1567,6 +1575,8 @@ func (u *BetaManagedAgentsEventParamsUnion) asAny() any {
 		return u.OfUserCustomToolResult
 	} else if !param.IsOmitted(u.OfUserDefineOutcome) {
 		return u.OfUserDefineOutcome
+	} else if !param.IsOmitted(u.OfUserToolResult) {
+		return u.OfUserToolResult
 	}
 	return nil
 }
@@ -1588,14 +1598,6 @@ func (u BetaManagedAgentsEventParamsUnion) GetResult() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaManagedAgentsEventParamsUnion) GetToolUseID() *string {
-	if vt := u.OfUserToolConfirmation; vt != nil {
-		return &vt.ToolUseID
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsEventParamsUnion) GetDenyMessage() *string {
 	if vt := u.OfUserToolConfirmation; vt != nil && vt.DenyMessage.Valid() {
 		return &vt.DenyMessage.Value
@@ -1607,14 +1609,6 @@ func (u BetaManagedAgentsEventParamsUnion) GetDenyMessage() *string {
 func (u BetaManagedAgentsEventParamsUnion) GetCustomToolUseID() *string {
 	if vt := u.OfUserCustomToolResult; vt != nil {
 		return &vt.CustomToolUseID
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaManagedAgentsEventParamsUnion) GetIsError() *bool {
-	if vt := u.OfUserCustomToolResult; vt != nil && vt.IsError.Valid() {
-		return &vt.IsError.Value
 	}
 	return nil
 }
@@ -1655,6 +1649,28 @@ func (u BetaManagedAgentsEventParamsUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfUserDefineOutcome; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfUserToolResult; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsEventParamsUnion) GetToolUseID() *string {
+	if vt := u.OfUserToolConfirmation; vt != nil {
+		return (*string)(&vt.ToolUseID)
+	} else if vt := u.OfUserToolResult; vt != nil {
+		return (*string)(&vt.ToolUseID)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsEventParamsUnion) GetIsError() *bool {
+	if vt := u.OfUserCustomToolResult; vt != nil && vt.IsError.Valid() {
+		return &vt.IsError.Value
+	} else if vt := u.OfUserToolResult; vt != nil && vt.IsError.Valid() {
+		return &vt.IsError.Value
 	}
 	return nil
 }
@@ -1667,13 +1683,16 @@ func (u BetaManagedAgentsEventParamsUnion) GetContent() (res betaManagedAgentsEv
 		res.any = &vt.Content
 	} else if vt := u.OfUserCustomToolResult; vt != nil {
 		res.any = &vt.Content
+	} else if vt := u.OfUserToolResult; vt != nil {
+		res.any = &vt.Content
 	}
 	return
 }
 
 // Can have the runtime types
 // [_[]BetaManagedAgentsUserMessageEventParamsContentUnion],
-// [_[]BetaManagedAgentsUserCustomToolResultEventParamsContentUnion]
+// [_[]BetaManagedAgentsUserCustomToolResultEventParamsContentUnion],
+// [\*[]BetaManagedAgentsUserToolResultEventParamsContentUnion]
 type betaManagedAgentsEventParamsUnionContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -1681,6 +1700,7 @@ type betaManagedAgentsEventParamsUnionContent struct{ any }
 //	switch u.AsAny().(type) {
 //	case *[]anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion:
 //	case *[]anthropic.BetaManagedAgentsUserCustomToolResultEventParamsContentUnion:
+//	case *[]anthropic.BetaManagedAgentsUserToolResultEventParamsContentUnion:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -1694,6 +1714,7 @@ func init() {
 		apijson.Discriminator[BetaManagedAgentsUserToolConfirmationEventParams]("user.tool_confirmation"),
 		apijson.Discriminator[BetaManagedAgentsUserCustomToolResultEventParams]("user.custom_tool_result"),
 		apijson.Discriminator[BetaManagedAgentsUserDefineOutcomeEventParams]("user.define_outcome"),
+		apijson.Discriminator[BetaManagedAgentsUserToolResultEventParams]("user.tool_result"),
 	)
 }
 
@@ -2960,7 +2981,8 @@ func (r *BetaManagedAgentsSendSessionEvents) UnmarshalJSON(data []byte) error {
 // [BetaManagedAgentsUserInterruptEvent],
 // [BetaManagedAgentsUserToolConfirmationEvent],
 // [BetaManagedAgentsUserCustomToolResultEvent],
-// [BetaManagedAgentsUserDefineOutcomeEvent].
+// [BetaManagedAgentsUserDefineOutcomeEvent],
+// [BetaManagedAgentsUserToolResultEvent].
 //
 // Use the [BetaManagedAgentsSendSessionEventsDataUnion.AsAny] method to switch on
 // the variant.
@@ -2969,23 +2991,22 @@ func (r *BetaManagedAgentsSendSessionEvents) UnmarshalJSON(data []byte) error {
 type BetaManagedAgentsSendSessionEventsDataUnion struct {
 	ID string `json:"id"`
 	// This field is a union of [[]BetaManagedAgentsUserMessageEventContentUnion],
-	// [[]BetaManagedAgentsUserCustomToolResultEventContentUnion]
+	// [[]BetaManagedAgentsUserCustomToolResultEventContentUnion],
+	// [[]BetaManagedAgentsUserToolResultEventContentUnion]
 	Content BetaManagedAgentsSendSessionEventsDataUnionContent `json:"content"`
 	// Any of "user.message", "user.interrupt", "user.tool_confirmation",
-	// "user.custom_tool_result", "user.define_outcome".
+	// "user.custom_tool_result", "user.define_outcome", "user.tool_result".
 	Type            string    `json:"type"`
 	ProcessedAt     time.Time `json:"processed_at"`
 	SessionThreadID string    `json:"session_thread_id"`
 	// This field is from variant [BetaManagedAgentsUserToolConfirmationEvent].
-	Result BetaManagedAgentsUserToolConfirmationEventResult `json:"result"`
-	// This field is from variant [BetaManagedAgentsUserToolConfirmationEvent].
-	ToolUseID string `json:"tool_use_id"`
+	Result    BetaManagedAgentsUserToolConfirmationEventResult `json:"result"`
+	ToolUseID string                                           `json:"tool_use_id"`
 	// This field is from variant [BetaManagedAgentsUserToolConfirmationEvent].
 	DenyMessage string `json:"deny_message"`
 	// This field is from variant [BetaManagedAgentsUserCustomToolResultEvent].
 	CustomToolUseID string `json:"custom_tool_use_id"`
-	// This field is from variant [BetaManagedAgentsUserCustomToolResultEvent].
-	IsError bool `json:"is_error"`
+	IsError         bool   `json:"is_error"`
 	// This field is from variant [BetaManagedAgentsUserDefineOutcomeEvent].
 	Description string `json:"description"`
 	// This field is from variant [BetaManagedAgentsUserDefineOutcomeEvent].
@@ -3025,6 +3046,7 @@ func (BetaManagedAgentsUserInterruptEvent) implBetaManagedAgentsSendSessionEvent
 func (BetaManagedAgentsUserToolConfirmationEvent) implBetaManagedAgentsSendSessionEventsDataUnion() {}
 func (BetaManagedAgentsUserCustomToolResultEvent) implBetaManagedAgentsSendSessionEventsDataUnion() {}
 func (BetaManagedAgentsUserDefineOutcomeEvent) implBetaManagedAgentsSendSessionEventsDataUnion()    {}
+func (BetaManagedAgentsUserToolResultEvent) implBetaManagedAgentsSendSessionEventsDataUnion()       {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -3034,6 +3056,7 @@ func (BetaManagedAgentsUserDefineOutcomeEvent) implBetaManagedAgentsSendSessionE
 //	case anthropic.BetaManagedAgentsUserToolConfirmationEvent:
 //	case anthropic.BetaManagedAgentsUserCustomToolResultEvent:
 //	case anthropic.BetaManagedAgentsUserDefineOutcomeEvent:
+//	case anthropic.BetaManagedAgentsUserToolResultEvent:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -3049,6 +3072,8 @@ func (u BetaManagedAgentsSendSessionEventsDataUnion) AsAny() anyBetaManagedAgent
 		return u.AsUserCustomToolResult()
 	case "user.define_outcome":
 		return u.AsUserDefineOutcome()
+	case "user.tool_result":
+		return u.AsUserToolResult()
 	}
 	return nil
 }
@@ -3078,6 +3103,11 @@ func (u BetaManagedAgentsSendSessionEventsDataUnion) AsUserDefineOutcome() (v Be
 	return
 }
 
+func (u BetaManagedAgentsSendSessionEventsDataUnion) AsUserToolResult() (v BetaManagedAgentsUserToolResultEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaManagedAgentsSendSessionEventsDataUnion) RawJSON() string { return u.JSON.raw }
 
@@ -3095,7 +3125,8 @@ func (r *BetaManagedAgentsSendSessionEventsDataUnion) UnmarshalJSON(data []byte)
 //
 // If the underlying value is not a json object, one of the following properties
 // will be valid: OfBetaManagedAgentsUserMessageEventContentArray
-// OfBetaManagedAgentsUserCustomToolResultEventContentArray]
+// OfBetaManagedAgentsUserCustomToolResultEventContentArray
+// OfBetaManagedAgentsUserToolResultEventContentArray]
 type BetaManagedAgentsSendSessionEventsDataUnionContent struct {
 	// This field will be present if the value is a
 	// [[]BetaManagedAgentsUserMessageEventContentUnion] instead of an object.
@@ -3103,9 +3134,13 @@ type BetaManagedAgentsSendSessionEventsDataUnionContent struct {
 	// This field will be present if the value is a
 	// [[]BetaManagedAgentsUserCustomToolResultEventContentUnion] instead of an object.
 	OfBetaManagedAgentsUserCustomToolResultEventContentArray []BetaManagedAgentsUserCustomToolResultEventContentUnion `json:",inline"`
-	JSON                                                     struct {
+	// This field will be present if the value is a
+	// [[]BetaManagedAgentsUserToolResultEventContentUnion] instead of an object.
+	OfBetaManagedAgentsUserToolResultEventContentArray []BetaManagedAgentsUserToolResultEventContentUnion `json:",inline"`
+	JSON                                               struct {
 		OfBetaManagedAgentsUserMessageEventContentArray          respjson.Field
 		OfBetaManagedAgentsUserCustomToolResultEventContentArray respjson.Field
+		OfBetaManagedAgentsUserToolResultEventContentArray       respjson.Field
 		raw                                                      string
 	} `json:"-"`
 }
@@ -3379,7 +3414,9 @@ const (
 // [BetaManagedAgentsSessionThreadStatusRunningEvent],
 // [BetaManagedAgentsSessionThreadStatusIdleEvent],
 // [BetaManagedAgentsSessionThreadStatusTerminatedEvent],
-// [BetaManagedAgentsSessionThreadStatusRescheduledEvent].
+// [BetaManagedAgentsUserToolResultEvent],
+// [BetaManagedAgentsSessionThreadStatusRescheduledEvent],
+// [BetaManagedAgentsSessionUpdatedEvent].
 //
 // Use the [BetaManagedAgentsSessionEventUnion.AsAny] method to switch on the
 // variant.
@@ -3393,7 +3430,8 @@ type BetaManagedAgentsSessionEventUnion struct {
 	// [[]BetaManagedAgentsAgentMCPToolResultEventContentUnion],
 	// [[]BetaManagedAgentsAgentToolResultEventContentUnion],
 	// [[]BetaManagedAgentsAgentThreadMessageReceivedEventContentUnion],
-	// [[]BetaManagedAgentsAgentThreadMessageSentEventContentUnion]
+	// [[]BetaManagedAgentsAgentThreadMessageSentEventContentUnion],
+	// [[]BetaManagedAgentsUserToolResultEventContentUnion]
 	Content BetaManagedAgentsSessionEventUnionContent `json:"content"`
 	// Any of "user.message", "user.interrupt", "user.tool_confirmation",
 	// "user.custom_tool_result", "agent.custom_tool_use", "agent.message",
@@ -3406,7 +3444,8 @@ type BetaManagedAgentsSessionEventUnion struct {
 	// "span.model_request_start", "span.model_request_end",
 	// "span.outcome_evaluation_ongoing", "user.define_outcome", "session.deleted",
 	// "session.thread_status_running", "session.thread_status_idle",
-	// "session.thread_status_terminated", "session.thread_status_rescheduled".
+	// "session.thread_status_terminated", "user.tool_result",
+	// "session.thread_status_rescheduled", "session.updated".
 	Type            string    `json:"type"`
 	ProcessedAt     time.Time `json:"processed_at"`
 	SessionThreadID string    `json:"session_thread_id"`
@@ -3457,7 +3496,13 @@ type BetaManagedAgentsSessionEventUnion struct {
 	MaxIterations int64 `json:"max_iterations"`
 	// This field is from variant [BetaManagedAgentsUserDefineOutcomeEvent].
 	Rubric BetaManagedAgentsUserDefineOutcomeEventRubricUnion `json:"rubric"`
-	JSON   struct {
+	// This field is from variant [BetaManagedAgentsSessionUpdatedEvent].
+	Agent BetaManagedAgentsSessionAgent `json:"agent"`
+	// This field is from variant [BetaManagedAgentsSessionUpdatedEvent].
+	Metadata map[string]string `json:"metadata"`
+	// This field is from variant [BetaManagedAgentsSessionUpdatedEvent].
+	Title string `json:"title"`
+	JSON  struct {
 		ID                       respjson.Field
 		Content                  respjson.Field
 		Type                     respjson.Field
@@ -3490,6 +3535,9 @@ type BetaManagedAgentsSessionEventUnion struct {
 		Description              respjson.Field
 		MaxIterations            respjson.Field
 		Rubric                   respjson.Field
+		Agent                    respjson.Field
+		Metadata                 respjson.Field
+		Title                    respjson.Field
 		raw                      string
 	} `json:"-"`
 }
@@ -3531,8 +3579,10 @@ func (BetaManagedAgentsSessionDeletedEvent) implBetaManagedAgentsSessionEventUni
 func (BetaManagedAgentsSessionThreadStatusRunningEvent) implBetaManagedAgentsSessionEventUnion()    {}
 func (BetaManagedAgentsSessionThreadStatusIdleEvent) implBetaManagedAgentsSessionEventUnion()       {}
 func (BetaManagedAgentsSessionThreadStatusTerminatedEvent) implBetaManagedAgentsSessionEventUnion() {}
+func (BetaManagedAgentsUserToolResultEvent) implBetaManagedAgentsSessionEventUnion()                {}
 func (BetaManagedAgentsSessionThreadStatusRescheduledEvent) implBetaManagedAgentsSessionEventUnion() {
 }
+func (BetaManagedAgentsSessionUpdatedEvent) implBetaManagedAgentsSessionEventUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -3567,7 +3617,9 @@ func (BetaManagedAgentsSessionThreadStatusRescheduledEvent) implBetaManagedAgent
 //	case anthropic.BetaManagedAgentsSessionThreadStatusRunningEvent:
 //	case anthropic.BetaManagedAgentsSessionThreadStatusIdleEvent:
 //	case anthropic.BetaManagedAgentsSessionThreadStatusTerminatedEvent:
+//	case anthropic.BetaManagedAgentsUserToolResultEvent:
 //	case anthropic.BetaManagedAgentsSessionThreadStatusRescheduledEvent:
+//	case anthropic.BetaManagedAgentsSessionUpdatedEvent:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -3633,8 +3685,12 @@ func (u BetaManagedAgentsSessionEventUnion) AsAny() anyBetaManagedAgentsSessionE
 		return u.AsSessionThreadStatusIdle()
 	case "session.thread_status_terminated":
 		return u.AsSessionThreadStatusTerminated()
+	case "user.tool_result":
+		return u.AsUserToolResult()
 	case "session.thread_status_rescheduled":
 		return u.AsSessionThreadStatusRescheduled()
+	case "session.updated":
+		return u.AsSessionUpdated()
 	}
 	return nil
 }
@@ -3789,7 +3845,17 @@ func (u BetaManagedAgentsSessionEventUnion) AsSessionThreadStatusTerminated() (v
 	return
 }
 
+func (u BetaManagedAgentsSessionEventUnion) AsUserToolResult() (v BetaManagedAgentsUserToolResultEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 func (u BetaManagedAgentsSessionEventUnion) AsSessionThreadStatusRescheduled() (v BetaManagedAgentsSessionThreadStatusRescheduledEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionEventUnion) AsSessionUpdated() (v BetaManagedAgentsSessionUpdatedEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -3815,7 +3881,8 @@ func (r *BetaManagedAgentsSessionEventUnion) UnmarshalJSON(data []byte) error {
 // OfBetaManagedAgentsAgentMCPToolResultEventContentArray
 // OfBetaManagedAgentsAgentToolResultEventContentArray
 // OfBetaManagedAgentsAgentThreadMessageReceivedEventContentArray
-// OfBetaManagedAgentsAgentThreadMessageSentEventContentArray]
+// OfBetaManagedAgentsAgentThreadMessageSentEventContentArray
+// OfBetaManagedAgentsUserToolResultEventContentArray]
 type BetaManagedAgentsSessionEventUnionContent struct {
 	// This field will be present if the value is a
 	// [[]BetaManagedAgentsUserMessageEventContentUnion] instead of an object.
@@ -3840,7 +3907,10 @@ type BetaManagedAgentsSessionEventUnionContent struct {
 	// [[]BetaManagedAgentsAgentThreadMessageSentEventContentUnion] instead of an
 	// object.
 	OfBetaManagedAgentsAgentThreadMessageSentEventContentArray []BetaManagedAgentsAgentThreadMessageSentEventContentUnion `json:",inline"`
-	JSON                                                       struct {
+	// This field will be present if the value is a
+	// [[]BetaManagedAgentsUserToolResultEventContentUnion] instead of an object.
+	OfBetaManagedAgentsUserToolResultEventContentArray []BetaManagedAgentsUserToolResultEventContentUnion `json:",inline"`
+	JSON                                               struct {
 		OfBetaManagedAgentsUserMessageEventContentArray                respjson.Field
 		OfBetaManagedAgentsUserCustomToolResultEventContentArray       respjson.Field
 		OfBetaManagedAgentsTextBlockArray                              respjson.Field
@@ -3848,6 +3918,7 @@ type BetaManagedAgentsSessionEventUnionContent struct {
 		OfBetaManagedAgentsAgentToolResultEventContentArray            respjson.Field
 		OfBetaManagedAgentsAgentThreadMessageReceivedEventContentArray respjson.Field
 		OfBetaManagedAgentsAgentThreadMessageSentEventContentArray     respjson.Field
+		OfBetaManagedAgentsUserToolResultEventContentArray             respjson.Field
 		raw                                                            string
 	} `json:"-"`
 }
@@ -4685,7 +4756,9 @@ const (
 // [BetaManagedAgentsSessionThreadStatusRunningEvent],
 // [BetaManagedAgentsSessionThreadStatusIdleEvent],
 // [BetaManagedAgentsSessionThreadStatusTerminatedEvent],
-// [BetaManagedAgentsSessionThreadStatusRescheduledEvent].
+// [BetaManagedAgentsUserToolResultEvent],
+// [BetaManagedAgentsSessionThreadStatusRescheduledEvent],
+// [BetaManagedAgentsSessionUpdatedEvent].
 //
 // Use the [BetaManagedAgentsStreamSessionEventsUnion.AsAny] method to switch on
 // the variant.
@@ -4699,7 +4772,8 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 	// [[]BetaManagedAgentsAgentMCPToolResultEventContentUnion],
 	// [[]BetaManagedAgentsAgentToolResultEventContentUnion],
 	// [[]BetaManagedAgentsAgentThreadMessageReceivedEventContentUnion],
-	// [[]BetaManagedAgentsAgentThreadMessageSentEventContentUnion]
+	// [[]BetaManagedAgentsAgentThreadMessageSentEventContentUnion],
+	// [[]BetaManagedAgentsUserToolResultEventContentUnion]
 	Content BetaManagedAgentsStreamSessionEventsUnionContent `json:"content"`
 	// Any of "user.message", "user.interrupt", "user.tool_confirmation",
 	// "user.custom_tool_result", "agent.custom_tool_use", "agent.message",
@@ -4712,7 +4786,8 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 	// "span.model_request_start", "span.model_request_end",
 	// "span.outcome_evaluation_ongoing", "user.define_outcome", "session.deleted",
 	// "session.thread_status_running", "session.thread_status_idle",
-	// "session.thread_status_terminated", "session.thread_status_rescheduled".
+	// "session.thread_status_terminated", "user.tool_result",
+	// "session.thread_status_rescheduled", "session.updated".
 	Type            string    `json:"type"`
 	ProcessedAt     time.Time `json:"processed_at"`
 	SessionThreadID string    `json:"session_thread_id"`
@@ -4763,7 +4838,13 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 	MaxIterations int64 `json:"max_iterations"`
 	// This field is from variant [BetaManagedAgentsUserDefineOutcomeEvent].
 	Rubric BetaManagedAgentsUserDefineOutcomeEventRubricUnion `json:"rubric"`
-	JSON   struct {
+	// This field is from variant [BetaManagedAgentsSessionUpdatedEvent].
+	Agent BetaManagedAgentsSessionAgent `json:"agent"`
+	// This field is from variant [BetaManagedAgentsSessionUpdatedEvent].
+	Metadata map[string]string `json:"metadata"`
+	// This field is from variant [BetaManagedAgentsSessionUpdatedEvent].
+	Title string `json:"title"`
+	JSON  struct {
 		ID                       respjson.Field
 		Content                  respjson.Field
 		Type                     respjson.Field
@@ -4796,6 +4877,9 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 		Description              respjson.Field
 		MaxIterations            respjson.Field
 		Rubric                   respjson.Field
+		Agent                    respjson.Field
+		Metadata                 respjson.Field
+		Title                    respjson.Field
 		raw                      string
 	} `json:"-"`
 }
@@ -4847,8 +4931,10 @@ func (BetaManagedAgentsSessionThreadStatusIdleEvent) implBetaManagedAgentsStream
 }
 func (BetaManagedAgentsSessionThreadStatusTerminatedEvent) implBetaManagedAgentsStreamSessionEventsUnion() {
 }
+func (BetaManagedAgentsUserToolResultEvent) implBetaManagedAgentsStreamSessionEventsUnion() {}
 func (BetaManagedAgentsSessionThreadStatusRescheduledEvent) implBetaManagedAgentsStreamSessionEventsUnion() {
 }
+func (BetaManagedAgentsSessionUpdatedEvent) implBetaManagedAgentsStreamSessionEventsUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -4883,7 +4969,9 @@ func (BetaManagedAgentsSessionThreadStatusRescheduledEvent) implBetaManagedAgent
 //	case anthropic.BetaManagedAgentsSessionThreadStatusRunningEvent:
 //	case anthropic.BetaManagedAgentsSessionThreadStatusIdleEvent:
 //	case anthropic.BetaManagedAgentsSessionThreadStatusTerminatedEvent:
+//	case anthropic.BetaManagedAgentsUserToolResultEvent:
 //	case anthropic.BetaManagedAgentsSessionThreadStatusRescheduledEvent:
+//	case anthropic.BetaManagedAgentsSessionUpdatedEvent:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -4949,8 +5037,12 @@ func (u BetaManagedAgentsStreamSessionEventsUnion) AsAny() anyBetaManagedAgentsS
 		return u.AsSessionThreadStatusIdle()
 	case "session.thread_status_terminated":
 		return u.AsSessionThreadStatusTerminated()
+	case "user.tool_result":
+		return u.AsUserToolResult()
 	case "session.thread_status_rescheduled":
 		return u.AsSessionThreadStatusRescheduled()
+	case "session.updated":
+		return u.AsSessionUpdated()
 	}
 	return nil
 }
@@ -5105,7 +5197,17 @@ func (u BetaManagedAgentsStreamSessionEventsUnion) AsSessionThreadStatusTerminat
 	return
 }
 
+func (u BetaManagedAgentsStreamSessionEventsUnion) AsUserToolResult() (v BetaManagedAgentsUserToolResultEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 func (u BetaManagedAgentsStreamSessionEventsUnion) AsSessionThreadStatusRescheduled() (v BetaManagedAgentsSessionThreadStatusRescheduledEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsStreamSessionEventsUnion) AsSessionUpdated() (v BetaManagedAgentsSessionUpdatedEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5132,7 +5234,8 @@ func (r *BetaManagedAgentsStreamSessionEventsUnion) UnmarshalJSON(data []byte) e
 // OfBetaManagedAgentsAgentMCPToolResultEventContentArray
 // OfBetaManagedAgentsAgentToolResultEventContentArray
 // OfBetaManagedAgentsAgentThreadMessageReceivedEventContentArray
-// OfBetaManagedAgentsAgentThreadMessageSentEventContentArray]
+// OfBetaManagedAgentsAgentThreadMessageSentEventContentArray
+// OfBetaManagedAgentsUserToolResultEventContentArray]
 type BetaManagedAgentsStreamSessionEventsUnionContent struct {
 	// This field will be present if the value is a
 	// [[]BetaManagedAgentsUserMessageEventContentUnion] instead of an object.
@@ -5157,7 +5260,10 @@ type BetaManagedAgentsStreamSessionEventsUnionContent struct {
 	// [[]BetaManagedAgentsAgentThreadMessageSentEventContentUnion] instead of an
 	// object.
 	OfBetaManagedAgentsAgentThreadMessageSentEventContentArray []BetaManagedAgentsAgentThreadMessageSentEventContentUnion `json:",inline"`
-	JSON                                                       struct {
+	// This field will be present if the value is a
+	// [[]BetaManagedAgentsUserToolResultEventContentUnion] instead of an object.
+	OfBetaManagedAgentsUserToolResultEventContentArray []BetaManagedAgentsUserToolResultEventContentUnion `json:",inline"`
+	JSON                                               struct {
 		OfBetaManagedAgentsUserMessageEventContentArray                respjson.Field
 		OfBetaManagedAgentsUserCustomToolResultEventContentArray       respjson.Field
 		OfBetaManagedAgentsTextBlockArray                              respjson.Field
@@ -5165,6 +5271,7 @@ type BetaManagedAgentsStreamSessionEventsUnionContent struct {
 		OfBetaManagedAgentsAgentToolResultEventContentArray            respjson.Field
 		OfBetaManagedAgentsAgentThreadMessageReceivedEventContentArray respjson.Field
 		OfBetaManagedAgentsAgentThreadMessageSentEventContentArray     respjson.Field
+		OfBetaManagedAgentsUserToolResultEventContentArray             respjson.Field
 		raw                                                            string
 	} `json:"-"`
 }
@@ -6620,6 +6727,231 @@ type BetaManagedAgentsUserToolConfirmationEventParamsType string
 const (
 	BetaManagedAgentsUserToolConfirmationEventParamsTypeUserToolConfirmation BetaManagedAgentsUserToolConfirmationEventParamsType = "user.tool_confirmation"
 )
+
+// Parameters for providing the result of an agent-toolset tool execution. Only
+// valid on `self_hosted` environments, where sandbox-routed tools are executed by
+// the client rather than the server.
+//
+// The properties ToolUseID, Type are required.
+type BetaManagedAgentsUserToolResultEventParams struct {
+	// The id of the `agent.tool_use` event this result corresponds to, which can be
+	// found in the last `session.status_idle`
+	// [event's](https://platform.claude.com/docs/en/api/beta/sessions/events/list#beta_managed_agents_session_requires_action.event_ids)
+	// `stop_reason.event_ids` field.
+	ToolUseID string `json:"tool_use_id" api:"required"`
+	// Any of "user.tool_result".
+	Type BetaManagedAgentsUserToolResultEventParamsType `json:"type,omitzero" api:"required"`
+	// Whether the tool execution resulted in an error.
+	IsError param.Opt[bool] `json:"is_error,omitzero"`
+	// The result content returned by the tool.
+	Content []BetaManagedAgentsUserToolResultEventParamsContentUnion `json:"content,omitzero"`
+	paramObj
+}
+
+func (r BetaManagedAgentsUserToolResultEventParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsUserToolResultEventParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsUserToolResultEventParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsUserToolResultEventParamsType string
+
+const (
+	BetaManagedAgentsUserToolResultEventParamsTypeUserToolResult BetaManagedAgentsUserToolResultEventParamsType = "user.tool_result"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaManagedAgentsUserToolResultEventParamsContentUnion struct {
+	OfText         *BetaManagedAgentsTextBlockParam         `json:",omitzero,inline"`
+	OfImage        *BetaManagedAgentsImageBlockParam        `json:",omitzero,inline"`
+	OfDocument     *BetaManagedAgentsDocumentBlockParam     `json:",omitzero,inline"`
+	OfSearchResult *BetaManagedAgentsSearchResultBlockParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaManagedAgentsUserToolResultEventParamsContentUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfText, u.OfImage, u.OfDocument, u.OfSearchResult)
+}
+func (u *BetaManagedAgentsUserToolResultEventParamsContentUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaManagedAgentsUserToolResultEventParamsContentUnion) asAny() any {
+	if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfImage) {
+		return u.OfImage
+	} else if !param.IsOmitted(u.OfDocument) {
+		return u.OfDocument
+	} else if !param.IsOmitted(u.OfSearchResult) {
+		return u.OfSearchResult
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsUserToolResultEventParamsContentUnion) GetText() *string {
+	if vt := u.OfText; vt != nil {
+		return &vt.Text
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsUserToolResultEventParamsContentUnion) GetContext() *string {
+	if vt := u.OfDocument; vt != nil && vt.Context.Valid() {
+		return &vt.Context.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsUserToolResultEventParamsContentUnion) GetCitations() *BetaManagedAgentsSearchResultCitationsParam {
+	if vt := u.OfSearchResult; vt != nil {
+		return &vt.Citations
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsUserToolResultEventParamsContentUnion) GetContent() []BetaManagedAgentsSearchResultContentParam {
+	if vt := u.OfSearchResult; vt != nil {
+		return vt.Content
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsUserToolResultEventParamsContentUnion) GetType() *string {
+	if vt := u.OfText; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfImage; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfDocument; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfSearchResult; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsUserToolResultEventParamsContentUnion) GetTitle() *string {
+	if vt := u.OfDocument; vt != nil && vt.Title.Valid() {
+		return &vt.Title.Value
+	} else if vt := u.OfSearchResult; vt != nil {
+		return (*string)(&vt.Title)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u BetaManagedAgentsUserToolResultEventParamsContentUnion) GetSource() (res betaManagedAgentsUserToolResultEventParamsContentUnionSource) {
+	if vt := u.OfImage; vt != nil {
+		res.any = vt.Source.asAny()
+	} else if vt := u.OfDocument; vt != nil {
+		res.any = vt.Source.asAny()
+	} else if vt := u.OfSearchResult; vt != nil {
+		res.any = &vt.Source
+	}
+	return
+}
+
+// Can have the runtime types [*BetaManagedAgentsBase64ImageSourceParam],
+// [*BetaManagedAgentsURLImageSourceParam],
+// [*BetaManagedAgentsFileImageSourceParam],
+// [*BetaManagedAgentsBase64DocumentSourceParam],
+// [*BetaManagedAgentsPlainTextDocumentSourceParam],
+// [*BetaManagedAgentsURLDocumentSourceParam],
+// [*BetaManagedAgentsFileDocumentSourceParam], [*string]
+type betaManagedAgentsUserToolResultEventParamsContentUnionSource struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BetaManagedAgentsBase64ImageSourceParam:
+//	case *anthropic.BetaManagedAgentsURLImageSourceParam:
+//	case *anthropic.BetaManagedAgentsFileImageSourceParam:
+//	case *anthropic.BetaManagedAgentsBase64DocumentSourceParam:
+//	case *anthropic.BetaManagedAgentsPlainTextDocumentSourceParam:
+//	case *anthropic.BetaManagedAgentsURLDocumentSourceParam:
+//	case *anthropic.BetaManagedAgentsFileDocumentSourceParam:
+//	case *string:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u betaManagedAgentsUserToolResultEventParamsContentUnionSource) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaManagedAgentsUserToolResultEventParamsContentUnionSource) GetData() *string {
+	switch vt := u.any.(type) {
+	case *BetaManagedAgentsImageBlockSourceUnionParam:
+		return vt.GetData()
+	case *BetaManagedAgentsDocumentBlockSourceUnionParam:
+		return vt.GetData()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaManagedAgentsUserToolResultEventParamsContentUnionSource) GetMediaType() *string {
+	switch vt := u.any.(type) {
+	case *BetaManagedAgentsImageBlockSourceUnionParam:
+		return vt.GetMediaType()
+	case *BetaManagedAgentsDocumentBlockSourceUnionParam:
+		return vt.GetMediaType()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaManagedAgentsUserToolResultEventParamsContentUnionSource) GetType() *string {
+	switch vt := u.any.(type) {
+	case *BetaManagedAgentsImageBlockSourceUnionParam:
+		return vt.GetType()
+	case *BetaManagedAgentsDocumentBlockSourceUnionParam:
+		return vt.GetType()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaManagedAgentsUserToolResultEventParamsContentUnionSource) GetURL() *string {
+	switch vt := u.any.(type) {
+	case *BetaManagedAgentsImageBlockSourceUnionParam:
+		return vt.GetURL()
+	case *BetaManagedAgentsDocumentBlockSourceUnionParam:
+		return vt.GetURL()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaManagedAgentsUserToolResultEventParamsContentUnionSource) GetFileID() *string {
+	switch vt := u.any.(type) {
+	case *BetaManagedAgentsImageBlockSourceUnionParam:
+		return vt.GetFileID()
+	case *BetaManagedAgentsDocumentBlockSourceUnionParam:
+		return vt.GetFileID()
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaManagedAgentsUserToolResultEventParamsContentUnion](
+		"type",
+		apijson.Discriminator[BetaManagedAgentsTextBlockParam]("text"),
+		apijson.Discriminator[BetaManagedAgentsImageBlockParam]("image"),
+		apijson.Discriminator[BetaManagedAgentsDocumentBlockParam]("document"),
+		apijson.Discriminator[BetaManagedAgentsSearchResultBlockParam]("search_result"),
+	)
+}
 
 type BetaSessionEventListParams struct {
 	// Return events created after this time (exclusive).

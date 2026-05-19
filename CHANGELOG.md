@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.44.1 (2026-05-19)
+
+Full Changelog: [v1.44.0...v1.44.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.44.0...v1.44.1)
+
+### Bug Fixes
+
+* **runner:** skip tool calls SessionToolRunner does not own ([93afc65](https://github.com/anthropics/anthropic-sdk-go/commit/93afc65f2f1b811d760f2e5149e13dd5eb328f79))
+
 ## 1.44.0 (2026-05-19)
 
 Full Changelog: [v1.43.0...v1.44.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.43.0...v1.44.0)

@@ -1299,6 +1299,20 @@ func (u CodeExecutionToolResultBlockParamContentUnion) MarshalJSON() ([]byte, er
 	return param.MarshalUnion(u, u.OfRequestCodeExecutionToolResultError, u.OfRequestCodeExecutionResultBlock, u.OfRequestEncryptedCodeExecutionResultBlock)
 }
 func (u *CodeExecutionToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
+	var discriminator struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &discriminator); err != nil {
+		return err
+	}
+	switch discriminator.Type {
+	case "code_execution_result":
+		return apijson.UnmarshalRoot(data, &u.OfRequestCodeExecutionResultBlock)
+	case "code_execution_tool_result_error":
+		return apijson.UnmarshalRoot(data, &u.OfRequestCodeExecutionToolResultError)
+	case "encrypted_code_execution_result":
+		return apijson.UnmarshalRoot(data, &u.OfRequestEncryptedCodeExecutionResultBlock)
+	}
 	return apijson.UnmarshalRoot(data, u)
 }
 
@@ -2048,6 +2062,16 @@ func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
 		u.OfContainerUpload)
 }
 func (u *ContentBlockParamUnion) UnmarshalJSON(data []byte) error {
+	var discriminator struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &discriminator); err != nil {
+		return err
+	}
+	switch discriminator.Type {
+	case "code_execution_tool_result":
+		return apijson.UnmarshalRoot(data, &u.OfCodeExecutionToolResult)
+	}
 	return apijson.UnmarshalRoot(data, u)
 }
 

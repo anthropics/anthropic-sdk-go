@@ -133,6 +133,7 @@ type Refusal string                                 // Always "refusal"
 type Rename string                                  // Always "rename"
 type SearchResult string                            // Always "search_result"
 type SearchResultLocation string                    // Always "search_result_location"
+type SelfHosted string                              // Always "self_hosted"
 type ServerToolUse string                           // Always "server_tool_use"
 type Session string                                 // Always "session"
 type SessionArchived string                         // Always "session.archived"
@@ -209,6 +210,9 @@ type WebSearchResult string                         // Always "web_search_result
 type WebSearchResultLocation string                 // Always "web_search_result_location"
 type WebSearchToolResult string                     // Always "web_search_tool_result"
 type WebSearchToolResultError string                // Always "web_search_tool_result_error"
+type Work string                                    // Always "work"
+type WorkHeartbeat string                           // Always "work_heartbeat"
+type WorkQueueStats string                          // Always "work_queue_stats"
 
 func (c Adaptive) Default() Adaptive                             { return "adaptive" }
 func (c Advisor) Default() Advisor                               { return "advisor" }
@@ -328,6 +332,7 @@ func (c Refusal) Default() Refusal                           { return "refusal" 
 func (c Rename) Default() Rename                             { return "rename" }
 func (c SearchResult) Default() SearchResult                 { return "search_result" }
 func (c SearchResultLocation) Default() SearchResultLocation { return "search_result_location" }
+func (c SelfHosted) Default() SelfHosted                     { return "self_hosted" }
 func (c ServerToolUse) Default() ServerToolUse               { return "server_tool_use" }
 func (c Session) Default() Session                           { return "session" }
 func (c SessionArchived) Default() SessionArchived           { return "session.archived" }
@@ -440,6 +445,9 @@ func (c WebSearchToolResult) Default() WebSearchToolResult { return "web_search_
 func (c WebSearchToolResultError) Default() WebSearchToolResultError {
 	return "web_search_tool_result_error"
 }
+func (c Work) Default() Work                     { return "work" }
+func (c WorkHeartbeat) Default() WorkHeartbeat   { return "work_heartbeat" }
+func (c WorkQueueStats) Default() WorkQueueStats { return "work_queue_stats" }
 
 func (c Adaptive) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Advisor) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -543,6 +551,7 @@ func (c Refusal) MarshalJSON() ([]byte, error)                             { ret
 func (c Rename) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c SearchResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c SearchResultLocation) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c SelfHosted) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c ServerToolUse) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Session) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c SessionArchived) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
@@ -623,6 +632,9 @@ func (c WebSearchResult) MarshalJSON() ([]byte, error)                   { retur
 func (c WebSearchResultLocation) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c WebSearchToolResult) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c WebSearchToolResultError) MarshalJSON() ([]byte, error)          { return marshalString(c) }
+func (c Work) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c WorkHeartbeat) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c WorkQueueStats) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 
 type constant[T any] interface {
 	Constant[T]

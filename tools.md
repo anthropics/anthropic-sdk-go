@@ -284,9 +284,19 @@ When Claude requests multiple tool calls in a single message, they are executed 
 - Proper context cancellation handling
 - Results returned in the correct order
 
+## Managed-agents sessions
+
+The same `anthropic.BetaTool` shape works for managed-agents sessions. Two helpers cover the self-hosted side:
+
+- `client.Beta.Sessions.Events.NewToolRunner(ctx, sessionID, anthropic.SessionToolRunnerOptions{...})` — the sessions-side counterpart to `client.Beta.Messages.NewToolRunner`. The session id is a positional argument (matching `list`/`send`/`stream` on the events resource); the options struct carries the tool registry and tuning knobs. It attaches to a session's event stream, dispatches the registered tools on both `agent.tool_use` (builtin tools, answered with `user.tool_result`) and `agent.custom_tool_use` (user-defined function tools, answered with `user.custom_tool_result`), and stops after the session is idle past `MaxIdle`. It does *only* that — no work claiming, lease heartbeating, or skill download.
+- `environments.NewEnvironmentWorker(client, environments.EnvironmentWorkerOptions{...})` (in `github.com/anthropics/anthropic-sdk-go/lib/environments`) — the full self-hosted runner: it composes `environments.WorkPoller` (claim work) with a per-session `SessionToolRunner`, sets up the workdir + downloads the session agent's skills, heartbeats the work-item lease in parallel, force-stops the work on exit, and loops. A single `EnvironmentKey` authorizes everything — both the work-poll calls and the per-session calls. `worker.Run(ctx)` drives the poll loop (requires `EnvironmentID` + `EnvironmentKey`); `worker.HandleItem(ctx, environments.HandleItemOptions{...})` runs that same per-item flow (skills + run + heartbeat + force-stop) once for a work item you have already claimed yourself. Each `HandleItemOptions` field — `WorkID` / `EnvironmentID` / `SessionID` / `EnvironmentKey` — falls back to `ANTHROPIC_WORK_ID` / `ANTHROPIC_ENVIRONMENT_ID` / `ANTHROPIC_SESSION_ID` / `ANTHROPIC_ENVIRONMENT_KEY` when left empty (and `EnvironmentKey` also falls back to the worker's own `EnvironmentKey` option), so inside an `ant worker poll --on-work` hook (which exports all of them) it is just `worker.HandleItem(ctx, environments.HandleItemOptions{})`. If you are iterating `environments.WorkPoller` yourself, pass the claimed item through: `worker.HandleItem(ctx, environments.HandleItemOptions{WorkID: work.ID, EnvironmentID: work.EnvironmentID, SessionID: work.Data.ID, EnvironmentKey: environmentKey})`.
+
+The standard `agent_toolset_20260401` tools (`bash`, `read`, `write`, `edit`, `glob`, `grep`), the workdir/skills `AgentToolContext`, and the skill-download helper live in `github.com/anthropics/anthropic-sdk-go/tools/agenttoolset`; `agenttoolset.BetaAgentToolset20260401(env)` returns them as a plain `[]anthropic.BetaTool` you can filter or extend. The file tools confine to the workdir (symlink-aware) and are safe without a sandbox; `bash` is unrestricted and should run inside one.
+
 ## Examples
 
 See the [examples](./examples) directory for complete working examples:
 
 - [examples/tool-runner](./examples/tool-runner) - Basic tool runner usage
 - [examples/tool-runner-streaming](./examples/tool-runner-streaming) - Streaming with tool runner
+- [examples/managed-agents-private-sandbox-worker](./examples/managed-agents-private-sandbox-worker) - Self-hosted environment worker

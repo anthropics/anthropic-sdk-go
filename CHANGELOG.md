@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.44.0 (2026-05-19)
+
+Full Changelog: [v1.43.0...v1.44.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.43.0...v1.44.0)
+
+### Features
+
+* **client:** Add support for self-hosted sandboxes in CMA with sandbox helpers ([34354c4](https://github.com/anthropics/anthropic-sdk-go/commit/34354c43f329852a88682bb6665a1453754d61be))
+
 ## 1.43.0 (2026-05-13)
 
 Full Changelog: [v1.42.0...v1.43.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.42.0...v1.43.0)

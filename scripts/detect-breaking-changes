@@ -18,6 +18,7 @@ TEST_PATHS=(
 	betaagent_test.go
 	betaagentversion_test.go
 	betaenvironment_test.go
+	betaenvironmentwork_test.go
 	betasession_test.go
 	betasessionevent_test.go
 	betasessionresource_test.go

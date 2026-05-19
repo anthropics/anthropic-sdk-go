@@ -420,29 +420,118 @@ func TestSessionToolRunner_ReconcileRetriesFailedPost(t *testing.T) {
 	require.NoError(t, r.Close())
 }
 
-func TestSessionToolRunner_UnknownTool(t *testing.T) {
+// TestSessionToolRunner_SkipsUnownedToolByDefault pins the default
+// split-client behavior: a tool-use event whose Name is not in the runner's
+// registry belongs to the other client servicing the session (e.g. the
+// customer's app backend handling custom tools). The runner must post NO
+// result for it, claim nothing, and leave the tool_use_id pending — while
+// still yielding the DispatchedToolCall so the caller can observe the unowned
+// dispatch (Posted=false, IsError=false, no result event populated). It must
+// not panic on the registry miss.
+func TestSessionToolRunner_SkipsUnownedToolByDefault(t *testing.T) {
 	server := newSessionEventsServer(t)
 	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
 		streamWriter(w, r, []string{
-			sseLine("agent.tool_use", toolUseEvt("evt_99", "nope", map[string]any{})),
+			sseLine("agent.tool_use", toolUseEvt("evt_99", "not_ours", map[string]any{})),
+			sseLine("agent.custom_tool_use", customToolUseEvt("cevt_99", "app_backend_tool", map[string]any{})),
 		}, true)
 	}
-	server.HandleSend = func(w http.ResponseWriter, r *http.Request) {
-		body, _ := io.ReadAll(r.Body)
-		require.Contains(t, string(body), `"is_error":true`)
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(sendOK()))
+	server.HandleSend = func(http.ResponseWriter, *http.Request) {
+		t.Fatal("runner must not post any result for a tool it does not own")
 	}
 
+	// The runner owns "echo" but neither streamed event is for it.
+	echo := &stubBetaTool{name: "echo"}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	r := newShortIdleRunner(t, ctx, server.Client(), nil, 500*time.Millisecond)
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 500*time.Millisecond)
 
-	require.True(t, r.Next())
+	seen := map[string]DispatchedToolCall{}
+	for range 2 {
+		require.True(t, r.Next(), "the unowned call must still be surfaced to the caller")
+		call := r.Current()
+		seen[call.ToolUseID] = call
+	}
+
+	builtin, ok := seen["evt_99"]
+	require.True(t, ok, "the unowned agent.tool_use must still be yielded")
+	require.Equal(t, "not_ours", builtin.Name)
+	require.False(t, builtin.Custom)
+	require.False(t, builtin.IsError, "a skipped call is not an error")
+	require.False(t, builtin.Posted, "nothing was sent for an unowned tool")
+	require.Equal(t, "evt_99", builtin.ToolUse.ID, "the triggering event is still surfaced")
+	require.Empty(t, builtin.Result.ToolUseID, "no user.tool_result was ever built")
+	require.Empty(t, dispatchedResultText(builtin))
+
+	custom, ok := seen["cevt_99"]
+	require.True(t, ok, "the unowned agent.custom_tool_use must still be yielded")
+	require.Equal(t, "app_backend_tool", custom.Name)
+	require.True(t, custom.Custom)
+	require.False(t, custom.IsError, "a skipped call is not an error")
+	require.False(t, custom.Posted, "nothing was sent for an unowned custom tool")
+	require.Equal(t, "cevt_99", custom.CustomToolUse.ID, "the triggering event is still surfaced")
+	require.Empty(t, custom.CustomResult.CustomToolUseID, "no user.custom_tool_result was ever built")
+	require.Empty(t, dispatchedResultText(custom))
+
+	require.Equal(t, int32(0), echo.runs.Load(), "no registered tool should have run")
+	require.NoError(t, r.Close())
+	require.NoError(t, r.Err(), "skipping an unowned tool is not a terminal error")
+}
+
+// TestSessionToolRunner_SkippedUnownedToolDoesNotTripIdle pins that a skipped
+// (unanswered) unowned tool_use stays out of the end-turn accounting:
+// reconcile sees history ending on an end_turn idle but with the unowned
+// tool_use still unanswered, so it must NOT arm the idle countdown — the
+// runner has not actually handled that call, its owner still has to.
+func TestSessionToolRunner_SkippedUnownedToolDoesNotTripIdle(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, nil, true) // no live events; reconcile drives the test
+	}
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		body, _ := json.Marshal(map[string]any{
+			"data": []any{
+				toolUseEvt("evt_pending", "not_ours", map[string]any{}),
+				idleEndTurnEvt("evt_idle"),
+			},
+			"first_id": "evt_pending", "has_more": false, "last_id": "evt_idle",
+		})
+		_, _ = w.Write(body)
+	}
+	server.HandleSend = func(http.ResponseWriter, *http.Request) {
+		t.Fatal("runner must not post any result for a tool it does not own")
+	}
+
+	// Bound the run: with a short MaxIdle, a wrongly-armed idle countdown
+	// would end the runner ~150ms in; a correct runner instead blocks until
+	// this ctx expires ~2s in. The gap makes the two outcomes unambiguous.
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), nil, 150*time.Millisecond)
+
+	require.True(t, r.Next(), "reconcile must still surface the unowned call")
 	call := r.Current()
-	require.True(t, call.IsError)
-	require.Contains(t, dispatchedResultText(call), "not implemented")
-	require.True(t, call.Posted)
+	require.Equal(t, "evt_pending", call.ToolUseID)
+	require.False(t, call.Posted)
+	require.False(t, call.IsError)
+	require.Empty(t, call.Result.ToolUseID, "no result was built for the skipped call")
+
+	// The skipped tool_use is unanswered, so reconcile must keep it OUT of
+	// the end-turn accounting even though history ends on an end_turn idle.
+	// Single-goroutine: drain to termination and assert it was ctx expiry,
+	// not an idle timeout.
+	start := time.Now()
+	for r.Next() {
+		t.Fatalf("unexpected extra yield: %+v", r.Current())
+	}
+	elapsed := time.Since(start)
+
+	require.NotErrorIs(t, r.Err(), ErrIdleTimeout,
+		"runner falsely went idle on a skipped unowned tool_use")
+	require.GreaterOrEqual(t, elapsed, time.Second,
+		"runner ended after only %s — it idle-timed-out instead of staying up for the pending unowned call", elapsed)
+	require.NoError(t, r.Close())
 }
 
 func TestSessionToolRunner_SessionTerminatedEndsIteration(t *testing.T) {

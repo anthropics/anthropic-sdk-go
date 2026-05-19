@@ -364,16 +364,41 @@ func heartbeatLease(ctx context.Context, cancel context.CancelFunc, client anthr
 
 // printCall logs one observed tool call: name, input, error flag, and whether
 // the result posted back to the session.
+//
+// By default the runner only owns the tools it was registered with. A
+// self-hosted session is commonly serviced by two clients at once (this runner
+// for sandbox tools, the customer's app backend for custom tools); a tool-use
+// for a name this runner does not own is deliberately left pending for its
+// owner — it is yielded here with Posted=false, IsError=false and no result
+// event built, which is distinct from a result the runner built but failed to
+// send.
 func printCall(call anthropic.DispatchedToolCall) {
 	status := "ok"
-	if call.IsError {
+	switch {
+	case call.IsError:
 		status = "error"
+	case skippedUnowned(call):
+		status = "skipped (not owned by this runner; left pending for its owner)"
 	}
 	posted := ""
-	if !call.Posted {
+	if !call.Posted && !skippedUnowned(call) {
 		posted = " [result post failed]"
 	}
 	fmt.Printf("tool %s(%s) -> %s%s\n", call.Name, truncate(callInput(call), 120), status, posted)
+}
+
+// skippedUnowned reports whether the runner deliberately left this call for
+// another client to answer (the default split-client behavior): nothing was
+// posted and no result event was ever constructed. Distinct from a failed
+// post, where the runner built the result but the send did not land.
+func skippedUnowned(call anthropic.DispatchedToolCall) bool {
+	if call.Posted || call.IsError {
+		return false
+	}
+	if call.Custom {
+		return call.CustomResult.CustomToolUseID == ""
+	}
+	return call.Result.ToolUseID == ""
 }
 
 // callInput renders the raw tool input from the triggering event —

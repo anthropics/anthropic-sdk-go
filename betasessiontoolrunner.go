@@ -144,10 +144,12 @@ type SessionToolRunnerOptions struct {
 // event (ToolUse.Input / CustomToolUse.Input) and the tool's output blocks on
 // the posted result (Result.Content / CustomResult.Content).
 //
-// IsError is true if the tool reported failure, the tool name was unknown, or
-// the tool exceeded its per-call timeout. Posted is orthogonal to IsError: it
-// reports whether the result event was successfully sent back to the session.
-// Posted=false means the agent will not see this result, regardless of IsError.
+// IsError is true if the tool reported failure or exceeded its per-call
+// timeout. Posted is orthogonal to IsError: it reports whether a result event
+// was successfully sent back to the session. Posted=false means the agent will
+// not see a result from this runner, regardless of IsError — either because
+// the send failed or because the tool name is not one this runner owns and the
+// runner deliberately posted nothing and left the id pending for its owner.
 type DispatchedToolCall struct {
 	// Custom reports whether this dispatch was triggered by an
 	// agent.custom_tool_use event (a user-defined function tool) rather than an
@@ -195,8 +197,10 @@ type DispatchedToolCall struct {
 	// agent as an error.
 	IsError bool
 
-	// Posted reports whether the result event reached the session. False on
-	// permanent 4xx or exhausted retries.
+	// Posted reports whether a result event for this call reached the session.
+	// False on a permanent 4xx or exhausted retries, and also false — with no
+	// result event ever built — for a tool name this runner does not own when
+	// it deliberately posts nothing and leaves the id pending for its owner.
 	Posted bool
 }
 
@@ -886,8 +890,18 @@ func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) Dispa
 	var blocks []BetaToolResultBlockParamContentUnion
 	tool, ok := r.byName[name]
 	if !ok {
-		call.IsError = true
-		blocks = textOnlyResult(fmt.Sprintf("tool %q not implemented", name))
+		// Skip (split-client partial fulfilment): a name this runner is not
+		// registered for belongs to the other client servicing this session
+		// (typically the customer's app backend handling custom tools). Post
+		// NO result, do not mark it answered, and leave the tool_use_id
+		// pending for its owner — claiming it would corrupt the conversation.
+		// Still yield the call so the caller can observe the unowned
+		// dispatch; nothing was sent, so Posted and IsError stay false and no
+		// result event is populated. The id remains unanswered, so reconcile
+		// keeps it out of the idle/end-turn accounting and re-surfaces it
+		// after a reconnect until its owner answers it.
+		log.Info("tool not owned by this runner; leaving the tool_use_id pending for its owner")
+		return call
 	} else {
 		// Derive the per-tool timeout from the runner ctx (not
 		// context.WithoutCancel) so cancelling the runner also aborts an

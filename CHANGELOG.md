@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.45.0 (2026-05-21)
+
+Full Changelog: [v1.44.1...v1.45.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.44.1...v1.45.0)
+
+### Features
+
+* **api:** Add support for thinking-token-count beta for estimated tokens in thinking block deltas when streaming ([dedeb6d](https://github.com/anthropics/anthropic-sdk-go/commit/dedeb6d263a651d63c95bd360befbd53dd26ec12))
+
 ## 1.44.1 (2026-05-19)
 
 Full Changelog: [v1.44.0...v1.44.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.44.0...v1.44.1)

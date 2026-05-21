@@ -5665,6 +5665,8 @@ type BetaRawContentBlockDeltaUnion struct {
 	// This field is from variant [BetaCitationsDelta].
 	Citation BetaCitationsDeltaCitationUnion `json:"citation"`
 	// This field is from variant [BetaThinkingDelta].
+	EstimatedTokens int64 `json:"estimated_tokens"`
+	// This field is from variant [BetaThinkingDelta].
 	Thinking string `json:"thinking"`
 	// This field is from variant [BetaSignatureDelta].
 	Signature string `json:"signature"`
@@ -5677,6 +5679,7 @@ type BetaRawContentBlockDeltaUnion struct {
 		Type             respjson.Field
 		PartialJSON      respjson.Field
 		Citation         respjson.Field
+		EstimatedTokens  respjson.Field
 		Thinking         respjson.Field
 		Signature        respjson.Field
 		Content          respjson.Field
@@ -6479,6 +6482,8 @@ type BetaRawMessageStreamEventUnionDelta struct {
 	// This field is from variant [BetaRawContentBlockDeltaUnion].
 	Citation BetaCitationsDeltaCitationUnion `json:"citation"`
 	// This field is from variant [BetaRawContentBlockDeltaUnion].
+	EstimatedTokens int64 `json:"estimated_tokens"`
+	// This field is from variant [BetaRawContentBlockDeltaUnion].
 	Thinking string `json:"thinking"`
 	// This field is from variant [BetaRawContentBlockDeltaUnion].
 	Signature string `json:"signature"`
@@ -6495,6 +6500,7 @@ type BetaRawMessageStreamEventUnionDelta struct {
 		Type             respjson.Field
 		PartialJSON      respjson.Field
 		Citation         respjson.Field
+		EstimatedTokens  respjson.Field
 		Thinking         respjson.Field
 		Signature        respjson.Field
 		Content          respjson.Field
@@ -8305,14 +8311,24 @@ func init() {
 }
 
 type BetaThinkingDelta struct {
-	Thinking string                 `json:"thinking" api:"required"`
-	Type     constant.ThinkingDelta `json:"type" default:"thinking_delta"`
+	// Per-frame increment of a coarse, running estimate of the tokens this thinking
+	// block has produced so far. Present whenever the
+	// `thinking-token-count-2026-05-13` beta is set; `null` unless `thinking.display`
+	// resolves to `"omitted"` and a count is due this frame. Sum the increments across
+	// `thinking_delta` frames on this block for a progress indicator. Each increment
+	// is a non-negative multiple of a fixed quantum and the cadence is rate-limited,
+	// so this is a deliberately lossy display hint, not a billable count;
+	// `usage.output_tokens` remains authoritative.
+	EstimatedTokens int64                  `json:"estimated_tokens" api:"required"`
+	Thinking        string                 `json:"thinking" api:"required"`
+	Type            constant.ThinkingDelta `json:"type" default:"thinking_delta"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Thinking    respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		EstimatedTokens respjson.Field
+		Thinking        respjson.Field
+		Type            respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 

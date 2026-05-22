@@ -299,4 +299,4 @@ See the [examples](./examples) directory for complete working examples:
 
 - [examples/tool-runner](./examples/tool-runner) - Basic tool runner usage
 - [examples/tool-runner-streaming](./examples/tool-runner-streaming) - Streaming with tool runner
-- [examples/managed-agents-private-sandbox-worker](./examples/managed-agents-private-sandbox-worker) - Self-hosted environment worker
+- [examples/managed-agents-self-hosted-sandbox-worker](./examples/managed-agents-self-hosted-sandbox-worker) - Self-hosted environment worker

@@ -316,21 +316,10 @@ func (r BashCodeExecutionToolResultBlock) ToParam() BashCodeExecutionToolResultB
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
 
-	if r.Content.JSON.ErrorCode.Valid() {
-		p.Content.OfRequestBashCodeExecutionToolResultError = &BashCodeExecutionToolResultErrorParam{
-			ErrorCode: BashCodeExecutionToolResultErrorCode(r.Content.ErrorCode),
-		}
-	} else {
-		requestBashContentResult := &BashCodeExecutionResultBlockParam{
-			ReturnCode: r.Content.ReturnCode,
-			Stderr:     r.Content.Stderr,
-			Stdout:     r.Content.Stdout,
-		}
-		for _, block := range r.Content.Content {
-			requestBashContentResult.Content = append(requestBashContentResult.Content, block.ToParam())
-		}
-		p.Content.OfRequestBashCodeExecutionResultBlock = requestBashContentResult
-	}
+	// Use raw JSON passthrough to preserve fields that would otherwise be
+	// dropped by `omitzero` (e.g. zero ReturnCode, empty Stderr/Stdout, or
+	// empty ErrorCode), which the API requires on the next turn. See #322.
+	p.Content = param.Override[BashCodeExecutionToolResultBlockParamContentUnion](json.RawMessage(r.Content.RawJSON()))
 
 	return p
 }
@@ -346,20 +335,11 @@ func (r CodeExecutionToolResultBlock) ToParam() CodeExecutionToolResultBlockPara
 	var p CodeExecutionToolResultBlockParam
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
-	if r.Content.JSON.ErrorCode.Valid() {
-		p.Content.OfRequestCodeExecutionToolResultError = &CodeExecutionToolResultErrorParam{
-			ErrorCode: r.Content.ErrorCode,
-		}
-	} else {
-		p.Content.OfRequestCodeExecutionResultBlock = &CodeExecutionResultBlockParam{
-			ReturnCode: r.Content.ReturnCode,
-			Stderr:     r.Content.Stderr,
-			Stdout:     r.Content.Stdout,
-		}
-		for _, block := range r.Content.Content {
-			p.Content.OfRequestCodeExecutionResultBlock.Content = append(p.Content.OfRequestCodeExecutionResultBlock.Content, block.ToParam())
-		}
-	}
+
+	// Use raw JSON passthrough to preserve fields that would otherwise be
+	// dropped by `omitzero` (e.g. zero ReturnCode, empty Stderr/Stdout, or
+	// empty ErrorCode), which the API requires on the next turn. See #322.
+	p.Content = param.Override[CodeExecutionToolResultBlockParamContentUnion](json.RawMessage(r.Content.RawJSON()))
 	return p
 }
 
@@ -380,7 +360,7 @@ func (r TextEditorCodeExecutionToolResultBlock) ToParam() TextEditorCodeExecutio
 			ErrorMessage: paramutil.ToOpt(r.Content.ErrorMessage, r.Content.JSON.ErrorMessage),
 		}
 	} else {
-		p.Content = param.Override[TextEditorCodeExecutionToolResultBlockParamContentUnion](r.Content.RawJSON())
+		p.Content = param.Override[TextEditorCodeExecutionToolResultBlockParamContentUnion](json.RawMessage(r.Content.RawJSON()))
 	}
 	return p
 }
@@ -389,19 +369,11 @@ func (r ToolSearchToolResultBlock) ToParam() ToolSearchToolResultBlockParam {
 	var p ToolSearchToolResultBlockParam
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
-	if r.Content.JSON.ErrorCode.Valid() {
-		p.Content.OfRequestToolSearchToolResultError = &ToolSearchToolResultErrorParam{
-			ErrorCode: ToolSearchToolResultErrorCode(r.Content.ErrorCode),
-		}
-	} else {
-		p.Content.OfRequestToolSearchToolSearchResultBlock = &ToolSearchToolSearchResultBlockParam{}
-		for _, block := range r.Content.ToolReferences {
-			p.Content.OfRequestToolSearchToolSearchResultBlock.ToolReferences = append(
-				p.Content.OfRequestToolSearchToolSearchResultBlock.ToolReferences,
-				block.ToParam(),
-			)
-		}
-	}
+
+	// Use raw JSON passthrough to preserve the required `error_code` field on
+	// the error variant (the typed field is tagged `omitzero`, so an empty
+	// ErrorCode would be silently dropped). See #317.
+	p.Content = param.Override[ToolSearchToolResultBlockParamContentUnion](json.RawMessage(r.Content.RawJSON()))
 	return p
 }
 

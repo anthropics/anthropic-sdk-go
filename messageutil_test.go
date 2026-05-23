@@ -2,6 +2,7 @@ package anthropic_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -29,6 +30,45 @@ func TestContentBlockUnionToParam(t *testing.T) {
 		}
 		if result.OfText.Type != constant.Text("text") {
 			t.Errorf("Expected type 'text', got '%s'", result.OfText.Type)
+		}
+	})
+
+	t.Run("CodeExecutionToolResultBlock preserves zero-valued stdout/stderr/return_code (regression for #322)", func(t *testing.T) {
+		// A successful code execution where return_code is 0 and stdout/stderr
+		// are empty would previously be marshalled as
+		// {"type":"code_execution_result"} (all fields dropped via omitzero),
+		// which the API rejects on the next turn.
+		raw := `{"type":"code_execution_tool_result","tool_use_id":"srvtoolu_1","content":{"type":"code_execution_result","return_code":0,"stdout":"","stderr":"","content":[]}}`
+		result := unmarshalContentBlockParam(t, raw)
+		if result.OfCodeExecutionToolResult == nil {
+			t.Fatal("Expected OfCodeExecutionToolResult to be non-nil")
+		}
+		marshalled, err := json.Marshal(result.OfCodeExecutionToolResult.Content)
+		if err != nil {
+			t.Fatalf("failed to marshal content: %v", err)
+		}
+		got := string(marshalled)
+		for _, key := range []string{`"return_code"`, `"stdout"`, `"stderr"`} {
+			if !strings.Contains(got, key) {
+				t.Errorf("expected %s to be present in marshalled content (got %s)", key, got)
+			}
+		}
+	})
+
+	t.Run("ToolSearchToolResultBlock preserves empty error_code (regression for #317)", func(t *testing.T) {
+		// An empty error_code on a tool_search_tool_result_error would
+		// previously be dropped, producing {"type":"tool_search_tool_result_error"}.
+		raw := `{"type":"tool_search_tool_result","tool_use_id":"srvtoolu_2","content":{"type":"tool_search_tool_result_error","error_code":""}}`
+		result := unmarshalContentBlockParam(t, raw)
+		if result.OfToolSearchToolResult == nil {
+			t.Fatal("Expected OfToolSearchToolResult to be non-nil")
+		}
+		marshalled, err := json.Marshal(result.OfToolSearchToolResult.Content)
+		if err != nil {
+			t.Fatalf("failed to marshal content: %v", err)
+		}
+		if !strings.Contains(string(marshalled), `"error_code"`) {
+			t.Errorf("expected error_code to be present in marshalled content (got %s)", string(marshalled))
 		}
 	})
 

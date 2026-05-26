@@ -11,12 +11,25 @@ import (
 	anthropic "github.com/anthropics/anthropic-sdk-go"
 )
 
-const (
-	readMaxBytes = 256 * 1024
-	// editMaxBytes caps how large a file the edit tool will read into memory
-	// before applying the replacement, mirroring readMaxBytes.
-	editMaxBytes = readMaxBytes
-)
+// defaultMaxFileBytes is the read/edit size cap used when
+// AgentToolContext.MaxFileBytes is unset (zero).
+const defaultMaxFileBytes = 256 * 1024
+
+// resolveMaxBytes turns a configured cap into an effective size limit. Zero
+// selects def (the built-in default); a negative value disables the size check
+// entirely (capped == false). It governs only the size guard — callers still
+// reject non-regular files, since the FIFO/device hang hazard is unrelated to
+// memory headroom.
+func resolveMaxBytes(configured, def int64) (limit int64, capped bool) {
+	switch {
+	case configured < 0:
+		return 0, false
+	case configured == 0:
+		return def, true
+	default:
+		return configured, true
+	}
+}
 
 // BetaReadTool returns an anthropic.BetaTool that reads file contents under
 // env.Workdir.
@@ -91,9 +104,9 @@ func execRead(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 	if !info.Mode().IsRegular() {
 		return errorf("read: %s is not a regular file", in.FilePath)
 	}
-	if info.Size() > readMaxBytes {
+	if limit, capped := resolveMaxBytes(env.MaxFileBytes, defaultMaxFileBytes); capped && info.Size() > limit {
 		return errorf("read: %s is %d bytes, exceeds %d-byte limit. Use bash (head/tail/sed) to read a slice.",
-			in.FilePath, info.Size(), readMaxBytes)
+			in.FilePath, info.Size(), limit)
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -171,9 +184,9 @@ func execEdit(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 	if !info.Mode().IsRegular() {
 		return errorf("edit: %s is not a regular file", in.FilePath)
 	}
-	if info.Size() > editMaxBytes {
+	if limit, capped := resolveMaxBytes(env.MaxFileBytes, defaultMaxFileBytes); capped && info.Size() > limit {
 		return errorf("edit: %s is %d bytes, exceeds %d-byte limit. Use bash (sed/awk) to modify a large file.",
-			in.FilePath, info.Size(), editMaxBytes)
+			in.FilePath, info.Size(), limit)
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {

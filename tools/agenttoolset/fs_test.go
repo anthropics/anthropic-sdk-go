@@ -191,7 +191,7 @@ func TestExecEdit(t *testing.T) {
 
 func TestExecEditRejectsOversizedFile(t *testing.T) {
 	work := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(work, "big.txt"), make([]byte, editMaxBytes+1), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(work, "big.txt"), make([]byte, defaultMaxFileBytes+1), 0o644))
 	out, isErr := runTool(t, BetaEditTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{
 		"file_path": "big.txt", "old_string": "a", "new_string": "b",
 	}))
@@ -223,7 +223,7 @@ func TestExecEditAllowsNormalFile(t *testing.T) {
 
 func TestExecReadRejectsOversizedFile(t *testing.T) {
 	work := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(work, "big.txt"), make([]byte, readMaxBytes+1), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(work, "big.txt"), make([]byte, defaultMaxFileBytes+1), 0o644))
 	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{"file_path": "big.txt"}))
 	require.True(t, isErr)
 	require.Contains(t, out, "exceeds")
@@ -233,6 +233,79 @@ func TestExecReadRejectsDirectory(t *testing.T) {
 	work := t.TempDir()
 	require.NoError(t, os.Mkdir(filepath.Join(work, "sub"), 0o755))
 	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{"file_path": "sub"}))
+	require.True(t, isErr)
+	require.Contains(t, out, "not a regular file")
+}
+
+// markedFile writes a file whose contents are the unique marker "OLD" followed
+// by pad zero bytes, so the edit tool has a unique old_string to replace while
+// the file's total size is controllable.
+func markedFile(t *testing.T, dir string, pad int) {
+	t.Helper()
+	content := append([]byte("OLD"), make([]byte, pad)...)
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "f.txt"), content, 0o644))
+}
+
+func TestExecEditCustomMaxBytesRejectsBelowCap(t *testing.T) {
+	work := t.TempDir()
+	markedFile(t, work, 2000) // ~2 KiB file
+	out, isErr := runTool(t, BetaEditTool(&AgentToolContext{Workdir: work, MaxFileBytes: 1000}), mustJSON(t, map[string]any{
+		"file_path": "f.txt", "old_string": "OLD", "new_string": "NEW",
+	}))
+	require.True(t, isErr)
+	require.Contains(t, out, "exceeds")
+}
+
+func TestExecEditCustomMaxBytesAllowsAboveDefault(t *testing.T) {
+	work := t.TempDir()
+	markedFile(t, work, defaultMaxFileBytes) // just over the built-in default
+	out, isErr := runTool(t, BetaEditTool(&AgentToolContext{Workdir: work, MaxFileBytes: defaultMaxFileBytes * 2}), mustJSON(t, map[string]any{
+		"file_path": "f.txt", "old_string": "OLD", "new_string": "NEW",
+	}))
+	require.False(t, isErr, "output=%q", out)
+	data, err := os.ReadFile(filepath.Join(work, "f.txt"))
+	require.NoError(t, err)
+	require.True(t, len(data) > defaultMaxFileBytes && string(data[:3]) == "NEW")
+}
+
+func TestExecEditUncappedAllowsOversized(t *testing.T) {
+	work := t.TempDir()
+	markedFile(t, work, defaultMaxFileBytes) // would exceed the default cap
+	out, isErr := runTool(t, BetaEditTool(&AgentToolContext{Workdir: work, MaxFileBytes: -1}), mustJSON(t, map[string]any{
+		"file_path": "f.txt", "old_string": "OLD", "new_string": "NEW",
+	}))
+	require.False(t, isErr, "output=%q", out)
+}
+
+func TestExecEditRejectsDirectoryEvenWhenUncapped(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(work, "sub"), 0o755))
+	out, isErr := runTool(t, BetaEditTool(&AgentToolContext{Workdir: work, MaxFileBytes: -1}), mustJSON(t, map[string]any{
+		"file_path": "sub", "old_string": "a", "new_string": "b",
+	}))
+	require.True(t, isErr)
+	require.Contains(t, out, "not a regular file")
+}
+
+func TestExecReadCustomMaxBytesRejectsBelowCap(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(work, "f.txt"), make([]byte, 2000), 0o644))
+	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work, MaxFileBytes: 1000}), mustJSON(t, map[string]any{"file_path": "f.txt"}))
+	require.True(t, isErr)
+	require.Contains(t, out, "exceeds")
+}
+
+func TestExecReadUncappedAllowsOversized(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(work, "big.txt"), make([]byte, defaultMaxFileBytes+1), 0o644))
+	_, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work, MaxFileBytes: -1}), mustJSON(t, map[string]any{"file_path": "big.txt"}))
+	require.False(t, isErr)
+}
+
+func TestExecReadRejectsDirectoryEvenWhenUncapped(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(work, "sub"), 0o755))
+	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work, MaxFileBytes: -1}), mustJSON(t, map[string]any{"file_path": "sub"}))
 	require.True(t, isErr)
 	require.Contains(t, out, "not a regular file")
 }

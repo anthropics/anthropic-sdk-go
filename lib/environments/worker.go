@@ -50,6 +50,13 @@ type EnvironmentWorkerOptions struct {
 	// [agenttoolset.AgentToolContext].
 	UnrestrictedPaths bool
 
+	// MaxFileBytes is forwarded to the per-session
+	// [agenttoolset.AgentToolContext], capping the size of files the read and
+	// edit tools load into memory. Zero uses the built-in 256 KiB default; a
+	// positive value sets a custom cap; a negative value disables the cap (use
+	// only when the sandbox can absorb arbitrarily large files).
+	MaxFileBytes int64
+
 	// Tools, if non-nil, is exposed to every claimed session as-is. Ignored
 	// when ToolsFunc is set. When both Tools and ToolsFunc are nil the worker
 	// uses agenttoolset.BetaAgentToolset20260401(env) — the standard
@@ -191,8 +198,8 @@ type HandleItemOptions struct {
 
 // HandleItem services a single already-claimed session work item — the per-item
 // flow [EnvironmentWorker.Run] runs for each claimed item: it builds the
-// per-session [agenttoolset.AgentToolContext] (workdir/UnrestrictedPaths from the
-// worker's options), downloads the session agent's skills
+// per-session [agenttoolset.AgentToolContext] (workdir/UnrestrictedPaths/
+// MaxFileBytes from the worker's options), downloads the session agent's skills
 // ([agenttoolset.AgentToolContext.SetupSkills]), then runs a SessionToolRunner for the
 // session WHILE heartbeating the work-item lease in parallel; on exit — success
 // or error — it force-stops the work item. Use it from a `worker poll
@@ -298,6 +305,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	env := &agenttoolset.AgentToolContext{
 		Workdir:           w.opts.Workdir,
 		UnrestrictedPaths: w.opts.UnrestrictedPaths,
+		MaxFileBytes:      w.opts.MaxFileBytes,
 	}
 	// The session lookup and skill download are environment-scoped, so they
 	// need the environment key like the heartbeat/stop and the runner do —

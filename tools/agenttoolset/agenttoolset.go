@@ -62,6 +62,15 @@ type AgentToolContext struct {
 	// Does not constrain [BetaBashTool].
 	UnrestrictedPaths bool
 
+	// MaxFileBytes caps the size of a file the read and edit tools will load
+	// into memory (both read the whole file). Zero (the default) uses the
+	// built-in 256 KiB cap; a positive value sets a custom cap; a negative
+	// value disables the size cap entirely. Disabling it reintroduces the OOM
+	// risk on a model-controlled path, so set it negative only when the sandbox
+	// can absorb arbitrarily large files. The non-regular-file (FIFO/device)
+	// guard always applies regardless of this value.
+	MaxFileBytes int64
+
 	// Env sets the bash subprocess environment. When non-nil it fully replaces
 	// the inherited environment with exactly these entries; when nil the
 	// subprocess inherits the runner's environment with ANTHROPIC_* credentials

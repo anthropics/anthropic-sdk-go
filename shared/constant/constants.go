@@ -105,6 +105,7 @@ type MessageDelta string                            // Always "message_delta"
 type MessageStart string                            // Always "message_start"
 type MessageStop string                             // Always "message_stop"
 type MessagesChanged string                         // Always "messages_changed"
+type MidConvSystem string                           // Always "mid_conv_system"
 type Model string                                   // Always "model"
 type ModelChanged string                            // Always "model_changed"
 type None string                                    // Always "none"
@@ -302,6 +303,7 @@ func (c MessageDelta) Default() MessageDelta               { return "message_del
 func (c MessageStart) Default() MessageStart               { return "message_start" }
 func (c MessageStop) Default() MessageStop                 { return "message_stop" }
 func (c MessagesChanged) Default() MessagesChanged         { return "messages_changed" }
+func (c MidConvSystem) Default() MidConvSystem             { return "mid_conv_system" }
 func (c Model) Default() Model                             { return "model" }
 func (c ModelChanged) Default() ModelChanged               { return "model_changed" }
 func (c None) Default() None                               { return "none" }
@@ -523,6 +525,7 @@ func (c MessageDelta) MarshalJSON() ([]byte, error)                        { ret
 func (c MessageStart) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c MessageStop) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c MessagesChanged) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c MidConvSystem) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Model) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c ModelChanged) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c None) MarshalJSON() ([]byte, error)                                { return marshalString(c) }

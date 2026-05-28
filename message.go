@@ -1983,6 +1983,12 @@ func NewContainerUploadBlock(fileID string) ContentBlockParamUnion {
 	return ContentBlockParamUnion{OfContainerUpload: &containerUpload}
 }
 
+func NewMidConvSystemBlock(content []TextBlockParam) ContentBlockParamUnion {
+	var midConvSystem MidConversationSystemBlockParam
+	midConvSystem.Content = content
+	return ContentBlockParamUnion{OfMidConvSystem: &midConvSystem}
+}
+
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
@@ -2003,6 +2009,7 @@ type ContentBlockParamUnion struct {
 	OfTextEditorCodeExecutionToolResult *TextEditorCodeExecutionToolResultBlockParam `json:",omitzero,inline"`
 	OfToolSearchToolResult              *ToolSearchToolResultBlockParam              `json:",omitzero,inline"`
 	OfContainerUpload                   *ContainerUploadBlockParam                   `json:",omitzero,inline"`
+	OfMidConvSystem                     *MidConversationSystemBlockParam             `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -2022,7 +2029,8 @@ func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
 		u.OfBashCodeExecutionToolResult,
 		u.OfTextEditorCodeExecutionToolResult,
 		u.OfToolSearchToolResult,
-		u.OfContainerUpload)
+		u.OfContainerUpload,
+		u.OfMidConvSystem)
 }
 func (u *ContentBlockParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -2061,6 +2069,8 @@ func (u *ContentBlockParamUnion) asAny() any {
 		return u.OfToolSearchToolResult
 	} else if !param.IsOmitted(u.OfContainerUpload) {
 		return u.OfContainerUpload
+	} else if !param.IsOmitted(u.OfMidConvSystem) {
+		return u.OfMidConvSystem
 	}
 	return nil
 }
@@ -2155,6 +2165,8 @@ func (u ContentBlockParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfContainerUpload; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfMidConvSystem; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -2238,6 +2250,8 @@ func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
 	} else if vt := u.OfToolSearchToolResult; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfContainerUpload; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfMidConvSystem; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil
@@ -2386,6 +2400,8 @@ func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent)
 		res.any = vt.Content.asAny()
 	} else if vt := u.OfToolSearchToolResult; vt != nil {
 		res.any = vt.Content.asAny()
+	} else if vt := u.OfMidConvSystem; vt != nil {
+		res.any = &vt.Content
 	}
 	return
 }
@@ -2761,6 +2777,7 @@ func init() {
 		apijson.Discriminator[TextEditorCodeExecutionToolResultBlockParam]("text_editor_code_execution_tool_result"),
 		apijson.Discriminator[ToolSearchToolResultBlockParam]("tool_search_tool_result"),
 		apijson.Discriminator[ContainerUploadBlockParam]("container_upload"),
+		apijson.Discriminator[MidConversationSystemBlockParam]("mid_conv_system"),
 	)
 }
 
@@ -3948,6 +3965,13 @@ type MessageDeltaUsage struct {
 	InputTokens int64 `json:"input_tokens" api:"required"`
 	// The cumulative number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens" api:"required"`
+	// Breakdown of output tokens by category.
+	//
+	// `output_tokens` remains the inclusive, authoritative total used for billing.
+	// This object provides a read-only decomposition for observability — for example,
+	// how many of the billed output tokens were spent on internal reasoning that may
+	// have been summarized before being returned to you.
+	OutputTokensDetails OutputTokensDetails `json:"output_tokens_details" api:"required"`
 	// The number of server tool requests.
 	ServerToolUse ServerToolUsage `json:"server_tool_use" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -3956,6 +3980,7 @@ type MessageDeltaUsage struct {
 		CacheReadInputTokens     respjson.Field
 		InputTokens              respjson.Field
 		OutputTokens             respjson.Field
+		OutputTokensDetails      respjson.Field
 		ServerToolUse            respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
@@ -3971,7 +3996,7 @@ func (r *MessageDeltaUsage) UnmarshalJSON(data []byte) error {
 // The properties Content, Role are required.
 type MessageParam struct {
 	Content []ContentBlockParamUnion `json:"content,omitzero" api:"required"`
-	// Any of "user", "assistant".
+	// Any of "user", "assistant", "system".
 	Role MessageParamRole `json:"role,omitzero" api:"required"`
 	paramObj
 }
@@ -3989,6 +4014,7 @@ type MessageParamRole string
 const (
 	MessageParamRoleUser      MessageParamRole = "user"
 	MessageParamRoleAssistant MessageParamRole = "assistant"
+	MessageParamRoleSystem    MessageParamRole = "system"
 )
 
 type MessageTokensCount struct {
@@ -4027,6 +4053,31 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// System instructions that appear mid-conversation.
+//
+// Use this block to provide or update system-level instructions at a specific
+// point in the conversation, rather than only via the top-level `system`
+// parameter.
+//
+// The properties Content, Type are required.
+type MidConversationSystemBlockParam struct {
+	// System instruction text blocks.
+	Content []TextBlockParam `json:"content,omitzero" api:"required"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// This field can be elided, and will marshal its zero value as "mid_conv_system".
+	Type constant.MidConvSystem `json:"type" default:"mid_conv_system"`
+	paramObj
+}
+
+func (r MidConversationSystemBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow MidConversationSystemBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *MidConversationSystemBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The model that will complete your prompt.
 //
 // See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
@@ -4034,6 +4085,7 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model = string
 
 const (
+	ModelClaudeOpus4_8            Model = "claude-opus-4-8"
 	ModelClaudeOpus4_7            Model = "claude-opus-4-7"
 	ModelClaudeMythosPreview      Model = "claude-mythos-preview"
 	ModelClaudeOpus4_6            Model = "claude-opus-4-6"
@@ -4098,6 +4150,30 @@ const (
 	OutputConfigEffortXhigh  OutputConfigEffort = "xhigh"
 	OutputConfigEffortMax    OutputConfigEffort = "max"
 )
+
+type OutputTokensDetails struct {
+	// Number of output tokens the model generated as internal reasoning, including the
+	// thinking-block delimiter tokens.
+	//
+	// Reflects the raw reasoning the model produced, not the (possibly shorter)
+	// summarized thinking text returned in the response body. Computed by
+	// re-tokenizing the raw reasoning text, so it may differ from the model's exact
+	// generation count by a small number of tokens. Always ≤ `output_tokens`;
+	// `output_tokens - thinking_tokens` approximates the non-reasoning output.
+	ThinkingTokens int64 `json:"thinking_tokens" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ThinkingTokens respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r OutputTokensDetails) RawJSON() string { return r.JSON.raw }
+func (r *OutputTokensDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type PlainTextSource struct {
 	Data      string             `json:"data" api:"required"`
@@ -8093,6 +8169,13 @@ type Usage struct {
 	InputTokens int64 `json:"input_tokens" api:"required"`
 	// The number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens" api:"required"`
+	// Breakdown of output tokens by category.
+	//
+	// `output_tokens` remains the inclusive, authoritative total used for billing.
+	// This object provides a read-only decomposition for observability — for example,
+	// how many of the billed output tokens were spent on internal reasoning that may
+	// have been summarized before being returned to you.
+	OutputTokensDetails OutputTokensDetails `json:"output_tokens_details" api:"required"`
 	// The number of server tool requests.
 	ServerToolUse ServerToolUsage `json:"server_tool_use" api:"required"`
 	// If the request used the priority, standard, or batch tier.
@@ -8107,6 +8190,7 @@ type Usage struct {
 		InferenceGeo             respjson.Field
 		InputTokens              respjson.Field
 		OutputTokens             respjson.Field
+		OutputTokensDetails      respjson.Field
 		ServerToolUse            respjson.Field
 		ServiceTier              respjson.Field
 		ExtraFields              map[string]respjson.Field
@@ -8619,8 +8703,8 @@ func init() {
 
 type WebFetchToolResultErrorBlock struct {
 	// Any of "invalid_tool_input", "url_too_long", "url_not_allowed",
-	// "url_not_accessible", "unsupported_content_type", "too_many_requests",
-	// "max_uses_exceeded", "unavailable".
+	// "url_not_in_prior_context", "url_not_accessible", "unsupported_content_type",
+	// "too_many_requests", "max_uses_exceeded", "unavailable".
 	ErrorCode WebFetchToolResultErrorCode      `json:"error_code" api:"required"`
 	Type      constant.WebFetchToolResultError `json:"type" default:"web_fetch_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -8641,8 +8725,8 @@ func (r *WebFetchToolResultErrorBlock) UnmarshalJSON(data []byte) error {
 // The properties ErrorCode, Type are required.
 type WebFetchToolResultErrorBlockParam struct {
 	// Any of "invalid_tool_input", "url_too_long", "url_not_allowed",
-	// "url_not_accessible", "unsupported_content_type", "too_many_requests",
-	// "max_uses_exceeded", "unavailable".
+	// "url_not_in_prior_context", "url_not_accessible", "unsupported_content_type",
+	// "too_many_requests", "max_uses_exceeded", "unavailable".
 	ErrorCode WebFetchToolResultErrorCode `json:"error_code,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_fetch_tool_result_error".
@@ -8664,6 +8748,7 @@ const (
 	WebFetchToolResultErrorCodeInvalidToolInput       WebFetchToolResultErrorCode = "invalid_tool_input"
 	WebFetchToolResultErrorCodeURLTooLong             WebFetchToolResultErrorCode = "url_too_long"
 	WebFetchToolResultErrorCodeURLNotAllowed          WebFetchToolResultErrorCode = "url_not_allowed"
+	WebFetchToolResultErrorCodeURLNotInPriorContext   WebFetchToolResultErrorCode = "url_not_in_prior_context"
 	WebFetchToolResultErrorCodeURLNotAccessible       WebFetchToolResultErrorCode = "url_not_accessible"
 	WebFetchToolResultErrorCodeUnsupportedContentType WebFetchToolResultErrorCode = "unsupported_content_type"
 	WebFetchToolResultErrorCodeTooManyRequests        WebFetchToolResultErrorCode = "too_many_requests"

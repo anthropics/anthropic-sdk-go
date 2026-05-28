@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.46.0 (2026-05-28)
+
+Full Changelog: [v1.45.0...v1.46.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.45.0...v1.46.0)
+
+### Features
+
+* **api:** Add support for claude-opus-4-8, mid-conversation system blocks, and usage.output_tokens_details ([4cd860b](https://github.com/anthropics/anthropic-sdk-go/commit/4cd860b8bd5365709f7f86466f449797a5f01875))
+* support custom file size caps ([#876](https://github.com/anthropics/anthropic-sdk-go/issues/876)) ([99634e8](https://github.com/anthropics/anthropic-sdk-go/commit/99634e85815be2215a8beb05f2deeec895133b3b))
+
+
+### Chores
+
+* **examples:** rename managed-agents private-sandbox-worker to self-hosted-sandbox-worker ([#873](https://github.com/anthropics/anthropic-sdk-go/issues/873)) ([07d3e46](https://github.com/anthropics/anthropic-sdk-go/commit/07d3e461f094d40a1bcf25fa8cefee7a90835193))
+
+
+### Documentation
+
+* replace literal newlines ([cbb7ea5](https://github.com/anthropics/anthropic-sdk-go/commit/cbb7ea55b131f492753ce9fdcfc73df2847daafd))
+
 ## 1.45.0 (2026-05-21)
 
 Full Changelog: [v1.44.1...v1.45.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.44.1...v1.45.0)

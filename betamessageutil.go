@@ -81,6 +81,7 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 			cb.Citations = append(cb.Citations, citation)
 		case BetaCompactionContentBlockDelta:
 			cb.Content.OfString = delta.Content
+			cb.EncryptedContent = delta.EncryptedContent
 		}
 	case BetaRawMessageStopEvent:
 		// Re-marshal the accumulated message to update JSON.raw so that AsAny()

@@ -453,6 +453,31 @@ Therefore, the answer is..."}}`,
 				{Type: "compaction", Content: anthropic.BetaContentBlockUnionContent{OfString: "Summary of the conversation so far."}},
 			}},
 		},
+		"refusal with stop_details and usage": {
+			events: []string{
+				`{"type": "message_start", "message": {}}`,
+				`{"type": "content_block_start", "index": 0, "content_block": {"type": "text", "text": "I cannot help"}}`,
+				`{"type": "content_block_stop", "index": 0}`,
+				`{"type": "message_delta", "delta": {"stop_reason": "refusal", "stop_details": {"type": "refusal", "category": "cyber", "explanation": "Declined by a streaming policy classifier."}}, "usage": {"input_tokens": 15, "output_tokens": 8, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 0, "server_tool_use": {"web_search_requests": 2}}}`,
+				`{"type": "message_stop"}`,
+			},
+			expected: anthropic.BetaMessage{
+				Content: []anthropic.BetaContentBlockUnion{
+					{Type: "text", Text: "I cannot help"},
+				},
+				StopReason: "refusal",
+				StopDetails: anthropic.BetaRefusalStopDetails{
+					Type:        "refusal",
+					Category:    "cyber",
+					Explanation: "Declined by a streaming policy classifier.",
+				},
+				Usage: anthropic.BetaUsage{
+					InputTokens:   15,
+					OutputTokens:  8,
+					ServerToolUse: anthropic.BetaServerToolUsage{WebSearchRequests: 2},
+				},
+			},
+		},
 		"multiple content blocks": {
 			events: []string{
 				`{"type": "message_start", "message": {}}`,

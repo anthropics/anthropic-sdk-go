@@ -28,7 +28,22 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 	case BetaRawMessageDeltaEvent:
 		acc.StopReason = event.Delta.StopReason
 		acc.StopSequence = event.Delta.StopSequence
+		if event.Delta.JSON.StopDetails.Valid() {
+			acc.StopDetails = event.Delta.StopDetails
+		}
 		acc.Usage.OutputTokens = event.Usage.OutputTokens
+		if event.Usage.JSON.InputTokens.Valid() {
+			acc.Usage.InputTokens = event.Usage.InputTokens
+		}
+		if event.Usage.JSON.CacheCreationInputTokens.Valid() {
+			acc.Usage.CacheCreationInputTokens = event.Usage.CacheCreationInputTokens
+		}
+		if event.Usage.JSON.CacheReadInputTokens.Valid() {
+			acc.Usage.CacheReadInputTokens = event.Usage.CacheReadInputTokens
+		}
+		if event.Usage.JSON.ServerToolUse.Valid() {
+			acc.Usage.ServerToolUse = event.Usage.ServerToolUse
+		}
 		acc.Usage.Iterations = event.Usage.Iterations
 		acc.ContextManagement = event.ContextManagement
 	case BetaRawContentBlockStartEvent:

@@ -38,8 +38,12 @@ func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes
 
 // WithCredentials returns a request option which uses the provided credentials for Google Vertex AI and registers middleware that
 // intercepts request to the Messages API.
-func WithCredentials(ctx context.Context, region string, projectID string, creds *google.Credentials) sdkoption.RequestOption {
-	client, _, err := transport.NewHTTPClient(ctx, option.WithTokenSource(creds.TokenSource))
+func WithCredentials(ctx context.Context, region string, projectID string, creds *google.Credentials, clientOpts ...option.ClientOption) sdkoption.RequestOption {
+
+	opts := []option.ClientOption{option.WithTokenSource(creds.TokenSource)}
+	opts = append(opts, clientOpts...)
+
+	client, _, err := transport.NewHTTPClient(ctx, opts...)
 	if err != nil {
 		panic(fmt.Errorf("failed to create HTTP client: %v", err))
 	}

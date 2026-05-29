@@ -64,6 +64,11 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 			cb.Citations = append(cb.Citations, citation)
 		}
 	case MessageStopEvent:
+		// Sanitize invalid Input on any block before re-marshaling — see
+		// sanitizeContentBlockInput for the failure mode this guards against.
+		for i := range acc.Content {
+			sanitizeContentBlockInput(&acc.Content[i])
+		}
 		// Re-marshal the accumulated message to update JSON.raw so that AsAny()
 		// returns the accumulated data rather than the original stream data
 		accJSON, err := json.Marshal(acc)
@@ -78,6 +83,7 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
 		}
 		contentBlock := &acc.Content[len(acc.Content)-1]
+		sanitizeContentBlockInput(contentBlock)
 		cbJSON, err := json.Marshal(contentBlock)
 		if err != nil {
 			return fmt.Errorf("error converting content block to JSON: %w", err)
@@ -86,6 +92,27 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 	}
 
 	return nil
+}
+
+// sanitizeContentBlockInput replaces a non-nil-but-invalid Input json.RawMessage
+// with []byte("{}") so the surrounding json.Marshal in Accumulate doesn't fail
+// the whole stream. Three real-world shapes hit this: an empty non-nil slice
+// (`""` in the start event), a truncated object (`{"argument":` when max_tokens
+// cuts off mid tool_use), and an unclosed string (`{"x": "abc`). All three
+// produce the same `unexpected end of JSON input` error from json.Compact
+// during marshal, even though the rest of the message accumulated fine. Patching
+// to `{}` rather than `null` keeps the tool_use structurally valid, so the
+// caller's tool dispatcher gets a real (if empty) object instead of having to
+// special-case `null`. Nil is left alone — it marshals as `null` cleanly and
+// carries the distinct "field absent" semantic.
+//
+// See https://github.com/anthropics/anthropic-sdk-go/issues/292 — reported as
+// "Streaming: json: error calling MarshalJSON for type json.RawMessage:
+// unexpected end of JSON input" when max_tokens is reached mid tool_use.
+func sanitizeContentBlockInput(cb *ContentBlockUnion) {
+	if cb.Input != nil && !json.Valid(cb.Input) {
+		cb.Input = []byte("{}")
+	}
 }
 
 // ToParam converters

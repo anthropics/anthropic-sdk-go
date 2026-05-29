@@ -506,6 +506,23 @@ Therefore, the answer is..."}}`,
 				{Type: "text", Text: "The weather in Los Angeles is 85 degrees Fahrenheit!"},
 			}},
 		},
+		"interleaved content blocks": {
+			events: []string{
+				`{"type": "message_start", "message": {}}`,
+				`{"type": "content_block_start", "index": 0, "content_block": {"type": "text", "text": ""}}`,
+				`{"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": "Hello"}}`,
+				`{"type": "content_block_start", "index": 1, "content_block": {"type": "thinking", "thinking": ""}}`,
+				`{"type": "content_block_delta", "index": 1, "delta": {"type": "thinking_delta", "thinking": "Thinking..."}}`,
+				`{"type": "content_block_delta", "index": 0, "delta": {"type": "text_delta", "text": " world"}}`,
+				`{"type": "content_block_stop", "index": 0}`,
+				`{"type": "content_block_stop", "index": 1}`,
+				`{"type": "message_stop"}`,
+			},
+			expected: anthropic.BetaMessage{Content: []anthropic.BetaContentBlockUnion{
+				{Type: "text", Text: "Hello world"},
+				{Type: "thinking", Thinking: "Thinking..."},
+			}},
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			message := anthropic.BetaMessage{}

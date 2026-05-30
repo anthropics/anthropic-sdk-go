@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"slices"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/tidwall/gjson"
 )
 
 // BetaMessageService contains methods and other services that help with
@@ -3927,6 +3929,20 @@ func (u betaContentBlockParamUnionCaller) GetToolID() *string {
 		return vt.GetToolID()
 	}
 	return nil
+}
+
+func init() {
+	apijson.RegisterCustomDecoder[[]BetaContentBlockParamUnion](func(node gjson.Result, value reflect.Value, defaultDecoder func(gjson.Result, reflect.Value) error) error {
+		if node.Type == gjson.String {
+			textBlock := BetaTextBlockParam{Text: node.String(), Type: "text"}
+			contentUnion := BetaContentBlockParamUnion{OfText: &textBlock}
+			arrayValue := reflect.MakeSlice(value.Type(), 1, 1)
+			arrayValue.Index(0).Set(reflect.ValueOf(contentUnion))
+			value.Set(arrayValue)
+			return nil
+		}
+		return defaultDecoder(node, value)
+	})
 }
 
 func init() {
@@ -9247,6 +9263,20 @@ func (u betaToolResultBlockParamContentUnionSource) GetFileID() *string {
 		return vt.GetFileID()
 	}
 	return nil
+}
+
+func init() {
+	apijson.RegisterCustomDecoder[[]BetaToolResultBlockParamContentUnion](func(node gjson.Result, value reflect.Value, defaultDecoder func(gjson.Result, reflect.Value) error) error {
+		if node.Type == gjson.String {
+			textBlock := BetaTextBlockParam{Text: node.String(), Type: "text"}
+			contentUnion := BetaToolResultBlockParamContentUnion{OfText: &textBlock}
+			arrayValue := reflect.MakeSlice(value.Type(), 1, 1)
+			arrayValue.Index(0).Set(reflect.ValueOf(contentUnion))
+			value.Set(arrayValue)
+			return nil
+		}
+		return defaultDecoder(node, value)
+	})
 }
 
 func init() {

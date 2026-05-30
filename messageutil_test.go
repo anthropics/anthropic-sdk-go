@@ -2,11 +2,33 @@ package anthropic_test
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
+
+func requireJSONEqual(t *testing.T, want string, got any) {
+	t.Helper()
+
+	gotJSON, err := json.Marshal(got)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	var wantValue any
+	if err := json.Unmarshal([]byte(want), &wantValue); err != nil {
+		t.Fatalf("Failed to unmarshal expected JSON: %v", err)
+	}
+	var gotValue any
+	if err := json.Unmarshal(gotJSON, &gotValue); err != nil {
+		t.Fatalf("Failed to unmarshal actual JSON: %v", err)
+	}
+	if !reflect.DeepEqual(gotValue, wantValue) {
+		t.Fatalf("JSON mismatch:\n got: %s\nwant: %s", gotJSON, want)
+	}
+}
 
 func unmarshalContentBlockParam(t *testing.T, jsonData string) anthropic.ContentBlockParamUnion {
 	var block anthropic.ContentBlockUnion
@@ -52,5 +74,45 @@ func TestContentBlockUnionToParam(t *testing.T) {
 		if len(result.OfWebSearchToolResult.Content.OfWebSearchToolResultBlockItem) != 1 {
 			t.Errorf("Expected 1 search result in param, got %d", len(result.OfWebSearchToolResult.Content.OfWebSearchToolResultBlockItem))
 		}
+	})
+}
+
+func TestWebFetchToolResultBlockToParam(t *testing.T) {
+	const jsonData = `{"type":"web_fetch_tool_result","tool_use_id":"fetch123","caller":{"type":"direct"},"content":{"type":"web_fetch_result","url":"https://example.com","retrieved_at":"2026-05-30T00:00:00Z","content":{"type":"document","title":"Example","citations":{"enabled":true},"source":{"type":"text","data":"hello"}}}}`
+
+	t.Run("stable", func(t *testing.T) {
+		var block anthropic.ContentBlockUnion
+		if err := json.Unmarshal([]byte(jsonData), &block); err != nil {
+			t.Fatalf("Failed to unmarshal JSON: %v", err)
+		}
+		requireJSONEqual(t, jsonData, block.ToParam())
+	})
+
+	t.Run("beta", func(t *testing.T) {
+		var block anthropic.BetaContentBlockUnion
+		if err := json.Unmarshal([]byte(jsonData), &block); err != nil {
+			t.Fatalf("Failed to unmarshal JSON: %v", err)
+		}
+		requireJSONEqual(t, jsonData, block.ToParam())
+	})
+}
+
+func TestWebSearchToolResultBlockToParam(t *testing.T) {
+	const jsonData = `{"type":"web_search_tool_result","tool_use_id":"search123","caller":{"type":"direct"},"content":[{"type":"web_search_result","title":"Example","url":"https://example.com","encrypted_content":"abc123"}]}`
+
+	t.Run("stable", func(t *testing.T) {
+		var block anthropic.ContentBlockUnion
+		if err := json.Unmarshal([]byte(jsonData), &block); err != nil {
+			t.Fatalf("Failed to unmarshal JSON: %v", err)
+		}
+		requireJSONEqual(t, jsonData, block.ToParam())
+	})
+
+	t.Run("beta", func(t *testing.T) {
+		var block anthropic.BetaContentBlockUnion
+		if err := json.Unmarshal([]byte(jsonData), &block); err != nil {
+			t.Fatalf("Failed to unmarshal JSON: %v", err)
+		}
+		requireJSONEqual(t, jsonData, block.ToParam())
 	})
 }

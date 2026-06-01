@@ -23,14 +23,14 @@ jobs:
       id-token: write
     runs-on: 'ubuntu-latest'
     if: |-
-      github.repository == 'github.com/anthropics/anthropic-sdk-go-private' &&
+      github.repository == 'anthropics/anthropic-sdk-go-private' &&
       (github.event_name == 'push' || github.event.pull_request.head.repo.fork)
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Get GitHub OIDC Token
         if: |-
-          github.repository == 'github.com/anthropics/anthropic-sdk-go-private' &&
+          github.repository == 'anthropics/anthropic-sdk-go-private' &&
           !startsWith(github.ref, 'refs/heads/stl/')
         id: github-oidc
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
@@ -39,7 +39,7 @@ jobs:
 
       - name: Upload tarball
         if: |-
-          github.repository == 'github.com/anthropics/anthropic-sdk-go-private' &&
+          github.repository == 'anthropics/anthropic-sdk-go-private' &&
           !startsWith(github.ref, 'refs/heads/stl/')
         env:
           URL: https://pkg.stainless.com/s

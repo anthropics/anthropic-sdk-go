@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.47.0 (2026-06-05)
+
+Full Changelog: [v1.46.0...v1.47.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.46.0...v1.47.0)
+
+### Features
+
+* **api:** mark Claude Opus 4.1 as deprecated ([64b20dc](https://github.com/anthropics/anthropic-sdk-go/commit/64b20dc87c2062ece15e2a46904eac00e6eae737))
+* require Go 1.24 ([#11](https://github.com/anthropics/anthropic-sdk-go/issues/11)) ([00fae19](https://github.com/anthropics/anthropic-sdk-go/commit/00fae190db05135e3de11acd30c5ed30f2f94811))
+
+
+### Bug Fixes
+
+* **streaming:** accumulate content block events by index ([#6](https://github.com/anthropics/anthropic-sdk-go/issues/6)) ([2161a38](https://github.com/anthropics/anthropic-sdk-go/commit/2161a381e70df6e5a00c00f841711151ab170ef9))
+* **streaming:** carry encrypted_content through beta compaction accumulator ([#875](https://github.com/anthropics/anthropic-sdk-go/issues/875)) ([13fa611](https://github.com/anthropics/anthropic-sdk-go/commit/13fa61165159653ee1f3cc63a4df2d1c5dab7970))
+* **streaming:** carry stop_details and usage fields through beta message_delta ([#879](https://github.com/anthropics/anthropic-sdk-go/issues/879)) ([d432c9f](https://github.com/anthropics/anthropic-sdk-go/commit/d432c9fb538442ccce72bfbee4f4d69d18d1acf2))
+* **streaming:** carry stop_details and usage fields through message_delta ([#877](https://github.com/anthropics/anthropic-sdk-go/issues/877)) ([e2fcc35](https://github.com/anthropics/anthropic-sdk-go/commit/e2fcc3583f9a9fa37ce5b1a1fc5f55391c2e9199))
+* support invopop/jsonschema v0.14.0 (switch to pb33f/ordered-map) ([#10](https://github.com/anthropics/anthropic-sdk-go/issues/10)) ([af018a7](https://github.com/anthropics/anthropic-sdk-go/commit/af018a7c71e0edc0c84561f0fe2a68e81627b38c))
+
+
+### Chores
+
+* **internal:** fix artifact url ([fd4cde3](https://github.com/anthropics/anthropic-sdk-go/commit/fd4cde3e00290d169e6435ae098dd73f57ac8991))
+* **internal:** fix branch names ([e1730cd](https://github.com/anthropics/anthropic-sdk-go/commit/e1730cd3865db09b5be7e5a32d9c57a94ba6e27f))
+* **internal:** update private repo name ([29f7468](https://github.com/anthropics/anthropic-sdk-go/commit/29f7468ec0d2bda6fe9c84e00be04e3d7ad34d25))
+
+
+### Documentation
+
+* point security reports to Anthropic's HackerOne program ([#9](https://github.com/anthropics/anthropic-sdk-go/issues/9)) ([c143385](https://github.com/anthropics/anthropic-sdk-go/commit/c143385a80838daaa3d416ce553c23f6a18f7657))
+
 ## 1.46.0 (2026-05-28)
 
 Full Changelog: [v1.45.0...v1.46.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.45.0...v1.46.0)

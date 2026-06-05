@@ -45,16 +45,22 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 			acc.Usage.ServerToolUse = event.Usage.ServerToolUse
 		}
 	case ContentBlockStartEvent:
+		// Content blocks start in index order with no gaps: a start event always
+		// addresses the slot right after the previous block, even when deltas and
+		// stops for still-open blocks interleave after it.
+		if event.Index != int64(len(acc.Content)) {
+			return fmt.Errorf("received event of type %s for content block at index %d, expected index %d", event.Type, event.Index, len(acc.Content))
+		}
 		acc.Content = append(acc.Content, ContentBlockUnion{})
-		err := acc.Content[len(acc.Content)-1].UnmarshalJSON([]byte(event.ContentBlock.RawJSON()))
+		err := acc.Content[event.Index].UnmarshalJSON([]byte(event.ContentBlock.RawJSON()))
 		if err != nil {
 			return err
 		}
 	case ContentBlockDeltaEvent:
-		if len(acc.Content) == 0 {
-			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
+		if err := checkContentBlockIndex(string(event.Type), event.Index, len(acc.Content)); err != nil {
+			return err
 		}
-		cb := &acc.Content[len(acc.Content)-1]
+		cb := &acc.Content[event.Index]
 		switch delta := event.Delta.AsAny().(type) {
 		case TextDelta:
 			cb.Text += delta.Text
@@ -89,10 +95,10 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 	case ContentBlockStopEvent:
 		// Re-marshal the content block to update JSON.raw so that AsAny()
 		// returns the accumulated data rather than the original stream data
-		if len(acc.Content) == 0 {
-			return fmt.Errorf("received event of type %s but there was no content block", event.Type)
+		if err := checkContentBlockIndex(string(event.Type), event.Index, len(acc.Content)); err != nil {
+			return err
 		}
-		contentBlock := &acc.Content[len(acc.Content)-1]
+		contentBlock := &acc.Content[event.Index]
 		cbJSON, err := json.Marshal(contentBlock)
 		if err != nil {
 			return fmt.Errorf("error converting content block to JSON: %w", err)
@@ -100,6 +106,17 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 		contentBlock.JSON.raw = string(cbJSON)
 	}
 
+	return nil
+}
+
+// checkContentBlockIndex reports an error if a stream event's index does not
+// address one of the numBlocks content blocks accumulated so far. Delta and
+// stop events may interleave across open content blocks, so they address
+// blocks by index rather than applying to the most recently started block.
+func checkContentBlockIndex(eventType string, index int64, numBlocks int) error {
+	if index < 0 || index >= int64(numBlocks) {
+		return fmt.Errorf("received event of type %s for content block at index %d but there are only %d content blocks", eventType, index, numBlocks)
+	}
 	return nil
 }
 

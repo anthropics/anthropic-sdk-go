@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -506,6 +507,30 @@ Therefore, the answer is..."}}`,
 				{Type: "text", Text: "The weather in Los Angeles is 85 degrees Fahrenheit!"},
 			}},
 		},
+		"interleaved content blocks": {
+			events: []string{
+				`{"type": "message_start", "message": {}}`,
+				`{"type": "content_block_start", "index": 0, "content_block": {"type": "thinking", "thinking": ""}}`,
+				`{"type": "content_block_delta", "index": 0, "delta": {"type": "thinking_delta", "thinking": "Let me think."}}`,
+				`{"type": "content_block_delta", "index": 0, "delta": {"type": "signature_delta", "signature": "sig123"}}`,
+				`{"type": "content_block_stop", "index": 0}`,
+				`{"type": "content_block_start", "index": 1, "content_block": {"type": "text", "text": ""}}`,
+				`{"type": "content_block_delta", "index": 1, "delta": {"type": "text_delta", "text": "Hello"}}`,
+				`{"type": "content_block_start", "index": 2, "content_block": {"type": "tool_use", "id": "toolu_id", "name": "get_weather", "input": {}}}`,
+				`{"type": "content_block_delta", "index": 1, "delta": {"type": "text_delta", "text": " world"}}`,
+				`{"type": "content_block_delta", "index": 2, "delta": {"type": "input_json_delta", "partial_json": "{\"city\": "}}`,
+				`{"type": "content_block_delta", "index": 1, "delta": {"type": "text_delta", "text": "!"}}`,
+				`{"type": "content_block_delta", "index": 2, "delta": {"type": "input_json_delta", "partial_json": "\"Los Angeles\"}"}}`,
+				`{"type": "content_block_stop", "index": 1}`,
+				`{"type": "content_block_stop", "index": 2}`,
+				`{"type": "message_stop"}`,
+			},
+			expected: anthropic.BetaMessage{Content: []anthropic.BetaContentBlockUnion{
+				{Type: "thinking", Thinking: "Let me think.", Signature: "sig123"},
+				{Type: "text", Text: "Hello world!"},
+				{Type: "tool_use", ID: "toolu_id", Name: "get_weather", Input: []byte(`{"city": "Los Angeles"}`)},
+			}},
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			message := anthropic.BetaMessage{}
@@ -527,6 +552,67 @@ Therefore, the answer is..."}}`,
 			}
 			if string(marshaledMessage) != string(marshaledExpectedMessage) {
 				t.Fatalf("Mismatched message: expected %s but got %s", marshaledExpectedMessage, marshaledMessage)
+			}
+		})
+	}
+}
+
+func TestBetaAccumulateContentBlockIndexErrors(t *testing.T) {
+	for name, testCase := range map[string]struct {
+		events  []string
+		wantErr string
+	}{
+		"start with an index gap": {
+			events: []string{
+				`{"type": "message_start", "message": {}}`,
+				`{"type": "content_block_start", "index": 1, "content_block": {"type": "text", "text": ""}}`,
+			},
+			wantErr: "expected index 0",
+		},
+		"delta for a block that never started": {
+			events: []string{
+				`{"type": "message_start", "message": {}}`,
+				`{"type": "content_block_start", "index": 0, "content_block": {"type": "text", "text": ""}}`,
+				`{"type": "content_block_delta", "index": 1, "delta": {"type": "text_delta", "text": "hi"}}`,
+			},
+			wantErr: "only 1 content blocks",
+		},
+		"delta with a negative index": {
+			events: []string{
+				`{"type": "message_start", "message": {}}`,
+				`{"type": "content_block_start", "index": 0, "content_block": {"type": "text", "text": ""}}`,
+				`{"type": "content_block_delta", "index": -1, "delta": {"type": "text_delta", "text": "hi"}}`,
+			},
+			wantErr: "index -1",
+		},
+		"stop for a block that never started": {
+			events: []string{
+				`{"type": "message_start", "message": {}}`,
+				`{"type": "content_block_stop", "index": 0}`,
+			},
+			wantErr: "only 0 content blocks",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			message := anthropic.BetaMessage{}
+			for i, eventStr := range testCase.events {
+				event := anthropic.BetaRawMessageStreamEventUnion{}
+				if err := (&event).UnmarshalJSON([]byte(eventStr)); err != nil {
+					t.Fatal(err)
+				}
+				err := (&message).Accumulate(event)
+				if i < len(testCase.events)-1 {
+					if err != nil {
+						t.Fatal(err)
+					}
+					continue
+				}
+				if err == nil {
+					t.Fatalf("expected error containing %q, got nil", testCase.wantErr)
+				}
+				if !strings.Contains(err.Error(), testCase.wantErr) {
+					t.Fatalf("expected error containing %q, got %q", testCase.wantErr, err.Error())
+				}
 			}
 		})
 	}

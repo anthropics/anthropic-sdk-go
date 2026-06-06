@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.48.0 (2026-06-06)
+
+Full Changelog: [v1.47.0...v1.48.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.47.0...v1.48.0)
+
+### Features
+
+* **api:** small updates to Managed Agents types ([3ebeea5](https://github.com/anthropics/anthropic-sdk-go/commit/3ebeea5856ea9a024ff77d22847f0109da2dd334))
+
 ## 1.47.0 (2026-06-05)
 
 Full Changelog: [v1.46.0...v1.47.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.46.0...v1.47.0)

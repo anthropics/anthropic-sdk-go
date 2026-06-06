@@ -2,13 +2,23 @@ package main
 
 import (
 	"context"
-	"github.com/anthropics/anthropic-sdk-go/vertex"
+	"log"
+	"net/http"
 
 	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/vertex"
 )
 
 func main() {
 	client := anthropic.NewClient(
+		// Register middleware before the Vertex option so it observes
+		// Anthropic-shaped requests (POST /v1/messages, model in the body);
+		// the Vertex adaptation runs closest to the wire.
+		option.WithMiddleware(func(req *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+			log.Printf("request: %s %s", req.Method, req.URL.Path)
+			return next(req)
+		}),
 		vertex.WithGoogleAuth(context.Background(), "us-central1", "id-xxx"),
 	)
 	content := "Write me a function to call the Anthropic message API in Node.js using the Anthropic Typescript SDK."

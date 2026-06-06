@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -18,7 +19,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
-func makeMantleStaticConfig(region string) awssdk.Config {
+func makeStaticAWSConfig(region string) awssdk.Config {
 	return awssdk.Config{
 		Region: region,
 		Credentials: credentials.StaticCredentialsProvider{
@@ -30,6 +31,21 @@ func makeMantleStaticConfig(region string) awssdk.Config {
 	}
 }
 
+// writeMessagesResponse writes a canned successful Messages API response.
+func writeMessagesResponse(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"id":            "msg_test",
+		"type":          "message",
+		"role":          "assistant",
+		"content":       []map[string]any{{"type": "text", "text": "hi"}},
+		"model":         "claude-sonnet-4-6-20250514",
+		"stop_reason":   "end_turn",
+		"stop_sequence": nil,
+		"usage":         map[string]any{"input_tokens": 1, "output_tokens": 1},
+	})
+}
+
 type mantleCapturedRequest struct {
 	Headers http.Header
 	URL     string
@@ -39,17 +55,7 @@ func mantleMessagesHandler(captured *mantleCapturedRequest) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		captured.Headers = r.Header.Clone()
 		captured.URL = r.URL.String()
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]any{
-			"id":            "msg_test",
-			"type":          "message",
-			"role":          "assistant",
-			"content":       []map[string]any{{"type": "text", "text": "hi"}},
-			"model":         "claude-sonnet-4-6-20250514",
-			"stop_reason":   "end_turn",
-			"stop_sequence": nil,
-			"usage":         map[string]any{"input_tokens": 1, "output_tokens": 1},
-		})
+		writeMessagesResponse(w)
 	}
 }
 
@@ -163,7 +169,7 @@ func TestMantleSigV4ModeHeaders(t *testing.T) {
 // --- SigV4 middleware service name test ---
 
 func TestMantleSigV4ServiceName(t *testing.T) {
-	cfg := makeMantleStaticConfig("us-east-1")
+	cfg := makeStaticAWSConfig("us-east-1")
 	signer := v4.NewSigner()
 	middleware := awsauth.SigV4Middleware(signer, cfg, mantleServiceName)
 
@@ -404,6 +410,77 @@ func TestMantleClientPerRequestOptionsOverrideClientOptions(t *testing.T) {
 
 	if got := captured.Headers.Get("X-Custom-Header"); got != "request-level" {
 		t.Errorf("expected X-Custom-Header %q (per-request override), got %q", "request-level", got)
+	}
+}
+
+// TestMantleUserMiddlewareRunsBeforeSigV4Signing verifies that SigV4 signing
+// runs after (inside) middleware registered through client options, so the
+// signature covers the middleware's request mutations.
+func TestMantleUserMiddlewareRunsBeforeSigV4Signing(t *testing.T) {
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+	t.Setenv("ANTHROPIC_AWS_API_KEY", "")
+	t.Setenv("ANTHROPIC_API_KEY", "")
+
+	var observedAuth, observedAmzDate string
+	mutator := func(r *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+		observedAuth = r.Header.Get("Authorization")
+		observedAmzDate = r.Header.Get("X-Amz-Date")
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			return nil, err
+		}
+		var parsed map[string]any
+		if err := json.Unmarshal(body, &parsed); err != nil {
+			return nil, err
+		}
+		parsed["metadata"] = map[string]any{"user_id": "injected-by-middleware"}
+		mutated, err := json.Marshal(parsed)
+		if err != nil {
+			return nil, err
+		}
+		r.Body = io.NopCloser(bytes.NewReader(mutated))
+		r.ContentLength = int64(len(mutated))
+		return next(r)
+	}
+
+	var wireBody map[string]any
+	var wireAuth string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		wireAuth = r.Header.Get("Authorization")
+		if err := json.NewDecoder(r.Body).Decode(&wireBody); err != nil {
+			t.Errorf("failed to decode wire body: %v", err)
+		}
+		writeMessagesResponse(w)
+	}))
+	t.Cleanup(server.Close)
+
+	client, err := NewMantleClient(context.Background(), MantleClientConfig{
+		BaseURL:            server.URL,
+		AWSRegion:          "us-east-1",
+		AWSAccessKey:       "test-access-key",
+		AWSSecretAccessKey: "test-secret-key",
+	}, option.WithMiddleware(mutator))
+	if err != nil {
+		t.Fatalf("NewMantleClient failed: %v", err)
+	}
+	sendTestMantleRequest(t, client)
+
+	// The user middleware runs before signing, so no signature exists yet.
+	if observedAuth != "" {
+		t.Errorf("expected user middleware to run before signing, but saw Authorization %q", observedAuth)
+	}
+	if observedAmzDate != "" {
+		t.Errorf("expected user middleware to run before signing, but saw X-Amz-Date %q", observedAmzDate)
+	}
+
+	// The wire request is signed and carries the middleware's mutation.
+	if !strings.HasPrefix(wireAuth, "AWS4-HMAC-SHA256") {
+		t.Errorf("expected SigV4 Authorization on the wire, got %q", wireAuth)
+	}
+	metadata, _ := wireBody["metadata"].(map[string]any)
+	if metadata["user_id"] != "injected-by-middleware" {
+		t.Errorf("expected middleware mutation in the signed wire body, got metadata %v", wireBody["metadata"])
 	}
 }
 

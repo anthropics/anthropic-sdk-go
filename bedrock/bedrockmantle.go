@@ -71,7 +71,11 @@ type MantleBetaService struct {
 //
 // Any additional [option.RequestOption] values are applied after the client's
 // internal options (base URL, auth, etc.), so they can be used to set custom
-// headers, timeouts, middleware, and other request-level settings.
+// headers, timeouts, middleware, and other request-level settings. When SigV4
+// authentication is in use, the signing middleware runs after any middleware
+// registered through these options, so the signature covers their request
+// mutations. Note that per-request middleware passed at a method call site
+// still runs after signing and must not mutate the request.
 //
 // Auth is resolved by precedence:
 //  1. APIKey arg (x-api-key header)
@@ -80,17 +84,13 @@ type MantleBetaService struct {
 //  4. AWS_BEARER_TOKEN_BEDROCK env var, then ANTHROPIC_AWS_API_KEY (x-api-key header)
 //  5. Default AWS credential chain (SigV4)
 func NewMantleClient(ctx context.Context, cfg MantleClientConfig, opts ...option.RequestOption) (*MantleClient, error) {
-	baseOpts, err := awsauth.CreateClientOptions(ctx, mantleToInternalConfig(cfg), mantleResolveParams())
-	if err != nil {
-		return nil, err
-	}
-
 	// We intentionally do not call anthropic.DefaultClientOptions() here.
 	// The Mantle client resolves its own base URL, auth, and workspace ID — the
 	// base SDK defaults (ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL) do not apply.
-	//
-	// User-provided opts are appended last so they take highest precedence.
-	opts = append(baseOpts, opts...)
+	opts, err := awsauth.CreateClientOptions(ctx, mantleToInternalConfig(cfg), mantleResolveParams(), opts...)
+	if err != nil {
+		return nil, err
+	}
 
 	return &MantleClient{
 		Options:  opts,

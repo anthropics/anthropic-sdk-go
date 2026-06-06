@@ -72,14 +72,22 @@ type Client struct {
 
 // NewClient creates a new AWS gateway client with the given configuration.
 //
+// Any additional [option.RequestOption] values are applied after the client's
+// internal options (base URL, auth, etc.), so they can be used to set custom
+// headers, timeouts, middleware, and other request-level settings. When SigV4
+// authentication is in use, the signing middleware runs after any middleware
+// registered through these options, so the signature covers their request
+// mutations. Per-request middleware passed at a method call site instead runs
+// after signing and must not mutate the request.
+//
 // Auth is resolved by precedence:
 //  1. APIKey arg (x-api-key header)
 //  2. AWSAccessKey + AWSSecretAccessKey args (SigV4)
 //  3. AWSProfile arg (SigV4 via provider chain)
 //  4. ANTHROPIC_AWS_API_KEY env var (x-api-key header)
 //  5. Default AWS credential chain (SigV4)
-func NewClient(ctx context.Context, cfg ClientConfig) (*Client, error) {
-	opts, err := awsauth.CreateClientOptions(ctx, toInternalConfig(cfg), awsResolveParams())
+func NewClient(ctx context.Context, cfg ClientConfig, opts ...option.RequestOption) (*Client, error) {
+	opts, err := awsauth.CreateClientOptions(ctx, toInternalConfig(cfg), awsResolveParams(), opts...)
 	if err != nil {
 		return nil, err
 	}

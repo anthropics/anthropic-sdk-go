@@ -1739,7 +1739,7 @@ type BetaSessionListParams struct {
 	// Filter sessions whose resources contain a memory_store with this memory store
 	// ID.
 	MemoryStoreID param.Opt[string] `query:"memory_store_id,omitzero" json:"-"`
-	// Opaque pagination cursor from a previous response's next_page.
+	// Opaque pagination cursor from a previous response.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
 	// Sort direction for results, ordered by created_at. Defaults to desc (newest
 	// first).

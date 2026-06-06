@@ -2471,15 +2471,6 @@ func (u contentBlockParamUnionContent) GetEncryptedStdout() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u contentBlockParamUnionContent) GetErrorMessage() *string {
-	switch vt := u.any.(type) {
-	case *TextEditorCodeExecutionToolResultBlockParamContentUnion:
-		return vt.GetErrorMessage()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
 func (u contentBlockParamUnionContent) GetFileType() *string {
 	switch vt := u.any.(type) {
 	case *TextEditorCodeExecutionToolResultBlockParamContentUnion:
@@ -2649,6 +2640,17 @@ func (u contentBlockParamUnionContent) GetStdout() *string {
 		return vt.GetStdout()
 	case *BashCodeExecutionToolResultBlockParamContentUnion:
 		return vt.GetStdout()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u contentBlockParamUnionContent) GetErrorMessage() *string {
+	switch vt := u.any.(type) {
+	case *TextEditorCodeExecutionToolResultBlockParamContentUnion:
+		return vt.GetErrorMessage()
+	case *ToolSearchToolResultBlockParamContentUnion:
+		return vt.GetErrorMessage()
 	}
 	return nil
 }
@@ -7276,6 +7278,14 @@ func (u ToolSearchToolResultBlockParamContentUnion) GetErrorCode() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u ToolSearchToolResultBlockParamContentUnion) GetErrorMessage() *string {
+	if vt := u.OfRequestToolSearchToolResultError; vt != nil && vt.ErrorMessage.Valid() {
+		return &vt.ErrorMessage.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u ToolSearchToolResultBlockParamContentUnion) GetToolReferences() []ToolReferenceBlockParam {
 	if vt := u.OfRequestToolSearchToolSearchResultBlock; vt != nil {
 		return vt.ToolReferences
@@ -7328,7 +7338,8 @@ const (
 type ToolSearchToolResultErrorParam struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded".
-	ErrorCode ToolSearchToolResultErrorCode `json:"error_code,omitzero" api:"required"`
+	ErrorCode    ToolSearchToolResultErrorCode `json:"error_code,omitzero" api:"required"`
+	ErrorMessage param.Opt[string]             `json:"error_message,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "tool_search_tool_result_error".
 	Type constant.ToolSearchToolResultError `json:"type" default:"tool_search_tool_result_error"`

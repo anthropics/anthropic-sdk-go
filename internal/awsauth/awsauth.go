@@ -240,7 +240,12 @@ func SigV4Middleware(signer *v4.Signer, cfg awssdk.Config, serviceName string) o
 // CreateClientOptions returns request options that configure an Anthropic client for use
 // with an AWS-based service. The params argument customizes env var names, base URL derivation,
 // and SigV4 service name per client type.
-func CreateClientOptions(ctx context.Context, cfg ClientConfig, params ResolveParams) ([]option.RequestOption, error) {
+//
+// Caller-provided userOpts are placed after the base options (so they can
+// override the base URL, headers, etc.) but before the SigV4 signing
+// middleware: signing must run closest to the wire so the signature covers
+// any body or header mutations made by user middleware.
+func CreateClientOptions(ctx context.Context, cfg ClientConfig, params ResolveParams, userOpts ...option.RequestOption) ([]option.RequestOption, error) {
 	resolved, err := ResolveConfig(cfg, params)
 	if err != nil {
 		return nil, err
@@ -253,7 +258,7 @@ func CreateClientOptions(ctx context.Context, cfg ClientConfig, params ResolvePa
 	}
 
 	if resolved.SkipAuth {
-		return opts, nil
+		return append(opts, userOpts...), nil
 	}
 
 	if resolved.APIKey != "" {
@@ -266,6 +271,8 @@ func CreateClientOptions(ctx context.Context, cfg ClientConfig, params ResolvePa
 	if resolved.WorkspaceID != "" {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", resolved.WorkspaceID))
 	}
+
+	opts = append(opts, userOpts...)
 
 	if resolved.UseSigV4 {
 		awsCfg, err := BuildAWSConfig(ctx, cfg, resolved.Region)

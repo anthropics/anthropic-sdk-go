@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"os"
@@ -25,7 +26,6 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
 )
 
 const DefaultVersion = "bedrock-2023-05-31"
@@ -49,71 +49,76 @@ type eventstreamChunk struct {
 	P     string `json:"p"`
 }
 
-type eventstreamDecoder struct {
+// sseTranslatingBody converts an AWS binary EventStream response body into SSE
+// wire format (text/event-stream), so that middleware outside the Bedrock
+// adaptation and stream consumers observe the same response shape on Bedrock
+// as on the first-party API.
+type sseTranslatingBody struct {
 	eventstream.Decoder
 
 	rc  io.ReadCloser
-	evt ssestream.Event
+	buf bytes.Buffer
 	err error
 }
 
-func (e *eventstreamDecoder) Close() error {
-	return e.rc.Close()
+func (b *sseTranslatingBody) Read(p []byte) (int, error) {
+	// Buffered SSE bytes must drain before a translation error surfaces, so
+	// events decoded ahead of a mid-stream exception still reach the consumer.
+	for b.buf.Len() == 0 {
+		if b.err != nil {
+			return 0, b.err
+		}
+
+		msg, err := b.Decoder.Decode(b.rc, nil)
+		if err != nil {
+			b.err = err
+			continue
+		}
+		b.translate(msg)
+	}
+	return b.buf.Read(p)
 }
 
-func (e *eventstreamDecoder) Err() error {
-	return e.err
+func (b *sseTranslatingBody) Close() error {
+	return b.rc.Close()
 }
 
-func (e *eventstreamDecoder) Next() bool {
-	if e.err != nil {
-		return false
-	}
-
-	msg, err := e.Decoder.Decode(e.rc, nil)
-	if err != nil {
-		e.err = err
-		return false
-	}
-
+func (b *sseTranslatingBody) translate(msg eventstream.Message) {
 	messageType := msg.Headers.Get(eventstreamapi.MessageTypeHeader)
 	if messageType == nil {
-		e.err = fmt.Errorf("%s event header not present", eventstreamapi.MessageTypeHeader)
-		return false
+		b.err = fmt.Errorf("%s event header not present", eventstreamapi.MessageTypeHeader)
+		return
 	}
 
 	switch messageType.String() {
 	case eventstreamapi.EventMessageType:
 		eventType := msg.Headers.Get(eventstreamapi.EventTypeHeader)
 		if eventType == nil {
-			e.err = fmt.Errorf("%s event header not present", eventstreamapi.EventTypeHeader)
-			return false
+			b.err = fmt.Errorf("%s event header not present", eventstreamapi.EventTypeHeader)
+			return
 		}
 
 		if eventType.String() == "chunk" {
 			chunk := eventstreamChunk{}
-			err = json.Unmarshal(msg.Payload, &chunk)
+			err := json.Unmarshal(msg.Payload, &chunk)
 			if err != nil {
-				e.err = err
-				return false
+				b.err = err
+				return
 			}
 			decoded, err := base64.StdEncoding.DecodeString(chunk.Bytes)
 			if err != nil {
-				e.err = err
-				return false
+				b.err = err
+				return
 			}
-			e.evt = ssestream.Event{
-				Type: gjson.GetBytes(decoded, "type").String(),
-				Data: decoded,
-			}
+			b.emit(gjson.GetBytes(decoded, "type").String(), decoded)
 		}
 
 	case eventstreamapi.ExceptionMessageType:
 		// See https://github.com/aws/aws-sdk-go-v2/blob/885de40869f9bcee29ad11d60967aa0f1b571d46/service/iotsitewise/deserializers.go#L15511C1-L15567C2
 		exceptionType := msg.Headers.Get(eventstreamapi.ExceptionTypeHeader)
 		if exceptionType == nil {
-			e.err = fmt.Errorf("%s event header not present", eventstreamapi.ExceptionTypeHeader)
-			return false
+			b.err = fmt.Errorf("%s event header not present", eventstreamapi.ExceptionTypeHeader)
+			return
 		}
 
 		// See https://github.com/aws/aws-sdk-go-v2/blob/885de40869f9bcee29ad11d60967aa0f1b571d46/aws/protocol/restjson/decoder_util.go#L15-L48k
@@ -122,10 +127,10 @@ func (e *eventstreamDecoder) Next() bool {
 			Type    string `json:"__type"`
 			Message string
 		}
-		err = json.Unmarshal(msg.Payload, &errInfo)
+		err := json.Unmarshal(msg.Payload, &errInfo)
 		if err != nil && err != io.EOF {
-			e.err = fmt.Errorf("received exception %s: parsing exception payload failed: %w", exceptionType.String(), err)
-			return false
+			b.err = fmt.Errorf("received exception %s: parsing exception payload failed: %w", exceptionType.String(), err)
+			return
 		}
 
 		errorCode := "UnknownError"
@@ -141,8 +146,7 @@ func (e *eventstreamDecoder) Next() bool {
 		if len(errInfo.Message) > 0 {
 			errorMessage = errInfo.Message
 		}
-		e.err = fmt.Errorf("received exception %s: %s", errorCode, errorMessage)
-		return false
+		b.err = fmt.Errorf("received exception %s: %s", errorCode, errorMessage)
 
 	case eventstreamapi.ErrorMessageType:
 		errorCode := "UnknownError"
@@ -153,31 +157,32 @@ func (e *eventstreamDecoder) Next() bool {
 		if header := msg.Headers.Get(eventstreamapi.ErrorMessageHeader); header != nil {
 			errorMessage = header.String()
 		}
-		e.err = fmt.Errorf("received error %s: %s", errorCode, errorMessage)
-		return false
+		b.err = fmt.Errorf("received error %s: %s", errorCode, errorMessage)
 	}
-
-	return true
 }
 
-func (e *eventstreamDecoder) Event() ssestream.Event {
-	return e.evt
-}
-
-var (
-	_ ssestream.Decoder = &eventstreamDecoder{}
-)
-
-func init() {
-	ssestream.RegisterDecoder("application/vnd.amazon.eventstream", func(rc io.ReadCloser) ssestream.Decoder {
-		return &eventstreamDecoder{rc: rc}
-	})
+func (b *sseTranslatingBody) emit(eventType string, data []byte) {
+	b.buf.WriteString("event: ")
+	b.buf.WriteString(eventType)
+	b.buf.WriteByte('\n')
+	// The SSE format carries one "data:" line per payload line; consumers
+	// rejoin multi-line data with '\n'. API event JSON contains no raw
+	// newlines, but split defensively to keep the framing valid either way.
+	for _, line := range bytes.Split(data, []byte("\n")) {
+		b.buf.WriteString("data: ")
+		b.buf.Write(line)
+		b.buf.WriteByte('\n')
+	}
+	b.buf.WriteByte('\n')
 }
 
 // WithLoadDefaultConfig returns a request option which loads the default config for Amazon and registers
 // middleware that intercepts request to the Messages API so that this SDK can be used with Amazon Bedrock.
 //
 // If you already have an [aws.Config], it is recommended that you instead call [WithConfig] directly.
+//
+// Register any [option.WithMiddleware] before this option so your middleware
+// observes Anthropic-shaped requests and responses; see [WithConfig].
 func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptions) error) option.RequestOption {
 	cfg, err := config.LoadDefaultConfig(ctx, optFns...)
 	if err != nil {
@@ -192,6 +197,23 @@ func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptio
 // Authentication is determined as follows: if the AWS_BEARER_TOKEN_BEDROCK environment variable is
 // set, it is used for bearer token authentication. Otherwise, if cfg.BearerAuthTokenProvider is set,
 // it is used. If neither is available, cfg.Credentials is used for AWS SigV4 signing and must be set.
+//
+// The Bedrock adaptation (URL and body rewriting, request signing, and
+// normalization of streaming responses to SSE) should run closest to the wire.
+// Middleware runs in registration order, so register [option.WithMiddleware]
+// before this option:
+//
+//	client := anthropic.NewClient(
+//		option.WithMiddleware(loggingMiddleware),
+//		bedrock.WithConfig(cfg),
+//	)
+//
+// Ordered this way, your middleware observes Anthropic-shaped requests
+// (POST /v1/messages with model and stream in the body, no AWS signature)
+// and SSE-formatted streaming responses — identical to the first-party API.
+// Note that mutating the request after the Bedrock middleware has signed it
+// invalidates the SigV4 signature, so body- or header-mutating middleware
+// must be registered before this option.
 func WithConfig(cfg aws.Config) option.RequestOption {
 	var credentialErr error
 
@@ -199,7 +221,8 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 		if token := os.Getenv("AWS_BEARER_TOKEN_BEDROCK"); token != "" {
 			cfg.BearerAuthTokenProvider = NewStaticBearerTokenProvider(token)
 		}
-	} else if cfg.BearerAuthTokenProvider == nil && cfg.Credentials == nil {
+	}
+	if cfg.BearerAuthTokenProvider == nil && cfg.Credentials == nil {
 		credentialErr = fmt.Errorf("expected AWS credentials to be set")
 	}
 
@@ -288,6 +311,22 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 			}
 		}
 
-		return next(r)
+		res, err = next(r)
+		if err != nil || res == nil {
+			return res, err
+		}
+
+		// Normalize streaming responses to the SSE format the first-party API
+		// uses, so layers above this middleware never see AWS EventStream.
+		// Error responses stay untranslated: the SDK's error path reads the
+		// raw body to build an error carrying the status and request ID.
+		if mediaType, _, _ := mime.ParseMediaType(res.Header.Get("Content-Type")); res.StatusCode < 400 && mediaType == "application/vnd.amazon.eventstream" {
+			res.Body = &sseTranslatingBody{rc: res.Body}
+			res.Header.Set("Content-Type", "text/event-stream")
+			res.Header.Del("Content-Length")
+			res.ContentLength = -1
+		}
+
+		return res, nil
 	}
 }

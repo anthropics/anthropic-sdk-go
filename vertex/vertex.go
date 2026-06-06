@@ -24,6 +24,9 @@ const DefaultVersion = "vertex-2023-10-16"
 //
 // If you already have a [*google.Credentials], it is recommended that you instead call [WithCredentials] directly.
 //
+// Register any [sdkoption.WithMiddleware] before this option so your
+// middleware observes Anthropic-shaped requests; see [WithCredentials].
+//
 // [Application Default Credentials]: https://cloud.google.com/docs/authentication/application-default-credentials
 func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes ...string) sdkoption.RequestOption {
 	if region == "" {
@@ -38,6 +41,19 @@ func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes
 
 // WithCredentials returns a request option which uses the provided credentials for Google Vertex AI and registers middleware that
 // intercepts request to the Messages API.
+//
+// The Vertex adaptation (URL and body rewriting, OAuth authorization) should
+// run closest to the wire. Middleware runs in registration order, so register
+// [sdkoption.WithMiddleware] before this option:
+//
+//	client := anthropic.NewClient(
+//		option.WithMiddleware(loggingMiddleware),
+//		vertex.WithCredentials(ctx, region, projectID, creds),
+//	)
+//
+// Ordered this way, your middleware observes Anthropic-shaped requests
+// (POST /v1/messages with the model in the body) — identical to the
+// first-party API.
 func WithCredentials(ctx context.Context, region string, projectID string, creds *google.Credentials) sdkoption.RequestOption {
 	client, _, err := transport.NewHTTPClient(ctx, option.WithTokenSource(creds.TokenSource))
 	if err != nil {

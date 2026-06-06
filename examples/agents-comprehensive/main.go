@@ -110,7 +110,6 @@ func main() {
 					Name:        "get_weather",
 					Description: "Look up the current weather for a city.",
 					InputSchema: anthropic.BetaManagedAgentsCustomToolInputSchemaParam{
-						Type:       anthropic.BetaManagedAgentsCustomToolInputSchemaTypeObject,
 						Properties: map[string]any{"city": map[string]any{"type": "string"}},
 						Required:   []string{"city"},
 					},

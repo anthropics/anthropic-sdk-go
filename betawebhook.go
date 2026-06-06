@@ -335,7 +335,7 @@ func (r *BetaWebhookEventDataUnion) UnmarshalJSON(data []byte) error {
 }
 
 type BetaWebhookSessionArchivedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                   `json:"id" api:"required"`
 	OrganizationID string                   `json:"organization_id" api:"required"`
 	Type           constant.SessionArchived `json:"type" default:"session.archived"`
@@ -358,7 +358,7 @@ func (r *BetaWebhookSessionArchivedEventData) UnmarshalJSON(data []byte) error {
 }
 
 type BetaWebhookSessionCreatedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                  `json:"id" api:"required"`
 	OrganizationID string                  `json:"organization_id" api:"required"`
 	Type           constant.SessionCreated `json:"type" default:"session.created"`
@@ -381,7 +381,7 @@ func (r *BetaWebhookSessionCreatedEventData) UnmarshalJSON(data []byte) error {
 }
 
 type BetaWebhookSessionDeletedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                  `json:"id" api:"required"`
 	OrganizationID string                  `json:"organization_id" api:"required"`
 	Type           constant.SessionDeleted `json:"type" default:"session.deleted"`
@@ -404,7 +404,7 @@ func (r *BetaWebhookSessionDeletedEventData) UnmarshalJSON(data []byte) error {
 }
 
 type BetaWebhookSessionIdledEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                `json:"id" api:"required"`
 	OrganizationID string                `json:"organization_id" api:"required"`
 	Type           constant.SessionIdled `json:"type" default:"session.idled"`
@@ -427,7 +427,7 @@ func (r *BetaWebhookSessionIdledEventData) UnmarshalJSON(data []byte) error {
 }
 
 type BetaWebhookSessionOutcomeEvaluationEndedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                                 `json:"id" api:"required"`
 	OrganizationID string                                 `json:"organization_id" api:"required"`
 	Type           constant.SessionOutcomeEvaluationEnded `json:"type" default:"session.outcome_evaluation_ended"`
@@ -450,7 +450,7 @@ func (r *BetaWebhookSessionOutcomeEvaluationEndedEventData) UnmarshalJSON(data [
 }
 
 type BetaWebhookSessionPendingEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                  `json:"id" api:"required"`
 	OrganizationID string                  `json:"organization_id" api:"required"`
 	Type           constant.SessionPending `json:"type" default:"session.pending"`
@@ -473,7 +473,7 @@ func (r *BetaWebhookSessionPendingEventData) UnmarshalJSON(data []byte) error {
 }
 
 type BetaWebhookSessionRequiresActionEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                         `json:"id" api:"required"`
 	OrganizationID string                         `json:"organization_id" api:"required"`
 	Type           constant.SessionRequiresAction `json:"type" default:"session.requires_action"`
@@ -496,7 +496,7 @@ func (r *BetaWebhookSessionRequiresActionEventData) UnmarshalJSON(data []byte) e
 }
 
 type BetaWebhookSessionRunningEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                  `json:"id" api:"required"`
 	OrganizationID string                  `json:"organization_id" api:"required"`
 	Type           constant.SessionRunning `json:"type" default:"session.running"`
@@ -519,7 +519,7 @@ func (r *BetaWebhookSessionRunningEventData) UnmarshalJSON(data []byte) error {
 }
 
 type BetaWebhookSessionStatusIdledEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                      `json:"id" api:"required"`
 	OrganizationID string                      `json:"organization_id" api:"required"`
 	Type           constant.SessionStatusIdled `json:"type" default:"session.status_idled"`
@@ -542,7 +542,7 @@ func (r *BetaWebhookSessionStatusIdledEventData) UnmarshalJSON(data []byte) erro
 }
 
 type BetaWebhookSessionStatusRescheduledEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                            `json:"id" api:"required"`
 	OrganizationID string                            `json:"organization_id" api:"required"`
 	Type           constant.SessionStatusRescheduled `json:"type" default:"session.status_rescheduled"`
@@ -565,7 +565,7 @@ func (r *BetaWebhookSessionStatusRescheduledEventData) UnmarshalJSON(data []byte
 }
 
 type BetaWebhookSessionStatusRunStartedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                           `json:"id" api:"required"`
 	OrganizationID string                           `json:"organization_id" api:"required"`
 	Type           constant.SessionStatusRunStarted `json:"type" default:"session.status_run_started"`
@@ -588,7 +588,7 @@ func (r *BetaWebhookSessionStatusRunStartedEventData) UnmarshalJSON(data []byte)
 }
 
 type BetaWebhookSessionStatusTerminatedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                           `json:"id" api:"required"`
 	OrganizationID string                           `json:"organization_id" api:"required"`
 	Type           constant.SessionStatusTerminated `json:"type" default:"session.status_terminated"`
@@ -611,7 +611,7 @@ func (r *BetaWebhookSessionStatusTerminatedEventData) UnmarshalJSON(data []byte)
 }
 
 type BetaWebhookSessionThreadCreatedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                        `json:"id" api:"required"`
 	OrganizationID string                        `json:"organization_id" api:"required"`
 	Type           constant.SessionThreadCreated `json:"type" default:"session.thread_created"`
@@ -634,7 +634,7 @@ func (r *BetaWebhookSessionThreadCreatedEventData) UnmarshalJSON(data []byte) er
 }
 
 type BetaWebhookSessionThreadIdledEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                      `json:"id" api:"required"`
 	OrganizationID string                      `json:"organization_id" api:"required"`
 	Type           constant.SessionThreadIdled `json:"type" default:"session.thread_idled"`
@@ -657,7 +657,7 @@ func (r *BetaWebhookSessionThreadIdledEventData) UnmarshalJSON(data []byte) erro
 }
 
 type BetaWebhookSessionThreadTerminatedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the session that triggered the event.
 	ID             string                           `json:"id" api:"required"`
 	OrganizationID string                           `json:"organization_id" api:"required"`
 	Type           constant.SessionThreadTerminated `json:"type" default:"session.thread_terminated"`
@@ -680,7 +680,7 @@ func (r *BetaWebhookSessionThreadTerminatedEventData) UnmarshalJSON(data []byte)
 }
 
 type BetaWebhookVaultArchivedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the vault that triggered the event.
 	ID             string                 `json:"id" api:"required"`
 	OrganizationID string                 `json:"organization_id" api:"required"`
 	Type           constant.VaultArchived `json:"type" default:"vault.archived"`
@@ -703,7 +703,7 @@ func (r *BetaWebhookVaultArchivedEventData) UnmarshalJSON(data []byte) error {
 }
 
 type BetaWebhookVaultCreatedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the vault that triggered the event.
 	ID             string                `json:"id" api:"required"`
 	OrganizationID string                `json:"organization_id" api:"required"`
 	Type           constant.VaultCreated `json:"type" default:"vault.created"`
@@ -726,7 +726,7 @@ func (r *BetaWebhookVaultCreatedEventData) UnmarshalJSON(data []byte) error {
 }
 
 type BetaWebhookVaultCredentialArchivedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the vault credential that triggered the event.
 	ID             string                           `json:"id" api:"required"`
 	OrganizationID string                           `json:"organization_id" api:"required"`
 	Type           constant.VaultCredentialArchived `json:"type" default:"vault_credential.archived"`
@@ -752,7 +752,7 @@ func (r *BetaWebhookVaultCredentialArchivedEventData) UnmarshalJSON(data []byte)
 }
 
 type BetaWebhookVaultCredentialCreatedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the vault credential that triggered the event.
 	ID             string                          `json:"id" api:"required"`
 	OrganizationID string                          `json:"organization_id" api:"required"`
 	Type           constant.VaultCredentialCreated `json:"type" default:"vault_credential.created"`
@@ -778,7 +778,7 @@ func (r *BetaWebhookVaultCredentialCreatedEventData) UnmarshalJSON(data []byte) 
 }
 
 type BetaWebhookVaultCredentialDeletedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the vault credential that triggered the event.
 	ID             string                          `json:"id" api:"required"`
 	OrganizationID string                          `json:"organization_id" api:"required"`
 	Type           constant.VaultCredentialDeleted `json:"type" default:"vault_credential.deleted"`
@@ -804,7 +804,7 @@ func (r *BetaWebhookVaultCredentialDeletedEventData) UnmarshalJSON(data []byte) 
 }
 
 type BetaWebhookVaultCredentialRefreshFailedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the vault credential that triggered the event.
 	ID             string                                `json:"id" api:"required"`
 	OrganizationID string                                `json:"organization_id" api:"required"`
 	Type           constant.VaultCredentialRefreshFailed `json:"type" default:"vault_credential.refresh_failed"`
@@ -830,7 +830,7 @@ func (r *BetaWebhookVaultCredentialRefreshFailedEventData) UnmarshalJSON(data []
 }
 
 type BetaWebhookVaultDeletedEventData struct {
-	// ID of the resource that triggered the event.
+	// ID of the vault that triggered the event.
 	ID             string                `json:"id" api:"required"`
 	OrganizationID string                `json:"organization_id" api:"required"`
 	Type           constant.VaultDeleted `json:"type" default:"vault.deleted"`

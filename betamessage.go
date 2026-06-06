@@ -251,6 +251,14 @@ type BetaAdvisorTool20260301Param struct {
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero" api:"required"`
+	// Bounds the advisor's total output (thinking + text) per call. When the advisor
+	// hits this cap, the returned advisor_result or advisor_redacted_result block
+	// carries stop_reason='max_tokens', and a truncation note is appended to the
+	// advice text the worker model sees (inside the encrypted blob in redacted mode).
+	// When set, the server also emits a remaining-tokens budget block in the advisor's
+	// prompt so the advisor self-shapes toward the cap. When omitted, the advisor
+	// model's default output cap applies and no budget block is emitted.
+	MaxTokens param.Opt[int64] `json:"max_tokens,omitzero"`
 	// Maximum number of times the tool can be used in the API request.
 	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
 	// If true, tool will not be included in initial system prompt. Only loaded when
@@ -447,7 +455,7 @@ func (u BetaAdvisorToolResultBlockParamContentUnion) GetStopReason() *string {
 
 type BetaAdvisorToolResultError struct {
 	// Any of "max_uses_exceeded", "prompt_too_long", "too_many_requests",
-	// "overloaded", "unavailable", "execution_time_exceeded".
+	// "overloaded", "unavailable", "execution_time_exceeded", "model_not_found".
 	ErrorCode BetaAdvisorToolResultErrorErrorCode `json:"error_code" api:"required"`
 	Type      constant.AdvisorToolResultError     `json:"type" default:"advisor_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -474,12 +482,13 @@ const (
 	BetaAdvisorToolResultErrorErrorCodeOverloaded            BetaAdvisorToolResultErrorErrorCode = "overloaded"
 	BetaAdvisorToolResultErrorErrorCodeUnavailable           BetaAdvisorToolResultErrorErrorCode = "unavailable"
 	BetaAdvisorToolResultErrorErrorCodeExecutionTimeExceeded BetaAdvisorToolResultErrorErrorCode = "execution_time_exceeded"
+	BetaAdvisorToolResultErrorErrorCodeModelNotFound         BetaAdvisorToolResultErrorErrorCode = "model_not_found"
 )
 
 // The properties ErrorCode, Type are required.
 type BetaAdvisorToolResultErrorParam struct {
 	// Any of "max_uses_exceeded", "prompt_too_long", "too_many_requests",
-	// "overloaded", "unavailable", "execution_time_exceeded".
+	// "overloaded", "unavailable", "execution_time_exceeded", "model_not_found".
 	ErrorCode BetaAdvisorToolResultErrorParamErrorCode `json:"error_code,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "advisor_tool_result_error".
@@ -504,6 +513,7 @@ const (
 	BetaAdvisorToolResultErrorParamErrorCodeOverloaded            BetaAdvisorToolResultErrorParamErrorCode = "overloaded"
 	BetaAdvisorToolResultErrorParamErrorCodeUnavailable           BetaAdvisorToolResultErrorParamErrorCode = "unavailable"
 	BetaAdvisorToolResultErrorParamErrorCodeExecutionTimeExceeded BetaAdvisorToolResultErrorParamErrorCode = "execution_time_exceeded"
+	BetaAdvisorToolResultErrorParamErrorCodeModelNotFound         BetaAdvisorToolResultErrorParamErrorCode = "model_not_found"
 )
 
 func NewBetaAllThinkingTurnsParam() BetaAllThinkingTurnsParam {
@@ -3615,15 +3625,6 @@ func (u betaContentBlockParamUnionContent) GetEncryptedStdout() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u betaContentBlockParamUnionContent) GetErrorMessage() *string {
-	switch vt := u.any.(type) {
-	case *BetaTextEditorCodeExecutionToolResultBlockParamContentUnion:
-		return vt.GetErrorMessage()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
 func (u betaContentBlockParamUnionContent) GetFileType() *string {
 	switch vt := u.any.(type) {
 	case *BetaTextEditorCodeExecutionToolResultBlockParamContentUnion:
@@ -3806,6 +3807,17 @@ func (u betaContentBlockParamUnionContent) GetStdout() *string {
 		return vt.GetStdout()
 	case *BetaBashCodeExecutionToolResultBlockParamContentUnion:
 		return vt.GetStdout()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContentBlockParamUnionContent) GetErrorMessage() *string {
+	switch vt := u.any.(type) {
+	case *BetaTextEditorCodeExecutionToolResultBlockParamContentUnion:
+		return vt.GetErrorMessage()
+	case *BetaToolSearchToolResultBlockParamContentUnion:
+		return vt.GetErrorMessage()
 	}
 	return nil
 }
@@ -9438,6 +9450,14 @@ func (u BetaToolSearchToolResultBlockParamContentUnion) GetErrorCode() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u BetaToolSearchToolResultBlockParamContentUnion) GetErrorMessage() *string {
+	if vt := u.OfRequestToolSearchToolResultError; vt != nil && vt.ErrorMessage.Valid() {
+		return &vt.ErrorMessage.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u BetaToolSearchToolResultBlockParamContentUnion) GetToolReferences() []BetaToolReferenceBlockParam {
 	if vt := u.OfRequestToolSearchToolSearchResultBlock; vt != nil {
 		return vt.ToolReferences
@@ -9490,7 +9510,8 @@ const (
 type BetaToolSearchToolResultErrorParam struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded".
-	ErrorCode BetaToolSearchToolResultErrorParamErrorCode `json:"error_code,omitzero" api:"required"`
+	ErrorCode    BetaToolSearchToolResultErrorParamErrorCode `json:"error_code,omitzero" api:"required"`
+	ErrorMessage param.Opt[string]                           `json:"error_message,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "tool_search_tool_result_error".
 	Type constant.ToolSearchToolResultError `json:"type" default:"tool_search_tool_result_error"`
@@ -9906,6 +9927,14 @@ func (u BetaToolUnionParam) GetModel() *Model {
 func (u BetaToolUnionParam) GetCaching() *BetaCacheControlEphemeralParam {
 	if vt := u.OfAdvisorTool20260301; vt != nil {
 		return &vt.Caching
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaToolUnionParam) GetMaxTokens() *int64 {
+	if vt := u.OfAdvisorTool20260301; vt != nil && vt.MaxTokens.Valid() {
+		return &vt.MaxTokens.Value
 	}
 	return nil
 }
@@ -12424,6 +12453,14 @@ func (u BetaMessageCountTokensParamsToolUnion) GetModel() *Model {
 func (u BetaMessageCountTokensParamsToolUnion) GetCaching() *BetaCacheControlEphemeralParam {
 	if vt := u.OfAdvisorTool20260301; vt != nil {
 		return &vt.Caching
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageCountTokensParamsToolUnion) GetMaxTokens() *int64 {
+	if vt := u.OfAdvisorTool20260301; vt != nil && vt.MaxTokens.Valid() {
+		return &vt.MaxTokens.Value
 	}
 	return nil
 }

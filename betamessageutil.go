@@ -391,7 +391,7 @@ func (r BetaTextEditorCodeExecutionToolResultBlock) ToParam() BetaTextEditorCode
 			ErrorMessage: paramutil.ToOpt(r.Content.ErrorMessage, r.Content.JSON.ErrorMessage),
 		}
 	} else {
-		p.Content = param.Override[BetaTextEditorCodeExecutionToolResultBlockParamContentUnion](r.Content.RawJSON())
+		p.Content = param.Override[BetaTextEditorCodeExecutionToolResultBlockParamContentUnion](json.RawMessage(r.Content.RawJSON()))
 	}
 	return p
 }

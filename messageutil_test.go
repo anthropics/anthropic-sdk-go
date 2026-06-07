@@ -54,3 +54,71 @@ func TestContentBlockUnionToParam(t *testing.T) {
 		}
 	})
 }
+
+func TestContentBlockUnionToParamTextEditorCodeExecutionResult(t *testing.T) {
+	const wire = `{
+		"type": "text_editor_code_execution_tool_result",
+		"tool_use_id": "srvtoolu_1",
+		"content": {
+			"type": "text_editor_code_execution_view_result",
+			"content": "line1\nline2\n",
+			"file_type": "text",
+			"num_lines": 2,
+			"start_line": 1,
+			"total_lines": 2
+		}
+	}`
+
+	var block anthropic.ContentBlockUnion
+	if err := json.Unmarshal([]byte(wire), &block); err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	assertTextEditorCodeExecutionResultContentObject(t, block.ToParam())
+}
+
+func TestBetaContentBlockUnionToParamTextEditorCodeExecutionResult(t *testing.T) {
+	const wire = `{
+		"type": "text_editor_code_execution_tool_result",
+		"tool_use_id": "srvtoolu_1",
+		"content": {
+			"type": "text_editor_code_execution_view_result",
+			"content": "line1\nline2\n",
+			"file_type": "text",
+			"num_lines": 2,
+			"start_line": 1,
+			"total_lines": 2
+		}
+	}`
+
+	var block anthropic.BetaContentBlockUnion
+	if err := json.Unmarshal([]byte(wire), &block); err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	assertTextEditorCodeExecutionResultContentObject(t, block.ToParam())
+}
+
+func assertTextEditorCodeExecutionResultContentObject(t *testing.T, paramBlock any) {
+	t.Helper()
+
+	out, err := json.Marshal(paramBlock)
+	if err != nil {
+		t.Fatalf("Failed to marshal param block: %v", err)
+	}
+	var got map[string]any
+	if err := json.Unmarshal(out, &got); err != nil {
+		t.Fatalf("Failed to unmarshal param JSON: %v", err)
+	}
+
+	content, ok := got["content"].(map[string]any)
+	if !ok {
+		t.Fatalf("Expected content to marshal as an object, got %T: %v", got["content"], got["content"])
+	}
+	if got := content["type"]; got != "text_editor_code_execution_view_result" {
+		t.Errorf("Expected content.type to round-trip, got %v", got)
+	}
+	if got := content["content"]; got != "line1\nline2\n" {
+		t.Errorf("Expected content.content to round-trip, got %v", got)
+	}
+}

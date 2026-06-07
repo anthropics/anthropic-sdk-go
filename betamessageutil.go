@@ -334,6 +334,7 @@ func (r BetaWebSearchToolResultBlock) ToParam() BetaWebSearchToolResultBlockPara
 	var p BetaWebSearchToolResultBlockParam
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
+	p.Caller = r.Caller.ToParam()
 
 	if len(r.Content.OfBetaWebSearchResultBlockArray) > 0 {
 		for _, block := range r.Content.OfBetaWebSearchResultBlockArray {
@@ -348,11 +349,61 @@ func (r BetaWebSearchToolResultBlock) ToParam() BetaWebSearchToolResultBlockPara
 	return p
 }
 
+func (u BetaWebSearchToolResultBlockCallerUnion) ToParam() BetaWebSearchToolResultBlockParamCallerUnion {
+	switch u.Type {
+	case "direct":
+		v := u.AsDirect().ToParam()
+		return BetaWebSearchToolResultBlockParamCallerUnion{OfDirect: &v}
+	case "code_execution_20250825":
+		v := u.AsCodeExecution20250825().ToParam()
+		return BetaWebSearchToolResultBlockParamCallerUnion{OfCodeExecution20250825: &v}
+	case "code_execution_20260120":
+		v := u.AsCodeExecution20260120().ToParam()
+		return BetaWebSearchToolResultBlockParamCallerUnion{OfCodeExecution20260120: &v}
+	default:
+		return BetaWebSearchToolResultBlockParamCallerUnion{}
+	}
+}
+
 func (r BetaWebFetchToolResultBlock) ToParam() BetaWebFetchToolResultBlockParam {
 	var p BetaWebFetchToolResultBlockParam
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
+	p.Content = r.Content.ToParam()
+	p.Caller = r.Caller.ToParam()
 	return p
+}
+
+func (r BetaWebFetchToolResultBlockContentUnion) ToParam() BetaWebFetchToolResultBlockParamContentUnion {
+	var p BetaWebFetchToolResultBlockParamContentUnion
+	if r.JSON.ErrorCode.Valid() {
+		p.OfRequestWebFetchToolResultError = &BetaWebFetchToolResultErrorBlockParam{
+			ErrorCode: r.ErrorCode,
+		}
+	} else {
+		p.OfRequestWebFetchResultBlock = &BetaWebFetchBlockParam{
+			URL:         r.URL,
+			RetrievedAt: paramutil.ToOpt(r.RetrievedAt, r.JSON.RetrievedAt),
+			Content:     param.Override[BetaRequestDocumentBlockParam](json.RawMessage(r.Content.RawJSON())),
+		}
+	}
+	return p
+}
+
+func (u BetaWebFetchToolResultBlockCallerUnion) ToParam() BetaWebFetchToolResultBlockParamCallerUnion {
+	switch u.Type {
+	case "direct":
+		v := u.AsDirect().ToParam()
+		return BetaWebFetchToolResultBlockParamCallerUnion{OfDirect: &v}
+	case "code_execution_20250825":
+		v := u.AsCodeExecution20250825().ToParam()
+		return BetaWebFetchToolResultBlockParamCallerUnion{OfCodeExecution20250825: &v}
+	case "code_execution_20260120":
+		v := u.AsCodeExecution20260120().ToParam()
+		return BetaWebFetchToolResultBlockParamCallerUnion{OfCodeExecution20260120: &v}
+	default:
+		return BetaWebFetchToolResultBlockParamCallerUnion{}
+	}
 }
 
 func (r BetaMCPToolUseBlock) ToParam() BetaMCPToolUseBlockParam {

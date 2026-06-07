@@ -9219,7 +9219,15 @@ type WebSearchToolResultBlockParamContentUnion struct {
 }
 
 func (u WebSearchToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfWebSearchToolResultBlockItem, u.OfRequestWebSearchToolResultError)
+	var resultList *struct {
+		List []WebSearchResultBlockParam `json:"list"`
+	}
+	if !param.IsOmitted(u.OfWebSearchToolResultBlockItem) {
+		resultList = &struct {
+			List []WebSearchResultBlockParam `json:"list"`
+		}{List: u.OfWebSearchToolResultBlockItem}
+	}
+	return param.MarshalUnion(u, resultList, u.OfRequestWebSearchToolResultError)
 }
 func (u *WebSearchToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)

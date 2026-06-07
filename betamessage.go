@@ -11664,7 +11664,15 @@ type BetaWebSearchToolResultBlockParamContentUnion struct {
 }
 
 func (u BetaWebSearchToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfResultBlock, u.OfError)
+	var resultList *struct {
+		List []BetaWebSearchResultBlockParam `json:"list"`
+	}
+	if !param.IsOmitted(u.OfResultBlock) {
+		resultList = &struct {
+			List []BetaWebSearchResultBlockParam `json:"list"`
+		}{List: u.OfResultBlock}
+	}
+	return param.MarshalUnion(u, resultList, u.OfError)
 }
 func (u *BetaWebSearchToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)

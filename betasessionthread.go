@@ -266,7 +266,7 @@ func (r *BetaManagedAgentsSessionThreadUsage) UnmarshalJSON(data []byte) error {
 // [BetaManagedAgentsSessionThreadStatusTerminatedEvent],
 // [BetaManagedAgentsUserToolResultEvent],
 // [BetaManagedAgentsSessionThreadStatusRescheduledEvent],
-// [BetaManagedAgentsSessionUpdatedEvent].
+// [BetaManagedAgentsSessionUpdatedEvent], [BetaManagedAgentsSystemMessageEvent].
 //
 // Use the [BetaManagedAgentsStreamSessionThreadEventsUnion.AsAny] method to switch
 // on the variant.
@@ -281,7 +281,8 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 	// [[]BetaManagedAgentsAgentToolResultEventContentUnion],
 	// [[]BetaManagedAgentsAgentThreadMessageReceivedEventContentUnion],
 	// [[]BetaManagedAgentsAgentThreadMessageSentEventContentUnion],
-	// [[]BetaManagedAgentsUserToolResultEventContentUnion]
+	// [[]BetaManagedAgentsUserToolResultEventContentUnion],
+	// [[]BetaManagedAgentsSystemContentBlock]
 	Content BetaManagedAgentsStreamSessionThreadEventsUnionContent `json:"content"`
 	// Any of "user.message", "user.interrupt", "user.tool_confirmation",
 	// "user.custom_tool_result", "agent.custom_tool_use", "agent.message",
@@ -295,7 +296,7 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 	// "span.outcome_evaluation_ongoing", "user.define_outcome", "session.deleted",
 	// "session.thread_status_running", "session.thread_status_idle",
 	// "session.thread_status_terminated", "user.tool_result",
-	// "session.thread_status_rescheduled", "session.updated".
+	// "session.thread_status_rescheduled", "session.updated", "system.message".
 	Type            string    `json:"type"`
 	ProcessedAt     time.Time `json:"processed_at"`
 	SessionThreadID string    `json:"session_thread_id"`
@@ -454,6 +455,7 @@ func (BetaManagedAgentsUserToolResultEvent) implBetaManagedAgentsStreamSessionTh
 func (BetaManagedAgentsSessionThreadStatusRescheduledEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion() {
 }
 func (BetaManagedAgentsSessionUpdatedEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion() {}
+func (BetaManagedAgentsSystemMessageEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion()  {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -491,6 +493,7 @@ func (BetaManagedAgentsSessionUpdatedEvent) implBetaManagedAgentsStreamSessionTh
 //	case anthropic.BetaManagedAgentsUserToolResultEvent:
 //	case anthropic.BetaManagedAgentsSessionThreadStatusRescheduledEvent:
 //	case anthropic.BetaManagedAgentsSessionUpdatedEvent:
+//	case anthropic.BetaManagedAgentsSystemMessageEvent:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -562,6 +565,8 @@ func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsAny() anyBetaManagedA
 		return u.AsSessionThreadStatusRescheduled()
 	case "session.updated":
 		return u.AsSessionUpdated()
+	case "system.message":
+		return u.AsSystemMessage()
 	}
 	return nil
 }
@@ -731,6 +736,11 @@ func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsSessionUpdated() (v B
 	return
 }
 
+func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsSystemMessage() (v BetaManagedAgentsSystemMessageEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaManagedAgentsStreamSessionThreadEventsUnion) RawJSON() string { return u.JSON.raw }
 
@@ -754,7 +764,8 @@ func (r *BetaManagedAgentsStreamSessionThreadEventsUnion) UnmarshalJSON(data []b
 // OfBetaManagedAgentsAgentToolResultEventContentArray
 // OfBetaManagedAgentsAgentThreadMessageReceivedEventContentArray
 // OfBetaManagedAgentsAgentThreadMessageSentEventContentArray
-// OfBetaManagedAgentsUserToolResultEventContentArray]
+// OfBetaManagedAgentsUserToolResultEventContentArray
+// OfBetaManagedAgentsSystemContentBlockArray]
 type BetaManagedAgentsStreamSessionThreadEventsUnionContent struct {
 	// This field will be present if the value is a
 	// [[]BetaManagedAgentsUserMessageEventContentUnion] instead of an object.
@@ -782,7 +793,10 @@ type BetaManagedAgentsStreamSessionThreadEventsUnionContent struct {
 	// This field will be present if the value is a
 	// [[]BetaManagedAgentsUserToolResultEventContentUnion] instead of an object.
 	OfBetaManagedAgentsUserToolResultEventContentArray []BetaManagedAgentsUserToolResultEventContentUnion `json:",inline"`
-	JSON                                               struct {
+	// This field will be present if the value is a
+	// [[]BetaManagedAgentsSystemContentBlock] instead of an object.
+	OfBetaManagedAgentsSystemContentBlockArray []BetaManagedAgentsSystemContentBlock `json:",inline"`
+	JSON                                       struct {
 		OfBetaManagedAgentsUserMessageEventContentArray                respjson.Field
 		OfBetaManagedAgentsUserCustomToolResultEventContentArray       respjson.Field
 		OfBetaManagedAgentsTextBlockArray                              respjson.Field
@@ -791,6 +805,7 @@ type BetaManagedAgentsStreamSessionThreadEventsUnionContent struct {
 		OfBetaManagedAgentsAgentThreadMessageReceivedEventContentArray respjson.Field
 		OfBetaManagedAgentsAgentThreadMessageSentEventContentArray     respjson.Field
 		OfBetaManagedAgentsUserToolResultEventContentArray             respjson.Field
+		OfBetaManagedAgentsSystemContentBlockArray                     respjson.Field
 		raw                                                            string
 	} `json:"-"`
 }

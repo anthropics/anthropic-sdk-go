@@ -231,7 +231,8 @@ func (r *BetaManagedAgentsCredential) UnmarshalJSON(data []byte) error {
 
 // BetaManagedAgentsCredentialAuthUnion contains all possible properties and values
 // from [BetaManagedAgentsMCPOAuthAuthResponse],
-// [BetaManagedAgentsStaticBearerAuthResponse].
+// [BetaManagedAgentsStaticBearerAuthResponse],
+// [BetaManagedAgentsEnvironmentVariableAuthResponse].
 //
 // Use the [BetaManagedAgentsCredentialAuthUnion.AsAny] method to switch on the
 // variant.
@@ -239,17 +240,23 @@ func (r *BetaManagedAgentsCredential) UnmarshalJSON(data []byte) error {
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsCredentialAuthUnion struct {
 	MCPServerURL string `json:"mcp_server_url"`
-	// Any of "mcp_oauth", "static_bearer".
+	// Any of "mcp_oauth", "static_bearer", "environment_variable".
 	Type string `json:"type"`
 	// This field is from variant [BetaManagedAgentsMCPOAuthAuthResponse].
 	ExpiresAt time.Time `json:"expires_at"`
 	// This field is from variant [BetaManagedAgentsMCPOAuthAuthResponse].
 	Refresh BetaManagedAgentsMCPOAuthRefreshResponse `json:"refresh"`
-	JSON    struct {
+	// This field is from variant [BetaManagedAgentsEnvironmentVariableAuthResponse].
+	Networking BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion `json:"networking"`
+	// This field is from variant [BetaManagedAgentsEnvironmentVariableAuthResponse].
+	SecretName string `json:"secret_name"`
+	JSON       struct {
 		MCPServerURL respjson.Field
 		Type         respjson.Field
 		ExpiresAt    respjson.Field
 		Refresh      respjson.Field
+		Networking   respjson.Field
+		SecretName   respjson.Field
 		raw          string
 	} `json:"-"`
 }
@@ -261,14 +268,16 @@ type anyBetaManagedAgentsCredentialAuth interface {
 	implBetaManagedAgentsCredentialAuthUnion()
 }
 
-func (BetaManagedAgentsMCPOAuthAuthResponse) implBetaManagedAgentsCredentialAuthUnion()     {}
-func (BetaManagedAgentsStaticBearerAuthResponse) implBetaManagedAgentsCredentialAuthUnion() {}
+func (BetaManagedAgentsMCPOAuthAuthResponse) implBetaManagedAgentsCredentialAuthUnion()            {}
+func (BetaManagedAgentsStaticBearerAuthResponse) implBetaManagedAgentsCredentialAuthUnion()        {}
+func (BetaManagedAgentsEnvironmentVariableAuthResponse) implBetaManagedAgentsCredentialAuthUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsCredentialAuthUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsMCPOAuthAuthResponse:
 //	case anthropic.BetaManagedAgentsStaticBearerAuthResponse:
+//	case anthropic.BetaManagedAgentsEnvironmentVariableAuthResponse:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -278,6 +287,8 @@ func (u BetaManagedAgentsCredentialAuthUnion) AsAny() anyBetaManagedAgentsCreden
 		return u.AsMCPOAuth()
 	case "static_bearer":
 		return u.AsStaticBearer()
+	case "environment_variable":
+		return u.AsEnvironmentVariable()
 	}
 	return nil
 }
@@ -288,6 +299,11 @@ func (u BetaManagedAgentsCredentialAuthUnion) AsMCPOAuth() (v BetaManagedAgentsM
 }
 
 func (u BetaManagedAgentsCredentialAuthUnion) AsStaticBearer() (v BetaManagedAgentsStaticBearerAuthResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsCredentialAuthUnion) AsEnvironmentVariable() (v BetaManagedAgentsEnvironmentVariableAuthResponse) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -304,6 +320,69 @@ type BetaManagedAgentsCredentialType string
 const (
 	BetaManagedAgentsCredentialTypeVaultCredential BetaManagedAgentsCredentialType = "vault_credential"
 )
+
+func BetaManagedAgentsCredentialNetworkingParamsOfUnrestricted(type_ BetaManagedAgentsUnrestrictedCredentialNetworkingParamsType) BetaManagedAgentsCredentialNetworkingParamsUnion {
+	var unrestricted BetaManagedAgentsUnrestrictedCredentialNetworkingParams
+	unrestricted.Type = type_
+	return BetaManagedAgentsCredentialNetworkingParamsUnion{OfUnrestricted: &unrestricted}
+}
+
+func BetaManagedAgentsCredentialNetworkingParamsOfLimited(allowedHosts []string) BetaManagedAgentsCredentialNetworkingParamsUnion {
+	var limited BetaManagedAgentsLimitedCredentialNetworkingParams
+	limited.AllowedHosts = allowedHosts
+	return BetaManagedAgentsCredentialNetworkingParamsUnion{OfLimited: &limited}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaManagedAgentsCredentialNetworkingParamsUnion struct {
+	OfUnrestricted *BetaManagedAgentsUnrestrictedCredentialNetworkingParams `json:",omitzero,inline"`
+	OfLimited      *BetaManagedAgentsLimitedCredentialNetworkingParams      `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaManagedAgentsCredentialNetworkingParamsUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfUnrestricted, u.OfLimited)
+}
+func (u *BetaManagedAgentsCredentialNetworkingParamsUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaManagedAgentsCredentialNetworkingParamsUnion) asAny() any {
+	if !param.IsOmitted(u.OfUnrestricted) {
+		return u.OfUnrestricted
+	} else if !param.IsOmitted(u.OfLimited) {
+		return u.OfLimited
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsCredentialNetworkingParamsUnion) GetAllowedHosts() []string {
+	if vt := u.OfLimited; vt != nil {
+		return vt.AllowedHosts
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsCredentialNetworkingParamsUnion) GetType() *string {
+	if vt := u.OfUnrestricted; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfLimited; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaManagedAgentsCredentialNetworkingParamsUnion](
+		"type",
+		apijson.Discriminator[BetaManagedAgentsUnrestrictedCredentialNetworkingParams]("unrestricted"),
+		apijson.Discriminator[BetaManagedAgentsLimitedCredentialNetworkingParams]("limited"),
+	)
+}
 
 // Result of live-probing a credential against its configured MCP server.
 type BetaManagedAgentsCredentialValidation struct {
@@ -386,6 +465,223 @@ type BetaManagedAgentsDeletedCredentialType string
 
 const (
 	BetaManagedAgentsDeletedCredentialTypeVaultCredentialDeleted BetaManagedAgentsDeletedCredentialType = "vault_credential_deleted"
+)
+
+// Environment variable credential details. The secret value is never returned.
+type BetaManagedAgentsEnvironmentVariableAuthResponse struct {
+	// Outbound hosts the secret value is substituted on.
+	Networking BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion `json:"networking" api:"required"`
+	// Name of the environment variable.
+	SecretName string `json:"secret_name" api:"required"`
+	// Any of "environment_variable".
+	Type BetaManagedAgentsEnvironmentVariableAuthResponseType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Networking  respjson.Field
+		SecretName  respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsEnvironmentVariableAuthResponse) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsEnvironmentVariableAuthResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion contains all
+// possible properties and values from
+// [BetaManagedAgentsUnrestrictedCredentialNetworkingResponse],
+// [BetaManagedAgentsLimitedCredentialNetworkingResponse].
+//
+// Use the [BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion.AsAny]
+// method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion struct {
+	// Any of "unrestricted", "limited".
+	Type string `json:"type"`
+	// This field is from variant
+	// [BetaManagedAgentsLimitedCredentialNetworkingResponse].
+	AllowedHosts []string `json:"allowed_hosts"`
+	JSON         struct {
+		Type         respjson.Field
+		AllowedHosts respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsEnvironmentVariableAuthResponseNetworking is implemented by
+// each variant of
+// [BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion] to add type
+// safety for the return type of
+// [BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion.AsAny]
+type anyBetaManagedAgentsEnvironmentVariableAuthResponseNetworking interface {
+	implBetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion()
+}
+
+func (BetaManagedAgentsUnrestrictedCredentialNetworkingResponse) implBetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion() {
+}
+func (BetaManagedAgentsLimitedCredentialNetworkingResponse) implBetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsUnrestrictedCredentialNetworkingResponse:
+//	case anthropic.BetaManagedAgentsLimitedCredentialNetworkingResponse:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion) AsAny() anyBetaManagedAgentsEnvironmentVariableAuthResponseNetworking {
+	switch u.Type {
+	case "unrestricted":
+		return u.AsUnrestricted()
+	case "limited":
+		return u.AsLimited()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion) AsUnrestricted() (v BetaManagedAgentsUnrestrictedCredentialNetworkingResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion) AsLimited() (v BetaManagedAgentsLimitedCredentialNetworkingResponse) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsEnvironmentVariableAuthResponseType string
+
+const (
+	BetaManagedAgentsEnvironmentVariableAuthResponseTypeEnvironmentVariable BetaManagedAgentsEnvironmentVariableAuthResponseType = "environment_variable"
+)
+
+// Parameters for creating an environment variable credential.
+//
+// The properties Networking, SecretName, SecretValue, Type are required.
+type BetaManagedAgentsEnvironmentVariableCreateParams struct {
+	// Outbound hosts the secret value is substituted on.
+	Networking BetaManagedAgentsCredentialNetworkingParamsUnion `json:"networking,omitzero" api:"required"`
+	// Name of the environment variable. Immutable after create.
+	SecretName string `json:"secret_name" api:"required"`
+	// Secret value. Write-only; never returned in responses.
+	SecretValue string `json:"secret_value" api:"required"`
+	// Any of "environment_variable".
+	Type BetaManagedAgentsEnvironmentVariableCreateParamsType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsEnvironmentVariableCreateParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsEnvironmentVariableCreateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsEnvironmentVariableCreateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsEnvironmentVariableCreateParamsType string
+
+const (
+	BetaManagedAgentsEnvironmentVariableCreateParamsTypeEnvironmentVariable BetaManagedAgentsEnvironmentVariableCreateParamsType = "environment_variable"
+)
+
+// Parameters for updating an environment variable credential. `secret_name` is
+// immutable.
+//
+// The property Type is required.
+type BetaManagedAgentsEnvironmentVariableUpdateParams struct {
+	// Any of "environment_variable".
+	Type BetaManagedAgentsEnvironmentVariableUpdateParamsType `json:"type,omitzero" api:"required"`
+	// Updated secret value.
+	SecretValue param.Opt[string] `json:"secret_value,omitzero"`
+	// Updated networking scope. Full replacement.
+	Networking BetaManagedAgentsCredentialNetworkingParamsUnion `json:"networking,omitzero"`
+	paramObj
+}
+
+func (r BetaManagedAgentsEnvironmentVariableUpdateParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsEnvironmentVariableUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsEnvironmentVariableUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsEnvironmentVariableUpdateParamsType string
+
+const (
+	BetaManagedAgentsEnvironmentVariableUpdateParamsTypeEnvironmentVariable BetaManagedAgentsEnvironmentVariableUpdateParamsType = "environment_variable"
+)
+
+// Substitute the secret only on requests to the listed hosts.
+//
+// The properties AllowedHosts, Type are required.
+type BetaManagedAgentsLimitedCredentialNetworkingParams struct {
+	// Hostnames on which the secret will be substituted. Each entry is a bare hostname
+	// (`api.example.com`), an IPv4 address (`192.0.2.1`), or a `*.`-prefixed wildcard
+	// (`*.example.com`). URLs, ports, paths, and IPv6 addresses are not accepted. At
+	// most 16 entries.
+	AllowedHosts []string `json:"allowed_hosts,omitzero" api:"required"`
+	// Any of "limited".
+	Type BetaManagedAgentsLimitedCredentialNetworkingParamsType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsLimitedCredentialNetworkingParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsLimitedCredentialNetworkingParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsLimitedCredentialNetworkingParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsLimitedCredentialNetworkingParamsType string
+
+const (
+	BetaManagedAgentsLimitedCredentialNetworkingParamsTypeLimited BetaManagedAgentsLimitedCredentialNetworkingParamsType = "limited"
+)
+
+// The secret is substituted only on requests to the listed hosts.
+type BetaManagedAgentsLimitedCredentialNetworkingResponse struct {
+	// Hostnames on which the secret will be substituted. An entry matches the request
+	// host exactly; a `*.`-prefixed entry matches any subdomain of the named domain
+	// but not the domain itself.
+	AllowedHosts []string `json:"allowed_hosts" api:"required"`
+	// Any of "limited".
+	Type BetaManagedAgentsLimitedCredentialNetworkingResponseType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AllowedHosts respjson.Field
+		Type         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsLimitedCredentialNetworkingResponse) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsLimitedCredentialNetworkingResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsLimitedCredentialNetworkingResponseType string
+
+const (
+	BetaManagedAgentsLimitedCredentialNetworkingResponseTypeLimited BetaManagedAgentsLimitedCredentialNetworkingResponseType = "limited"
 )
 
 // OAuth credential details for an MCP server.
@@ -1106,6 +1402,58 @@ const (
 	BetaManagedAgentsTokenEndpointAuthPostUpdateParamTypeClientSecretPost BetaManagedAgentsTokenEndpointAuthPostUpdateParamType = "client_secret_post"
 )
 
+// Substitute the secret on any host the session's Environment network policy
+// permits egress to. The Environment's network policy is the only boundary on
+// where the secret can reach.
+//
+// The property Type is required.
+type BetaManagedAgentsUnrestrictedCredentialNetworkingParams struct {
+	// Any of "unrestricted".
+	Type BetaManagedAgentsUnrestrictedCredentialNetworkingParamsType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsUnrestrictedCredentialNetworkingParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsUnrestrictedCredentialNetworkingParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsUnrestrictedCredentialNetworkingParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsUnrestrictedCredentialNetworkingParamsType string
+
+const (
+	BetaManagedAgentsUnrestrictedCredentialNetworkingParamsTypeUnrestricted BetaManagedAgentsUnrestrictedCredentialNetworkingParamsType = "unrestricted"
+)
+
+// The secret is substituted on any host the session's Environment network policy
+// permits egress to.
+type BetaManagedAgentsUnrestrictedCredentialNetworkingResponse struct {
+	// Any of "unrestricted".
+	Type BetaManagedAgentsUnrestrictedCredentialNetworkingResponseType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsUnrestrictedCredentialNetworkingResponse) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *BetaManagedAgentsUnrestrictedCredentialNetworkingResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsUnrestrictedCredentialNetworkingResponseType string
+
+const (
+	BetaManagedAgentsUnrestrictedCredentialNetworkingResponseTypeUnrestricted BetaManagedAgentsUnrestrictedCredentialNetworkingResponseType = "unrestricted"
+)
+
 type BetaVaultCredentialNewParams struct {
 	// Authentication details for creating a credential.
 	Auth BetaVaultCredentialNewParamsAuthUnion `json:"auth,omitzero" api:"required"`
@@ -1131,13 +1479,14 @@ func (r *BetaVaultCredentialNewParams) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaVaultCredentialNewParamsAuthUnion struct {
-	OfMCPOAuth     *BetaManagedAgentsMCPOAuthCreateParams     `json:",omitzero,inline"`
-	OfStaticBearer *BetaManagedAgentsStaticBearerCreateParams `json:",omitzero,inline"`
+	OfMCPOAuth            *BetaManagedAgentsMCPOAuthCreateParams            `json:",omitzero,inline"`
+	OfStaticBearer        *BetaManagedAgentsStaticBearerCreateParams        `json:",omitzero,inline"`
+	OfEnvironmentVariable *BetaManagedAgentsEnvironmentVariableCreateParams `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaVaultCredentialNewParamsAuthUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfMCPOAuth, u.OfStaticBearer)
+	return param.MarshalUnion(u, u.OfMCPOAuth, u.OfStaticBearer, u.OfEnvironmentVariable)
 }
 func (u *BetaVaultCredentialNewParamsAuthUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -1148,6 +1497,8 @@ func (u *BetaVaultCredentialNewParamsAuthUnion) asAny() any {
 		return u.OfMCPOAuth
 	} else if !param.IsOmitted(u.OfStaticBearer) {
 		return u.OfStaticBearer
+	} else if !param.IsOmitted(u.OfEnvironmentVariable) {
+		return u.OfEnvironmentVariable
 	}
 	return nil
 }
@@ -1185,6 +1536,30 @@ func (u BetaVaultCredentialNewParamsAuthUnion) GetToken() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u BetaVaultCredentialNewParamsAuthUnion) GetNetworking() *BetaManagedAgentsCredentialNetworkingParamsUnion {
+	if vt := u.OfEnvironmentVariable; vt != nil {
+		return &vt.Networking
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaVaultCredentialNewParamsAuthUnion) GetSecretName() *string {
+	if vt := u.OfEnvironmentVariable; vt != nil {
+		return &vt.SecretName
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaVaultCredentialNewParamsAuthUnion) GetSecretValue() *string {
+	if vt := u.OfEnvironmentVariable; vt != nil {
+		return &vt.SecretValue
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u BetaVaultCredentialNewParamsAuthUnion) GetMCPServerURL() *string {
 	if vt := u.OfMCPOAuth; vt != nil {
 		return (*string)(&vt.MCPServerURL)
@@ -1200,6 +1575,8 @@ func (u BetaVaultCredentialNewParamsAuthUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfStaticBearer; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfEnvironmentVariable; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -1209,6 +1586,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsMCPOAuthCreateParams]("mcp_oauth"),
 		apijson.Discriminator[BetaManagedAgentsStaticBearerCreateParams]("static_bearer"),
+		apijson.Discriminator[BetaManagedAgentsEnvironmentVariableCreateParams]("environment_variable"),
 	)
 }
 
@@ -1245,13 +1623,14 @@ func (r *BetaVaultCredentialUpdateParams) UnmarshalJSON(data []byte) error {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaVaultCredentialUpdateParamsAuthUnion struct {
-	OfMCPOAuth     *BetaManagedAgentsMCPOAuthUpdateParams     `json:",omitzero,inline"`
-	OfStaticBearer *BetaManagedAgentsStaticBearerUpdateParams `json:",omitzero,inline"`
+	OfMCPOAuth            *BetaManagedAgentsMCPOAuthUpdateParams            `json:",omitzero,inline"`
+	OfStaticBearer        *BetaManagedAgentsStaticBearerUpdateParams        `json:",omitzero,inline"`
+	OfEnvironmentVariable *BetaManagedAgentsEnvironmentVariableUpdateParams `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaVaultCredentialUpdateParamsAuthUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfMCPOAuth, u.OfStaticBearer)
+	return param.MarshalUnion(u, u.OfMCPOAuth, u.OfStaticBearer, u.OfEnvironmentVariable)
 }
 func (u *BetaVaultCredentialUpdateParamsAuthUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -1262,6 +1641,8 @@ func (u *BetaVaultCredentialUpdateParamsAuthUnion) asAny() any {
 		return u.OfMCPOAuth
 	} else if !param.IsOmitted(u.OfStaticBearer) {
 		return u.OfStaticBearer
+	} else if !param.IsOmitted(u.OfEnvironmentVariable) {
+		return u.OfEnvironmentVariable
 	}
 	return nil
 }
@@ -1299,10 +1680,28 @@ func (u BetaVaultCredentialUpdateParamsAuthUnion) GetToken() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u BetaVaultCredentialUpdateParamsAuthUnion) GetNetworking() *BetaManagedAgentsCredentialNetworkingParamsUnion {
+	if vt := u.OfEnvironmentVariable; vt != nil {
+		return &vt.Networking
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaVaultCredentialUpdateParamsAuthUnion) GetSecretValue() *string {
+	if vt := u.OfEnvironmentVariable; vt != nil && vt.SecretValue.Valid() {
+		return &vt.SecretValue.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u BetaVaultCredentialUpdateParamsAuthUnion) GetType() *string {
 	if vt := u.OfMCPOAuth; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfStaticBearer; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfEnvironmentVariable; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -1313,6 +1712,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsMCPOAuthUpdateParams]("mcp_oauth"),
 		apijson.Discriminator[BetaManagedAgentsStaticBearerUpdateParams]("static_bearer"),
+		apijson.Discriminator[BetaManagedAgentsEnvironmentVariableUpdateParams]("environment_variable"),
 	)
 }
 

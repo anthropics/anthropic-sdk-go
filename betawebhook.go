@@ -96,16 +96,18 @@ type BetaWebhookEventDataUnion struct {
 	// "session.outcome_evaluation_ended", "vault.created", "vault.archived",
 	// "vault.deleted", "vault_credential.created", "vault_credential.archived",
 	// "vault_credential.deleted", "vault_credential.refresh_failed".
-	Type        string `json:"type"`
-	WorkspaceID string `json:"workspace_id"`
-	VaultID     string `json:"vault_id"`
-	JSON        struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		VaultID        respjson.Field
-		raw            string
+	Type            string `json:"type"`
+	WorkspaceID     string `json:"workspace_id"`
+	SessionThreadID string `json:"session_thread_id"`
+	VaultID         string `json:"vault_id"`
+	JSON            struct {
+		ID              respjson.Field
+		OrganizationID  respjson.Field
+		Type            respjson.Field
+		WorkspaceID     respjson.Field
+		SessionThreadID respjson.Field
+		VaultID         respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -612,18 +614,21 @@ func (r *BetaWebhookSessionStatusTerminatedEventData) UnmarshalJSON(data []byte)
 
 type BetaWebhookSessionThreadCreatedEventData struct {
 	// ID of the session that triggered the event.
-	ID             string                        `json:"id" api:"required"`
-	OrganizationID string                        `json:"organization_id" api:"required"`
-	Type           constant.SessionThreadCreated `json:"type" default:"session.thread_created"`
-	WorkspaceID    string                        `json:"workspace_id" api:"required"`
+	ID             string `json:"id" api:"required"`
+	OrganizationID string `json:"organization_id" api:"required"`
+	// ID of the session thread this event refers to.
+	SessionThreadID string                        `json:"session_thread_id" api:"required"`
+	Type            constant.SessionThreadCreated `json:"type" default:"session.thread_created"`
+	WorkspaceID     string                        `json:"workspace_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		OrganizationID  respjson.Field
+		SessionThreadID respjson.Field
+		Type            respjson.Field
+		WorkspaceID     respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -635,18 +640,21 @@ func (r *BetaWebhookSessionThreadCreatedEventData) UnmarshalJSON(data []byte) er
 
 type BetaWebhookSessionThreadIdledEventData struct {
 	// ID of the session that triggered the event.
-	ID             string                      `json:"id" api:"required"`
-	OrganizationID string                      `json:"organization_id" api:"required"`
-	Type           constant.SessionThreadIdled `json:"type" default:"session.thread_idled"`
-	WorkspaceID    string                      `json:"workspace_id" api:"required"`
+	ID             string `json:"id" api:"required"`
+	OrganizationID string `json:"organization_id" api:"required"`
+	// ID of the session thread this event refers to.
+	SessionThreadID string                      `json:"session_thread_id" api:"required"`
+	Type            constant.SessionThreadIdled `json:"type" default:"session.thread_idled"`
+	WorkspaceID     string                      `json:"workspace_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		OrganizationID  respjson.Field
+		SessionThreadID respjson.Field
+		Type            respjson.Field
+		WorkspaceID     respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 
@@ -658,18 +666,21 @@ func (r *BetaWebhookSessionThreadIdledEventData) UnmarshalJSON(data []byte) erro
 
 type BetaWebhookSessionThreadTerminatedEventData struct {
 	// ID of the session that triggered the event.
-	ID             string                           `json:"id" api:"required"`
-	OrganizationID string                           `json:"organization_id" api:"required"`
-	Type           constant.SessionThreadTerminated `json:"type" default:"session.thread_terminated"`
-	WorkspaceID    string                           `json:"workspace_id" api:"required"`
+	ID             string `json:"id" api:"required"`
+	OrganizationID string `json:"organization_id" api:"required"`
+	// ID of the session thread this event refers to.
+	SessionThreadID string                           `json:"session_thread_id" api:"required"`
+	Type            constant.SessionThreadTerminated `json:"type" default:"session.thread_terminated"`
+	WorkspaceID     string                           `json:"workspace_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID              respjson.Field
+		OrganizationID  respjson.Field
+		SessionThreadID respjson.Field
+		Type            respjson.Field
+		WorkspaceID     respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
 	} `json:"-"`
 }
 

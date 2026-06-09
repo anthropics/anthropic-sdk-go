@@ -6995,7 +6995,7 @@ type BetaRefusalStopDetails struct {
 	//
 	// `null` when the refusal doesn't map to a named category.
 	//
-	// Any of "cyber", "bio", "reasoning_extraction".
+	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction".
 	Category BetaRefusalStopDetailsCategory `json:"category" api:"required"`
 	// Human-readable explanation of the refusal.
 	//
@@ -7074,6 +7074,7 @@ type BetaRefusalStopDetailsCategory string
 const (
 	BetaRefusalStopDetailsCategoryCyber               BetaRefusalStopDetailsCategory = "cyber"
 	BetaRefusalStopDetailsCategoryBio                 BetaRefusalStopDetailsCategory = "bio"
+	BetaRefusalStopDetailsCategoryFrontierLLM         BetaRefusalStopDetailsCategory = "frontier_llm"
 	BetaRefusalStopDetailsCategoryReasoningExtraction BetaRefusalStopDetailsCategory = "reasoning_extraction"
 )
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.50.0 (2026-06-09)
+
+Full Changelog: [v1.49.0...v1.50.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.49.0...v1.50.0)
+
+### Features
+
+* **api:** add support for Managed Agents deployments and environment variable credentials ([f72e1d8](https://github.com/anthropics/anthropic-sdk-go/commit/f72e1d84cf3b6d2319c083d8ae814dcae236f217))
+
 ## 1.49.0 (2026-06-09)
 
 Full Changelog: [v1.48.0...v1.49.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.48.0...v1.49.0)

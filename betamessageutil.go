@@ -44,6 +44,9 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 		if event.Usage.JSON.ServerToolUse.Valid() {
 			acc.Usage.ServerToolUse = event.Usage.ServerToolUse
 		}
+		if event.Usage.JSON.OutputTokensDetails.Valid() {
+			acc.Usage.OutputTokensDetails = event.Usage.OutputTokensDetails
+		}
 		acc.Usage.Iterations = event.Usage.Iterations
 		acc.ContextManagement = event.ContextManagement
 	case BetaRawContentBlockStartEvent:
@@ -57,6 +60,12 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 		err := acc.Content[event.Index].UnmarshalJSON([]byte(event.ContentBlock.RawJSON()))
 		if err != nil {
 			return err
+		}
+		// The final hop's fallback block names the model that served the response;
+		// non-streaming responses already report that model, so relabel the
+		// accumulated snapshot to match. Last block wins on multi-hop chains.
+		if fallback, ok := acc.Content[event.Index].AsAny().(BetaFallbackBlock); ok {
+			acc.Model = fallback.To.Model
 		}
 	case BetaRawContentBlockDeltaEvent:
 		if err := checkContentBlockIndex(string(event.Type), event.Index, len(acc.Content)); err != nil {
@@ -216,6 +225,11 @@ func (variant BetaToolSearchToolResultBlock) toParamUnion() BetaContentBlockPara
 func (variant BetaCompactionBlock) toParamUnion() BetaContentBlockParamUnion {
 	p := variant.ToParam()
 	return BetaContentBlockParamUnion{OfCompaction: &p}
+}
+
+func (variant BetaFallbackBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := variant.ToParam()
+	return BetaContentBlockParamUnion{OfFallback: &p}
 }
 
 func (r BetaMessage) ToParam() BetaMessageParam {
@@ -500,5 +514,13 @@ func (r BetaCompactionBlock) ToParam() BetaCompactionBlockParam {
 	var p BetaCompactionBlockParam
 	p.Type = r.Type
 	p.Content = param.NewOpt(r.Content)
+	return p
+}
+
+func (r BetaFallbackBlock) ToParam() BetaFallbackBlockParam {
+	var p BetaFallbackBlockParam
+	p.Type = r.Type
+	p.From = BetaFallbackInfoParam{Model: r.From.Model}
+	p.To = BetaFallbackInfoParam{Model: r.To.Model}
 	return p
 }

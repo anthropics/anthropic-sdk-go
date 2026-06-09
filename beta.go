@@ -18,18 +18,20 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewBetaService] method instead.
 type BetaService struct {
-	Options      []option.RequestOption
-	Models       BetaModelService
-	Messages     BetaMessageService
-	Agents       BetaAgentService
-	Environments BetaEnvironmentService
-	Sessions     BetaSessionService
-	Vaults       BetaVaultService
-	MemoryStores BetaMemoryStoreService
-	Files        BetaFileService
-	Skills       BetaSkillService
-	Webhooks     BetaWebhookService
-	UserProfiles BetaUserProfileService
+	Options        []option.RequestOption
+	Models         BetaModelService
+	Messages       BetaMessageService
+	Agents         BetaAgentService
+	Environments   BetaEnvironmentService
+	Sessions       BetaSessionService
+	Deployments    BetaDeploymentService
+	DeploymentRuns BetaDeploymentRunService
+	Vaults         BetaVaultService
+	MemoryStores   BetaMemoryStoreService
+	Files          BetaFileService
+	Skills         BetaSkillService
+	Webhooks       BetaWebhookService
+	UserProfiles   BetaUserProfileService
 }
 
 // NewBetaService generates a new service that applies the given options to each
@@ -43,6 +45,8 @@ func NewBetaService(opts ...option.RequestOption) (r BetaService) {
 	r.Agents = NewBetaAgentService(opts...)
 	r.Environments = NewBetaEnvironmentService(opts...)
 	r.Sessions = NewBetaSessionService(opts...)
+	r.Deployments = NewBetaDeploymentService(opts...)
+	r.DeploymentRuns = NewBetaDeploymentRunService(opts...)
 	r.Vaults = NewBetaVaultService(opts...)
 	r.MemoryStores = NewBetaMemoryStoreService(opts...)
 	r.Files = NewBetaFileService(opts...)

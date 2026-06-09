@@ -164,6 +164,7 @@ func TestBetaSessionListWithOptionalParams(t *testing.T) {
 		CreatedAtGte:    anthropic.Time(time.Now()),
 		CreatedAtLt:     anthropic.Time(time.Now()),
 		CreatedAtLte:    anthropic.Time(time.Now()),
+		DeploymentID:    anthropic.String("deployment_id"),
 		IncludeArchived: anthropic.Bool(true),
 		Limit:           anthropic.Int(0),
 		MemoryStoreID:   anthropic.String("memory_store_id"),

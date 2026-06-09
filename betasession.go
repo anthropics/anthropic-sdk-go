@@ -693,6 +693,9 @@ type BetaManagedAgentsSession struct {
 	// Vault IDs attached to the session at creation. Empty when no vaults were
 	// supplied.
 	VaultIDs []string `json:"vault_ids" api:"required"`
+	// Deployment ID when the session was created from a deployment reference. Null
+	// otherwise.
+	DeploymentID string `json:"deployment_id" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                 respjson.Field
@@ -710,6 +713,7 @@ type BetaManagedAgentsSession struct {
 		UpdatedAt          respjson.Field
 		Usage              respjson.Field
 		VaultIDs           respjson.Field
+		DeploymentID       respjson.Field
 		ExtraFields        map[string]respjson.Field
 		raw                string
 	} `json:"-"`
@@ -1339,6 +1343,96 @@ func (r *BetaManagedAgentsSessionUsage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Regular text content.
+type BetaManagedAgentsSystemContentBlock struct {
+	// The text content.
+	Text string `json:"text" api:"required"`
+	// Any of "text".
+	Type BetaManagedAgentsSystemContentBlockType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Text        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSystemContentBlock) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSystemContentBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsSystemContentBlock to a
+// BetaManagedAgentsSystemContentBlockParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsSystemContentBlockParam.Overrides()
+func (r BetaManagedAgentsSystemContentBlock) ToParam() BetaManagedAgentsSystemContentBlockParam {
+	return param.Override[BetaManagedAgentsSystemContentBlockParam](json.RawMessage(r.RawJSON()))
+}
+
+type BetaManagedAgentsSystemContentBlockType string
+
+const (
+	BetaManagedAgentsSystemContentBlockTypeText BetaManagedAgentsSystemContentBlockType = "text"
+)
+
+// Regular text content.
+//
+// The properties Text, Type are required.
+type BetaManagedAgentsSystemContentBlockParam struct {
+	// The text content.
+	Text string `json:"text" api:"required"`
+	// Any of "text".
+	Type BetaManagedAgentsSystemContentBlockType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsSystemContentBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsSystemContentBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsSystemContentBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A mid-conversation system message event. Carries system-role content that is
+// appended to the session as a `role: "system"` turn.
+type BetaManagedAgentsSystemMessageEvent struct {
+	// Unique identifier for this event.
+	ID string `json:"id" api:"required"`
+	// System content blocks. Text-only.
+	Content []BetaManagedAgentsSystemContentBlock `json:"content" api:"required"`
+	// Any of "system.message".
+	Type BetaManagedAgentsSystemMessageEventType `json:"type" api:"required"`
+	// A timestamp in RFC 3339 format
+	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Content     respjson.Field
+		Type        respjson.Field
+		ProcessedAt respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSystemMessageEvent) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSystemMessageEvent) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsSystemMessageEventType string
+
+const (
+	BetaManagedAgentsSystemMessageEventTypeSystemMessage BetaManagedAgentsSystemMessageEventType = "system.message"
+)
+
 // Event sent by the client providing the result of an agent-toolset tool
 // execution. Only valid on `self_hosted` environments, where sandbox-routed tools
 // are executed by the client rather than the server.
@@ -1732,6 +1826,8 @@ type BetaSessionListParams struct {
 	CreatedAtLt param.Opt[time.Time] `query:"created_at[lt],omitzero" format:"date-time" json:"-"`
 	// Return sessions created at or before this time (inclusive).
 	CreatedAtLte param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
+	// Filter sessions created by this deployment ID.
+	DeploymentID param.Opt[string] `query:"deployment_id,omitzero" json:"-"`
 	// When true, includes archived sessions. Default: false (exclude archived).
 	IncludeArchived param.Opt[bool] `query:"include_archived,omitzero" json:"-"`
 	// Maximum number of results to return.

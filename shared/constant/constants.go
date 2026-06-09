@@ -85,6 +85,8 @@ type Error string                                   // Always "error"
 type Errored string                                 // Always "errored"
 type Event string                                   // Always "event"
 type Expired string                                 // Always "expired"
+type Fallback string                                // Always "fallback"
+type FallbackMessage string                         // Always "fallback_message"
 type File string                                    // Always "file"
 type Image string                                   // Always "image"
 type InputJSONDelta string                          // Always "input_json_delta"
@@ -283,6 +285,8 @@ func (c Error) Default() Error                             { return "error" }
 func (c Errored) Default() Errored                         { return "errored" }
 func (c Event) Default() Event                             { return "event" }
 func (c Expired) Default() Expired                         { return "expired" }
+func (c Fallback) Default() Fallback                       { return "fallback" }
+func (c FallbackMessage) Default() FallbackMessage         { return "fallback_message" }
 func (c File) Default() File                               { return "file" }
 func (c Image) Default() Image                             { return "image" }
 func (c InputJSONDelta) Default() InputJSONDelta           { return "input_json_delta" }
@@ -505,6 +509,8 @@ func (c Error) MarshalJSON() ([]byte, error)                               { ret
 func (c Errored) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Event) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Expired) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c Fallback) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c FallbackMessage) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c File) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Image) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c InputJSONDelta) MarshalJSON() ([]byte, error)                      { return marshalString(c) }

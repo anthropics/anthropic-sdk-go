@@ -2402,7 +2402,7 @@ func (r *BetaContainerUploadBlockParam) UnmarshalJSON(data []byte) error {
 // [BetaCodeExecutionToolResultBlock], [BetaBashCodeExecutionToolResultBlock],
 // [BetaTextEditorCodeExecutionToolResultBlock], [BetaToolSearchToolResultBlock],
 // [BetaMCPToolUseBlock], [BetaMCPToolResultBlock], [BetaContainerUploadBlock],
-// [BetaCompactionBlock].
+// [BetaCompactionBlock], [BetaFallbackBlock].
 //
 // Use the [BetaContentBlockUnion.AsAny] method to switch on the variant.
 //
@@ -2416,7 +2416,7 @@ type BetaContentBlockUnion struct {
 	// "web_search_tool_result", "web_fetch_tool_result", "advisor_tool_result",
 	// "code_execution_tool_result", "bash_code_execution_tool_result",
 	// "text_editor_code_execution_tool_result", "tool_search_tool_result",
-	// "mcp_tool_use", "mcp_tool_result", "container_upload", "compaction".
+	// "mcp_tool_use", "mcp_tool_result", "container_upload", "compaction", "fallback".
 	Type string `json:"type"`
 	// This field is from variant [BetaThinkingBlock].
 	Signature string `json:"signature"`
@@ -2449,7 +2449,11 @@ type BetaContentBlockUnion struct {
 	FileID string `json:"file_id"`
 	// This field is from variant [BetaCompactionBlock].
 	EncryptedContent string `json:"encrypted_content"`
-	JSON             struct {
+	// This field is from variant [BetaFallbackBlock].
+	From BetaFallbackInfo `json:"from"`
+	// This field is from variant [BetaFallbackBlock].
+	To   BetaFallbackInfo `json:"to"`
+	JSON struct {
 		Citations        respjson.Field
 		Text             respjson.Field
 		Type             respjson.Field
@@ -2466,6 +2470,8 @@ type BetaContentBlockUnion struct {
 		IsError          respjson.Field
 		FileID           respjson.Field
 		EncryptedContent respjson.Field
+		From             respjson.Field
+		To               respjson.Field
 		raw              string
 	} `json:"-"`
 }
@@ -2492,6 +2498,7 @@ func (BetaMCPToolUseBlock) implBetaContentBlockUnion()                        {}
 func (BetaMCPToolResultBlock) implBetaContentBlockUnion()                     {}
 func (BetaContainerUploadBlock) implBetaContentBlockUnion()                   {}
 func (BetaCompactionBlock) implBetaContentBlockUnion()                        {}
+func (BetaFallbackBlock) implBetaContentBlockUnion()                          {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -2512,6 +2519,7 @@ func (BetaCompactionBlock) implBetaContentBlockUnion()                        {}
 //	case anthropic.BetaMCPToolResultBlock:
 //	case anthropic.BetaContainerUploadBlock:
 //	case anthropic.BetaCompactionBlock:
+//	case anthropic.BetaFallbackBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -2549,6 +2557,8 @@ func (u BetaContentBlockUnion) AsAny() anyBetaContentBlock {
 		return u.AsContainerUpload()
 	case "compaction":
 		return u.AsCompaction()
+	case "fallback":
+		return u.AsFallback()
 	}
 	return nil
 }
@@ -2629,6 +2639,11 @@ func (u BetaContentBlockUnion) AsContainerUpload() (v BetaContainerUploadBlock) 
 }
 
 func (u BetaContentBlockUnion) AsCompaction() (v BetaCompactionBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaContentBlockUnion) AsFallback() (v BetaFallbackBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -3012,6 +3027,13 @@ func NewBetaMidConvSystemBlock(content []BetaTextBlockParam) BetaContentBlockPar
 	return BetaContentBlockParamUnion{OfMidConvSystem: &midConvSystem}
 }
 
+func NewBetaFallbackBlock(from BetaFallbackInfoParam, to BetaFallbackInfoParam) BetaContentBlockParamUnion {
+	var fallback BetaFallbackBlockParam
+	fallback.From = from
+	fallback.To = to
+	return BetaContentBlockParamUnion{OfFallback: &fallback}
+}
+
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
@@ -3037,6 +3059,7 @@ type BetaContentBlockParamUnion struct {
 	OfContainerUpload                   *BetaContainerUploadBlockParam                   `json:",omitzero,inline"`
 	OfCompaction                        *BetaCompactionBlockParam                        `json:",omitzero,inline"`
 	OfMidConvSystem                     *BetaMidConversationSystemBlockParam             `json:",omitzero,inline"`
+	OfFallback                          *BetaFallbackBlockParam                          `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -3061,7 +3084,8 @@ func (u BetaContentBlockParamUnion) MarshalJSON() ([]byte, error) {
 		u.OfMCPToolResult,
 		u.OfContainerUpload,
 		u.OfCompaction,
-		u.OfMidConvSystem)
+		u.OfMidConvSystem,
+		u.OfFallback)
 }
 func (u *BetaContentBlockParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3110,6 +3134,8 @@ func (u *BetaContentBlockParamUnion) asAny() any {
 		return u.OfCompaction
 	} else if !param.IsOmitted(u.OfMidConvSystem) {
 		return u.OfMidConvSystem
+	} else if !param.IsOmitted(u.OfFallback) {
+		return u.OfFallback
 	}
 	return nil
 }
@@ -3179,6 +3205,22 @@ func (u BetaContentBlockParamUnion) GetEncryptedContent() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u BetaContentBlockParamUnion) GetFrom() *BetaFallbackInfoParam {
+	if vt := u.OfFallback; vt != nil {
+		return &vt.From
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaContentBlockParamUnion) GetTo() *BetaFallbackInfoParam {
+	if vt := u.OfFallback; vt != nil {
+		return &vt.To
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetType() *string {
 	if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
@@ -3221,6 +3263,8 @@ func (u BetaContentBlockParamUnion) GetType() *string {
 	} else if vt := u.OfCompaction; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfMidConvSystem; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfFallback; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -3928,6 +3972,7 @@ func init() {
 		apijson.Discriminator[BetaContainerUploadBlockParam]("container_upload"),
 		apijson.Discriminator[BetaCompactionBlockParam]("compaction"),
 		apijson.Discriminator[BetaMidConversationSystemBlockParam]("mid_conv_system"),
+		apijson.Discriminator[BetaFallbackBlockParam]("fallback"),
 	)
 }
 
@@ -4601,6 +4646,268 @@ func (r *BetaEncryptedCodeExecutionResultBlockParam) UnmarshalJSON(data []byte) 
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Marks the point in `content` where one model's output gives way to the next.
+//
+// One block appears per hop where a preceding model actually ran this turn and
+// declined. A turn routed directly by the sticky decision has no such boundary and
+// carries no block — the signal for whether a fallback model served the response
+// is the presence of a `fallback_message` entry in `usage.iterations`, not this
+// block.
+//
+// The block is treated like a server-tool content block for streaming: it arrives
+// via the standard `content_block_start` / `content_block_stop` pair and carries
+// no deltas.
+type BetaFallbackBlock struct {
+	// The model whose output ends at this point — the model that declined at this hop.
+	// When the declining hop is the requested model, its `model` echoes the top-level
+	// `model` string the caller sent (alias or canonical); when the declining hop is a
+	// fallback model, its `model` is that model's canonical id.
+	From BetaFallbackInfo `json:"from" api:"required"`
+	// The fallback model producing the content that follows this block. Its `model` is
+	// always the canonical id.
+	To   BetaFallbackInfo  `json:"to" api:"required"`
+	Type constant.Fallback `json:"type" default:"fallback"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		From        respjson.Field
+		To          respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaFallbackBlock) RawJSON() string { return r.JSON.raw }
+func (r *BetaFallbackBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A `fallback` block echoed back from a prior response.
+//
+// Accepted in `messages[].content` and never rendered into the prompt, not
+// validated against the request's `fallbacks` chain or top-level `model`, and
+// stripped before the sticky-routing cache key is computed.
+//
+// Callers should echo the assistant turn verbatim — block included. The block's
+// position is load-bearing for thinking verification: the thinking runs on either
+// side of a fallback hop carry independently-rooted verification hash chains, and
+// this block is the only record of where one chain ends and the next begins. When
+// thinking runs flank the boundary, omitting the block merges the runs into one
+// contiguous span whose hashes cannot verify (the request is rejected), and moving
+// it into the middle of a single run splits that run's chain and is likewise
+// rejected; between non-thinking blocks the block's placement has no verification
+// effect.
+//
+// The properties From, To, Type are required.
+type BetaFallbackBlockParam struct {
+	// Identifies one hop of a fallback transition.
+	From BetaFallbackInfoParam `json:"from,omitzero" api:"required"`
+	// Identifies one hop of a fallback transition.
+	To BetaFallbackInfoParam `json:"to,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "fallback".
+	Type constant.Fallback `json:"type" default:"fallback"`
+	paramObj
+}
+
+func (r BetaFallbackBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaFallbackBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaFallbackBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Identifies one hop of a fallback transition.
+type BetaFallbackInfo struct {
+	// The model that will complete your prompt.
+	//
+	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
+	// details and options.
+	Model Model `json:"model" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Model       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaFallbackInfo) RawJSON() string { return r.JSON.raw }
+func (r *BetaFallbackInfo) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Identifies one hop of a fallback transition.
+//
+// The property Model is required.
+type BetaFallbackInfoParam struct {
+	// The model that will complete your prompt.
+	//
+	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
+	// details and options.
+	Model Model `json:"model,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaFallbackInfoParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaFallbackInfoParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaFallbackInfoParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Token usage for the fallback-model attempt of a server-side fallback request.
+//
+// Produced in place of a `message` entry for whichever hop served the response. A
+// declined hop produces the existing `message` entry. Whether a fallback model
+// served the response is signalled by the presence of this entry in
+// `usage.iterations`.
+type BetaFallbackMessageIterationUsage struct {
+	// Breakdown of cached tokens by TTL
+	CacheCreation BetaCacheCreation `json:"cache_creation" api:"required"`
+	// The number of input tokens used to create the cache entry.
+	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens" api:"required"`
+	// The number of input tokens read from the cache.
+	CacheReadInputTokens int64 `json:"cache_read_input_tokens" api:"required"`
+	// The number of input tokens which were used.
+	InputTokens int64 `json:"input_tokens" api:"required"`
+	// The model that will complete your prompt.
+	//
+	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
+	// details and options.
+	Model Model `json:"model" api:"required"`
+	// The number of output tokens which were used.
+	OutputTokens int64 `json:"output_tokens" api:"required"`
+	// Usage for the fallback-model attempt that served the response
+	Type constant.FallbackMessage `json:"type" default:"fallback_message"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheCreation            respjson.Field
+		CacheCreationInputTokens respjson.Field
+		CacheReadInputTokens     respjson.Field
+		InputTokens              respjson.Field
+		Model                    respjson.Field
+		OutputTokens             respjson.Field
+		Type                     respjson.Field
+		ExtraFields              map[string]respjson.Field
+		raw                      string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaFallbackMessageIterationUsage) RawJSON() string { return r.JSON.raw }
+func (r *BetaFallbackMessageIterationUsage) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One entry in the `fallbacks` chain on a `/v1/messages` request.
+//
+// `model` is required. The four override fields (`max_tokens`, `thinking`,
+// `output_config`, and `speed`) replace the corresponding top-level field for this
+// attempt only and are validated as if the request were made to `model`. Any other
+// key is rejected at parse time.
+//
+// The property Model is required.
+type BetaFallbackParam struct {
+	// The model that will complete your prompt.
+	//
+	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
+	// details and options.
+	Model     Model            `json:"model,omitzero" api:"required"`
+	MaxTokens param.Opt[int64] `json:"max_tokens,omitzero"`
+	// Any of "standard", "fast".
+	Speed        BetaFallbackParamSpeed         `json:"speed,omitzero"`
+	Thinking     BetaFallbackParamThinkingUnion `json:"thinking,omitzero"`
+	OutputConfig BetaOutputConfigParam          `json:"output_config,omitzero"`
+	ExtraFields  map[string]any                 `json:"-"`
+	paramObj
+}
+
+func (r BetaFallbackParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaFallbackParam
+	return param.MarshalWithExtras(r, (*shadow)(&r), r.ExtraFields)
+}
+func (r *BetaFallbackParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaFallbackParamSpeed string
+
+const (
+	BetaFallbackParamSpeedStandard BetaFallbackParamSpeed = "standard"
+	BetaFallbackParamSpeedFast     BetaFallbackParamSpeed = "fast"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaFallbackParamThinkingUnion struct {
+	OfEnabled  *BetaThinkingConfigEnabledParam  `json:",omitzero,inline"`
+	OfDisabled *BetaThinkingConfigDisabledParam `json:",omitzero,inline"`
+	OfAdaptive *BetaThinkingConfigAdaptiveParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaFallbackParamThinkingUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled, u.OfAdaptive)
+}
+func (u *BetaFallbackParamThinkingUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaFallbackParamThinkingUnion) asAny() any {
+	if !param.IsOmitted(u.OfEnabled) {
+		return u.OfEnabled
+	} else if !param.IsOmitted(u.OfDisabled) {
+		return u.OfDisabled
+	} else if !param.IsOmitted(u.OfAdaptive) {
+		return u.OfAdaptive
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaFallbackParamThinkingUnion) GetBudgetTokens() *int64 {
+	if vt := u.OfEnabled; vt != nil {
+		return &vt.BudgetTokens
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaFallbackParamThinkingUnion) GetType() *string {
+	if vt := u.OfEnabled; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfDisabled; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfAdaptive; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaFallbackParamThinkingUnion) GetDisplay() *string {
+	if vt := u.OfEnabled; vt != nil {
+		return (*string)(&vt.Display)
+	} else if vt := u.OfAdaptive; vt != nil {
+		return (*string)(&vt.Display)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaFallbackParamThinkingUnion](
+		"type",
+		apijson.Discriminator[BetaThinkingConfigEnabledParam]("enabled"),
+		apijson.Discriminator[BetaThinkingConfigDisabledParam]("disabled"),
+		apijson.Discriminator[BetaThinkingConfigAdaptiveParam]("adaptive"),
+	)
+}
+
 // The properties FileID, Type are required.
 type BetaFileDocumentSourceParam struct {
 	FileID string `json:"file_id" api:"required"`
@@ -4786,7 +5093,7 @@ type BetaIterationsUsage []BetaIterationsUsageItemUnion
 
 // BetaIterationsUsageItemUnion contains all possible properties and values from
 // [BetaMessageIterationUsage], [BetaCompactionIterationUsage],
-// [BetaAdvisorMessageIterationUsage].
+// [BetaAdvisorMessageIterationUsage], [BetaFallbackMessageIterationUsage].
 //
 // Use the [BetaIterationsUsageItemUnion.AsAny] method to switch on the variant.
 //
@@ -4797,19 +5104,19 @@ type BetaIterationsUsageItemUnion struct {
 	CacheCreationInputTokens int64             `json:"cache_creation_input_tokens"`
 	CacheReadInputTokens     int64             `json:"cache_read_input_tokens"`
 	InputTokens              int64             `json:"input_tokens"`
-	OutputTokens             int64             `json:"output_tokens"`
-	// Any of "message", "compaction", "advisor_message".
+	// This field is from variant [BetaMessageIterationUsage].
+	Model        Model `json:"model"`
+	OutputTokens int64 `json:"output_tokens"`
+	// Any of "message", "compaction", "advisor_message", "fallback_message".
 	Type string `json:"type"`
-	// This field is from variant [BetaAdvisorMessageIterationUsage].
-	Model Model `json:"model"`
-	JSON  struct {
+	JSON struct {
 		CacheCreation            respjson.Field
 		CacheCreationInputTokens respjson.Field
 		CacheReadInputTokens     respjson.Field
 		InputTokens              respjson.Field
+		Model                    respjson.Field
 		OutputTokens             respjson.Field
 		Type                     respjson.Field
-		Model                    respjson.Field
 		raw                      string
 	} `json:"-"`
 }
@@ -4821,9 +5128,10 @@ type anyBetaIterationsUsageItem interface {
 	implBetaIterationsUsageItemUnion()
 }
 
-func (BetaMessageIterationUsage) implBetaIterationsUsageItemUnion()        {}
-func (BetaCompactionIterationUsage) implBetaIterationsUsageItemUnion()     {}
-func (BetaAdvisorMessageIterationUsage) implBetaIterationsUsageItemUnion() {}
+func (BetaMessageIterationUsage) implBetaIterationsUsageItemUnion()         {}
+func (BetaCompactionIterationUsage) implBetaIterationsUsageItemUnion()      {}
+func (BetaAdvisorMessageIterationUsage) implBetaIterationsUsageItemUnion()  {}
+func (BetaFallbackMessageIterationUsage) implBetaIterationsUsageItemUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -4831,6 +5139,7 @@ func (BetaAdvisorMessageIterationUsage) implBetaIterationsUsageItemUnion() {}
 //	case anthropic.BetaMessageIterationUsage:
 //	case anthropic.BetaCompactionIterationUsage:
 //	case anthropic.BetaAdvisorMessageIterationUsage:
+//	case anthropic.BetaFallbackMessageIterationUsage:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -4842,6 +5151,8 @@ func (u BetaIterationsUsageItemUnion) AsAny() anyBetaIterationsUsageItem {
 		return u.AsCompaction()
 	case "advisor_message":
 		return u.AsAdvisorMessage()
+	case "fallback_message":
+		return u.AsFallbackMessage()
 	}
 	return nil
 }
@@ -4857,6 +5168,11 @@ func (u BetaIterationsUsageItemUnion) AsCompaction() (v BetaCompactionIterationU
 }
 
 func (u BetaIterationsUsageItemUnion) AsAdvisorMessage() (v BetaAdvisorMessageIterationUsage) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaIterationsUsageItemUnion) AsFallbackMessage() (v BetaFallbackMessageIterationUsage) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5535,6 +5851,11 @@ type BetaMessageIterationUsage struct {
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens" api:"required"`
 	// The number of input tokens which were used.
 	InputTokens int64 `json:"input_tokens" api:"required"`
+	// The model that will complete your prompt.
+	//
+	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
+	// details and options.
+	Model Model `json:"model" api:"required"`
 	// The number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens" api:"required"`
 	// Usage for a sampling iteration
@@ -5545,6 +5866,7 @@ type BetaMessageIterationUsage struct {
 		CacheCreationInputTokens respjson.Field
 		CacheReadInputTokens     respjson.Field
 		InputTokens              respjson.Field
+		Model                    respjson.Field
 		OutputTokens             respjson.Field
 		Type                     respjson.Field
 		ExtraFields              map[string]respjson.Field
@@ -5920,7 +6242,7 @@ func (r *BetaRawContentBlockStartEvent) UnmarshalJSON(data []byte) error {
 // [BetaBashCodeExecutionToolResultBlock],
 // [BetaTextEditorCodeExecutionToolResultBlock], [BetaToolSearchToolResultBlock],
 // [BetaMCPToolUseBlock], [BetaMCPToolResultBlock], [BetaContainerUploadBlock],
-// [BetaCompactionBlock].
+// [BetaCompactionBlock], [BetaFallbackBlock].
 //
 // Use the [BetaRawContentBlockStartEventContentBlockUnion.AsAny] method to switch
 // on the variant.
@@ -5935,7 +6257,7 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	// "web_search_tool_result", "web_fetch_tool_result", "advisor_tool_result",
 	// "code_execution_tool_result", "bash_code_execution_tool_result",
 	// "text_editor_code_execution_tool_result", "tool_search_tool_result",
-	// "mcp_tool_use", "mcp_tool_result", "container_upload", "compaction".
+	// "mcp_tool_use", "mcp_tool_result", "container_upload", "compaction", "fallback".
 	Type string `json:"type"`
 	// This field is from variant [BetaThinkingBlock].
 	Signature string `json:"signature"`
@@ -5968,7 +6290,11 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	FileID string `json:"file_id"`
 	// This field is from variant [BetaCompactionBlock].
 	EncryptedContent string `json:"encrypted_content"`
-	JSON             struct {
+	// This field is from variant [BetaFallbackBlock].
+	From BetaFallbackInfo `json:"from"`
+	// This field is from variant [BetaFallbackBlock].
+	To   BetaFallbackInfo `json:"to"`
+	JSON struct {
 		Citations        respjson.Field
 		Text             respjson.Field
 		Type             respjson.Field
@@ -5985,6 +6311,8 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 		IsError          respjson.Field
 		FileID           respjson.Field
 		EncryptedContent respjson.Field
+		From             respjson.Field
+		To               respjson.Field
 		raw              string
 	} `json:"-"`
 }
@@ -6013,6 +6341,7 @@ func (BetaMCPToolUseBlock) implBetaRawContentBlockStartEventContentBlockUnion() 
 func (BetaMCPToolResultBlock) implBetaRawContentBlockStartEventContentBlockUnion()        {}
 func (BetaContainerUploadBlock) implBetaRawContentBlockStartEventContentBlockUnion()      {}
 func (BetaCompactionBlock) implBetaRawContentBlockStartEventContentBlockUnion()           {}
+func (BetaFallbackBlock) implBetaRawContentBlockStartEventContentBlockUnion()             {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -6033,6 +6362,7 @@ func (BetaCompactionBlock) implBetaRawContentBlockStartEventContentBlockUnion() 
 //	case anthropic.BetaMCPToolResultBlock:
 //	case anthropic.BetaContainerUploadBlock:
 //	case anthropic.BetaCompactionBlock:
+//	case anthropic.BetaFallbackBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -6070,6 +6400,8 @@ func (u BetaRawContentBlockStartEventContentBlockUnion) AsAny() anyBetaRawConten
 		return u.AsContainerUpload()
 	case "compaction":
 		return u.AsCompaction()
+	case "fallback":
+		return u.AsFallback()
 	}
 	return nil
 }
@@ -6150,6 +6482,11 @@ func (u BetaRawContentBlockStartEventContentBlockUnion) AsContainerUpload() (v B
 }
 
 func (u BetaRawContentBlockStartEventContentBlockUnion) AsCompaction() (v BetaCompactionBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaRawContentBlockStartEventContentBlockUnion) AsFallback() (v BetaFallbackBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -6658,21 +6995,68 @@ type BetaRefusalStopDetails struct {
 	//
 	// `null` when the refusal doesn't map to a named category.
 	//
-	// Any of "cyber", "bio".
+	// Any of "cyber", "bio", "reasoning_extraction".
 	Category BetaRefusalStopDetailsCategory `json:"category" api:"required"`
 	// Human-readable explanation of the refusal.
 	//
 	// This text is not guaranteed to be stable. `null` when no explanation is
 	// available for the category.
-	Explanation string           `json:"explanation" api:"required"`
-	Type        constant.Refusal `json:"type" default:"refusal"`
+	Explanation string `json:"explanation" api:"required"`
+	// Opaque code that refunds the cache-miss cost when retrying this refused request
+	// on the fallback model. Pass it as `fallback_credit_token` on the retry request.
+	// Expires 5 minutes after the refusal.
+	//
+	// The retry is sent either with the same request body (`system`, `messages`,
+	// `tools`, and other render-shaping fields), or with the same body plus one
+	// appended `assistant` message whose content is the partial text (with any
+	// trailing whitespace stripped from the final text block) and paired server-tool
+	// blocks from this refusal — which also authorizes that appended turn as an
+	// assistant-prefill continuation on models that otherwise disallow prefill. A
+	// token minted mid-server-tool-loop whose partial content was continuable may only
+	// be redeemed the second way — if a same-body retry is rejected with a 400 saying
+	// the token must be redeemed by continuing the partial response, retry the second
+	// way instead. Either way: same workspace, same platform; a mismatch is a 400.
+	// Resending a token for an already-warm prefix is permitted but yields no
+	// additional credit.
+	//
+	// `null` when the refused model isn't eligible for a fallback credit.
+	FallbackCreditToken string `json:"fallback_credit_token" api:"required"`
+	// Whether the accompanying `fallback_credit_token` may be redeemed with the
+	// appended-assistant retry form. Only set when `fallback_credit_token` is present.
+	//
+	// `true`: retry by resending the same request body plus one appended `assistant`
+	// message whose content is this response's `content` with any trailing whitespace
+	// stripped from the final text block and unpaired `tool_use` blocks omitted (the
+	// same appended-turn shape described on `fallback_credit_token`), with the token
+	// attached. `false`: retry by resending the original request body unchanged, with
+	// the token attached — the appended-assistant form is not available for this
+	// refusal (no continuable partial content, or the request uses `output_format` or
+	// a `tool_choice` that forces tool use). One exception: when the request used
+	// `output_format` or a forced `tool_choice` and the refusal arrived after server
+	// tools (including MCP connector tools) had already executed, the token may not be
+	// redeemable by either retry form; if the exact-body retry is then rejected with a
+	// 400 saying the token must be redeemed by continuing the partial response,
+	// discard the token and retry without it.
+	//
+	// Advisory: if an appended-assistant retry is rejected with a 400 despite `true`,
+	// fall back to resending the original request body with the token.
+	FallbackHasPrefillClaim bool `json:"fallback_has_prefill_claim" api:"required"`
+	// The server's suggested retry target for this refusal. Populated when a fallback
+	// attempt could not be made (the fallback model's rate limit was exhausted, or it
+	// was overloaded); names the fallback model the caller can retry directly. Null
+	// otherwise.
+	RecommendedModel string           `json:"recommended_model" api:"required"`
+	Type             constant.Refusal `json:"type" default:"refusal"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Category    respjson.Field
-		Explanation respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Category                respjson.Field
+		Explanation             respjson.Field
+		FallbackCreditToken     respjson.Field
+		FallbackHasPrefillClaim respjson.Field
+		RecommendedModel        respjson.Field
+		Type                    respjson.Field
+		ExtraFields             map[string]respjson.Field
+		raw                     string
 	} `json:"-"`
 }
 
@@ -6688,8 +7072,9 @@ func (r *BetaRefusalStopDetails) UnmarshalJSON(data []byte) error {
 type BetaRefusalStopDetailsCategory string
 
 const (
-	BetaRefusalStopDetailsCategoryCyber BetaRefusalStopDetailsCategory = "cyber"
-	BetaRefusalStopDetailsCategoryBio   BetaRefusalStopDetailsCategory = "bio"
+	BetaRefusalStopDetailsCategoryCyber               BetaRefusalStopDetailsCategory = "cyber"
+	BetaRefusalStopDetailsCategoryBio                 BetaRefusalStopDetailsCategory = "bio"
+	BetaRefusalStopDetailsCategoryReasoningExtraction BetaRefusalStopDetailsCategory = "reasoning_extraction"
 )
 
 // The properties Source, Type are required.
@@ -11764,6 +12149,26 @@ type BetaMessageNewParams struct {
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero" api:"required"`
+	// The `fallback_credit_token` from a prior refusal's `stop_details`.
+	//
+	// When a preceding request was refused and returned a `fallback_credit_token`,
+	// pass that code here on the retry to have the retry's cache-creation tokens for
+	// the prefix that was warm on the refused model billed at the cache-read rate.
+	// Must be redeemed by the same organization and workspace, with the same request
+	// body (optionally extended by one appended `assistant` message whose content is
+	// the partial text — with any trailing whitespace stripped from the final text
+	// block — and paired server-tool blocks streamed before the refusal; the
+	// appended-assistant form is not available for requests with `output_format` set
+	// or forced `tool_choice`), on an eligible fallback model, on the same platform,
+	// and within 5 minutes of the refusal; a mismatch is a 400. A token minted
+	// mid-server-tool-loop whose partial content was continuable may only be redeemed
+	// with the appended-assistant form — if an exact-body retry is rejected with a 400
+	// saying the token must be redeemed by continuing the partial response, retry with
+	// the appended-assistant form instead.
+	//
+	// When the appended-assistant form is used on a model that otherwise disallows
+	// assistant-turn prefill, this token also authorizes that one prefill.
+	FallbackCreditToken param.Opt[string] `json:"fallback_credit_token,omitzero"`
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
@@ -11796,6 +12201,10 @@ type BetaMessageNewParams struct {
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// Container identifier for reuse across requests.
 	Container BetaMessageNewParamsContainerUnion `json:"container,omitzero"`
+	// Opt-in server-side retry on one or more substitute models when the requested
+	// model declines for policy reasons. Tried in order: if the first entry also
+	// declines, the second is tried, and so on.
+	Fallbacks []BetaFallbackParam `json:"fallbacks,omitzero"`
 	// The inference speed mode for this request. `"fast"` enables high
 	// output-tokens-per-second inference.
 	//

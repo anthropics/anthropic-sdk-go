@@ -4087,8 +4087,14 @@ func (r *MidConversationSystemBlockParam) UnmarshalJSON(data []byte) error {
 type Model = string
 
 const (
-	ModelClaudeOpus4_8            Model = "claude-opus-4-8"
-	ModelClaudeOpus4_7            Model = "claude-opus-4-7"
+	ModelClaudeFable5  Model = "claude-fable-5"
+	ModelClaudeMythos5 Model = "claude-mythos-5"
+	ModelClaudeOpus4_8 Model = "claude-opus-4-8"
+	ModelClaudeOpus4_7 Model = "claude-opus-4-7"
+	// Deprecated: Will reach end-of-life on June 30, 2026. Please migrate to
+	// claude-mythos-5. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
 	ModelClaudeMythosPreview      Model = "claude-mythos-preview"
 	ModelClaudeOpus4_6            Model = "claude-opus-4-6"
 	ModelClaudeSonnet4_6          Model = "claude-sonnet-4-6"
@@ -5026,7 +5032,7 @@ type RefusalStopDetails struct {
 	//
 	// `null` when the refusal doesn't map to a named category.
 	//
-	// Any of "cyber", "bio".
+	// Any of "cyber", "bio", "reasoning_extraction".
 	Category RefusalStopDetailsCategory `json:"category" api:"required"`
 	// Human-readable explanation of the refusal.
 	//
@@ -5056,8 +5062,9 @@ func (r *RefusalStopDetails) UnmarshalJSON(data []byte) error {
 type RefusalStopDetailsCategory string
 
 const (
-	RefusalStopDetailsCategoryCyber RefusalStopDetailsCategory = "cyber"
-	RefusalStopDetailsCategoryBio   RefusalStopDetailsCategory = "bio"
+	RefusalStopDetailsCategoryCyber               RefusalStopDetailsCategory = "cyber"
+	RefusalStopDetailsCategoryBio                 RefusalStopDetailsCategory = "bio"
+	RefusalStopDetailsCategoryReasoningExtraction RefusalStopDetailsCategory = "reasoning_extraction"
 )
 
 // The properties Content, Source, Title, Type are required.

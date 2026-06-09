@@ -1701,6 +1701,7 @@ const (
 type BetaManagedAgentsModel = string
 
 const (
+	BetaManagedAgentsModelClaudeFable5             BetaManagedAgentsModel = "claude-fable-5"
 	BetaManagedAgentsModelClaudeOpus4_8            BetaManagedAgentsModel = "claude-opus-4-8"
 	BetaManagedAgentsModelClaudeOpus4_7            BetaManagedAgentsModel = "claude-opus-4-7"
 	BetaManagedAgentsModelClaudeOpus4_6            BetaManagedAgentsModel = "claude-opus-4-6"

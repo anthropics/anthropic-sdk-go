@@ -213,6 +213,10 @@ func (r *BetaModelCapabilities) UnmarshalJSON(data []byte) error {
 type BetaModelInfo struct {
 	// Unique model identifier.
 	ID string `json:"id" api:"required"`
+	// Model IDs this model accepts as `fallbacks[i].model` on the Messages API. An
+	// empty list means the `fallbacks` parameter is not supported for this model as
+	// primary.
+	AllowedFallbackModels []string `json:"allowed_fallback_models" api:"required"`
 	// Model capability information.
 	Capabilities BetaModelCapabilities `json:"capabilities" api:"required"`
 	// RFC 3339 datetime string representing the time at which the model was released.
@@ -230,15 +234,16 @@ type BetaModelInfo struct {
 	Type constant.Model `json:"type" default:"model"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID             respjson.Field
-		Capabilities   respjson.Field
-		CreatedAt      respjson.Field
-		DisplayName    respjson.Field
-		MaxInputTokens respjson.Field
-		MaxTokens      respjson.Field
-		Type           respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
+		ID                    respjson.Field
+		AllowedFallbackModels respjson.Field
+		Capabilities          respjson.Field
+		CreatedAt             respjson.Field
+		DisplayName           respjson.Field
+		MaxInputTokens        respjson.Field
+		MaxTokens             respjson.Field
+		Type                  respjson.Field
+		ExtraFields           map[string]respjson.Field
+		raw                   string
 	} `json:"-"`
 }
 

@@ -24,6 +24,8 @@ TEST_PATHS=(
 	betasessionresource_test.go
 	betasessionthread_test.go
 	betasessionthreadevent_test.go
+	betadeployment_test.go
+	betadeploymentrun_test.go
 	betavault_test.go
 	betavaultcredential_test.go
 	betamemorystore_test.go

@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.49.0 (2026-06-09)
+
+Full Changelog: [v1.48.0...v1.49.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.48.0...v1.49.0)
+
+### Features
+
+* **api:** add support for claude-mythos-5 and claude-fable-5, with support for server-side fallbacks on refusal ([782f223](https://github.com/anthropics/anthropic-sdk-go/commit/782f2239803f6c0b65a9b23a7efe7e12059ac8a0))
+* **client:** adds client-side fallbacks middleware for API providers that do not support server-side fallbacks ([782f223](https://github.com/anthropics/anthropic-sdk-go/commit/782f2239803f6c0b65a9b23a7efe7e12059ac8a0))
+
+
+### Bug Fixes
+
+* 3p middleware ordering ([#38](https://github.com/anthropics/anthropic-sdk-go/issues/38)) ([8f47086](https://github.com/anthropics/anthropic-sdk-go/commit/8f47086cb6094c7c6ba06a7b9d94d56ead5ba295))
+
 ## 1.48.0 (2026-06-06)
 
 Full Changelog: [v1.47.0...v1.48.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.47.0...v1.48.0)

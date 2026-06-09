@@ -5097,7 +5097,7 @@ type RefusalStopDetails struct {
 	//
 	// `null` when the refusal doesn't map to a named category.
 	//
-	// Any of "cyber", "bio", "reasoning_extraction".
+	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction".
 	Category RefusalStopDetailsCategory `json:"category" api:"required"`
 	// Human-readable explanation of the refusal.
 	//
@@ -5129,6 +5129,7 @@ type RefusalStopDetailsCategory string
 const (
 	RefusalStopDetailsCategoryCyber               RefusalStopDetailsCategory = "cyber"
 	RefusalStopDetailsCategoryBio                 RefusalStopDetailsCategory = "bio"
+	RefusalStopDetailsCategoryFrontierLLM         RefusalStopDetailsCategory = "frontier_llm"
 	RefusalStopDetailsCategoryReasoningExtraction RefusalStopDetailsCategory = "reasoning_extraction"
 )
 

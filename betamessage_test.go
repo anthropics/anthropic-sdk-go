@@ -87,6 +87,30 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		Diagnostics: anthropic.BetaDiagnosticsParam{
 			PreviousMessageID: anthropic.String("previous_message_id"),
 		},
+		FallbackCreditToken: anthropic.String("x"),
+		Fallbacks: []anthropic.BetaFallbackParam{{
+			Model:     anthropic.ModelClaudeFable5,
+			MaxTokens: anthropic.Int(0),
+			OutputConfig: anthropic.BetaOutputConfigParam{
+				Effort: anthropic.BetaOutputConfigEffortLow,
+				Format: anthropic.BetaJSONOutputFormatParam{
+					Schema: map[string]any{
+						"foo": "bar",
+					},
+				},
+				TaskBudget: anthropic.BetaTokenTaskBudgetParam{
+					Total:     1024,
+					Remaining: anthropic.Int(0),
+				},
+			},
+			Speed: anthropic.BetaFallbackParamSpeedStandard,
+			Thinking: anthropic.BetaFallbackParamThinkingUnion{
+				OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{
+					BudgetTokens: 1024,
+					Display:      anthropic.BetaThinkingConfigEnabledDisplaySummarized,
+				},
+			},
+		}},
 		InferenceGeo: anthropic.String("inference_geo"),
 		MCPServers: []anthropic.BetaRequestMCPServerURLDefinitionParam{{
 			Name:               "name",
@@ -506,6 +530,27 @@ Therefore, the answer is..."}}`,
 				{Type: "tool_use", ID: "toolu_id", Name: "get_weather", Input: []byte(`{"city": "Los Angeles"}`)},
 				{Type: "text", Text: "The weather in Los Angeles is 85 degrees Fahrenheit!"},
 			}},
+		},
+		"fallback block relabels accumulated model": {
+			events: []string{
+				`{"type": "message_start", "message": {"model": "model-a"}}`,
+				`{"type": "content_block_start", "index": 0, "content_block": {"type": "fallback", "from": {"model": "model-a"}, "to": {"model": "model-b"}}}`,
+				`{"type": "content_block_stop", "index": 0}`,
+				`{"type": "message_delta", "delta": {"stop_reason": "end_turn"}, "usage": {"output_tokens": 5}}`,
+				`{"type": "message_stop"}`,
+			},
+			expected: anthropic.BetaMessage{
+				Model: "model-b",
+				Content: []anthropic.BetaContentBlockUnion{
+					{
+						Type: "fallback",
+						From: anthropic.BetaFallbackInfo{Model: "model-a"},
+						To:   anthropic.BetaFallbackInfo{Model: "model-b"},
+					},
+				},
+				StopReason: "end_turn",
+				Usage:      anthropic.BetaUsage{OutputTokens: 5},
+			},
 		},
 		"interleaved content blocks": {
 			events: []string{

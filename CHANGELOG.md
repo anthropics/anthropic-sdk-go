@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.50.2 (2026-06-15)
+
+Full Changelog: [v1.50.1...v1.50.2](https://github.com/anthropics/anthropic-sdk-go/compare/v1.50.1...v1.50.2)
+
+### Chores
+
+* **api:** remove retired models from API and SDKs ([11f5c82](https://github.com/anthropics/anthropic-sdk-go/commit/11f5c8239cb11351c5f42aac6bb12c0dc8fdccd2))
+
 ## 1.50.1 (2026-06-09)
 
 Full Changelog: [v1.50.0...v1.50.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.50.0...v1.50.1)

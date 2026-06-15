@@ -502,7 +502,7 @@ func TestMessageNewWithNonStreamingTimeoutLimits(t *testing.T) {
 	)
 
 	// Set a model with known token limits
-	model := anthropic.ModelClaudeOpus4_20250514
+	model := anthropic.ModelClaudeOpus4_1_20250805
 	testModelLimit := constant.ModelNonStreamingTokens[string(model)]
 
 	// This test verifies that we can still create a message with tokens below the limit

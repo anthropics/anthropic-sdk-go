@@ -113,7 +113,7 @@ tools := []anthropic.BetaTool{weatherTool}
 
 runner := client.Beta.Messages.NewToolRunner(tools, anthropic.BetaToolRunnerParams{
 	BetaMessageNewParams: anthropic.BetaMessageNewParams{
-		Model:     anthropic.ModelClaudeSonnet4_20250514,
+		Model:     anthropic.ModelClaudeSonnet4_5_20250929,
 		MaxTokens: 1024,
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather in Tokyo?")),
@@ -169,7 +169,7 @@ Use `BetaToolRunnerStreaming` via `NewToolRunnerStreaming()` for streaming respo
 ```go
 runner := client.Beta.Messages.NewToolRunnerStreaming(tools, anthropic.BetaToolRunnerParams{
 	BetaMessageNewParams: anthropic.BetaMessageNewParams{
-		Model:     anthropic.ModelClaudeSonnet4_20250514,
+		Model:     anthropic.ModelClaudeSonnet4_5_20250929,
 		MaxTokens: 1024,
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather in Tokyo?")),

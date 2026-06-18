@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"iter"
 
+	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"golang.org/x/sync/errgroup"
 )
@@ -62,6 +63,8 @@ func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool,
 	// Add tools to the API params
 	params.BetaMessageNewParams.Tools = apiTools
 	params.Messages = append([]BetaMessageParam{}, params.Messages...)
+
+	opts = append([]option.RequestOption{stainlessheader.With(stainlessheader.BetaToolRunner)}, opts...)
 
 	return betaToolRunnerBase{
 		messageService: messageService,

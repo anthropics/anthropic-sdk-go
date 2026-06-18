@@ -19,6 +19,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
@@ -156,6 +157,10 @@ func BetaRefusalFallbackMiddleware(fallbacks []anthropic.BetaFallbackParam) opti
 				return next(requestWithBody(req, orig))
 			}
 		}
+		// Tag this and every hop derived from it (requestWithBody clones
+		// req.Header) with the middleware's helper telemetry.
+		stainlessheader.AppendHeaderValue(req.Header, stainlessheader.FallbackRefusalMiddleware)
+
 		// The two chains cannot adjudicate refusals together; fail loudly
 		// rather than letting them race.
 		if _, ok := body["fallbacks"]; ok {

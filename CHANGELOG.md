@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.51.0 (2026-06-18)
+
+Full Changelog: [v1.50.2...v1.51.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.50.2...v1.51.0)
+
+### Features
+
+* **api:** add support for new code_execution_20260120 tool ([f54a4a8](https://github.com/anthropics/anthropic-sdk-go/commit/f54a4a8e6f9c271b2b31e0cf504cdab8005f28c4))
+
 ## 1.50.2 (2026-06-15)
 
 Full Changelog: [v1.50.1...v1.50.2](https://github.com/anthropics/anthropic-sdk-go/compare/v1.50.1...v1.50.2)

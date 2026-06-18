@@ -930,9 +930,10 @@ func TestRefusalFallbackMiddlewarePrependsFallbackBlockWhenCallerArmedTheBeta(t 
 	require.NoError(t, json.Unmarshal(buf, &message))
 	require.Len(t, message.Content, 2)
 	assert.Equal(t, map[string]any{
-		"type": "fallback",
-		"from": map[string]any{"model": "primary-model"},
-		"to":   map[string]any{"model": "fallback-model"},
+		"type":    "fallback",
+		"from":    map[string]any{"model": "primary-model"},
+		"to":      map[string]any{"model": "fallback-model"},
+		"trigger": map[string]any{"type": "refusal", "category": nil},
 	}, message.Content[0])
 	assert.Equal(t, "served", message.Content[1]["text"])
 	assert.Equal(t, int64(len(buf)), res.ContentLength)

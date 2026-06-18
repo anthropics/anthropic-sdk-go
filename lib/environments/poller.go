@@ -28,24 +28,9 @@ import (
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
-)
-
-const (
-	// helperHeaderName is a telemetry header the SDK helpers add to the
-	// requests they issue, so the control plane can attribute traffic to a
-	// specific helper rather than to bare client calls.
-	helperHeaderName = "x-stainless-helper"
-	// helperHeaderWorkPoller names the WorkPoller's work.* requests.
-	helperHeaderWorkPoller = "environments-work-poller"
-	// helperHeaderEnvironmentWorker names the EnvironmentWorker's heartbeat /
-	// force-stop requests. The SessionToolRunner stamps its own
-	// "session-tool-runner" header internally (see
-	// betasessiontoolrunner.go — it appends after the caller's
-	// RequestOptions and overwrites anything passed through), so the worker
-	// passes no helper tag for the runner's stream/list/send calls.
-	helperHeaderEnvironmentWorker = "environments-worker"
 )
 
 // bearerReqOpts returns the auth-only per-request options every
@@ -87,12 +72,12 @@ func bearerReqOpts(environmentKey string) ([]option.RequestOption, error) {
 // and so should pass [bearerReqOpts] through unchanged.
 //
 // Surfaces [bearerReqOpts]'s empty-key error to the caller.
-func helperReqOpts(environmentKey, helperName string) ([]option.RequestOption, error) {
+func helperReqOpts(environmentKey string, helper stainlessheader.Value) ([]option.RequestOption, error) {
 	opts, err := bearerReqOpts(environmentKey)
 	if err != nil {
 		return nil, err
 	}
-	return append(opts, option.WithHeader(helperHeaderName, helperName)), nil
+	return append(opts, stainlessheader.With(helper)), nil
 }
 
 // ManagedAgentsBeta is the anthropic-beta value gating self-hosted
@@ -272,7 +257,7 @@ func (p *WorkPoller) Next() bool {
 	// Caller-supplied RequestOptions are applied first so a proxy/custom
 	// header reaches Poll/Ack/Stop while the poller's own X-Api-Key delete,
 	// environment-key auth and helper header (appended last) still win.
-	helperOpts, err := helperReqOpts(p.opts.EnvironmentKey, helperHeaderWorkPoller)
+	helperOpts, err := helperReqOpts(p.opts.EnvironmentKey, stainlessheader.EnvironmentsWorkPoller)
 	if err != nil {
 		// NewWorkPoller already validates EnvironmentKey at construction
 		// (see line 240-245), so reaching here means the validation was

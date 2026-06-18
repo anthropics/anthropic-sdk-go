@@ -29,6 +29,7 @@ type scriptedTransport struct {
 	headers   []http.Header
 	bodies    []map[string]any
 	betas     [][]string
+	helpers   [][]string
 }
 
 func (s *scriptedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -38,6 +39,7 @@ func (s *scriptedTransport) RoundTrip(req *http.Request) (*http.Response, error)
 	require.NoError(s.t, json.Unmarshal(buf, &body))
 	s.bodies = append(s.bodies, body)
 	s.betas = append(s.betas, req.Header.Values("anthropic-beta"))
+	s.helpers = append(s.helpers, req.Header.Values("x-stainless-helper"))
 	require.NotEmpty(s.t, s.responses, "more requests than scripted responses")
 	next := s.responses[0]
 	s.responses = s.responses[1:]
@@ -118,6 +120,54 @@ func TestRefusalFallbackMiddlewareRetriesWithFallbackParamsAndCreditToken(t *tes
 	assert.Equal(t, "credit-token", transport.bodies[1]["fallback_credit_token"])
 	_, hasToken := transport.bodies[0]["fallback_credit_token"]
 	assert.False(t, hasToken)
+}
+
+func TestRefusalFallbackMiddlewareTagsTheOriginalAndFallbackRequests(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{refusalResponse("primary-model", "credit-token"), messageResponse("fallback-model")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
+		),
+	)
+
+	_, err := client.Beta.Messages.New(context.Background(), fallbackTestParams)
+	require.NoError(t, err)
+	assert.Equal(t, [][]string{
+		{"fallback-refusal-middleware"},
+		{"fallback-refusal-middleware"},
+	}, transport.helpers)
+}
+
+func TestRefusalFallbackMiddlewareAppendsToAnExistingHelperTag(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{messageResponse("primary-model")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
+		),
+	)
+
+	_, err := client.Beta.Messages.New(context.Background(), fallbackTestParams,
+		option.WithHeader("X-Stainless-Helper", "BetaToolRunner"))
+	require.NoError(t, err)
+	assert.Equal(t, [][]string{{"BetaToolRunner, fallback-refusal-middleware"}}, transport.helpers)
+}
+
+func TestRefusalFallbackMiddlewareDoesNotTagRequestsItPassesThrough(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{messageResponse("primary-model")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
+		),
+	)
+
+	// the GA surface is not applicable to this middleware
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:     "primary-model",
+		MaxTokens: 1024,
+		Messages:  []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, [][]string{nil}, transport.helpers)
 }
 
 func TestRefusalFallbackMiddlewarePinsTheConversationToTheAcceptedFallback(t *testing.T) {

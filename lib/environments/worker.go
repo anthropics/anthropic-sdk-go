@@ -10,6 +10,7 @@ import (
 	"time"
 
 	anthropic "github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/anthropics/anthropic-sdk-go/tools/agenttoolset"
@@ -269,7 +270,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	// RequestOptions are applied first so a proxy/custom header reaches every
 	// per-session call while the worker's own X-Api-Key delete,
 	// environment-key auth and helper header (appended last) still win.
-	helperOpts, err := helperReqOpts(environmentKey, helperHeaderEnvironmentWorker)
+	helperOpts, err := helperReqOpts(environmentKey, stainlessheader.EnvironmentsWorker)
 	if err != nil {
 		// Run and HandleItem validate environmentKey at their entry points
 		// (see worker.go:130 / 209-218), so an empty key here means a future

@@ -12,17 +12,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"golang.org/x/sync/errgroup"
-)
-
-// sessionRunnerHelperHeader and its value tag the requests the
-// SessionToolRunner issues (stream / list / send) so the control plane can
-// attribute traffic to the helper rather than to bare client calls.
-const (
-	sessionRunnerHelperHeader = "x-stainless-helper"
-	sessionRunnerHelperValue  = "session-tool-runner"
 )
 
 // DefaultMaxIdle is used for [SessionToolRunnerOptions.MaxIdle] when it is nil:
@@ -331,7 +324,7 @@ func (r *BetaSessionEventService) NewToolRunner(ctx context.Context, sessionID s
 	internalCtx, cancel := context.WithCancel(ctx)
 	reqOpts := make([]option.RequestOption, 0, len(opts.RequestOptions)+1)
 	reqOpts = append(reqOpts, opts.RequestOptions...)
-	reqOpts = append(reqOpts, option.WithHeader(sessionRunnerHelperHeader, sessionRunnerHelperValue))
+	reqOpts = append(reqOpts, stainlessheader.With(stainlessheader.SessionToolRunner))
 	rn := &SessionToolRunner{
 		eventService: r,
 		sessionID:    sessionID,

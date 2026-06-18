@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.51.1 (2026-06-18)
+
+Full Changelog: [v1.51.0...v1.51.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.51.0...v1.51.1)
+
+### Bug Fixes
+
+* **helpers:** single source for x-stainless-helper, append semantics, and tag the fallback middleware ([#88](https://github.com/anthropics/anthropic-sdk-go/issues/88)) ([ebbdb7d](https://github.com/anthropics/anthropic-sdk-go/commit/ebbdb7dea37b15cdd055c53806a51e06422847fe))
+
 ## 1.51.0 (2026-06-18)
 
 Full Changelog: [v1.50.2...v1.51.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.50.2...v1.51.0)

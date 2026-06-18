@@ -151,16 +151,23 @@ func (b *rawBlock) finalize() json.RawMessage {
 	return out
 }
 
-type seam struct{ from, to string }
+type seam struct {
+	from, to string
+	// category is the policy category that triggered the refusal at this
+	// boundary; nil when the server didn't surface one. Typed any so nil
+	// serializes as JSON null in block().
+	category any
+}
 
 // block returns the fallback boundary content block as raw JSON — the shape
 // both the streaming splice and the non-streaming prepend emit, and that
 // trimFallbackTurns keys off on history replay.
 func (s seam) block() json.RawMessage {
 	block, _ := json.Marshal(map[string]any{
-		"type": "fallback",
-		"from": map[string]any{"model": s.from},
-		"to":   map[string]any{"model": s.to},
+		"type":    "fallback",
+		"from":    map[string]any{"model": s.from},
+		"to":      map[string]any{"model": s.to},
+		"trigger": map[string]any{"type": "refusal", "category": s.category},
 	})
 	return block
 }
@@ -208,6 +215,7 @@ type streamSplicer struct {
 
 	// Chain state.
 	token          string
+	category       any // policy category from the most recent refusal's stop_details; nil when not surfaced
 	continuation   []json.RawMessage
 	lastClaimCount int
 	ledger         []json.RawMessage
@@ -440,6 +448,10 @@ func (s *streamSplicer) handleTerminal(evt ssestream.Event) {
 			s.lastClaimCount = len(claim)
 		}
 		s.token = token
+		s.category = nil
+		if cat := parsed.Get("delta.stop_details.category"); cat.Type == gjson.String {
+			s.category = cat.String()
+		}
 		s.held = &heldRefusal{startRaw: s.startRaw, deltaRaw: append([]byte(nil), evt.Data...), stopRaw: s.readStop()}
 		s.res.Body.Close()
 		s.openNextHop()
@@ -722,7 +734,7 @@ func (s *streamSplicer) tryHop(entry anthropic.BetaFallbackParam, token string, 
 // emitting (or queueing) the fallback boundary between the previous
 // content-bearing model and this hop.
 func (s *streamSplicer) engage(res *http.Response, entry anthropic.BetaFallbackParam) {
-	sm := seam{from: s.effModel, to: string(entry.Model)}
+	sm := seam{from: s.effModel, to: string(entry.Model), category: s.category}
 	if s.wireOpen {
 		s.closeOpenBlocks()
 		s.emitSeam(sm)

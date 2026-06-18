@@ -80,7 +80,8 @@ func (r *BetaWebhookService) Unwrap(payload []byte, headers http.Header, opts ..
 // [BetaWebhookVaultCredentialCreatedEventData],
 // [BetaWebhookVaultCredentialArchivedEventData],
 // [BetaWebhookVaultCredentialDeletedEventData],
-// [BetaWebhookVaultCredentialRefreshFailedEventData].
+// [BetaWebhookVaultCredentialRefreshFailedEventData],
+// [BetaWebhookSessionUpdatedEventData].
 //
 // Use the [BetaWebhookEventDataUnion.AsAny] method to switch on the variant.
 //
@@ -95,7 +96,8 @@ type BetaWebhookEventDataUnion struct {
 	// "session.thread_idled", "session.thread_terminated",
 	// "session.outcome_evaluation_ended", "vault.created", "vault.archived",
 	// "vault.deleted", "vault_credential.created", "vault_credential.archived",
-	// "vault_credential.deleted", "vault_credential.refresh_failed".
+	// "vault_credential.deleted", "vault_credential.refresh_failed",
+	// "session.updated".
 	Type            string `json:"type"`
 	WorkspaceID     string `json:"workspace_id"`
 	SessionThreadID string `json:"session_thread_id"`
@@ -140,6 +142,7 @@ func (BetaWebhookVaultCredentialCreatedEventData) implBetaWebhookEventDataUnion(
 func (BetaWebhookVaultCredentialArchivedEventData) implBetaWebhookEventDataUnion()       {}
 func (BetaWebhookVaultCredentialDeletedEventData) implBetaWebhookEventDataUnion()        {}
 func (BetaWebhookVaultCredentialRefreshFailedEventData) implBetaWebhookEventDataUnion()  {}
+func (BetaWebhookSessionUpdatedEventData) implBetaWebhookEventDataUnion()                {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -166,6 +169,7 @@ func (BetaWebhookVaultCredentialRefreshFailedEventData) implBetaWebhookEventData
 //	case anthropic.BetaWebhookVaultCredentialArchivedEventData:
 //	case anthropic.BetaWebhookVaultCredentialDeletedEventData:
 //	case anthropic.BetaWebhookVaultCredentialRefreshFailedEventData:
+//	case anthropic.BetaWebhookSessionUpdatedEventData:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -215,6 +219,8 @@ func (u BetaWebhookEventDataUnion) AsAny() anyBetaWebhookEventData {
 		return u.AsVaultCredentialDeleted()
 	case "vault_credential.refresh_failed":
 		return u.AsVaultCredentialRefreshFailed()
+	case "session.updated":
+		return u.AsSessionUpdated()
 	}
 	return nil
 }
@@ -325,6 +331,11 @@ func (u BetaWebhookEventDataUnion) AsVaultCredentialDeleted() (v BetaWebhookVaul
 }
 
 func (u BetaWebhookEventDataUnion) AsVaultCredentialRefreshFailed() (v BetaWebhookVaultCredentialRefreshFailedEventData) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWebhookEventDataUnion) AsSessionUpdated() (v BetaWebhookSessionUpdatedEventData) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -687,6 +698,29 @@ type BetaWebhookSessionThreadTerminatedEventData struct {
 // Returns the unmodified JSON received from the API
 func (r BetaWebhookSessionThreadTerminatedEventData) RawJSON() string { return r.JSON.raw }
 func (r *BetaWebhookSessionThreadTerminatedEventData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaWebhookSessionUpdatedEventData struct {
+	// ID of the session that triggered the event.
+	ID             string                  `json:"id" api:"required"`
+	OrganizationID string                  `json:"organization_id" api:"required"`
+	Type           constant.SessionUpdated `json:"type" default:"session.updated"`
+	WorkspaceID    string                  `json:"workspace_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID             respjson.Field
+		OrganizationID respjson.Field
+		Type           respjson.Field
+		WorkspaceID    respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWebhookSessionUpdatedEventData) RawJSON() string { return r.JSON.raw }
+func (r *BetaWebhookSessionUpdatedEventData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

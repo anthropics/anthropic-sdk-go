@@ -216,7 +216,7 @@ func BetaRefusalFallbackMiddleware(fallbacks []anthropic.BetaFallbackParam) opti
 		fromModel := gjson.GetBytes(attempt, "model").String()
 
 		for err == nil && index < len(fallbacks)-1 {
-			refused, creditToken, perr := refusedMessage(res)
+			refused, creditToken, category, perr := refusedMessage(res)
 			if perr != nil {
 				return nil, perr
 			}
@@ -229,7 +229,7 @@ func BetaRefusalFallbackMiddleware(fallbacks []anthropic.BetaFallbackParam) opti
 			if state != nil {
 				state.SetIndex(index)
 			}
-			seams = append(seams, seam{from: fromModel, to: string(fallback.Model)})
+			seams = append(seams, seam{from: fromModel, to: string(fallback.Model), category: category})
 			fromModel = string(fallback.Model)
 			var tokenSent bool
 			if attempt, tokenSent, err = mergeFallback(body, fallback, creditToken); err != nil {
@@ -455,24 +455,28 @@ func mergeFallback(body map[string]json.RawMessage, fallback anthropic.BetaFallb
 	return out, creditToken != "", err
 }
 
-// refusedMessage reports whether res is a message that stopped with a refusal
-// and its credit token, restoring res.Body for the caller.
-func refusedMessage(res *http.Response) (refused bool, creditToken string, err error) {
+// refusedMessage reports whether res is a message that stopped with a refusal,
+// its credit token, and its policy category (nil when not surfaced), restoring
+// res.Body for the caller.
+func refusedMessage(res *http.Response) (refused bool, creditToken string, category any, err error) {
 	if res.StatusCode != http.StatusOK {
-		return false, "", nil
+		return false, "", nil, nil
 	}
 	// A still-encoded body (caller-set Accept-Encoding) can't be inspected.
 	if res.Header.Get("Content-Encoding") != "" {
-		return false, "", nil
+		return false, "", nil, nil
 	}
 	buf, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		return false, "", fmt.Errorf("betafallback: reading response body: %w", err)
+		return false, "", nil, fmt.Errorf("betafallback: reading response body: %w", err)
 	}
 	res.Body = io.NopCloser(bytes.NewReader(buf))
 	if gjson.GetBytes(buf, "stop_reason").String() != string(anthropic.BetaStopReasonRefusal) {
-		return false, "", nil
+		return false, "", nil, nil
 	}
-	return true, gjson.GetBytes(buf, "stop_details.fallback_credit_token").String(), nil
+	if cat := gjson.GetBytes(buf, "stop_details.category"); cat.Type == gjson.String {
+		category = cat.String()
+	}
+	return true, gjson.GetBytes(buf, "stop_details.fallback_credit_token").String(), category, nil
 }

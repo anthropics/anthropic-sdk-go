@@ -14,6 +14,18 @@ func WithSkipCompaction(b bool) Option {
 	}
 }
 
+// PROTOTYPE(begin): opt-in buffer-direct encoding of nested SDK marshalers.
+// When set, the encoder encodes any value implementing [MarshalerTo] straight
+// into the shared output buffer instead of calling MarshalJSON() (which
+// allocates a fresh []byte of the whole subtree at every nesting level).
+func WithBufferDirect(b bool) Option {
+	return func(eos *encOpts) {
+		eos.bufferDirect = b
+	}
+}
+
+// PROTOTYPE(end)
+
 func (eos encOpts) apply(opts ...Option) encOpts {
 	for _, opt := range opts {
 		opt(&eos)

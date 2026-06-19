@@ -361,6 +361,9 @@ type encOpts struct {
 	// EDIT(begin): add optimization to skip compaction
 	skipCompaction bool
 	// EDIT(end)
+	// PROTOTYPE(begin): encode nested SDK marshalers directly into the buffer
+	bufferDirect bool
+	// PROTOTYPE(end)
 }
 
 type encoderFunc func(e *encodeState, v reflect.Value, opts encOpts)
@@ -488,6 +491,17 @@ func marshalerEncoder(e *encodeState, v reflect.Value, opts encOpts) {
 	}
 	// EDIT(end)
 
+	// PROTOTYPE(begin): if buffer-direct encoding is enabled and the value can
+	// encode itself into the shared buffer, do so — avoiding the per-level
+	// MarshalJSON() []byte allocation + appendCompact copy.
+	if opts.bufferDirect {
+		if mt, ok := v.Interface().(MarshalerTo); ok {
+			mt.MarshalJSONTo(&DirectEncoder{e: e, opts: opts})
+			return
+		}
+	}
+	// PROTOTYPE(end)
+
 	b, err := m.MarshalJSON()
 	if err == nil {
 		e.Grow(len(b))
@@ -499,6 +513,42 @@ func marshalerEncoder(e *encodeState, v reflect.Value, opts encOpts) {
 		e.error(&MarshalerError{v.Type(), err, "MarshalJSON"})
 	}
 }
+
+// PROTOTYPE(begin): buffer-direct encoding support.
+//
+// MarshalerTo is implemented by SDK types that can append their JSON encoding
+// straight into the encoder's shared output buffer, rather than returning a
+// freshly-allocated []byte from MarshalJSON. This eliminates the per-nesting-
+// level full-payload copy that drives request-marshal memory amplification.
+type MarshalerTo interface {
+	MarshalJSONTo(enc *DirectEncoder)
+}
+
+// DirectEncoder is an opaque handle to the in-progress encode state, passed to
+// [MarshalerTo] implementations so they can write into the shared buffer.
+type DirectEncoder struct {
+	e    *encodeState
+	opts encOpts
+}
+
+// Encode writes the JSON encoding of v into the shared buffer, reusing the
+// encoder's existing machinery (and propagating buffer-direct mode so nested
+// MarshalerTo values keep writing into the same buffer).
+func (enc *DirectEncoder) Encode(v any) {
+	enc.e.reflectValue(reflect.ValueOf(v), enc.opts)
+}
+
+// WriteRaw appends already-encoded JSON bytes directly to the buffer.
+func (enc *DirectEncoder) WriteRaw(b []byte) {
+	enc.e.Buffer.Write(b)
+}
+
+// Error aborts the encode with err (panics through the top-level recover).
+func (enc *DirectEncoder) Error(err error) {
+	enc.e.error(err)
+}
+
+// PROTOTYPE(end)
 
 func addrMarshalerEncoder(e *encodeState, v reflect.Value, opts encOpts) {
 	va := v.Addr()
@@ -512,6 +562,15 @@ func addrMarshalerEncoder(e *encodeState, v reflect.Value, opts encOpts) {
 		return
 	}
 	// EDIT(end)
+
+	// PROTOTYPE(begin): buffer-direct fast path (addressable variant).
+	if opts.bufferDirect {
+		if mt, ok := va.Interface().(MarshalerTo); ok {
+			mt.MarshalJSONTo(&DirectEncoder{e: e, opts: opts})
+			return
+		}
+	}
+	// PROTOTYPE(end)
 
 	m := va.Interface().(Marshaler)
 	b, err := m.MarshalJSON()

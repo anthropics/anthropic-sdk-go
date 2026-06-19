@@ -865,8 +865,9 @@ func (r *BetaManagedAgentsAgentToolset20260401EditInput) UnmarshalJSON(data []by
 // Input payload for the `glob` tool. Returns paths matching a doublestar glob
 // pattern, newest first.
 type BetaManagedAgentsAgentToolset20260401GlobInput struct {
-	// Doublestar glob pattern (e.g. `**/*.go`). Absolute patterns are only permitted
-	// when the runner is configured to allow them.
+	// Doublestar glob pattern (e.g. `**/*.go`). Absolute patterns are permitted
+	// when they resolve under the runner's working directory, or when the runner is
+	// configured to allow unrestricted paths.
 	Pattern string `json:"pattern" api:"required"`
 	// Optional directory root to search under. Defaults to the runner's working
 	// directory.

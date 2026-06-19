@@ -57,9 +57,10 @@ import (
 type AgentToolContext struct {
 	// Workdir is the base directory for resolving relative tool paths.
 	Workdir string
-	// UnrestrictedPaths controls whether the file tools accept absolute paths
-	// and paths that escape Workdir. When false (default) they are rejected.
-	// Does not constrain [BetaBashTool].
+	// UnrestrictedPaths controls whether the file tools accept paths that
+	// escape Workdir. When false (default), relative paths and absolute paths
+	// are accepted only if they resolve inside Workdir. Does not constrain
+	// [BetaBashTool].
 	UnrestrictedPaths bool
 
 	// MaxFileBytes caps the size of a file the read and edit tools will load
@@ -178,7 +179,7 @@ func fsErrorMessage(err error) string {
 }
 
 // resolvePath resolves p relative to env.Workdir. Unless UnrestrictedPaths is
-// set, absolute inputs are rejected and the canonical path is returned — every
+// set, the canonical path is returned only if it stays under Workdir — every
 // symlink in p (including the leaf, even a dangling one) is resolved before the
 // workdir check, and the resolved path is what the tool then operates on, so a
 // symlink inside the workdir that points outside it can neither pass the check
@@ -190,22 +191,23 @@ func fsErrorMessage(err error) string {
 // same residual exposure exists in the SDK's other file-tool helpers and is why
 // a sandbox is still recommended for the toolset as a whole.
 func resolvePath(env *AgentToolContext, p string) (string, error) {
-	if filepath.IsAbs(p) {
-		if !env.UnrestrictedPaths {
-			return "", fmt.Errorf("absolute path %q not permitted", p)
-		}
-		return filepath.Clean(p), nil
-	}
 	root := realpathOrSelf(absOrSelf(env.Workdir))
-	abs := filepath.Join(root, p)
+	abs := p
+	if !filepath.IsAbs(abs) {
+		abs = filepath.Join(root, p)
+	}
 	if env.UnrestrictedPaths {
-		return abs, nil
+		return filepath.Clean(abs), nil
 	}
 	real := canonicalize(abs)
-	if real != root && !strings.HasPrefix(real, root+string(filepath.Separator)) {
+	if !isPathWithinRoot(real, root) {
 		return "", fmt.Errorf("path %q escapes workdir", p)
 	}
 	return real, nil
+}
+
+func isPathWithinRoot(p, root string) bool {
+	return p == root || strings.HasPrefix(p, root+string(filepath.Separator))
 }
 
 func absOrSelf(p string) string {

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -284,6 +285,66 @@ func TestBedrockWithConfigRequiresCredentials(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "expected AWS credentials to be set") {
 		t.Fatalf("Expected credentials error, got: %v", err)
 	}
+}
+
+func TestBedrockWithConfigUsesAWSHTTPClient(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+
+	var customClientHits atomic.Int32
+	customClient := &http.Client{
+		Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+			customClientHits.Add(1)
+			if r.URL.Path != "/model/claude-3-sonnet/invoke" {
+				t.Errorf("Expected Bedrock path %q, got %q", "/model/claude-3-sonnet/invoke", r.URL.Path)
+			}
+			return &http.Response{
+				StatusCode: 200,
+				Header:     http.Header{"Content-Type": []string{"application/json"}},
+				Body:       io.NopCloser(strings.NewReader(`{"id":"msg_test","type":"message","role":"assistant","content":[{"type":"text","text":"hi"}],"model":"claude-3-sonnet","stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`)),
+				Request:    r,
+			}, nil
+		}),
+	}
+
+	var fallbackHits atomic.Int32
+	fallbackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fallbackHits.Add(1)
+		writeMessagesResponse(w)
+	}))
+	t.Cleanup(fallbackServer.Close)
+
+	cfg := makeStaticAWSConfig("us-east-1")
+	cfg.HTTPClient = customClient
+	client := anthropic.NewClient(
+		option.WithoutEnvironmentDefaults(),
+		WithConfig(cfg),
+		option.WithBaseURL(fallbackServer.URL),
+	)
+
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:     "claude-3-sonnet",
+		MaxTokens: 1,
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+		},
+	})
+	if err != nil {
+		t.Fatalf("Request failed: %v", err)
+	}
+
+	if got := customClientHits.Load(); got != 1 {
+		t.Fatalf("Expected AWS config HTTP client to handle 1 request, got %d", got)
+	}
+	if got := fallbackHits.Load(); got != 0 {
+		t.Fatalf("Expected fallback server to receive no requests, got %d", got)
+	}
+}
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
 }
 
 // --- EventStream → SSE response normalization tests ---

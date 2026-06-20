@@ -601,20 +601,49 @@ func WithEnvironmentProduction() RequestOption {
 	return requestconfig.WithDefaultBaseURL("https://api.anthropic.com/")
 }
 
+type staticCredentialOption interface {
+	RequestOption
+	isStaticCredentialOption()
+}
+
+type apiKeyOption string
+
+func (apiKeyOption) isStaticCredentialOption() {}
+
+func (o apiKeyOption) Apply(r *requestconfig.RequestConfig) error {
+	r.APIKey = string(o)
+	return r.Apply(WithHeader("X-Api-Key", r.APIKey))
+}
+
+type authTokenOption string
+
+func (authTokenOption) isStaticCredentialOption() {}
+
+func (o authTokenOption) Apply(r *requestconfig.RequestConfig) error {
+	r.AuthToken = string(o)
+	return r.Apply(WithHeader("authorization", fmt.Sprintf("Bearer %s", r.AuthToken)))
+}
+
+// HasExplicitCredential reports whether opts contains a caller-supplied
+// static credential. NewClient uses this to avoid prepending credential
+// autoload options from the environment or profile config.
+func HasExplicitCredential(opts []RequestOption) bool {
+	for _, o := range opts {
+		if _, ok := o.(staticCredentialOption); ok {
+			return true
+		}
+	}
+	return false
+}
+
 // WithAPIKey returns a RequestOption that sets the client setting "api_key".
 func WithAPIKey(value string) RequestOption {
-	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-		r.APIKey = value
-		return r.Apply(WithHeader("X-Api-Key", r.APIKey))
-	})
+	return apiKeyOption(value)
 }
 
 // WithAuthToken returns a RequestOption that sets the client setting "auth_token".
 func WithAuthToken(value string) RequestOption {
-	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-		r.AuthToken = value
-		return r.Apply(WithHeader("authorization", fmt.Sprintf("Bearer %s", r.AuthToken)))
-	})
+	return authTokenOption(value)
 }
 
 // WithWebhookKey returns a RequestOption that sets the client setting "webhook_key".

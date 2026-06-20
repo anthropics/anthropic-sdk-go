@@ -46,16 +46,24 @@ type Client struct {
 // When no source produces a credential, the first request fails with an
 // [auth.NoCredentialsError]. If ANTHROPIC_PROFILE points at a missing or
 // invalid profile, the first request instead fails with a wrapped
-// profile-load error naming the profile. An explicit credential option
-// passed to [NewClient] (e.g. [option.WithAPIKey] or [option.WithAuthToken])
-// suppresses both paths. Also honors ANTHROPIC_BASE_URL.
+// profile-load error naming the profile. When called by [NewClient], an
+// explicit credential option (e.g. [option.WithAPIKey] or
+// [option.WithAuthToken]) suppresses credential autoload. Also honors
+// ANTHROPIC_BASE_URL.
 func DefaultClientOptions() []option.RequestOption {
+	return defaultClientOptions(true)
+}
+
+func defaultClientOptions(loadCredentials bool) []option.RequestOption {
 	defaults := []option.RequestOption{
 		option.WithHTTPClient(defaultHTTPClient()),
 		option.WithEnvironmentProduction(),
 	}
 	if o, ok := os.LookupEnv("ANTHROPIC_BASE_URL"); ok {
 		defaults = append(defaults, option.WithBaseURL(o))
+	}
+	if !loadCredentials {
+		return appendNonCredentialEnvOptions(defaults)
 	}
 
 	statuses := []auth.CredentialSourceStatus{}
@@ -110,6 +118,14 @@ func DefaultClientOptions() []option.RequestOption {
 	if fallbackOpt != nil {
 		return append(defaults, fallbackOpt)
 	}
+	defaults = appendNonCredentialEnvOptions(defaults)
+
+	statuses = append(statuses, envFederationStatus, fallbackStatus)
+	defaults = append(defaults, noCredentialsSentinel(statuses))
+	return defaults
+}
+
+func appendNonCredentialEnvOptions(defaults []option.RequestOption) []option.RequestOption {
 	if o, ok := os.LookupEnv("ANTHROPIC_WEBHOOK_SIGNING_KEY"); ok {
 		defaults = append(defaults, option.WithWebhookKey(o))
 	}
@@ -121,9 +137,6 @@ func DefaultClientOptions() []option.RequestOption {
 			}
 		}
 	}
-
-	statuses = append(statuses, envFederationStatus, fallbackStatus)
-	defaults = append(defaults, noCredentialsSentinel(statuses))
 	return defaults
 }
 
@@ -208,6 +221,8 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	var defaults []option.RequestOption
 	if option.HasWithoutEnvironmentDefaults(opts) {
 		defaults = []option.RequestOption{option.WithEnvironmentProduction()}
+	} else if option.HasExplicitCredential(opts) {
+		defaults = defaultClientOptions(false)
 	} else {
 		defaults = DefaultClientOptions()
 	}

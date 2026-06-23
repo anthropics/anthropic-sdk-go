@@ -116,8 +116,9 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 				Type:   anthropic.ToolTypeCustom,
 			},
 		}},
-		TopK: anthropic.Int(5),
-		TopP: anthropic.Float(0.7),
+		TopK:          anthropic.Int(5),
+		TopP:          anthropic.Float(0.7),
+		UserProfileID: anthropic.String("anthropic-user-profile-id"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

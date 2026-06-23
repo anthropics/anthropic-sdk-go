@@ -194,8 +194,8 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		}},
 		TopK:          anthropic.Int(5),
 		TopP:          anthropic.Float(0.7),
-		UserProfileID: anthropic.String("user_profile_id"),
 		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		UserProfileID: anthropic.String("anthropic-user-profile-id"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

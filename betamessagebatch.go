@@ -54,6 +54,9 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.UserProfileID) {
+		opts = append(opts, option.WithHeader("anthropic-user-profile-id", fmt.Sprintf("%v", params.UserProfileID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	path := "v1/messages/batches?beta=true"
@@ -512,6 +515,11 @@ type BetaMessageBatchNewParams struct {
 	// List of requests for prompt completion. Each is an individual request to create
 	// a Message.
 	Requests []BetaMessageBatchNewParamsRequest `json:"requests,omitzero" api:"required"`
+	// The user profile ID to attribute the requests in this batch to. Use when acting
+	// on behalf of a party other than your organization. Requires the `user-profiles`
+	// beta header. Applies to every request in the batch; an individual request whose
+	// `user_profile_id` body field conflicts with this header is errored.
+	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -665,9 +673,6 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
-	// The user profile ID to attribute this request to. Use when acting on behalf of a
-	// party other than your organization.
-	UserProfileID param.Opt[string] `json:"user_profile_id,omitzero"`
 	// Whether to incrementally stream the response using server-sent events.
 	//
 	// See [streaming](https://docs.claude.com/en/api/messages-streaming) for details.

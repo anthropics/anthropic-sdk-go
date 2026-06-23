@@ -2202,7 +2202,9 @@ type BetaAgentNewParams struct {
 	// System prompt for the agent.
 	System param.Opt[string] `json:"system,omitzero"`
 	// MCP servers this agent connects to. Maximum 20. Names must be unique within the
-	// array.
+	// array. Every server must be referenced by an `mcp_toolset` in `tools`;
+	// unreferenced servers are rejected. See the
+	// [MCP connector guide](https://platform.claude.com/docs/en/managed-agents/mcp-connector).
 	MCPServers []BetaManagedAgentsURLMCPServerParams `json:"mcp_servers,omitzero"`
 	// Arbitrary key-value metadata. Maximum 16 pairs, keys up to 64 chars, values up
 	// to 512 chars.
@@ -2438,8 +2440,11 @@ type BetaAgentUpdateParams struct {
 	System param.Opt[string] `json:"system,omitzero"`
 	// Human-readable name. Must be non-empty. Omit to preserve. Cannot be cleared.
 	Name param.Opt[string] `json:"name,omitzero"`
-	// MCP servers. Full replacement. Omit to preserve; send empty array or null to
-	// clear. Names must be unique. Maximum 20.
+	// MCP servers. Full replacement. Omit to preserve; send empty array or `null` to
+	// clear. Names must be unique. Maximum 20. Every server must be referenced by an
+	// `mcp_toolset` in the agent's resulting `tools`; unreferenced servers are
+	// rejected. See the
+	// [MCP connector guide](https://platform.claude.com/docs/en/managed-agents/mcp-connector).
 	MCPServers []BetaManagedAgentsURLMCPServerParams `json:"mcp_servers,omitzero"`
 	// Metadata patch. Set a key to a string to upsert it, or to null to delete it.
 	// Omit the field to preserve. The stored bag is limited to 16 keys (up to 64 chars

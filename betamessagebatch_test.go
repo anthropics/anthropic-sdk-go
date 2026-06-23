@@ -145,7 +145,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				ServiceTier:   "auto",
 				Speed:         "standard",
 				StopSequences: []string{"string"},
-				Stream:        anthropic.Bool(true),
+				Stream:        anthropic.Bool(false),
 				System: []anthropic.BetaTextBlockParam{{
 					Text: "Today's date is 2024-06-01.",
 					CacheControl: anthropic.BetaCacheControlEphemeralParam{
@@ -196,12 +196,12 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type:   anthropic.BetaToolTypeCustom,
 					},
 				}},
-				TopK:          anthropic.Int(5),
-				TopP:          anthropic.Float(0.7),
-				UserProfileID: anthropic.String("user_profile_id"),
+				TopK: anthropic.Int(5),
+				TopP: anthropic.Float(0.7),
 			},
 		}},
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		UserProfileID: anthropic.String("anthropic-user-profile-id"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

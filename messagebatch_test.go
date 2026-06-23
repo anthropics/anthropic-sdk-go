@@ -13,7 +13,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
-func TestMessageBatchNew(t *testing.T) {
+func TestMessageBatchNewWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -69,7 +69,7 @@ func TestMessageBatchNew(t *testing.T) {
 				},
 				ServiceTier:   "auto",
 				StopSequences: []string{"string"},
-				Stream:        anthropic.Bool(true),
+				Stream:        anthropic.Bool(false),
 				System: []anthropic.TextBlockParam{{
 					Text: "Today's date is 2024-06-01.",
 					CacheControl: anthropic.CacheControlEphemeralParam{
@@ -124,6 +124,7 @@ func TestMessageBatchNew(t *testing.T) {
 				TopP: anthropic.Float(0.7),
 			},
 		}},
+		UserProfileID: anthropic.String("anthropic-user-profile-id"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

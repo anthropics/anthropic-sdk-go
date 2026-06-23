@@ -51,10 +51,13 @@ func NewMessageBatchService(opts ...option.RequestOption) (r MessageBatchService
 //
 // Learn more about the Message Batches API in our
 // [user guide](https://docs.claude.com/en/docs/build-with-claude/batch-processing)
-func (r *MessageBatchService) New(ctx context.Context, body MessageBatchNewParams, opts ...option.RequestOption) (res *MessageBatch, err error) {
+func (r *MessageBatchService) New(ctx context.Context, params MessageBatchNewParams, opts ...option.RequestOption) (res *MessageBatch, err error) {
+	if !param.IsOmitted(params.UserProfileID) {
+		opts = append(opts, option.WithHeader("anthropic-user-profile-id", fmt.Sprintf("%v", params.UserProfileID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/batches"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
@@ -491,6 +494,11 @@ type MessageBatchNewParams struct {
 	// List of requests for prompt completion. Each is an individual request to create
 	// a Message.
 	Requests []MessageBatchNewParamsRequest `json:"requests,omitzero" api:"required"`
+	// The user profile ID to attribute the requests in this batch to. Use when acting
+	// on behalf of a party other than your organization. Requires the `user-profiles`
+	// beta header. Applies to every request in the batch; an individual request whose
+	// `user_profile_id` body field conflicts with this header is errored.
+	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`
 	paramObj
 }
 

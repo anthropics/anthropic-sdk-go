@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.52.0 (2026-06-24)
+
+Full Changelog: [v1.51.1...v1.52.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.51.1...v1.52.0)
+
+### Features
+
+* **client:** add support for system.message streaming events ([7bb296d](https://github.com/anthropics/anthropic-sdk-go/commit/7bb296db56de13140605495642cf72889f829ed8))
+
+
+### Chores
+
+* **api:** add support for new refusal category ([46f8625](https://github.com/anthropics/anthropic-sdk-go/commit/46f86259a94c1d43a21b3d44dd5eb40e9d4b3e13))
+* **api:** add support for sending User Profile ID in request headers ([5cab486](https://github.com/anthropics/anthropic-sdk-go/commit/5cab486af669c06349d03bb66f0214557422561c))
+
 ## 1.51.1 (2026-06-18)
 
 Full Changelog: [v1.51.0...v1.51.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.51.0...v1.51.1)

@@ -36,9 +36,9 @@ func resolveMaxBytes(configured, def int64) (limit int64, capped bool) {
 func BetaReadTool(env *AgentToolContext) anthropic.BetaTool {
 	return &funcTool{
 		name:        "read",
-		description: "Read a UTF-8 text file relative to the workdir.",
+		description: "Read a UTF-8 text file under the workdir.",
 		schema: objectSchema(map[string]any{
-			"file_path": prop("string", "Path of the file to read, relative to the workdir."),
+			"file_path": prop("string", "Path of the file to read, relative to the workdir or absolute under it."),
 			"view_range": map[string]any{
 				"type":        "array",
 				"items":       map[string]any{"type": "integer"},
@@ -55,9 +55,9 @@ func BetaReadTool(env *AgentToolContext) anthropic.BetaTool {
 func BetaWriteTool(env *AgentToolContext) anthropic.BetaTool {
 	return &funcTool{
 		name:        "write",
-		description: "Write a UTF-8 text file relative to the workdir, creating parent directories as needed.",
+		description: "Write a UTF-8 text file under the workdir, creating parent directories as needed.",
 		schema: objectSchema(map[string]any{
-			"file_path": prop("string", "Path of the file to write, relative to the workdir."),
+			"file_path": prop("string", "Path of the file to write, relative to the workdir or absolute under it."),
 			"content":   prop("string", "Full file contents to write."),
 		}, "file_path", "content"),
 		env: env,
@@ -72,7 +72,7 @@ func BetaEditTool(env *AgentToolContext) anthropic.BetaTool {
 		name:        "edit",
 		description: "Replace a unique occurrence of old_string with new_string in a file (set replace_all to replace every occurrence).",
 		schema: objectSchema(map[string]any{
-			"file_path":   prop("string", "Path of the file to edit, relative to the workdir."),
+			"file_path":   prop("string", "Path of the file to edit, relative to the workdir or absolute under it."),
 			"old_string":  prop("string", "Substring to find and replace."),
 			"new_string":  prop("string", "Replacement text."),
 			"replace_all": prop("boolean", "Replace every occurrence instead of requiring a unique match."),

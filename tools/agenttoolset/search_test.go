@@ -26,10 +26,14 @@ func TestExecGlob(t *testing.T) {
 	write("b.go", now)
 	write("sub/c.go", now.Add(-1*time.Hour))
 	write("d.txt", now)
+	sibling := work + "extra"
+	require.NoError(t, os.MkdirAll(sibling, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(sibling, "secret.go"), []byte("x"), 0o644))
 
 	tests := []struct {
 		description string
 		pattern     string
+		path        string
 		assert      func(t *testing.T, lines []string)
 		wantErr     bool
 	}{
@@ -57,8 +61,21 @@ func TestExecGlob(t *testing.T) {
 			wantErr:     true,
 		},
 		{
-			description: "absolute pattern is rejected when UnrestrictedPaths is false",
-			pattern:     "/etc/*",
+			description: "absolute pattern inside the workdir is confined and matched",
+			pattern:     filepath.Join(work, "sub", "*.go"),
+			assert: func(t *testing.T, lines []string) {
+				require.Len(t, lines, 1)
+				require.True(t, strings.HasSuffix(lines[0], filepath.Join("sub", "c.go")), "expected sub/c.go, got %q", lines[0])
+			},
+		},
+		{
+			description: "absolute pattern outside the workdir is rejected when UnrestrictedPaths is false",
+			pattern:     filepath.Join(sibling, "*.go"),
+			wantErr:     true,
+		},
+		{
+			description: "absolute pattern with a .. segment is rejected even when it normalizes inside the workdir",
+			pattern:     work + string(filepath.Separator) + "sub" + string(filepath.Separator) + ".." + string(filepath.Separator) + "*.go",
 			wantErr:     true,
 		},
 		{
@@ -75,7 +92,11 @@ func TestExecGlob(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.description, func(t *testing.T) {
-			out, isErr := execGlob(context.Background(), mustJSON(t, map[string]any{"pattern": tc.pattern}), env)
+			input := map[string]any{"pattern": tc.pattern}
+			if tc.path != "" {
+				input["path"] = tc.path
+			}
+			out, isErr := execGlob(context.Background(), mustJSON(t, input), env)
 			require.Equal(t, tc.wantErr, isErr, "output=%q", out)
 			if tc.wantErr || tc.assert == nil {
 				return
@@ -96,6 +117,13 @@ func TestExecGlob(t *testing.T) {
 		require.Contains(t, out, "c.go")
 		require.NotContains(t, out, "a.go")
 	})
+
+	t.Run("absolute path argument scopes the search to a subdirectory of the workdir", func(t *testing.T) {
+		out, isErr := execGlob(context.Background(), mustJSON(t, map[string]any{"pattern": "*.go", "path": filepath.Join(work, "sub")}), env)
+		require.False(t, isErr)
+		require.Contains(t, out, "c.go")
+		require.NotContains(t, out, "a.go")
+	})
 }
 
 func TestExecGrep(t *testing.T) {
@@ -103,10 +131,13 @@ func TestExecGrep(t *testing.T) {
 	env := &AgentToolContext{Workdir: work}
 	require.NoError(t, os.WriteFile(filepath.Join(work, "a.txt"), []byte("hello world\nfoo bar\nhello again"), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(work, "b.txt"), []byte("nothing here"), 0o644))
+	require.NoError(t, os.Mkdir(filepath.Join(work, "sub"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(work, "sub", "c.txt"), []byte("hello sub"), 0o644))
 
 	tests := []struct {
 		description string
 		pattern     string
+		path        string
 		hidePath    bool
 		assert      func(t *testing.T, out string)
 		wantErr     bool
@@ -118,6 +149,15 @@ func TestExecGrep(t *testing.T) {
 				require.Contains(t, out, "a.txt:1:")
 				require.Contains(t, out, "a.txt:3:")
 				require.NotContains(t, out, "b.txt")
+			},
+		},
+		{
+			description: "absolute path argument scopes the search to a directory inside the workdir",
+			pattern:     "hello",
+			path:        filepath.Join(work, "sub"),
+			assert: func(t *testing.T, out string) {
+				require.Contains(t, out, "c.txt:1:")
+				require.NotContains(t, out, "a.txt")
 			},
 		},
 		{
@@ -140,6 +180,16 @@ func TestExecGrep(t *testing.T) {
 				require.Contains(t, out, "a.txt:1:")
 			},
 		},
+		{
+			description: "fallback walker accepts an absolute path argument inside the workdir",
+			pattern:     "hello",
+			path:        filepath.Join(work, "sub"),
+			hidePath:    true,
+			assert: func(t *testing.T, out string) {
+				require.Contains(t, out, "c.txt:1:")
+				require.NotContains(t, out, "a.txt")
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -147,7 +197,11 @@ func TestExecGrep(t *testing.T) {
 			if tc.hidePath {
 				t.Setenv("PATH", "")
 			}
-			out, isErr := execGrep(context.Background(), mustJSON(t, map[string]any{"pattern": tc.pattern}), env)
+			input := map[string]any{"pattern": tc.pattern}
+			if tc.path != "" {
+				input["path"] = tc.path
+			}
+			out, isErr := execGrep(context.Background(), mustJSON(t, input), env)
 			require.Equal(t, tc.wantErr, isErr, "output=%q", out)
 			if tc.assert != nil {
 				tc.assert(t, out)

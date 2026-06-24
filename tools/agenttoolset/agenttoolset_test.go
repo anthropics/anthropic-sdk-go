@@ -55,9 +55,21 @@ func TestResolvePath(t *testing.T) {
 			want:        filepath.Join(absWork, "c.txt"),
 		},
 		{
-			description: "absolute path is rejected when UnrestrictedPaths is false",
+			description: "absolute path inside the workdir resolves when UnrestrictedPaths is false",
+			env:         &AgentToolContext{Workdir: work},
+			input:       filepath.Join(absWork, "d.txt"),
+			want:        filepath.Join(absWork, "d.txt"),
+		},
+		{
+			description: "absolute path outside the workdir is rejected when UnrestrictedPaths is false",
 			env:         &AgentToolContext{Workdir: work},
 			input:       "/etc/passwd",
+			wantErr:     true,
+		},
+		{
+			description: "absolute sibling path that string-prefixes the workdir is rejected when UnrestrictedPaths is false",
+			env:         &AgentToolContext{Workdir: work},
+			input:       sibling,
 			wantErr:     true,
 		},
 		{
@@ -107,6 +119,8 @@ func TestResolvePathConfinesSymlinks(t *testing.T) {
 	require.NoError(t, os.Symlink(filepath.Join(outside, "secret.txt"), filepath.Join(work, "live")))
 	_, err := resolvePath(env, "live")
 	require.Error(t, err, "a symlink inside the workdir that points outside it must be rejected")
+	_, err = resolvePath(env, filepath.Join(realpathOrSelf(absOrSelf(work)), "live"))
+	require.Error(t, err, "an absolute symlink inside the workdir that points outside it must be rejected")
 
 	// Dangling target outside the workdir.
 	require.NoError(t, os.Symlink(filepath.Join(outside, "nope.txt"), filepath.Join(work, "dangling")))

@@ -32,8 +32,8 @@ func BetaGlobTool(env *AgentToolContext) anthropic.BetaTool {
 		name:        "glob",
 		description: "List paths matching a glob pattern (e.g. **/*.go), newest first.",
 		schema: objectSchema(map[string]any{
-			"pattern": prop("string", "Glob pattern, e.g. **/*.go (** matches any depth)."),
-			"path":    prop("string", "Directory to search in. Defaults to the workdir."),
+			"pattern": prop("string", "Glob pattern, e.g. **/*.go (** matches any depth), or an absolute pattern under the workdir."),
+			"path":    prop("string", "Directory to search in, relative to the workdir or absolute under it. Defaults to the workdir."),
 		}, "pattern"),
 		env: env,
 		run: execGlob,
@@ -48,7 +48,7 @@ func BetaGrepTool(env *AgentToolContext) anthropic.BetaTool {
 		description: "Search file contents for a regex. Uses ripgrep if available, otherwise a built-in walker.",
 		schema: objectSchema(map[string]any{
 			"pattern": prop("string", "Regular expression to search for."),
-			"path":    prop("string", "Directory to search in. Defaults to the workdir."),
+			"path":    prop("string", "Directory to search in, relative to the workdir or absolute under it. Defaults to the workdir."),
 		}, "pattern"),
 		env: env,
 		run: execGrep,
@@ -67,11 +67,11 @@ func execGlob(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 	root := env.Workdir
 	pattern := in.Pattern
 	if filepath.IsAbs(pattern) {
-		if !env.UnrestrictedPaths {
-			return errorf("glob: absolute pattern not permitted")
+		var err error
+		root, pattern, err = resolveAbsoluteGlobPattern(env, pattern)
+		if err != nil {
+			return errorf("glob: %v", err)
 		}
-		root = "/"
-		pattern = strings.TrimPrefix(pattern, "/")
 	} else if in.Path != "" {
 		p, err := resolvePath(env, in.Path)
 		if err != nil {
@@ -155,6 +155,57 @@ func hasParentDirSegment(pattern string) bool {
 		}
 	}
 	return false
+}
+
+func resolveAbsoluteGlobPattern(env *AgentToolContext, pattern string) (string, string, error) {
+	if env.UnrestrictedPaths {
+		return string(filepath.Separator), strings.TrimPrefix(pattern, string(filepath.Separator)), nil
+	}
+	if hasParentDirSegment(pattern) {
+		return "", "", fmt.Errorf("pattern %q must not contain a %q segment", pattern, "..")
+	}
+	root := realpathOrSelf(absOrSelf(env.Workdir))
+	prefix, suffix := splitGlobLiteralPrefix(pattern)
+	realPrefix := canonicalize(prefix)
+	if !isPathWithinRoot(realPrefix, root) {
+		return "", "", fmt.Errorf("pattern %q escapes workdir", pattern)
+	}
+	relPrefix, err := filepath.Rel(root, realPrefix)
+	if err != nil {
+		return "", "", err
+	}
+	return root, joinGlobPattern(relPrefix, suffix), nil
+}
+
+func splitGlobLiteralPrefix(pattern string) (string, string) {
+	meta := strings.IndexAny(pattern, "*?[")
+	if meta < 0 {
+		return filepath.Clean(pattern), ""
+	}
+	prefixEnd := strings.LastIndex(pattern[:meta], string(filepath.Separator))
+	if prefixEnd < 0 {
+		return ".", pattern
+	}
+	if prefixEnd == 0 {
+		return string(filepath.Separator), pattern[1:]
+	}
+	return filepath.Clean(pattern[:prefixEnd]), pattern[prefixEnd+1:]
+}
+
+func joinGlobPattern(prefix, suffix string) string {
+	if prefix == "." {
+		prefix = ""
+	}
+	prefix = filepath.ToSlash(prefix)
+	suffix = filepath.ToSlash(suffix)
+	switch {
+	case prefix == "":
+		return suffix
+	case suffix == "":
+		return prefix
+	default:
+		return prefix + "/" + suffix
+	}
 }
 
 // globMatch reports whether rel — a slash-separated path relative to the search

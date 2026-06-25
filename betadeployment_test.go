@@ -55,8 +55,8 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 			},
 		}},
 		Schedule: anthropic.BetaManagedAgentsScheduleParams{
-			Expression: "x",
-			Timezone:   "x",
+			Expression: "0 9 * * 1-5",
+			Timezone:   "America/Los_Angeles",
 			Type:       anthropic.BetaManagedAgentsScheduleParamsTypeCron,
 		},
 		VaultIDs: []string{"string"},
@@ -86,7 +86,7 @@ func TestBetaDeploymentGetWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Deployments.Get(
 		context.TODO(),
-		"deployment_id",
+		"depl_011CZkZcDH3vPqd7xnEfwTai",
 		anthropic.BetaDeploymentGetParams{
 			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
@@ -114,7 +114,7 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Deployments.Update(
 		context.TODO(),
-		"deployment_id",
+		"depl_011CZkZcDH3vPqd7xnEfwTai",
 		anthropic.BetaDeploymentUpdateParams{
 			Agent: anthropic.BetaDeploymentUpdateParamsAgentUnion{
 				OfString: anthropic.String("string"),
@@ -144,8 +144,8 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 				},
 			}},
 			Schedule: anthropic.BetaManagedAgentsScheduleParams{
-				Expression: "x",
-				Timezone:   "x",
+				Expression: "0 9 * * 1-5",
+				Timezone:   "America/Los_Angeles",
 				Type:       anthropic.BetaManagedAgentsScheduleParamsTypeCron,
 			},
 			VaultIDs: []string{"string"},
@@ -207,7 +207,7 @@ func TestBetaDeploymentArchiveWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Deployments.Archive(
 		context.TODO(),
-		"deployment_id",
+		"depl_011CZkZcDH3vPqd7xnEfwTai",
 		anthropic.BetaDeploymentArchiveParams{
 			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
@@ -235,7 +235,7 @@ func TestBetaDeploymentPauseWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Deployments.Pause(
 		context.TODO(),
-		"deployment_id",
+		"depl_011CZkZcDH3vPqd7xnEfwTai",
 		anthropic.BetaDeploymentPauseParams{
 			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
@@ -263,7 +263,7 @@ func TestBetaDeploymentRunWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Deployments.Run(
 		context.TODO(),
-		"deployment_id",
+		"depl_011CZkZcDH3vPqd7xnEfwTai",
 		anthropic.BetaDeploymentRunParams{
 			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
@@ -291,7 +291,7 @@ func TestBetaDeploymentUnpauseWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Deployments.Unpause(
 		context.TODO(),
-		"deployment_id",
+		"depl_011CZkZcDH3vPqd7xnEfwTai",
 		anthropic.BetaDeploymentUnpauseParams{
 			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},

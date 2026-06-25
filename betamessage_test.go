@@ -344,7 +344,8 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 				Type:   anthropic.BetaToolTypeCustom,
 			},
 		}},
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		UserProfileID: anthropic.String("anthropic-user-profile-id"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

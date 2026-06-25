@@ -225,6 +225,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 				Type:   anthropic.ToolTypeCustom,
 			},
 		}},
+		UserProfileID: anthropic.String("anthropic-user-profile-id"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

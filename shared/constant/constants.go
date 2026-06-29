@@ -192,12 +192,14 @@ type WebFetch string                                // Always "web_fetch"
 type WebFetch20250910 string                        // Always "web_fetch_20250910"
 type WebFetch20260209 string                        // Always "web_fetch_20260209"
 type WebFetch20260309 string                        // Always "web_fetch_20260309"
+type WebFetch20260318 string                        // Always "web_fetch_20260318"
 type WebFetchResult string                          // Always "web_fetch_result"
 type WebFetchToolResult string                      // Always "web_fetch_tool_result"
 type WebFetchToolResultError string                 // Always "web_fetch_tool_result_error"
 type WebSearch string                               // Always "web_search"
 type WebSearch20250305 string                       // Always "web_search_20250305"
 type WebSearch20260209 string                       // Always "web_search_20260209"
+type WebSearch20260318 string                       // Always "web_search_20260318"
 type WebSearchResult string                         // Always "web_search_result"
 type WebSearchResultLocation string                 // Always "web_search_result_location"
 type WebSearchToolResult string                     // Always "web_search_tool_result"
@@ -426,6 +428,7 @@ func (c WebFetch) Default() WebFetch                     { return "web_fetch" }
 func (c WebFetch20250910) Default() WebFetch20250910     { return "web_fetch_20250910" }
 func (c WebFetch20260209) Default() WebFetch20260209     { return "web_fetch_20260209" }
 func (c WebFetch20260309) Default() WebFetch20260309     { return "web_fetch_20260309" }
+func (c WebFetch20260318) Default() WebFetch20260318     { return "web_fetch_20260318" }
 func (c WebFetchResult) Default() WebFetchResult         { return "web_fetch_result" }
 func (c WebFetchToolResult) Default() WebFetchToolResult { return "web_fetch_tool_result" }
 func (c WebFetchToolResultError) Default() WebFetchToolResultError {
@@ -434,6 +437,7 @@ func (c WebFetchToolResultError) Default() WebFetchToolResultError {
 func (c WebSearch) Default() WebSearch                 { return "web_search" }
 func (c WebSearch20250305) Default() WebSearch20250305 { return "web_search_20250305" }
 func (c WebSearch20260209) Default() WebSearch20260209 { return "web_search_20260209" }
+func (c WebSearch20260318) Default() WebSearch20260318 { return "web_search_20260318" }
 func (c WebSearchResult) Default() WebSearchResult     { return "web_search_result" }
 func (c WebSearchResultLocation) Default() WebSearchResultLocation {
 	return "web_search_result_location"
@@ -624,12 +628,14 @@ func (c WebFetch) MarshalJSON() ([]byte, error)                          { retur
 func (c WebFetch20250910) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c WebFetch20260209) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c WebFetch20260309) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c WebFetch20260318) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c WebFetchResult) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c WebFetchToolResult) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c WebFetchToolResultError) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c WebSearch) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c WebSearch20250305) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c WebSearch20260209) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c WebSearch20260318) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c WebSearchResult) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c WebSearchResultLocation) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c WebSearchToolResult) MarshalJSON() ([]byte, error)               { return marshalString(c) }

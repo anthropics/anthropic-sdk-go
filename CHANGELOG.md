@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.53.0 (2026-06-29)
+
+Full Changelog: [v1.52.0...v1.53.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.52.0...v1.53.0)
+
+### Features
+
+* **api:** add support for 20260318 web fetch and support tools ([6396455](https://github.com/anthropics/anthropic-sdk-go/commit/6396455a220b3e37cc87ce44b6d1e615d6386c74))
+
+
+### Chores
+
+* **api:** accept user profile ID's when counting tokens ([d31ba27](https://github.com/anthropics/anthropic-sdk-go/commit/d31ba27f74d9a39dcaaabe8dc0d37b5b811c150c))
+* **docs:** updates to descriptions and example values ([cb00f34](https://github.com/anthropics/anthropic-sdk-go/commit/cb00f34a3c75e9f183d569321ff2de6da8efc29c))
+
 ## 1.52.0 (2026-06-24)
 
 Full Changelog: [v1.51.1...v1.52.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.51.1...v1.52.0)

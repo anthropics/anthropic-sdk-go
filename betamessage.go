@@ -48,7 +48,7 @@ func NewBetaMessageService(opts ...option.RequestOption) (r BetaMessageService) 
 // conversations.
 //
 // Learn more about the Messages API in our
-// [user guide](https://docs.claude.com/en/docs/initial-setup)
+// [user guide](https://platform.claude.com/docs/en/get-started)
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParams, opts ...option.RequestOption) (res *BetaMessage, err error) {
@@ -89,7 +89,7 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 // conversations.
 //
 // Learn more about the Messages API in our
-// [user guide](https://docs.claude.com/en/docs/initial-setup)
+// [user guide](https://platform.claude.com/docs/en/get-started)
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[BetaRawMessageStreamEventUnion]) {
@@ -117,7 +117,7 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 // including tools, images, and documents, without creating it.
 //
 // Learn more about token counting in our
-// [user guide](https://docs.claude.com/en/docs/build-with-claude/token-counting)
+// [user guide](https://platform.claude.com/docs/en/build-with-claude/token-counting)
 func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessageCountTokensParams, opts ...option.RequestOption) (res *BetaMessageTokensCount, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
@@ -936,7 +936,7 @@ type BetaCacheControlEphemeralParam struct {
 	// - `1h`: 1 hour
 	//
 	// Defaults to `5m`. See
-	// [prompt caching pricing](https://docs.claude.com/en/docs/build-with-claude/prompt-caching)
+	// [prompt caching pricing](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
 	// for details.
 	//
 	// Any of "5m", "1h".
@@ -961,7 +961,7 @@ func (r *BetaCacheControlEphemeralParam) UnmarshalJSON(data []byte) error {
 // - `1h`: 1 hour
 //
 // Defaults to `5m`. See
-// [prompt caching pricing](https://docs.claude.com/en/docs/build-with-claude/prompt-caching)
+// [prompt caching pricing](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
 // for details.
 type BetaCacheControlEphemeralTTL string
 
@@ -8816,7 +8816,7 @@ type BetaThinkingConfigEnabledParam struct {
 	// Must be ≥1024 and less than `max_tokens`.
 	//
 	// See
-	// [extended thinking](https://docs.claude.com/en/docs/build-with-claude/extended-thinking)
+	// [extended thinking](https://platform.claude.com/docs/en/build-with-claude/extended-thinking)
 	// for details.
 	BudgetTokens int64 `json:"budget_tokens" api:"required"`
 	// Controls how thinking content appears in the response. When set to `summarized`,
@@ -10280,6 +10280,8 @@ type BetaToolUnionParam struct {
 	OfWebSearchTool20260209       *BetaWebSearchTool20260209Param       `json:",omitzero,inline"`
 	OfWebFetchTool20260209        *BetaWebFetchTool20260209Param        `json:",omitzero,inline"`
 	OfWebFetchTool20260309        *BetaWebFetchTool20260309Param        `json:",omitzero,inline"`
+	OfWebSearchTool20260318       *BetaWebSearchTool20260318Param       `json:",omitzero,inline"`
+	OfWebFetchTool20260318        *BetaWebFetchTool20260318Param        `json:",omitzero,inline"`
 	OfAdvisorTool20260301         *BetaAdvisorTool20260301Param         `json:",omitzero,inline"`
 	OfToolSearchToolBm25_20251119 *BetaToolSearchToolBm25_20251119Param `json:",omitzero,inline"`
 	OfToolSearchToolRegex20251119 *BetaToolSearchToolRegex20251119Param `json:",omitzero,inline"`
@@ -10308,6 +10310,8 @@ func (u BetaToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfWebSearchTool20260209,
 		u.OfWebFetchTool20260209,
 		u.OfWebFetchTool20260309,
+		u.OfWebSearchTool20260318,
+		u.OfWebFetchTool20260318,
 		u.OfAdvisorTool20260301,
 		u.OfToolSearchToolBm25_20251119,
 		u.OfToolSearchToolRegex20251119,
@@ -10358,6 +10362,10 @@ func (u *BetaToolUnionParam) asAny() any {
 		return u.OfWebFetchTool20260209
 	} else if !param.IsOmitted(u.OfWebFetchTool20260309) {
 		return u.OfWebFetchTool20260309
+	} else if !param.IsOmitted(u.OfWebSearchTool20260318) {
+		return u.OfWebSearchTool20260318
+	} else if !param.IsOmitted(u.OfWebFetchTool20260318) {
+		return u.OfWebFetchTool20260318
 	} else if !param.IsOmitted(u.OfAdvisorTool20260301) {
 		return u.OfAdvisorTool20260301
 	} else if !param.IsOmitted(u.OfToolSearchToolBm25_20251119) {
@@ -10406,14 +10414,6 @@ func (u BetaToolUnionParam) GetEnableZoom() *bool {
 func (u BetaToolUnionParam) GetMaxCharacters() *int64 {
 	if vt := u.OfTextEditor20250728; vt != nil && vt.MaxCharacters.Valid() {
 		return &vt.MaxCharacters.Value
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaToolUnionParam) GetUseCache() *bool {
-	if vt := u.OfWebFetchTool20260309; vt != nil && vt.UseCache.Valid() {
-		return &vt.UseCache.Value
 	}
 	return nil
 }
@@ -10508,6 +10508,10 @@ func (u BetaToolUnionParam) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfAdvisorTool20260301; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
@@ -10559,6 +10563,10 @@ func (u BetaToolUnionParam) GetDeferLoading() *bool {
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.DeferLoading.Valid() {
+		return &vt.DeferLoading.Value
+	} else if vt := u.OfWebSearchTool20260318; vt != nil && vt.DeferLoading.Valid() {
+		return &vt.DeferLoading.Value
+	} else if vt := u.OfWebFetchTool20260318; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfAdvisorTool20260301; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
@@ -10612,6 +10620,10 @@ func (u BetaToolUnionParam) GetStrict() *bool {
 		return &vt.Strict.Value
 	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
+	} else if vt := u.OfWebSearchTool20260318; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfWebFetchTool20260318; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
 	} else if vt := u.OfAdvisorTool20260301; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil && vt.Strict.Valid() {
@@ -10663,6 +10675,10 @@ func (u BetaToolUnionParam) GetType() *string {
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAdvisorTool20260301; vt != nil {
 		return (*string)(&vt.Type)
@@ -10724,6 +10740,10 @@ func (u BetaToolUnionParam) GetMaxUses() *int64 {
 		return &vt.MaxUses.Value
 	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxUses.Valid() {
 		return &vt.MaxUses.Value
+	} else if vt := u.OfWebSearchTool20260318; vt != nil && vt.MaxUses.Valid() {
+		return &vt.MaxUses.Value
+	} else if vt := u.OfWebFetchTool20260318; vt != nil && vt.MaxUses.Valid() {
+		return &vt.MaxUses.Value
 	} else if vt := u.OfAdvisorTool20260301; vt != nil && vt.MaxUses.Valid() {
 		return &vt.MaxUses.Value
 	}
@@ -10738,6 +10758,28 @@ func (u BetaToolUnionParam) GetMaxContentTokens() *int64 {
 		return &vt.MaxContentTokens.Value
 	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxContentTokens.Valid() {
 		return &vt.MaxContentTokens.Value
+	} else if vt := u.OfWebFetchTool20260318; vt != nil && vt.MaxContentTokens.Valid() {
+		return &vt.MaxContentTokens.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaToolUnionParam) GetUseCache() *bool {
+	if vt := u.OfWebFetchTool20260309; vt != nil && vt.UseCache.Valid() {
+		return &vt.UseCache.Value
+	} else if vt := u.OfWebFetchTool20260318; vt != nil && vt.UseCache.Valid() {
+		return &vt.UseCache.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaToolUnionParam) GetResponseInclusion() *string {
+	if vt := u.OfWebSearchTool20260318; vt != nil {
+		return (*string)(&vt.ResponseInclusion)
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return (*string)(&vt.ResponseInclusion)
 	}
 	return nil
 }
@@ -10784,6 +10826,10 @@ func (u BetaToolUnionParam) GetAllowedCallers() []string {
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return vt.AllowedCallers
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return vt.AllowedCallers
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfAdvisorTool20260301; vt != nil {
 		return vt.AllowedCallers
@@ -10836,6 +10882,10 @@ func (u BetaToolUnionParam) GetCacheControl() *BetaCacheControlEphemeralParam {
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfAdvisorTool20260301; vt != nil {
 		return &vt.CacheControl
@@ -10891,6 +10941,10 @@ func (u BetaToolUnionParam) GetAllowedDomains() []string {
 		return vt.AllowedDomains
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.AllowedDomains
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return vt.AllowedDomains
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return vt.AllowedDomains
 	}
 	return nil
 }
@@ -10908,6 +10962,10 @@ func (u BetaToolUnionParam) GetBlockedDomains() []string {
 		return vt.BlockedDomains
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.BlockedDomains
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return vt.BlockedDomains
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return vt.BlockedDomains
 	}
 	return nil
 }
@@ -10917,6 +10975,8 @@ func (u BetaToolUnionParam) GetUserLocation() *BetaUserLocationParam {
 	if vt := u.OfWebSearchTool20250305; vt != nil {
 		return &vt.UserLocation
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
+		return &vt.UserLocation
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
 		return &vt.UserLocation
 	}
 	return nil
@@ -10929,6 +10989,8 @@ func (u BetaToolUnionParam) GetCitations() *BetaCitationsConfigParam {
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return &vt.Citations
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return &vt.Citations
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
 		return &vt.Citations
 	}
 	return nil
@@ -11462,6 +11524,76 @@ func (r *BetaWebFetchTool20260309Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Name, Type are required.
+type BetaWebFetchTool20260318Param struct {
+	// Maximum number of tokens used by including web page text content in the context.
+	// The limit is approximate and does not apply to binary content such as PDFs.
+	MaxContentTokens param.Opt[int64] `json:"max_content_tokens,omitzero"`
+	// Maximum number of times the tool can be used in the API request.
+	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
+	// If true, tool will not be included in initial system prompt. Only loaded when
+	// returned via tool_reference from tool search.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
+	// Whether to use cached content. Set to false to bypass the cache and fetch fresh
+	// content. Only set to false when the user explicitly requests fresh content or
+	// when fetching rapidly-changing sources.
+	UseCache param.Opt[bool] `json:"use_cache,omitzero"`
+	// List of domains to allow fetching from
+	AllowedDomains []string `json:"allowed_domains,omitzero"`
+	// List of domains to block fetching from
+	BlockedDomains []string `json:"blocked_domains,omitzero"`
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120",
+	// "code_execution_20260521".
+	AllowedCallers []string `json:"allowed_callers,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Citations configuration for fetched documents. Citations are disabled by
+	// default.
+	Citations BetaCitationsConfigParam `json:"citations,omitzero"`
+	// How this tool's result blocks appear in the API response when the result was
+	// consumed by a completed code_execution call in the same turn. 'full' returns the
+	// complete content (default). 'excluded' drops the nested server_tool_use and
+	// result block pair entirely. Results from direct calls, or from code_execution
+	// calls that paused before completing, are always returned in full so they can be
+	// sent back on the next turn.
+	//
+	// Any of "full", "excluded".
+	ResponseInclusion BetaWebFetchTool20260318ResponseInclusion `json:"response_inclusion,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as "web_fetch".
+	Name constant.WebFetch `json:"name" default:"web_fetch"`
+	// This field can be elided, and will marshal its zero value as
+	// "web_fetch_20260318".
+	Type constant.WebFetch20260318 `json:"type" default:"web_fetch_20260318"`
+	paramObj
+}
+
+func (r BetaWebFetchTool20260318Param) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchTool20260318Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchTool20260318Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// How this tool's result blocks appear in the API response when the result was
+// consumed by a completed code_execution call in the same turn. 'full' returns the
+// complete content (default). 'excluded' drops the nested server_tool_use and
+// result block pair entirely. Results from direct calls, or from code_execution
+// calls that paused before completing, are always returned in full so they can be
+// sent back on the next turn.
+type BetaWebFetchTool20260318ResponseInclusion string
+
+const (
+	BetaWebFetchTool20260318ResponseInclusionFull     BetaWebFetchTool20260318ResponseInclusion = "full"
+	BetaWebFetchTool20260318ResponseInclusionExcluded BetaWebFetchTool20260318ResponseInclusion = "excluded"
+)
+
 type BetaWebFetchToolResultBlock struct {
 	Content   BetaWebFetchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                  `json:"tool_use_id" api:"required"`
@@ -11932,6 +12064,71 @@ func (r *BetaWebSearchTool20260209Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Name, Type are required.
+type BetaWebSearchTool20260318Param struct {
+	// Maximum number of times the tool can be used in the API request.
+	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
+	// If true, tool will not be included in initial system prompt. Only loaded when
+	// returned via tool_reference from tool search.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// When true, guarantees schema validation on tool names and inputs
+	Strict param.Opt[bool] `json:"strict,omitzero"`
+	// If provided, only these domains will be included in results. Cannot be used
+	// alongside `blocked_domains`.
+	AllowedDomains []string `json:"allowed_domains,omitzero"`
+	// If provided, these domains will never appear in results. Cannot be used
+	// alongside `allowed_domains`.
+	BlockedDomains []string `json:"blocked_domains,omitzero"`
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120",
+	// "code_execution_20260521".
+	AllowedCallers []string `json:"allowed_callers,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// How this tool's result blocks appear in the API response when the result was
+	// consumed by a completed code_execution call in the same turn. 'full' returns the
+	// complete content (default). 'excluded' drops the nested server_tool_use and
+	// result block pair entirely. Results from direct calls, or from code_execution
+	// calls that paused before completing, are always returned in full so they can be
+	// sent back on the next turn.
+	//
+	// Any of "full", "excluded".
+	ResponseInclusion BetaWebSearchTool20260318ResponseInclusion `json:"response_inclusion,omitzero"`
+	// Parameters for the user's location. Used to provide more relevant search
+	// results.
+	UserLocation BetaUserLocationParam `json:"user_location,omitzero"`
+	// Name of the tool.
+	//
+	// This is how the tool will be called by the model and in `tool_use` blocks.
+	//
+	// This field can be elided, and will marshal its zero value as "web_search".
+	Name constant.WebSearch `json:"name" default:"web_search"`
+	// This field can be elided, and will marshal its zero value as
+	// "web_search_20260318".
+	Type constant.WebSearch20260318 `json:"type" default:"web_search_20260318"`
+	paramObj
+}
+
+func (r BetaWebSearchTool20260318Param) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebSearchTool20260318Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebSearchTool20260318Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// How this tool's result blocks appear in the API response when the result was
+// consumed by a completed code_execution call in the same turn. 'full' returns the
+// complete content (default). 'excluded' drops the nested server_tool_use and
+// result block pair entirely. Results from direct calls, or from code_execution
+// calls that paused before completing, are always returned in full so they can be
+// sent back on the next turn.
+type BetaWebSearchTool20260318ResponseInclusion string
+
+const (
+	BetaWebSearchTool20260318ResponseInclusionFull     BetaWebSearchTool20260318ResponseInclusion = "full"
+	BetaWebSearchTool20260318ResponseInclusionExcluded BetaWebSearchTool20260318ResponseInclusion = "excluded"
+)
+
 // The properties ErrorCode, Type are required.
 type BetaWebSearchToolRequestErrorParam struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
@@ -12237,11 +12434,12 @@ type BetaMessageNewParams struct {
 	// only specifies the absolute maximum number of tokens to generate.
 	//
 	// Set to `0` to populate the
-	// [prompt cache](https://docs.claude.com/en/docs/build-with-claude/prompt-caching#pre-warming-the-cache)
+	// [prompt cache](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#pre-warming-the-cache)
 	// without generating a response.
 	//
 	// Different models have different maximum values for this parameter. See
-	// [models](https://docs.claude.com/en/docs/models-overview) for details.
+	// [models](https://platform.claude.com/docs/en/about-claude/models/overview) for
+	// details.
 	MaxTokens int64 `json:"max_tokens" api:"required"`
 	// Input messages.
 	//
@@ -12304,12 +12502,13 @@ type BetaMessageNewParams struct {
 	// { "role": "user", "content": [{ "type": "text", "text": "Hello, Claude" }] }
 	// ```
 	//
-	// See [input examples](https://docs.claude.com/en/api/messages-examples).
+	// See
+	// [input examples](https://platform.claude.com/docs/en/build-with-claude/working-with-messages).
 	//
 	// Note that if you want to include a
-	// [system prompt](https://docs.claude.com/en/docs/system-prompts), you can use the
-	// top-level `system` parameter — there is no `"system"` role for input messages in
-	// the Messages API.
+	// [system prompt](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices#give-claude-a-role),
+	// you can use the top-level `system` parameter — there is no `"system"` role for
+	// input messages in the Messages API.
 	//
 	// There is a limit of 100,000 messages in a single request.
 	Messages []BetaMessageParam `json:"messages,omitzero" api:"required"`
@@ -12406,7 +12605,8 @@ type BetaMessageNewParams struct {
 	// for this request.
 	//
 	// Anthropic offers different levels of service for your API requests. See
-	// [service-tiers](https://docs.claude.com/en/api/service-tiers) for details.
+	// [service-tiers](https://platform.claude.com/docs/en/api/service-tiers) for
+	// details.
 	//
 	// Any of "auto", "standard_only".
 	ServiceTier BetaMessageNewParamsServiceTier `json:"service_tier,omitzero"`
@@ -12424,7 +12624,7 @@ type BetaMessageNewParams struct {
 	//
 	// A system prompt is a way of providing context and instructions to Claude, such
 	// as specifying a particular goal or role. See our
-	// [guide to system prompts](https://docs.claude.com/en/docs/system-prompts).
+	// [guide to system prompts](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices#give-claude-a-role).
 	System []BetaTextBlockParam `json:"system,omitzero"`
 	// Configuration for enabling Claude's extended thinking.
 	//
@@ -12433,7 +12633,7 @@ type BetaMessageNewParams struct {
 	// tokens and counts towards your `max_tokens` limit.
 	//
 	// See
-	// [extended thinking](https://docs.claude.com/en/docs/build-with-claude/extended-thinking)
+	// [extended thinking](https://platform.claude.com/docs/en/build-with-claude/extended-thinking)
 	// for details.
 	Thinking BetaThinkingConfigParamUnion `json:"thinking,omitzero"`
 	// How the model should use the provided tools. The model can use a specific tool,
@@ -12448,9 +12648,9 @@ type BetaMessageNewParams struct {
 	//
 	// There are two types of tools: **client tools** and **server tools**. The
 	// behavior described below applies to client tools. For
-	// [server tools](https://docs.claude.com/en/docs/agents-and-tools/tool-use/overview#server-tools),
+	// [server tools](https://platform.claude.com/docs/en/agents-and-tools/tool-use/server-tools),
 	// see their individual documentation as each has its own behavior (e.g., the
-	// [web search tool](https://docs.claude.com/en/docs/agents-and-tools/tool-use/web-search-tool)).
+	// [web search tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool)).
 	//
 	// Each tool definition includes:
 	//
@@ -12519,7 +12719,9 @@ type BetaMessageNewParams struct {
 	// functions, or more generally whenever you want the model to produce a particular
 	// JSON structure of output.
 	//
-	// See our [guide](https://docs.claude.com/en/docs/tool-use) for more details.
+	// See our
+	// [guide](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
+	// for more details.
 	Tools []BetaToolUnionParam `json:"tools,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -12563,7 +12765,8 @@ func (u *BetaMessageNewParamsContainerUnion) asAny() any {
 // for this request.
 //
 // Anthropic offers different levels of service for your API requests. See
-// [service-tiers](https://docs.claude.com/en/api/service-tiers) for details.
+// [service-tiers](https://platform.claude.com/docs/en/api/service-tiers) for
+// details.
 type BetaMessageNewParamsServiceTier string
 
 const (
@@ -12642,12 +12845,13 @@ type BetaMessageCountTokensParams struct {
 	// { "role": "user", "content": [{ "type": "text", "text": "Hello, Claude" }] }
 	// ```
 	//
-	// See [input examples](https://docs.claude.com/en/api/messages-examples).
+	// See
+	// [input examples](https://platform.claude.com/docs/en/build-with-claude/working-with-messages).
 	//
 	// Note that if you want to include a
-	// [system prompt](https://docs.claude.com/en/docs/system-prompts), you can use the
-	// top-level `system` parameter — there is no `"system"` role for input messages in
-	// the Messages API.
+	// [system prompt](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices#give-claude-a-role),
+	// you can use the top-level `system` parameter — there is no `"system"` role for
+	// input messages in the Messages API.
 	//
 	// There is a limit of 100,000 messages in a single request.
 	Messages []BetaMessageParam `json:"messages,omitzero" api:"required"`
@@ -12686,7 +12890,7 @@ type BetaMessageCountTokensParams struct {
 	//
 	// A system prompt is a way of providing context and instructions to Claude, such
 	// as specifying a particular goal or role. See our
-	// [guide to system prompts](https://docs.claude.com/en/docs/system-prompts).
+	// [guide to system prompts](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices#give-claude-a-role).
 	System BetaMessageCountTokensParamsSystemUnion `json:"system,omitzero"`
 	// Configuration for enabling Claude's extended thinking.
 	//
@@ -12695,7 +12899,7 @@ type BetaMessageCountTokensParams struct {
 	// tokens and counts towards your `max_tokens` limit.
 	//
 	// See
-	// [extended thinking](https://docs.claude.com/en/docs/build-with-claude/extended-thinking)
+	// [extended thinking](https://platform.claude.com/docs/en/build-with-claude/extended-thinking)
 	// for details.
 	Thinking BetaThinkingConfigParamUnion `json:"thinking,omitzero"`
 	// How the model should use the provided tools. The model can use a specific tool,
@@ -12710,9 +12914,9 @@ type BetaMessageCountTokensParams struct {
 	//
 	// There are two types of tools: **client tools** and **server tools**. The
 	// behavior described below applies to client tools. For
-	// [server tools](https://docs.claude.com/en/docs/agents-and-tools/tool-use/overview#server-tools),
+	// [server tools](https://platform.claude.com/docs/en/agents-and-tools/tool-use/server-tools),
 	// see their individual documentation as each has its own behavior (e.g., the
-	// [web search tool](https://docs.claude.com/en/docs/agents-and-tools/tool-use/web-search-tool)).
+	// [web search tool](https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool)).
 	//
 	// Each tool definition includes:
 	//
@@ -12781,7 +12985,9 @@ type BetaMessageCountTokensParams struct {
 	// functions, or more generally whenever you want the model to produce a particular
 	// JSON structure of output.
 	//
-	// See our [guide](https://docs.claude.com/en/docs/tool-use) for more details.
+	// See our
+	// [guide](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
+	// for more details.
 	Tools []BetaMessageCountTokensParamsToolUnion `json:"tools,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -12854,6 +13060,8 @@ type BetaMessageCountTokensParamsToolUnion struct {
 	OfWebSearchTool20260209       *BetaWebSearchTool20260209Param       `json:",omitzero,inline"`
 	OfWebFetchTool20260209        *BetaWebFetchTool20260209Param        `json:",omitzero,inline"`
 	OfWebFetchTool20260309        *BetaWebFetchTool20260309Param        `json:",omitzero,inline"`
+	OfWebSearchTool20260318       *BetaWebSearchTool20260318Param       `json:",omitzero,inline"`
+	OfWebFetchTool20260318        *BetaWebFetchTool20260318Param        `json:",omitzero,inline"`
 	OfAdvisorTool20260301         *BetaAdvisorTool20260301Param         `json:",omitzero,inline"`
 	OfToolSearchToolBm25_20251119 *BetaToolSearchToolBm25_20251119Param `json:",omitzero,inline"`
 	OfToolSearchToolRegex20251119 *BetaToolSearchToolRegex20251119Param `json:",omitzero,inline"`
@@ -12882,6 +13090,8 @@ func (u BetaMessageCountTokensParamsToolUnion) MarshalJSON() ([]byte, error) {
 		u.OfWebSearchTool20260209,
 		u.OfWebFetchTool20260209,
 		u.OfWebFetchTool20260309,
+		u.OfWebSearchTool20260318,
+		u.OfWebFetchTool20260318,
 		u.OfAdvisorTool20260301,
 		u.OfToolSearchToolBm25_20251119,
 		u.OfToolSearchToolRegex20251119,
@@ -12932,6 +13142,10 @@ func (u *BetaMessageCountTokensParamsToolUnion) asAny() any {
 		return u.OfWebFetchTool20260209
 	} else if !param.IsOmitted(u.OfWebFetchTool20260309) {
 		return u.OfWebFetchTool20260309
+	} else if !param.IsOmitted(u.OfWebSearchTool20260318) {
+		return u.OfWebSearchTool20260318
+	} else if !param.IsOmitted(u.OfWebFetchTool20260318) {
+		return u.OfWebFetchTool20260318
 	} else if !param.IsOmitted(u.OfAdvisorTool20260301) {
 		return u.OfAdvisorTool20260301
 	} else if !param.IsOmitted(u.OfToolSearchToolBm25_20251119) {
@@ -12980,14 +13194,6 @@ func (u BetaMessageCountTokensParamsToolUnion) GetEnableZoom() *bool {
 func (u BetaMessageCountTokensParamsToolUnion) GetMaxCharacters() *int64 {
 	if vt := u.OfTextEditor20250728; vt != nil && vt.MaxCharacters.Valid() {
 		return &vt.MaxCharacters.Value
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaMessageCountTokensParamsToolUnion) GetUseCache() *bool {
-	if vt := u.OfWebFetchTool20260309; vt != nil && vt.UseCache.Valid() {
-		return &vt.UseCache.Value
 	}
 	return nil
 }
@@ -13082,6 +13288,10 @@ func (u BetaMessageCountTokensParamsToolUnion) GetName() *string {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return (*string)(&vt.Name)
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return (*string)(&vt.Name)
 	} else if vt := u.OfAdvisorTool20260301; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
@@ -13133,6 +13343,10 @@ func (u BetaMessageCountTokensParamsToolUnion) GetDeferLoading() *bool {
 	} else if vt := u.OfWebFetchTool20260209; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.DeferLoading.Valid() {
+		return &vt.DeferLoading.Value
+	} else if vt := u.OfWebSearchTool20260318; vt != nil && vt.DeferLoading.Valid() {
+		return &vt.DeferLoading.Value
+	} else if vt := u.OfWebFetchTool20260318; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
 	} else if vt := u.OfAdvisorTool20260301; vt != nil && vt.DeferLoading.Valid() {
 		return &vt.DeferLoading.Value
@@ -13186,6 +13400,10 @@ func (u BetaMessageCountTokensParamsToolUnion) GetStrict() *bool {
 		return &vt.Strict.Value
 	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
+	} else if vt := u.OfWebSearchTool20260318; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
+	} else if vt := u.OfWebFetchTool20260318; vt != nil && vt.Strict.Valid() {
+		return &vt.Strict.Value
 	} else if vt := u.OfAdvisorTool20260301; vt != nil && vt.Strict.Valid() {
 		return &vt.Strict.Value
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil && vt.Strict.Valid() {
@@ -13237,6 +13455,10 @@ func (u BetaMessageCountTokensParamsToolUnion) GetType() *string {
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAdvisorTool20260301; vt != nil {
 		return (*string)(&vt.Type)
@@ -13298,6 +13520,10 @@ func (u BetaMessageCountTokensParamsToolUnion) GetMaxUses() *int64 {
 		return &vt.MaxUses.Value
 	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxUses.Valid() {
 		return &vt.MaxUses.Value
+	} else if vt := u.OfWebSearchTool20260318; vt != nil && vt.MaxUses.Valid() {
+		return &vt.MaxUses.Value
+	} else if vt := u.OfWebFetchTool20260318; vt != nil && vt.MaxUses.Valid() {
+		return &vt.MaxUses.Value
 	} else if vt := u.OfAdvisorTool20260301; vt != nil && vt.MaxUses.Valid() {
 		return &vt.MaxUses.Value
 	}
@@ -13312,6 +13538,28 @@ func (u BetaMessageCountTokensParamsToolUnion) GetMaxContentTokens() *int64 {
 		return &vt.MaxContentTokens.Value
 	} else if vt := u.OfWebFetchTool20260309; vt != nil && vt.MaxContentTokens.Valid() {
 		return &vt.MaxContentTokens.Value
+	} else if vt := u.OfWebFetchTool20260318; vt != nil && vt.MaxContentTokens.Valid() {
+		return &vt.MaxContentTokens.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageCountTokensParamsToolUnion) GetUseCache() *bool {
+	if vt := u.OfWebFetchTool20260309; vt != nil && vt.UseCache.Valid() {
+		return &vt.UseCache.Value
+	} else if vt := u.OfWebFetchTool20260318; vt != nil && vt.UseCache.Valid() {
+		return &vt.UseCache.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageCountTokensParamsToolUnion) GetResponseInclusion() *string {
+	if vt := u.OfWebSearchTool20260318; vt != nil {
+		return (*string)(&vt.ResponseInclusion)
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return (*string)(&vt.ResponseInclusion)
 	}
 	return nil
 }
@@ -13358,6 +13606,10 @@ func (u BetaMessageCountTokensParamsToolUnion) GetAllowedCallers() []string {
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return vt.AllowedCallers
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return vt.AllowedCallers
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfAdvisorTool20260301; vt != nil {
 		return vt.AllowedCallers
@@ -13410,6 +13662,10 @@ func (u BetaMessageCountTokensParamsToolUnion) GetCacheControl() *BetaCacheContr
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfAdvisorTool20260301; vt != nil {
 		return &vt.CacheControl
@@ -13465,6 +13721,10 @@ func (u BetaMessageCountTokensParamsToolUnion) GetAllowedDomains() []string {
 		return vt.AllowedDomains
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.AllowedDomains
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return vt.AllowedDomains
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return vt.AllowedDomains
 	}
 	return nil
 }
@@ -13482,6 +13742,10 @@ func (u BetaMessageCountTokensParamsToolUnion) GetBlockedDomains() []string {
 		return vt.BlockedDomains
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
 		return vt.BlockedDomains
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
+		return vt.BlockedDomains
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return vt.BlockedDomains
 	}
 	return nil
 }
@@ -13491,6 +13755,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetUserLocation() *BetaUserLocati
 	if vt := u.OfWebSearchTool20250305; vt != nil {
 		return &vt.UserLocation
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
+		return &vt.UserLocation
+	} else if vt := u.OfWebSearchTool20260318; vt != nil {
 		return &vt.UserLocation
 	}
 	return nil
@@ -13503,6 +13769,8 @@ func (u BetaMessageCountTokensParamsToolUnion) GetCitations() *BetaCitationsConf
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
 		return &vt.Citations
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return &vt.Citations
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
 		return &vt.Citations
 	}
 	return nil

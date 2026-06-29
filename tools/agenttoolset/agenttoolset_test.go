@@ -55,9 +55,27 @@ func TestResolvePath(t *testing.T) {
 			want:        filepath.Join(absWork, "c.txt"),
 		},
 		{
-			description: "absolute path is rejected when UnrestrictedPaths is false",
+			description: "absolute path outside workdir is rejected when UnrestrictedPaths is false",
 			env:         &AgentToolContext{Workdir: work},
 			input:       "/etc/passwd",
+			wantErr:     true,
+		},
+		{
+			description: "absolute path inside workdir is permitted when UnrestrictedPaths is false",
+			env:         &AgentToolContext{Workdir: work},
+			input:       filepath.Join(absWork, "a.txt"),
+			want:        filepath.Join(absWork, "a.txt"),
+		},
+		{
+			description: "absolute path naming the workdir itself is permitted",
+			env:         &AgentToolContext{Workdir: work},
+			input:       absWork,
+			want:        absWork,
+		},
+		{
+			description: "absolute sibling that string-prefixes the workdir is rejected (segment-aware contain)",
+			env:         &AgentToolContext{Workdir: work},
+			input:       filepath.Join(absWork+"extra", "secret.txt"),
 			wantErr:     true,
 		},
 		{

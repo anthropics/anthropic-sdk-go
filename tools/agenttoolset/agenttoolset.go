@@ -57,8 +57,8 @@ import (
 type AgentToolContext struct {
 	// Workdir is the base directory for resolving relative tool paths.
 	Workdir string
-	// UnrestrictedPaths controls whether the file tools accept absolute paths
-	// and paths that escape Workdir. When false (default) they are rejected.
+	// UnrestrictedPaths controls whether the file tools accept paths that
+	// resolve outside Workdir. When false (default) they are rejected.
 	// Does not constrain [BetaBashTool].
 	UnrestrictedPaths bool
 
@@ -177,12 +177,14 @@ func fsErrorMessage(err error) string {
 	}
 }
 
-// resolvePath resolves p relative to env.Workdir. Unless UnrestrictedPaths is
-// set, absolute inputs are rejected and the canonical path is returned — every
-// symlink in p (including the leaf, even a dangling one) is resolved before the
-// workdir check, and the resolved path is what the tool then operates on, so a
-// symlink inside the workdir that points outside it can neither pass the check
-// nor be followed afterwards. See the package-level trust model.
+// resolvePath resolves p against env.Workdir. Absolute and relative inputs go
+// through the same canonicalise-then-contain check — an absolute path that
+// lands inside the workdir is permitted, only paths that resolve outside are
+// rejected. Every symlink in p (including the leaf, even a dangling one) is
+// resolved before the workdir check, and the resolved path is what the tool
+// then operates on, so a symlink inside the workdir that points outside it can
+// neither pass the check nor be followed afterwards. See the package-level
+// trust model.
 //
 // Residual TOCTOU: a component could still be swapped for a symlink between this
 // call and the eventual filesystem operation. Closing that fully needs
@@ -190,14 +192,14 @@ func fsErrorMessage(err error) string {
 // same residual exposure exists in the SDK's other file-tool helpers and is why
 // a sandbox is still recommended for the toolset as a whole.
 func resolvePath(env *AgentToolContext, p string) (string, error) {
-	if filepath.IsAbs(p) {
-		if !env.UnrestrictedPaths {
-			return "", fmt.Errorf("absolute path %q not permitted", p)
-		}
+	if env.UnrestrictedPaths && filepath.IsAbs(p) {
 		return filepath.Clean(p), nil
 	}
 	root := realpathOrSelf(absOrSelf(env.Workdir))
-	abs := filepath.Join(root, p)
+	abs := filepath.Clean(p)
+	if !filepath.IsAbs(p) {
+		abs = filepath.Join(root, p)
+	}
 	if env.UnrestrictedPaths {
 		return abs, nil
 	}

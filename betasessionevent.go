@@ -88,12 +88,12 @@ func (r *BetaSessionEventService) Send(ctx context.Context, sessionID string, pa
 }
 
 // Stream Events
-func (r *BetaSessionEventService) StreamEvents(ctx context.Context, sessionID string, query BetaSessionEventStreamParams, opts ...option.RequestOption) (stream *ssestream.Stream[BetaManagedAgentsStreamSessionEventsUnion]) {
+func (r *BetaSessionEventService) StreamEvents(ctx context.Context, sessionID string, params BetaSessionEventStreamParams, opts ...option.RequestOption) (stream *ssestream.Stream[BetaManagedAgentsStreamSessionEventsUnion]) {
 	var (
 		raw *http.Response
 		err error
 	)
-	for _, v := range query.Betas {
+	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
@@ -103,7 +103,7 @@ func (r *BetaSessionEventService) StreamEvents(ctx context.Context, sessionID st
 		return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](nil, err)
 	}
 	path := fmt.Sprintf("v1/sessions/%s/events/stream?beta=true", sessionID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &raw, opts...)
 	return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](ssestream.NewDecoder(raw), err)
 }
 
@@ -4940,7 +4940,8 @@ const (
 // [BetaManagedAgentsSessionThreadStatusTerminatedEvent],
 // [BetaManagedAgentsUserToolResultEvent],
 // [BetaManagedAgentsSessionThreadStatusRescheduledEvent],
-// [BetaManagedAgentsSessionUpdatedEvent], [BetaManagedAgentsSystemMessageEvent].
+// [BetaManagedAgentsSessionUpdatedEvent], [BetaManagedAgentsStartEvent],
+// [BetaManagedAgentsDeltaEvent], [BetaManagedAgentsSystemMessageEvent].
 //
 // Use the [BetaManagedAgentsStreamSessionEventsUnion.AsAny] method to switch on
 // the variant.
@@ -4970,7 +4971,8 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 	// "span.outcome_evaluation_ongoing", "user.define_outcome", "session.deleted",
 	// "session.thread_status_running", "session.thread_status_idle",
 	// "session.thread_status_terminated", "user.tool_result",
-	// "session.thread_status_rescheduled", "session.updated", "system.message".
+	// "session.thread_status_rescheduled", "session.updated", "event_start",
+	// "event_delta", "system.message".
 	Type            string    `json:"type"`
 	ProcessedAt     time.Time `json:"processed_at"`
 	SessionThreadID string    `json:"session_thread_id"`
@@ -5027,7 +5029,13 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 	Metadata map[string]string `json:"metadata"`
 	// This field is from variant [BetaManagedAgentsSessionUpdatedEvent].
 	Title string `json:"title"`
-	JSON  struct {
+	// This field is from variant [BetaManagedAgentsStartEvent].
+	Event BetaManagedAgentsStartEventPreviewUnion `json:"event"`
+	// This field is from variant [BetaManagedAgentsDeltaEvent].
+	Delta BetaManagedAgentsDeltaContent `json:"delta"`
+	// This field is from variant [BetaManagedAgentsDeltaEvent].
+	EventID string `json:"event_id"`
+	JSON    struct {
 		ID                       respjson.Field
 		Content                  respjson.Field
 		Type                     respjson.Field
@@ -5063,6 +5071,9 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 		Agent                    respjson.Field
 		Metadata                 respjson.Field
 		Title                    respjson.Field
+		Event                    respjson.Field
+		Delta                    respjson.Field
+		EventID                  respjson.Field
 		raw                      string
 	} `json:"-"`
 }
@@ -5118,6 +5129,8 @@ func (BetaManagedAgentsUserToolResultEvent) implBetaManagedAgentsStreamSessionEv
 func (BetaManagedAgentsSessionThreadStatusRescheduledEvent) implBetaManagedAgentsStreamSessionEventsUnion() {
 }
 func (BetaManagedAgentsSessionUpdatedEvent) implBetaManagedAgentsStreamSessionEventsUnion() {}
+func (BetaManagedAgentsStartEvent) implBetaManagedAgentsStreamSessionEventsUnion()          {}
+func (BetaManagedAgentsDeltaEvent) implBetaManagedAgentsStreamSessionEventsUnion()          {}
 func (BetaManagedAgentsSystemMessageEvent) implBetaManagedAgentsStreamSessionEventsUnion()  {}
 
 // Use the following switch statement to find the correct variant
@@ -5156,6 +5169,8 @@ func (BetaManagedAgentsSystemMessageEvent) implBetaManagedAgentsStreamSessionEve
 //	case anthropic.BetaManagedAgentsUserToolResultEvent:
 //	case anthropic.BetaManagedAgentsSessionThreadStatusRescheduledEvent:
 //	case anthropic.BetaManagedAgentsSessionUpdatedEvent:
+//	case anthropic.BetaManagedAgentsStartEvent:
+//	case anthropic.BetaManagedAgentsDeltaEvent:
 //	case anthropic.BetaManagedAgentsSystemMessageEvent:
 //	default:
 //	  fmt.Errorf("no variant present")
@@ -5228,6 +5243,10 @@ func (u BetaManagedAgentsStreamSessionEventsUnion) AsAny() anyBetaManagedAgentsS
 		return u.AsSessionThreadStatusRescheduled()
 	case "session.updated":
 		return u.AsSessionUpdated()
+	case "event_start":
+		return u.AsEventStart()
+	case "event_delta":
+		return u.AsEventDelta()
 	case "system.message":
 		return u.AsSystemMessage()
 	}
@@ -5395,6 +5414,16 @@ func (u BetaManagedAgentsStreamSessionEventsUnion) AsSessionThreadStatusReschedu
 }
 
 func (u BetaManagedAgentsStreamSessionEventsUnion) AsSessionUpdated() (v BetaManagedAgentsSessionUpdatedEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsStreamSessionEventsUnion) AsEventStart() (v BetaManagedAgentsStartEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsStreamSessionEventsUnion) AsEventDelta() (v BetaManagedAgentsDeltaEvent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -7241,7 +7270,27 @@ func (r *BetaSessionEventSendParams) UnmarshalJSON(data []byte) error {
 }
 
 type BetaSessionEventStreamParams struct {
+	// When set, this connection also receives streaming deltas (`event_start`,
+	// `event_delta`) while an event is being produced, before the event itself
+	// arrives. Deltas are best-effort; when the final event is produced it carries the
+	// complete content. A model request that ends early (an error or interrupt)
+	// produces no final event — its terminal `span.model_request_end` closes the
+	// preview. Accepts one or more event types to preview and may be repeated:
+	// `agent.message` streams `content_delta` fragments; `agent.thinking` is
+	// start-only — a signal that the agent has begun extended thinking, concluded by
+	// the `agent.thinking` event itself. Only previews of the requested event types
+	// are sent.
+	EventDeltas []BetaManagedAgentsDeltaType `query:"event_deltas,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
+}
+
+// URLQuery serializes [BetaSessionEventStreamParams]'s query parameters as
+// `url.Values`.
+func (r BetaSessionEventStreamParams) URLQuery() (v url.Values, err error) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
+		NestedFormat: apiquery.NestedQueryFormatBrackets,
+	})
 }

@@ -34,7 +34,7 @@ func TestUsage(t *testing.T) {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeSonnet4_5_20250929,
+		Model: anthropic.ModelClaudeSonnet5,
 	})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())

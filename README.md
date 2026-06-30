@@ -64,7 +64,7 @@ func main() {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeSonnet4_5_20250929,
+		Model: anthropic.ModelClaudeSonnet5,
 	})
 	if err != nil {
 		panic(err.Error())
@@ -345,7 +345,7 @@ _, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		}},
 		Role: anthropic.MessageParamRoleUser,
 	}},
-	Model: anthropic.ModelClaudeSonnet4_5_20250929,
+	Model: anthropic.ModelClaudeSonnet5,
 })
 if err != nil {
 	var apierr *anthropic.Error
@@ -383,7 +383,7 @@ client.Messages.New(
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeSonnet4_5_20250929,
+		Model: anthropic.ModelClaudeSonnet5,
 	},
 	// This sets the per-retry timeout
 	option.WithRequestTimeout(20*time.Second),
@@ -448,7 +448,7 @@ client.Messages.New(
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeSonnet4_5_20250929,
+		Model: anthropic.ModelClaudeSonnet5,
 	},
 	option.WithMaxRetries(5),
 )
@@ -474,7 +474,7 @@ message, err := client.Messages.New(
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeSonnet4_5_20250929,
+		Model: anthropic.ModelClaudeSonnet5,
 	},
 	option.WithResponseInto(&response),
 )

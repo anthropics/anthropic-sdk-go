@@ -4217,6 +4217,7 @@ func (r *MidConversationSystemBlockParam) UnmarshalJSON(data []byte) error {
 type Model = string
 
 const (
+	ModelClaudeSonnet5 Model = "claude-sonnet-5"
 	ModelClaudeFable5  Model = "claude-fable-5"
 	ModelClaudeMythos5 Model = "claude-mythos-5"
 	ModelClaudeOpus4_8 Model = "claude-opus-4-8"

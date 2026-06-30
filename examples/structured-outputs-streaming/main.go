@@ -24,7 +24,7 @@ func main() {
 	// on the wire. After accumulating the stream, use ParseOutput to parse.
 	var weather WeatherQuery
 	stream := client.Beta.Messages.NewStreaming(context.TODO(), anthropic.BetaMessageNewParams{
-		Model:     anthropic.ModelClaudeSonnet4_5,
+		Model:     anthropic.ModelClaudeSonnet5,
 		MaxTokens: 1024,
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather like in San Francisco for the next 3 days? Include wind information.")),

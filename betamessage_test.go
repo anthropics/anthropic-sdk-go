@@ -89,7 +89,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		},
 		FallbackCreditToken: anthropic.String("x"),
 		Fallbacks: []anthropic.BetaFallbackParam{{
-			Model:     anthropic.ModelClaudeFable5,
+			Model:     anthropic.ModelClaudeSonnet5,
 			MaxTokens: anthropic.Int(0),
 			OutputConfig: anthropic.BetaOutputConfigParam{
 				Effort: anthropic.BetaOutputConfigEffortLow,

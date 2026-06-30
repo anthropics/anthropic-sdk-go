@@ -72,7 +72,7 @@ func main() {
 
 	for {
 		stream := client.Messages.NewStreaming(context.TODO(), anthropic.MessageNewParams{
-			Model:     anthropic.ModelClaudeSonnet4_5_20250929,
+			Model:     anthropic.ModelClaudeSonnet5,
 			MaxTokens: 1024,
 			Messages:  messages,
 			Tools:     tools,

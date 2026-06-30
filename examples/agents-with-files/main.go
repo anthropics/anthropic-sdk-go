@@ -27,7 +27,7 @@ func main() {
 	agent, err := client.Beta.Agents.New(ctx, anthropic.BetaAgentNewParams{
 		Name: "files-example-agent",
 		Model: anthropic.BetaManagedAgentsModelConfigParams{
-			ID: anthropic.BetaManagedAgentsModelClaudeSonnet4_6,
+			ID: anthropic.BetaManagedAgentsModelClaudeSonnet5,
 		},
 		Tools: []anthropic.BetaAgentNewParamsToolUnion{
 			{

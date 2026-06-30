@@ -24,7 +24,7 @@ func main() {
 	// the wire and auto-parse the response into the struct.
 	var weather WeatherQuery
 	msg, err := client.Beta.Messages.New(context.TODO(), anthropic.BetaMessageNewParams{
-		Model:     anthropic.ModelClaudeSonnet4_5,
+		Model:     anthropic.ModelClaudeSonnet5,
 		MaxTokens: 1024,
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather like in San Francisco for the next 3 days? Include wind information.")),

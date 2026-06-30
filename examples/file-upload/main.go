@@ -39,7 +39,7 @@ func main() {
 				}),
 			),
 		},
-		Model: anthropic.ModelClaudeSonnet4_5_20250929,
+		Model: anthropic.ModelClaudeSonnet5,
 		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaFilesAPI2025_04_14},
 	})
 	if err != nil {

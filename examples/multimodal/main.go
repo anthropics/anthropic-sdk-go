@@ -35,7 +35,7 @@ func main() {
 				anthropic.NewImageBlockBase64("image/png", fileEncoded),
 			),
 		},
-		Model:         anthropic.ModelClaudeSonnet4_5_20250929,
+		Model:         anthropic.ModelClaudeSonnet5,
 		StopSequences: []string{"```\n"},
 	})
 	if err != nil {

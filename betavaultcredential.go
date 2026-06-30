@@ -247,17 +247,20 @@ type BetaManagedAgentsCredentialAuthUnion struct {
 	// This field is from variant [BetaManagedAgentsMCPOAuthAuthResponse].
 	Refresh BetaManagedAgentsMCPOAuthRefreshResponse `json:"refresh"`
 	// This field is from variant [BetaManagedAgentsEnvironmentVariableAuthResponse].
+	InjectionLocation BetaManagedAgentsInjectionLocationResponse `json:"injection_location"`
+	// This field is from variant [BetaManagedAgentsEnvironmentVariableAuthResponse].
 	Networking BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion `json:"networking"`
 	// This field is from variant [BetaManagedAgentsEnvironmentVariableAuthResponse].
 	SecretName string `json:"secret_name"`
 	JSON       struct {
-		MCPServerURL respjson.Field
-		Type         respjson.Field
-		ExpiresAt    respjson.Field
-		Refresh      respjson.Field
-		Networking   respjson.Field
-		SecretName   respjson.Field
-		raw          string
+		MCPServerURL      respjson.Field
+		Type              respjson.Field
+		ExpiresAt         respjson.Field
+		Refresh           respjson.Field
+		InjectionLocation respjson.Field
+		Networking        respjson.Field
+		SecretName        respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -469,6 +472,8 @@ const (
 
 // Environment variable credential details. The secret value is never returned.
 type BetaManagedAgentsEnvironmentVariableAuthResponse struct {
+	// Where in the outbound request the secret value is substituted.
+	InjectionLocation BetaManagedAgentsInjectionLocationResponse `json:"injection_location" api:"required"`
 	// Outbound hosts the secret value is substituted on.
 	Networking BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion `json:"networking" api:"required"`
 	// Name of the environment variable.
@@ -477,11 +482,12 @@ type BetaManagedAgentsEnvironmentVariableAuthResponse struct {
 	Type BetaManagedAgentsEnvironmentVariableAuthResponseType `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Networking  respjson.Field
-		SecretName  respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		InjectionLocation respjson.Field
+		Networking        respjson.Field
+		SecretName        respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -582,6 +588,8 @@ type BetaManagedAgentsEnvironmentVariableCreateParams struct {
 	SecretValue string `json:"secret_value" api:"required"`
 	// Any of "environment_variable".
 	Type BetaManagedAgentsEnvironmentVariableCreateParamsType `json:"type,omitzero" api:"required"`
+	// Where in the outbound request the secret value may be substituted.
+	InjectionLocation BetaManagedAgentsInjectionLocationParams `json:"injection_location,omitzero"`
 	paramObj
 }
 
@@ -608,6 +616,8 @@ type BetaManagedAgentsEnvironmentVariableUpdateParams struct {
 	Type BetaManagedAgentsEnvironmentVariableUpdateParamsType `json:"type,omitzero" api:"required"`
 	// Updated secret value.
 	SecretValue param.Opt[string] `json:"secret_value,omitzero"`
+	// Updated injection location.
+	InjectionLocation BetaManagedAgentsInjectionLocationUpdateParams `json:"injection_location,omitzero"`
 	// Updated networking scope. Full replacement.
 	Networking BetaManagedAgentsCredentialNetworkingParamsUnion `json:"networking,omitzero"`
 	paramObj
@@ -626,6 +636,61 @@ type BetaManagedAgentsEnvironmentVariableUpdateParamsType string
 const (
 	BetaManagedAgentsEnvironmentVariableUpdateParamsTypeEnvironmentVariable BetaManagedAgentsEnvironmentVariableUpdateParamsType = "environment_variable"
 )
+
+// Where in the outbound request the secret value may be substituted.
+type BetaManagedAgentsInjectionLocationParams struct {
+	// Substitute when the placeholder appears in the request body.
+	Body param.Opt[bool] `json:"body,omitzero"`
+	// Substitute when the placeholder appears in a request header value.
+	Header param.Opt[bool] `json:"header,omitzero"`
+	paramObj
+}
+
+func (r BetaManagedAgentsInjectionLocationParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsInjectionLocationParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsInjectionLocationParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Where in the outbound request the secret value is substituted.
+type BetaManagedAgentsInjectionLocationResponse struct {
+	// Whether the placeholder is substituted in the request body.
+	Body bool `json:"body" api:"required"`
+	// Whether the placeholder is substituted in request header values.
+	Header bool `json:"header" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Body        respjson.Field
+		Header      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsInjectionLocationResponse) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsInjectionLocationResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Updated injection location.
+type BetaManagedAgentsInjectionLocationUpdateParams struct {
+	// Substitute when the placeholder appears in the request body.
+	Body param.Opt[bool] `json:"body,omitzero"`
+	// Substitute when the placeholder appears in a request header value.
+	Header param.Opt[bool] `json:"header,omitzero"`
+	paramObj
+}
+
+func (r BetaManagedAgentsInjectionLocationUpdateParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsInjectionLocationUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsInjectionLocationUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Substitute the secret only on requests to the listed hosts.
 //
@@ -1560,6 +1625,14 @@ func (u BetaVaultCredentialNewParamsAuthUnion) GetSecretValue() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u BetaVaultCredentialNewParamsAuthUnion) GetInjectionLocation() *BetaManagedAgentsInjectionLocationParams {
+	if vt := u.OfEnvironmentVariable; vt != nil {
+		return &vt.InjectionLocation
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u BetaVaultCredentialNewParamsAuthUnion) GetMCPServerURL() *string {
 	if vt := u.OfMCPOAuth; vt != nil {
 		return (*string)(&vt.MCPServerURL)
@@ -1675,6 +1748,14 @@ func (u BetaVaultCredentialUpdateParamsAuthUnion) GetRefresh() *BetaManagedAgent
 func (u BetaVaultCredentialUpdateParamsAuthUnion) GetToken() *string {
 	if vt := u.OfStaticBearer; vt != nil && vt.Token.Valid() {
 		return &vt.Token.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaVaultCredentialUpdateParamsAuthUnion) GetInjectionLocation() *BetaManagedAgentsInjectionLocationUpdateParams {
+	if vt := u.OfEnvironmentVariable; vt != nil {
+		return &vt.InjectionLocation
 	}
 	return nil
 }

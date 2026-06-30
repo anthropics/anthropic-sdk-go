@@ -39,6 +39,10 @@ type AdvisorRedactedResult string                   // Always "advisor_redacted_
 type AdvisorResult string                           // Always "advisor_result"
 type AdvisorToolResult string                       // Always "advisor_tool_result"
 type AdvisorToolResultError string                  // Always "advisor_tool_result_error"
+type AgentArchived string                           // Always "agent.archived"
+type AgentCreated string                            // Always "agent.created"
+type AgentDeleted string                            // Always "agent.deleted"
+type AgentUpdated string                            // Always "agent.updated"
 type All string                                     // Always "all"
 type Any string                                     // Always "any"
 type APIError string                                // Always "api_error"
@@ -87,6 +91,15 @@ type ContentBlockStart string                       // Always "content_block_sta
 type ContentBlockStop string                        // Always "content_block_stop"
 type Create string                                  // Always "create"
 type Delete string                                  // Always "delete"
+type DeploymentRunFailed string                     // Always "deployment_run.failed"
+type DeploymentRunStarted string                    // Always "deployment_run.started"
+type DeploymentRunSucceeded string                  // Always "deployment_run.succeeded"
+type DeploymentArchived string                      // Always "deployment.archived"
+type DeploymentCreated string                       // Always "deployment.created"
+type DeploymentDeleted string                       // Always "deployment.deleted"
+type DeploymentPaused string                        // Always "deployment.paused"
+type DeploymentUnpaused string                      // Always "deployment.unpaused"
+type DeploymentUpdated string                       // Always "deployment.updated"
 type Direct string                                  // Always "direct"
 type Disabled string                                // Always "disabled"
 type Document string                                // Always "document"
@@ -94,6 +107,9 @@ type Enabled string                                 // Always "enabled"
 type EncryptedCodeExecutionResult string            // Always "encrypted_code_execution_result"
 type Environment string                             // Always "environment"
 type EnvironmentDeleted string                      // Always "environment_deleted"
+type EnvironmentArchived string                     // Always "environment.archived"
+type EnvironmentCreated string                      // Always "environment.created"
+type EnvironmentUpdated string                      // Always "environment.updated"
 type Ephemeral string                               // Always "ephemeral"
 type Error string                                   // Always "error"
 type Errored string                                 // Always "errored"
@@ -114,6 +130,9 @@ type MCPToolUse string                              // Always "mcp_tool_use"
 type MCPToolset string                              // Always "mcp_toolset"
 type Memory string                                  // Always "memory"
 type Memory20250818 string                          // Always "memory_20250818"
+type MemoryStoreArchived string                     // Always "memory_store.archived"
+type MemoryStoreCreated string                      // Always "memory_store.created"
+type MemoryStoreDeleted string                      // Always "memory_store.deleted"
 type Message string                                 // Always "message"
 type MessageBatch string                            // Always "message_batch"
 type MessageBatchDeleted string                     // Always "message_batch_deleted"
@@ -229,6 +248,10 @@ func (c AdvisorRedactedResult) Default() AdvisorRedactedResult   { return "advis
 func (c AdvisorResult) Default() AdvisorResult                   { return "advisor_result" }
 func (c AdvisorToolResult) Default() AdvisorToolResult           { return "advisor_tool_result" }
 func (c AdvisorToolResultError) Default() AdvisorToolResultError { return "advisor_tool_result_error" }
+func (c AgentArchived) Default() AgentArchived                   { return "agent.archived" }
+func (c AgentCreated) Default() AgentCreated                     { return "agent.created" }
+func (c AgentDeleted) Default() AgentDeleted                     { return "agent.deleted" }
+func (c AgentUpdated) Default() AgentUpdated                     { return "agent.updated" }
 func (c All) Default() All                                       { return "all" }
 func (c Any) Default() Any                                       { return "any" }
 func (c APIError) Default() APIError                             { return "api_error" }
@@ -273,31 +296,43 @@ func (c CodeExecutionToolResult) Default() CodeExecutionToolResult {
 func (c CodeExecutionToolResultError) Default() CodeExecutionToolResultError {
 	return "code_execution_tool_result_error"
 }
-func (c Compact20260112) Default() Compact20260112           { return "compact_20260112" }
-func (c Compaction) Default() Compaction                     { return "compaction" }
-func (c CompactionDelta) Default() CompactionDelta           { return "compaction_delta" }
-func (c Completion) Default() Completion                     { return "completion" }
-func (c Computer) Default() Computer                         { return "computer" }
-func (c Computer20241022) Default() Computer20241022         { return "computer_20241022" }
-func (c Computer20250124) Default() Computer20250124         { return "computer_20250124" }
-func (c Computer20251124) Default() Computer20251124         { return "computer_20251124" }
-func (c ContainerUpload) Default() ContainerUpload           { return "container_upload" }
-func (c Content) Default() Content                           { return "content" }
-func (c ContentBlockDelta) Default() ContentBlockDelta       { return "content_block_delta" }
-func (c ContentBlockLocation) Default() ContentBlockLocation { return "content_block_location" }
-func (c ContentBlockStart) Default() ContentBlockStart       { return "content_block_start" }
-func (c ContentBlockStop) Default() ContentBlockStop         { return "content_block_stop" }
-func (c Create) Default() Create                             { return "create" }
-func (c Delete) Default() Delete                             { return "delete" }
-func (c Direct) Default() Direct                             { return "direct" }
-func (c Disabled) Default() Disabled                         { return "disabled" }
-func (c Document) Default() Document                         { return "document" }
-func (c Enabled) Default() Enabled                           { return "enabled" }
+func (c Compact20260112) Default() Compact20260112               { return "compact_20260112" }
+func (c Compaction) Default() Compaction                         { return "compaction" }
+func (c CompactionDelta) Default() CompactionDelta               { return "compaction_delta" }
+func (c Completion) Default() Completion                         { return "completion" }
+func (c Computer) Default() Computer                             { return "computer" }
+func (c Computer20241022) Default() Computer20241022             { return "computer_20241022" }
+func (c Computer20250124) Default() Computer20250124             { return "computer_20250124" }
+func (c Computer20251124) Default() Computer20251124             { return "computer_20251124" }
+func (c ContainerUpload) Default() ContainerUpload               { return "container_upload" }
+func (c Content) Default() Content                               { return "content" }
+func (c ContentBlockDelta) Default() ContentBlockDelta           { return "content_block_delta" }
+func (c ContentBlockLocation) Default() ContentBlockLocation     { return "content_block_location" }
+func (c ContentBlockStart) Default() ContentBlockStart           { return "content_block_start" }
+func (c ContentBlockStop) Default() ContentBlockStop             { return "content_block_stop" }
+func (c Create) Default() Create                                 { return "create" }
+func (c Delete) Default() Delete                                 { return "delete" }
+func (c DeploymentRunFailed) Default() DeploymentRunFailed       { return "deployment_run.failed" }
+func (c DeploymentRunStarted) Default() DeploymentRunStarted     { return "deployment_run.started" }
+func (c DeploymentRunSucceeded) Default() DeploymentRunSucceeded { return "deployment_run.succeeded" }
+func (c DeploymentArchived) Default() DeploymentArchived         { return "deployment.archived" }
+func (c DeploymentCreated) Default() DeploymentCreated           { return "deployment.created" }
+func (c DeploymentDeleted) Default() DeploymentDeleted           { return "deployment.deleted" }
+func (c DeploymentPaused) Default() DeploymentPaused             { return "deployment.paused" }
+func (c DeploymentUnpaused) Default() DeploymentUnpaused         { return "deployment.unpaused" }
+func (c DeploymentUpdated) Default() DeploymentUpdated           { return "deployment.updated" }
+func (c Direct) Default() Direct                                 { return "direct" }
+func (c Disabled) Default() Disabled                             { return "disabled" }
+func (c Document) Default() Document                             { return "document" }
+func (c Enabled) Default() Enabled                               { return "enabled" }
 func (c EncryptedCodeExecutionResult) Default() EncryptedCodeExecutionResult {
 	return "encrypted_code_execution_result"
 }
 func (c Environment) Default() Environment                 { return "environment" }
 func (c EnvironmentDeleted) Default() EnvironmentDeleted   { return "environment_deleted" }
+func (c EnvironmentArchived) Default() EnvironmentArchived { return "environment.archived" }
+func (c EnvironmentCreated) Default() EnvironmentCreated   { return "environment.created" }
+func (c EnvironmentUpdated) Default() EnvironmentUpdated   { return "environment.updated" }
 func (c Ephemeral) Default() Ephemeral                     { return "ephemeral" }
 func (c Error) Default() Error                             { return "error" }
 func (c Errored) Default() Errored                         { return "errored" }
@@ -318,6 +353,9 @@ func (c MCPToolUse) Default() MCPToolUse                   { return "mcp_tool_us
 func (c MCPToolset) Default() MCPToolset                   { return "mcp_toolset" }
 func (c Memory) Default() Memory                           { return "memory" }
 func (c Memory20250818) Default() Memory20250818           { return "memory_20250818" }
+func (c MemoryStoreArchived) Default() MemoryStoreArchived { return "memory_store.archived" }
+func (c MemoryStoreCreated) Default() MemoryStoreCreated   { return "memory_store.created" }
+func (c MemoryStoreDeleted) Default() MemoryStoreDeleted   { return "memory_store.deleted" }
 func (c Message) Default() Message                         { return "message" }
 func (c MessageBatch) Default() MessageBatch               { return "message_batch" }
 func (c MessageBatchDeleted) Default() MessageBatchDeleted { return "message_batch_deleted" }
@@ -471,6 +509,10 @@ func (c AdvisorRedactedResult) MarshalJSON() ([]byte, error)               { ret
 func (c AdvisorResult) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c AdvisorToolResult) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c AdvisorToolResultError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c AgentArchived) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c AgentCreated) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c AgentDeleted) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c AgentUpdated) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c All) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Any) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c APIError) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
@@ -519,6 +561,15 @@ func (c ContentBlockStart) MarshalJSON() ([]byte, error)                   { ret
 func (c ContentBlockStop) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Create) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Delete) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c DeploymentRunFailed) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c DeploymentRunStarted) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c DeploymentRunSucceeded) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c DeploymentArchived) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c DeploymentCreated) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c DeploymentDeleted) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c DeploymentPaused) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c DeploymentUnpaused) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c DeploymentUpdated) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c Direct) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Disabled) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Document) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
@@ -526,6 +577,9 @@ func (c Enabled) MarshalJSON() ([]byte, error)                             { ret
 func (c EncryptedCodeExecutionResult) MarshalJSON() ([]byte, error)        { return marshalString(c) }
 func (c Environment) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c EnvironmentDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c EnvironmentArchived) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c EnvironmentCreated) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c EnvironmentUpdated) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Ephemeral) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c Error) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Errored) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -546,6 +600,9 @@ func (c MCPToolUse) MarshalJSON() ([]byte, error)                          { ret
 func (c MCPToolset) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Memory) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Memory20250818) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c MemoryStoreArchived) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c MemoryStoreCreated) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c MemoryStoreDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Message) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c MessageBatch) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c MessageBatchDeleted) MarshalJSON() ([]byte, error)                 { return marshalString(c) }

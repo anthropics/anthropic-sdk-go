@@ -28,8 +28,8 @@ func TestBetaSkillNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.Skills.New(context.TODO(), anthropic.BetaSkillNewParams{
-		DisplayTitle: anthropic.String("display_title"),
 		Files:        []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
+		DisplayTitle: anthropic.String("display_title"),
 		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {

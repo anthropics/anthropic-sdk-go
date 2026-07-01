@@ -327,7 +327,7 @@ type BetaSkillVersionNewParams struct {
 	//
 	// All files must be in the same top-level directory and must include a SKILL.md
 	// file at the root of that directory.
-	Files []io.Reader `json:"files,omitzero" format:"binary"`
+	Files []io.Reader `json:"files,omitzero" api:"required" format:"binary"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

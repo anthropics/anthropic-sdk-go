@@ -361,105 +361,6 @@ func (r *BetaWebhookDeploymentUpdatedEventData) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaWebhookEnvironmentArchivedEventData struct {
-	// ID of the environment that triggered the event.
-	ID             string                       `json:"id" api:"required"`
-	OrganizationID string                       `json:"organization_id" api:"required"`
-	Type           constant.EnvironmentArchived `json:"type" default:"environment.archived"`
-	WorkspaceID    string                       `json:"workspace_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaWebhookEnvironmentArchivedEventData) RawJSON() string { return r.JSON.raw }
-func (r *BetaWebhookEnvironmentArchivedEventData) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type BetaWebhookEnvironmentCreatedEventData struct {
-	// ID of the environment that triggered the event.
-	ID             string                      `json:"id" api:"required"`
-	OrganizationID string                      `json:"organization_id" api:"required"`
-	Type           constant.EnvironmentCreated `json:"type" default:"environment.created"`
-	WorkspaceID    string                      `json:"workspace_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaWebhookEnvironmentCreatedEventData) RawJSON() string { return r.JSON.raw }
-func (r *BetaWebhookEnvironmentCreatedEventData) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type BetaWebhookEnvironmentDeletedEventData struct {
-	// ID of the environment that triggered the event.
-	ID             string `json:"id" api:"required"`
-	OrganizationID string `json:"organization_id" api:"required"`
-	// Any of "environment.deleted".
-	Type        BetaWebhookEnvironmentDeletedEventType `json:"type" api:"required"`
-	WorkspaceID string                                 `json:"workspace_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaWebhookEnvironmentDeletedEventData) RawJSON() string { return r.JSON.raw }
-func (r *BetaWebhookEnvironmentDeletedEventData) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type BetaWebhookEnvironmentDeletedEventType string
-
-const (
-	BetaWebhookEnvironmentDeletedEventTypeEnvironmentDeleted BetaWebhookEnvironmentDeletedEventType = "environment.deleted"
-)
-
-type BetaWebhookEnvironmentUpdatedEventData struct {
-	// ID of the environment that triggered the event.
-	ID             string                      `json:"id" api:"required"`
-	OrganizationID string                      `json:"organization_id" api:"required"`
-	Type           constant.EnvironmentUpdated `json:"type" default:"environment.updated"`
-	WorkspaceID    string                      `json:"workspace_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaWebhookEnvironmentUpdatedEventData) RawJSON() string { return r.JSON.raw }
-func (r *BetaWebhookEnvironmentUpdatedEventData) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // BetaWebhookEventDataUnion contains all possible properties and values from
 // [BetaWebhookSessionCreatedEventData], [BetaWebhookSessionPendingEventData],
 // [BetaWebhookSessionRunningEventData], [BetaWebhookSessionIdledEventData],
@@ -489,14 +390,7 @@ func (r *BetaWebhookEnvironmentUpdatedEventData) UnmarshalJSON(data []byte) erro
 // [BetaWebhookDeploymentArchivedEventData],
 // [BetaWebhookDeploymentRunStartedEventData],
 // [BetaWebhookDeploymentDeletedEventData],
-// [BetaWebhookDeploymentRunSucceededEventData],
-// [BetaWebhookEnvironmentCreatedEventData],
-// [BetaWebhookEnvironmentUpdatedEventData],
-// [BetaWebhookEnvironmentArchivedEventData],
-// [BetaWebhookEnvironmentDeletedEventData],
-// [BetaWebhookMemoryStoreCreatedEventData],
-// [BetaWebhookMemoryStoreArchivedEventData],
-// [BetaWebhookMemoryStoreDeletedEventData].
+// [BetaWebhookDeploymentRunSucceededEventData].
 //
 // Use the [BetaWebhookEventDataUnion.AsAny] method to switch on the variant.
 //
@@ -516,9 +410,7 @@ type BetaWebhookEventDataUnion struct {
 	// "deployment.paused", "deployment_run.failed", "deployment.created",
 	// "deployment.updated", "deployment.unpaused", "agent.updated",
 	// "deployment.archived", "deployment_run.started", "deployment.deleted",
-	// "deployment_run.succeeded", "environment.created", "environment.updated",
-	// "environment.archived", "environment.deleted", "memory_store.created",
-	// "memory_store.archived", "memory_store.deleted".
+	// "deployment_run.succeeded".
 	Type            string `json:"type"`
 	WorkspaceID     string `json:"workspace_id"`
 	SessionThreadID string `json:"session_thread_id"`
@@ -577,13 +469,6 @@ func (BetaWebhookDeploymentArchivedEventData) implBetaWebhookEventDataUnion()   
 func (BetaWebhookDeploymentRunStartedEventData) implBetaWebhookEventDataUnion()          {}
 func (BetaWebhookDeploymentDeletedEventData) implBetaWebhookEventDataUnion()             {}
 func (BetaWebhookDeploymentRunSucceededEventData) implBetaWebhookEventDataUnion()        {}
-func (BetaWebhookEnvironmentCreatedEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookEnvironmentUpdatedEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookEnvironmentArchivedEventData) implBetaWebhookEventDataUnion()           {}
-func (BetaWebhookEnvironmentDeletedEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookMemoryStoreCreatedEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookMemoryStoreArchivedEventData) implBetaWebhookEventDataUnion()           {}
-func (BetaWebhookMemoryStoreDeletedEventData) implBetaWebhookEventDataUnion()            {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -624,13 +509,6 @@ func (BetaWebhookMemoryStoreDeletedEventData) implBetaWebhookEventDataUnion()   
 //	case anthropic.BetaWebhookDeploymentRunStartedEventData:
 //	case anthropic.BetaWebhookDeploymentDeletedEventData:
 //	case anthropic.BetaWebhookDeploymentRunSucceededEventData:
-//	case anthropic.BetaWebhookEnvironmentCreatedEventData:
-//	case anthropic.BetaWebhookEnvironmentUpdatedEventData:
-//	case anthropic.BetaWebhookEnvironmentArchivedEventData:
-//	case anthropic.BetaWebhookEnvironmentDeletedEventData:
-//	case anthropic.BetaWebhookMemoryStoreCreatedEventData:
-//	case anthropic.BetaWebhookMemoryStoreArchivedEventData:
-//	case anthropic.BetaWebhookMemoryStoreDeletedEventData:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -708,20 +586,6 @@ func (u BetaWebhookEventDataUnion) AsAny() anyBetaWebhookEventData {
 		return u.AsDeploymentDeleted()
 	case "deployment_run.succeeded":
 		return u.AsDeploymentRunSucceeded()
-	case "environment.created":
-		return u.AsEnvironmentCreated()
-	case "environment.updated":
-		return u.AsEnvironmentUpdated()
-	case "environment.archived":
-		return u.AsEnvironmentArchived()
-	case "environment.deleted":
-		return u.AsEnvironmentDeleted()
-	case "memory_store.created":
-		return u.AsMemoryStoreCreated()
-	case "memory_store.archived":
-		return u.AsMemoryStoreArchived()
-	case "memory_store.deleted":
-		return u.AsMemoryStoreDeleted()
 	}
 	return nil
 }
@@ -906,114 +770,10 @@ func (u BetaWebhookEventDataUnion) AsDeploymentRunSucceeded() (v BetaWebhookDepl
 	return
 }
 
-func (u BetaWebhookEventDataUnion) AsEnvironmentCreated() (v BetaWebhookEnvironmentCreatedEventData) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaWebhookEventDataUnion) AsEnvironmentUpdated() (v BetaWebhookEnvironmentUpdatedEventData) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaWebhookEventDataUnion) AsEnvironmentArchived() (v BetaWebhookEnvironmentArchivedEventData) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaWebhookEventDataUnion) AsEnvironmentDeleted() (v BetaWebhookEnvironmentDeletedEventData) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaWebhookEventDataUnion) AsMemoryStoreCreated() (v BetaWebhookMemoryStoreCreatedEventData) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaWebhookEventDataUnion) AsMemoryStoreArchived() (v BetaWebhookMemoryStoreArchivedEventData) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaWebhookEventDataUnion) AsMemoryStoreDeleted() (v BetaWebhookMemoryStoreDeletedEventData) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
 // Returns the unmodified JSON received from the API
 func (u BetaWebhookEventDataUnion) RawJSON() string { return u.JSON.raw }
 
 func (r *BetaWebhookEventDataUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type BetaWebhookMemoryStoreArchivedEventData struct {
-	// ID of the memory store that triggered the event.
-	ID             string                       `json:"id" api:"required"`
-	OrganizationID string                       `json:"organization_id" api:"required"`
-	Type           constant.MemoryStoreArchived `json:"type" default:"memory_store.archived"`
-	WorkspaceID    string                       `json:"workspace_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaWebhookMemoryStoreArchivedEventData) RawJSON() string { return r.JSON.raw }
-func (r *BetaWebhookMemoryStoreArchivedEventData) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type BetaWebhookMemoryStoreCreatedEventData struct {
-	// ID of the memory store that triggered the event.
-	ID             string                      `json:"id" api:"required"`
-	OrganizationID string                      `json:"organization_id" api:"required"`
-	Type           constant.MemoryStoreCreated `json:"type" default:"memory_store.created"`
-	WorkspaceID    string                      `json:"workspace_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaWebhookMemoryStoreCreatedEventData) RawJSON() string { return r.JSON.raw }
-func (r *BetaWebhookMemoryStoreCreatedEventData) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type BetaWebhookMemoryStoreDeletedEventData struct {
-	// ID of the memory store that triggered the event.
-	ID             string                      `json:"id" api:"required"`
-	OrganizationID string                      `json:"organization_id" api:"required"`
-	Type           constant.MemoryStoreDeleted `json:"type" default:"memory_store.deleted"`
-	WorkspaceID    string                      `json:"workspace_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID             respjson.Field
-		OrganizationID respjson.Field
-		Type           respjson.Field
-		WorkspaceID    respjson.Field
-		ExtraFields    map[string]respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaWebhookMemoryStoreDeletedEventData) RawJSON() string { return r.JSON.raw }
-func (r *BetaWebhookMemoryStoreDeletedEventData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

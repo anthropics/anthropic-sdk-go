@@ -107,9 +107,6 @@ type Enabled string                                 // Always "enabled"
 type EncryptedCodeExecutionResult string            // Always "encrypted_code_execution_result"
 type Environment string                             // Always "environment"
 type EnvironmentDeleted string                      // Always "environment_deleted"
-type EnvironmentArchived string                     // Always "environment.archived"
-type EnvironmentCreated string                      // Always "environment.created"
-type EnvironmentUpdated string                      // Always "environment.updated"
 type Ephemeral string                               // Always "ephemeral"
 type Error string                                   // Always "error"
 type Errored string                                 // Always "errored"
@@ -130,9 +127,6 @@ type MCPToolUse string                              // Always "mcp_tool_use"
 type MCPToolset string                              // Always "mcp_toolset"
 type Memory string                                  // Always "memory"
 type Memory20250818 string                          // Always "memory_20250818"
-type MemoryStoreArchived string                     // Always "memory_store.archived"
-type MemoryStoreCreated string                      // Always "memory_store.created"
-type MemoryStoreDeleted string                      // Always "memory_store.deleted"
 type Message string                                 // Always "message"
 type MessageBatch string                            // Always "message_batch"
 type MessageBatchDeleted string                     // Always "message_batch_deleted"
@@ -330,9 +324,6 @@ func (c EncryptedCodeExecutionResult) Default() EncryptedCodeExecutionResult {
 }
 func (c Environment) Default() Environment                 { return "environment" }
 func (c EnvironmentDeleted) Default() EnvironmentDeleted   { return "environment_deleted" }
-func (c EnvironmentArchived) Default() EnvironmentArchived { return "environment.archived" }
-func (c EnvironmentCreated) Default() EnvironmentCreated   { return "environment.created" }
-func (c EnvironmentUpdated) Default() EnvironmentUpdated   { return "environment.updated" }
 func (c Ephemeral) Default() Ephemeral                     { return "ephemeral" }
 func (c Error) Default() Error                             { return "error" }
 func (c Errored) Default() Errored                         { return "errored" }
@@ -353,9 +344,6 @@ func (c MCPToolUse) Default() MCPToolUse                   { return "mcp_tool_us
 func (c MCPToolset) Default() MCPToolset                   { return "mcp_toolset" }
 func (c Memory) Default() Memory                           { return "memory" }
 func (c Memory20250818) Default() Memory20250818           { return "memory_20250818" }
-func (c MemoryStoreArchived) Default() MemoryStoreArchived { return "memory_store.archived" }
-func (c MemoryStoreCreated) Default() MemoryStoreCreated   { return "memory_store.created" }
-func (c MemoryStoreDeleted) Default() MemoryStoreDeleted   { return "memory_store.deleted" }
 func (c Message) Default() Message                         { return "message" }
 func (c MessageBatch) Default() MessageBatch               { return "message_batch" }
 func (c MessageBatchDeleted) Default() MessageBatchDeleted { return "message_batch_deleted" }
@@ -577,9 +565,6 @@ func (c Enabled) MarshalJSON() ([]byte, error)                             { ret
 func (c EncryptedCodeExecutionResult) MarshalJSON() ([]byte, error)        { return marshalString(c) }
 func (c Environment) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c EnvironmentDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c EnvironmentArchived) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
-func (c EnvironmentCreated) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c EnvironmentUpdated) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Ephemeral) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c Error) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Errored) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -600,9 +585,6 @@ func (c MCPToolUse) MarshalJSON() ([]byte, error)                          { ret
 func (c MCPToolset) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Memory) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Memory20250818) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
-func (c MemoryStoreArchived) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
-func (c MemoryStoreCreated) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c MemoryStoreDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Message) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c MessageBatch) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c MessageBatchDeleted) MarshalJSON() ([]byte, error)                 { return marshalString(c) }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.55.1 (2026-07-01)
+
+Full Changelog: [v1.55.0...v1.55.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.55.0...v1.55.1)
+
+### Chores
+
+* **api:** remove some nonfunctional types from the SDKs ([9bd3d09](https://github.com/anthropics/anthropic-sdk-go/commit/9bd3d099c5c5cb69f7011376a63a882216d30fcb))
+
 ## 1.55.0 (2026-06-30)
 
 Full Changelog: [v1.54.0...v1.55.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.54.0...v1.55.0)

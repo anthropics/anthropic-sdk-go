@@ -1285,7 +1285,7 @@ func (r *BetaManagedAgentsCustomToolInputSchemaParam) UnmarshalJSON(data []byte)
 // The properties Description, InputSchema, Name, Type are required.
 type BetaManagedAgentsCustomToolParams struct {
 	// Description of what the tool does, shown to the agent to help it decide when to
-	// use the tool. 1-1024 characters.
+	// use the tool. 1-4096 characters.
 	Description string `json:"description" api:"required"`
 	// JSON Schema for custom tool input parameters.
 	InputSchema BetaManagedAgentsCustomToolInputSchemaParam `json:"input_schema,omitzero" api:"required"`

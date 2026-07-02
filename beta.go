@@ -87,6 +87,7 @@ const (
 	AnthropicBetaThinkingTokenCount2026_05_13         AnthropicBeta = "thinking-token-count-2026-05-13"
 	AnthropicBetaServerSideFallback2026_06_01         AnthropicBeta = "server-side-fallback-2026-06-01"
 	AnthropicBetaFallbackCredit2026_06_01             AnthropicBeta = "fallback-credit-2026-06-01"
+	AnthropicBetaAgentMemory2026_07_22                AnthropicBeta = "agent-memory-2026-07-22"
 )
 
 type BetaAPIError struct {

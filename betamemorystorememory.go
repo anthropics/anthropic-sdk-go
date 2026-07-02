@@ -46,7 +46,7 @@ func (r *BetaMemoryStoreMemoryService) New(ctx context.Context, memoryStoreID st
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22")}, opts...)
 	if memoryStoreID == "" {
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
@@ -62,7 +62,7 @@ func (r *BetaMemoryStoreMemoryService) Get(ctx context.Context, memoryID string,
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22")}, opts...)
 	if params.MemoryStoreID == "" {
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
@@ -82,7 +82,7 @@ func (r *BetaMemoryStoreMemoryService) Update(ctx context.Context, memoryID stri
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22")}, opts...)
 	if params.MemoryStoreID == "" {
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
@@ -103,7 +103,7 @@ func (r *BetaMemoryStoreMemoryService) List(ctx context.Context, memoryStoreID s
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22"), option.WithResponseInto(&raw)}, opts...)
 	if memoryStoreID == "" {
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
@@ -132,7 +132,7 @@ func (r *BetaMemoryStoreMemoryService) Delete(ctx context.Context, memoryID stri
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22")}, opts...)
 	if params.MemoryStoreID == "" {
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
@@ -519,8 +519,6 @@ type BetaMemoryStoreMemoryListParams struct {
 	// to 20 when omitted. Capped at 20 when `view=full`. Both `memory` and
 	// `memory_prefix` items count toward the limit.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Query parameter for order_by
-	OrderBy param.Opt[string] `query:"order_by,omitzero" json:"-"`
 	// Opaque pagination cursor (a `page_...` value). Pass the `next_page` value from a
 	// previous response to fetch the next page; omit for the first page.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
@@ -528,10 +526,6 @@ type BetaMemoryStoreMemoryListParams struct {
 	// `/notes/`. This value appears in request URLs. Do not include secrets or
 	// personally identifiable information.
 	PathPrefix param.Opt[string] `query:"path_prefix,omitzero" json:"-"`
-	// Query parameter for order
-	//
-	// Any of "asc", "desc".
-	Order BetaMemoryStoreMemoryListParamsOrder `query:"order,omitzero" json:"-"`
 	// Which projection of each `memory` to return. Defaults to `basic` (content
 	// omitted). `full` populates `content` on each item and caps `limit` at 20; use
 	// this as the bulk-read path for export and sync.
@@ -551,14 +545,6 @@ func (r BetaMemoryStoreMemoryListParams) URLQuery() (v url.Values, err error) {
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
-
-// Query parameter for order
-type BetaMemoryStoreMemoryListParamsOrder string
-
-const (
-	BetaMemoryStoreMemoryListParamsOrderAsc  BetaMemoryStoreMemoryListParamsOrder = "asc"
-	BetaMemoryStoreMemoryListParamsOrderDesc BetaMemoryStoreMemoryListParamsOrder = "desc"
-)
 
 type BetaMemoryStoreMemoryDeleteParams struct {
 	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`

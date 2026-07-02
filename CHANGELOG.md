@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.56.0 (2026-07-02)
+
+Full Changelog: [v1.55.1...v1.56.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.55.1...v1.56.0)
+
+### Features
+
+* **api:** add agent-memory-2026-07-22 beta header ([5bcfda4](https://github.com/anthropics/anthropic-sdk-go/commit/5bcfda43d70d05ea124f6b6efa678807b8aba064))
+
 ## 1.55.1 (2026-07-01)
 
 Full Changelog: [v1.55.0...v1.55.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.55.0...v1.55.1)

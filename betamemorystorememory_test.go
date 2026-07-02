@@ -129,8 +129,6 @@ func TestBetaMemoryStoreMemoryListWithOptionalParams(t *testing.T) {
 		anthropic.BetaMemoryStoreMemoryListParams{
 			Depth:      anthropic.Int(0),
 			Limit:      anthropic.Int(0),
-			Order:      anthropic.BetaMemoryStoreMemoryListParamsOrderAsc,
-			OrderBy:    anthropic.String("order_by"),
 			Page:       anthropic.String("page"),
 			PathPrefix: anthropic.String("path_prefix"),
 			View:       anthropic.BetaManagedAgentsMemoryViewBasic,

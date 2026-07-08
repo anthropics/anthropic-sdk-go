@@ -39,7 +39,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 							},
 							Citations: []anthropic.BetaTextCitationParamUnion{{
 								OfCharLocation: &anthropic.BetaCitationCharLocationParam{
-									CitedText:      "cited_text",
+									CitedText:      "The grass is green. The sky is blue.",
 									DocumentIndex:  0,
 									DocumentTitle:  anthropic.String("x"),
 									EndCharIndex:   0,
@@ -153,7 +153,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 					},
 					Citations: []anthropic.BetaTextCitationParamUnion{{
 						OfCharLocation: &anthropic.BetaCitationCharLocationParam{
-							CitedText:      "cited_text",
+							CitedText:      "The grass is green. The sky is blue.",
 							DocumentIndex:  0,
 							DocumentTitle:  anthropic.String("x"),
 							EndCharIndex:   0,

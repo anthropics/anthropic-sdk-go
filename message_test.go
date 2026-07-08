@@ -36,7 +36,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 					},
 					Citations: []anthropic.TextCitationParamUnion{{
 						OfCharLocation: &anthropic.CitationCharLocationParam{
-							CitedText:      "cited_text",
+							CitedText:      "The grass is green. The sky is blue.",
 							DocumentIndex:  0,
 							DocumentTitle:  anthropic.String("x"),
 							EndCharIndex:   0,
@@ -73,7 +73,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 			},
 			Citations: []anthropic.TextCitationParamUnion{{
 				OfCharLocation: &anthropic.CitationCharLocationParam{
-					CitedText:      "cited_text",
+					CitedText:      "The grass is green. The sky is blue.",
 					DocumentIndex:  0,
 					DocumentTitle:  anthropic.String("x"),
 					EndCharIndex:   0,
@@ -151,7 +151,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 					},
 					Citations: []anthropic.TextCitationParamUnion{{
 						OfCharLocation: &anthropic.CitationCharLocationParam{
-							CitedText:      "cited_text",
+							CitedText:      "The grass is green. The sky is blue.",
 							DocumentIndex:  0,
 							DocumentTitle:  anthropic.String("x"),
 							EndCharIndex:   0,
@@ -182,7 +182,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 				},
 				Citations: []anthropic.TextCitationParamUnion{{
 					OfCharLocation: &anthropic.CitationCharLocationParam{
-						CitedText:      "cited_text",
+						CitedText:      "The grass is green. The sky is blue.",
 						DocumentIndex:  0,
 						DocumentTitle:  anthropic.String("x"),
 						EndCharIndex:   0,

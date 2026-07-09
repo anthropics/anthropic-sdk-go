@@ -16,6 +16,10 @@ import "strings"
 //		}
 //	}
 type BetaManagedAgentsEventAccumulator struct {
+	// AgentMessages holds one snapshot per event id. Reconciled canonical
+	// agent.message events persist across model requests; unreconciled previews
+	// are dropped at span.model_request_end because the server will never
+	// complete them. The buffered event stream is the authoritative transcript.
 	AgentMessages map[string]BetaManagedAgentsAgentMessageEvent
 }
 
@@ -38,7 +42,7 @@ func (acc *BetaManagedAgentsEventAccumulator) Accumulate(event BetaManagedAgents
 
 	case "event_delta":
 		msg, ok := acc.AgentMessages[event.EventID]
-		if !ok {
+		if !ok || msg.JSON.ProcessedAt.Valid() {
 			return
 		}
 		idx := int(event.Delta.Index)
@@ -59,7 +63,11 @@ func (acc *BetaManagedAgentsEventAccumulator) Accumulate(event BetaManagedAgents
 		acc.AgentMessages[event.ID] = event.AsAgentMessage()
 
 	case "span.model_request_end":
-		acc.AgentMessages = map[string]BetaManagedAgentsAgentMessageEvent{}
+		for id, msg := range acc.AgentMessages {
+			if !msg.JSON.ProcessedAt.Valid() {
+				delete(acc.AgentMessages, id)
+			}
+		}
 	}
 }
 

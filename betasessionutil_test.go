@@ -121,6 +121,19 @@ func TestBetaManagedAgentsEventAccumulator_BufferedEventReplacesPreview(t *testi
 	}
 }
 
+func TestBetaManagedAgentsEventAccumulator_StragglerDeltaAfterBufferedEventIsDropped(t *testing.T) {
+	var acc BetaManagedAgentsEventAccumulator
+	feed(&acc,
+		eventStart(t, "evt_1"),
+		eventDelta(t, "evt_1", "partial", 0),
+		sseEvent(t, `{"type":"agent.message","id":"evt_1","processed_at":"2024-01-01T00:00:00Z","content":[{"type":"text","text":"complete"}]}`),
+		eventDelta(t, "evt_1", "straggler", 0),
+	)
+	if text := acc.AgentMessageText("evt_1"); text != "complete" {
+		t.Fatalf("expected straggler delta after the canonical event to be dropped, got %q", text)
+	}
+}
+
 func TestBetaManagedAgentsEventAccumulator_ModelRequestEndClearsPreviews(t *testing.T) {
 	var acc BetaManagedAgentsEventAccumulator
 	feed(&acc,
@@ -130,6 +143,24 @@ func TestBetaManagedAgentsEventAccumulator_ModelRequestEndClearsPreviews(t *test
 	)
 	if len(acc.AgentMessages) != 0 {
 		t.Fatal("expected previews to be cleared by span.model_request_end")
+	}
+}
+
+func TestBetaManagedAgentsEventAccumulator_ModelRequestEndKeepsCanonicalMessages(t *testing.T) {
+	var acc BetaManagedAgentsEventAccumulator
+	feed(&acc,
+		eventStart(t, "evt_1"),
+		eventDelta(t, "evt_1", "partial", 0),
+		sseEvent(t, `{"type":"agent.message","id":"evt_1","processed_at":"2024-01-01T00:00:00Z","content":[{"type":"text","text":"complete"}]}`),
+		eventStart(t, "evt_2"),
+		eventDelta(t, "evt_2", "open", 0),
+		sseEvent(t, `{"type":"span.model_request_end","id":"sevt_2","model_request_start_id":"sevt_1","is_error":true,"processed_at":"2024-01-01T00:00:00Z"}`),
+	)
+	if text := acc.AgentMessageText("evt_1"); text != "complete" {
+		t.Fatalf("expected canonical message to survive span.model_request_end, got %q", text)
+	}
+	if _, ok := acc.AgentMessages["evt_2"]; ok {
+		t.Fatal("expected open preview to be discarded by span.model_request_end")
 	}
 }
 

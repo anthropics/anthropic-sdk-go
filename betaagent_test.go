@@ -28,7 +28,7 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Agents.New(context.TODO(), anthropic.BetaAgentNewParams{
 		Model: anthropic.BetaManagedAgentsModelConfigParams{
-			ID:    anthropic.BetaManagedAgentsModelClaudeOpus4_6,
+			ID:    anthropic.BetaManagedAgentsModelClaudeOpus4_8,
 			Speed: anthropic.BetaManagedAgentsModelConfigParamsSpeedStandard,
 		},
 		Name:        "My First Agent",
@@ -149,7 +149,7 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 				"foo": "string",
 			},
 			Model: anthropic.BetaManagedAgentsModelConfigParams{
-				ID:    anthropic.BetaManagedAgentsModelClaudeOpus4_6,
+				ID:    anthropic.BetaManagedAgentsModelClaudeOpus4_8,
 				Speed: anthropic.BetaManagedAgentsModelConfigParamsSpeedStandard,
 			},
 			Multiagent: anthropic.BetaManagedAgentsMultiagentParams{

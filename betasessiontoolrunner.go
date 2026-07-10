@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"math/rand/v2"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
@@ -76,7 +75,9 @@ type SessionToolRunnerOptions struct {
 
 	// MaxIdle is how long the runner keeps running after the session goes idle
 	// with stop_reason "end_turn" before it stops; any new event resets the
-	// countdown and it re-arms on the next "end_turn" idle. nil uses
+	// countdown and it re-arms on the next "end_turn" idle. The countdown is
+	// deferred while a confirmation-gated call is held or still dispatching,
+	// and starts fresh once the last such call resolves. nil uses
 	// [DefaultMaxIdle] (60s). A non-nil value <= 0 disables it — the runner
 	// then only stops on session termination, the consumer breaking out, or
 	// ctx cancellation.
@@ -151,6 +152,14 @@ type DispatchedToolCall struct {
 	// populated; the other pair is left zero.
 	Custom bool
 
+	// Confirmation is the verdict that gated this call, if any. "allow"
+	// means the call required user confirmation and was approved before it
+	// ran; "deny" means the user denied it or the server evaluated its
+	// permission to "deny" — the tool was never executed and nothing was
+	// posted (Posted=false, IsError=false, no Result). Empty means the call
+	// needed no confirmation.
+	Confirmation string
+
 	// ToolUse is the full agent.tool_use event that triggered this dispatch,
 	// exactly as it arrived on the stream (or via reconcile). Populated only
 	// when Custom is false.
@@ -214,6 +223,17 @@ type DispatchedToolCall struct {
 // from a background goroutine, but only one at a time per runner (serial
 // execution per the agent.tool_use contract).
 //
+// A call the server gated with evaluated_permission "ask" (the always_ask
+// policy — or any unrecognized value, failing closed) is held until its
+// user.tool_confirmation arrives: only an explicit "allow" runs it. A "deny"
+// verdict — or a call the server already evaluated to "deny" — is never
+// executed and posts nothing, but IS yielded (Confirmation="deny",
+// Posted=false, no Result) so the caller can observe it. While a call is held
+// the server parks the session at stop_reason "requires_action" and the
+// runner waits until the verdict arrives, the session terminates, or ctx is
+// cancelled — wrap in [environments.EnvironmentWorker] for lease-driven
+// detach, or pass a context.WithTimeout for a wall-clock bound.
+//
 // Tool lifetime is the caller's responsibility; the runner never closes tools,
 // so the same Tools slice can be reused across multiple sessions.
 //
@@ -268,21 +288,18 @@ type SessionToolRunner struct {
 	mu       sync.Mutex
 	seen     map[string]struct{}
 	answered map[string]struct{}
+	// Confirmation gating (always_ask tools). `confirmationVerdicts` records
+	// every user.tool_confirmation verdict by tool_use_id (persistent for the
+	// run, like seen/answered). `awaitingConfirmation` holds the ask-gated tool
+	// calls whose verdict has not yet arrived. Both are only touched from the
+	// stream goroutine (streamLoop / reconcile), so no lock is needed for them.
+	confirmationVerdicts map[string]string
+	awaitingConfirmation map[string]pendingToolUse
 
-	// endTurnAtNano is the time.Now().UnixNano() of the most recent
-	// session.status_idle with stop_reason "end_turn" for which no newer event
-	// has since arrived; 0 whenever the session is not in that state. Set by
-	// the stream goroutine (and the reconcile pass), read by the idle watchdog
-	// — hence atomic.
-	endTurnAtNano atomic.Int64
-
-	// idleSignal wakes the idle watchdog whenever the stream goroutine (or the
-	// reconcile pass) updates endTurnAtNano, so the watchdog re-arms its timer
-	// off the relevant event instead of polling endTurnAtNano on a ticker. It
-	// is buffered (cap 1) and written with a non-blocking send: a single
-	// pending nudge is enough, since the watchdog reads the authoritative
-	// endTurnAtNano stamp once it runs. Created in start().
-	idleSignal chan struct{}
+	// idle owns the single stop-countdown, armed off the server's
+	// session.status_idle stop_reason, including its deferral while
+	// confirmation-gated tool work is outstanding.
+	idle *idleClock
 
 	// constructErr is set only at construction and is immutable thereafter;
 	// safe to read without a lock. Used to bail out of Next/start when required
@@ -302,8 +319,8 @@ type SessionToolRunner struct {
 // service for the given managed-agents session. It is the sessions-side
 // counterpart to (*BetaMessageService).NewToolRunner. sessionID is a leading
 // positional argument, matching list/send/stream on the events resource. The
-// first call to Next launches background goroutines (stream, dispatch, idle
-// watchdog). Logger defaults to slog.Default().
+// first call to Next launches background goroutines (stream, dispatch).
+// Logger defaults to slog.Default().
 //
 // sessionID is validated here: if it is empty, Next returns false on the first
 // call and Err returns the corresponding error. The returned pointer is never
@@ -337,6 +354,9 @@ func (r *BetaSessionEventService) NewToolRunner(ctx context.Context, sessionID s
 		seen:         map[string]struct{}{},
 		answered:     map[string]struct{}{},
 	}
+	rn.confirmationVerdicts = map[string]string{}
+	rn.awaitingConfirmation = map[string]pendingToolUse{}
+	rn.idle = newIdleClock(rn.maxIdle())
 	if sessionID == "" {
 		rn.constructErr = errors.New("anthropic: NewToolRunner requires a non-empty session id")
 	}
@@ -436,7 +456,6 @@ func (r *SessionToolRunner) start() {
 		return
 	}
 	r.results = make(chan DispatchedToolCall, sessionRunnerResultsBuffer)
-	r.idleSignal = make(chan struct{}, 1)
 	toolUseQ := make(chan pendingToolUse, sessionRunnerToolUseQueueBuffer)
 	g, gctx := errgroup.WithContext(r.ctx)
 	r.group = g
@@ -495,10 +514,14 @@ func (r *SessionToolRunner) setTerminalErr(err error) {
 // has picked up and queued for dispatch. Exactly one of toolUse / customToolUse
 // is populated, selected by custom: an agent.tool_use is answered with a
 // user.tool_result, an agent.custom_tool_use with a user.custom_tool_result.
+// confirmation is the verdict that released it onto the queue — "allow" for an
+// ask-gated call the user approved, "" for a call that needed no confirmation.
+// Denied calls never reach the queue.
 type pendingToolUse struct {
 	custom        bool
 	toolUse       BetaManagedAgentsAgentToolUseEvent
 	customToolUse BetaManagedAgentsAgentCustomToolUseEvent
+	confirmation  string
 }
 
 // id returns the tool-use event id — the key for the seen/answered dedup sets
@@ -526,14 +549,143 @@ func (p pendingToolUse) input() map[string]any {
 	return p.toolUse.Input
 }
 
-// signalIdle nudges the idle watchdog to re-evaluate endTurnAtNano. It is a
-// non-blocking send on a cap-1 channel — only the stream goroutine calls it, so
-// a dropped nudge just means a wake is already pending.
-func (r *SessionToolRunner) signalIdle() {
+// idleClock is the idle stop-countdown state. idleWatchdog reads it and
+// stops the runner once armedAt + maxIdle has elapsed.
+//
+// It also owns the deferral of that countdown: gated tool work registered via
+// block — a call held for user confirmation, or a user-approved call still
+// dispatching — keeps an arm pending until unblock retires the last blocker.
+// The server can report an end_turn idle while a call is held (a legacy
+// v1beta idle is up-converted with stop_reason "end_turn" unconditionally), so
+// the countdown must never run over gated work: stopping then would drop the
+// held call when its verdict later arrives, or cut the runner off before a
+// released call's result can drive the next turn.
+//
+// Every transition runs under mu, so a disarm racing the pending-arm apply
+// cannot be overwritten and resurrect a cancelled countdown.
+type idleClock struct {
+	maxIdle time.Duration
+
+	wake chan struct{} // cap-1; nudges idleWatchdog to re-read the state
+
+	mu      sync.Mutex
+	armedAt time.Time // zero when disarmed
+	// armPending is set when an arm found blockers outstanding; the unblock
+	// retiring the last blocker applies it. Cleared by any disarm. While it is
+	// set — and, more generally, while blockers is non-empty — armedAt is zero.
+	armPending bool
+	blockers   map[string]struct{}
+}
+
+func newIdleClock(maxIdle time.Duration) *idleClock {
+	return &idleClock{maxIdle: maxIdle, wake: make(chan struct{}, 1), blockers: map[string]struct{}{}}
+}
+
+// noteEvent arms on session.status_idle with stop_reason "end_turn";
+// disarms on anything else.
+//
+// user.tool_confirmation is neutral: it signals neither agent activity nor an
+// idle, and its effect on the clock flows through block/unblock instead —
+// disarming here would discard the pending arm the verdict is about to settle.
+func (c *idleClock) noteEvent(eventType, stopReason string) {
+	if eventType == "user.tool_confirmation" {
+		return
+	}
+	if eventType == string(BetaManagedAgentsSessionStatusIdleEventTypeSessionStatusIdle) &&
+		stopReason == string(BetaManagedAgentsSessionEndTurnTypeEndTurn) {
+		c.arm()
+	} else {
+		c.disarm()
+	}
+}
+
+// arm (re)starts the countdown from now and wakes the watchdog — or, while
+// blockers are outstanding, holds the arm pending instead.
+func (c *idleClock) arm() {
+	if c.maxIdle <= 0 {
+		return
+	}
+	c.mu.Lock()
+	if len(c.blockers) > 0 {
+		// Any running countdown is stale: the arm defers because gated work is
+		// outstanding, so the session is not idly waiting to stop.
+		c.armPending = true
+		was := !c.armedAt.IsZero()
+		c.armedAt = time.Time{}
+		c.mu.Unlock()
+		if was {
+			c.signal()
+		}
+		return
+	}
+	c.armPending = false
+	c.armedAt = time.Now()
+	c.mu.Unlock()
+	c.signal()
+}
+
+// disarm cancels the countdown and any pending arm. Blockers persist — they
+// track real outstanding work, retired only by unblock.
+func (c *idleClock) disarm() {
+	c.mu.Lock()
+	c.armPending = false
+	was := !c.armedAt.IsZero()
+	c.armedAt = time.Time{}
+	c.mu.Unlock()
+	if was {
+		c.signal()
+	}
+}
+
+// block registers gated work that must finish before an idle countdown starts.
+func (c *idleClock) block(id string) {
+	c.mu.Lock()
+	c.blockers[id] = struct{}{}
+	// Defensive: a blocker taken while the countdown runs converts it into a
+	// pending arm, so a stale end_turn cannot stop the runner mid-gate.
+	was := !c.armedAt.IsZero()
+	if was {
+		c.armPending = true
+		c.armedAt = time.Time{}
+	}
+	c.mu.Unlock()
+	if was {
+		c.signal()
+	}
+}
+
+// unblock retires gated work (a no-op for ids never blocked) and applies a
+// pending arm once the last blocker retires — the countdown then runs a full
+// fresh window from now. The apply happens inside the critical section:
+// deciding under the lock but stamping after releasing it would let a
+// concurrent disarm (a new stream event — the session is not idle) land in the
+// gap and be overwritten, resurrecting a cancelled countdown.
+func (c *idleClock) unblock(id string) {
+	c.mu.Lock()
+	delete(c.blockers, id)
+	fire := len(c.blockers) == 0 && c.armPending
+	if fire {
+		c.armPending = false
+		c.armedAt = time.Now()
+	}
+	c.mu.Unlock()
+	if fire {
+		c.signal()
+	}
+}
+
+func (c *idleClock) signal() {
 	select {
-	case r.idleSignal <- struct{}{}:
+	case c.wake <- struct{}{}:
 	default:
 	}
+}
+
+// snapshot returns the current arm timestamp for the watchdog.
+func (c *idleClock) snapshot() time.Time {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.armedAt
 }
 
 // streamLoop tails the live SSE stream with reconnect backoff. On each
@@ -585,30 +737,18 @@ func (r *SessionToolRunner) streamLoop(ctx context.Context, out chan<- pendingTo
 				backoff = sessionRunnerStreamBackoffStart
 			}
 			ev := stream.Current()
-			if ev.Type == string(BetaManagedAgentsSessionStatusIdleEventTypeSessionStatusIdle) &&
-				ev.StopReason.Type == string(BetaManagedAgentsSessionEndTurnTypeEndTurn) {
-				r.endTurnAtNano.Store(time.Now().UnixNano())
-			} else {
-				r.endTurnAtNano.Store(0)
-			}
-			r.signalIdle()
+			r.idle.noteEvent(ev.Type, ev.StopReason.Type)
 			switch ev.Type {
 			case string(BetaManagedAgentsAgentToolUseEventTypeAgentToolUse):
 				if r.markSeen(ev.ID) {
-					select {
-					case <-ctx.Done():
-						sentinel = ctx.Err()
-					case out <- pendingToolUse{toolUse: ev.AsAgentToolUse()}:
-					}
+					r.routeToolEvent(ctx, out, pendingToolUse{toolUse: ev.AsAgentToolUse()})
 				}
 			case string(BetaManagedAgentsAgentCustomToolUseEventTypeAgentCustomToolUse):
 				if r.markSeen(ev.ID) {
-					select {
-					case <-ctx.Done():
-						sentinel = ctx.Err()
-					case out <- pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse()}:
-					}
+					r.routeToolEvent(ctx, out, pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse()})
 				}
+			case "user.tool_confirmation":
+				r.noteConfirmation(ctx, out, ev.ToolUseID, string(ev.Result))
 			case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
 				r.markAnswered(ev.ToolUseID)
 			case string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult):
@@ -691,6 +831,14 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 		case string(BetaManagedAgentsAgentCustomToolUseEventTypeAgentCustomToolUse):
 			r.markSeen(ev.ID)
 			pending = append(pending, pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse()})
+		case "user.tool_confirmation":
+			// Record the verdict only, before the routing pass below, so a
+			// tool call whose confirmation appears later in the same history
+			// is routed with its verdict already known. Skip already-answered
+			// calls so we don't re-record their verdict on every reconcile.
+			if !r.isAnswered(ev.ToolUseID) {
+				r.confirmationVerdicts[ev.ToolUseID] = string(ev.Result)
+			}
 		case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
 			r.markAnswered(ev.ToolUseID)
 		case string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult):
@@ -717,26 +865,59 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 			unanswered = append(unanswered, p)
 		}
 	}
-	if lastWasEndTurn && len(unanswered) == 0 {
-		r.endTurnAtNano.Store(time.Now().UnixNano())
-	} else {
-		r.endTurnAtNano.Store(0)
-	}
-	r.signalIdle()
+	// Disarm before routing: the routing pass can block on a full work queue
+	// while the clock is still armed from before the reconnect.
+	r.idle.disarm()
 	for _, p := range unanswered {
-		select {
-		case <-ctx.Done():
-			return nil
-		case out <- p:
+		r.routeToolEvent(ctx, out, p)
+	}
+	// A held call's verdict is normally applied by the routing pass above; if
+	// its tool_use fell outside the listed window the pass never saw it, so
+	// apply the recorded verdict to the held copy here.
+	for id, held := range r.awaitingConfirmation {
+		if v, ok := r.confirmationVerdicts[id]; ok {
+			r.applyVerdict(ctx, out, held, v)
 		}
 	}
+	// Routing resolved denied calls in place (marking them answered) and held
+	// ask-gated calls for their verdict. If the last event in history is an
+	// end_turn idle and no tool work is outstanding, the session is done — arm
+	// the stop-countdown so the runner stops even if that end_turn arrived
+	// during a disconnect. A still-held call doesn't count as outstanding: the
+	// clock blocks on it, so the arm is held pending until its verdict lands.
+	if lastWasEndTurn && len(r.outstanding(unanswered)) == 0 {
+		r.idle.arm()
+	}
 	return nil
+}
+
+// outstanding returns the reconciled tool calls that still owe the session a
+// result: neither answered (a denial resolves a call in place) nor held
+// awaiting a user confirmation.
+func (r *SessionToolRunner) outstanding(unanswered []pendingToolUse) []pendingToolUse {
+	var out []pendingToolUse
+	for _, p := range unanswered {
+		id := p.id()
+		if _, held := r.awaitingConfirmation[id]; held {
+			continue
+		}
+		if r.isAnswered(id) {
+			continue
+		}
+		out = append(out, p)
+	}
+	return out
 }
 
 // dispatchLoop reads tool-use events (agent.tool_use and agent.custom_tool_use)
 // serially and executes each. The session contract guarantees one outstanding
 // tool-use per session at a time, so serial execution is correct. Pushes the
 // resulting DispatchedToolCall to r.results.
+//
+// Each call is unblocked once it is fully disposed of — executed, or moot
+// because it was answered elsewhere — retiring the idle-clock blocker
+// applyVerdict took on a user-approved call. unblock is a no-op for a call
+// that was never gated.
 func (r *SessionToolRunner) dispatchLoop(ctx context.Context, in <-chan pendingToolUse) error {
 	for {
 		select {
@@ -746,11 +927,17 @@ func (r *SessionToolRunner) dispatchLoop(ctx context.Context, in <-chan pendingT
 			if !ok {
 				return nil
 			}
-			if r.isAnswered(p.id()) {
-				continue
-			}
-			call := r.execute(ctx, p)
-			r.results <- call
+			// Retire the blocker only once the call is fully disposed of —
+			// executed and surfaced, or moot because it was answered
+			// elsewhere. Surfacing can block on a full results buffer, and
+			// the countdown must not start while the call is still queued.
+			func() {
+				defer r.idle.unblock(p.id())
+				if r.isAnswered(p.id()) {
+					return
+				}
+				r.surfaceCall(ctx, r.execute(ctx, p))
+			}()
 		}
 	}
 }
@@ -792,27 +979,18 @@ func (r *SessionToolRunner) drainTimeout() time.Duration {
 	return defaultSessionRunnerDrainTimeout
 }
 
-// idleWatchdog returns ErrIdleTimeout once the session has been idle with
-// stop_reason "end_turn" for MaxIdle with no new events. It is event-driven:
-// the stream goroutine nudges idleSignal whenever it updates endTurnAtNano, and
-// the watchdog re-arms a single timer off that authoritative stamp — no polling
-// ticker. MaxIdle <= 0 disables it (waits only for ctx).
+// idleWatchdog returns ErrIdleTimeout once the session has been idle past
+// the bound matching its stop_reason. It is event-driven: the stream
+// goroutine nudges idle.wake whenever it updates the clock, and the
+// watchdog re-arms a single timer off that authoritative stamp — no
+// polling ticker.
 func (r *SessionToolRunner) idleWatchdog(ctx context.Context) error {
-	maxIdle := r.maxIdle()
-	if maxIdle <= 0 {
-		<-ctx.Done()
-		return nil
-	}
-	// Start with a stopped, drained timer; it is armed only once an
-	// end_turn-idle stamp is observed.
-	timer := time.NewTimer(maxIdle)
+	timer := time.NewTimer(time.Hour)
 	if !timer.Stop() {
 		<-timer.C
 	}
 	defer timer.Stop()
 
-	// rearm stops/drains the timer and, if the session is currently idle on
-	// end_turn, resets it to fire when MaxIdle elapses from that stamp.
 	rearm := func() {
 		if !timer.Stop() {
 			select {
@@ -820,8 +998,8 @@ func (r *SessionToolRunner) idleWatchdog(ctx context.Context) error {
 			default:
 			}
 		}
-		if at := r.endTurnAtNano.Load(); at != 0 {
-			remaining := maxIdle - time.Since(time.Unix(0, at))
+		if at := r.idle.snapshot(); !at.IsZero() {
+			remaining := r.idle.maxIdle - time.Since(at)
 			if remaining < time.Millisecond {
 				remaining = time.Millisecond
 			}
@@ -833,17 +1011,15 @@ func (r *SessionToolRunner) idleWatchdog(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-r.idleSignal:
+		case <-r.idle.wake:
 			rearm()
 		case <-timer.C:
-			at := r.endTurnAtNano.Load()
-			if at != 0 && time.Since(time.Unix(0, at)) >= maxIdle {
-				r.log.Info("session idle after end_turn; stopping", slog.Duration("max_idle", maxIdle))
+			at := r.idle.snapshot()
+			if !at.IsZero() && time.Since(at) >= r.idle.maxIdle {
+				r.log.Info("session idle after end_turn; stopping",
+					slog.Duration("max_idle", r.idle.maxIdle))
 				return ErrIdleTimeout
 			}
-			// A newer event moved (or cleared) the stamp between the timer
-			// firing and this read — re-arm from the current state instead of
-			// timing out spuriously.
 			rearm()
 		}
 	}
@@ -871,6 +1047,7 @@ func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) Dispa
 		CustomToolUse: p.customToolUse,
 		ToolUseID:     id,
 		Name:          name,
+		Confirmation:  p.confirmation,
 	}
 
 	rawInput, err := json.Marshal(p.input())
@@ -1074,6 +1251,111 @@ func (r *SessionToolRunner) isAnswered(id string) bool {
 	defer r.mu.Unlock()
 	_, ok := r.answered[id]
 	return ok
+}
+
+// routeToolEvent enqueues p for dispatch, honoring its evaluated permission.
+// A call the server gated with "ask" (or any unrecognized permission — fail
+// closed) is held until its user.tool_confirmation arrives; a call already
+// evaluated to "deny" is resolved as denied regardless of any recorded verdict.
+func (r *SessionToolRunner) routeToolEvent(ctx context.Context, out chan<- pendingToolUse, p pendingToolUse) {
+	id := p.id()
+	// Only builtin agent.tool_use carries evaluated_permission today; if the
+	// field ever lands on agent.custom_tool_use the gate must keep failing
+	// closed rather than dispatch a gated call by event type.
+	perm := ""
+	if !p.custom {
+		perm = string(p.toolUse.EvaluatedPermission)
+	}
+	// Comma-ok, not the zero value: a verdict this SDK doesn't recognise —
+	// including an empty one — must reach applyVerdict and fail closed, not
+	// read as "no verdict yet" and dispatch.
+	verdict, hasVerdict := r.confirmationVerdicts[id]
+	if perm == "deny" {
+		// A server-side deny overrides any (stray) recorded verdict.
+		verdict, hasVerdict = "deny", true
+	}
+	if !hasVerdict {
+		if perm == "" || perm == "allow" {
+			select {
+			case <-ctx.Done():
+			case out <- p:
+			}
+		} else if _, held := r.awaitingConfirmation[id]; !held {
+			// "ask" — or a permission this SDK doesn't recognise — waits for
+			// the user's verdict. (Already held: a reconcile after a reconnect
+			// re-routes the call; keep the existing hold.)
+			r.log.Info("tool call awaiting confirmation; holding",
+				slog.String("tool", p.name()), slog.String("tool_use_id", id))
+			r.awaitingConfirmation[id] = p
+			r.idle.block(id)
+		}
+		return
+	}
+	r.applyVerdict(ctx, out, p, verdict)
+}
+
+// noteConfirmation records an allow/deny verdict and releases the held call it
+// gates, if any. A verdict for a call this runner has not seen yet (or one it
+// never gates, e.g. an agent.mcp_tool_use) is kept in confirmationVerdicts so
+// a later route of that call resolves instantly.
+func (r *SessionToolRunner) noteConfirmation(ctx context.Context, out chan<- pendingToolUse, toolUseID, result string) {
+	r.confirmationVerdicts[toolUseID] = result
+	if held, ok := r.awaitingConfirmation[toolUseID]; ok {
+		r.applyVerdict(ctx, out, held, result)
+	}
+}
+
+// applyVerdict dispatches or resolves a gated call according to its verdict.
+// Only an explicit "allow" releases the call to execute; anything else fails
+// closed as a denial. A denied call is marked answered and yielded directly
+// (nothing ran, nothing posted) — it never reaches the dispatch queue.
+//
+// The idle-clock blocker accounting lives here: a denial retires the held
+// call's blocker, while an allow keeps one on the call — taking it now if the
+// verdict was already known when the call was routed, so no hold was ever
+// taken — until the dispatch loop has finished with it. The countdown must not
+// run over gated work that is still in flight.
+func (r *SessionToolRunner) applyVerdict(ctx context.Context, out chan<- pendingToolUse, p pendingToolUse, verdict string) {
+	id := p.id()
+	_, wasHeld := r.awaitingConfirmation[id]
+	delete(r.awaitingConfirmation, id)
+	if verdict == "allow" {
+		r.log.Info("tool call confirmed", slog.String("tool", p.name()), slog.String("tool_use_id", id))
+		if !wasHeld {
+			r.idle.block(id)
+		}
+		p.confirmation = "allow"
+		select {
+		case <-ctx.Done():
+		case out <- p:
+		}
+		return
+	}
+	if wasHeld {
+		r.idle.unblock(id)
+	}
+	r.markAnswered(id)
+	r.log.Info("tool call denied; not executing", slog.String("tool", p.name()), slog.String("tool_use_id", id))
+	r.surfaceCall(ctx, DispatchedToolCall{
+		Custom:        p.custom,
+		ToolUse:       p.toolUse,
+		CustomToolUse: p.customToolUse,
+		ToolUseID:     id,
+		Name:          p.name(),
+		IsError:       false,
+		Posted:        false,
+		Confirmation:  "deny",
+	})
+}
+
+// surfaceCall yields call to the consumer, tolerating a consumer that left
+// early (ctx cancelled). The underlying work already happened; only the
+// observability event is lost.
+func (r *SessionToolRunner) surfaceCall(ctx context.Context, call DispatchedToolCall) {
+	select {
+	case <-ctx.Done():
+	case r.results <- call:
+	}
 }
 
 // sleepCtx sleeps for d or until ctx is done, whichever comes first.

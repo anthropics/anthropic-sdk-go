@@ -32,6 +32,7 @@ type BetaService struct {
 	Skills         BetaSkillService
 	Webhooks       BetaWebhookService
 	UserProfiles   BetaUserProfileService
+	Dreams         BetaDreamService
 }
 
 // NewBetaService generates a new service that applies the given options to each
@@ -53,6 +54,7 @@ func NewBetaService(opts ...option.RequestOption) (r BetaService) {
 	r.Skills = NewBetaSkillService(opts...)
 	r.Webhooks = NewBetaWebhookService(opts...)
 	r.UserProfiles = NewBetaUserProfileService(opts...)
+	r.Dreams = NewBetaDreamService(opts...)
 	return
 }
 
@@ -84,6 +86,7 @@ const (
 	AnthropicBetaAdvisorTool2026_03_01                AnthropicBeta = "advisor-tool-2026-03-01"
 	AnthropicBetaManagedAgents2026_04_01              AnthropicBeta = "managed-agents-2026-04-01"
 	AnthropicBetaCacheDiagnosis2026_04_07             AnthropicBeta = "cache-diagnosis-2026-04-07"
+	AnthropicBetaDreaming2026_04_21                   AnthropicBeta = "dreaming-2026-04-21"
 	AnthropicBetaThinkingTokenCount2026_05_13         AnthropicBeta = "thinking-token-count-2026-05-13"
 	AnthropicBetaServerSideFallback2026_06_01         AnthropicBeta = "server-side-fallback-2026-06-01"
 	AnthropicBetaFallbackCredit2026_06_01             AnthropicBeta = "fallback-credit-2026-06-01"

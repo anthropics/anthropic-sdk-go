@@ -4883,6 +4883,10 @@ type BetaFallbackParam struct {
 	// details and options.
 	Model     Model            `json:"model,omitzero" api:"required"`
 	MaxTokens param.Opt[int64] `json:"max_tokens,omitzero"`
+	// Inference speed mode. `fast` provides significantly faster output token
+	// generation at premium pricing. Not all models support `fast`; invalid
+	// combinations are rejected at create time.
+	//
 	// Any of "standard", "fast".
 	Speed        BetaFallbackParamSpeed         `json:"speed,omitzero"`
 	Thinking     BetaFallbackParamThinkingUnion `json:"thinking,omitzero"`
@@ -4899,6 +4903,9 @@ func (r *BetaFallbackParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Inference speed mode. `fast` provides significantly faster output token
+// generation at premium pricing. Not all models support `fast`; invalid
+// combinations are rejected at create time.
 type BetaFallbackParamSpeed string
 
 const (
@@ -11234,7 +11241,9 @@ type BetaUsage struct {
 	//
 	// Any of "standard", "priority", "batch".
 	ServiceTier BetaUsageServiceTier `json:"service_tier" api:"required"`
-	// The inference speed mode used for this request.
+	// Inference speed mode. `fast` provides significantly faster output token
+	// generation at premium pricing. Not all models support `fast`; invalid
+	// combinations are rejected at create time.
 	//
 	// Any of "standard", "fast".
 	Speed BetaUsageSpeed `json:"speed" api:"required"`
@@ -11271,7 +11280,9 @@ const (
 	BetaUsageServiceTierBatch    BetaUsageServiceTier = "batch"
 )
 
-// The inference speed mode used for this request.
+// Inference speed mode. `fast` provides significantly faster output token
+// generation at premium pricing. Not all models support `fast`; invalid
+// combinations are rejected at create time.
 type BetaUsageSpeed string
 
 const (
@@ -12535,8 +12546,9 @@ type BetaMessageNewParams struct {
 	// model declines for policy reasons. Tried in order: if the first entry also
 	// declines, the second is tried, and so on.
 	Fallbacks []BetaFallbackParam `json:"fallbacks,omitzero"`
-	// The inference speed mode for this request. `"fast"` enables high
-	// output-tokens-per-second inference.
+	// Inference speed mode. `fast` provides significantly faster output token
+	// generation at premium pricing. Not all models support `fast`; invalid
+	// combinations are rejected at create time.
 	//
 	// Any of "standard", "fast".
 	Speed BetaMessageNewParamsSpeed `json:"speed,omitzero"`
@@ -12736,8 +12748,9 @@ const (
 	BetaMessageNewParamsServiceTierStandardOnly BetaMessageNewParamsServiceTier = "standard_only"
 )
 
-// The inference speed mode for this request. `"fast"` enables high
-// output-tokens-per-second inference.
+// Inference speed mode. `fast` provides significantly faster output token
+// generation at premium pricing. Not all models support `fast`; invalid
+// combinations are rejected at create time.
 type BetaMessageNewParamsSpeed string
 
 const (
@@ -12825,8 +12838,9 @@ type BetaMessageCountTokensParams struct {
 	// The user profile ID to attribute this request to. Use when acting on behalf of a
 	// party other than your organization. Requires the `user-profiles` beta header.
 	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`
-	// The inference speed mode for this request. `"fast"` enables high
-	// output-tokens-per-second inference.
+	// Inference speed mode. `fast` provides significantly faster output token
+	// generation at premium pricing. Not all models support `fast`; invalid
+	// combinations are rejected at create time.
 	//
 	// Any of "standard", "fast".
 	Speed BetaMessageCountTokensParamsSpeed `json:"speed,omitzero"`
@@ -12964,8 +12978,9 @@ func (r *BetaMessageCountTokensParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The inference speed mode for this request. `"fast"` enables high
-// output-tokens-per-second inference.
+// Inference speed mode. `fast` provides significantly faster output token
+// generation at premium pricing. Not all models support `fast`; invalid
+// combinations are rejected at create time.
 type BetaMessageCountTokensParamsSpeed string
 
 const (

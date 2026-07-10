@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.57.0 (2026-07-10)
+
+Full Changelog: [v1.56.0...v1.57.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.56.0...v1.57.0)
+
+### Features
+
+* **api:** add support for dreaming ([3736bf0](https://github.com/anthropics/anthropic-sdk-go/commit/3736bf0740c2b88d72f478df5fb7f13856f4beaa))
+* **tools:** gate session tool calls on evaluated_permission ([#151](https://github.com/anthropics/anthropic-sdk-go/issues/151)) ([4d85a6f](https://github.com/anthropics/anthropic-sdk-go/commit/4d85a6f2b0629b35630cf7560bc24d9d8cc8fa45))
+
+
+### Bug Fixes
+
+* **helpers:** distinguish canonical agent.message events from open previews ([#118](https://github.com/anthropics/anthropic-sdk-go/issues/118)) ([c49c17c](https://github.com/anthropics/anthropic-sdk-go/commit/c49c17c06ba2e646d5dd54c7614a7fa05becabd1))
+
+
+### Chores
+
+* **docs:** small updates to field descriptions ([61bc396](https://github.com/anthropics/anthropic-sdk-go/commit/61bc39690bc241eb4747626c0f0344e9b9e1b11f))
+* **docs:** update model example ([937a29c](https://github.com/anthropics/anthropic-sdk-go/commit/937a29cb229173f5009bda6a1b71889ed6a8103a))
+* **docs:** updates to descriptions and examples ([2c59f79](https://github.com/anthropics/anthropic-sdk-go/commit/2c59f7908e86a5dfc1f702120b56bbe2a07ae020))
+
 ## 1.56.0 (2026-07-02)
 
 Full Changelog: [v1.55.1...v1.56.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.55.1...v1.56.0)

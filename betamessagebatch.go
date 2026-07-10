@@ -723,8 +723,9 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// model declines for policy reasons. Tried in order: if the first entry also
 	// declines, the second is tried, and so on.
 	Fallbacks []BetaFallbackParam `json:"fallbacks,omitzero"`
-	// The inference speed mode for this request. `"fast"` enables high
-	// output-tokens-per-second inference.
+	// Inference speed mode. `fast` provides significantly faster output token
+	// generation at premium pricing. Not all models support `fast`; invalid
+	// combinations are rejected at create time.
 	//
 	// Any of "standard", "fast".
 	Speed string `json:"speed,omitzero"`

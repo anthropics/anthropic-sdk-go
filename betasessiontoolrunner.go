@@ -279,15 +279,22 @@ type SessionToolRunner struct {
 	// Tracks in-flight tool executions for the drain phase.
 	inFlight sync.WaitGroup
 
-	// Dedup sets — touched by the stream goroutine, the reconcile pass before
-	// each stream reconnect, and the dispatch goroutine. `seen` prevents
-	// re-dispatching the same tool_use across reconcile+stream overlaps;
-	// `answered` prevents re-executing a tool whose result the server already
-	// has. One mutex covers both — they're always touched together at low
-	// frequency.
-	mu       sync.Mutex
-	seen     map[string]struct{}
-	answered map[string]struct{}
+	// eventMu serializes idle/settlement transitions from the stream/reconcile
+	// goroutine with the dispatch-side history refresh after a rejected result.
+	eventMu sync.Mutex
+
+	// Tool-call state shared by the stream/reconcile and dispatch goroutines.
+	// `seen` stores each call's processed timestamp for stream/history dedup and
+	// interrupt cutoff checks; `answered` tracks results accepted by the server;
+	// `canceled` tracks calls invalidated by a processed session-wide interrupt.
+	// The active-call fields let such an interrupt cancel local execution too.
+	mu                      sync.Mutex
+	seen                    map[string]time.Time
+	answered                map[string]struct{}
+	canceled                map[string]struct{}
+	latestGlobalInterruptAt time.Time
+	activeCallID            string
+	activeCallCancel        context.CancelFunc
 	// Confirmation gating (always_ask tools). `confirmationVerdicts` records
 	// every user.tool_confirmation verdict by tool_use_id (persistent for the
 	// run, like seen/answered). `awaitingConfirmation` holds the ask-gated tool
@@ -351,8 +358,9 @@ func (r *BetaSessionEventService) NewToolRunner(ctx context.Context, sessionID s
 		reqOpts:      reqOpts,
 		ctx:          internalCtx,
 		cancel:       cancel,
-		seen:         map[string]struct{}{},
+		seen:         map[string]time.Time{},
 		answered:     map[string]struct{}{},
+		canceled:     map[string]struct{}{},
 	}
 	rn.confirmationVerdicts = map[string]string{}
 	rn.awaitingConfirmation = map[string]pendingToolUse{}
@@ -379,15 +387,37 @@ func (r *SessionToolRunner) Next() bool {
 		return false
 	}
 	r.start()
+	// Prefer already-buffered calls over cancellation so a terminal error does
+	// not hide the rejected dispatch that produced it.
 	select {
-	case <-r.ctx.Done():
-		return false
 	case call, ok := <-r.results:
 		if !ok {
 			return false
 		}
 		r.current = call
 		return true
+	default:
+	}
+	select {
+	case call, ok := <-r.results:
+		if !ok {
+			return false
+		}
+		r.current = call
+		return true
+	case <-r.ctx.Done():
+		// coordinate may have canceled the context after buffering the final
+		// call. Check once more before ending iteration.
+		select {
+		case call, ok := <-r.results:
+			if !ok {
+				return false
+			}
+			r.current = call
+			return true
+		default:
+			return false
+		}
 	}
 }
 
@@ -737,22 +767,28 @@ func (r *SessionToolRunner) streamLoop(ctx context.Context, out chan<- pendingTo
 				backoff = sessionRunnerStreamBackoffStart
 			}
 			ev := stream.Current()
+			r.eventMu.Lock()
 			r.idle.noteEvent(ev.Type, ev.StopReason.Type)
 			switch ev.Type {
+			case "user.interrupt":
+				r.processGlobalInterrupt(ev.ProcessedAt, ev.SessionThreadID)
+			case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
+				r.noteAnswered(ev.ToolUseID)
+			case string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult):
+				r.noteAnswered(ev.CustomToolUseID)
+			}
+			r.eventMu.Unlock()
+			switch ev.Type {
 			case string(BetaManagedAgentsAgentToolUseEventTypeAgentToolUse):
-				if r.markSeen(ev.ID) {
+				if r.markSeen(ev.ID, ev.ProcessedAt) {
 					r.routeToolEvent(ctx, out, pendingToolUse{toolUse: ev.AsAgentToolUse()})
 				}
 			case string(BetaManagedAgentsAgentCustomToolUseEventTypeAgentCustomToolUse):
-				if r.markSeen(ev.ID) {
+				if r.markSeen(ev.ID, ev.ProcessedAt) {
 					r.routeToolEvent(ctx, out, pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse()})
 				}
 			case "user.tool_confirmation":
 				r.noteConfirmation(ctx, out, ev.ToolUseID, string(ev.Result))
-			case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
-				r.markAnswered(ev.ToolUseID)
-			case string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult):
-				r.markAnswered(ev.CustomToolUseID)
 			case string(BetaManagedAgentsSessionStatusTerminatedEventTypeSessionStatusTerminated),
 				string(BetaManagedAgentsSessionDeletedEventTypeSessionDeleted):
 				r.log.Info("session terminated", slog.String("type", ev.Type))
@@ -804,15 +840,21 @@ func jitterDuration(d time.Duration) time.Duration {
 //
 // Every tool-use event is collected — and marked seen so the concurrently
 // running stream loop does not also enqueue it — but the enqueue decision is
-// gated on `answered`, NOT `seen`: a tool_use whose result post previously
-// FAILED was never marked answered, so it is re-dispatched on the next
-// reconcile instead of being silently dropped.
+// gated on whether the call is settled, NOT merely seen. Calls canceled by a
+// processed session-wide interrupt are settled locally because the server no
+// longer accepts their results; transient send failures remain eligible for a
+// later reconcile.
 //
 // Returns ErrSessionTerminated if the listed history contains a
 // session.status_terminated or session.deleted event — the live stream
 // will never replay a terminate that fired before we attached, so without
 // this check streamLoop would reconnect forever against a dead session.
 func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToolUse) error {
+	// Reconciliation replaces the runner's view of session idleness. Clear any
+	// prior pending arm before interrupts/results retire confirmation blockers.
+	r.eventMu.Lock()
+	r.idle.disarm()
+	r.eventMu.Unlock()
 	var pending []pendingToolUse
 	lastWasEndTurn := false
 	pager := r.eventService.ListAutoPaging(ctx, r.sessionID,
@@ -826,23 +868,34 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 		ev := pager.Current()
 		switch ev.Type {
 		case string(BetaManagedAgentsAgentToolUseEventTypeAgentToolUse):
-			r.markSeen(ev.ID)
+			r.markSeen(ev.ID, ev.ProcessedAt)
 			pending = append(pending, pendingToolUse{toolUse: ev.AsAgentToolUse()})
 		case string(BetaManagedAgentsAgentCustomToolUseEventTypeAgentCustomToolUse):
-			r.markSeen(ev.ID)
+			r.markSeen(ev.ID, ev.ProcessedAt)
 			pending = append(pending, pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse()})
 		case "user.tool_confirmation":
 			// Record the verdict only, before the routing pass below, so a
 			// tool call whose confirmation appears later in the same history
-			// is routed with its verdict already known. Skip already-answered
-			// calls so we don't re-record their verdict on every reconcile.
-			if !r.isAnswered(ev.ToolUseID) {
+			// is routed with its verdict already known. Skip settled calls so
+			// we don't re-record their verdict on every reconcile.
+			if !r.isSettled(ev.ToolUseID) {
 				r.confirmationVerdicts[ev.ToolUseID] = string(ev.Result)
 			}
+		case "user.interrupt":
+			// Event history is ordered by created_at, which can differ from
+			// processed_at for queued user events. Keep a processed-time cutoff
+			// instead of assuming every later history entry survived the interrupt.
+			r.eventMu.Lock()
+			r.processGlobalInterrupt(ev.ProcessedAt, ev.SessionThreadID)
+			r.eventMu.Unlock()
 		case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
-			r.markAnswered(ev.ToolUseID)
+			r.eventMu.Lock()
+			r.noteAnswered(ev.ToolUseID)
+			r.eventMu.Unlock()
 		case string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult):
-			r.markAnswered(ev.CustomToolUseID)
+			r.eventMu.Lock()
+			r.noteAnswered(ev.CustomToolUseID)
+			r.eventMu.Unlock()
 		case string(BetaManagedAgentsSessionStatusTerminatedEventTypeSessionStatusTerminated),
 			string(BetaManagedAgentsSessionDeletedEventTypeSessionDeleted):
 			// The session is already over. Any pending tool_use we
@@ -861,13 +914,10 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 	}
 	var unanswered []pendingToolUse
 	for _, p := range pending {
-		if !r.isAnswered(p.id()) {
+		if !r.isSettled(p.id()) {
 			unanswered = append(unanswered, p)
 		}
 	}
-	// Disarm before routing: the routing pass can block on a full work queue
-	// while the clock is still armed from before the reconnect.
-	r.idle.disarm()
 	for _, p := range unanswered {
 		r.routeToolEvent(ctx, out, p)
 	}
@@ -875,6 +925,10 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 	// its tool_use fell outside the listed window the pass never saw it, so
 	// apply the recorded verdict to the held copy here.
 	for id, held := range r.awaitingConfirmation {
+		if r.isSettled(id) {
+			r.cancelHeldCall(id)
+			continue
+		}
 		if v, ok := r.confirmationVerdicts[id]; ok {
 			r.applyVerdict(ctx, out, held, v)
 		}
@@ -886,7 +940,9 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 	// during a disconnect. A still-held call doesn't count as outstanding: the
 	// clock blocks on it, so the arm is held pending until its verdict lands.
 	if lastWasEndTurn && len(r.outstanding(unanswered)) == 0 {
+		r.eventMu.Lock()
 		r.idle.arm()
+		r.eventMu.Unlock()
 	}
 	return nil
 }
@@ -901,7 +957,7 @@ func (r *SessionToolRunner) outstanding(unanswered []pendingToolUse) []pendingTo
 		if _, held := r.awaitingConfirmation[id]; held {
 			continue
 		}
-		if r.isAnswered(id) {
+		if r.isSettled(id) {
 			continue
 		}
 		out = append(out, p)
@@ -931,13 +987,19 @@ func (r *SessionToolRunner) dispatchLoop(ctx context.Context, in <-chan pendingT
 			// executed and surfaced, or moot because it was answered
 			// elsewhere. Surfacing can block on a full results buffer, and
 			// the countdown must not start while the call is still queued.
-			func() {
+			if err := func() error {
 				defer r.idle.unblock(p.id())
-				if r.isAnswered(p.id()) {
-					return
+				if r.isSettled(p.id()) {
+					return nil
 				}
-				r.surfaceCall(ctx, r.execute(ctx, p))
-			}()
+				call, surface, err := r.execute(ctx, p)
+				if surface {
+					r.surfaceCall(ctx, call)
+				}
+				return err
+			}(); err != nil {
+				return err
+			}
 		}
 	}
 }
@@ -1029,7 +1091,7 @@ func (r *SessionToolRunner) idleWatchdog(ctx context.Context) error {
 // the matching result event (user.tool_result for an agent.tool_use,
 // user.custom_tool_result for an agent.custom_tool_use), and returns the
 // DispatchedToolCall to be yielded.
-func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) DispatchedToolCall {
+func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) (DispatchedToolCall, bool, error) {
 	id, name := p.id(), p.name()
 	log := r.log.With(
 		slog.String("tool", name),
@@ -1049,12 +1111,22 @@ func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) Dispa
 		Name:          name,
 		Confirmation:  p.confirmation,
 	}
+	callCtx, cancelCall := context.WithCancel(ctx)
+	if !r.startCall(id, cancelCall) {
+		cancelCall()
+		return call, false, nil
+	}
+	defer func() {
+		r.finishCall(id)
+		cancelCall()
+	}()
 
 	rawInput, err := json.Marshal(p.input())
 	if err != nil {
 		log.Warn("re-encoding tool input failed", slog.Any("error", err))
 		call.IsError = true
-		return r.postCall(ctx, call, textOnlyResult(fmt.Sprintf("tool input could not be re-encoded: %v", err)))
+		call, err = r.postCall(callCtx, call, textOnlyResult(fmt.Sprintf("tool input could not be re-encoded: %v", err)))
+		return call, true, err
 	}
 
 	var blocks []BetaToolResultBlockParamContentUnion
@@ -1071,18 +1143,22 @@ func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) Dispa
 		// keeps it out of the idle/end-turn accounting and re-surfaces it
 		// after a reconnect until its owner answers it.
 		log.Info("tool not owned by this runner; leaving the tool_use_id pending for its owner")
-		return call
+		return call, true, nil
 	} else {
 		// Derive the per-tool timeout from the runner ctx (not
 		// context.WithoutCancel) so cancelling the runner also aborts an
 		// in-flight tool instead of leaving it to run out the full timeout
 		// while teardown blocks on the drain.
 		toolTimeout := r.toolTimeout()
-		toolCtx, cancel := context.WithTimeout(ctx, toolTimeout)
+		toolCtx, cancel := context.WithTimeout(callCtx, toolTimeout)
 		out, runErr := tool.Execute(toolCtx, rawInput)
+		toolCtxErr := toolCtx.Err()
 		cancel()
+		if r.isCanceled(id) {
+			return call, true, nil
+		}
 		switch {
-		case errors.Is(toolCtx.Err(), context.DeadlineExceeded):
+		case errors.Is(toolCtxErr, context.DeadlineExceeded):
 			call.IsError = true
 			blocks = textOnlyResult(fmt.Sprintf("tool %q timed out after %s", name, toolTimeout))
 		case runErr != nil:
@@ -1096,7 +1172,8 @@ func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) Dispa
 	if len(blocks) == 0 {
 		blocks = textOnlyResult("(no output)")
 	}
-	return r.postCall(ctx, call, blocks)
+	call, err = r.postCall(callCtx, call, blocks)
+	return call, true, err
 }
 
 // textOnlyResult wraps s as a single text tool-result block.
@@ -1163,9 +1240,13 @@ func toCustomToolResultContent(blocks []BetaToolResultBlockParamContentUnion) []
 // when call.Custom, otherwise user.tool_result — from the tool's result blocks,
 // sends it, and records the event on call.Result / call.CustomResult and the
 // send outcome on call.Posted. The tool-use id is marked answered ONLY when
-// the result post actually succeeds: a failed post leaves the call unanswered
-// so the next reconcile re-dispatches it instead of silently dropping it.
-func (r *SessionToolRunner) postCall(ctx context.Context, call DispatchedToolCall, blocks []BetaToolResultBlockParamContentUnion) DispatchedToolCall {
+// the result post actually succeeds. Transient send exhaustion leaves the call
+// pending for reconcile; a permanent rejection is returned as a terminal
+// runner error.
+func (r *SessionToolRunner) postCall(ctx context.Context, call DispatchedToolCall, blocks []BetaToolResultBlockParamContentUnion) (DispatchedToolCall, error) {
+	if r.isSettled(call.ToolUseID) {
+		return call, nil
+	}
 	var event BetaManagedAgentsEventParamsUnion
 	if call.Custom {
 		call.CustomResult = BetaManagedAgentsUserCustomToolResultEventParams{
@@ -1184,38 +1265,59 @@ func (r *SessionToolRunner) postCall(ctx context.Context, call DispatchedToolCal
 		}
 		event = BetaManagedAgentsEventParamsUnion{OfUserToolResult: &call.Result}
 	}
-	call.Posted = r.sendResult(ctx, event, call.ToolUseID)
+	var err error
+	call.Posted, err = r.sendResult(ctx, event, call.ToolUseID)
+	if err != nil {
+		return call, err
+	}
 	if call.Posted {
 		r.markAnswered(call.ToolUseID)
 	}
-	return call
+	return call, nil
 }
 
 // sendResult posts a tool-result event (user.tool_result or
 // user.custom_tool_result). Returns true on success. Retries up to
 // sessionRunnerSendRetries times on transient failures, backing off between
 // attempts but NOT after the final one; a permanent 4xx short-circuits and
-// returns false.
-func (r *SessionToolRunner) sendResult(ctx context.Context, event BetaManagedAgentsEventParamsUnion, toolUseID string) bool {
+// returns a terminal error so the worker releases the session instead of
+// redispatching an unrecoverable call forever.
+func (r *SessionToolRunner) sendResult(ctx context.Context, event BetaManagedAgentsEventParamsUnion, toolUseID string) (bool, error) {
 	params := BetaSessionEventSendParams{
 		Events: []BetaManagedAgentsEventParamsUnion{event},
 	}
 	for attempt := range sessionRunnerSendRetries {
+		if r.isSettled(toolUseID) {
+			return false, nil
+		}
 		sendCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), r.sendTimeout())
 		_, err := r.eventService.Send(sendCtx, r.sessionID, params, r.reqOpts...)
 		cancel()
 		if err == nil {
-			return true
+			return true, nil
 		}
-		if isFatal4xxStatus(err) {
-			r.log.Error("tool result send hit permanent 4xx; not retrying",
-				slog.String("tool_use_id", toolUseID), slog.Any("error", err))
-			return false
+		if r.isSettled(toolUseID) {
+			r.log.Debug("tool result send abandoned: call settled elsewhere",
+				slog.String("tool_use_id", toolUseID))
+			return false, nil
 		}
 		if ctx.Err() != nil {
 			r.log.Debug("tool result send abandoned: ctx cancelled",
 				slog.String("tool_use_id", toolUseID))
-			return false
+			return false, nil
+		}
+		if isFatal4xxStatus(err) {
+			if r.refreshRejectedCall(ctx, toolUseID) {
+				r.log.Debug("tool result rejection matched settled history",
+					slog.String("tool_use_id", toolUseID))
+				return false, nil
+			}
+			if ctx.Err() != nil {
+				return false, nil
+			}
+			r.log.Error("tool result send hit permanent 4xx; not retrying",
+				slog.String("tool_use_id", toolUseID), slog.Any("error", err))
+			return false, fmt.Errorf("tool result send: %w", err)
 		}
 		r.log.Warn("tool result send failed; retrying",
 			slog.String("tool_use_id", toolUseID),
@@ -1227,22 +1329,209 @@ func (r *SessionToolRunner) sendResult(ctx context.Context, event BetaManagedAge
 			sleepCtx(ctx, time.Duration(attempt+1)*time.Second)
 		}
 	}
-	return false
+	return false, nil
 }
 
-func (r *SessionToolRunner) markSeen(id string) bool {
+// refreshRejectedCall resolves the race where the server processes an
+// interrupt or another runner's result before the local SSE stream observes it.
+// It is only called after a permanent result rejection, so the extra list
+// request stays off the normal dispatch path.
+func (r *SessionToolRunner) refreshRejectedCall(ctx context.Context, toolUseID string) bool {
+	r.mu.Lock()
+	_, seen := r.seen[toolUseID]
+	r.mu.Unlock()
+	if !seen {
+		return false
+	}
+
+	listCtx, cancel := context.WithTimeout(ctx, r.sendTimeout())
+	defer cancel()
+	pager := r.eventService.ListAutoPaging(listCtx, r.sessionID,
+		BetaSessionEventListParams{
+			Limit: param.NewOpt(int64(1000)),
+			Order: BetaSessionEventListParamsOrderAsc,
+			Types: []string{
+				"user.interrupt",
+				string(BetaManagedAgentsUserToolResultEventTypeUserToolResult),
+				string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult),
+			},
+		},
+		r.reqOpts...)
+	var latestGlobalInterruptAt time.Time
+	answeredIDs := map[string]struct{}{}
+	for pager.Next() {
+		ev := pager.Current()
+		switch ev.Type {
+		case "user.interrupt":
+			if ev.SessionThreadID == "" && ev.ProcessedAt.After(latestGlobalInterruptAt) {
+				latestGlobalInterruptAt = ev.ProcessedAt
+			}
+		case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
+			answeredIDs[ev.ToolUseID] = struct{}{}
+		case string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult):
+			answeredIDs[ev.CustomToolUseID] = struct{}{}
+		}
+	}
+
+	r.eventMu.Lock()
+	answeredAdvanced := false
+	for id := range answeredIDs {
+		if r.markAnswered(id) {
+			answeredAdvanced = true
+		}
+	}
+	var canceledIDs []string
+	var cancelActive context.CancelFunc
+	interruptAdvanced := false
+	if !latestGlobalInterruptAt.IsZero() {
+		var ok bool
+		canceledIDs, cancelActive, ok, interruptAdvanced = r.recordGlobalInterrupt(latestGlobalInterruptAt, "")
+		if !ok {
+			interruptAdvanced = false
+		}
+	}
+	if answeredAdvanced || interruptAdvanced {
+		// These non-idle events have not reached the local stream yet. Clear
+		// stale idle state before retiring blockers; a later idle event arms a
+		// fresh countdown. eventMu prevents a stream idle from racing past this.
+		r.idle.disarm()
+	}
+	if cancelActive != nil {
+		cancelActive()
+	}
+	// awaitingConfirmation belongs to the stream goroutine. Retire blockers
+	// here; the next stream/reconcile pass removes the corresponding map entries.
+	for id := range answeredIDs {
+		r.idle.unblock(id)
+	}
+	for _, id := range canceledIDs {
+		r.idle.unblock(id)
+	}
+	r.eventMu.Unlock()
+
+	if err := pager.Err(); err != nil {
+		r.log.Warn("tool result rejection history check failed",
+			slog.String("tool_use_id", toolUseID), slog.Any("error", err))
+	}
+	return r.isSettled(toolUseID)
+}
+
+func (r *SessionToolRunner) markSeen(id string, processedAt time.Time) bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, ok := r.seen[id]; ok {
 		return false
 	}
-	r.seen[id] = struct{}{}
+	r.seen[id] = processedAt
+	if !r.latestGlobalInterruptAt.IsZero() && !processedAt.After(r.latestGlobalInterruptAt) {
+		r.canceled[id] = struct{}{}
+	}
 	return true
 }
 
-func (r *SessionToolRunner) markAnswered(id string) {
+func (r *SessionToolRunner) markAnswered(id string) bool {
+	r.mu.Lock()
+	_, existed := r.answered[id]
+	r.answered[id] = struct{}{}
+	r.mu.Unlock()
+	return !existed
+}
+
+// noteAnswered records a result observed from the server and retires any local
+// execution or confirmation hold for the same call. Only the stream goroutine
+// calls this method, so awaitingConfirmation needs no additional lock.
+func (r *SessionToolRunner) noteAnswered(id string) {
 	r.mu.Lock()
 	r.answered[id] = struct{}{}
+	var cancelActive context.CancelFunc
+	if r.activeCallID == id {
+		cancelActive = r.activeCallCancel
+	}
+	r.mu.Unlock()
+
+	if cancelActive != nil {
+		cancelActive()
+	}
+	r.cancelHeldCall(id)
+}
+
+func (r *SessionToolRunner) cancelHeldCall(id string) {
+	if _, held := r.awaitingConfirmation[id]; held {
+		delete(r.awaitingConfirmation, id)
+		delete(r.confirmationVerdicts, id)
+		r.idle.unblock(id)
+	}
+}
+
+// processGlobalInterrupt advances the session-wide processed-time cutoff. Calls
+// at or before the cutoff are no longer accepted by the server, regardless of
+// where they appear in created_at-ordered history.
+func (r *SessionToolRunner) processGlobalInterrupt(processedAt time.Time, sessionThreadID string) {
+	canceledIDs, cancelActive, ok, _ := r.recordGlobalInterrupt(processedAt, sessionThreadID)
+	if !ok {
+		return
+	}
+
+	if cancelActive != nil {
+		cancelActive()
+	}
+	for _, id := range canceledIDs {
+		r.cancelHeldCall(id)
+	}
+}
+
+// recordGlobalInterrupt applies the synchronized portion of a global interrupt
+// transition. It can run from the stream loop or the dispatch-side rejection
+// refresh; stream-owned confirmation maps are cleaned separately.
+func (r *SessionToolRunner) recordGlobalInterrupt(processedAt time.Time, sessionThreadID string) ([]string, context.CancelFunc, bool, bool) {
+	if processedAt.IsZero() || sessionThreadID != "" {
+		return nil, nil, false, false
+	}
+
+	r.mu.Lock()
+	advanced := processedAt.After(r.latestGlobalInterruptAt)
+	if advanced {
+		r.latestGlobalInterruptAt = processedAt
+	}
+	var canceledIDs []string
+	for id, callProcessedAt := range r.seen {
+		if callProcessedAt.After(r.latestGlobalInterruptAt) {
+			continue
+		}
+		if _, answered := r.answered[id]; answered {
+			continue
+		}
+		r.canceled[id] = struct{}{}
+		canceledIDs = append(canceledIDs, id)
+	}
+	var cancelActive context.CancelFunc
+	if _, canceled := r.canceled[r.activeCallID]; canceled {
+		cancelActive = r.activeCallCancel
+	}
+	r.mu.Unlock()
+	return canceledIDs, cancelActive, true, advanced
+}
+
+func (r *SessionToolRunner) startCall(id string, cancel context.CancelFunc) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if _, answered := r.answered[id]; answered {
+		return false
+	}
+	if _, canceled := r.canceled[id]; canceled {
+		return false
+	}
+	r.activeCallID = id
+	r.activeCallCancel = cancel
+	return true
+}
+
+func (r *SessionToolRunner) finishCall(id string) {
+	r.mu.Lock()
+	if r.activeCallID == id {
+		r.activeCallID = ""
+		r.activeCallCancel = nil
+	}
 	r.mu.Unlock()
 }
 
@@ -1253,12 +1542,30 @@ func (r *SessionToolRunner) isAnswered(id string) bool {
 	return ok
 }
 
+func (r *SessionToolRunner) isSettled(id string) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	_, answered := r.answered[id]
+	_, canceled := r.canceled[id]
+	return answered || canceled
+}
+
+func (r *SessionToolRunner) isCanceled(id string) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	_, canceled := r.canceled[id]
+	return canceled
+}
+
 // routeToolEvent enqueues p for dispatch, honoring its evaluated permission.
 // A call the server gated with "ask" (or any unrecognized permission — fail
 // closed) is held until its user.tool_confirmation arrives; a call already
 // evaluated to "deny" is resolved as denied regardless of any recorded verdict.
 func (r *SessionToolRunner) routeToolEvent(ctx context.Context, out chan<- pendingToolUse, p pendingToolUse) {
 	id := p.id()
+	if r.isSettled(id) {
+		return
+	}
 	// Only builtin agent.tool_use carries evaluated_permission today; if the
 	// field ever lands on agent.custom_tool_use the gate must keep failing
 	// closed rather than dispatch a gated call by event type.
@@ -1288,6 +1595,11 @@ func (r *SessionToolRunner) routeToolEvent(ctx context.Context, out chan<- pendi
 				slog.String("tool", p.name()), slog.String("tool_use_id", id))
 			r.awaitingConfirmation[id] = p
 			r.idle.block(id)
+			// A dispatch-side history refresh can apply an interrupt between
+			// the initial settled check and this hold registration.
+			if r.isSettled(id) {
+				r.cancelHeldCall(id)
+			}
 		}
 		return
 	}
@@ -1299,6 +1611,9 @@ func (r *SessionToolRunner) routeToolEvent(ctx context.Context, out chan<- pendi
 // never gates, e.g. an agent.mcp_tool_use) is kept in confirmationVerdicts so
 // a later route of that call resolves instantly.
 func (r *SessionToolRunner) noteConfirmation(ctx context.Context, out chan<- pendingToolUse, toolUseID, result string) {
+	if r.isSettled(toolUseID) {
+		return
+	}
 	r.confirmationVerdicts[toolUseID] = result
 	if held, ok := r.awaitingConfirmation[toolUseID]; ok {
 		r.applyVerdict(ctx, out, held, result)
@@ -1352,9 +1667,22 @@ func (r *SessionToolRunner) applyVerdict(ctx context.Context, out chan<- pending
 // early (ctx cancelled). The underlying work already happened; only the
 // observability event is lost.
 func (r *SessionToolRunner) surfaceCall(ctx context.Context, call DispatchedToolCall) {
+	// Prefer an immediately available buffer slot over cancellation. A sibling
+	// loop can terminate the errgroup just as this completed call is surfaced.
 	select {
-	case <-ctx.Done():
 	case r.results <- call:
+		return
+	default:
+	}
+	select {
+	case r.results <- call:
+	case <-ctx.Done():
+		// Cancellation and buffer availability can become ready together.
+		// Preserve the call when possible without blocking shutdown.
+		select {
+		case r.results <- call:
+		default:
+		}
 	}
 }
 

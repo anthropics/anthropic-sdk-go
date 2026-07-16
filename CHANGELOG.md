@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.58.0 (2026-07-16)
+
+Full Changelog: [v1.57.0...v1.58.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.57.0...v1.58.0)
+
+### Features
+
+* **api:** add support for MCP Tunnels ([3465b89](https://github.com/anthropics/anthropic-sdk-go/commit/3465b897f12872663b0f61c0c3edb277e2efbe44))
+
 ## 1.57.0 (2026-07-10)
 
 Full Changelog: [v1.56.0...v1.57.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.56.0...v1.57.0)

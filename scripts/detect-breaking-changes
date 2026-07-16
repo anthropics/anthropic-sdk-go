@@ -37,6 +37,8 @@ TEST_PATHS=(
 	betawebhook_test.go
 	betauserprofile_test.go
 	betadream_test.go
+	betatunnel_test.go
+	betatunnelcertificate_test.go
 	usage_test.go
 	paginationauto_test.go
 	paginationmanual_test.go

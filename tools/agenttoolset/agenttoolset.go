@@ -141,8 +141,13 @@ func (t *funcTool) Execute(ctx context.Context, input json.RawMessage) ([]anthro
 	return textResult(content), nil
 }
 
+const emptyToolOutputText = "(no output)"
+
 // textResult wraps a plain string as a single text tool-result block.
 func textResult(s string) []anthropic.BetaToolResultBlockParamContentUnion {
+	if s == "" {
+		s = emptyToolOutputText
+	}
 	return []anthropic.BetaToolResultBlockParamContentUnion{{OfText: &anthropic.BetaTextBlockParam{Text: s}}}
 }
 

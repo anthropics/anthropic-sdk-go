@@ -38,7 +38,7 @@ func getNormalizedOS() string {
 		return "Android"
 	case "darwin":
 		return "MacOS"
-	case "window":
+	case "windows":
 		return "Windows"
 	case "freebsd":
 		return "FreeBSD"

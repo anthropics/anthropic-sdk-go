@@ -190,6 +190,9 @@ type ToolSearchToolSearchResult string              // Always "tool_search_tool_
 type ToolUse string                                 // Always "tool_use"
 type ToolUses string                                // Always "tool_uses"
 type ToolsChanged string                            // Always "tools_changed"
+type Tunnel string                                  // Always "tunnel"
+type TunnelCertificate string                       // Always "tunnel_certificate"
+type TunnelToken string                             // Always "tunnel_token"
 type Unavailable string                             // Always "unavailable"
 type Unrestricted string                            // Always "unrestricted"
 type URL string                                     // Always "url"
@@ -432,12 +435,15 @@ func (c ToolSearchToolResultError) Default() ToolSearchToolResultError {
 func (c ToolSearchToolSearchResult) Default() ToolSearchToolSearchResult {
 	return "tool_search_tool_search_result"
 }
-func (c ToolUse) Default() ToolUse           { return "tool_use" }
-func (c ToolUses) Default() ToolUses         { return "tool_uses" }
-func (c ToolsChanged) Default() ToolsChanged { return "tools_changed" }
-func (c Unavailable) Default() Unavailable   { return "unavailable" }
-func (c Unrestricted) Default() Unrestricted { return "unrestricted" }
-func (c URL) Default() URL                   { return "url" }
+func (c ToolUse) Default() ToolUse                     { return "tool_use" }
+func (c ToolUses) Default() ToolUses                   { return "tool_uses" }
+func (c ToolsChanged) Default() ToolsChanged           { return "tools_changed" }
+func (c Tunnel) Default() Tunnel                       { return "tunnel" }
+func (c TunnelCertificate) Default() TunnelCertificate { return "tunnel_certificate" }
+func (c TunnelToken) Default() TunnelToken             { return "tunnel_token" }
+func (c Unavailable) Default() Unavailable             { return "unavailable" }
+func (c Unrestricted) Default() Unrestricted           { return "unrestricted" }
+func (c URL) Default() URL                             { return "url" }
 func (c VaultCredentialArchived) Default() VaultCredentialArchived {
 	return "vault_credential.archived"
 }
@@ -652,6 +658,9 @@ func (c ToolSearchToolSearchResult) MarshalJSON() ([]byte, error)        { retur
 func (c ToolUse) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c ToolUses) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c ToolsChanged) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c Tunnel) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c TunnelCertificate) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c TunnelToken) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Unavailable) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Unrestricted) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                               { return marshalString(c) }

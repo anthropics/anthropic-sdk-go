@@ -33,6 +33,7 @@ type BetaService struct {
 	Webhooks       BetaWebhookService
 	UserProfiles   BetaUserProfileService
 	Dreams         BetaDreamService
+	Tunnels        BetaTunnelService
 }
 
 // NewBetaService generates a new service that applies the given options to each
@@ -55,6 +56,7 @@ func NewBetaService(opts ...option.RequestOption) (r BetaService) {
 	r.Webhooks = NewBetaWebhookService(opts...)
 	r.UserProfiles = NewBetaUserProfileService(opts...)
 	r.Dreams = NewBetaDreamService(opts...)
+	r.Tunnels = NewBetaTunnelService(opts...)
 	return
 }
 

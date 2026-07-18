@@ -412,7 +412,7 @@ func (r TextEditorCodeExecutionToolResultBlock) ToParam() TextEditorCodeExecutio
 			ErrorMessage: paramutil.ToOpt(r.Content.ErrorMessage, r.Content.JSON.ErrorMessage),
 		}
 	} else {
-		p.Content = param.Override[TextEditorCodeExecutionToolResultBlockParamContentUnion](r.Content.RawJSON())
+		p.Content = param.Override[TextEditorCodeExecutionToolResultBlockParamContentUnion](json.RawMessage(r.Content.RawJSON()))
 	}
 	return p
 }

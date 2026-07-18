@@ -1,6 +1,7 @@
 package anthropic_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"testing"
 
@@ -51,6 +52,68 @@ func TestContentBlockUnionToParam(t *testing.T) {
 		}
 		if len(result.OfWebSearchToolResult.Content.OfWebSearchToolResultBlockItem) != 1 {
 			t.Errorf("Expected 1 search result in param, got %d", len(result.OfWebSearchToolResult.Content.OfWebSearchToolResultBlockItem))
+		}
+	})
+}
+
+// TestJSONOutputFormatParamTypeAlwaysMarshaled is a regression test for issue
+// https://github.com/anthropics/anthropic-sdk-go/issues/328 — the structured-
+// output `type` discriminator was being elided from the request body, which
+// caused the API to hang. The field is documented as elidable (its zero value
+// should marshal as "json_schema") via the `default:"json_schema"` struct tag,
+// so request bodies must always carry it.
+func TestJSONOutputFormatParamTypeAlwaysMarshaled(t *testing.T) {
+	wantType := []byte(`"type":"json_schema"`)
+
+	t.Run("zero Type emits default", func(t *testing.T) {
+		body, err := json.Marshal(anthropic.JSONOutputFormatParam{
+			Schema: map[string]any{"type": "object"},
+		})
+		if err != nil {
+			t.Fatalf("marshal: %v", err)
+		}
+		if !bytes.Contains(body, wantType) {
+			t.Errorf("missing %s in %s", wantType, body)
+		}
+	})
+
+	t.Run("explicit Type round-trips", func(t *testing.T) {
+		body, err := json.Marshal(anthropic.JSONOutputFormatParam{
+			Schema: map[string]any{"type": "object"},
+			Type:   constant.JSONSchema("json_schema"),
+		})
+		if err != nil {
+			t.Fatalf("marshal: %v", err)
+		}
+		if !bytes.Contains(body, wantType) {
+			t.Errorf("missing %s in %s", wantType, body)
+		}
+	})
+
+	t.Run("nested in MessageNewParams", func(t *testing.T) {
+		params := anthropic.MessageNewParams{
+			MaxTokens: 100,
+			Model:     anthropic.ModelClaudeSonnet4_5,
+			Messages: []anthropic.MessageParam{
+				anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+			},
+			OutputConfig: anthropic.OutputConfigParam{
+				Format: anthropic.JSONOutputFormatParam{
+					Schema: map[string]any{"type": "object"},
+				},
+			},
+		}
+		body, err := json.Marshal(params)
+		if err != nil {
+			t.Fatalf("marshal: %v", err)
+		}
+		if !bytes.Contains(body, wantType) {
+			t.Errorf("missing %s in %s", wantType, body)
+		}
+		// Sanity check: the `type` we found is the one inside output_config.format,
+		// not a stray copy from a nested schema.
+		if !bytes.Contains(body, []byte(`"format":{"schema":`)) {
+			t.Errorf("unexpected body shape: %s", body)
 		}
 	})
 }

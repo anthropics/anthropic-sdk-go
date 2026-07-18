@@ -770,6 +770,15 @@ FieldLoop:
 			e.WriteString(f.nameNonEsc)
 		}
 		opts.quoted = f.quoted
+		// EDIT(begin): honor `default:"..."` tag for string-kinded fields.
+		// If the field carries a default and its current value is the zero
+		// value, emit the pre-marshaled default literal instead of invoking
+		// the field encoder. See issue #328.
+		if f.hasDefault && fv.IsValid() && fv.IsZero() {
+			e.Buffer.Write(f.defaultJSON)
+			continue
+		}
+		// EDIT(end)
 		f.encoder(e, fv, opts)
 	}
 	if next == '{' {
@@ -1118,6 +1127,16 @@ type field struct {
 	// EDIT(begin): save the timefmt if present
 	timefmt string
 	// EDIT(end)
+
+	// EDIT(begin): save the default value if present
+	// hasDefault is set when the struct field carries a `default:"..."` tag.
+	// When the field's value is the zero value, the encoder emits defaultJSON
+	// (a pre-marshaled JSON literal) instead of running the field's encoder.
+	// This guarantees fields like `constant.*` typed members marshal their
+	// documented default even when callers leave them at zero. See issue #328.
+	hasDefault  bool
+	defaultJSON []byte
+	// EDIT(end)
 }
 
 type isZeroer interface {
@@ -1234,6 +1253,19 @@ func typeFields(t reflect.Type) structFields {
 						timefmt: sf.Tag.Get("format"),
 						// EDIT(end)
 					}
+					// EDIT(begin): record `default:"..."` tag for string-kinded fields.
+					// Mirrors the contract in internal/apijson/encoder.go so request-body
+					// marshaling preserves documented defaults (e.g. `constant.JSONSchema`
+					// always serializes as "json_schema" even when left zero).
+					if ft.Kind() == reflect.String {
+						if raw, ok := sf.Tag.Lookup("default"); ok {
+							if encoded, err := Marshal(raw); err == nil {
+								field.hasDefault = true
+								field.defaultJSON = encoded
+							}
+						}
+					}
+					// EDIT(end)
 					field.nameBytes = []byte(field.name)
 
 					// Build nameEscHTML and nameNonEsc ahead of time.

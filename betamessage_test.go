@@ -663,3 +663,31 @@ func TestBetaAccumulateContentBlockIndexErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestBetaMessageNewParamsUnmarshalStringContent(t *testing.T) {
+	var params anthropic.BetaMessageNewParams
+	err := json.Unmarshal([]byte(`{"messages":[{"role":"user","content":"hello"}]}`), &params)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(params.Messages) != 1 || len(params.Messages[0].Content) != 1 {
+		t.Fatalf("expected one content block, got %#v", params.Messages)
+	}
+	if got := params.Messages[0].Content[0].OfText.Text; got != "hello" {
+		t.Fatalf("expected content %q, got %q", "hello", got)
+	}
+}
+
+func TestBetaToolResultBlockParamUnmarshalStringContent(t *testing.T) {
+	var block anthropic.BetaToolResultBlockParam
+	err := json.Unmarshal([]byte(`{"type":"tool_result","tool_use_id":"toolu_id","content":"hello"}`), &block)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(block.Content) != 1 {
+		t.Fatalf("expected one content block, got %#v", block.Content)
+	}
+	if got := block.Content[0].OfText.Text; got != "hello" {
+		t.Fatalf("expected content %q, got %q", "hello", got)
+	}
+}

@@ -270,6 +270,9 @@ func (r WebSearchToolResultBlock) ToParam() WebSearchToolResultBlockParam {
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
 	p.Content = r.Content.ToParam()
+	if r.JSON.Caller.Valid() {
+		p.Caller = param.Override[WebSearchToolResultBlockParamCallerUnion](json.RawMessage(r.Caller.RawJSON()))
+	}
 	return p
 }
 
@@ -333,6 +336,10 @@ func (r WebFetchToolResultBlock) ToParam() WebFetchToolResultBlockParam {
 	var p WebFetchToolResultBlockParam
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
+	p.Content = param.Override[WebFetchToolResultBlockParamContentUnion](json.RawMessage(r.Content.RawJSON()))
+	if r.JSON.Caller.Valid() {
+		p.Caller = param.Override[WebFetchToolResultBlockParamCallerUnion](json.RawMessage(r.Caller.RawJSON()))
+	}
 	return p
 }
 

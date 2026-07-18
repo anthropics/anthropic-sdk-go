@@ -348,6 +348,9 @@ func (r BetaWebSearchToolResultBlock) ToParam() BetaWebSearchToolResultBlockPara
 	var p BetaWebSearchToolResultBlockParam
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
+	if r.JSON.Caller.Valid() {
+		p.Caller = param.Override[BetaWebSearchToolResultBlockParamCallerUnion](json.RawMessage(r.Caller.RawJSON()))
+	}
 
 	if len(r.Content.OfBetaWebSearchResultBlockArray) > 0 {
 		for _, block := range r.Content.OfBetaWebSearchResultBlockArray {
@@ -366,6 +369,10 @@ func (r BetaWebFetchToolResultBlock) ToParam() BetaWebFetchToolResultBlockParam 
 	var p BetaWebFetchToolResultBlockParam
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
+	p.Content = param.Override[BetaWebFetchToolResultBlockParamContentUnion](json.RawMessage(r.Content.RawJSON()))
+	if r.JSON.Caller.Valid() {
+		p.Caller = param.Override[BetaWebFetchToolResultBlockParamCallerUnion](json.RawMessage(r.Caller.RawJSON()))
+	}
 	return p
 }
 

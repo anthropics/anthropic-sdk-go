@@ -4163,8 +4163,8 @@ const (
 	BetaManagedAgentsSessionRequiresActionTypeRequiresAction BetaManagedAgentsSessionRequiresActionType = "requires_action"
 )
 
-// The turn ended because repeated errors exhausted the automatic retry budget or
-// the agent reached an internal execution limit.
+// The turn ended because repeated errors exhausted the retry budget or an error
+// escalated to `retry_status: 'exhausted'`.
 type BetaManagedAgentsSessionRetriesExhausted struct {
 	// Any of "retries_exhausted".
 	Type BetaManagedAgentsSessionRetriesExhaustedType `json:"type" api:"required"`

@@ -5140,7 +5140,7 @@ func (r *RedactedThinkingBlockParam) UnmarshalJSON(data []byte) error {
 type RefusalStopDetails struct {
 	// The policy category that triggered a refusal.
 	//
-	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction".
+	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction", "general_harms".
 	Category RefusalStopDetailsCategory `json:"category" api:"required"`
 	// Human-readable explanation of the refusal.
 	//
@@ -5172,6 +5172,7 @@ const (
 	RefusalStopDetailsCategoryBio                 RefusalStopDetailsCategory = "bio"
 	RefusalStopDetailsCategoryFrontierLLM         RefusalStopDetailsCategory = "frontier_llm"
 	RefusalStopDetailsCategoryReasoningExtraction RefusalStopDetailsCategory = "reasoning_extraction"
+	RefusalStopDetailsCategoryGeneralHarms        RefusalStopDetailsCategory = "general_harms"
 )
 
 // The properties Content, Source, Title, Type are required.

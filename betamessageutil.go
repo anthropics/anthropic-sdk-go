@@ -281,6 +281,7 @@ func (citationVariant BetaCitationPageLocation) toParamUnion() BetaTextCitationP
 	var citationParam BetaCitationPageLocationParam
 	citationParam.Type = citationVariant.Type
 	citationParam.DocumentTitle = paramutil.ToOpt(citationVariant.DocumentTitle, citationVariant.JSON.DocumentTitle)
+	citationParam.CitedText = citationVariant.CitedText
 	citationParam.DocumentIndex = citationVariant.DocumentIndex
 	citationParam.EndPageNumber = citationVariant.EndPageNumber
 	citationParam.StartPageNumber = citationVariant.StartPageNumber
@@ -303,6 +304,8 @@ func (citationVariant BetaCitationsWebSearchResultLocation) toParamUnion() BetaT
 	citationParam.Type = citationVariant.Type
 	citationParam.CitedText = citationVariant.CitedText
 	citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
+	citationParam.EncryptedIndex = citationVariant.EncryptedIndex
+	citationParam.URL = citationVariant.URL
 	return BetaTextCitationParamUnion{OfWebSearchResultLocation: &citationParam}
 }
 
@@ -312,8 +315,9 @@ func (citationVariant BetaCitationSearchResultLocation) toParamUnion() BetaTextC
 	citationParam.CitedText = citationVariant.CitedText
 	citationParam.Title = paramutil.ToOpt(citationVariant.Title, citationVariant.JSON.Title)
 	citationParam.EndBlockIndex = citationVariant.EndBlockIndex
-	citationParam.StartBlockIndex = citationVariant.StartBlockIndex
+	citationParam.SearchResultIndex = citationVariant.SearchResultIndex
 	citationParam.Source = citationVariant.Source
+	citationParam.StartBlockIndex = citationVariant.StartBlockIndex
 	return BetaTextCitationParamUnion{OfSearchResultLocation: &citationParam}
 }
 

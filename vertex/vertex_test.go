@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"golang.org/x/oauth2"
@@ -156,5 +159,67 @@ func TestVertexUserMiddlewareObservesAnthropicShape(t *testing.T) {
 	}
 	if wireAuth != "Bearer fake" {
 		t.Errorf("Expected OAuth Authorization on the wire, got %q", wireAuth)
+	}
+}
+
+// TestWithGoogleAuthDefaultsCloudPlatformScope drives the workload-identity
+// (external_account) flow against a local STS endpoint: without an explicit
+// scope from the caller, the token exchange must request cloud-platform —
+// external-account credentials fail to mint tokens with no scope at all.
+func TestWithGoogleAuthDefaultsCloudPlatformScope(t *testing.T) {
+	scopes := make(chan string, 1)
+	tokenServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// The STS exchange is the only POST; the probe GET must not report.
+		if r.Method != http.MethodPost {
+			return
+		}
+		if err := r.ParseForm(); err != nil {
+			t.Errorf("Failed to parse token request form: %v", err)
+		}
+		scopes <- r.Form.Get("scope")
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"access_token":"tok","issued_token_type":"urn:ietf:params:oauth:token-type:access_token","token_type":"Bearer","expires_in":3600}`))
+	}))
+	t.Cleanup(tokenServer.Close)
+
+	dir := t.TempDir()
+	subjectTokenFile := filepath.Join(dir, "subject-token")
+	if err := os.WriteFile(subjectTokenFile, []byte("subject-token"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	credFile := filepath.Join(dir, "creds.json")
+	credJSON := fmt.Sprintf(`{
+		"type": "external_account",
+		"audience": "//iam.googleapis.com/projects/1/locations/global/workloadIdentityPools/pool/providers/provider",
+		"subject_token_type": "urn:ietf:params:oauth:token-type:jwt",
+		"token_url": %q,
+		"credential_source": {"file": %q}
+	}`, tokenServer.URL, subjectTokenFile)
+	if err := os.WriteFile(credFile, []byte(credJSON), 0600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", credFile)
+
+	var rc requestconfig.RequestConfig
+	if err := rc.Apply(WithGoogleAuth(context.Background(), "us-east5", "proj")); err != nil {
+		t.Fatalf("Expected option to apply, got: %v", err)
+	}
+
+	// Any request through the option's HTTP client first performs the token
+	// exchange; the probe target just needs to answer.
+	req, _ := http.NewRequest(http.MethodGet, tokenServer.URL+"/probe", nil)
+	resp, err := rc.HTTPClient.Do(req)
+	if err != nil {
+		t.Fatalf("Expected the probe request to complete, got: %v", err)
+	}
+	resp.Body.Close()
+
+	select {
+	case got := <-scopes:
+		if got != cloudPlatformScope {
+			t.Errorf("Expected default scope %q in the token exchange, got %q", cloudPlatformScope, got)
+		}
+	default:
+		t.Fatal("Expected a token exchange to hit the local STS endpoint")
 	}
 }

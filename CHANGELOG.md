@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.58.1 (2026-07-21)
+
+Full Changelog: [v1.58.0...v1.58.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.58.0...v1.58.1)
+
+### Bug Fixes
+
+* **client:** copy all citation fields in ToParam conversions ([#191](https://github.com/anthropics/anthropic-sdk-go/issues/191)) ([26ac1f9](https://github.com/anthropics/anthropic-sdk-go/commit/26ac1f9c150b980b5df4c0b3c826ecde38f2affe))
+* **vertex:** default to the cloud-platform scope in WithGoogleAuth ([#190](https://github.com/anthropics/anthropic-sdk-go/issues/190)) ([7931e70](https://github.com/anthropics/anthropic-sdk-go/commit/7931e705abad1f245d7362cbc17ef281647b0bb9))
+
+
+### Chores
+
+* **api:** add support for new refusal category ([f77159c](https://github.com/anthropics/anthropic-sdk-go/commit/f77159cf64b7965f6c6be42ae2d25fb690c134c2))
+* **docs:** small updates ([576dc36](https://github.com/anthropics/anthropic-sdk-go/commit/576dc36ce84f1a842a728fcb11636342407b3f63))
+* **docs:** small updates ([f618082](https://github.com/anthropics/anthropic-sdk-go/commit/f6180825ac983aebfb0d0e09e3784145698d4cdc))
+* **internal:** codegen related update ([03fee5d](https://github.com/anthropics/anthropic-sdk-go/commit/03fee5d99295612792d12d60e5fca0a798e723d5))
+
 ## 1.58.0 (2026-07-16)
 
 Full Changelog: [v1.57.0...v1.58.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.57.0...v1.58.0)

@@ -4961,7 +4961,7 @@ func init() {
 type BetaFallbackRefusalTrigger struct {
 	// The policy category that triggered a refusal.
 	//
-	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction".
+	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction", "general_harms".
 	Category BetaFallbackRefusalTriggerCategory `json:"category" api:"required"`
 	Type     constant.Refusal                   `json:"type" default:"refusal"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -4987,6 +4987,7 @@ const (
 	BetaFallbackRefusalTriggerCategoryBio                 BetaFallbackRefusalTriggerCategory = "bio"
 	BetaFallbackRefusalTriggerCategoryFrontierLLM         BetaFallbackRefusalTriggerCategory = "frontier_llm"
 	BetaFallbackRefusalTriggerCategoryReasoningExtraction BetaFallbackRefusalTriggerCategory = "reasoning_extraction"
+	BetaFallbackRefusalTriggerCategoryGeneralHarms        BetaFallbackRefusalTriggerCategory = "general_harms"
 )
 
 // The properties FileID, Type are required.
@@ -7123,7 +7124,7 @@ func (r *BetaRedactedThinkingBlockParam) UnmarshalJSON(data []byte) error {
 type BetaRefusalStopDetails struct {
 	// The policy category that triggered a refusal.
 	//
-	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction".
+	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction", "general_harms".
 	Category BetaRefusalStopDetailsCategory `json:"category" api:"required"`
 	// Human-readable explanation of the refusal.
 	//
@@ -7202,6 +7203,7 @@ const (
 	BetaRefusalStopDetailsCategoryBio                 BetaRefusalStopDetailsCategory = "bio"
 	BetaRefusalStopDetailsCategoryFrontierLLM         BetaRefusalStopDetailsCategory = "frontier_llm"
 	BetaRefusalStopDetailsCategoryReasoningExtraction BetaRefusalStopDetailsCategory = "reasoning_extraction"
+	BetaRefusalStopDetailsCategoryGeneralHarms        BetaRefusalStopDetailsCategory = "general_harms"
 )
 
 // The properties Source, Type are required.

@@ -19,8 +19,16 @@ import (
 
 const DefaultVersion = "vertex-2023-10-16"
 
+// cloudPlatformScope is the OAuth2 scope used when the caller provides none.
+// External-account (workload identity federation) credentials fail to mint
+// tokens without an explicit scope.
+const cloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
+
 // WithGoogleAuth returns a request option which loads the [Application Default Credentials] for Google Vertex AI and registers
 // middleware that intercepts requests to the Messages API.
+//
+// When no scopes are given, the https://www.googleapis.com/auth/cloud-platform
+// scope is used.
 //
 // If you already have a [*google.Credentials], it is recommended that you instead call [WithCredentials] directly.
 //
@@ -32,6 +40,9 @@ func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes
 	if region == "" {
 		panic("region must be provided")
 	}
+	if len(scopes) == 0 {
+		scopes = []string{cloudPlatformScope}
+	}
 	creds, err := google.FindDefaultCredentials(ctx, scopes...)
 	if err != nil {
 		panic(fmt.Errorf("failed to find default credentials: %v", err))
@@ -41,6 +52,10 @@ func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes
 
 // WithCredentials returns a request option which uses the provided credentials for Google Vertex AI and registers middleware that
 // intercepts request to the Messages API.
+//
+// External-account (workload identity federation) credentials must be
+// constructed with a scope — typically
+// https://www.googleapis.com/auth/cloud-platform — or token minting fails.
 //
 // The Vertex adaptation (URL and body rewriting, OAuth authorization) should
 // run closest to the wire. Middleware runs in registration order, so register

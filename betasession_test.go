@@ -31,6 +31,17 @@ func TestBetaSessionNewWithOptionalParams(t *testing.T) {
 			OfString: anthropic.String("agent_011CZkYpogX7uDKUyvBTophP"),
 		},
 		EnvironmentID: "env_011CZkZ9X2dpNyB7HsEFoRfW",
+		InitialEvents: []anthropic.BetaSessionNewParamsInitialEventUnion{{
+			OfUserMessage: &anthropic.BetaManagedAgentsUserMessageEventParams{
+				Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{{
+					OfText: &anthropic.BetaManagedAgentsTextBlockParam{
+						Text: "Where is my order #1234?",
+						Type: anthropic.BetaManagedAgentsTextBlockTypeText,
+					},
+				}},
+				Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
+			},
+		}},
 		Metadata: map[string]string{
 			"foo": "string",
 		},

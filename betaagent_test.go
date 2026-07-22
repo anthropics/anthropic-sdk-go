@@ -28,7 +28,10 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Agents.New(context.TODO(), anthropic.BetaAgentNewParams{
 		Model: anthropic.BetaManagedAgentsModelConfigParams{
-			ID:    anthropic.BetaManagedAgentsModelClaudeOpus4_8,
+			ID: anthropic.BetaManagedAgentsModelClaudeOpus4_8,
+			Effort: anthropic.BetaManagedAgentsModelConfigParamsEffortUnion{
+				OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel: anthropic.String("low"),
+			},
 			Speed: anthropic.BetaManagedAgentsModelConfigParamsSpeedStandard,
 		},
 		Name:        "My First Agent",
@@ -138,8 +141,7 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"agent_011CZkYpogX7uDKUyvBTophP",
 		anthropic.BetaAgentUpdateParams{
-			Version:     1,
-			Description: anthropic.String("description"),
+			Description: anthropic.String("updated"),
 			MCPServers: []anthropic.BetaManagedAgentsURLMCPServerParams{{
 				Name: "example-mcp",
 				Type: anthropic.BetaManagedAgentsURLMCPServerParamsTypeURL,
@@ -149,7 +151,10 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 				"foo": "string",
 			},
 			Model: anthropic.BetaManagedAgentsModelConfigParams{
-				ID:    anthropic.BetaManagedAgentsModelClaudeOpus4_8,
+				ID: anthropic.BetaManagedAgentsModelClaudeOpus4_8,
+				Effort: anthropic.BetaManagedAgentsModelConfigParamsEffortUnion{
+					OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel: anthropic.String("low"),
+				},
 				Speed: anthropic.BetaManagedAgentsModelConfigParamsSpeedStandard,
 			},
 			Multiagent: anthropic.BetaManagedAgentsMultiagentParams{
@@ -193,7 +198,8 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 					},
 				},
 			}},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Version: anthropic.Int(1),
+			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {

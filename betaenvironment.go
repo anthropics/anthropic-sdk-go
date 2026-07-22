@@ -462,7 +462,9 @@ type BetaEnvironmentDeleteResponse struct {
 	// Environment identifier
 	ID string `json:"id" api:"required"`
 	// The type of response
-	Type constant.EnvironmentDeleted `json:"type" default:"environment_deleted"`
+	//
+	// Any of "environment_deleted".
+	Type BetaEnvironmentDeleteResponseType `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -477,6 +479,13 @@ func (r BetaEnvironmentDeleteResponse) RawJSON() string { return r.JSON.raw }
 func (r *BetaEnvironmentDeleteResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// The type of response
+type BetaEnvironmentDeleteResponseType string
+
+const (
+	BetaEnvironmentDeleteResponseTypeEnvironmentDeleted BetaEnvironmentDeleteResponseType = "environment_deleted"
+)
 
 // Limited network access.
 type BetaLimitedNetwork struct {

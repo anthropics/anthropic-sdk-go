@@ -124,7 +124,7 @@ func main() {
 
 	// Patch the agent to v2 by adding skills; each update bumps the version
 	agent, err := client.Beta.Agents.Update(ctx, agentV1.ID, anthropic.BetaAgentUpdateParams{
-		Version: agentV1.Version,
+		Version: anthropic.Int(agentV1.Version),
 		Skills: []anthropic.BetaManagedAgentsSkillParamsUnion{
 			{
 				OfCustom: &anthropic.BetaManagedAgentsCustomSkillParams{

@@ -37,6 +37,7 @@ func (r *Error) Type() shared.ErrorType { return r.errorType }
 
 // Returns the unmodified JSON received from the API
 func (r Error) RawJSON() string { return r.JSON.raw }
+
 func (r *Error) UnmarshalJSON(data []byte) error {
 	if err := apijson.UnmarshalRoot(data, r); err != nil {
 		return err
@@ -52,6 +53,10 @@ func (r *Error) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
+
+// UnmarshalAPIJSON marks Error as not apijson-native. See
+// [apijson.CustomUnmarshaler].
+func (r *Error) UnmarshalAPIJSON(data []byte) error { return r.UnmarshalJSON(data) }
 
 func (r *Error) Error() string {
 	// Attempt to re-populate the response body

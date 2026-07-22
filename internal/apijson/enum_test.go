@@ -40,6 +40,11 @@ func (e NamedEnumType) IsKnown() bool {
 }
 
 func TestEnumStructStringValidator(t *testing.T) {
+	var (
+		exact  = exactness{}
+		loose  = exactness{coercions: 1}
+		extras = exactness{extras: hasExtras}
+	)
 	cases := map[string]struct {
 		exactness
 		EnumStruct
@@ -81,7 +86,7 @@ func TestEnumStructStringValidator(t *testing.T) {
 		}
 
 		if exactness != expected.exactness {
-			t.Fatalf("exactness got %d expected %d %s", exactness, expected.exactness, raw)
+			t.Fatalf("exactness got %+v expected %+v %s", exactness, expected.exactness, raw)
 		}
 	}
 }

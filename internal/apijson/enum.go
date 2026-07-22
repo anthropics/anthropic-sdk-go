@@ -88,7 +88,7 @@ func (state *decoderState) validateString(v reflect.Value) {
 		return
 	}
 	if !slices.Contains(state.validator.legalValues.strings, v.String()) {
-		state.exactness = loose
+		state.exactness.noteCoercion()
 	}
 }
 
@@ -97,7 +97,7 @@ func (state *decoderState) validateInt(v reflect.Value) {
 		return
 	}
 	if !slices.Contains(state.validator.legalValues.ints, v.Int()) {
-		state.exactness = loose
+		state.exactness.noteCoercion()
 	}
 }
 
@@ -107,21 +107,21 @@ func (state *decoderState) validateBool(v reflect.Value) {
 	}
 	b := v.Bool()
 	if state.validator.legalValues.bools == 1 && !b {
-		state.exactness = loose
+		state.exactness.noteCoercion()
 	} else if state.validator.legalValues.bools == 0 && b {
-		state.exactness = loose
+		state.exactness.noteCoercion()
 	}
 }
 
 func (state *decoderState) validateOptKind(node gjson.Result, t reflect.Type) {
 	switch node.Type {
 	case gjson.JSON:
-		state.exactness = loose
+		state.exactness.noteCoercion()
 	case gjson.Null:
 		return
 	case gjson.False, gjson.True:
 		if t.Kind() != reflect.Bool {
-			state.exactness = loose
+			state.exactness.noteCoercion()
 		}
 	case gjson.Number:
 		switch t.Kind() {
@@ -130,11 +130,11 @@ func (state *decoderState) validateOptKind(node gjson.Result, t reflect.Type) {
 			reflect.Float32, reflect.Float64:
 			return
 		default:
-			state.exactness = loose
+			state.exactness.noteCoercion()
 		}
 	case gjson.String:
 		if t.Kind() != reflect.String {
-			state.exactness = loose
+			state.exactness.noteCoercion()
 		}
 	}
 }

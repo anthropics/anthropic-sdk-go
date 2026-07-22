@@ -139,7 +139,7 @@ func tryLoadFallbackProfile() (auth.CredentialSourceStatus, option.RequestOption
 			return auth.CredentialSourceStatus{
 				Name:   "profile config file",
 				State:  auth.CredentialSourceNotFound,
-				Detail: "run `anthropic auth login` to create one",
+				Detail: "run `ant auth login` to create one",
 			}, nil
 		}
 		return auth.CredentialSourceStatus{

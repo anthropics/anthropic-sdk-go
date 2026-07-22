@@ -114,7 +114,7 @@ func TestOAuthTokenError_InvalidGrantSuggestsRelogin(t *testing.T) {
 	if !strings.Contains(msg, "refresh token expired") {
 		t.Errorf("expected error_description in message, got: %s", msg)
 	}
-	if !strings.Contains(msg, "anthropic auth login") {
+	if !strings.Contains(msg, "ant auth login") {
 		t.Errorf("expected relogin hint in message, got: %s", msg)
 	}
 	if !strings.Contains(msg, "invalid_grant") {
@@ -128,7 +128,7 @@ func TestOAuthTokenError_InvalidGrantSuggestsRelogin(t *testing.T) {
 func TestOAuthTokenError_401UnauthorizedSuggestsRelogin(t *testing.T) {
 	err := &OAuthTokenError{StatusCode: 401, Body: `{"error":"unauthorized_client"}`}
 	msg := err.Error()
-	if !strings.Contains(msg, "anthropic auth login") {
+	if !strings.Contains(msg, "ant auth login") {
 		t.Errorf("expected relogin hint on 401, got: %s", msg)
 	}
 }
@@ -138,7 +138,7 @@ func TestOAuthTokenError_401UnauthorizedSuggestsRelogin(t *testing.T) {
 func TestOAuthTokenError_500DoesNotSuggestRelogin(t *testing.T) {
 	err := &OAuthTokenError{StatusCode: 500, Body: `{"error":"server_error"}`}
 	msg := err.Error()
-	if strings.Contains(msg, "anthropic auth login") {
+	if strings.Contains(msg, "ant auth login") {
 		t.Errorf("5xx should not suggest re-login: %s", msg)
 	}
 }

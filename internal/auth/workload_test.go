@@ -396,7 +396,7 @@ func TestWorkloadIdentityCredentials_401NoWorkspaceIDIncludesHint(t *testing.T) 
 		t.Errorf("expected hint to point at the authentication-events page, got: %s", msg)
 	}
 	// The relogin suffix is user_oauth-only; it must never run into this hint.
-	if strings.Contains(msg, "anthropic auth login") {
+	if strings.Contains(msg, "ant auth login") {
 		t.Errorf("workload-identity 401 must not suggest interactive relogin, got: %s", msg)
 	}
 }
@@ -442,7 +442,7 @@ func TestWorkloadIdentityCredentials_401WithWorkspaceIDOmitsWorkspaceHint(t *tes
 
 // TestWorkloadIdentityCredentials_NoReloginSuggestion verifies that
 // workload-identity token-exchange failures never suggest re-running
-// `anthropic auth login`. Machine credentials have no interactive browser
+// `ant auth login`. Machine credentials have no interactive browser
 // login to re-run; that remediation is only meaningful for the user_oauth
 // flow. The cases below are exactly the statuses (and the invalid_grant
 // RFC code) that trigger the relogin suffix on the user_oauth path — see
@@ -490,7 +490,7 @@ func TestWorkloadIdentityCredentials_NoReloginSuggestion(t *testing.T) {
 				t.Error("expected WorkloadIdentity to be set on workload-identity errors")
 			}
 			msg := err.Error()
-			if strings.Contains(msg, "anthropic auth login") {
+			if strings.Contains(msg, "ant auth login") {
 				t.Errorf("workload-identity error must not suggest interactive relogin, got: %s", msg)
 			}
 			if tc.wantHint {

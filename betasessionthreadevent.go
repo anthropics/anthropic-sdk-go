@@ -91,7 +91,7 @@ func (r *BetaSessionThreadEventService) StreamEvents(ctx context.Context, thread
 		return ssestream.NewStream[BetaManagedAgentsStreamSessionThreadEventsUnion](nil, err)
 	}
 	path := fmt.Sprintf("v1/sessions/%s/threads/%s/stream?beta=true", params.SessionID, threadID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &raw, opts...)
 	return ssestream.NewStream[BetaManagedAgentsStreamSessionThreadEventsUnion](ssestream.NewDecoder(raw), err)
 }
 
@@ -117,7 +117,27 @@ func (r BetaSessionThreadEventListParams) URLQuery() (v url.Values, err error) {
 
 type BetaSessionThreadEventStreamParams struct {
 	SessionID string `path:"session_id" api:"required" json:"-"`
+	// When set, this connection also receives streaming deltas (`event_start`,
+	// `event_delta`) while an event is being produced, before the event itself
+	// arrives. Deltas are best-effort; when the final event is produced it carries the
+	// complete content. A model request that ends early (an error or interrupt)
+	// produces no final event — its terminal `span.model_request_end` closes the
+	// preview. Accepts one or more event types to preview and may be repeated:
+	// `agent.message` streams `content_delta` fragments; `agent.thinking` is
+	// start-only — a signal that the agent has begun extended thinking, concluded by
+	// the `agent.thinking` event itself. Only previews of the requested event types
+	// are sent.
+	EventDeltas []BetaManagedAgentsDeltaType `query:"event_deltas,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
+}
+
+// URLQuery serializes [BetaSessionThreadEventStreamParams]'s query parameters as
+// `url.Values`.
+func (r BetaSessionThreadEventStreamParams) URLQuery() (v url.Values, err error) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
+		NestedFormat: apiquery.NestedQueryFormatBrackets,
+	})
 }

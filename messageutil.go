@@ -277,6 +277,7 @@ func (r WebSearchToolResultBlock) ToParam() WebSearchToolResultBlockParam {
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
 	p.Content = r.Content.ToParam()
+	p.Caller = r.Caller.ToParam()
 	return p
 }
 
@@ -304,6 +305,22 @@ func (r WebSearchToolResultBlockContentUnion) ToParam() WebSearchToolResultBlock
 		ErrorCode: WebSearchToolResultErrorCode(r.ErrorCode),
 	}
 	return p
+}
+
+func (u WebSearchToolResultBlockCallerUnion) ToParam() WebSearchToolResultBlockParamCallerUnion {
+	switch u.Type {
+	case "direct":
+		v := u.AsDirect().ToParam()
+		return WebSearchToolResultBlockParamCallerUnion{OfDirect: &v}
+	case "code_execution_20250825":
+		v := u.AsCodeExecution20250825().ToParam()
+		return WebSearchToolResultBlockParamCallerUnion{OfCodeExecution20250825: &v}
+	case "code_execution_20260120":
+		v := u.AsCodeExecution20260120().ToParam()
+		return WebSearchToolResultBlockParamCallerUnion{OfCodeExecution20260120: &v}
+	default:
+		return WebSearchToolResultBlockParamCallerUnion{}
+	}
 }
 
 func (variant WebFetchToolResultBlock) toParamUnion() ContentBlockParamUnion {
@@ -340,7 +357,41 @@ func (r WebFetchToolResultBlock) ToParam() WebFetchToolResultBlockParam {
 	var p WebFetchToolResultBlockParam
 	p.Type = r.Type
 	p.ToolUseID = r.ToolUseID
+	p.Content = r.Content.ToParam()
+	p.Caller = r.Caller.ToParam()
 	return p
+}
+
+func (r WebFetchToolResultBlockContentUnion) ToParam() WebFetchToolResultBlockParamContentUnion {
+	var p WebFetchToolResultBlockParamContentUnion
+	if r.JSON.ErrorCode.Valid() {
+		p.OfRequestWebFetchToolResultError = &WebFetchToolResultErrorBlockParam{
+			ErrorCode: r.ErrorCode,
+		}
+	} else {
+		p.OfRequestWebFetchResultBlock = &WebFetchBlockParam{
+			URL:         r.URL,
+			RetrievedAt: paramutil.ToOpt(r.RetrievedAt, r.JSON.RetrievedAt),
+			Content:     param.Override[DocumentBlockParam](json.RawMessage(r.Content.RawJSON())),
+		}
+	}
+	return p
+}
+
+func (u WebFetchToolResultBlockCallerUnion) ToParam() WebFetchToolResultBlockParamCallerUnion {
+	switch u.Type {
+	case "direct":
+		v := u.AsDirect().ToParam()
+		return WebFetchToolResultBlockParamCallerUnion{OfDirect: &v}
+	case "code_execution_20250825":
+		v := u.AsCodeExecution20250825().ToParam()
+		return WebFetchToolResultBlockParamCallerUnion{OfCodeExecution20250825: &v}
+	case "code_execution_20260120":
+		v := u.AsCodeExecution20260120().ToParam()
+		return WebFetchToolResultBlockParamCallerUnion{OfCodeExecution20260120: &v}
+	default:
+		return WebFetchToolResultBlockParamCallerUnion{}
+	}
 }
 
 func (r ContainerUploadBlock) ToParam() ContainerUploadBlockParam {

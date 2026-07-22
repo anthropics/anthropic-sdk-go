@@ -148,6 +148,21 @@ func idleRequiresActionEvt(id string, eventIDs ...string) map[string]any {
 	}
 }
 
+func interruptEvt(id string, processed bool, sessionThreadID string) map[string]any {
+	event := map[string]any{
+		"type":         "user.interrupt",
+		"id":           id,
+		"processed_at": nil,
+	}
+	if processed {
+		event["processed_at"] = "2026-05-11T12:00:01Z"
+	}
+	if sessionThreadID != "" {
+		event["session_thread_id"] = sessionThreadID
+	}
+	return event
+}
+
 func emptyEventList() string {
 	body, _ := json.Marshal(map[string]any{"data": []any{}, "first_id": nil, "has_more": false, "last_id": nil})
 	return string(body)
@@ -387,48 +402,119 @@ func TestSessionToolRunner_DispatchesBuiltinAndCustom(t *testing.T) {
 	require.Equal(t, int32(2), echo.runs.Load())
 }
 
-// TestSessionToolRunner_ReconcileRetriesFailedPost covers the regression where
-// a tool_use whose result post failed was marked answered anyway and so never
-// retried. The post must only count as answered once it actually succeeds, so
-// the reconcile after a reconnect re-dispatches the still-unanswered call.
-func TestSessionToolRunner_ReconcileRetriesFailedPost(t *testing.T) {
+func TestSessionToolRunner_PermanentResultRejectionTerminates(t *testing.T) {
 	server := newSessionEventsServer(t)
-
-	var streamConns atomic.Int32
 	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
-		if streamConns.Add(1) == 1 {
-			// First connection: deliver the tool_use, then close so the runner
-			// reconnects and reconciles.
-			streamWriter(w, r, []string{
-				sseLine("agent.tool_use", toolUseEvt("evt_1", "echo", map[string]any{})),
-			}, false)
-			return
-		}
-		streamWriter(w, r, nil, true) // later connections: hold open, no events
-	}
-
-	var lists atomic.Int32
-	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		// The reconcile after the reconnect must still see the unanswered
-		// tool_use in history so it can re-dispatch it.
-		if lists.Add(1) >= 2 {
-			body, _ := json.Marshal(map[string]any{
-				"data":     []any{toolUseEvt("evt_1", "echo", map[string]any{})},
-				"first_id": "evt_1", "has_more": false, "last_id": "evt_1",
-			})
-			_, _ = w.Write(body)
-			return
-		}
-		_, _ = w.Write([]byte(emptyEventList()))
+		streamWriter(w, r, []string{
+			sseLine("agent.tool_use", toolUseEvt("evt_1", "echo", map[string]any{})),
+		}, true)
 	}
 
 	var sends atomic.Int32
 	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		sends.Add(1)
+		http.Error(w, "bad", http.StatusBadRequest)
+	}
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 0)
+
+	require.True(t, r.Next(), "the rejected dispatch remains observable")
+	require.False(t, r.Current().Posted)
+	require.False(t, r.Next(), "a permanent result rejection must stop the runner")
+	require.ErrorContains(t, r.Err(), "tool result send")
+	require.Equal(t, int32(1), echo.runs.Load())
+	require.Equal(t, int32(1), sends.Load())
+	require.NoError(t, r.Close())
+}
+
+func TestSessionToolRunner_DrainsRejectedCallAfterTerminalCancel(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, []string{
+			sseLine("agent.tool_use", toolUseEvt("evt_ok", "echo", nil)),
+			sseLine("agent.tool_use", toolUseEvt("evt_rejected", "echo", nil)),
+		}, true)
+	}
+	var sends atomic.Int32
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
 		if sends.Add(1) == 1 {
-			// First post fails permanently — the call must NOT be marked
-			// answered, so the next reconcile retries it.
-			http.Error(w, "bad", http.StatusBadRequest)
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(sendOK()))
+			return
+		}
+		http.Error(w, "bad", http.StatusBadRequest)
+	}
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 0)
+
+	require.True(t, r.Next())
+	require.Equal(t, "evt_ok", r.Current().ToolUseID)
+	require.True(t, r.Current().Posted)
+	select {
+	case <-r.ctx.Done():
+	case <-time.After(time.Second):
+		t.Fatal("runner did not terminate after permanent result rejection")
+	}
+	require.True(t, r.Next(), "a buffered rejected call must be drained before cancellation ends iteration")
+	require.Equal(t, "evt_rejected", r.Current().ToolUseID)
+	require.False(t, r.Current().Posted)
+	require.False(t, r.Next())
+	require.ErrorContains(t, r.Err(), "tool result send")
+	require.Equal(t, int32(2), echo.runs.Load())
+	require.Equal(t, int32(2), sends.Load())
+	require.NoError(t, r.Close())
+}
+
+func TestSessionToolRunner_SurfaceCallPrefersBufferAfterCancellation(t *testing.T) {
+	r := &SessionToolRunner{results: make(chan DispatchedToolCall, 1)}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	r.surfaceCall(ctx, DispatchedToolCall{ToolUseID: "evt_done"})
+
+	select {
+	case call := <-r.results:
+		require.Equal(t, "evt_done", call.ToolUseID)
+	default:
+		t.Fatal("completed call was dropped despite available result buffer")
+	}
+}
+
+func TestSessionToolRunner_ReconcileRetriesTransientPostFailure(t *testing.T) {
+	server := newSessionEventsServer(t)
+	var streamConns atomic.Int32
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		if streamConns.Add(1) == 1 {
+			streamWriter(w, r, []string{
+				sseLine("agent.tool_use", toolUseEvt("evt_retry", "echo", nil)),
+			}, false)
+			return
+		}
+		streamWriter(w, r, nil, true)
+	}
+	var lists atomic.Int32
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if lists.Add(1) == 1 {
+			_, _ = w.Write([]byte(emptyEventList()))
+			return
+		}
+		body, _ := json.Marshal(map[string]any{
+			"data":     []any{toolUseEvt("evt_retry", "echo", nil)},
+			"first_id": "evt_retry", "has_more": false, "last_id": "evt_retry",
+		})
+		_, _ = w.Write(body)
+	}
+	var sends atomic.Int32
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		if sends.Add(1) <= sessionRunnerSendRetries {
+			http.Error(w, "retry", http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -440,18 +526,371 @@ func TestSessionToolRunner_ReconcileRetriesFailedPost(t *testing.T) {
 	defer cancel()
 	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 0)
 
-	require.True(t, r.Next(), "first dispatch should be yielded")
-	first := r.Current()
-	require.Equal(t, "evt_1", first.ToolUseID)
-	require.False(t, first.Posted, "the first result post fails (permanent 4xx)")
-
-	require.True(t, r.Next(), "reconcile after reconnect must re-dispatch the unanswered tool_use")
-	second := r.Current()
-	require.Equal(t, "evt_1", second.ToolUseID)
-	require.True(t, second.Posted, "the retried result post succeeds")
-
-	require.GreaterOrEqual(t, echo.runs.Load(), int32(2), "the tool is re-executed on the retry")
+	require.True(t, r.Next())
+	require.False(t, r.Current().Posted)
+	require.True(t, r.Next())
+	require.True(t, r.Current().Posted)
+	require.Equal(t, int32(2), echo.runs.Load())
+	require.Equal(t, int32(4), sends.Load())
 	require.NoError(t, r.Close())
+}
+
+func TestSessionToolRunner_GlobalInterruptCancelsHeldHistory(t *testing.T) {
+	server := newSessionEventsServer(t)
+	var streamConns atomic.Int32
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		if streamConns.Add(1) == 1 {
+			streamWriter(w, r, []string{
+				sseLine("agent.tool_use", askToolUseEvt("evt_held", "echo", nil, "ask")),
+			}, false)
+			return
+		}
+		streamWriter(w, r, nil, true)
+	}
+
+	var lists atomic.Int32
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if lists.Add(1) == 1 {
+			_, _ = w.Write([]byte(emptyEventList()))
+			return
+		}
+		events := []any{interruptEvt("evt_interrupt", true, ""), idleEndTurnEvt("evt_idle")}
+		body, _ := json.Marshal(map[string]any{
+			"data": events, "first_id": "evt_interrupt", "has_more": false, "last_id": "evt_idle",
+		})
+		_, _ = w.Write(body)
+	}
+	server.HandleSend = func(http.ResponseWriter, *http.Request) {
+		t.Fatal("an interrupted tool call must not post a result")
+	}
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 50*time.Millisecond)
+
+	require.False(t, r.Next())
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout)
+	require.Equal(t, int32(0), echo.runs.Load())
+	require.False(t, r.isAnswered("evt_held"))
+	require.True(t, r.isSettled("evt_held"))
+	require.NoError(t, r.Close())
+}
+
+func TestSessionToolRunner_GlobalInterruptCancelsHeldLiveCall(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, []string{
+			sseLine("agent.tool_use", askToolUseEvt("evt_held", "echo", nil, "ask")),
+			sseLine("user.interrupt", interruptEvt("evt_interrupt", true, "")),
+			sseLine("session.status_idle", idleEndTurnEvt("evt_idle")),
+		}, true)
+	}
+	server.HandleSend = func(http.ResponseWriter, *http.Request) {
+		t.Fatal("an interrupted tool call must not post a result")
+	}
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 50*time.Millisecond)
+
+	require.False(t, r.Next())
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout)
+	require.Equal(t, int32(0), echo.runs.Load())
+	require.False(t, r.isAnswered("evt_held"))
+	require.True(t, r.isSettled("evt_held"))
+	require.NoError(t, r.Close())
+}
+
+func TestSessionToolRunner_GlobalInterruptUsesProcessedTimeCutoff(t *testing.T) {
+	tests := []struct {
+		name      string
+		toolUseID string
+		toolUse   map[string]any
+	}{
+		{
+			name:      "builtin",
+			toolUseID: "evt_stale",
+			toolUse:   toolUseEvt("evt_stale", "echo", nil),
+		},
+		{
+			name:      "custom",
+			toolUseID: "cevt_stale",
+			toolUse:   customToolUseEvt("cevt_stale", "echo", nil),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				streamWriter(w, r, nil, true)
+			}
+			server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+				// History is ordered by created_at. A queued interrupt can therefore
+				// appear before a tool call that it later invalidated at processing time.
+				events := []any{interruptEvt("evt_interrupt", true, ""), tt.toolUse, idleEndTurnEvt("evt_idle")}
+				body, _ := json.Marshal(map[string]any{
+					"data": events, "first_id": "evt_interrupt", "has_more": false, "last_id": "evt_idle",
+				})
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write(body)
+			}
+			server.HandleSend = func(http.ResponseWriter, *http.Request) {
+				t.Fatal("a tool call before the processed interrupt cutoff must not post a result")
+			}
+
+			echo := &stubBetaTool{name: "echo"}
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 50*time.Millisecond)
+
+			require.False(t, r.Next())
+			require.ErrorIs(t, r.Err(), ErrIdleTimeout)
+			require.Equal(t, int32(0), echo.runs.Load())
+			require.True(t, r.isCanceled(tt.toolUseID))
+			require.NoError(t, r.Close())
+		})
+	}
+}
+
+func TestSessionToolRunner_GlobalInterruptCancelsInFlightCall(t *testing.T) {
+	server := newSessionEventsServer(t)
+	started := make(chan struct{})
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		flusher := w.(http.Flusher)
+		w.WriteHeader(http.StatusOK)
+		flusher.Flush()
+		_, _ = w.Write([]byte(sseLine("agent.tool_use", toolUseEvt("evt_running", "echo", nil))))
+		flusher.Flush()
+		select {
+		case <-started:
+		case <-r.Context().Done():
+			return
+		}
+		_, _ = w.Write([]byte(sseLine("user.interrupt", interruptEvt("evt_interrupt", true, ""))))
+		flusher.Flush()
+		_, _ = w.Write([]byte(sseLine("session.status_idle", idleEndTurnEvt("evt_idle"))))
+		flusher.Flush()
+		<-r.Context().Done()
+	}
+	server.HandleSend = func(http.ResponseWriter, *http.Request) {
+		t.Fatal("an interrupted in-flight tool call must not post a result")
+	}
+
+	echo := &stubBetaTool{name: "echo", run: func(ctx context.Context, _ json.RawMessage) (string, bool) {
+		close(started)
+		<-ctx.Done()
+		return ctx.Err().Error(), true
+	}}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 50*time.Millisecond)
+
+	require.True(t, r.Next(), "the interrupted dispatch remains observable")
+	require.Equal(t, "evt_running", r.Current().ToolUseID)
+	require.False(t, r.Current().Posted)
+	require.False(t, r.Next())
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout)
+	require.Equal(t, int32(1), echo.runs.Load())
+	require.True(t, r.isCanceled("evt_running"))
+	require.NoError(t, r.Close())
+}
+
+func TestSessionToolRunner_PermanentRejectionRefreshesSettlementHistory(t *testing.T) {
+	server := newSessionEventsServer(t)
+	sendStarted := make(chan struct{})
+	releaseIdle := make(chan struct{})
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		flusher := w.(http.Flusher)
+		w.WriteHeader(http.StatusOK)
+		flusher.Flush()
+		_, _ = w.Write([]byte(sseLine("agent.tool_use", toolUseEvt("evt_race", "echo", nil))))
+		_, _ = w.Write([]byte(sseLine("agent.tool_use", toolUseEvt("evt_queued_answered", "echo", nil))))
+		_, _ = w.Write([]byte(sseLine("agent.tool_use", toolUseEvt("evt_queued_interrupted", "echo", nil))))
+		flusher.Flush()
+		select {
+		case <-sendStarted:
+		case <-r.Context().Done():
+			return
+		}
+		select {
+		case <-releaseIdle:
+		case <-r.Context().Done():
+			return
+		}
+		_, _ = w.Write([]byte(sseLine("session.status_idle", idleEndTurnEvt("evt_idle"))))
+		flusher.Flush()
+		<-r.Context().Done()
+	}
+
+	var lists atomic.Int32
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if lists.Add(1) == 1 {
+			_, _ = w.Write([]byte(emptyEventList()))
+			return
+		}
+		result := map[string]any{
+			"type":         "user.tool_result",
+			"id":           "evt_result",
+			"tool_use_id":  "evt_race",
+			"content":      []any{map[string]any{"type": "text", "text": "answered elsewhere"}},
+			"is_error":     false,
+			"processed_at": "2026-05-11T12:00:01Z",
+		}
+		queuedResult := map[string]any{
+			"type":         "user.tool_result",
+			"id":           "evt_queued_result",
+			"tool_use_id":  "evt_queued_answered",
+			"content":      []any{map[string]any{"type": "text", "text": "answered elsewhere"}},
+			"is_error":     false,
+			"processed_at": "2026-05-11T12:00:01Z",
+		}
+		interrupt := interruptEvt("evt_interrupt", true, "")
+		body, _ := json.Marshal(map[string]any{
+			"data": []any{result, queuedResult, interrupt}, "first_id": "evt_result", "has_more": false, "last_id": "evt_interrupt",
+		})
+		_, _ = w.Write(body)
+	}
+	var sends atomic.Int32
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		if sends.Add(1) == 1 {
+			close(sendStarted)
+		}
+		http.Error(w, "interrupted", http.StatusBadRequest)
+	}
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	runner := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 50*time.Millisecond)
+
+	require.True(t, runner.Next(), "the interrupted dispatch remains observable")
+	require.False(t, runner.Current().Posted)
+	close(releaseIdle)
+	require.False(t, runner.Next())
+	require.ErrorIs(t, runner.Err(), ErrIdleTimeout)
+	require.Equal(t, int32(1), echo.runs.Load())
+	require.Equal(t, int32(1), sends.Load())
+	require.Equal(t, int32(2), lists.Load())
+	require.True(t, runner.isAnswered("evt_race"))
+	require.False(t, runner.isCanceled("evt_race"))
+	require.True(t, runner.isAnswered("evt_queued_answered"))
+	require.False(t, runner.isCanceled("evt_queued_answered"))
+	require.True(t, runner.isCanceled("evt_queued_interrupted"))
+	require.NoError(t, runner.Close())
+}
+
+func TestSessionToolRunner_ExternalResultReleasesConfirmationHold(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		result := map[string]any{
+			"type":         "user.tool_result",
+			"id":           "evt_result",
+			"tool_use_id":  "evt_held",
+			"content":      []any{map[string]any{"type": "text", "text": "answered elsewhere"}},
+			"is_error":     false,
+			"processed_at": "2026-05-11T12:00:01Z",
+		}
+		streamWriter(w, r, []string{
+			sseLine("agent.tool_use", askToolUseEvt("evt_held", "echo", nil, "ask")),
+			sseLine("user.tool_result", result),
+			sseLine("session.status_idle", idleEndTurnEvt("evt_idle")),
+		}, true)
+	}
+	server.HandleSend = func(http.ResponseWriter, *http.Request) {
+		t.Fatal("a tool call answered elsewhere must not post another result")
+	}
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 50*time.Millisecond)
+
+	require.False(t, r.Next())
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout)
+	require.Equal(t, int32(0), echo.runs.Load())
+	require.True(t, r.isAnswered("evt_held"))
+	require.NoError(t, r.Close())
+}
+
+func TestSessionToolRunner_HistoryInterruptIsNotReappliedFromStream(t *testing.T) {
+	server := newSessionEventsServer(t)
+	interrupt := interruptEvt("evt_interrupt", true, "")
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, []string{sseLine("user.interrupt", interrupt)}, true)
+	}
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		tool := toolUseEvt("evt_after", "echo", nil)
+		tool["processed_at"] = "2026-05-11T12:00:02Z"
+		body, _ := json.Marshal(map[string]any{
+			"data": []any{interrupt, tool}, "first_id": "evt_interrupt", "has_more": false, "last_id": "evt_after",
+		})
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(body)
+	}
+	var sends atomic.Int32
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		sends.Add(1)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 0)
+
+	require.True(t, r.Next())
+	require.Equal(t, "evt_after", r.Current().ToolUseID)
+	require.True(t, r.Current().Posted)
+	require.Equal(t, int32(1), echo.runs.Load())
+	require.Equal(t, int32(1), sends.Load())
+	require.NoError(t, r.Close())
+}
+
+func TestSessionToolRunner_DoesNotCancelForTargetedOrQueuedInterrupt(t *testing.T) {
+	tests := map[string]map[string]any{
+		"targeted": interruptEvt("evt_interrupt", true, "sthr_other"),
+		"queued":   interruptEvt("evt_interrupt", false, ""),
+	}
+	for name, interrupt := range tests {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				streamWriter(w, r, nil, true)
+			}
+			server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				events := []any{toolUseEvt("evt_live", "echo", nil), interrupt, idleEndTurnEvt("evt_idle")}
+				body, _ := json.Marshal(map[string]any{
+					"data": events, "first_id": "evt_live", "has_more": false, "last_id": "evt_idle",
+				})
+				_, _ = w.Write(body)
+			}
+			var sends atomic.Int32
+			server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+				sends.Add(1)
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(sendOK()))
+			}
+
+			echo := &stubBetaTool{name: "echo"}
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 0)
+
+			require.True(t, r.Next())
+			require.True(t, r.Current().Posted)
+			require.Equal(t, int32(1), echo.runs.Load())
+			require.Equal(t, int32(1), sends.Load())
+			require.NoError(t, r.Close())
+		})
+	}
 }
 
 // TestSessionToolRunner_SkipsUnownedToolByDefault pins the default

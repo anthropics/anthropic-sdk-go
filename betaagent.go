@@ -1311,6 +1311,261 @@ const (
 	BetaManagedAgentsCustomToolParamsTypeCustom BetaManagedAgentsCustomToolParamsType = "custom"
 )
 
+// High effort. Favors reasoning depth.
+type BetaManagedAgentsEffortHigh struct {
+	// Any of "high".
+	Type BetaManagedAgentsEffortHighType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsEffortHigh) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsEffortHigh) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsEffortHigh to a
+// BetaManagedAgentsEffortHighParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsEffortHighParam.Overrides()
+func (r BetaManagedAgentsEffortHigh) ToParam() BetaManagedAgentsEffortHighParam {
+	return param.Override[BetaManagedAgentsEffortHighParam](json.RawMessage(r.RawJSON()))
+}
+
+type BetaManagedAgentsEffortHighType string
+
+const (
+	BetaManagedAgentsEffortHighTypeHigh BetaManagedAgentsEffortHighType = "high"
+)
+
+// High effort. Favors reasoning depth.
+//
+// The property Type is required.
+type BetaManagedAgentsEffortHighParam struct {
+	// Any of "high".
+	Type BetaManagedAgentsEffortHighType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsEffortHighParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsEffortHighParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsEffortHighParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Low effort. Favors latency over reasoning depth.
+type BetaManagedAgentsEffortLow struct {
+	// Any of "low".
+	Type BetaManagedAgentsEffortLowType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsEffortLow) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsEffortLow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsEffortLow to a
+// BetaManagedAgentsEffortLowParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsEffortLowParam.Overrides()
+func (r BetaManagedAgentsEffortLow) ToParam() BetaManagedAgentsEffortLowParam {
+	return param.Override[BetaManagedAgentsEffortLowParam](json.RawMessage(r.RawJSON()))
+}
+
+type BetaManagedAgentsEffortLowType string
+
+const (
+	BetaManagedAgentsEffortLowTypeLow BetaManagedAgentsEffortLowType = "low"
+)
+
+// Low effort. Favors latency over reasoning depth.
+//
+// The property Type is required.
+type BetaManagedAgentsEffortLowParam struct {
+	// Any of "low".
+	Type BetaManagedAgentsEffortLowType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsEffortLowParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsEffortLowParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsEffortLowParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Maximum effort. Favors reasoning depth over latency.
+type BetaManagedAgentsEffortMax struct {
+	// Any of "max".
+	Type BetaManagedAgentsEffortMaxType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsEffortMax) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsEffortMax) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsEffortMax to a
+// BetaManagedAgentsEffortMaxParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsEffortMaxParam.Overrides()
+func (r BetaManagedAgentsEffortMax) ToParam() BetaManagedAgentsEffortMaxParam {
+	return param.Override[BetaManagedAgentsEffortMaxParam](json.RawMessage(r.RawJSON()))
+}
+
+type BetaManagedAgentsEffortMaxType string
+
+const (
+	BetaManagedAgentsEffortMaxTypeMax BetaManagedAgentsEffortMaxType = "max"
+)
+
+// Maximum effort. Favors reasoning depth over latency.
+//
+// The property Type is required.
+type BetaManagedAgentsEffortMaxParam struct {
+	// Any of "max".
+	Type BetaManagedAgentsEffortMaxType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsEffortMaxParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsEffortMaxParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsEffortMaxParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Medium effort. Balances latency and reasoning depth.
+type BetaManagedAgentsEffortMedium struct {
+	// Any of "medium".
+	Type BetaManagedAgentsEffortMediumType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsEffortMedium) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsEffortMedium) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsEffortMedium to a
+// BetaManagedAgentsEffortMediumParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsEffortMediumParam.Overrides()
+func (r BetaManagedAgentsEffortMedium) ToParam() BetaManagedAgentsEffortMediumParam {
+	return param.Override[BetaManagedAgentsEffortMediumParam](json.RawMessage(r.RawJSON()))
+}
+
+type BetaManagedAgentsEffortMediumType string
+
+const (
+	BetaManagedAgentsEffortMediumTypeMedium BetaManagedAgentsEffortMediumType = "medium"
+)
+
+// Medium effort. Balances latency and reasoning depth.
+//
+// The property Type is required.
+type BetaManagedAgentsEffortMediumParam struct {
+	// Any of "medium".
+	Type BetaManagedAgentsEffortMediumType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsEffortMediumParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsEffortMediumParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsEffortMediumParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Extra-high effort. Not all models accept this level.
+type BetaManagedAgentsEffortXhigh struct {
+	// Any of "xhigh".
+	Type BetaManagedAgentsEffortXhighType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsEffortXhigh) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsEffortXhigh) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsEffortXhigh to a
+// BetaManagedAgentsEffortXhighParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsEffortXhighParam.Overrides()
+func (r BetaManagedAgentsEffortXhigh) ToParam() BetaManagedAgentsEffortXhighParam {
+	return param.Override[BetaManagedAgentsEffortXhighParam](json.RawMessage(r.RawJSON()))
+}
+
+type BetaManagedAgentsEffortXhighType string
+
+const (
+	BetaManagedAgentsEffortXhighTypeXhigh BetaManagedAgentsEffortXhighType = "xhigh"
+)
+
+// Extra-high effort. Not all models accept this level.
+//
+// The property Type is required.
+type BetaManagedAgentsEffortXhighParam struct {
+	// Any of "xhigh".
+	Type BetaManagedAgentsEffortXhighType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaManagedAgentsEffortXhighParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsEffortXhighParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsEffortXhighParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // URL-based MCP server connection as returned in API responses.
 type BetaManagedAgentsMCPServerURLDefinition struct {
 	Name string `json:"name" api:"required"`
@@ -1722,6 +1977,9 @@ type BetaManagedAgentsModelConfig struct {
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	ID BetaManagedAgentsModel `json:"id" api:"required"`
+	// How hard Claude works on each turn. Sets `output_config.effort` on every
+	// Messages call the session makes.
+	Effort BetaManagedAgentsModelConfigEffortUnion `json:"effort"`
 	// Inference speed mode. `fast` provides significantly faster output token
 	// generation at premium pricing. Not all models support `fast`; invalid
 	// combinations are rejected at create time.
@@ -1731,6 +1989,7 @@ type BetaManagedAgentsModelConfig struct {
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
+		Effort      respjson.Field
 		Speed       respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -1740,6 +1999,96 @@ type BetaManagedAgentsModelConfig struct {
 // Returns the unmodified JSON received from the API
 func (r BetaManagedAgentsModelConfig) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsModelConfig) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsModelConfigEffortUnion contains all possible properties and
+// values from [BetaManagedAgentsEffortLow], [BetaManagedAgentsEffortMedium],
+// [BetaManagedAgentsEffortHigh], [BetaManagedAgentsEffortXhigh],
+// [BetaManagedAgentsEffortMax].
+//
+// Use the [BetaManagedAgentsModelConfigEffortUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsModelConfigEffortUnion struct {
+	// Any of "low", "medium", "high", "xhigh", "max".
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsModelConfigEffort is implemented by each variant of
+// [BetaManagedAgentsModelConfigEffortUnion] to add type safety for the return type
+// of [BetaManagedAgentsModelConfigEffortUnion.AsAny]
+type anyBetaManagedAgentsModelConfigEffort interface {
+	implBetaManagedAgentsModelConfigEffortUnion()
+}
+
+func (BetaManagedAgentsEffortLow) implBetaManagedAgentsModelConfigEffortUnion()    {}
+func (BetaManagedAgentsEffortMedium) implBetaManagedAgentsModelConfigEffortUnion() {}
+func (BetaManagedAgentsEffortHigh) implBetaManagedAgentsModelConfigEffortUnion()   {}
+func (BetaManagedAgentsEffortXhigh) implBetaManagedAgentsModelConfigEffortUnion()  {}
+func (BetaManagedAgentsEffortMax) implBetaManagedAgentsModelConfigEffortUnion()    {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsModelConfigEffortUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsEffortLow:
+//	case anthropic.BetaManagedAgentsEffortMedium:
+//	case anthropic.BetaManagedAgentsEffortHigh:
+//	case anthropic.BetaManagedAgentsEffortXhigh:
+//	case anthropic.BetaManagedAgentsEffortMax:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsModelConfigEffortUnion) AsAny() anyBetaManagedAgentsModelConfigEffort {
+	switch u.Type {
+	case "low":
+		return u.AsLow()
+	case "medium":
+		return u.AsMedium()
+	case "high":
+		return u.AsHigh()
+	case "xhigh":
+		return u.AsXhigh()
+	case "max":
+		return u.AsMax()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsModelConfigEffortUnion) AsLow() (v BetaManagedAgentsEffortLow) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsModelConfigEffortUnion) AsMedium() (v BetaManagedAgentsEffortMedium) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsModelConfigEffortUnion) AsHigh() (v BetaManagedAgentsEffortHigh) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsModelConfigEffortUnion) AsXhigh() (v BetaManagedAgentsEffortXhigh) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsModelConfigEffortUnion) AsMax() (v BetaManagedAgentsEffortMax) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsModelConfigEffortUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsModelConfigEffortUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1762,6 +2111,10 @@ type BetaManagedAgentsModelConfigParams struct {
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	ID BetaManagedAgentsModel `json:"id,omitzero" api:"required"`
+	// How hard Claude works on each inference call. Accepts a bare level string
+	// (`"high"`) or `{"type": "high"}`. On create, omitting it resolves the per-model
+	// default; on update, omitting it leaves the stored value unchanged.
+	Effort BetaManagedAgentsModelConfigParamsEffortUnion `json:"effort,omitzero"`
 	// Inference speed mode. `fast` provides significantly faster output token
 	// generation at premium pricing. Not all models support `fast`; invalid
 	// combinations are rejected at create time.
@@ -1778,6 +2131,79 @@ func (r BetaManagedAgentsModelConfigParams) MarshalJSON() (data []byte, err erro
 func (r *BetaManagedAgentsModelConfigParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaManagedAgentsModelConfigParamsEffortUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel)
+	OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel param.Opt[string]                   `json:",omitzero,inline"`
+	OfBetaManagedAgentsEffortLow                                      *BetaManagedAgentsEffortLowParam    `json:",omitzero,inline"`
+	OfBetaManagedAgentsEffortMedium                                   *BetaManagedAgentsEffortMediumParam `json:",omitzero,inline"`
+	OfBetaManagedAgentsEffortHigh                                     *BetaManagedAgentsEffortHighParam   `json:",omitzero,inline"`
+	OfBetaManagedAgentsEffortXhigh                                    *BetaManagedAgentsEffortXhighParam  `json:",omitzero,inline"`
+	OfBetaManagedAgentsEffortMax                                      *BetaManagedAgentsEffortMaxParam    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaManagedAgentsModelConfigParamsEffortUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel,
+		u.OfBetaManagedAgentsEffortLow,
+		u.OfBetaManagedAgentsEffortMedium,
+		u.OfBetaManagedAgentsEffortHigh,
+		u.OfBetaManagedAgentsEffortXhigh,
+		u.OfBetaManagedAgentsEffortMax)
+}
+func (u *BetaManagedAgentsModelConfigParamsEffortUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaManagedAgentsModelConfigParamsEffortUnion) asAny() any {
+	if !param.IsOmitted(u.OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel) {
+		return &u.OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel
+	} else if !param.IsOmitted(u.OfBetaManagedAgentsEffortLow) {
+		return u.OfBetaManagedAgentsEffortLow
+	} else if !param.IsOmitted(u.OfBetaManagedAgentsEffortMedium) {
+		return u.OfBetaManagedAgentsEffortMedium
+	} else if !param.IsOmitted(u.OfBetaManagedAgentsEffortHigh) {
+		return u.OfBetaManagedAgentsEffortHigh
+	} else if !param.IsOmitted(u.OfBetaManagedAgentsEffortXhigh) {
+		return u.OfBetaManagedAgentsEffortXhigh
+	} else if !param.IsOmitted(u.OfBetaManagedAgentsEffortMax) {
+		return u.OfBetaManagedAgentsEffortMax
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsModelConfigParamsEffortUnion) GetType() *string {
+	if vt := u.OfBetaManagedAgentsEffortLow; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfBetaManagedAgentsEffortMedium; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfBetaManagedAgentsEffortHigh; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfBetaManagedAgentsEffortXhigh; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfBetaManagedAgentsEffortMax; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// How hard Claude works on each turn. Higher levels favor reasoning depth over
+// latency. Not all models accept every level; invalid combinations are rejected at
+// create time.
+type BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel string
+
+const (
+	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelLow    BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "low"
+	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelMedium BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "medium"
+	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelHigh   BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "high"
+	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelXhigh  BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "xhigh"
+	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelMax    BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "max"
+)
 
 // Inference speed mode. `fast` provides significantly faster output token
 // generation at premium pricing. Not all models support `fast`; invalid
@@ -2431,16 +2857,17 @@ func (r BetaAgentGetParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaAgentUpdateParams struct {
-	// The agent's current version, used to prevent concurrent overwrites. Obtain this
-	// value from a create or retrieve response. The request fails if this does not
-	// match the server's current version.
-	Version int64 `json:"version" api:"required"`
 	// Description. Omit to preserve; send empty string or null to clear.
 	Description param.Opt[string] `json:"description,omitzero"`
 	// System prompt. Omit to preserve; send empty string or null to clear.
 	System param.Opt[string] `json:"system,omitzero"`
 	// Human-readable name. Must be non-empty. Omit to preserve. Cannot be cleared.
 	Name param.Opt[string] `json:"name,omitzero"`
+	// The agent's current version, used to prevent concurrent overwrites. Obtain this
+	// value from a create or retrieve response. Must be at least 1 if specified. When
+	// supplied, the request fails if it does not match the server's current version;
+	// omit to apply the update unconditionally.
+	Version param.Opt[int64] `json:"version,omitzero"`
 	// MCP servers. Full replacement. Omit to preserve; send empty array or `null` to
 	// clear. Names must be unique. Maximum 20. Every server must be referenced by an
 	// `mcp_toolset` in the agent's resulting `tools`; unreferenced servers are

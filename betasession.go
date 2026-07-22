@@ -2079,6 +2079,9 @@ type BetaSessionNewParams struct {
 	EnvironmentID string `json:"environment_id" api:"required"`
 	// Human-readable session title.
 	Title param.Opt[string] `json:"title,omitzero"`
+	// Initial events to send to the `session` at creation, processed in order.
+	// Supports `user.message` and `user.define_outcome` events. Maximum 50 events.
+	InitialEvents []BetaSessionNewParamsInitialEventUnion `json:"initial_events,omitzero"`
 	// Arbitrary key-value metadata attached to the session. Maximum 16 pairs, keys up
 	// to 64 chars, values up to 512 chars.
 	Metadata map[string]string `json:"metadata,omitzero"`
@@ -2195,6 +2198,81 @@ func (u BetaSessionNewParamsAgentUnion) GetVersion() *int64 {
 		return &vt.Version.Value
 	}
 	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaSessionNewParamsInitialEventUnion struct {
+	OfUserMessage       *BetaManagedAgentsUserMessageEventParams       `json:",omitzero,inline"`
+	OfUserDefineOutcome *BetaManagedAgentsUserDefineOutcomeEventParams `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaSessionNewParamsInitialEventUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfUserMessage, u.OfUserDefineOutcome)
+}
+func (u *BetaSessionNewParamsInitialEventUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaSessionNewParamsInitialEventUnion) asAny() any {
+	if !param.IsOmitted(u.OfUserMessage) {
+		return u.OfUserMessage
+	} else if !param.IsOmitted(u.OfUserDefineOutcome) {
+		return u.OfUserDefineOutcome
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaSessionNewParamsInitialEventUnion) GetContent() []BetaManagedAgentsUserMessageEventParamsContentUnion {
+	if vt := u.OfUserMessage; vt != nil {
+		return vt.Content
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaSessionNewParamsInitialEventUnion) GetDescription() *string {
+	if vt := u.OfUserDefineOutcome; vt != nil {
+		return &vt.Description
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaSessionNewParamsInitialEventUnion) GetRubric() *BetaManagedAgentsUserDefineOutcomeEventParamsRubricUnion {
+	if vt := u.OfUserDefineOutcome; vt != nil {
+		return &vt.Rubric
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaSessionNewParamsInitialEventUnion) GetMaxIterations() *int64 {
+	if vt := u.OfUserDefineOutcome; vt != nil && vt.MaxIterations.Valid() {
+		return &vt.MaxIterations.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaSessionNewParamsInitialEventUnion) GetType() *string {
+	if vt := u.OfUserMessage; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfUserDefineOutcome; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaSessionNewParamsInitialEventUnion](
+		"type",
+		apijson.Discriminator[BetaManagedAgentsUserMessageEventParams]("user.message"),
+		apijson.Discriminator[BetaManagedAgentsUserDefineOutcomeEventParams]("user.define_outcome"),
+	)
 }
 
 // Only one field can be non-zero.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.59.0 (2026-07-22)
+
+Full Changelog: [v1.58.1...v1.59.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.58.1...v1.59.0)
+
+### Features
+
+* **api:** add support for Managed Agents model effort, initial session events, and threads delta streaming ([abca19a](https://github.com/anthropics/anthropic-sdk-go/commit/abca19a766bd7dadcd3cdb12a97d62c4861b29dd))
+
 ## 1.58.1 (2026-07-21)
 
 Full Changelog: [v1.58.0...v1.58.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.58.0...v1.58.1)

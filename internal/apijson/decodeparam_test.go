@@ -66,10 +66,14 @@ type BasicObject struct {
 func (o *BasicObject) UnmarshalJSON(data []byte) error { return apijson.UnmarshalRoot(data, o) }
 
 func TestBasicObjectWithNull(t *testing.T) {
-	raw := `{"opt_int":null,"opt_string":null,"opt_bool":null}`
+	raw := `{"req_int":1,"req_float":1.5,"req_string":"s","req_bool":true,"opt_int":null,"opt_string":null,"opt_bool":null}`
 	var dst BasicObject
 	target := BasicObject{
-		OptInt: param.Null[int64](),
+		ReqInt:    1,
+		ReqFloat:  1.5,
+		ReqString: "s",
+		ReqBool:   true,
+		OptInt:    param.Null[int64](),
 		// OptFloat:  param.Opt[float64]{},
 		OptString: param.Null[string](),
 		OptBool:   param.Null[bool](),

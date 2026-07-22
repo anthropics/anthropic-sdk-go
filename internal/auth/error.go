@@ -30,7 +30,7 @@ type OAuthTokenError struct {
 	// whether to include it.
 	Hint string
 	// WorkloadIdentity is set by the OIDC federation (jwt-bearer) flow to
-	// suppress the "re-run `anthropic auth login`" remediation suffix.
+	// suppress the "re-run `ant auth login`" remediation suffix.
 	// That suffix only makes sense for the interactive user_oauth flow;
 	// machine credentials have no browser login to re-run, and suggesting
 	// one sends operators down the wrong path. The zero value keeps the
@@ -64,7 +64,7 @@ func (e *OAuthTokenError) Error() string {
 
 	msg := strings.Join(parts, "; ")
 	if !e.WorkloadIdentity && shouldSuggestRelogin(e.StatusCode, parsed.Error) {
-		msg += " — re-run `anthropic auth login` to re-authenticate"
+		msg += " — re-run `ant auth login` to re-authenticate"
 	}
 	if e.Hint != "" {
 		msg += ". " + e.Hint
@@ -125,7 +125,7 @@ func (e *NoCredentialsError) Error() string {
 		fmt.Fprintf(&b, "\n  %d. %s: %s", i+1, s.Name, formatSourceState(s))
 	}
 	b.WriteString("\nTo fix:")
-	b.WriteString("\n  - run `anthropic auth login` to interactively authenticate, or")
+	b.WriteString("\n  - run `ant auth login` to interactively authenticate, or")
 	b.WriteString("\n  - set ANTHROPIC_API_KEY, or")
 	b.WriteString("\n  - configure workload identity federation with ANTHROPIC_FEDERATION_RULE_ID, ANTHROPIC_ORGANIZATION_ID, and ANTHROPIC_IDENTITY_TOKEN_FILE")
 	return b.String()

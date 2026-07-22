@@ -77,7 +77,7 @@ const (
 	AuthenticationTypeOIDCFederation AuthenticationType = "oidc_federation"
 
 	// AuthenticationTypeUserOAuth authenticates with an access token minted
-	// through a user-interactive OAuth flow (e.g. `anthropic login`), with
+	// through a user-interactive OAuth flow (e.g. `ant auth login`), with
 	// optional refresh-token rotation when a ClientID is configured.
 	AuthenticationTypeUserOAuth AuthenticationType = "user_oauth"
 )

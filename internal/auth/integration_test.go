@@ -660,7 +660,7 @@ func TestIntegration_NoCredentialsAggregatedError(t *testing.T) {
 	if !strings.Contains(msg, "federation") {
 		t.Errorf("expected source list to mention federation, got: %v", err)
 	}
-	if !strings.Contains(msg, "anthropic auth login") {
+	if !strings.Contains(msg, "ant auth login") {
 		t.Errorf("expected remediation hint in message, got: %v", err)
 	}
 }

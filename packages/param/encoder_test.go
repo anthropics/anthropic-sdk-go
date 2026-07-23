@@ -551,3 +551,71 @@ func TestAppendCompact(t *testing.T) {
 		})
 	}
 }
+
+// Caller-supplied json.RawMessage is not SDK-authored: unlike SDK MarshalJSON
+// output, it must still be compacted, HTML-escaped, and validated rather than
+// written verbatim.
+
+type RawInput struct {
+	Input any `json:"input,omitzero"`
+
+	param.APIObject
+}
+
+func (r RawInput) MarshalJSON() ([]byte, error) {
+	type shadow RawInput
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+
+// namedRawPtr has an empty method set, so it must take the regular pointer
+// encoder path rather than the RawMessage one.
+type namedRawPtr *json.RawMessage
+
+func TestRawMessageNormalized(t *testing.T) {
+	messy := json.RawMessage("{\n  \"q\": \"a<b&c\u2028\"  }")
+	compacted := `{"input":{"q":"a\u003cb\u0026c\u2028"}}`
+	deref := json.RawMessage(`{"a":1}`)
+
+	for name, test := range map[string]struct {
+		input    any
+		expected string
+	}{
+		"value":         {messy, compacted},
+		"pointer":       {&messy, compacted},
+		"named-pointer": {namedRawPtr(&deref), `{"input":{"a":1}}`},
+	} {
+		t.Run(name, func(t *testing.T) {
+			b, err := RawInput{Input: test.input}.MarshalJSON()
+			if err != nil {
+				t.Fatalf("didn't expect error %v, expected %s", err, test.expected)
+			}
+			if string(b) != test.expected {
+				t.Fatalf("expected %s, received %s", test.expected, string(b))
+			}
+		})
+	}
+
+	for _, raw := range []string{`{"a":}`, ``} {
+		if b, err := (RawInput{Input: json.RawMessage(raw)}).MarshalJSON(); err == nil {
+			t.Errorf("raw %q: expected error, received %s", raw, b)
+		}
+	}
+}
+
+// Extra fields are inserted by sjson, which does not HTML-escape; the values
+// must be escaped at insertion, since parents write nested MarshalJSON output
+// verbatim.
+func TestExtraFieldValuesEscaped(t *testing.T) {
+	s := StructWithAdditionalProperties{
+		First: "f", Second: 1,
+		ExtraFields: map[string]any{"x_note": "a<b&c"},
+	}
+	expected := `{"first":"f","second":1,"x_note":"a\u003cb\u0026c"}`
+	b, err := s.MarshalJSON()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(b) != expected {
+		t.Fatalf("expected %s, received %s", expected, b)
+	}
+}

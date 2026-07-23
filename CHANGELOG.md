@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.60.0 (2026-07-23)
+
+Full Changelog: [v1.59.0...v1.60.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.59.0...v1.60.0)
+
+### Features
+
+* **api:** add new stop reason 'model_context_window_exceeded' ([94caa5d](https://github.com/anthropics/anthropic-sdk-go/commit/94caa5dd2c259b4fac101f4ee44632157669fa23))
+
+
+### Bug Fixes
+
+* **apijson:** correct unmarshaling for param types ([#73](https://github.com/anthropics/anthropic-sdk-go/issues/73)) ([661be2e](https://github.com/anthropics/anthropic-sdk-go/commit/661be2e4d0e956585ca0d5474675d55dfc6a079a))
+* **client:** escape HTML in RawJSON overrides of nested properties ([3b163e2](https://github.com/anthropics/anthropic-sdk-go/commit/3b163e2c1453b127801abe67745d6109c6ee0b2c))
+* refer to the CLI as `ant` in auth error messages ([#194](https://github.com/anthropics/anthropic-sdk-go/issues/194)) ([d6508c7](https://github.com/anthropics/anthropic-sdk-go/commit/d6508c729ea131600b758bd140a49548c6d30946))
+
 ## 1.59.0 (2026-07-22)
 
 Full Changelog: [v1.58.1...v1.59.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.58.1...v1.59.0)

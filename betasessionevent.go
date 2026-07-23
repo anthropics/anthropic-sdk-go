@@ -7210,20 +7210,24 @@ func init() {
 }
 
 type BetaSessionEventListParams struct {
-	// Return events created after this time (exclusive).
+	// Return events created after this time (exclusive). Compared against the event's
+	// `processed_at` value.
 	CreatedAtGt param.Opt[time.Time] `query:"created_at[gt],omitzero" format:"date-time" json:"-"`
-	// Return events created at or after this time (inclusive).
+	// Return events created at or after this time (inclusive). Compared against the
+	// event's `processed_at` value.
 	CreatedAtGte param.Opt[time.Time] `query:"created_at[gte],omitzero" format:"date-time" json:"-"`
-	// Return events created before this time (exclusive).
+	// Return events created before this time (exclusive). Compared against the event's
+	// `processed_at` value.
 	CreatedAtLt param.Opt[time.Time] `query:"created_at[lt],omitzero" format:"date-time" json:"-"`
-	// Return events created at or before this time (inclusive).
+	// Return events created at or before this time (inclusive). Compared against the
+	// event's `processed_at` value.
 	CreatedAtLte param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
 	// Query parameter for limit
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Opaque pagination cursor from a previous response's next_page.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
-	// Sort direction for results, ordered by created_at. Defaults to asc
-	// (chronological).
+	// Sort direction for results, ordered by the event's `processed_at`. Defaults to
+	// asc (chronological).
 	//
 	// Any of "asc", "desc".
 	Order BetaSessionEventListParamsOrder `query:"order,omitzero" json:"-"`
@@ -7244,8 +7248,8 @@ func (r BetaSessionEventListParams) URLQuery() (v url.Values, err error) {
 	})
 }
 
-// Sort direction for results, ordered by created_at. Defaults to asc
-// (chronological).
+// Sort direction for results, ordered by the event's `processed_at`. Defaults to
+// asc (chronological).
 type BetaSessionEventListParamsOrder string
 
 const (

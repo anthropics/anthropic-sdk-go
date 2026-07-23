@@ -419,6 +419,14 @@ func newTypeEncoder(t reflect.Type, allowAddr bool) encoderFunc {
 	}
 	// EDIT(end)
 
+	// EDIT(begin): json.RawMessage carries caller-supplied bytes; never skip its scanning pass.
+	// The Implements guard keeps named pointer types (empty method set) on the
+	// regular pointer-encoder path.
+	if t == rawMessageType || (t.Kind() == reflect.Pointer && t.Elem() == rawMessageType && t.Implements(marshalerType)) {
+		return rawMessageEncoder
+	}
+	// EDIT(end)
+
 	// If we have a non-pointer value whose type implements
 	// Marshaler with a value receiver, then we're better off taking
 	// the address of the value - otherwise we end up with an

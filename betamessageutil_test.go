@@ -16,6 +16,16 @@ func unmarshalBetaContentBlockParam(t *testing.T, jsonData string) anthropic.Bet
 	return block.ToParam()
 }
 
+func TestBetaToolUseBlockInputPreservesRawJSON(t *testing.T) {
+	var block anthropic.BetaToolUseBlock
+	if err := json.Unmarshal([]byte(`{"id":"toolu_1","input":{"city":"Amsterdam"},"name":"weather","type":"tool_use"}`), &block); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := string(block.Input), `{"city":"Amsterdam"}`; got != want {
+		t.Fatalf("Expected raw input %s, got %s", want, got)
+	}
+}
+
 func TestBetaTextCitationToParamKeepsAllFields(t *testing.T) {
 	t.Run("page_location keeps cited_text", func(t *testing.T) {
 		result := unmarshalBetaContentBlockParam(t, `{"type":"text","text":"x","citations":[{"type":"page_location","cited_text":"quoted","document_index":2,"document_title":"Doc","start_page_number":3,"end_page_number":4}]}`)

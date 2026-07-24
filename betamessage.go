@@ -11003,8 +11003,9 @@ func (u BetaToolUnionParam) GetCitations() *BetaCitationsConfigParam {
 }
 
 type BetaToolUseBlock struct {
-	ID    string           `json:"id" api:"required"`
-	Input any              `json:"input" api:"required"`
+	ID string `json:"id" api:"required"`
+	// necessary custom code modification
+	Input json.RawMessage  `json:"input" api:"required"`
 	Name  string           `json:"name" api:"required"`
 	Type  constant.ToolUse `json:"type" default:"tool_use"`
 	// Tool invocation directly from the model.

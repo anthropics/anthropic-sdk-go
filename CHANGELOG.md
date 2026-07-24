@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.61.0 (2026-07-24)
+
+Full Changelog: [v1.60.0...v1.61.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.60.0...v1.61.0)
+
+### Features
+
+* **api:** add claude-opus-5 model ([bb7dc83](https://github.com/anthropics/anthropic-sdk-go/commit/bb7dc8379e9acf920d865c3a63eedfdbabf8f976))
+* **api:** add tool addition/removal blocks and tool_change events ([bb7dc83](https://github.com/anthropics/anthropic-sdk-go/commit/bb7dc8379e9acf920d865c3a63eedfdbabf8f976))
+* **api:** expand client-side fallback credit token types and add server-side fallbacks default option ([bb7dc83](https://github.com/anthropics/anthropic-sdk-go/commit/bb7dc8379e9acf920d865c3a63eedfdbabf8f976))
+
 ## 1.60.0 (2026-07-23)
 
 Full Changelog: [v1.59.0...v1.60.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.59.0...v1.60.0)

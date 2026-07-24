@@ -15,6 +15,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/lib/betafallback"
 	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -76,6 +77,13 @@ func messageResponse(model string) string {
 	}`, model)
 }
 
+// creditTokenBody is the decoded object form the middleware sends when it
+// redeems a refusal's fallback_credit_token: best_effort mode, so a token-layer
+// failure still serves the retry.
+func creditTokenBody(token string) map[string]any {
+	return map[string]any{"token": token, "mode": "best_effort"}
+}
+
 func refusalResponse(model string, creditToken any) string {
 	token, _ := json.Marshal(creditToken)
 	return fmt.Sprintf(`{
@@ -117,7 +125,7 @@ func TestRefusalFallbackMiddlewareRetriesWithFallbackParamsAndCreditToken(t *tes
 	assert.Equal(t, anthropic.Model("fallback-model"), message.Model)
 	assert.Equal(t, anthropic.BetaStopReasonEndTurn, message.StopReason)
 	assert.Equal(t, []string{"primary-model", "fallback-model"}, transport.models())
-	assert.Equal(t, "credit-token", transport.bodies[1]["fallback_credit_token"])
+	assert.Equal(t, creditTokenBody("credit-token"), transport.bodies[1]["fallback_credit_token"])
 	_, hasToken := transport.bodies[0]["fallback_credit_token"]
 	assert.False(t, hasToken)
 }
@@ -239,8 +247,8 @@ func TestRefusalFallbackMiddlewareReportsEachHopThroughTheChain(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, anthropic.Model("fallback-2"), message.Model)
 	assert.Equal(t, []string{"primary-model", "fallback-1", "fallback-2"}, transport.models())
-	assert.Equal(t, "token-1", transport.bodies[1]["fallback_credit_token"])
-	assert.Equal(t, "token-2", transport.bodies[2]["fallback_credit_token"])
+	assert.Equal(t, creditTokenBody("token-1"), transport.bodies[1]["fallback_credit_token"])
+	assert.Equal(t, creditTokenBody("token-2"), transport.bodies[2]["fallback_credit_token"])
 }
 
 func TestRefusalFallbackMiddlewareReturnsTheLastRefusalWhenTheChainIsExhausted(t *testing.T) {
@@ -284,6 +292,210 @@ func TestRefusalFallbackMiddlewareAppliesFallbackOverridesAndPreservesOtherField
 	assert.Equal(t, map[string]any{"type": "disabled"}, retry["thinking"])
 	assert.Equal(t, 0.5, retry["temperature"])
 	assert.Equal(t, transport.bodies[0]["messages"], retry["messages"])
+}
+
+func TestRefusalFallbackMiddlewareNullOverrideUnsetsTheOriginalField(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{refusalResponse("primary-model", nil), messageResponse("fallback-model")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{
+				Model:     "fallback-model",    // set: overrides the original
+				MaxTokens: param.Null[int64](), // null: unsets the original
+				// temperature absent: the original value is kept
+			}},
+		),
+	)
+
+	params := fallbackTestParams
+	params.Temperature = anthropic.Float(0.5)
+	_, err := client.Beta.Messages.New(context.Background(), params)
+	require.NoError(t, err)
+
+	require.Len(t, transport.bodies, 2)
+	assert.Equal(t, float64(1024), transport.bodies[0]["max_tokens"])
+	retry := transport.bodies[1]
+	assert.Equal(t, "fallback-model", retry["model"])
+	_, hasMaxTokens := retry["max_tokens"]
+	assert.False(t, hasMaxTokens, "null override must remove the key, not send null or keep the original")
+	assert.Equal(t, 0.5, retry["temperature"])
+}
+
+func TestRefusalFallbackMiddlewareEachHopPatchesTheOriginalParams(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{
+			refusalResponse("primary-model", nil),
+			refusalResponse("fallback-1", nil),
+			messageResponse("fallback-2"),
+		},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{
+				{Model: "fallback-1", MaxTokens: anthropic.Int(2048), Speed: anthropic.BetaFallbackParamSpeedFast},
+				{Model: "fallback-2"},
+			},
+		),
+	)
+
+	_, err := client.Beta.Messages.New(context.Background(), fallbackTestParams)
+	require.NoError(t, err)
+
+	require.Len(t, transport.bodies, 3)
+	hop1, hop2 := transport.bodies[1], transport.bodies[2]
+	assert.Equal(t, "fallback-1", hop1["model"])
+	assert.Equal(t, float64(2048), hop1["max_tokens"])
+	assert.Equal(t, "fast", hop1["speed"])
+	// Hop 2 patches the original request, never hop 1's patched request.
+	assert.Equal(t, "fallback-2", hop2["model"])
+	assert.Equal(t, float64(1024), hop2["max_tokens"])
+	_, hasSpeed := hop2["speed"]
+	assert.False(t, hasSpeed, "hop 1's override must not leak into hop 2")
+}
+
+// outputConfigOverride builds an output_config overlay from raw subfields,
+// since the typed effort field cannot spell an explicit null.
+func outputConfigOverride(fields map[string]any) anthropic.BetaOutputConfigParam {
+	var config anthropic.BetaOutputConfigParam
+	config.SetExtraFields(fields)
+	return config
+}
+
+func TestRefusalFallbackMiddlewareOutputConfigSubfieldsMergeOneLevelDeep(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{refusalResponse("primary-model", nil), messageResponse("fallback-model")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{
+				Model: "fallback-model",
+				// effort set: overrides; task_budget null: unset; format
+				// absent: kept from the original.
+				OutputConfig: outputConfigOverride(map[string]any{"effort": "high", "task_budget": nil}),
+			}},
+		),
+	)
+
+	params := fallbackTestParams
+	params.OutputConfig = anthropic.BetaOutputConfigParam{
+		Effort:     anthropic.BetaOutputConfigEffortLow,
+		Format:     anthropic.BetaJSONOutputFormatParam{Schema: map[string]any{"type": "object"}},
+		TaskBudget: anthropic.BetaTokenTaskBudgetParam{Total: 4096},
+	}
+	_, err := client.Beta.Messages.New(context.Background(), params)
+	require.NoError(t, err)
+
+	require.Len(t, transport.bodies, 2)
+	original, retry := transport.bodies[0]["output_config"], transport.bodies[1]["output_config"]
+	assert.Equal(t, "low", original.(map[string]any)["effort"])
+	assert.Equal(t, map[string]any{
+		"effort": "high",
+		"format": original.(map[string]any)["format"],
+	}, retry, "set subfields override, null subfields unset, absent subfields survive")
+}
+
+func TestRefusalFallbackMiddlewareNullOutputConfigUnsetsTheWholeObject(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{refusalResponse("primary-model", nil), messageResponse("fallback-model")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{
+				Model:        "fallback-model",
+				OutputConfig: param.NullStruct[anthropic.BetaOutputConfigParam](),
+			}},
+		),
+	)
+
+	params := fallbackTestParams
+	params.OutputConfig = anthropic.BetaOutputConfigParam{Effort: anthropic.BetaOutputConfigEffortLow}
+	_, err := client.Beta.Messages.New(context.Background(), params)
+	require.NoError(t, err)
+
+	require.Len(t, transport.bodies, 2)
+	assert.Contains(t, transport.bodies[0], "output_config")
+	assert.NotContains(t, transport.bodies[1], "output_config")
+}
+
+func TestRefusalFallbackMiddlewareOutputConfigCreatedWhenTheOriginalHasNone(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{refusalResponse("primary-model", nil), messageResponse("fallback-model")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{
+				Model:        "fallback-model",
+				OutputConfig: outputConfigOverride(map[string]any{"effort": "high", "task_budget": nil}),
+			}},
+		),
+	)
+
+	_, err := client.Beta.Messages.New(context.Background(), fallbackTestParams)
+	require.NoError(t, err)
+
+	require.Len(t, transport.bodies, 2)
+	assert.NotContains(t, transport.bodies[0], "output_config")
+	assert.Equal(t, map[string]any{"effort": "high"}, transport.bodies[1]["output_config"],
+		"set subfields land, null subfields are dropped")
+}
+
+func TestRefusalFallbackMiddlewareDropsOutputConfigWhenNoSubfieldsRemain(t *testing.T) {
+	for _, test := range []struct {
+		name     string
+		original *anthropic.BetaOutputConfigParam
+	}{
+		// The original object's only subfield is unset by the overlay: the
+		// key must be dropped, never sent as {}.
+		{"UnsetsEveryOriginalSubfield", &anthropic.BetaOutputConfigParam{Effort: anthropic.BetaOutputConfigEffortLow}},
+		// No original object and the overlay's only subfield is null: no
+		// key is added.
+		{"OverlayOnAnAbsentOriginal", nil},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			client, transport := fallbackTestClient(t,
+				[]string{refusalResponse("primary-model", nil), messageResponse("fallback-model")},
+				betafallback.BetaRefusalFallbackMiddleware(
+					[]anthropic.BetaFallbackParam{{
+						Model:        "fallback-model",
+						OutputConfig: outputConfigOverride(map[string]any{"effort": nil}),
+					}},
+				),
+			)
+
+			params := fallbackTestParams
+			if test.original != nil {
+				params.OutputConfig = *test.original
+			}
+			_, err := client.Beta.Messages.New(context.Background(), params)
+			require.NoError(t, err)
+
+			require.Len(t, transport.bodies, 2)
+			assert.NotContains(t, transport.bodies[1], "output_config",
+				"an output_config left with no subfields is dropped, not sent as {}")
+		})
+	}
+}
+
+func TestRefusalFallbackMiddlewareEachHopPatchesTheOriginalOutputConfig(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{
+			refusalResponse("primary-model", nil),
+			refusalResponse("fallback-1", nil),
+			messageResponse("fallback-2"),
+		},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{
+				{Model: "fallback-1", OutputConfig: outputConfigOverride(map[string]any{"effort": "max", "task_budget": nil})},
+				{Model: "fallback-2", OutputConfig: outputConfigOverride(map[string]any{"effort": "high"})},
+			},
+		),
+	)
+
+	params := fallbackTestParams
+	params.OutputConfig = anthropic.BetaOutputConfigParam{
+		Effort:     anthropic.BetaOutputConfigEffortLow,
+		TaskBudget: anthropic.BetaTokenTaskBudgetParam{Total: 4096},
+	}
+	_, err := client.Beta.Messages.New(context.Background(), params)
+	require.NoError(t, err)
+
+	require.Len(t, transport.bodies, 3)
+	budget := transport.bodies[0]["output_config"].(map[string]any)["task_budget"]
+	assert.Equal(t, map[string]any{"effort": "max"}, transport.bodies[1]["output_config"])
+	// Hop 2 patches the original output_config: task_budget (unset only by
+	// hop 1) returns, and hop 1's effort does not leak.
+	assert.Equal(t, map[string]any{"effort": "high", "task_budget": budget}, transport.bodies[2]["output_config"])
 }
 
 func TestBetaFallbackStateIsConcurrencySafe(t *testing.T) {
@@ -409,7 +621,7 @@ func TestRefusalFallbackMiddlewareWithAnEmptyChainDoesNotOptIntoTheBeta(t *testi
 	_, err := client.Beta.Messages.New(context.Background(), fallbackTestParams)
 	require.NoError(t, err)
 	require.Len(t, transport.betas, 1)
-	assert.NotContains(t, transport.betas[0], string(anthropic.AnthropicBetaFallbackCredit2026_06_01))
+	assert.NotContains(t, transport.betas[0], string(anthropic.AnthropicBetaFallbackCredit2026_07_01))
 }
 
 func TestRefusalFallbackMiddlewareDropsAStaleCreditToken(t *testing.T) {
@@ -423,7 +635,9 @@ func TestRefusalFallbackMiddlewareDropsAStaleCreditToken(t *testing.T) {
 	)
 
 	params := fallbackTestParams
-	params.FallbackCreditToken = anthropic.String("stale-token")
+	params.FallbackCreditToken = anthropic.BetaMessageNewParamsFallbackCreditTokenUnion{
+		OfString: anthropic.String("stale-token"),
+	}
 	_, err := client.Beta.Messages.New(context.Background(), params)
 	require.NoError(t, err)
 
@@ -484,8 +698,8 @@ func TestRefusalFallbackMiddlewareSendsTheTokenWithAllOverrides(t *testing.T) {
 	_, err := client.Beta.Messages.New(context.Background(), fallbackTestParams)
 	require.NoError(t, err)
 	require.Len(t, transport.bodies, 3)
-	assert.Equal(t, "token-1", transport.bodies[1]["fallback_credit_token"], "the token rides with every override")
-	assert.Equal(t, "token-2", transport.bodies[2]["fallback_credit_token"])
+	assert.Equal(t, creditTokenBody("token-1"), transport.bodies[1]["fallback_credit_token"], "the token rides with every override")
+	assert.Equal(t, creditTokenBody("token-2"), transport.bodies[2]["fallback_credit_token"])
 }
 
 func TestRefusalFallbackMiddlewareErrorsWhenServerSideFallbacksAreRequested(t *testing.T) {
@@ -499,9 +713,11 @@ func TestRefusalFallbackMiddlewareErrorsWhenServerSideFallbacksAreRequested(t *t
 	)
 
 	params := fallbackTestParams
-	params.Fallbacks = []anthropic.BetaFallbackParam{{Model: "server-side-fallback"}}
+	params.Fallbacks = anthropic.BetaFallbacksParamUnion{
+		OfBetaFallbackArray: []anthropic.BetaFallbackParam{{Model: "server-side-fallback"}},
+	}
 	_, err := client.Beta.Messages.New(context.Background(), params)
-	require.ErrorContains(t, err, "Sending the `fallbacks:` request param is not supported when using the `BetaRefusalFallbackMiddleware` middleware. You should either remove the middleware and send `fallbacks:` with the `server-side-fallback-2026-06-01` beta header to let the API handle refusal fallbacks, or omit the `fallbacks:` param if you'd like the `BetaRefusalFallbackMiddleware` middleware to handle fallbacks on the client side.")
+	require.ErrorContains(t, err, "Sending the `fallbacks:` request param is not supported when using the `BetaRefusalFallbackMiddleware` middleware. You should either remove the middleware and send `fallbacks:` with the `server-side-fallback-2026-07-01` beta header to let the API handle refusal fallbacks, or omit the `fallbacks:` param if you'd like the `BetaRefusalFallbackMiddleware` middleware to handle fallbacks on the client side.")
 	assert.Empty(t, transport.bodies, "no request reaches the server")
 }
 func TestRefusalFallbackMiddlewareRetriesARejectedTokenOnceWithoutIt(t *testing.T) {
@@ -528,7 +744,7 @@ func TestRefusalFallbackMiddlewareRetriesARejectedTokenOnceWithoutIt(t *testing.
 	require.NoError(t, err)
 	assert.Equal(t, anthropic.Model("fallback-model"), message.Model)
 	require.Len(t, transport.bodies, 3)
-	assert.Equal(t, "credit-token", transport.bodies[1]["fallback_credit_token"])
+	assert.Equal(t, creditTokenBody("credit-token"), transport.bodies[1]["fallback_credit_token"])
 	_, hasToken := transport.bodies[2]["fallback_credit_token"]
 	assert.False(t, hasToken, "recovery retry must omit the token")
 }
@@ -586,8 +802,8 @@ func TestRefusalFallbackMiddlewareReentersTheChainWhenTheClientRetries(t *testin
 	require.NoError(t, err)
 	assert.Equal(t, anthropic.Model("fallback-model"), message.Model)
 	assert.Equal(t, []string{"primary-model", "fallback-model", "primary-model", "fallback-model"}, transport.models())
-	assert.Equal(t, "token-1", transport.bodies[1]["fallback_credit_token"])
-	assert.Equal(t, "token-2", transport.bodies[3]["fallback_credit_token"], "the re-entered chain redeems the fresh token")
+	assert.Equal(t, creditTokenBody("token-1"), transport.bodies[1]["fallback_credit_token"])
+	assert.Equal(t, creditTokenBody("token-2"), transport.bodies[3]["fallback_credit_token"], "the re-entered chain redeems the fresh token")
 }
 
 func TestRefusalFallbackMiddlewareReentersAtThePinWhenTheClientRetries(t *testing.T) {
@@ -658,7 +874,7 @@ func TestRefusalFallbackMiddlewareOptsEveryAttemptIntoTheCreditBeta(t *testing.T
 	require.NoError(t, err)
 	require.Len(t, transport.betas, 2)
 	for i, betas := range transport.betas {
-		assert.Contains(t, betas, string(anthropic.AnthropicBetaFallbackCredit2026_06_01), "request %d", i)
+		assert.Contains(t, betas, string(anthropic.AnthropicBetaFallbackCredit2026_07_01), "request %d", i)
 	}
 }
 
@@ -671,10 +887,10 @@ func TestRefusalFallbackMiddlewareKeepsACallerSuppliedCreditBeta(t *testing.T) {
 	)
 
 	_, err := client.Beta.Messages.New(context.Background(), fallbackTestParams,
-		option.WithHeaderAdd("anthropic-beta", string(anthropic.AnthropicBetaFallbackCredit2026_06_01)))
+		option.WithHeaderAdd("anthropic-beta", string(anthropic.AnthropicBetaFallbackCredit2026_07_01)))
 	require.NoError(t, err)
 	require.Len(t, transport.betas, 1)
-	assert.Equal(t, []string{string(anthropic.AnthropicBetaFallbackCredit2026_06_01)}, transport.betas[0])
+	assert.Equal(t, []string{string(anthropic.AnthropicBetaFallbackCredit2026_07_01)}, transport.betas[0])
 }
 
 func TestRefusalFallbackMiddlewareDoesNotAddTheBetaToPassthroughRequests(t *testing.T) {
@@ -773,7 +989,7 @@ func TestRefusalFallbackMiddlewareWorksWithUnbufferableRequestBodies(t *testing.
 	require.NoError(t, err)
 	require.Len(t, bodies, 2)
 	assert.Equal(t, "fallback-model", bodies[1]["model"])
-	assert.Equal(t, "credit-token", bodies[1]["fallback_credit_token"])
+	assert.Equal(t, creditTokenBody("credit-token"), bodies[1]["fallback_credit_token"])
 	body, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
 	assert.Contains(t, string(body), "end_turn")
@@ -841,7 +1057,7 @@ func TestRefusalFallbackMiddlewareRedirectsThroughAPlatformTransform(t *testing.
 	require.Len(t, transport.bodies, 2)
 	_, hasModel := transport.bodies[1]["model"]
 	assert.False(t, hasModel, "the transform moved the model out of the body")
-	assert.Equal(t, "credit-token", transport.bodies[1]["fallback_credit_token"])
+	assert.Equal(t, creditTokenBody("credit-token"), transport.bodies[1]["fallback_credit_token"])
 }
 
 // roundTripFunc adapts a function to http.RoundTripper.
@@ -884,7 +1100,7 @@ func TestRefusalFallbackMiddlewareArmsTheCreditBetaOnEveryLeg(t *testing.T) {
 	_, err := client.Beta.Messages.New(context.Background(), fallbackTestParams)
 	require.NoError(t, err)
 	for i := range transport.betas {
-		assert.Contains(t, transport.betas[i], "fallback-credit-2026-06-01", "request %d", i)
+		assert.Contains(t, transport.betas[i], "fallback-credit-2026-07-01", "request %d", i)
 	}
 }
 
@@ -954,7 +1170,7 @@ func TestRefusalFallbackMiddlewarePrependsFallbackBlockWhenCallerArmedTheBeta(t 
 		strings.NewReader(`{"model": "primary-model", "messages": [], "max_tokens": 16}`))
 	require.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("anthropic-beta", string(anthropic.AnthropicBetaFallbackCredit2026_06_01))
+	req.Header.Set("anthropic-beta", string(anthropic.AnthropicBetaFallbackCredit2026_07_01))
 
 	served := `{
 		"id": "msg_2", "type": "message", "role": "assistant", "model": "fallback-model",

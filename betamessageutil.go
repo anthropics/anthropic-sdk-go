@@ -47,6 +47,9 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 		if event.Usage.JSON.OutputTokensDetails.Valid() {
 			acc.Usage.OutputTokensDetails = event.Usage.OutputTokensDetails
 		}
+		if event.Usage.JSON.FallbackCredit.Valid() {
+			acc.Usage.FallbackCredit = event.Usage.FallbackCredit
+		}
 		acc.Usage.Iterations = event.Usage.Iterations
 		acc.ContextManagement = event.ContextManagement
 	case BetaRawContentBlockStartEvent:

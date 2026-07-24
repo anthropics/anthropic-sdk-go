@@ -3100,10 +3100,40 @@ func NewBetaContainerUploadBlock(fileID string) BetaContentBlockParamUnion {
 	return BetaContentBlockParamUnion{OfContainerUpload: &containerUpload}
 }
 
-func NewBetaMidConvSystemBlock(content []BetaTextBlockParam) BetaContentBlockParamUnion {
+func NewBetaMidConvSystemBlock(content []BetaMidConversationSystemBlockParamContentUnion) BetaContentBlockParamUnion {
 	var midConvSystem BetaMidConversationSystemBlockParam
 	midConvSystem.Content = content
 	return BetaContentBlockParamUnion{OfMidConvSystem: &midConvSystem}
+}
+
+func NewBetaToolAdditionBlock[
+	T BetaToolChangeToolReferenceParam | BetaToolChangeMCPToolReferenceParam | BetaToolChangeMCPToolsetReferenceParam,
+](tool T) BetaContentBlockParamUnion {
+	var toolAddition BetaRequestToolAdditionBlockParam
+	switch v := any(tool).(type) {
+	case BetaToolChangeToolReferenceParam:
+		toolAddition.Tool.OfToolReference = &v
+	case BetaToolChangeMCPToolReferenceParam:
+		toolAddition.Tool.OfMCPToolReference = &v
+	case BetaToolChangeMCPToolsetReferenceParam:
+		toolAddition.Tool.OfMCPToolsetReference = &v
+	}
+	return BetaContentBlockParamUnion{OfToolAddition: &toolAddition}
+}
+
+func NewBetaToolRemovalBlock[
+	T BetaToolChangeToolReferenceParam | BetaToolChangeMCPToolReferenceParam | BetaToolChangeMCPToolsetReferenceParam,
+](tool T) BetaContentBlockParamUnion {
+	var toolRemoval BetaRequestToolRemovalBlockParam
+	switch v := any(tool).(type) {
+	case BetaToolChangeToolReferenceParam:
+		toolRemoval.Tool.OfToolReference = &v
+	case BetaToolChangeMCPToolReferenceParam:
+		toolRemoval.Tool.OfMCPToolReference = &v
+	case BetaToolChangeMCPToolsetReferenceParam:
+		toolRemoval.Tool.OfMCPToolsetReference = &v
+	}
+	return BetaContentBlockParamUnion{OfToolRemoval: &toolRemoval}
 }
 
 func NewBetaFallbackBlock(from BetaFallbackInfoParam, to BetaFallbackInfoParam) BetaContentBlockParamUnion {
@@ -3138,6 +3168,8 @@ type BetaContentBlockParamUnion struct {
 	OfContainerUpload                   *BetaContainerUploadBlockParam                   `json:",omitzero,inline"`
 	OfCompaction                        *BetaCompactionBlockParam                        `json:",omitzero,inline"`
 	OfMidConvSystem                     *BetaMidConversationSystemBlockParam             `json:",omitzero,inline"`
+	OfToolAddition                      *BetaRequestToolAdditionBlockParam               `json:",omitzero,inline"`
+	OfToolRemoval                       *BetaRequestToolRemovalBlockParam                `json:",omitzero,inline"`
 	OfFallback                          *BetaFallbackBlockParam                          `json:",omitzero,inline"`
 	paramUnion
 }
@@ -3164,6 +3196,8 @@ func (u BetaContentBlockParamUnion) MarshalJSON() ([]byte, error) {
 		u.OfContainerUpload,
 		u.OfCompaction,
 		u.OfMidConvSystem,
+		u.OfToolAddition,
+		u.OfToolRemoval,
 		u.OfFallback)
 }
 func (u *BetaContentBlockParamUnion) UnmarshalJSON(data []byte) error {
@@ -3213,6 +3247,10 @@ func (u *BetaContentBlockParamUnion) asAny() any {
 		return u.OfCompaction
 	} else if !param.IsOmitted(u.OfMidConvSystem) {
 		return u.OfMidConvSystem
+	} else if !param.IsOmitted(u.OfToolAddition) {
+		return u.OfToolAddition
+	} else if !param.IsOmitted(u.OfToolRemoval) {
+		return u.OfToolRemoval
 	} else if !param.IsOmitted(u.OfFallback) {
 		return u.OfFallback
 	}
@@ -3351,6 +3389,10 @@ func (u BetaContentBlockParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfMidConvSystem; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfToolAddition; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfToolRemoval; vt != nil {
+		return (*string)(&vt.Type)
 	} else if vt := u.OfFallback; vt != nil {
 		return (*string)(&vt.Type)
 	}
@@ -3464,6 +3506,10 @@ func (u BetaContentBlockParamUnion) GetCacheControl() *BetaCacheControlEphemeral
 	} else if vt := u.OfCompaction; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfMidConvSystem; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfToolAddition; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfToolRemoval; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil
@@ -3654,7 +3700,8 @@ func (u BetaContentBlockParamUnion) GetContent() (res betaContentBlockParamUnion
 // [*BetaTextEditorCodeExecutionCreateResultBlockParam],
 // [*BetaTextEditorCodeExecutionStrReplaceResultBlockParam],
 // [*BetaToolSearchToolResultErrorParam],
-// [*BetaToolSearchToolSearchResultBlockParam], [*string]
+// [*BetaToolSearchToolSearchResultBlockParam], [*string],
+// [\*[]BetaMidConversationSystemBlockParamContentUnion]
 type betaContentBlockParamUnionContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -3680,6 +3727,7 @@ type betaContentBlockParamUnionContent struct{ any }
 //	case *anthropic.BetaToolSearchToolResultErrorParam:
 //	case *anthropic.BetaToolSearchToolSearchResultBlockParam:
 //	case *string:
+//	case *[]anthropic.BetaMidConversationSystemBlockParamContentUnion:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -4035,6 +4083,67 @@ func (u betaContentBlockParamUnionCaller) GetToolID() *string {
 	return nil
 }
 
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u BetaContentBlockParamUnion) GetTool() (res betaContentBlockParamUnionTool) {
+	if vt := u.OfToolAddition; vt != nil {
+		res.any = vt.Tool.asAny()
+	} else if vt := u.OfToolRemoval; vt != nil {
+		res.any = vt.Tool.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*BetaToolChangeToolReferenceParam],
+// [*BetaToolChangeMCPToolReferenceParam],
+// [*BetaToolChangeMCPToolsetReferenceParam]
+type betaContentBlockParamUnionTool struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BetaToolChangeToolReferenceParam:
+//	case *anthropic.BetaToolChangeMCPToolReferenceParam:
+//	case *anthropic.BetaToolChangeMCPToolsetReferenceParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u betaContentBlockParamUnionTool) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContentBlockParamUnionTool) GetName() *string {
+	switch vt := u.any.(type) {
+	case *BetaRequestToolAdditionBlockToolUnionParam:
+		return vt.GetName()
+	case *BetaRequestToolRemovalBlockToolUnionParam:
+		return vt.GetName()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContentBlockParamUnionTool) GetType() *string {
+	switch vt := u.any.(type) {
+	case *BetaRequestToolAdditionBlockToolUnionParam:
+		return vt.GetType()
+	case *BetaRequestToolRemovalBlockToolUnionParam:
+		return vt.GetType()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaContentBlockParamUnionTool) GetServerName() *string {
+	switch vt := u.any.(type) {
+	case *BetaRequestToolAdditionBlockToolUnionParam:
+		return vt.GetServerName()
+	case *BetaRequestToolRemovalBlockToolUnionParam:
+		return vt.GetServerName()
+	}
+	return nil
+}
+
 func init() {
 	apijson.RegisterUnion[BetaContentBlockParamUnion](
 		"type",
@@ -4059,6 +4168,8 @@ func init() {
 		apijson.Discriminator[BetaContainerUploadBlockParam]("container_upload"),
 		apijson.Discriminator[BetaCompactionBlockParam]("compaction"),
 		apijson.Discriminator[BetaMidConversationSystemBlockParam]("mid_conv_system"),
+		apijson.Discriminator[BetaRequestToolAdditionBlockParam]("tool_addition"),
+		apijson.Discriminator[BetaRequestToolRemovalBlockParam]("tool_removal"),
 		apijson.Discriminator[BetaFallbackBlockParam]("fallback"),
 	)
 }
@@ -4760,6 +4871,219 @@ func (r *BetaFallbackBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// No reprice was applied; `reason` says why.
+type BetaFallbackCreditNotApplied struct {
+	// Why the reprice was not applied.
+	//
+	// A closed enum; additions to the redemption-check vocabulary arrive as deliberate
+	// schema updates.
+	//
+	// Any of "body_mismatch", "continuation_excluded", "continuation_only", "expired",
+	// "invalid_target_model", "not_enabled", "reprice_unavailable",
+	// "temporarily_unavailable", "variant_fields_present", "wrong_organization",
+	// "wrong_platform", "wrong_workspace".
+	Reason BetaFallbackCreditNotAppliedReason `json:"reason" api:"required"`
+	Type   constant.NotApplied                `json:"type" default:"not_applied"`
+	// Request fields to remove before retrying, so the retry can redeem this token.
+	//
+	// Present exactly when `reason` is `variant_fields_present` — never null, never an
+	// empty array; absent otherwise. Fields are named only from your own request, and
+	// only after the sealed variant hash matched. A served best-effort retry has
+	// already been billed at normal price; nothing redeems retroactively, but a
+	// corrected re-send inside the token's five-minute window can still redeem.
+	RemoveToRedeem []string `json:"remove_to_redeem" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Reason         respjson.Field
+		Type           respjson.Field
+		RemoveToRedeem respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaFallbackCreditNotApplied) RawJSON() string { return r.JSON.raw }
+func (r *BetaFallbackCreditNotApplied) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Why the reprice was not applied.
+//
+// A closed enum; additions to the redemption-check vocabulary arrive as deliberate
+// schema updates.
+type BetaFallbackCreditNotAppliedReason string
+
+const (
+	BetaFallbackCreditNotAppliedReasonBodyMismatch           BetaFallbackCreditNotAppliedReason = "body_mismatch"
+	BetaFallbackCreditNotAppliedReasonContinuationExcluded   BetaFallbackCreditNotAppliedReason = "continuation_excluded"
+	BetaFallbackCreditNotAppliedReasonContinuationOnly       BetaFallbackCreditNotAppliedReason = "continuation_only"
+	BetaFallbackCreditNotAppliedReasonExpired                BetaFallbackCreditNotAppliedReason = "expired"
+	BetaFallbackCreditNotAppliedReasonInvalidTargetModel     BetaFallbackCreditNotAppliedReason = "invalid_target_model"
+	BetaFallbackCreditNotAppliedReasonNotEnabled             BetaFallbackCreditNotAppliedReason = "not_enabled"
+	BetaFallbackCreditNotAppliedReasonRepriceUnavailable     BetaFallbackCreditNotAppliedReason = "reprice_unavailable"
+	BetaFallbackCreditNotAppliedReasonTemporarilyUnavailable BetaFallbackCreditNotAppliedReason = "temporarily_unavailable"
+	BetaFallbackCreditNotAppliedReasonVariantFieldsPresent   BetaFallbackCreditNotAppliedReason = "variant_fields_present"
+	BetaFallbackCreditNotAppliedReasonWrongOrganization      BetaFallbackCreditNotAppliedReason = "wrong_organization"
+	BetaFallbackCreditNotAppliedReasonWrongPlatform          BetaFallbackCreditNotAppliedReason = "wrong_platform"
+	BetaFallbackCreditNotAppliedReasonWrongWorkspace         BetaFallbackCreditNotAppliedReason = "wrong_workspace"
+)
+
+// The reprice was applied: the retry is billed as if the conversation had been on
+// the retry model all along.
+type BetaFallbackCreditRedeemed struct {
+	Type constant.Redeemed `json:"type" default:"redeemed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaFallbackCreditRedeemed) RawJSON() string { return r.JSON.raw }
+func (r *BetaFallbackCreditRedeemed) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Object form of `fallback_credit_token`: the token plus a redemption mode.
+//
+// Requires `anthropic-beta: fallback-credit-2026-07-01`; without that header the
+// field accepts the bare string only. The bare string and the mode-less object are
+// equivalent (both select `strict`), so wrapping an existing token changes nothing
+// by itself.
+//
+// The property Token is required.
+type BetaFallbackCreditTokenParam struct {
+	// The opaque `fallback_credit_token` from a prior refusal's `stop_details` — the
+	// same string the bare-string form carries.
+	Token string `json:"token" api:"required"`
+	// How a failing token affects the retry. `strict` (the default, and the
+	// bare-string behavior): a failing redemption is a 400 and the retry is not
+	// served. `best_effort`: the retry is served either way — a token-layer failure no
+	// longer rejects the request; the retry proceeds at normal price and the outcome
+	// is reported on the response's `usage.fallback_credit`. Two failures stay hard in
+	// both modes: a malformed token, and combining `fallback_credit_token` with
+	// `fallbacks`.
+	//
+	// Any of "strict", "best_effort".
+	Mode BetaFallbackCreditTokenParamMode `json:"mode,omitzero"`
+	paramObj
+}
+
+func (r BetaFallbackCreditTokenParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaFallbackCreditTokenParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaFallbackCreditTokenParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// How a failing token affects the retry. `strict` (the default, and the
+// bare-string behavior): a failing redemption is a 400 and the retry is not
+// served. `best_effort`: the retry is served either way — a token-layer failure no
+// longer rejects the request; the retry proceeds at normal price and the outcome
+// is reported on the response's `usage.fallback_credit`. Two failures stay hard in
+// both modes: a malformed token, and combining `fallback_credit_token` with
+// `fallbacks`.
+type BetaFallbackCreditTokenParamMode string
+
+const (
+	BetaFallbackCreditTokenParamModeStrict     BetaFallbackCreditTokenParamMode = "strict"
+	BetaFallbackCreditTokenParamModeBestEffort BetaFallbackCreditTokenParamMode = "best_effort"
+)
+
+// Outcome of the `fallback_credit_token` presented on this request.
+type BetaFallbackCreditUsage struct {
+	// Whether the fallback-credit reprice was applied to this response's billing.
+	//
+	// A union discriminated on `type`. `redeemed`: the retry is billed as if the
+	// conversation had been on the retry model all along — including when the
+	// resulting shift is zero because there was nothing to move. `not_applied`: no
+	// reprice was applied; the arm's `reason` says why.
+	Status BetaFallbackCreditUsageStatusUnion `json:"status" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Status      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaFallbackCreditUsage) RawJSON() string { return r.JSON.raw }
+func (r *BetaFallbackCreditUsage) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaFallbackCreditUsageStatusUnion contains all possible properties and values
+// from [BetaFallbackCreditRedeemed], [BetaFallbackCreditNotApplied].
+//
+// Use the [BetaFallbackCreditUsageStatusUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaFallbackCreditUsageStatusUnion struct {
+	// Any of "redeemed", "not_applied".
+	Type string `json:"type"`
+	// This field is from variant [BetaFallbackCreditNotApplied].
+	Reason BetaFallbackCreditNotAppliedReason `json:"reason"`
+	// This field is from variant [BetaFallbackCreditNotApplied].
+	RemoveToRedeem []string `json:"remove_to_redeem"`
+	JSON           struct {
+		Type           respjson.Field
+		Reason         respjson.Field
+		RemoveToRedeem respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// anyBetaFallbackCreditUsageStatus is implemented by each variant of
+// [BetaFallbackCreditUsageStatusUnion] to add type safety for the return type of
+// [BetaFallbackCreditUsageStatusUnion.AsAny]
+type anyBetaFallbackCreditUsageStatus interface {
+	implBetaFallbackCreditUsageStatusUnion()
+}
+
+func (BetaFallbackCreditRedeemed) implBetaFallbackCreditUsageStatusUnion()   {}
+func (BetaFallbackCreditNotApplied) implBetaFallbackCreditUsageStatusUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaFallbackCreditUsageStatusUnion.AsAny().(type) {
+//	case anthropic.BetaFallbackCreditRedeemed:
+//	case anthropic.BetaFallbackCreditNotApplied:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaFallbackCreditUsageStatusUnion) AsAny() anyBetaFallbackCreditUsageStatus {
+	switch u.Type {
+	case "redeemed":
+		return u.AsRedeemed()
+	case "not_applied":
+		return u.AsNotApplied()
+	}
+	return nil
+}
+
+func (u BetaFallbackCreditUsageStatusUnion) AsRedeemed() (v BetaFallbackCreditRedeemed) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaFallbackCreditUsageStatusUnion) AsNotApplied() (v BetaFallbackCreditNotApplied) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaFallbackCreditUsageStatusUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaFallbackCreditUsageStatusUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Identifies one hop of a fallback transition.
 type BetaFallbackInfo struct {
 	// The model that will complete your prompt.
@@ -4989,6 +5313,36 @@ const (
 	BetaFallbackRefusalTriggerCategoryReasoningExtraction BetaFallbackRefusalTriggerCategory = "reasoning_extraction"
 	BetaFallbackRefusalTriggerCategoryGeneralHarms        BetaFallbackRefusalTriggerCategory = "general_harms"
 )
+
+func BetaFallbacksParamOfDefault() BetaFallbacksParamUnion {
+	return BetaFallbacksParamUnion{OfDefault: constant.ValueOf[constant.Default]()}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaFallbacksParamUnion struct {
+	OfBetaFallbackArray []BetaFallbackParam `json:",omitzero,inline"`
+	// Construct this variant with constant.ValueOf[constant.Default]()
+	OfDefault constant.Default `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaFallbacksParamUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBetaFallbackArray, u.OfDefault)
+}
+func (u *BetaFallbacksParamUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaFallbacksParamUnion) asAny() any {
+	if !param.IsOmitted(u.OfBetaFallbackArray) {
+		return &u.OfBetaFallbackArray
+	} else if !param.IsOmitted(u.OfDefault) {
+		return &u.OfDefault
+	}
+	return nil
+}
 
 // The properties FileID, Type are required.
 type BetaFileDocumentSourceParam struct {
@@ -5921,6 +6275,8 @@ type BetaMessageDeltaUsage struct {
 	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens" api:"required"`
 	// The cumulative number of input tokens read from the cache.
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens" api:"required"`
+	// Outcome of the `fallback_credit_token` presented on this request.
+	FallbackCredit BetaFallbackCreditUsage `json:"fallback_credit" api:"required"`
 	// The cumulative number of input tokens which were used.
 	InputTokens int64 `json:"input_tokens" api:"required"`
 	// Per-iteration token usage breakdown.
@@ -5947,6 +6303,7 @@ type BetaMessageDeltaUsage struct {
 	JSON struct {
 		CacheCreationInputTokens respjson.Field
 		CacheReadInputTokens     respjson.Field
+		FallbackCredit           respjson.Field
 		InputTokens              respjson.Field
 		Iterations               respjson.Field
 		OutputTokens             respjson.Field
@@ -6081,7 +6438,7 @@ func (r *BetaMetadataParam) UnmarshalJSON(data []byte) error {
 // The properties Content, Type are required.
 type BetaMidConversationSystemBlockParam struct {
 	// System instruction text blocks.
-	Content []BetaTextBlockParam `json:"content,omitzero" api:"required"`
+	Content []BetaMidConversationSystemBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "mid_conv_system".
@@ -6095,6 +6452,144 @@ func (r BetaMidConversationSystemBlockParam) MarshalJSON() (data []byte, err err
 }
 func (r *BetaMidConversationSystemBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaMidConversationSystemBlockParamContentUnion struct {
+	OfText         *BetaTextBlockParam                `json:",omitzero,inline"`
+	OfToolAddition *BetaRequestToolAdditionBlockParam `json:",omitzero,inline"`
+	OfToolRemoval  *BetaRequestToolRemovalBlockParam  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaMidConversationSystemBlockParamContentUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfText, u.OfToolAddition, u.OfToolRemoval)
+}
+func (u *BetaMidConversationSystemBlockParamContentUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaMidConversationSystemBlockParamContentUnion) asAny() any {
+	if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfToolAddition) {
+		return u.OfToolAddition
+	} else if !param.IsOmitted(u.OfToolRemoval) {
+		return u.OfToolRemoval
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMidConversationSystemBlockParamContentUnion) GetText() *string {
+	if vt := u.OfText; vt != nil {
+		return &vt.Text
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMidConversationSystemBlockParamContentUnion) GetCitations() []BetaTextCitationParamUnion {
+	if vt := u.OfText; vt != nil {
+		return vt.Citations
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMidConversationSystemBlockParamContentUnion) GetType() *string {
+	if vt := u.OfText; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfToolAddition; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfToolRemoval; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's CacheControl property, if present.
+func (u BetaMidConversationSystemBlockParamContentUnion) GetCacheControl() *BetaCacheControlEphemeralParam {
+	if vt := u.OfText; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfToolAddition; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfToolRemoval; vt != nil {
+		return &vt.CacheControl
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u BetaMidConversationSystemBlockParamContentUnion) GetTool() (res betaMidConversationSystemBlockParamContentUnionTool) {
+	if vt := u.OfToolAddition; vt != nil {
+		res.any = vt.Tool.asAny()
+	} else if vt := u.OfToolRemoval; vt != nil {
+		res.any = vt.Tool.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*BetaToolChangeToolReferenceParam],
+// [*BetaToolChangeMCPToolReferenceParam],
+// [*BetaToolChangeMCPToolsetReferenceParam]
+type betaMidConversationSystemBlockParamContentUnionTool struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BetaToolChangeToolReferenceParam:
+//	case *anthropic.BetaToolChangeMCPToolReferenceParam:
+//	case *anthropic.BetaToolChangeMCPToolsetReferenceParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u betaMidConversationSystemBlockParamContentUnionTool) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaMidConversationSystemBlockParamContentUnionTool) GetName() *string {
+	switch vt := u.any.(type) {
+	case *BetaRequestToolAdditionBlockToolUnionParam:
+		return vt.GetName()
+	case *BetaRequestToolRemovalBlockToolUnionParam:
+		return vt.GetName()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaMidConversationSystemBlockParamContentUnionTool) GetType() *string {
+	switch vt := u.any.(type) {
+	case *BetaRequestToolAdditionBlockToolUnionParam:
+		return vt.GetType()
+	case *BetaRequestToolRemovalBlockToolUnionParam:
+		return vt.GetType()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaMidConversationSystemBlockParamContentUnionTool) GetServerName() *string {
+	switch vt := u.any.(type) {
+	case *BetaRequestToolAdditionBlockToolUnionParam:
+		return vt.GetServerName()
+	case *BetaRequestToolRemovalBlockToolUnionParam:
+		return vt.GetServerName()
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaMidConversationSystemBlockParamContentUnion](
+		"type",
+		apijson.Discriminator[BetaTextBlockParam]("text"),
+		apijson.Discriminator[BetaRequestToolAdditionBlockParam]("tool_addition"),
+		apijson.Discriminator[BetaRequestToolRemovalBlockParam]("tool_removal"),
+	)
 }
 
 type BetaOutputConfigParam struct {
@@ -7413,6 +7908,196 @@ func (u *BetaRequestMCPToolResultBlockParamContentUnion) asAny() any {
 		return &u.OfBetaMCPToolResultBlockContent
 	}
 	return nil
+}
+
+// Mid-conversation directive to surface a declared tool.
+//
+// `tool` references a tool (or MCP toolset) by name from the request's `tools`; it
+// is offered to the model from this point in the conversation onward.
+//
+// The properties Tool, Type are required.
+type BetaRequestToolAdditionBlockParam struct {
+	// Reference to a single tool the caller declared directly in `tools[]`. Does not
+	// accept the composed `{server}_{name}` form the server assigns to MCP-resolved
+	// tools — use `mcp_tool_reference` or `mcp_toolset_reference` for those.
+	Tool BetaRequestToolAdditionBlockToolUnionParam `json:"tool,omitzero" api:"required"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// This field can be elided, and will marshal its zero value as "tool_addition".
+	Type constant.ToolAddition `json:"type" default:"tool_addition"`
+	paramObj
+}
+
+func (r BetaRequestToolAdditionBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaRequestToolAdditionBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaRequestToolAdditionBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaRequestToolAdditionBlockToolUnionParam struct {
+	OfToolReference       *BetaToolChangeToolReferenceParam       `json:",omitzero,inline"`
+	OfMCPToolReference    *BetaToolChangeMCPToolReferenceParam    `json:",omitzero,inline"`
+	OfMCPToolsetReference *BetaToolChangeMCPToolsetReferenceParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaRequestToolAdditionBlockToolUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfToolReference, u.OfMCPToolReference, u.OfMCPToolsetReference)
+}
+func (u *BetaRequestToolAdditionBlockToolUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaRequestToolAdditionBlockToolUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfToolReference) {
+		return u.OfToolReference
+	} else if !param.IsOmitted(u.OfMCPToolReference) {
+		return u.OfMCPToolReference
+	} else if !param.IsOmitted(u.OfMCPToolsetReference) {
+		return u.OfMCPToolsetReference
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestToolAdditionBlockToolUnionParam) GetName() *string {
+	if vt := u.OfToolReference; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfMCPToolReference; vt != nil {
+		return (*string)(&vt.Name)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestToolAdditionBlockToolUnionParam) GetType() *string {
+	if vt := u.OfToolReference; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfMCPToolReference; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfMCPToolsetReference; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestToolAdditionBlockToolUnionParam) GetServerName() *string {
+	if vt := u.OfMCPToolReference; vt != nil {
+		return (*string)(&vt.ServerName)
+	} else if vt := u.OfMCPToolsetReference; vt != nil {
+		return (*string)(&vt.ServerName)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaRequestToolAdditionBlockToolUnionParam](
+		"type",
+		apijson.Discriminator[BetaToolChangeToolReferenceParam]("tool_reference"),
+		apijson.Discriminator[BetaToolChangeMCPToolReferenceParam]("mcp_tool_reference"),
+		apijson.Discriminator[BetaToolChangeMCPToolsetReferenceParam]("mcp_toolset_reference"),
+	)
+}
+
+// Mid-conversation directive to withdraw a tool.
+//
+// `tool` references a tool (or MCP toolset) by name from the request's `tools`; it
+// is no longer offered to the model from this point in the conversation onward.
+//
+// The properties Tool, Type are required.
+type BetaRequestToolRemovalBlockParam struct {
+	// Reference to a single tool the caller declared directly in `tools[]`. Does not
+	// accept the composed `{server}_{name}` form the server assigns to MCP-resolved
+	// tools — use `mcp_tool_reference` or `mcp_toolset_reference` for those.
+	Tool BetaRequestToolRemovalBlockToolUnionParam `json:"tool,omitzero" api:"required"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// This field can be elided, and will marshal its zero value as "tool_removal".
+	Type constant.ToolRemoval `json:"type" default:"tool_removal"`
+	paramObj
+}
+
+func (r BetaRequestToolRemovalBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaRequestToolRemovalBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaRequestToolRemovalBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaRequestToolRemovalBlockToolUnionParam struct {
+	OfToolReference       *BetaToolChangeToolReferenceParam       `json:",omitzero,inline"`
+	OfMCPToolReference    *BetaToolChangeMCPToolReferenceParam    `json:",omitzero,inline"`
+	OfMCPToolsetReference *BetaToolChangeMCPToolsetReferenceParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaRequestToolRemovalBlockToolUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfToolReference, u.OfMCPToolReference, u.OfMCPToolsetReference)
+}
+func (u *BetaRequestToolRemovalBlockToolUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaRequestToolRemovalBlockToolUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfToolReference) {
+		return u.OfToolReference
+	} else if !param.IsOmitted(u.OfMCPToolReference) {
+		return u.OfMCPToolReference
+	} else if !param.IsOmitted(u.OfMCPToolsetReference) {
+		return u.OfMCPToolsetReference
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestToolRemovalBlockToolUnionParam) GetName() *string {
+	if vt := u.OfToolReference; vt != nil {
+		return (*string)(&vt.Name)
+	} else if vt := u.OfMCPToolReference; vt != nil {
+		return (*string)(&vt.Name)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestToolRemovalBlockToolUnionParam) GetType() *string {
+	if vt := u.OfToolReference; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfMCPToolReference; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfMCPToolsetReference; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaRequestToolRemovalBlockToolUnionParam) GetServerName() *string {
+	if vt := u.OfMCPToolReference; vt != nil {
+		return (*string)(&vt.ServerName)
+	} else if vt := u.OfMCPToolsetReference; vt != nil {
+		return (*string)(&vt.ServerName)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaRequestToolRemovalBlockToolUnionParam](
+		"type",
+		apijson.Discriminator[BetaToolChangeToolReferenceParam]("tool_reference"),
+		apijson.Discriminator[BetaToolChangeMCPToolReferenceParam]("mcp_tool_reference"),
+		apijson.Discriminator[BetaToolChangeMCPToolsetReferenceParam]("mcp_toolset_reference"),
+	)
 }
 
 // The properties Content, Source, Title, Type are required.
@@ -9135,6 +9820,66 @@ func (r BetaToolBash20250124Param) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *BetaToolBash20250124Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Reference to a single MCP tool by its server and remote name — the same
+// `server_name`/`name` pair `mcp_tool_use` carries.
+//
+// The properties Name, ServerName, Type are required.
+type BetaToolChangeMCPToolReferenceParam struct {
+	Name       string `json:"name" api:"required"`
+	ServerName string `json:"server_name" api:"required"`
+	// This field can be elided, and will marshal its zero value as
+	// "mcp_tool_reference".
+	Type constant.MCPToolReference `json:"type" default:"mcp_tool_reference"`
+	paramObj
+}
+
+func (r BetaToolChangeMCPToolReferenceParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaToolChangeMCPToolReferenceParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaToolChangeMCPToolReferenceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Reference to every tool in the named MCP server's toolset.
+//
+// The properties ServerName, Type are required.
+type BetaToolChangeMCPToolsetReferenceParam struct {
+	ServerName string `json:"server_name" api:"required"`
+	// This field can be elided, and will marshal its zero value as
+	// "mcp_toolset_reference".
+	Type constant.MCPToolsetReference `json:"type" default:"mcp_toolset_reference"`
+	paramObj
+}
+
+func (r BetaToolChangeMCPToolsetReferenceParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaToolChangeMCPToolsetReferenceParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaToolChangeMCPToolsetReferenceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Reference to a single tool the caller declared directly in `tools[]`. Does not
+// accept the composed `{server}_{name}` form the server assigns to MCP-resolved
+// tools — use `mcp_tool_reference` or `mcp_toolset_reference` for those.
+//
+// The properties Name, Type are required.
+type BetaToolChangeToolReferenceParam struct {
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "tool_reference".
+	Type constant.ToolReference `json:"type" default:"tool_reference"`
+	paramObj
+}
+
+func (r BetaToolChangeToolReferenceParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaToolChangeToolReferenceParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaToolChangeToolReferenceParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -11250,6 +11995,8 @@ type BetaUsage struct {
 	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens" api:"required"`
 	// The number of input tokens read from the cache.
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens" api:"required"`
+	// Outcome of the `fallback_credit_token` presented on this request.
+	FallbackCredit BetaFallbackCreditUsage `json:"fallback_credit" api:"required"`
 	// The geographic region where inference was performed for this request.
 	InferenceGeo string `json:"inference_geo" api:"required"`
 	// The number of input tokens which were used.
@@ -11289,6 +12036,7 @@ type BetaUsage struct {
 		CacheCreation            respjson.Field
 		CacheCreationInputTokens respjson.Field
 		CacheReadInputTokens     respjson.Field
+		FallbackCredit           respjson.Field
 		InferenceGeo             respjson.Field
 		InputTokens              respjson.Field
 		Iterations               respjson.Field
@@ -12527,26 +13275,6 @@ type BetaMessageNewParams struct {
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero" api:"required"`
-	// The `fallback_credit_token` from a prior refusal's `stop_details`.
-	//
-	// When a preceding request was refused and returned a `fallback_credit_token`,
-	// pass that code here on the retry to have the retry's cache-creation tokens for
-	// the prefix that was warm on the refused model billed at the cache-read rate.
-	// Must be redeemed by the same organization and workspace, with the same request
-	// body (optionally extended by one appended `assistant` message whose content is
-	// the partial text — with any trailing whitespace stripped from the final text
-	// block — and paired server-tool blocks streamed before the refusal; the
-	// appended-assistant form is not available for requests with `output_format` set
-	// or forced `tool_choice`), on an eligible fallback model, on the same platform,
-	// and within 5 minutes of the refusal; a mismatch is a 400. A token minted
-	// mid-server-tool-loop whose partial content was continuable may only be redeemed
-	// with the appended-assistant form — if an exact-body retry is rejected with a 400
-	// saying the token must be redeemed by continuing the partial response, retry with
-	// the appended-assistant form instead.
-	//
-	// When the appended-assistant form is used on a model that otherwise disallows
-	// assistant-turn prefill, this token also authorizes that one prefill.
-	FallbackCreditToken param.Opt[string] `json:"fallback_credit_token,omitzero"`
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
@@ -12579,10 +13307,31 @@ type BetaMessageNewParams struct {
 	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`
 	// Container identifier for reuse across requests.
 	Container BetaMessageNewParamsContainerUnion `json:"container,omitzero"`
+	// The `fallback_credit_token` from a prior refusal's `stop_details`.
+	//
+	// When a preceding request was refused and returned a `fallback_credit_token`,
+	// pass that code here on the retry to have the retry's cache-creation tokens for
+	// the prefix that was warm on the refused model billed at the cache-read rate.
+	// Must be redeemed by the same organization and workspace, with the same request
+	// body (optionally extended by one appended `assistant` message whose content is
+	// the partial text — with any trailing whitespace stripped from the final text
+	// block — and paired server-tool blocks streamed before the refusal; the
+	// appended-assistant form is not available for requests with `output_format` set
+	// or forced `tool_choice`), on an eligible fallback model, on the same platform,
+	// and within 5 minutes of the refusal; a mismatch is a 400. A token minted
+	// mid-server-tool-loop whose partial content was continuable may only be redeemed
+	// with the appended-assistant form — if an exact-body retry is rejected with a 400
+	// saying the token must be redeemed by continuing the partial response, retry with
+	// the appended-assistant form instead.
+	//
+	// When the appended-assistant form is used on a model that otherwise disallows
+	// assistant-turn prefill, this token also authorizes that one prefill.
+	FallbackCreditToken BetaMessageNewParamsFallbackCreditTokenUnion `json:"fallback_credit_token,omitzero"`
 	// Opt-in server-side retry on one or more substitute models when the requested
 	// model declines for policy reasons. Tried in order: if the first entry also
-	// declines, the second is tried, and so on.
-	Fallbacks []BetaFallbackParam `json:"fallbacks,omitzero"`
+	// declines, the second is tried, and so on. The string "default" requests the
+	// requested model's server-defined default fallback configuration.
+	Fallbacks BetaFallbacksParamUnion `json:"fallbacks,omitzero"`
 	// Inference speed mode. `fast` provides significantly faster output token
 	// generation at premium pricing. Not all models support `fast`; invalid
 	// combinations are rejected at create time.
@@ -12768,6 +13517,31 @@ func (u *BetaMessageNewParamsContainerUnion) asAny() any {
 		return u.OfContainers
 	} else if !param.IsOmitted(u.OfString) {
 		return &u.OfString.Value
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaMessageNewParamsFallbackCreditTokenUnion struct {
+	OfString              param.Opt[string]             `json:",omitzero,inline"`
+	OfFallbackCreditToken *BetaFallbackCreditTokenParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaMessageNewParamsFallbackCreditTokenUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString, u.OfFallbackCreditToken)
+}
+func (u *BetaMessageNewParamsFallbackCreditTokenUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaMessageNewParamsFallbackCreditTokenUnion) asAny() any {
+	if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
+	} else if !param.IsOmitted(u.OfFallbackCreditToken) {
+		return u.OfFallbackCreditToken
 	}
 	return nil
 }

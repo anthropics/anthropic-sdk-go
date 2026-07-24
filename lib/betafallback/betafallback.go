@@ -89,7 +89,12 @@ func WithBetaFallbackState(state *BetaFallbackState) option.RequestOption {
 //	message, err := client.Beta.Messages.New(ctx, params, conversation)
 //
 // Each fallback merges over the original params, overriding only the fields
-// it sets. An exhausted chain returns the last refusal as a normal response;
+// it sets; a field set to JSON null (for example param.Null) is removed
+// from that attempt. output_config merges one level deep: its set subfields
+// override, its null subfields are removed, and the rest of the original
+// object survives (a null output_config removes it whole). Overrides never
+// carry from one hop to the next.
+// An exhausted chain returns the last refusal as a normal response;
 // an empty chain disables the middleware.
 //
 // Only the beta Messages surface is handled (client.Beta.Messages, which
@@ -164,7 +169,7 @@ func BetaRefusalFallbackMiddleware(fallbacks []anthropic.BetaFallbackParam) opti
 		// The two chains cannot adjudicate refusals together; fail loudly
 		// rather than letting them race.
 		if _, ok := body["fallbacks"]; ok {
-			return nil, fmt.Errorf("Sending the `fallbacks:` request param is not supported when using the `BetaRefusalFallbackMiddleware` middleware. You should either remove the middleware and send `fallbacks:` with the `server-side-fallback-2026-06-01` beta header to let the API handle refusal fallbacks, or omit the `fallbacks:` param if you'd like the `BetaRefusalFallbackMiddleware` middleware to handle fallbacks on the client side.")
+			return nil, fmt.Errorf("Sending the `fallbacks:` request param is not supported when using the `BetaRefusalFallbackMiddleware` middleware. You should either remove the middleware and send `fallbacks:` with the `server-side-fallback-2026-07-01` beta header to let the API handle refusal fallbacks, or omit the `fallbacks:` param if you'd like the `BetaRefusalFallbackMiddleware` middleware to handle fallbacks on the client side.")
 		}
 		if string(bytes.TrimSpace(body["stream"])) == "true" {
 			// A bad chain fails only requests the middleware would act on.
@@ -408,7 +413,7 @@ func ensureFallbackCreditBeta(h http.Header) {
 	if hasFallbackCreditBeta(h) {
 		return
 	}
-	h.Add("anthropic-beta", string(anthropic.AnthropicBetaFallbackCredit2026_06_01))
+	h.Add("anthropic-beta", string(anthropic.AnthropicBetaFallbackCredit2026_07_01))
 }
 
 // hasFallbackCreditBeta reports whether the headers already carry the
@@ -416,7 +421,7 @@ func ensureFallbackCreditBeta(h http.Header) {
 func hasFallbackCreditBeta(h http.Header) bool {
 	for _, value := range h.Values("anthropic-beta") {
 		for _, beta := range strings.Split(value, ",") {
-			if strings.TrimSpace(beta) == string(anthropic.AnthropicBetaFallbackCredit2026_06_01) {
+			if strings.TrimSpace(beta) == string(anthropic.AnthropicBetaFallbackCredit2026_07_01) {
 				return true
 			}
 		}
@@ -443,6 +448,29 @@ func mergeFallback(body map[string]json.RawMessage, fallback anthropic.BetaFallb
 		merged[k] = v
 	}
 	for k, v := range overlay {
+		// A fallback field set to JSON null unsets the original field: the
+		// retry omits the key rather than sending null or keeping the
+		// original value.
+		if isJSONNull(v) {
+			delete(merged, k)
+			continue
+		}
+		// output_config patches one level deep: subfields the fallback sets
+		// override the original's, subfields it sets to null are unset, and
+		// unmentioned subfields survive. An object left with no subfields
+		// is dropped rather than sent as {}.
+		if k == "output_config" {
+			patched, ok, err := patchObject(body[k], v)
+			if err != nil {
+				return nil, false, fmt.Errorf("betafallback: merging output_config: %w", err)
+			}
+			if ok {
+				merged[k] = patched
+			} else {
+				delete(merged, k)
+			}
+			continue
+		}
 		merged[k] = v
 	}
 
@@ -451,13 +479,57 @@ func mergeFallback(body map[string]json.RawMessage, fallback anthropic.BetaFallb
 	delete(merged, "fallback")
 	delete(merged, "fallbacks")
 	if creditToken != "" {
-		token, _ := json.Marshal(creditToken)
+		// The object form with best_effort mode: a token-layer redemption
+		// failure serves the retry at normal price instead of failing it.
+		token, err := json.Marshal(anthropic.BetaFallbackCreditTokenParam{
+			Token: creditToken,
+			Mode:  anthropic.BetaFallbackCreditTokenParamModeBestEffort,
+		})
+		if err != nil {
+			return nil, false, fmt.Errorf("betafallback: marshaling credit token: %w", err)
+		}
 		merged["fallback_credit_token"] = token
 	} else {
 		delete(merged, "fallback_credit_token")
 	}
 	out, err := json.Marshal(merged)
 	return out, creditToken != "", err
+}
+
+func isJSONNull(v json.RawMessage) bool {
+	return string(bytes.TrimSpace(v)) == "null"
+}
+
+// patchObject applies overlay onto base one level deep: overlay keys set to
+// a value override, keys set to null are removed, and base keys the overlay
+// leaves out survive. A missing or null base starts empty. ok is false when
+// no keys remain, so the caller drops the field instead of sending {}.
+func patchObject(base, overlay json.RawMessage) (patched json.RawMessage, ok bool, err error) {
+	var merged map[string]json.RawMessage
+	if len(base) > 0 && !isJSONNull(base) {
+		if err := json.Unmarshal(base, &merged); err != nil {
+			return nil, false, err
+		}
+	}
+	if merged == nil {
+		merged = map[string]json.RawMessage{}
+	}
+	var patch map[string]json.RawMessage
+	if err := json.Unmarshal(overlay, &patch); err != nil {
+		return nil, false, err
+	}
+	for k, v := range patch {
+		if isJSONNull(v) {
+			delete(merged, k)
+			continue
+		}
+		merged[k] = v
+	}
+	if len(merged) == 0 {
+		return nil, false, nil
+	}
+	patched, err = json.Marshal(merged)
+	return patched, err == nil, err
 }
 
 // refusedMessage reports whether res is a message that stopped with a refusal,

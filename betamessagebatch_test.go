@@ -11,6 +11,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
 	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
@@ -88,30 +89,12 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				Diagnostics: anthropic.BetaDiagnosticsParam{
 					PreviousMessageID: anthropic.String("previous_message_id"),
 				},
-				FallbackCreditToken: anthropic.String("x"),
-				Fallbacks: []anthropic.BetaFallbackParam{{
-					Model:     anthropic.ModelClaudeSonnet5,
-					MaxTokens: anthropic.Int(0),
-					OutputConfig: anthropic.BetaOutputConfigParam{
-						Effort: anthropic.BetaOutputConfigEffortLow,
-						Format: anthropic.BetaJSONOutputFormatParam{
-							Schema: map[string]any{
-								"foo": "bar",
-							},
-						},
-						TaskBudget: anthropic.BetaTokenTaskBudgetParam{
-							Total:     1024,
-							Remaining: anthropic.Int(0),
-						},
-					},
-					Speed: anthropic.BetaFallbackParamSpeedStandard,
-					Thinking: anthropic.BetaFallbackParamThinkingUnion{
-						OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{
-							BudgetTokens: 1024,
-							Display:      anthropic.BetaThinkingConfigEnabledDisplaySummarized,
-						},
-					},
-				}},
+				FallbackCreditToken: anthropic.BetaMessageBatchNewParamsRequestParamsFallbackCreditTokenUnion{
+					OfString: anthropic.String("x"),
+				},
+				Fallbacks: anthropic.BetaFallbacksParamUnion{
+					OfDefault: constant.ValueOf[constant.Default](),
+				},
 				InferenceGeo: anthropic.String("inference_geo"),
 				MCPServers: []anthropic.BetaRequestMCPServerURLDefinitionParam{{
 					Name:               "name",

@@ -13,6 +13,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
 	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 func TestBetaMessageNewWithOptionalParams(t *testing.T) {
@@ -87,30 +88,12 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		Diagnostics: anthropic.BetaDiagnosticsParam{
 			PreviousMessageID: anthropic.String("previous_message_id"),
 		},
-		FallbackCreditToken: anthropic.String("x"),
-		Fallbacks: []anthropic.BetaFallbackParam{{
-			Model:     anthropic.ModelClaudeSonnet5,
-			MaxTokens: anthropic.Int(0),
-			OutputConfig: anthropic.BetaOutputConfigParam{
-				Effort: anthropic.BetaOutputConfigEffortLow,
-				Format: anthropic.BetaJSONOutputFormatParam{
-					Schema: map[string]any{
-						"foo": "bar",
-					},
-				},
-				TaskBudget: anthropic.BetaTokenTaskBudgetParam{
-					Total:     1024,
-					Remaining: anthropic.Int(0),
-				},
-			},
-			Speed: anthropic.BetaFallbackParamSpeedStandard,
-			Thinking: anthropic.BetaFallbackParamThinkingUnion{
-				OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{
-					BudgetTokens: 1024,
-					Display:      anthropic.BetaThinkingConfigEnabledDisplaySummarized,
-				},
-			},
-		}},
+		FallbackCreditToken: anthropic.BetaMessageNewParamsFallbackCreditTokenUnion{
+			OfString: anthropic.String("x"),
+		},
+		Fallbacks: anthropic.BetaFallbacksParamUnion{
+			OfDefault: constant.ValueOf[constant.Default](),
+		},
 		InferenceGeo: anthropic.String("inference_geo"),
 		MCPServers: []anthropic.BetaRequestMCPServerURLDefinitionParam{{
 			Name:               "name",
@@ -501,6 +484,32 @@ Therefore, the answer is..."}}`,
 					InputTokens:   15,
 					OutputTokens:  8,
 					ServerToolUse: anthropic.BetaServerToolUsage{WebSearchRequests: 2},
+				},
+			},
+		},
+		"message_delta usage with fallback_credit": {
+			events: []string{
+				`{"type": "message_start", "message": {}}`,
+				`{"type": "content_block_start", "index": 0, "content_block": {"type": "text", "text": "Hi"}}`,
+				`{"type": "content_block_stop", "index": 0}`,
+				`{"type": "message_delta", "delta": {"stop_reason": "end_turn"}, "usage": {"input_tokens": 15, "output_tokens": 8, "fallback_credit": {"status": {"type": "not_applied", "reason": "expired", "remove_to_redeem": ["fallback_credit_token"]}}}}`,
+				`{"type": "message_stop"}`,
+			},
+			expected: anthropic.BetaMessage{
+				Content: []anthropic.BetaContentBlockUnion{
+					{Type: "text", Text: "Hi"},
+				},
+				StopReason: "end_turn",
+				Usage: anthropic.BetaUsage{
+					InputTokens:  15,
+					OutputTokens: 8,
+					FallbackCredit: anthropic.BetaFallbackCreditUsage{
+						Status: anthropic.BetaFallbackCreditUsageStatusUnion{
+							Type:           "not_applied",
+							Reason:         anthropic.BetaFallbackCreditNotAppliedReasonExpired,
+							RemoveToRedeem: []string{"fallback_credit_token"},
+						},
+					},
 				},
 			},
 		},

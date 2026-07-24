@@ -180,7 +180,7 @@ func TestStreamingRefusalSplicesIntoOneMessage(t *testing.T) {
 	require.Len(t, transport.bodies, 2)
 	retry := transport.bodies[1]
 	assert.Equal(t, "fallback-model", retry["model"])
-	assert.Equal(t, "credit-token-a", retry["fallback_credit_token"])
+	assert.Equal(t, creditTokenBody("credit-token-a"), retry["fallback_credit_token"])
 	assert.Equal(t, true, retry["stream"])
 	messages := retry["messages"].([]any)
 	require.Len(t, messages, 2, "the claim rides as one appended turn")
@@ -188,7 +188,7 @@ func TestStreamingRefusalSplicesIntoOneMessage(t *testing.T) {
 	assert.Equal(t, "assistant", claim["role"])
 	assert.Equal(t, []any{map[string]any{"type": "text", "text": "partial "}}, claim["content"], "echoed verbatim, whitespace included")
 	for i, betas := range transport.betas {
-		assert.Contains(t, betas, string(anthropic.AnthropicBetaFallbackCredit2026_06_01), "request %d", i)
+		assert.Contains(t, betas, string(anthropic.AnthropicBetaFallbackCredit2026_07_01), "request %d", i)
 	}
 }
 
@@ -201,7 +201,7 @@ func TestStreamingClaimFalseRetriesTheExactBody(t *testing.T) {
 	_, _, _ = collectStream(t, client, context.Background(), fallbackTestParams)
 	require.Len(t, transport.bodies, 2)
 	retry := transport.bodies[1]
-	assert.Equal(t, "credit-token-a", retry["fallback_credit_token"])
+	assert.Equal(t, creditTokenBody("credit-token-a"), retry["fallback_credit_token"])
 	assert.Len(t, retry["messages"].([]any), 1, "no claim advertised, no turn appended")
 }
 
@@ -255,7 +255,7 @@ func TestStreamingFailedHopSkipsToTheNextEntry(t *testing.T) {
 	msg, _, _ := collectStream(t, client, context.Background(), fallbackTestParams)
 	assert.Equal(t, anthropic.BetaStopReasonEndTurn, msg.StopReason)
 	require.Len(t, transport.bodies, 3)
-	assert.Equal(t, "credit-token-a", transport.bodies[2]["fallback_credit_token"])
+	assert.Equal(t, creditTokenBody("credit-token-a"), transport.bodies[2]["fallback_credit_token"])
 	assert.Len(t, transport.bodies[2]["messages"].([]any), 2, "the claim carries to the next entry")
 
 	var boundaries []string
@@ -313,7 +313,7 @@ func TestStreaming400OnAClaimedAttemptRetriesTheLastEntryWithoutTheClaim(t *test
 	assert.Len(t, transport.bodies[1]["messages"].([]any), 2, "first attempt carries the claim")
 	assert.Len(t, transport.bodies[2]["messages"].([]any), 1, "the degrade drops the claim turn")
 	assert.Equal(t, "fallback-model", transport.bodies[2]["model"], "same entry retried")
-	assert.Equal(t, "credit-token-a", transport.bodies[2]["fallback_credit_token"], "the token is kept")
+	assert.Equal(t, creditTokenBody("credit-token-a"), transport.bodies[2]["fallback_credit_token"], "the token is kept")
 }
 
 func TestStreamingHopSuppliedIterationsRideThroughLabeled(t *testing.T) {
@@ -347,7 +347,7 @@ func TestStreaming400OnATokenedAttemptRetriesTheLastEntryTokenless(t *testing.T)
 	msg, _, _ := collectStream(t, client, context.Background(), fallbackTestParams)
 	assert.Equal(t, anthropic.BetaStopReasonEndTurn, msg.StopReason)
 	require.Len(t, transport.bodies, 3)
-	assert.Equal(t, "credit-token-a", transport.bodies[1]["fallback_credit_token"], "first attempt redeems")
+	assert.Equal(t, creditTokenBody("credit-token-a"), transport.bodies[1]["fallback_credit_token"], "first attempt redeems")
 	assert.Equal(t, "fallback-model", transport.bodies[2]["model"], "same entry retried")
 	_, hasToken := transport.bodies[2]["fallback_credit_token"]
 	assert.False(t, hasToken, "the tokenless retry drops the token")
@@ -434,11 +434,13 @@ func TestStreamingServerSideFallbacksError(t *testing.T) {
 	client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-model"}})
 
 	params := fallbackTestParams
-	params.Fallbacks = []anthropic.BetaFallbackParam{{Model: "server-fallback"}}
+	params.Fallbacks = anthropic.BetaFallbacksParamUnion{
+		OfBetaFallbackArray: []anthropic.BetaFallbackParam{{Model: "server-fallback"}},
+	}
 	stream := client.Beta.Messages.NewStreaming(context.Background(), params)
 	for stream.Next() {
 	}
-	require.ErrorContains(t, stream.Err(), "Sending the `fallbacks:` request param is not supported when using the `BetaRefusalFallbackMiddleware` middleware. You should either remove the middleware and send `fallbacks:` with the `server-side-fallback-2026-06-01` beta header to let the API handle refusal fallbacks, or omit the `fallbacks:` param if you'd like the `BetaRefusalFallbackMiddleware` middleware to handle fallbacks on the client side.")
+	require.ErrorContains(t, stream.Err(), "Sending the `fallbacks:` request param is not supported when using the `BetaRefusalFallbackMiddleware` middleware. You should either remove the middleware and send `fallbacks:` with the `server-side-fallback-2026-07-01` beta header to let the API handle refusal fallbacks, or omit the `fallbacks:` param if you'd like the `BetaRefusalFallbackMiddleware` middleware to handle fallbacks on the client side.")
 	assert.Empty(t, transport.bodies, "no request reaches the server")
 }
 

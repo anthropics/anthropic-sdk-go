@@ -103,7 +103,7 @@ func TestToolRunnerWithFallbackMiddlewareMidLoopRefusal(t *testing.T) {
 	refusedTurn, _ := json.Marshal(transport.bodies[1]["messages"])
 	retryTurn, _ := json.Marshal(transport.bodies[2]["messages"])
 	assert.JSONEq(t, string(refusedTurn), string(retryTurn), "the retry resends the refused turn's messages — tool results included")
-	assert.Equal(t, "credit-token", transport.bodies[2]["fallback_credit_token"], "the retry redeems the refusal's token")
+	assert.Equal(t, creditTokenBody("credit-token"), transport.bodies[2]["fallback_credit_token"], "the retry redeems the refusal's token")
 	assert.Equal(t, "fallback-model", transport.bodies[2]["model"])
 	assert.Equal(t, 0, state.Index(), "the pin carries across runner turns")
 }
@@ -133,7 +133,7 @@ func TestStreamingToolRunnerEchoesTheSplicedTurn(t *testing.T) {
 	// Three wire requests: refused opening turn, the middleware's hop, the
 	// runner's tool-result turn echoing the spliced assistant message.
 	require.Len(t, transport.bodies, 3)
-	assert.Equal(t, "credit-token-a", transport.bodies[1]["fallback_credit_token"], "the hop redeems the token")
+	assert.Equal(t, creditTokenBody("credit-token-a"), transport.bodies[1]["fallback_credit_token"], "the hop redeems the token")
 	echoed, err := json.Marshal(transport.bodies[2]["messages"])
 	require.NoError(t, err)
 	echo := string(echoed)

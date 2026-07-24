@@ -152,6 +152,7 @@ func (b *betaToolRunnerBase) executeTools(ctx context.Context, message *BetaMess
 
 	// Execute all tools in parallel using errgroup for proper cancellation handling
 	results := make([]BetaContentBlockParamUnion, len(toolUseBlocks))
+	available := b.availableToolNames()
 
 	g, gctx := errgroup.WithContext(ctx)
 	for i, toolUse := range toolUseBlocks {
@@ -162,7 +163,7 @@ func (b *betaToolRunnerBase) executeTools(ctx context.Context, message *BetaMess
 				return gctx.Err()
 			default:
 			}
-			result := b.executeToolUse(gctx, toolUse)
+			result := b.executeToolUse(gctx, toolUse, available)
 			results[i] = BetaContentBlockParamUnion{OfToolResult: &result}
 			return nil // tool errors become result content, not Go errors
 		})
@@ -181,10 +182,91 @@ func newBetaToolResultErrorBlockParam(toolUseID string, errorText string) BetaTo
 	return NewBetaToolResultTextBlockParam(toolUseID, errorText, true)
 }
 
+// availableToolNames returns the tool names currently offered to the model:
+// every registered tool, minus names dropped by tool_removal blocks in
+// role "system" messages, plus names re-enabled by later tool_addition
+// blocks. Removal is only a hint — the model can still call a removed tool —
+// so a removed tool must resolve to the same not-found result as one that
+// was never registered.
+func (b *betaToolRunnerBase) availableToolNames() map[string]struct{} {
+	available := make(map[string]struct{}, len(b.toolMap))
+	for name := range b.toolMap {
+		available[name] = struct{}{}
+	}
+	for _, message := range b.Params.Messages {
+		if message.Role != BetaMessageParamRoleSystem {
+			continue
+		}
+		for _, block := range message.Content {
+			applyToolChange(block, available)
+		}
+	}
+	return available
+}
+
+// applyToolChange folds one system-message content block into the available
+// tool-name set. The populated Of* variant is the discriminator; every other
+// block type, including ones added after this SDK was generated, leaves the
+// set untouched.
+func applyToolChange(block BetaContentBlockParamUnion, available map[string]struct{}) {
+	switch {
+	case block.OfToolRemoval != nil:
+		if name, ok := removalRefName(block.OfToolRemoval.Tool); ok {
+			delete(available, name)
+		}
+	case block.OfToolAddition != nil:
+		if name, ok := additionRefName(block.OfToolAddition.Tool); ok {
+			available[name] = struct{}{}
+		}
+	case block.OfMidConvSystem != nil:
+		// Nested wrapper: same handling, one level down.
+		for _, inner := range block.OfMidConvSystem.Content {
+			switch {
+			case inner.OfToolRemoval != nil:
+				if name, ok := removalRefName(inner.OfToolRemoval.Tool); ok {
+					delete(available, name)
+				}
+			case inner.OfToolAddition != nil:
+				if name, ok := additionRefName(inner.OfToolAddition.Tool); ok {
+					available[name] = struct{}{}
+				}
+			default:
+				// forward-compat no-op
+			}
+		}
+	default:
+		// forward-compat no-op
+	}
+}
+
+// additionRefName and removalRefName resolve the referenced tool's name across
+// the generated addition/removal tool unions. Only a tool_reference names a
+// locally runnable tool; MCP references run server-side and unknown variants
+// are ignored.
+func additionRefName(u BetaRequestToolAdditionBlockToolUnionParam) (string, bool) {
+	switch {
+	case u.OfToolReference != nil:
+		return u.OfToolReference.Name, u.OfToolReference.Name != ""
+	default:
+		return "", false
+	}
+}
+
+func removalRefName(u BetaRequestToolRemovalBlockToolUnionParam) (string, bool) {
+	switch {
+	case u.OfToolReference != nil:
+		return u.OfToolReference.Name, u.OfToolReference.Name != ""
+	default:
+		return "", false
+	}
+}
+
 // executeToolUse executes a single tool use block and returns the result.
-func (b *betaToolRunnerBase) executeToolUse(ctx context.Context, toolUse BetaToolUseBlock) BetaToolResultBlockParam {
+// available is the current set of offered tool names (see availableToolNames).
+func (b *betaToolRunnerBase) executeToolUse(ctx context.Context, toolUse BetaToolUseBlock, available map[string]struct{}) BetaToolResultBlockParam {
+	_, allowed := available[toolUse.Name]
 	tool, exists := b.toolMap[toolUse.Name]
-	if !exists {
+	if !exists || !allowed {
 		return newBetaToolResultErrorBlockParam(
 			toolUse.ID,
 			fmt.Sprintf("Error: Tool '%s' not found", toolUse.Name),

@@ -77,6 +77,7 @@ type ContentBlockLocation string                    // Always "content_block_loc
 type ContentBlockStart string                       // Always "content_block_start"
 type ContentBlockStop string                        // Always "content_block_stop"
 type Create string                                  // Always "create"
+type Default string                                 // Always "default"
 type Delete string                                  // Always "delete"
 type DeploymentRunFailed string                     // Always "deployment_run.failed"
 type DeploymentRunStarted string                    // Always "deployment_run.started"
@@ -112,9 +113,11 @@ type Insert string                                  // Always "insert"
 type InvalidRequestError string                     // Always "invalid_request_error"
 type JSONSchema string                              // Always "json_schema"
 type Limited string                                 // Always "limited"
+type MCPToolReference string                        // Always "mcp_tool_reference"
 type MCPToolResult string                           // Always "mcp_tool_result"
 type MCPToolUse string                              // Always "mcp_tool_use"
 type MCPToolset string                              // Always "mcp_toolset"
+type MCPToolsetReference string                     // Always "mcp_toolset_reference"
 type Memory string                                  // Always "memory"
 type Memory20250818 string                          // Always "memory_20250818"
 type MemoryStoreArchived string                     // Always "memory_store.archived"
@@ -131,6 +134,7 @@ type MidConvSystem string                           // Always "mid_conv_system"
 type Model string                                   // Always "model"
 type ModelChanged string                            // Always "model_changed"
 type None string                                    // Always "none"
+type NotApplied string                              // Always "not_applied"
 type NotFoundError string                           // Always "not_found_error"
 type Object string                                  // Always "object"
 type OverloadedError string                         // Always "overloaded_error"
@@ -139,6 +143,7 @@ type PermissionError string                         // Always "permission_error"
 type PreviousMessageNotFound string                 // Always "previous_message_not_found"
 type RateLimitError string                          // Always "rate_limit_error"
 type RedactedThinking string                        // Always "redacted_thinking"
+type Redeemed string                                // Always "redeemed"
 type Refusal string                                 // Always "refusal"
 type Rename string                                  // Always "rename"
 type SearchResult string                            // Always "search_result"
@@ -186,7 +191,9 @@ type ThinkingTurns string                           // Always "thinking_turns"
 type TimeoutError string                            // Always "timeout_error"
 type Tokens string                                  // Always "tokens"
 type Tool string                                    // Always "tool"
+type ToolAddition string                            // Always "tool_addition"
 type ToolReference string                           // Always "tool_reference"
+type ToolRemoval string                             // Always "tool_removal"
 type ToolResult string                              // Always "tool_result"
 type ToolSearchToolBm25 string                      // Always "tool_search_tool_bm25"
 type ToolSearchToolRegex string                     // Always "tool_search_tool_regex"
@@ -301,6 +308,7 @@ func (c ContentBlockLocation) Default() ContentBlockLocation     { return "conte
 func (c ContentBlockStart) Default() ContentBlockStart           { return "content_block_start" }
 func (c ContentBlockStop) Default() ContentBlockStop             { return "content_block_stop" }
 func (c Create) Default() Create                                 { return "create" }
+func (c Default) Default() Default                               { return "default" }
 func (c Delete) Default() Delete                                 { return "delete" }
 func (c DeploymentRunFailed) Default() DeploymentRunFailed       { return "deployment_run.failed" }
 func (c DeploymentRunStarted) Default() DeploymentRunStarted     { return "deployment_run.started" }
@@ -338,9 +346,11 @@ func (c Insert) Default() Insert                           { return "insert" }
 func (c InvalidRequestError) Default() InvalidRequestError { return "invalid_request_error" }
 func (c JSONSchema) Default() JSONSchema                   { return "json_schema" }
 func (c Limited) Default() Limited                         { return "limited" }
+func (c MCPToolReference) Default() MCPToolReference       { return "mcp_tool_reference" }
 func (c MCPToolResult) Default() MCPToolResult             { return "mcp_tool_result" }
 func (c MCPToolUse) Default() MCPToolUse                   { return "mcp_tool_use" }
 func (c MCPToolset) Default() MCPToolset                   { return "mcp_toolset" }
+func (c MCPToolsetReference) Default() MCPToolsetReference { return "mcp_toolset_reference" }
 func (c Memory) Default() Memory                           { return "memory" }
 func (c Memory20250818) Default() Memory20250818           { return "memory_20250818" }
 func (c MemoryStoreArchived) Default() MemoryStoreArchived { return "memory_store.archived" }
@@ -357,6 +367,7 @@ func (c MidConvSystem) Default() MidConvSystem             { return "mid_conv_sy
 func (c Model) Default() Model                             { return "model" }
 func (c ModelChanged) Default() ModelChanged               { return "model_changed" }
 func (c None) Default() None                               { return "none" }
+func (c NotApplied) Default() NotApplied                   { return "not_applied" }
 func (c NotFoundError) Default() NotFoundError             { return "not_found_error" }
 func (c Object) Default() Object                           { return "object" }
 func (c OverloadedError) Default() OverloadedError         { return "overloaded_error" }
@@ -367,6 +378,7 @@ func (c PreviousMessageNotFound) Default() PreviousMessageNotFound {
 }
 func (c RateLimitError) Default() RateLimitError             { return "rate_limit_error" }
 func (c RedactedThinking) Default() RedactedThinking         { return "redacted_thinking" }
+func (c Redeemed) Default() Redeemed                         { return "redeemed" }
 func (c Refusal) Default() Refusal                           { return "refusal" }
 func (c Rename) Default() Rename                             { return "rename" }
 func (c SearchResult) Default() SearchResult                 { return "search_result" }
@@ -436,7 +448,9 @@ func (c ThinkingTurns) Default() ThinkingTurns               { return "thinking_
 func (c TimeoutError) Default() TimeoutError                 { return "timeout_error" }
 func (c Tokens) Default() Tokens                             { return "tokens" }
 func (c Tool) Default() Tool                                 { return "tool" }
+func (c ToolAddition) Default() ToolAddition                 { return "tool_addition" }
 func (c ToolReference) Default() ToolReference               { return "tool_reference" }
+func (c ToolRemoval) Default() ToolRemoval                   { return "tool_removal" }
 func (c ToolResult) Default() ToolResult                     { return "tool_result" }
 func (c ToolSearchToolBm25) Default() ToolSearchToolBm25     { return "tool_search_tool_bm25" }
 func (c ToolSearchToolRegex) Default() ToolSearchToolRegex   { return "tool_search_tool_regex" }
@@ -553,6 +567,7 @@ func (c ContentBlockLocation) MarshalJSON() ([]byte, error)                { ret
 func (c ContentBlockStart) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c ContentBlockStop) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Create) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c Default) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Delete) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c DeploymentRunFailed) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c DeploymentRunStarted) MarshalJSON() ([]byte, error)                { return marshalString(c) }
@@ -588,9 +603,11 @@ func (c Insert) MarshalJSON() ([]byte, error)                              { ret
 func (c InvalidRequestError) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c JSONSchema) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Limited) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c MCPToolReference) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c MCPToolResult) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c MCPToolUse) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c MCPToolset) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c MCPToolsetReference) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c Memory) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Memory20250818) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c MemoryStoreArchived) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
@@ -607,6 +624,7 @@ func (c MidConvSystem) MarshalJSON() ([]byte, error)                       { ret
 func (c Model) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c ModelChanged) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c None) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
+func (c NotApplied) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c NotFoundError) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Object) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c OverloadedError) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
@@ -615,6 +633,7 @@ func (c PermissionError) MarshalJSON() ([]byte, error)                     { ret
 func (c PreviousMessageNotFound) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c RateLimitError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c RedactedThinking) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c Redeemed) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Refusal) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Rename) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c SearchResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
@@ -666,7 +685,9 @@ func (c ThinkingTurns) MarshalJSON() ([]byte, error)                     { retur
 func (c TimeoutError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Tokens) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Tool) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c ToolAddition) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c ToolReference) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c ToolRemoval) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c ToolResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c ToolSearchToolBm25) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c ToolSearchToolRegex) MarshalJSON() ([]byte, error)               { return marshalString(c) }

@@ -91,7 +91,9 @@ const (
 	AnthropicBetaDreaming2026_04_21                   AnthropicBeta = "dreaming-2026-04-21"
 	AnthropicBetaThinkingTokenCount2026_05_13         AnthropicBeta = "thinking-token-count-2026-05-13"
 	AnthropicBetaServerSideFallback2026_06_01         AnthropicBeta = "server-side-fallback-2026-06-01"
+	AnthropicBetaServerSideFallback2026_07_01         AnthropicBeta = "server-side-fallback-2026-07-01"
 	AnthropicBetaFallbackCredit2026_06_01             AnthropicBeta = "fallback-credit-2026-06-01"
+	AnthropicBetaFallbackCredit2026_07_01             AnthropicBeta = "fallback-credit-2026-07-01"
 	AnthropicBetaAgentMemory2026_07_22                AnthropicBeta = "agent-memory-2026-07-22"
 )
 

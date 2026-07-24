@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/tidwall/sjson"
+
 	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 )
 
 // Accumulate builds up the Message incrementally from a MessageStreamEvent. The Message then can be used as
-// any other Message, except with the caveat that the Message.JSON field which normally can be used to inspect
-// the JSON sent over the network may not be populated fully.
+// any other Message, including the Message.JSON field, which holds the wire JSON with the streamed deltas
+// applied and is complete once message_stop arrives.
 //
 //	message := anthropic.Message{}
 //	for stream.Next() {
@@ -22,14 +24,17 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 		return fmt.Errorf("accumulate: cannot accumulate into nil Message")
 	}
 
-	switch event := event.AsAny().(type) {
-	case BetaRawMessageStartEvent:
+	switch event.Type {
+	case "message_start":
 		*acc = event.Message
-	case BetaRawMessageDeltaEvent:
+	case "message_delta":
 		acc.StopReason = event.Delta.StopReason
 		acc.StopSequence = event.Delta.StopSequence
 		if event.Delta.JSON.StopDetails.Valid() {
 			acc.StopDetails = event.Delta.StopDetails
+		}
+		if event.Delta.JSON.Container.Valid() {
+			acc.Container = event.Delta.Container
 		}
 		acc.Usage.OutputTokens = event.Usage.OutputTokens
 		if event.Usage.JSON.InputTokens.Valid() {
@@ -50,9 +55,16 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 		if event.Usage.JSON.FallbackCredit.Valid() {
 			acc.Usage.FallbackCredit = event.Usage.FallbackCredit
 		}
-		acc.Usage.Iterations = event.Usage.Iterations
-		acc.ContextManagement = event.ContextManagement
-	case BetaRawContentBlockStartEvent:
+		if event.Usage.JSON.Iterations.Valid() {
+			acc.Usage.Iterations = event.Usage.Iterations
+		}
+		if event.JSON.ContextManagement.Valid() {
+			acc.ContextManagement = event.ContextManagement
+			acc.JSON.raw, _ = sjson.SetRaw(acc.JSON.raw, "context_management", event.ContextManagement.RawJSON())
+		}
+		acc.JSON.raw = mergeRaw(acc.JSON.raw, "", event.Delta.JSON.raw)
+		acc.JSON.raw = mergeRaw(acc.JSON.raw, "usage", event.Usage.RawJSON())
+	case "content_block_start":
 		// Content blocks start in index order with no gaps: a start event always
 		// addresses the slot right after the previous block, even when deltas and
 		// stops for still-open blocks interleave after it.
@@ -69,61 +81,84 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 		// accumulated snapshot to match. Last block wins on multi-hop chains.
 		if fallback, ok := acc.Content[event.Index].AsAny().(BetaFallbackBlock); ok {
 			acc.Model = fallback.To.Model
+			acc.JSON.raw, _ = sjson.SetRaw(acc.JSON.raw, "model", jsonString(string(fallback.To.Model)))
 		}
-	case BetaRawContentBlockDeltaEvent:
-		if err := checkContentBlockIndex(string(event.Type), event.Index, len(acc.Content)); err != nil {
+	case "content_block_delta":
+		if err := checkContentBlockIndex(event.Type, event.Index, len(acc.Content)); err != nil {
 			return err
 		}
 		cb := &acc.Content[event.Index]
-		switch delta := event.Delta.AsAny().(type) {
-		case BetaTextDelta:
-			cb.Text += delta.Text
-		case BetaInputJSONDelta:
-			if len(delta.PartialJSON) != 0 {
+		switch event.Delta.Type {
+		case "text_delta":
+			cb.Text += event.Delta.Text
+		case "input_json_delta":
+			if len(event.Delta.PartialJSON) != 0 {
 				if string(cb.Input) == "{}" {
-					cb.Input = []byte(delta.PartialJSON)
+					cb.Input = []byte(event.Delta.PartialJSON)
 				} else {
-					cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
+					cb.Input = append(cb.Input, event.Delta.PartialJSON...)
 				}
 			}
-		case BetaThinkingDelta:
-			cb.Thinking += delta.Thinking
-		case BetaSignatureDelta:
-			cb.Signature += delta.Signature
-		case BetaCitationsDelta:
+		case "thinking_delta":
+			cb.Thinking += event.Delta.Thinking
+		case "signature_delta":
+			cb.Signature += event.Delta.Signature
+		case "citations_delta":
 			citation := BetaTextCitationUnion{}
-			err := citation.UnmarshalJSON([]byte(delta.Citation.RawJSON()))
+			err := citation.UnmarshalJSON([]byte(event.Delta.Citation.RawJSON()))
 			if err != nil {
 				return fmt.Errorf("could not unmarshal citation delta into citation type: %w", err)
 			}
 			cb.Citations = append(cb.Citations, citation)
-		case BetaCompactionContentBlockDelta:
-			cb.Content.OfString = delta.Content
-			cb.EncryptedContent = delta.EncryptedContent
+		case "compaction_delta":
+			cb.Content.OfString = event.Delta.Content
+			cb.EncryptedContent = event.Delta.EncryptedContent
 		}
-	case BetaRawMessageStopEvent:
-		// Re-marshal the accumulated message to update JSON.raw so that AsAny()
-		// returns the accumulated data rather than the original stream data
-		accJSON, err := json.Marshal(acc)
-		if err != nil {
-			return fmt.Errorf("error converting accumulated message to JSON: %w", err)
+	case "message_stop":
+		// A block whose stop event never arrived has not been refreshed yet.
+		for i := range acc.Content {
+			refreshBetaContentBlockRaw(&acc.Content[i])
 		}
-		acc.JSON.raw = string(accJSON)
-	case BetaRawContentBlockStopEvent:
-		// Re-marshal the content block to update JSON.raw so that AsAny()
-		// returns the accumulated data rather than the original stream data
-		if err := checkContentBlockIndex(string(event.Type), event.Index, len(acc.Content)); err != nil {
+		acc.JSON.raw, _ = sjson.SetRaw(acc.JSON.raw, "content", rawArray(acc.Content))
+	case "content_block_stop":
+		if err := checkContentBlockIndex(event.Type, event.Index, len(acc.Content)); err != nil {
 			return err
 		}
-		contentBlock := &acc.Content[event.Index]
-		cbJSON, err := json.Marshal(contentBlock)
-		if err != nil {
-			return fmt.Errorf("error converting content block to JSON: %w", err)
-		}
-		contentBlock.JSON.raw = string(cbJSON)
+		refreshBetaContentBlockRaw(&acc.Content[event.Index])
 	}
 
 	return nil
+}
+
+// refreshBetaContentBlockRaw overlays the delta-mutated fields onto the block's
+// wire JSON, leaving a block that received no deltas byte for byte.
+func refreshBetaContentBlockRaw(cb *BetaContentBlockUnion) {
+	raw := cb.JSON.raw
+	if cb.Text != "" {
+		raw, _ = sjson.SetRaw(raw, "text", jsonString(cb.Text))
+	}
+	if cb.Thinking != "" {
+		raw, _ = sjson.SetRaw(raw, "thinking", jsonString(cb.Thinking))
+	}
+	if cb.Signature != "" {
+		raw, _ = sjson.SetRaw(raw, "signature", jsonString(cb.Signature))
+	}
+	if json.Valid(cb.Input) {
+		raw, _ = sjson.SetRaw(raw, "input", string(cb.Input))
+	} else if len(cb.Input) > 0 {
+		// A cut-off tool call left non-JSON input; empty it so the block marshals.
+		cb.Input = json.RawMessage(`{}`)
+	}
+	if len(cb.Citations) > 0 {
+		raw, _ = sjson.SetRaw(raw, "citations", rawArray(cb.Citations))
+	}
+	if cb.Content.OfString != "" {
+		raw, _ = sjson.SetRaw(raw, "content", jsonString(cb.Content.OfString))
+	}
+	if cb.EncryptedContent != "" {
+		raw, _ = sjson.SetRaw(raw, "encrypted_content", jsonString(cb.EncryptedContent))
+	}
+	cb.JSON.raw = raw
 }
 
 // ParseOutput finds the first text content block in the message and unmarshals it

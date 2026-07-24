@@ -152,6 +152,13 @@ func TestBetaAgentToolset(t *testing.T) {
 	}
 }
 
+func TestTextResultUsesNonEmptyPlaceholderForEmptyOutput(t *testing.T) {
+	got := textResult("")
+	require.Len(t, got, 1)
+	require.NotNil(t, got[0].OfText)
+	require.Equal(t, "(no output)", got[0].OfText.Text)
+}
+
 // closerTool is a BetaTool whose Close behaviour is controlled by onClose. Used
 // to verify CloseAll's per-tool isolation.
 type closerTool struct {

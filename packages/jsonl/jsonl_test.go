@@ -2,6 +2,7 @@ package jsonl
 
 import (
 	"bufio"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -49,8 +50,8 @@ func TestScannerErrorSurfaced(t *testing.T) {
 	stream := NewStream[map[string]any](res, nil)
 	for stream.Next() {
 	}
-	if err := stream.Err(); err == nil {
-		t.Fatal("Err() = nil, want the underlying read error")
+	if err := stream.Err(); !errors.Is(err, io.ErrClosedPipe) {
+		t.Fatalf("Err() = %v, want error matching io.ErrClosedPipe", err)
 	}
 }
 

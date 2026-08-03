@@ -26,9 +26,11 @@ func NewStream[T any](res *http.Response, err error) *Stream[T] {
 		return &Stream[T]{err: fmt.Errorf("No streaming response body")}
 	}
 
+	scn := bufio.NewScanner(res.Body)
+	scn.Buffer(nil, bufio.MaxScanTokenSize<<9)
 	return &Stream[T]{
 		rc:  res.Body,
-		scn: bufio.NewScanner(res.Body),
+		scn: scn,
 		err: err,
 	}
 }
@@ -39,6 +41,9 @@ func (s *Stream[T]) Next() bool {
 	}
 
 	if !s.scn.Scan() {
+		if err := s.scn.Err(); err != nil {
+			s.err = err
+		}
 		return false
 	}
 
@@ -58,5 +63,8 @@ func (s *Stream[T]) Err() error {
 }
 
 func (s *Stream[T]) Close() error {
+	if s.rc == nil {
+		return nil
+	}
 	return s.rc.Close()
 }

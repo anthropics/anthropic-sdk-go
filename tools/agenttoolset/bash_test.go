@@ -253,3 +253,19 @@ func TestBashOutputBufferBounded(t *testing.T) {
 	require.LessOrEqual(t, len(out), bashOutputLimit+len("[output truncated]\n"))
 	require.Equal(t, 0, code)
 }
+
+// A shell dying mid-command returns ErrBashTerminated, distinct from the
+// errBashClosed of an Exec after Close.
+func TestBashSessionTerminatedIsMatchable(t *testing.T) {
+	sess, err := NewBashSession(t.TempDir(), nil)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = sess.Close() })
+
+	_, _, err = sess.Exec(context.Background(), "exit 0", 5*time.Second)
+	require.ErrorIs(t, err, ErrBashTerminated, "a shell that exits mid-command is reported by name")
+	require.NotErrorIs(t, err, errBashClosed, "a dead shell is not the same failure as an Exec after Close")
+
+	_ = sess.Close()
+	_, _, err = sess.Exec(context.Background(), "echo after", 5*time.Second)
+	require.ErrorIs(t, err, errBashClosed, "Exec on a closed session is reported as closed")
+}

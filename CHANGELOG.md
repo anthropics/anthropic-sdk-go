@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.62.0 (2026-08-06)
+
+Full Changelog: [v1.61.0...v1.62.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.61.0...v1.62.0)
+
+### Features
+
+* **api:** add `mid-conversation-tool-changes-2026-07-01` beta ([f53c3d3](https://github.com/anthropics/anthropic-sdk-go/commit/f53c3d36b9bca3ea057b25b85be2ac62c0d18125))
+* **api:** add support for session budgets, advisor tool, pinned inference location and skills auto-loading from GitHub ([89c04c2](https://github.com/anthropics/anthropic-sdk-go/commit/89c04c2e2b10a5a7c3b6601a52c280c12b5fda41))
+
+
+### Bug Fixes
+
+* **client:** preserve wire-faithful JSON in accumulated streaming messages ([#197](https://github.com/anthropics/anthropic-sdk-go/issues/197)) ([9a01ac0](https://github.com/anthropics/anthropic-sdk-go/commit/9a01ac02821ec5e5b4d248121a8518eafb10389d))
+* **jsonl:** prevent silent truncation of large results, and don't panic on close ([#203](https://github.com/anthropics/anthropic-sdk-go/issues/203)) ([77dd33d](https://github.com/anthropics/anthropic-sdk-go/commit/77dd33d1ee59db8a02cab29c91f746671152c566))
+* **tools:** name tool refusals and a dead shell so they can be matched ([#213](https://github.com/anthropics/anthropic-sdk-go/issues/213)) ([da87d4d](https://github.com/anthropics/anthropic-sdk-go/commit/da87d4dc2782efe7f73a502a65375820aaed226e))
+
+
+### Chores
+
+* **api:** remove retired Claude Opus 4.1 models ([85fdf3b](https://github.com/anthropics/anthropic-sdk-go/commit/85fdf3b214891bcd0f14a08fdf4aca7b884e1132))
+* **docs:** small updates to descriptions ([487e6ea](https://github.com/anthropics/anthropic-sdk-go/commit/487e6ea4e4e0ca8faf20c999f127ac8a0578e9a6))
+* **docs:** updates to a few documentation strings ([03dc511](https://github.com/anthropics/anthropic-sdk-go/commit/03dc511df2319f61a2988a73bfce54262d0ced6d))
+
 ## 1.61.0 (2026-07-24)
 
 Full Changelog: [v1.60.0...v1.61.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.60.0...v1.61.0)

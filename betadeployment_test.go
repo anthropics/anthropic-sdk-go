@@ -42,7 +42,14 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 				Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 			},
 		}},
-		Name:        "x",
+		Name: "x",
+		Budget: anthropic.BetaManagedAgentsBudgetLimitParam{
+			MaxListCost: anthropic.BetaMonetaryAmountParam{
+				Amount:   "2500",
+				Currency: anthropic.BetaCurrencyUsd,
+			},
+			Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
+		},
 		Description: anthropic.String("description"),
 		Metadata: map[string]string{
 			"foo": "string",
@@ -118,6 +125,13 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 		anthropic.BetaDeploymentUpdateParams{
 			Agent: anthropic.BetaDeploymentUpdateParamsAgentUnion{
 				OfString: anthropic.String("string"),
+			},
+			Budget: anthropic.BetaManagedAgentsBudgetLimitParam{
+				MaxListCost: anthropic.BetaMonetaryAmountParam{
+					Amount:   "2500",
+					Currency: anthropic.BetaCurrencyUsd,
+				},
+				Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
 			},
 			Description:   anthropic.String("description"),
 			EnvironmentID: anthropic.String("environment_id"),

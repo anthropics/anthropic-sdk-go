@@ -3,14 +3,19 @@ package anthropic
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
+
+	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 )
 
 // Accumulate builds up the Message incrementally from a MessageStreamEvent. The Message then can be used as
-// any other Message, except with the caveat that the Message.JSON field which normally can be used to inspect
-// the JSON sent over the network may not be populated fully.
+// any other Message, including the Message.JSON field, which holds the wire JSON with the streamed deltas
+// applied and is complete once message_stop arrives.
 //
 //	message := anthropic.Message{}
 //	for stream.Next() {
@@ -22,14 +27,17 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 		return fmt.Errorf("accumulate: cannot accumulate into nil Message")
 	}
 
-	switch event := event.AsAny().(type) {
-	case MessageStartEvent:
+	switch event.Type {
+	case "message_start":
 		*acc = event.Message
-	case MessageDeltaEvent:
+	case "message_delta":
 		acc.StopReason = event.Delta.StopReason
 		acc.StopSequence = event.Delta.StopSequence
 		if event.Delta.JSON.StopDetails.Valid() {
 			acc.StopDetails = event.Delta.StopDetails
+		}
+		if event.Delta.JSON.Container.Valid() {
+			acc.Container = event.Delta.Container
 		}
 		acc.Usage.OutputTokens = event.Usage.OutputTokens
 		if event.Usage.JSON.InputTokens.Valid() {
@@ -44,7 +52,12 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 		if event.Usage.JSON.ServerToolUse.Valid() {
 			acc.Usage.ServerToolUse = event.Usage.ServerToolUse
 		}
-	case ContentBlockStartEvent:
+		if event.Usage.JSON.OutputTokensDetails.Valid() {
+			acc.Usage.OutputTokensDetails = event.Usage.OutputTokensDetails
+		}
+		acc.JSON.raw = mergeRaw(acc.JSON.raw, "", event.Delta.JSON.raw)
+		acc.JSON.raw = mergeRaw(acc.JSON.raw, "usage", event.Usage.RawJSON())
+	case "content_block_start":
 		// Content blocks start in index order with no gaps: a start event always
 		// addresses the slot right after the previous block, even when deltas and
 		// stops for still-open blocks interleave after it.
@@ -56,57 +69,111 @@ func (acc *Message) Accumulate(event MessageStreamEventUnion) error {
 		if err != nil {
 			return err
 		}
-	case ContentBlockDeltaEvent:
-		if err := checkContentBlockIndex(string(event.Type), event.Index, len(acc.Content)); err != nil {
+	case "content_block_delta":
+		if err := checkContentBlockIndex(event.Type, event.Index, len(acc.Content)); err != nil {
 			return err
 		}
 		cb := &acc.Content[event.Index]
-		switch delta := event.Delta.AsAny().(type) {
-		case TextDelta:
-			cb.Text += delta.Text
-		case InputJSONDelta:
-			if len(delta.PartialJSON) != 0 {
+		switch event.Delta.Type {
+		case "text_delta":
+			cb.Text += event.Delta.Text
+		case "input_json_delta":
+			if len(event.Delta.PartialJSON) != 0 {
 				if string(cb.Input) == "{}" {
-					cb.Input = []byte(delta.PartialJSON)
+					cb.Input = []byte(event.Delta.PartialJSON)
 				} else {
-					cb.Input = append(cb.Input, []byte(delta.PartialJSON)...)
+					cb.Input = append(cb.Input, event.Delta.PartialJSON...)
 				}
 			}
-		case ThinkingDelta:
-			cb.Thinking += delta.Thinking
-		case SignatureDelta:
-			cb.Signature += delta.Signature
-		case CitationsDelta:
+		case "thinking_delta":
+			cb.Thinking += event.Delta.Thinking
+		case "signature_delta":
+			cb.Signature += event.Delta.Signature
+		case "citations_delta":
 			citation := TextCitationUnion{}
-			err := citation.UnmarshalJSON([]byte(delta.Citation.RawJSON()))
+			err := citation.UnmarshalJSON([]byte(event.Delta.Citation.RawJSON()))
 			if err != nil {
 				return fmt.Errorf("could not unmarshal citation delta into citation type: %w", err)
 			}
 			cb.Citations = append(cb.Citations, citation)
 		}
-	case MessageStopEvent:
-		// Re-marshal the accumulated message to update JSON.raw so that AsAny()
-		// returns the accumulated data rather than the original stream data
-		accJSON, err := json.Marshal(acc)
-		if err != nil {
-			return fmt.Errorf("error converting accumulated message to JSON: %w", err)
+	case "message_stop":
+		// A block whose stop event never arrived has not been refreshed yet.
+		for i := range acc.Content {
+			refreshContentBlockRaw(&acc.Content[i])
 		}
-		acc.JSON.raw = string(accJSON)
-	case ContentBlockStopEvent:
-		// Re-marshal the content block to update JSON.raw so that AsAny()
-		// returns the accumulated data rather than the original stream data
-		if err := checkContentBlockIndex(string(event.Type), event.Index, len(acc.Content)); err != nil {
+		acc.JSON.raw, _ = sjson.SetRaw(acc.JSON.raw, "content", rawArray(acc.Content))
+	case "content_block_stop":
+		if err := checkContentBlockIndex(event.Type, event.Index, len(acc.Content)); err != nil {
 			return err
 		}
-		contentBlock := &acc.Content[event.Index]
-		cbJSON, err := json.Marshal(contentBlock)
-		if err != nil {
-			return fmt.Errorf("error converting content block to JSON: %w", err)
-		}
-		contentBlock.JSON.raw = string(cbJSON)
+		refreshContentBlockRaw(&acc.Content[event.Index])
 	}
 
 	return nil
+}
+
+// refreshContentBlockRaw overlays the delta-mutated fields onto the block's
+// wire JSON, leaving a block that received no deltas byte for byte.
+func refreshContentBlockRaw(cb *ContentBlockUnion) {
+	raw := cb.JSON.raw
+	if cb.Text != "" {
+		raw, _ = sjson.SetRaw(raw, "text", jsonString(cb.Text))
+	}
+	if cb.Thinking != "" {
+		raw, _ = sjson.SetRaw(raw, "thinking", jsonString(cb.Thinking))
+	}
+	if cb.Signature != "" {
+		raw, _ = sjson.SetRaw(raw, "signature", jsonString(cb.Signature))
+	}
+	if json.Valid(cb.Input) {
+		raw, _ = sjson.SetRaw(raw, "input", string(cb.Input))
+	} else if len(cb.Input) > 0 {
+		// A cut-off tool call left non-JSON input; empty it so the block marshals.
+		cb.Input = json.RawMessage(`{}`)
+	}
+	if len(cb.Citations) > 0 {
+		raw, _ = sjson.SetRaw(raw, "citations", rawArray(cb.Citations))
+	}
+	cb.JSON.raw = raw
+}
+
+// jsonString encodes s as the server does, leaving <, > and & literal, which
+// sjson.Set does inconsistently.
+func jsonString(s string) string {
+	var b strings.Builder
+	enc := json.NewEncoder(&b)
+	enc.SetEscapeHTML(false)
+	enc.Encode(s)
+	return strings.TrimSuffix(b.String(), "\n")
+}
+
+// mergeRaw merges the wire object src into dst at path, skipping the nulls
+// message_delta sends for values it is not updating.
+func mergeRaw(dst, path, src string) string {
+	if path != "" {
+		path += "."
+	}
+	gjson.Parse(src).ForEach(func(key, value gjson.Result) bool {
+		if value.Type == gjson.Null {
+			return true
+		}
+		dst, _ = sjson.SetRaw(dst, path+apijson.EscapeSJSONKey(key.String()), value.Raw)
+		return true
+	})
+	return dst
+}
+
+// rawArray renders the wire JSON of each item as an array, skipping any item
+// with none, such as a block whose start event carried no content_block.
+func rawArray[T interface{ RawJSON() string }](items []T) string {
+	raws := make([]string, 0, len(items))
+	for _, item := range items {
+		if raw := item.RawJSON(); raw != "" {
+			raws = append(raws, raw)
+		}
+	}
+	return "[" + strings.Join(raws, ",") + "]"
 }
 
 // checkContentBlockIndex reports an error if a stream event's index does not

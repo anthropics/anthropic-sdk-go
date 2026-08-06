@@ -118,10 +118,19 @@ func CloseAll(ts []anthropic.BetaTool) {
 	}
 }
 
+// ToolError is a tool's error result — a refused path, a missing argument,
+// a failed command — carrying the text the model sees with is_error set.
+type ToolError struct {
+	// Content is the error-result text shown to the model.
+	Content string
+}
+
+func (e *ToolError) Error() string { return e.Content }
+
 // funcTool adapts a plain function into an anthropic.BetaTool. Used for
 // stateless tools that only need the shared AgentToolContext. Soft tool failures (the
-// (string, true) return) become a Go error so the surrounding tool runner
-// surfaces them to the model as an error result.
+// (string, true) return) become a *[ToolError] so the surrounding tool
+// runner surfaces them to the model as an error result.
 type funcTool struct {
 	name        string
 	description string
@@ -136,7 +145,7 @@ func (t *funcTool) InputSchema() anthropic.BetaToolInputSchemaParam { return t.s
 func (t *funcTool) Execute(ctx context.Context, input json.RawMessage) ([]anthropic.BetaToolResultBlockParamContentUnion, error) {
 	content, isErr := t.run(ctx, input, t.env)
 	if isErr {
-		return nil, errors.New(content)
+		return nil, &ToolError{Content: content}
 	}
 	return textResult(content), nil
 }

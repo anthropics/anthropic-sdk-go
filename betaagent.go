@@ -130,6 +130,34 @@ func (r *BetaAgentService) Archive(ctx context.Context, agentID string, body Bet
 	return res, err
 }
 
+// Platform advisor roster entry: a model the session's primary thread may consult
+// mid-turn.
+type BetaManagedAgentsAdvisor struct {
+	// The advisor model id.
+	Model string `json:"model" api:"required"`
+	// Any of "advisor".
+	Type BetaManagedAgentsAdvisorType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Model       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsAdvisor) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsAdvisor) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaManagedAgentsAdvisorType string
+
+const (
+	BetaManagedAgentsAdvisorTypeAdvisor BetaManagedAgentsAdvisorType = "advisor"
+)
+
 // A Managed Agents `agent`.
 type BetaManagedAgentsAgent struct {
 	ID string `json:"id" api:"required"`
@@ -1285,7 +1313,7 @@ func (r *BetaManagedAgentsCustomToolInputSchemaParam) UnmarshalJSON(data []byte)
 // The properties Description, InputSchema, Name, Type are required.
 type BetaManagedAgentsCustomToolParams struct {
 	// Description of what the tool does, shown to the agent to help it decide when to
-	// use the tool. 1-4096 characters.
+	// use the tool.
 	Description string `json:"description" api:"required"`
 	// JSON Schema for custom tool input parameters.
 	InputSchema BetaManagedAgentsCustomToolInputSchemaParam `json:"input_schema,omitzero" api:"required"`
@@ -1981,6 +2009,9 @@ type BetaManagedAgentsModelConfig struct {
 	// How hard Claude works on each turn. Sets `output_config.effort` on every
 	// Messages call the session makes.
 	Effort BetaManagedAgentsModelConfigEffortUnion `json:"effort"`
+	// Geographic region for model inference. When unset, requests fall through to the
+	// workspace's default_inference_geo.
+	InferenceGeo string `json:"inference_geo"`
 	// Inference speed mode. `fast` provides significantly faster output token
 	// generation at premium pricing. Not all models support `fast`; invalid
 	// combinations are rejected at create time.
@@ -1989,11 +2020,12 @@ type BetaManagedAgentsModelConfig struct {
 	Speed BetaManagedAgentsModelConfigSpeed `json:"speed"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
-		Effort      respjson.Field
-		Speed       respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		ID           respjson.Field
+		Effort       respjson.Field
+		InferenceGeo respjson.Field
+		Speed        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
 	} `json:"-"`
 }
 
@@ -2112,6 +2144,10 @@ type BetaManagedAgentsModelConfigParams struct {
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	ID BetaManagedAgentsModel `json:"id,omitzero" api:"required"`
+	// Geographic region for model inference. When unset, requests fall through to the
+	// workspace's default_inference_geo. On update, `model` is whole-object
+	// replacement — omitting inference_geo clears it.
+	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
 	// How hard Claude works on each inference call. Accepts a bare level string
 	// (`"high"`) or `{"type": "high"}`. On create, omitting it resolves the per-model
 	// default; on update, omitting it leaves the stored value unchanged.

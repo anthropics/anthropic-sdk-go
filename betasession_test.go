@@ -31,6 +31,13 @@ func TestBetaSessionNewWithOptionalParams(t *testing.T) {
 			OfString: anthropic.String("agent_011CZkYpogX7uDKUyvBTophP"),
 		},
 		EnvironmentID: "env_011CZkZ9X2dpNyB7HsEFoRfW",
+		Budget: anthropic.BetaManagedAgentsBudgetLimitParam{
+			MaxListCost: anthropic.BetaMonetaryAmountParam{
+				Amount:   "2500",
+				Currency: anthropic.BetaCurrencyUsd,
+			},
+			Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
+		},
 		InitialEvents: []anthropic.BetaSessionNewParamsInitialEventUnion{{
 			OfUserMessage: &anthropic.BetaManagedAgentsUserMessageEventParams{
 				Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{{
@@ -137,6 +144,13 @@ func TestBetaSessionUpdateWithOptionalParams(t *testing.T) {
 						},
 					},
 				}},
+			},
+			Budget: anthropic.BetaManagedAgentsBudgetLimitParam{
+				MaxListCost: anthropic.BetaMonetaryAmountParam{
+					Amount:   "2500",
+					Currency: anthropic.BetaCurrencyUsd,
+				},
+				Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
 			},
 			Metadata: map[string]string{
 				"foo": "string",

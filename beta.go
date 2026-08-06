@@ -7,6 +7,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
@@ -95,6 +96,7 @@ const (
 	AnthropicBetaFallbackCredit2026_06_01             AnthropicBeta = "fallback-credit-2026-06-01"
 	AnthropicBetaFallbackCredit2026_07_01             AnthropicBeta = "fallback-credit-2026-07-01"
 	AnthropicBetaAgentMemory2026_07_22                AnthropicBeta = "agent-memory-2026-07-22"
+	AnthropicBetaMidConversationToolChanges2026_07_01 AnthropicBeta = "mid-conversation-tool-changes-2026-07-01"
 )
 
 type BetaAPIError struct {
@@ -150,6 +152,12 @@ func (r BetaBillingError) RawJSON() string { return r.JSON.raw }
 func (r *BetaBillingError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type BetaCurrency string
+
+const (
+	BetaCurrencyUsd BetaCurrency = "USD"
+)
 
 // BetaErrorUnion contains all possible properties and values from
 // [BetaInvalidRequestError], [BetaAuthenticationError], [BetaBillingError],
@@ -332,6 +340,67 @@ type BetaInvalidRequestError struct {
 // Returns the unmodified JSON received from the API
 func (r BetaInvalidRequestError) RawJSON() string { return r.JSON.raw }
 func (r *BetaInvalidRequestError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A monetary amount in a specific currency.
+type BetaMonetaryAmount struct {
+	// Amount in minor units of the currency, as an integer decimal string with no
+	// leading zeros: "2500" is $25.00 and "50" is fifty cents. A string rather than a
+	// number so no float rounding is ever applied.
+	Amount string `json:"amount" api:"required"`
+	// Uppercase ISO-4217 currency code. `USD` is the only currency currently
+	// supported; the accepted set is closed and grows only when a new currency is
+	// priced.
+	//
+	// Any of "USD".
+	Currency BetaCurrency `json:"currency" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Amount      respjson.Field
+		Currency    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaMonetaryAmount) RawJSON() string { return r.JSON.raw }
+func (r *BetaMonetaryAmount) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaMonetaryAmount to a BetaMonetaryAmountParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaMonetaryAmountParam.Overrides()
+func (r BetaMonetaryAmount) ToParam() BetaMonetaryAmountParam {
+	return param.Override[BetaMonetaryAmountParam](json.RawMessage(r.RawJSON()))
+}
+
+// A monetary amount in a specific currency.
+//
+// The properties Amount, Currency are required.
+type BetaMonetaryAmountParam struct {
+	// Amount in minor units of the currency, as an integer decimal string with no
+	// leading zeros: "2500" is $25.00 and "50" is fifty cents. A string rather than a
+	// number so no float rounding is ever applied.
+	Amount string `json:"amount" api:"required"`
+	// Uppercase ISO-4217 currency code. `USD` is the only currency currently
+	// supported; the accepted set is closed and grows only when a new currency is
+	// priced.
+	//
+	// Any of "USD".
+	Currency BetaCurrency `json:"currency,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaMonetaryAmountParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaMonetaryAmountParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaMonetaryAmountParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

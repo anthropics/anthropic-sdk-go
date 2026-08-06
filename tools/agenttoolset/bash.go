@@ -198,7 +198,7 @@ func (s *BashSession) exec(ctx context.Context, cmd string, timeout time.Duratio
 		case <-ctx.Done():
 			return "", -1, ctx.Err()
 		case <-s.done:
-			return "", -1, fmt.Errorf("bash session terminated")
+			return "", -1, ErrBashTerminated
 		case <-s.notify:
 		case <-timer.C:
 			timedOut = true
@@ -238,6 +238,10 @@ func newSentinel() string {
 // per-call deadline; the caller must restart the session because the
 // running group's sentinel will land in a future buffer otherwise.
 var ErrTimedOut = errors.New("bash: command timed out")
+
+// ErrBashTerminated signals the shell exited while a command was running,
+// so no completion sentinel will land; the caller must restart the session.
+var ErrBashTerminated = errors.New("bash session terminated")
 
 // errBashClosed is returned when Exec is called on a closed session.
 var errBashClosed = errors.New("session closed")
@@ -317,7 +321,7 @@ func (t *bashTool) InputSchema() anthropic.BetaToolInputSchemaParam {
 func (t *bashTool) Execute(ctx context.Context, raw json.RawMessage) ([]anthropic.BetaToolResultBlockParamContentUnion, error) {
 	content, isErr := t.run(ctx, raw)
 	if isErr {
-		return nil, errors.New(content)
+		return nil, &ToolError{Content: content}
 	}
 	return textResult(content), nil
 }

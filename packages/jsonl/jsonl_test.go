@@ -9,8 +9,7 @@ import (
 	"testing"
 )
 
-// TestCloseNilPanic checks that Close does not panic when the stream was
-// created with an error and the underlying reader is nil.
+// Close must not panic when the stream was constructed with an error and has no reader.
 func TestCloseNilPanic(t *testing.T) {
 	stream := NewStream[map[string]any](nil, io.ErrUnexpectedEOF)
 	defer func() {
@@ -23,8 +22,7 @@ func TestCloseNilPanic(t *testing.T) {
 	}
 }
 
-// TestLargeLine checks that a JSONL line larger than the default 64 KiB
-// scanner buffer is read as one record instead of being silently dropped.
+// A JSONL line larger than the default 64 KiB scanner buffer must yield one record.
 func TestLargeLine(t *testing.T) {
 	big := strings.Repeat("x", bufio.MaxScanTokenSize+10)
 	body := `{"custom_id":"a","payload":"` + big + `"}` + "\n"
@@ -43,8 +41,7 @@ func TestLargeLine(t *testing.T) {
 	}
 }
 
-// TestScannerErrorSurfaced checks that a read error from the response body
-// is returned through Err instead of looking like a clean end of stream.
+// A read error from the body must surface via Err rather than look like clean EOF.
 func TestScannerErrorSurfaced(t *testing.T) {
 	res := &http.Response{Body: io.NopCloser(&errReader{fail: io.ErrClosedPipe})}
 	stream := NewStream[map[string]any](res, nil)

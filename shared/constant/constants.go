@@ -14,7 +14,6 @@ var ModelNonStreamingTokens = map[string]int{
 	"claude-opus-4-0":                         8192,
 	"anthropic.claude-opus-4-20250514-v1:0":   8192,
 	"claude-opus-4@20250514":                  8192,
-	"claude-opus-4-1-20250805":                8192,
 	"anthropic.claude-opus-4-1-20250805-v1:0": 8192,
 	"claude-opus-4-1@20250805":                8192,
 }
@@ -165,6 +164,7 @@ type SelfHosted string                              // Always "self_hosted"
 type ServerToolUse string                           // Always "server_tool_use"
 type Session string                                 // Always "session"
 type SessionArchived string                         // Always "session.archived"
+type SessionBudgetReached string                    // Always "session.budget_reached"
 type SessionCreated string                          // Always "session.created"
 type SessionDeleted string                          // Always "session.deleted"
 type SessionIdled string                            // Always "session.idled"
@@ -400,6 +400,7 @@ func (c SelfHosted) Default() SelfHosted                     { return "self_host
 func (c ServerToolUse) Default() ServerToolUse               { return "server_tool_use" }
 func (c Session) Default() Session                           { return "session" }
 func (c SessionArchived) Default() SessionArchived           { return "session.archived" }
+func (c SessionBudgetReached) Default() SessionBudgetReached { return "session.budget_reached" }
 func (c SessionCreated) Default() SessionCreated             { return "session.created" }
 func (c SessionDeleted) Default() SessionDeleted             { return "session.deleted" }
 func (c SessionIdled) Default() SessionIdled                 { return "session.idled" }
@@ -655,6 +656,7 @@ func (c SelfHosted) MarshalJSON() ([]byte, error)                          { ret
 func (c ServerToolUse) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Session) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c SessionArchived) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c SessionBudgetReached) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c SessionCreated) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c SessionDeleted) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c SessionIdled) MarshalJSON() ([]byte, error)                        { return marshalString(c) }

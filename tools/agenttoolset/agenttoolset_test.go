@@ -194,3 +194,40 @@ func TestCloseAllIsolatesPanicsAndErrors(t *testing.T) {
 	require.True(t, errored.closed,
 		"tool after the panicker must still see Close — per-tool recover keeps the loop running")
 }
+
+// A tool-input refusal is matchable by name, not only by its wording.
+func TestToolRefusalIsAToolError(t *testing.T) {
+	env := &AgentToolContext{Workdir: t.TempDir()}
+	tools := []anthropic.BetaTool{BetaReadTool(env), BetaBashTool(env)}
+	defer CloseAll(tools)
+
+	tests := []struct {
+		description string
+		tool        anthropic.BetaTool
+		input       map[string]any
+		wantContent string
+	}{
+		{
+			description: "a file path that escapes the workdir is refused as a *ToolError",
+			tool:        tools[0],
+			input:       map[string]any{"file_path": "../outside.txt"},
+			wantContent: `read: path "../outside.txt" escapes workdir`,
+		},
+		{
+			description: "a missing required argument is refused as a *ToolError",
+			tool:        tools[1],
+			input:       map[string]any{},
+			wantContent: "bash: command is required",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			_, err := tc.tool.Execute(context.Background(), mustJSON(t, tc.input))
+			var toolErr *ToolError
+			require.ErrorAs(t, err, &toolErr)
+			require.Equal(t, tc.wantContent, toolErr.Content)
+			require.EqualError(t, err, tc.wantContent, "the typed error keeps the exact message")
+		})
+	}
+}

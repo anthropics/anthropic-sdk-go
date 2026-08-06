@@ -256,3 +256,55 @@ func TestBetaToolRunner_ToolAddition_AppendMessagesInDispatchWindow(t *testing.T
 		t.Fatalf("expected one successful tool_result, got %+v", results)
 	}
 }
+
+type recordingTool struct {
+	name  string
+	calls int
+}
+
+func (r *recordingTool) Name() string                          { return r.name }
+func (r *recordingTool) Description() string                   { return "records invocations" }
+func (r *recordingTool) InputSchema() BetaToolInputSchemaParam { return BetaToolInputSchemaParam{} }
+func (r *recordingTool) Execute(ctx context.Context, input json.RawMessage) ([]BetaToolResultBlockParamContentUnion, error) {
+	r.calls++
+	return []BetaToolResultBlockParamContentUnion{{OfText: &BetaTextBlockParam{Text: "ok"}}}, nil
+}
+
+// A cut-off turn may carry a tool call whose input was cut mid-stream; the
+// runner must not execute it.
+func TestExecuteToolsSkipsMaxTokensTurn(t *testing.T) {
+	var toolUse BetaContentBlockUnion
+	if err := toolUse.UnmarshalJSON([]byte(`{"type":"tool_use","id":"toolu_1","name":"rec","input":{}}`)); err != nil {
+		t.Fatalf("building tool_use block: %v", err)
+	}
+
+	for _, tt := range []struct {
+		name       string
+		stopReason BetaStopReason
+		wantCalls  int
+		wantResult bool
+	}{
+		{"max_tokens turn skips execution", BetaStopReasonMaxTokens, 0, false},
+		{"context window turn skips execution", BetaStopReasonModelContextWindowExceeded, 0, false},
+		{"tool_use turn executes", BetaStopReasonToolUse, 1, true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			tool := &recordingTool{name: "rec"}
+			base := newBetaToolRunnerBase(nil, []BetaTool{tool}, BetaToolRunnerParams{}, nil)
+			message := &BetaMessage{
+				StopReason: tt.stopReason,
+				Content:    []BetaContentBlockUnion{toolUse},
+			}
+			result, err := base.executeTools(context.Background(), message)
+			if err != nil {
+				t.Fatalf("executeTools: %v", err)
+			}
+			if tool.calls != tt.wantCalls {
+				t.Errorf("tool executed %d times, want %d", tool.calls, tt.wantCalls)
+			}
+			if (result != nil) != tt.wantResult {
+				t.Errorf("result presence = %v, want %v", result != nil, tt.wantResult)
+			}
+		})
+	}
+}

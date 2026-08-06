@@ -127,6 +127,11 @@ func (b *betaToolRunnerBase) executeTools(ctx context.Context, message *BetaMess
 		return nil, nil
 	}
 
+	// A cut-off turn left its last call's arguments incomplete.
+	if message.StopReason == BetaStopReasonMaxTokens || message.StopReason == BetaStopReasonModelContextWindowExceeded {
+		return nil, nil
+	}
+
 	// Tool calls before the last fallback block belong to the attempt that
 	// refused; the fallback middleware strips them from replayed history, so
 	// answering them would orphan the tool_result.

@@ -4237,14 +4237,6 @@ const (
 	ModelClaudeOpus4_5_20251101   Model = "claude-opus-4-5-20251101"
 	ModelClaudeSonnet4_5          Model = "claude-sonnet-4-5"
 	ModelClaudeSonnet4_5_20250929 Model = "claude-sonnet-4-5-20250929"
-	// Deprecated: Will reach end-of-life on August 5, 2026. Please migrate to a newer
-	// model. Visit https://docs.anthropic.com/en/docs/resources/model-deprecations for
-	// more information.
-	ModelClaudeOpus4_1 Model = "claude-opus-4-1"
-	// Deprecated: Will reach end-of-life on August 5, 2026. Please migrate to a newer
-	// model. Visit https://docs.anthropic.com/en/docs/resources/model-deprecations for
-	// more information.
-	ModelClaudeOpus4_1_20250805 Model = "claude-opus-4-1-20250805"
 )
 
 type OutputConfigParam struct {

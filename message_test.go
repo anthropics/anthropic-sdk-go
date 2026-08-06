@@ -503,8 +503,11 @@ func TestMessageNewWithNonStreamingTimeoutLimits(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 
-	// Set a model with known token limits
-	model := anthropic.ModelClaudeOpus4_1_20250805
+	originalModelTokenLimits := constant.ModelNonStreamingTokens
+	defer func() { constant.ModelNonStreamingTokens = originalModelTokenLimits }()
+	constant.ModelNonStreamingTokens = map[string]int{"test-model": 8192}
+
+	model := anthropic.Model("test-model")
 	testModelLimit := constant.ModelNonStreamingTokens[string(model)]
 
 	// This test verifies that we can still create a message with tokens below the limit

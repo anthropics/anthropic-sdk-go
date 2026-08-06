@@ -32,7 +32,8 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 			Effort: anthropic.BetaManagedAgentsModelConfigParamsEffortUnion{
 				OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel: anthropic.String("low"),
 			},
-			Speed: anthropic.BetaManagedAgentsModelConfigParamsSpeedStandard,
+			InferenceGeo: anthropic.String("inference_geo"),
+			Speed:        anthropic.BetaManagedAgentsModelConfigParamsSpeedStandard,
 		},
 		Name:        "My First Agent",
 		Description: anthropic.String("A general-purpose starter agent."),
@@ -155,7 +156,8 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 				Effort: anthropic.BetaManagedAgentsModelConfigParamsEffortUnion{
 					OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel: anthropic.String("low"),
 				},
-				Speed: anthropic.BetaManagedAgentsModelConfigParamsSpeedStandard,
+				InferenceGeo: anthropic.String("inference_geo"),
+				Speed:        anthropic.BetaManagedAgentsModelConfigParamsSpeedStandard,
 			},
 			Multiagent: anthropic.BetaManagedAgentsMultiagentParams{
 				Agents: []anthropic.BetaManagedAgentsMultiagentRosterEntryParamsUnion{{

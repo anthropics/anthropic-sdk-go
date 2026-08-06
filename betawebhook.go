@@ -489,7 +489,8 @@ func (r *BetaWebhookEnvironmentUpdatedEventData) UnmarshalJSON(data []byte) erro
 // [BetaWebhookEnvironmentDeletedEventData],
 // [BetaWebhookMemoryStoreCreatedEventData],
 // [BetaWebhookMemoryStoreArchivedEventData],
-// [BetaWebhookMemoryStoreDeletedEventData].
+// [BetaWebhookMemoryStoreDeletedEventData],
+// [BetaWebhookSessionBudgetReachedEventData].
 //
 // Use the [BetaWebhookEventDataUnion.AsAny] method to switch on the variant.
 //
@@ -511,7 +512,7 @@ type BetaWebhookEventDataUnion struct {
 	// "deployment.archived", "deployment_run.started", "deployment.deleted",
 	// "deployment_run.succeeded", "environment.created", "environment.updated",
 	// "environment.archived", "environment.deleted", "memory_store.created",
-	// "memory_store.archived", "memory_store.deleted".
+	// "memory_store.archived", "memory_store.deleted", "session.budget_reached".
 	Type            string `json:"type"`
 	WorkspaceID     string `json:"workspace_id"`
 	SessionThreadID string `json:"session_thread_id"`
@@ -577,6 +578,7 @@ func (BetaWebhookEnvironmentDeletedEventData) implBetaWebhookEventDataUnion()   
 func (BetaWebhookMemoryStoreCreatedEventData) implBetaWebhookEventDataUnion()            {}
 func (BetaWebhookMemoryStoreArchivedEventData) implBetaWebhookEventDataUnion()           {}
 func (BetaWebhookMemoryStoreDeletedEventData) implBetaWebhookEventDataUnion()            {}
+func (BetaWebhookSessionBudgetReachedEventData) implBetaWebhookEventDataUnion()          {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -624,6 +626,7 @@ func (BetaWebhookMemoryStoreDeletedEventData) implBetaWebhookEventDataUnion()   
 //	case anthropic.BetaWebhookMemoryStoreCreatedEventData:
 //	case anthropic.BetaWebhookMemoryStoreArchivedEventData:
 //	case anthropic.BetaWebhookMemoryStoreDeletedEventData:
+//	case anthropic.BetaWebhookSessionBudgetReachedEventData:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -715,6 +718,8 @@ func (u BetaWebhookEventDataUnion) AsAny() anyBetaWebhookEventData {
 		return u.AsMemoryStoreArchived()
 	case "memory_store.deleted":
 		return u.AsMemoryStoreDeleted()
+	case "session.budget_reached":
+		return u.AsSessionBudgetReached()
 	}
 	return nil
 }
@@ -934,6 +939,11 @@ func (u BetaWebhookEventDataUnion) AsMemoryStoreDeleted() (v BetaWebhookMemorySt
 	return
 }
 
+func (u BetaWebhookEventDataUnion) AsSessionBudgetReached() (v BetaWebhookSessionBudgetReachedEventData) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaWebhookEventDataUnion) RawJSON() string { return u.JSON.raw }
 
@@ -1030,6 +1040,29 @@ type BetaWebhookSessionArchivedEventData struct {
 // Returns the unmodified JSON received from the API
 func (r BetaWebhookSessionArchivedEventData) RawJSON() string { return r.JSON.raw }
 func (r *BetaWebhookSessionArchivedEventData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaWebhookSessionBudgetReachedEventData struct {
+	// ID of the session that triggered the event.
+	ID             string                        `json:"id" api:"required"`
+	OrganizationID string                        `json:"organization_id" api:"required"`
+	Type           constant.SessionBudgetReached `json:"type" default:"session.budget_reached"`
+	WorkspaceID    string                        `json:"workspace_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID             respjson.Field
+		OrganizationID respjson.Field
+		Type           respjson.Field
+		WorkspaceID    respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWebhookSessionBudgetReachedEventData) RawJSON() string { return r.JSON.raw }
+func (r *BetaWebhookSessionBudgetReachedEventData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

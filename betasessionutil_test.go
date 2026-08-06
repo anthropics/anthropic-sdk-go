@@ -89,6 +89,33 @@ func TestBetaManagedAgentsEventAccumulator_DeltaDefaultsIndexZero(t *testing.T) 
 	}
 }
 
+func TestBetaManagedAgentsEventAccumulator_DeltaSeedsTheUnionVariant(t *testing.T) {
+	var acc BetaManagedAgentsEventAccumulator
+	feed(&acc,
+		eventStart(t, "evt_1"),
+		eventDelta(t, "evt_1", "Hel", 0),
+	)
+	block := acc.AgentMessages["evt_1"].Content[0]
+	if _, ok := block.AsAny().(BetaManagedAgentsTextBlock); !ok {
+		t.Fatalf("expected preview block to report the text variant, got %T", block.AsAny())
+	}
+}
+
+func TestBetaManagedAgentsEventAccumulator_ContentlessDeltaKeepsIndexAlignment(t *testing.T) {
+	// Deltas address entries by index, so a fragment carrying no content still
+	// has to occupy its slot or every later fragment falls out of range.
+	var acc BetaManagedAgentsEventAccumulator
+	feed(&acc,
+		eventStart(t, "evt_1"),
+		sseEvent(t, `{"type":"event_delta","event_id":"evt_1","delta":{"type":"content_delta","index":0}}`),
+		eventDelta(t, "evt_1", "World", 1),
+	)
+	msg := acc.AgentMessages["evt_1"]
+	if len(msg.Content) != 2 || msg.Content[1].Text != "World" {
+		t.Fatalf("unexpected content: %+v", msg.Content)
+	}
+}
+
 func TestBetaManagedAgentsEventAccumulator_DeltaBeforeStartIsNoOp(t *testing.T) {
 	var acc BetaManagedAgentsEventAccumulator
 	feed(&acc, eventDelta(t, "evt_1", "x", 0))

@@ -240,6 +240,9 @@ type BetaManagedAgentsDeployment struct {
 	// Vault IDs supplying stored credentials for sessions created from this
 	// deployment.
 	VaultIDs []string `json:"vault_ids" api:"required"`
+	// A hard spend ceiling. The session stops issuing new model requests once the
+	// tracked list cost reaches `max_list_cost`.
+	Budget BetaManagedAgentsBudgetLimit `json:"budget" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID            respjson.Field
@@ -258,6 +261,7 @@ type BetaManagedAgentsDeployment struct {
 		Type          respjson.Field
 		UpdatedAt     respjson.Field
 		VaultIDs      respjson.Field
+		Budget        respjson.Field
 		ExtraFields   map[string]respjson.Field
 		raw           string
 	} `json:"-"`
@@ -956,7 +960,8 @@ func (r *BetaManagedAgentsDeploymentUserMessageEvent) UnmarshalJSON(data []byte)
 
 // BetaManagedAgentsDeploymentUserMessageEventContentUnion contains all possible
 // properties and values from [BetaManagedAgentsTextBlock],
-// [BetaManagedAgentsImageBlock], [BetaManagedAgentsDocumentBlock].
+// [BetaManagedAgentsImageBlock], [BetaManagedAgentsDocumentBlock],
+// [BetaManagedAgentsRedactedBlock].
 //
 // Use the [BetaManagedAgentsDeploymentUserMessageEventContentUnion.AsAny] method
 // to switch on the variant.
@@ -965,7 +970,7 @@ func (r *BetaManagedAgentsDeploymentUserMessageEvent) UnmarshalJSON(data []byte)
 type BetaManagedAgentsDeploymentUserMessageEventContentUnion struct {
 	// This field is from variant [BetaManagedAgentsTextBlock].
 	Text string `json:"text"`
-	// Any of "text", "image", "document".
+	// Any of "text", "image", "document", "redacted".
 	Type string `json:"type"`
 	// This field is a union of [BetaManagedAgentsImageBlockSourceUnion],
 	// [BetaManagedAgentsDocumentBlockSourceUnion]
@@ -995,6 +1000,7 @@ type anyBetaManagedAgentsDeploymentUserMessageEventContent interface {
 func (BetaManagedAgentsTextBlock) implBetaManagedAgentsDeploymentUserMessageEventContentUnion()     {}
 func (BetaManagedAgentsImageBlock) implBetaManagedAgentsDeploymentUserMessageEventContentUnion()    {}
 func (BetaManagedAgentsDocumentBlock) implBetaManagedAgentsDeploymentUserMessageEventContentUnion() {}
+func (BetaManagedAgentsRedactedBlock) implBetaManagedAgentsDeploymentUserMessageEventContentUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -1002,6 +1008,7 @@ func (BetaManagedAgentsDocumentBlock) implBetaManagedAgentsDeploymentUserMessage
 //	case anthropic.BetaManagedAgentsTextBlock:
 //	case anthropic.BetaManagedAgentsImageBlock:
 //	case anthropic.BetaManagedAgentsDocumentBlock:
+//	case anthropic.BetaManagedAgentsRedactedBlock:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1013,6 +1020,8 @@ func (u BetaManagedAgentsDeploymentUserMessageEventContentUnion) AsAny() anyBeta
 		return u.AsImage()
 	case "document":
 		return u.AsDocument()
+	case "redacted":
+		return u.AsRedacted()
 	}
 	return nil
 }
@@ -1028,6 +1037,11 @@ func (u BetaManagedAgentsDeploymentUserMessageEventContentUnion) AsImage() (v Be
 }
 
 func (u BetaManagedAgentsDeploymentUserMessageEventContentUnion) AsDocument() (v BetaManagedAgentsDocumentBlock) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsDeploymentUserMessageEventContentUnion) AsRedacted() (v BetaManagedAgentsRedactedBlock) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1827,6 +1841,9 @@ type BetaDeploymentNewParams struct {
 	Name string `json:"name" api:"required"`
 	// Description of what the deployment does.
 	Description param.Opt[string] `json:"description,omitzero"`
+	// A hard spend ceiling. The session stops issuing new model requests once the
+	// tracked list cost reaches `max_list_cost`.
+	Budget BetaManagedAgentsBudgetLimitParam `json:"budget,omitzero"`
 	// Arbitrary key-value metadata. Maximum 16 pairs, keys up to 64 chars, values up
 	// to 512 chars.
 	Metadata map[string]string `json:"metadata,omitzero"`
@@ -2019,6 +2036,9 @@ type BetaDeploymentUpdateParams struct {
 	// version, or an `agent` object with both id and version specified. Omit to
 	// preserve. Cannot be cleared.
 	Agent BetaDeploymentUpdateParamsAgentUnion `json:"agent,omitzero"`
+	// A hard spend ceiling. The session stops issuing new model requests once the
+	// tracked list cost reaches `max_list_cost`.
+	Budget BetaManagedAgentsBudgetLimitParam `json:"budget,omitzero"`
 	// Initial events. Full replacement. Omit to preserve. Cannot be cleared. At least
 	// 1, maximum 50.
 	InitialEvents []BetaManagedAgentsDeploymentInitialEventParamsUnion `json:"initial_events,omitzero"`

@@ -50,10 +50,9 @@ func (acc *BetaManagedAgentsEventAccumulator) Accumulate(event BetaManagedAgents
 			return
 		}
 		if idx == len(msg.Content) {
-			msg.Content = append(msg.Content, BetaManagedAgentsTextBlock{
-				Type: event.Delta.Content.Type,
-				Text: event.Delta.Content.Text,
-			})
+			var block BetaManagedAgentsAgentMessageEventContentUnion
+			_ = block.UnmarshalJSON([]byte(event.Delta.Content.RawJSON()))
+			msg.Content = append(msg.Content, block)
 		} else {
 			msg.Content[idx].Text += event.Delta.Content.Text
 		}

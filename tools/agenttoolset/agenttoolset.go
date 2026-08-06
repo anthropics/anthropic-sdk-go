@@ -31,6 +31,12 @@
 //   - [BetaBashTool] runs an unrestricted /bin/bash and cannot be confined. Run
 //     it — and, for defense in depth, the whole toolset — inside a sandbox the
 //     host controls (e.g. a self-hosted environment runner).
+//
+// Helper programs ([BetaGrepTool] shells out to ripgrep when one is installed)
+// are located with lookPath, which only ever returns an absolute path from
+// PATH and never a file in the current working directory, so nothing planted
+// in the tree being searched can become a helper binary. See the invariant
+// documented on lookPath in exec.go.
 package agenttoolset
 
 import (

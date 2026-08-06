@@ -21,6 +21,23 @@ Most of the SDK is generated code. Modifications to code will be persisted betwe
 result in merge conflicts between manual patches and changes from the generator. The generator will never
 modify the contents of the `lib/` and `examples/` directories.
 
+## Spawning external programs
+
+The agent toolset (`tools/agenttoolset`) is the only part of the SDK that starts other programs, and it never
+launches one by bare name. A program is either an absolute path written out in the code (`/bin/bash`) or a bare
+name resolved through the package's `lookPath` helper ([`tools/agenttoolset/exec.go`](tools/agenttoolset/exec.go)),
+which returns an absolute path from `PATH` or an error and never selects a file from the current working
+directory — so a binary planted in a repository the tools are pointed at cannot become a helper. When adding
+code that runs a program:
+
+- resolve a bare name with `lookPath` and pass the absolute result to `exec.Command`/`exec.CommandContext`;
+  don't call `exec.LookPath` directly and don't pass a bare name straight to `exec.Command`;
+- treat every lookup error, `exec.ErrDot` included, as "not installed" — never clear it and run the path anyway;
+- don't hand-roll a `PATH` walk and don't build `"./" + name`.
+
+`tools/agenttoolset/exec_test.go` and `TestExecGrepNeverRunsPlantedRipgrep` pin this behaviour; the same
+guarantee is documented in the other Anthropic SDKs.
+
 ## Adding and running examples
 
 All files in the `examples/` directory are not modified by the generator and can be freely edited or added to.

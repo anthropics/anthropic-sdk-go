@@ -2,6 +2,7 @@ package agenttoolset
 
 import (
 	"context"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -154,6 +155,27 @@ func TestExecGrep(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestExecGrepNeverRunsPlantedRipgrep is the callsite regression test for the
+// lookPath invariant: an executable named rg planted in the directory being
+// searched — which is also the process working directory here — must not be
+// what the grep tool runs, even when PATH lists "." and an empty entry and
+// holds no real ripgrep. grep must answer from its built-in walker instead,
+// and the plant (which drops a marker file when executed) must never run.
+func TestExecGrepNeverRunsPlantedRipgrep(t *testing.T) {
+	work := t.TempDir()
+	marker := filepath.Join(t.TempDir(), "planted-rg-ran")
+	require.NoError(t, os.WriteFile(filepath.Join(work, "a.txt"), []byte("hello world\n"), 0o644))
+	writeExecutable(t, work, "rg", "echo pwned > '"+marker+"'")
+	t.Chdir(work)
+	t.Setenv("PATH", "."+string(os.PathListSeparator)) // "." then an empty entry; no directory with a real rg
+
+	out, isErr := execGrep(context.Background(), mustJSON(t, map[string]any{"pattern": "hello"}), &AgentToolContext{Workdir: work})
+	_, err := os.Stat(marker)
+	require.ErrorIs(t, err, fs.ErrNotExist, "the rg planted in the working directory was executed")
+	require.False(t, isErr, "output=%q", out)
+	require.Contains(t, out, "a.txt:1:", "grep should have answered from the built-in walker")
 }
 
 // TestExecGrepSkipsSymlinks verifies the built-in walker never reads through a

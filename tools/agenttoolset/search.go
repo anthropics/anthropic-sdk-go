@@ -228,12 +228,17 @@ func execGrep(ctx context.Context, raw json.RawMessage, env *AgentToolContext) (
 		searchPath = p
 	}
 
-	if rg, err := exec.LookPath("rg"); err == nil {
+	// lookPath, not exec.LookPath: an rg that is only reachable relative to
+	// the working directory (planted in the repository being searched, say)
+	// is reported as not found and we fall back to the built-in walker. See
+	// the invariant on lookPath.
+	if rg, err := lookPath("rg"); err == nil {
 		return runRipgrep(ctx, rg, in.Pattern, searchPath)
 	}
 	return runWalkGrep(in.Pattern, searchPath)
 }
 
+// runRipgrep runs the ripgrep binary at rg, an absolute path from lookPath.
 func runRipgrep(ctx context.Context, rg, pattern, path string) (string, bool) {
 	// --max-filesize bounds per-file size; cappedBuffer bounds total stdout.
 	cmd := exec.CommandContext(ctx, rg, "-n", "--no-heading",

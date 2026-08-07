@@ -84,12 +84,28 @@ func TestIsFatal4xx(t *testing.T) {
 	}{
 		{"400 is fatal because the request body cannot succeed on retry",
 			&anthropic.Error{StatusCode: 400}, true},
+		{"401 is fatal because a bad environment key never starts working",
+			&anthropic.Error{StatusCode: 401}, true},
+		{"403 is fatal because a forbidden caller stays forbidden",
+			&anthropic.Error{StatusCode: 403}, true},
+		{"404 is fatal because a missing environment or work item stays missing",
+			&anthropic.Error{StatusCode: 404}, true},
 		{"408 is excluded because timeouts deserve backoff, not teardown",
 			&anthropic.Error{StatusCode: 408}, false},
+		{"409 is excluded because a conflict is retried by the core client too",
+			&anthropic.Error{StatusCode: 409}, false},
+		{"412 stays fatal so a reclaimed lease still cancels the session at once",
+			&anthropic.Error{StatusCode: 412}, true},
+		{"422 is fatal because an unprocessable request cannot succeed on retry",
+			&anthropic.Error{StatusCode: 422}, true},
 		{"429 is excluded because rate-limits deserve backoff, not teardown",
 			&anthropic.Error{StatusCode: 429}, false},
 		{"500 is excluded because server-side errors retry, not abort",
 			&anthropic.Error{StatusCode: 500}, false},
+		{"non-api error is never classified as a permanent client error",
+			errors.New("409 conflict"), false},
+		{"nil error is not fatal",
+			nil, false},
 	}
 	for _, tc := range tests {
 		t.Run(tc.description, func(t *testing.T) {
@@ -444,6 +460,115 @@ func TestWorkPoller_AckFailureSkips(t *testing.T) {
 	}
 	require.NotNil(t, work1Stop, "ack-failed work_1 must be force-stopped, not silently skipped")
 	require.Contains(t, work1Stop.body, `"force":true`, "discard stop must force")
+}
+
+// writeAPIError writes an API-shaped error body with the given status so the
+// SDK surfaces it as an *anthropic.Error carrying that status code.
+func writeAPIError(w http.ResponseWriter, status int) {
+	http.Error(w, `{"type":"error","error":{"type":"api_error","message":"scripted"}}`, status)
+}
+
+// TestWorkPoller_BacksOffOn409ThenYields relies on the fake server's client
+// using WithMaxRetries(0): with core-client retries enabled the 409 would be
+// absorbed before the poller's own classification ever ran.
+func TestWorkPoller_BacksOffOn409ThenYields(t *testing.T) {
+	server := newFakeWorkServer(t)
+	work := workJSON("work_1", "env_1", "session")
+
+	pollCount := 0
+	server.HandlePoll = func(w http.ResponseWriter, _ *http.Request) {
+		pollCount++
+		if pollCount == 1 {
+			writeAPIError(w, http.StatusConflict)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(work))
+	}
+	server.HandleAck = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(work))
+	}
+	server.HandleStop = func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	p := NewWorkPoller(ctx, server.Client(), WorkPollerOptions{
+		EnvironmentID:  "env_1",
+		EnvironmentKey: "env_key",
+		Logger:         silentLogger,
+	})
+	t.Cleanup(func() { _ = p.Close() })
+
+	require.True(t, p.Next(), "a 409 on poll must be retried after a backoff, not end iteration")
+	require.Equal(t, "work_1", p.Current().ID)
+	require.NoError(t, p.Err())
+	require.Equal(t, 2, pollCount)
+}
+
+func TestWorkPoller_Stop409IsSilent(t *testing.T) {
+	server := newFakeWorkServer(t)
+	work := workJSON("work_1", "env_1", "session")
+
+	pollCount := 0
+	server.HandlePoll = func(w http.ResponseWriter, _ *http.Request) {
+		pollCount++
+		if pollCount == 1 {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(work))
+			return
+		}
+		writeEmptyPoll(w)
+	}
+	server.HandleAck = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(work))
+	}
+	server.HandleStop = func(w http.ResponseWriter, _ *http.Request) {
+		writeAPIError(w, http.StatusConflict)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var logs lockedBuffer
+	p := NewWorkPoller(ctx, server.Client(), WorkPollerOptions{
+		EnvironmentID:  "env_1",
+		EnvironmentKey: "env_key",
+		Drain:          true,
+		Logger:         slog.New(slog.NewTextHandler(&logs, nil)),
+	})
+	t.Cleanup(func() { _ = p.Close() })
+
+	require.True(t, p.Next())
+	require.False(t, p.Next(), "iteration continues past the 409 stop and drains normally")
+	require.NoError(t, p.Err())
+	require.NotContains(t, logs.String(), "stop failed", "a 409 on stop means already stopped and is not worth a warning")
+}
+
+func TestWorkPoller_SurfacesPermanent4xxOnPoll(t *testing.T) {
+	server := newFakeWorkServer(t)
+	server.HandlePoll = func(w http.ResponseWriter, _ *http.Request) {
+		writeAPIError(w, http.StatusUnauthorized)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	p := NewWorkPoller(ctx, server.Client(), WorkPollerOptions{
+		EnvironmentID:  "env_1",
+		EnvironmentKey: "env_key",
+		Logger:         silentLogger,
+	})
+	t.Cleanup(func() { _ = p.Close() })
+
+	require.False(t, p.Next(), "a 401 on poll will never succeed and must end iteration")
+	require.ErrorContains(t, p.Err(), "environments: poll failed")
+	require.True(t, isStatus(p.Err(), http.StatusUnauthorized), "Err must wrap the API error")
+	require.Len(t, server.Calls(), 1, "a permanent 4xx must not be retried")
 }
 
 func TestWorkPoller_CtxCancelDuringPollExitsCleanly(t *testing.T) {

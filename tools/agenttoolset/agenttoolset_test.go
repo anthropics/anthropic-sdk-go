@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	anthropic "github.com/anthropics/anthropic-sdk-go"
 	"github.com/stretchr/testify/require"
@@ -137,6 +139,89 @@ func TestResolvePathConfinesSymlinks(t *testing.T) {
 	got, err := resolvePath(env, filepath.Join("inside", "f.txt"))
 	require.NoError(t, err)
 	require.Equal(t, filepath.Join(realpathOrSelf(absOrSelf(work)), "sub", "f.txt"), got)
+
+	// A dangling symlink whose target is inside the workdir resolves to that
+	// target even when the target's parent directory does not exist yet.
+	require.NoError(t, os.Symlink(filepath.Join("newdir", "f.txt"), filepath.Join(work, "d")))
+	got, err = resolvePath(env, "d")
+	require.NoError(t, err)
+	require.Equal(t, filepath.Join(realpathOrSelf(absOrSelf(work)), "newdir", "f.txt"), got)
+}
+
+// symlinkLoopFixture lays out, under a fresh workdir: loop_a <-> loop_b,
+// self -> self, evil_link -> <outside>/secret.txt, and L -> loop_a/../evil_link.
+// It returns the workdir and the outside directory.
+func symlinkLoopFixture(t *testing.T) (work, outside string) {
+	t.Helper()
+	work = t.TempDir()
+	outside = t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(outside, "secret.txt"), []byte("SECRET"), 0o644))
+	for name, target := range map[string]string{
+		"loop_a":    "loop_b",
+		"loop_b":    "loop_a",
+		"self":      "self",
+		"evil_link": filepath.Join(outside, "secret.txt"),
+		"L":         "loop_a/../evil_link",
+	} {
+		require.NoError(t, os.Symlink(target, filepath.Join(work, name)))
+	}
+	return work, outside
+}
+
+func TestResolvePathRejectsSymlinkLoops(t *testing.T) {
+	work, outside := symlinkLoopFixture(t)
+	env := &AgentToolContext{Workdir: work}
+	absWork := realpathOrSelf(absOrSelf(work))
+
+	tests := []struct {
+		description string
+		input       string
+		wantErr     string
+	}{
+		{"two-link cycle", "loop_a", `path "loop_a": too many levels of symbolic links`},
+		{"child under a two-link cycle", "loop_a/child.txt", `path "loop_a/child.txt": too many levels of symbolic links`},
+		{"self-referencing link", "self", `path "self": too many levels of symbolic links`},
+		{"child under a self-referencing link", "self/x", `path "self/x": too many levels of symbolic links`},
+		{"dot-dot past a cycle is collapsed lexically and lands on the escaping link", "loop_a/../evil_link", `path "loop_a/../evil_link" escapes workdir`},
+		{"dot-dot past a self link is collapsed lexically and lands on the escaping link", "self/../evil_link", `path "self/../evil_link" escapes workdir`},
+		{"dangling link pointing outside the workdir", "dangle_out", `path "dangle_out" escapes workdir`},
+	}
+	require.NoError(t, os.Symlink(filepath.Join(outside, "nope"), filepath.Join(work, "dangle_out")))
+
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			errc := make(chan error, 1)
+			go func() {
+				_, err := resolvePath(env, tc.input)
+				errc <- err
+			}()
+			select {
+			case err := <-errc:
+				require.EqualError(t, err, tc.wantErr)
+				require.NotContains(t, err.Error(), absWork)
+			case <-time.After(2 * time.Second):
+				t.Fatal("resolvePath did not return within 2s")
+			}
+		})
+	}
+
+	t.Run("link whose target text crosses a cycle is denied one way or the other", func(t *testing.T) {
+		_, err := resolvePath(env, "L")
+		require.Error(t, err)
+		require.Regexp(t, `too many levels of symbolic links|escapes workdir`, err.Error())
+	})
+
+	t.Run("deep missing path under an outside-pointing link is still an escape", func(t *testing.T) {
+		require.NoError(t, os.Symlink(outside, filepath.Join(work, "outlink")))
+		parts := []string{"outlink"}
+		for i := range 300 {
+			parts = append(parts, fmt.Sprintf("d%d", i))
+		}
+		parts = append(parts, "f.txt")
+		_, err := resolvePath(env, filepath.Join(parts...))
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "escapes workdir")
+	})
 }
 
 func TestBetaAgentToolset(t *testing.T) {

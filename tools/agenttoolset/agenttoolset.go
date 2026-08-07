@@ -170,7 +170,8 @@ func errorf(format string, a ...any) (string, bool) {
 // fsErrorMessage maps a filesystem error to a consistent, language-independent
 // message so the model sees the same wording regardless of the host runtime's
 // raw errno text (e.g. Go's "open x: no such file or directory" vs a bare
-// ENOENT from another SDK). Unrecognised errors fall through to their text.
+// ENOENT from another SDK). It never returns Go's "op /abs/path: ..." text,
+// so the host's absolute path does not reach the model.
 func fsErrorMessage(err error) string {
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
@@ -181,9 +182,14 @@ func fsErrorMessage(err error) string {
 		return "not a directory"
 	case errors.Is(err, syscall.EISDIR):
 		return "is a directory"
-	default:
-		return err.Error()
+	case errors.Is(err, errSymlinkLoop), errors.Is(err, syscall.ELOOP):
+		return errSymlinkLoop.Error()
 	}
+	var errno syscall.Errno
+	if errors.As(err, &errno) {
+		return errno.Error()
+	}
+	return "i/o error"
 }
 
 // resolvePath resolves p against env.Workdir. Absolute and relative inputs go
@@ -192,8 +198,10 @@ func fsErrorMessage(err error) string {
 // rejected. Every symlink in p (including the leaf, even a dangling one) is
 // resolved before the workdir check, and the resolved path is what the tool
 // then operates on, so a symlink inside the workdir that points outside it can
-// neither pass the check nor be followed afterwards. See the package-level
-// trust model.
+// neither pass the check nor be followed afterwards. ".." is collapsed
+// lexically before any symlink is followed, and a path whose symlinks cannot
+// be resolved (a loop, an unreadable component) is rejected rather than used
+// as given. See the package-level trust model.
 //
 // Residual TOCTOU: a component could still be swapped for a symlink between this
 // call and the eventual filesystem operation. Closing that fully needs
@@ -212,7 +220,10 @@ func resolvePath(env *AgentToolContext, p string) (string, error) {
 	if env.UnrestrictedPaths {
 		return abs, nil
 	}
-	real := canonicalize(abs)
+	real, err := canonicalize(abs)
+	if err != nil {
+		return "", fmt.Errorf("path %q: %s", p, fsErrorMessage(err))
+	}
 	if real != root && !strings.HasPrefix(real, root+string(filepath.Separator)) {
 		return "", fmt.Errorf("path %q escapes workdir", p)
 	}
@@ -233,48 +244,57 @@ func realpathOrSelf(p string) string {
 	return p
 }
 
-// canonicalize fully resolves abs: EvalSymlinks the longest existing ancestor
-// and re-append the rest, but never re-append a component that is itself a
-// symlink — read the link and continue from its target instead. This handles
-// paths being created (write/edit) without letting a symlink leaf (e.g. a
-// dangling one pointing outside the workdir) slip through unresolved. A symlink
-// loop falls back to returning abs unchanged after a bounded number of hops.
-func canonicalize(abs string) string {
+var errSymlinkLoop = errors.New("too many levels of symbolic links")
+
+const maxSymlinkHops = 40
+
+// canonicalize returns abs with every symlink resolved, or an error — never
+// abs itself or a partly resolved path. It EvalSymlinks the longest existing
+// ancestor and re-appends the missing remainder so paths being created
+// (write/edit) still resolve, but a component that is itself a symlink is read
+// and followed rather than re-appended, so a dangling link pointing outside the
+// workdir cannot slip through. Only symlink reads count against
+// maxSymlinkHops; exceeding it, or an ELOOP from the OS, is a loop.
+func canonicalize(abs string) (string, error) {
 	var tail []string
 	prefix := filepath.Clean(abs)
-	for hops := 0; hops < 255; hops++ {
-		if real, err := filepath.EvalSymlinks(prefix); err == nil {
-			if len(tail) == 0 {
-				return real
-			}
+	hops := 0
+	for {
+		real, evalErr := filepath.EvalSymlinks(prefix)
+		if evalErr == nil {
 			parts := make([]string, 0, len(tail)+1)
 			parts = append(parts, real)
 			for i := len(tail) - 1; i >= 0; i-- {
 				parts = append(parts, tail[i])
 			}
-			return filepath.Join(parts...)
+			return filepath.Join(parts...), nil
 		}
-		isLink := false
-		if fi, err := os.Lstat(prefix); err == nil {
-			isLink = fi.Mode()&os.ModeSymlink != 0
-		}
-		if isLink {
+		fi, lerr := os.Lstat(prefix)
+		switch {
+		case lerr == nil && fi.Mode()&os.ModeSymlink != 0:
+			hops++
+			if hops > maxSymlinkHops {
+				return "", errSymlinkLoop
+			}
 			dest, err := os.Readlink(prefix)
 			if err != nil {
-				return abs
+				return "", err
 			}
 			if !filepath.IsAbs(dest) {
 				dest = filepath.Join(filepath.Dir(prefix), dest)
 			}
 			prefix = filepath.Clean(dest)
-			continue
+		case lerr == nil:
+			return "", evalErr
+		case errors.Is(lerr, fs.ErrNotExist), errors.Is(lerr, syscall.ENOTDIR):
+			parent := filepath.Dir(prefix)
+			if parent == prefix {
+				return "", lerr
+			}
+			tail = append(tail, filepath.Base(prefix))
+			prefix = parent
+		default:
+			return "", lerr
 		}
-		parent := filepath.Dir(prefix)
-		if parent == prefix {
-			return abs // walked past the filesystem root without a hit
-		}
-		tail = append(tail, filepath.Base(prefix))
-		prefix = parent
 	}
-	return abs
 }

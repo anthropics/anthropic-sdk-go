@@ -1,7 +1,9 @@
 package environments
 
 import (
+	"bytes"
 	"context"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -350,7 +352,7 @@ func TestEnvironmentWorker_HeartbeatPerRequestTimeoutAndStalenessCeiling(t *test
 			// First beat succeeds with a tight TTL so the test runs fast:
 			// ttl becomes 2 s and interval shrinks to 1 s.
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(`{"last_heartbeat":"2026-05-11T12:00:00Z","lease_extended":true,"state":"active","ttl_seconds":2,"type":"work_heartbeat"}`))
+			_, _ = w.Write([]byte(shortTTLHeartbeat))
 			return
 		}
 		// Every subsequent beat hangs. With the per-request-timeout fix the
@@ -365,52 +367,8 @@ func TestEnvironmentWorker_HeartbeatPerRequestTimeoutAndStalenessCeiling(t *test
 		}
 	}
 
-	server.HandleSessionGet = func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"agent":{"skills":[]}}`))
-	}
-	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"data":[],"first_id":null,"has_more":false,"last_id":null}`))
-	}
-	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
-		// Stream stays open until the per-session ctx is cancelled — which
-		// is what the staleness ceiling triggers.
-		w.Header().Set("Content-Type", "text/event-stream")
-		flusher, ok := w.(http.Flusher)
-		require.True(t, ok)
-		w.WriteHeader(http.StatusOK)
-		flusher.Flush()
-		<-r.Context().Done()
-	}
-	server.HandleStop = func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusNoContent)
-	}
-
-	worker := NewEnvironmentWorker(server.Client(), EnvironmentWorkerOptions{
-		EnvironmentID:  "env_1",
-		EnvironmentKey: "env_key",
-		Workdir:        t.TempDir(),
-		Logger:         silentLogger,
-	})
-
-	// Outer ctx is generous so a regression (hung beat blocking on the SDK
-	// default 10-min timeout) doesn't masquerade as "test finished within
-	// the deadline" — we explicitly cap the expected runtime below.
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
-
-	start := time.Now()
-	// HandleItem returns nil here — the runner's Err() is documented to
-	// return nil when iteration ended via consumer ctx cancellation (which
-	// is what the staleness ceiling triggers via sessCtx). The two
-	// behavioural assertions below are what proves the fixes work.
-	_ = worker.HandleItem(ctx, HandleItemOptions{
-		WorkID:        "work_1",
-		EnvironmentID: "env_1",
-		SessionID:     "sesn_test",
-	})
-	elapsed := time.Since(start)
+	scriptOpenSession(t, server)
+	elapsed := timeHandleItem(t, server, silentLogger)
 
 	// With the fix, the staleness ceiling fires once the 2 s ttl has
 	// elapsed since the first (and only) successful beat, terminating
@@ -425,4 +383,124 @@ func TestEnvironmentWorker_HeartbeatPerRequestTimeoutAndStalenessCeiling(t *test
 	// default when HandleItem returns (via the outer ctx), so the count
 	// would be 1.
 	require.GreaterOrEqual(t, heartbeatCalls.Load(), int32(2), "expected at least 2 heartbeats; got %d — per-request timeout likely missing", heartbeatCalls.Load())
+}
+
+// A 409 on heartbeat is transient: the session survives the first one, the
+// beat is retried at the current interval, and only the staleness ceiling —
+// no successful heartbeat within ttl — cancels the session.
+func TestEnvironmentWorker_Heartbeat409IsRetriedUntilStalenessCeiling(t *testing.T) {
+	server := newFakeWorkServer(t)
+
+	var heartbeatCalls atomic.Int32
+	server.HandleHeartbeat = func(w http.ResponseWriter, _ *http.Request) {
+		if heartbeatCalls.Add(1) == 1 {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(shortTTLHeartbeat))
+			return
+		}
+		writeAPIError(w, http.StatusConflict)
+	}
+	scriptOpenSession(t, server)
+
+	var logs lockedBuffer
+	elapsed := timeHandleItem(t, server, slog.New(slog.NewTextHandler(&logs, nil)))
+
+	require.Less(t, elapsed, 8*time.Second, "the staleness ceiling must end the session once ttl passes without a successful heartbeat (got %s)", elapsed)
+	require.GreaterOrEqual(t, heartbeatCalls.Load(), int32(3), "a 409 must be retried at the beat interval, not end heartbeating")
+	out := logs.String()
+	require.Contains(t, out, "transient heartbeat failure")
+	require.Contains(t, out, "heartbeat staleness ceiling exceeded")
+	require.NotContains(t, out, "permanent heartbeat failure", "a 409 must never take the permanent-failure path")
+}
+
+func TestEnvironmentWorker_Heartbeat401CancelsImmediately(t *testing.T) {
+	server := newFakeWorkServer(t)
+
+	var heartbeatCalls atomic.Int32
+	server.HandleHeartbeat = func(w http.ResponseWriter, _ *http.Request) {
+		heartbeatCalls.Add(1)
+		writeAPIError(w, http.StatusUnauthorized)
+	}
+	scriptOpenSession(t, server)
+
+	var logs lockedBuffer
+	elapsed := timeHandleItem(t, server, slog.New(slog.NewTextHandler(&logs, nil)))
+
+	require.Less(t, elapsed, 5*time.Second, "a permanent heartbeat failure must cancel the session at once (got %s)", elapsed)
+	require.Equal(t, int32(1), heartbeatCalls.Load(), "a 401 must not be retried")
+	require.Contains(t, logs.String(), "permanent heartbeat failure")
+}
+
+// shortTTLHeartbeat is a successful heartbeat body whose 2 s TTL shrinks the
+// worker's beat interval to 1 s and its staleness ceiling to 2 s.
+const shortTTLHeartbeat = `{"last_heartbeat":"2026-05-11T12:00:00Z","lease_extended":true,"state":"active","ttl_seconds":2,"type":"work_heartbeat"}`
+
+// scriptOpenSession scripts a skill-less session whose event stream stays
+// open until the per-session context is cancelled, so only the heartbeat
+// loop (or the outer deadline) can end HandleItem.
+func scriptOpenSession(t *testing.T, server *fakeWorkServer) {
+	t.Helper()
+	server.HandleSessionGet = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"agent":{"skills":[]}}`))
+	}
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"data":[],"first_id":null,"has_more":false,"last_id":null}`))
+	}
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		flusher, ok := w.(http.Flusher)
+		require.True(t, ok)
+		w.WriteHeader(http.StatusOK)
+		flusher.Flush()
+		<-r.Context().Done()
+	}
+	server.HandleStop = func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+// timeHandleItem serves one work item against server and returns how long
+// HandleItem took. The 15 s outer deadline is deliberately generous so a run
+// that only the deadline ended is distinguishable from one the heartbeat loop
+// ended; callers assert an upper bound well below it. HandleItem's return
+// value is ignored: a heartbeat-driven cancel is normal termination (nil).
+func timeHandleItem(t *testing.T, server *fakeWorkServer, logger *slog.Logger) time.Duration {
+	t.Helper()
+	worker := NewEnvironmentWorker(server.Client(), EnvironmentWorkerOptions{
+		EnvironmentID:  "env_1",
+		EnvironmentKey: "env_key",
+		Workdir:        t.TempDir(),
+		Logger:         logger,
+	})
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	start := time.Now()
+	_ = worker.HandleItem(ctx, HandleItemOptions{
+		WorkID:        "work_1",
+		EnvironmentID: "env_1",
+		SessionID:     "sesn_test",
+	})
+	return time.Since(start)
+}
+
+// lockedBuffer is an io.Writer safe for the concurrent writes slog issues
+// from the worker's goroutines.
+type lockedBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *lockedBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+func (b *lockedBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
 }

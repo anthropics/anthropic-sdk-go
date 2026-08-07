@@ -156,6 +156,15 @@ func TestExecGrep(t *testing.T) {
 	}
 }
 
+func TestExecGlobToleratesSymlinkLoopsInWorkdir(t *testing.T) {
+	work, _ := symlinkLoopFixture(t)
+	require.NoError(t, os.WriteFile(filepath.Join(work, "ok.txt"), []byte("x"), 0o644))
+
+	out, isErr := execGlob(context.Background(), mustJSON(t, map[string]any{"pattern": "*"}), &AgentToolContext{Workdir: work})
+	require.False(t, isErr, "output=%q", out)
+	require.Contains(t, strings.Split(out, "\n"), filepath.Join(work, "ok.txt"))
+}
+
 // TestExecGrepSkipsSymlinks verifies the built-in walker never reads through a
 // symlink: a link inside the workdir pointing at a file outside it (e.g. a
 // stand-in for /etc/shadow) must not have its target's contents surface in

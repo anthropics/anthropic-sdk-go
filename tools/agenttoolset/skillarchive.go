@@ -25,10 +25,12 @@ var (
 )
 
 // extractSkillArchive extracts the skill download at archivePath (a zip or
-// gzip/bzip2/plain tar archive) into dest, refusing any member that would
-// escape dest (zip-slip / tar-slip): skill archives come from the API, but
-// skills can be third-party. The archive is read straight from disk — never
-// buffered whole into memory — so a large skill bundle cannot OOM the runner.
+// gzip/bzip2/plain tar archive) into dest, confining any member that would
+// escape dest (zip-slip / tar-slip) and skipping every member that is not a
+// regular file or directory (symlink, hardlink, device, FIFO, PAX global
+// header), in zip and tar alike: skill archives come from the API, but skills
+// can be third-party. The archive is read straight from disk — never buffered
+// whole into memory — so a large skill bundle cannot OOM the runner.
 func extractSkillArchive(archivePath, dest string) (retErr error) {
 	root, err := filepath.Abs(dest)
 	if err != nil {
@@ -173,12 +175,17 @@ func extractZip(archivePath, root string) error {
 	}
 	names := make([]string, 0, len(zr.File))
 	for _, f := range zr.File {
-		names = append(names, f.Name)
+		if zipEntryIsPlain(f) {
+			names = append(names, f.Name)
+		}
 	}
 	top := archiveTopDir(names)
 	members := 0
 	var remaining int64 = skillArchiveMaxBytes
 	for _, f := range zr.File {
+		if !zipEntryIsPlain(f) {
+			continue
+		}
 		nm := stripTopDir(f.Name, top)
 		if nm == "" {
 			continue
@@ -209,6 +216,25 @@ func extractZip(archivePath, root string) error {
 	return nil
 }
 
+// zipEntryIsPlain reports whether f is a regular file or directory. Unix type
+// bits are honoured only for entries written by a Unix host, which is exactly
+// what [zip.FileHeader.Mode] observes; every other entry's bytes are data.
+func zipEntryIsPlain(f *zip.File) bool {
+	m := f.Mode()
+	return m.IsRegular() || m.IsDir()
+}
+
+// tarEntryIsPlain reports whether hdr is a regular file or directory. Every
+// other header type — symlink, hardlink, device, FIFO, PAX global header,
+// vendor extensions — is skipped rather than materialised.
+func tarEntryIsPlain(hdr *tar.Header) bool {
+	switch hdr.Typeflag {
+	case tar.TypeReg, tar.TypeCont, tar.TypeGNUSparse, tar.TypeDir:
+		return true
+	}
+	return false
+}
+
 // copyZipEntry decompresses f to target, capped at limit bytes; returns bytes
 // written.
 func copyZipEntry(f *zip.File, target string, limit int64) (int64, error) {
@@ -229,14 +255,6 @@ func copyZipEntry(f *zip.File, target string, limit int64) (int64, error) {
 // into root. f must be positioned at the start of the archive; the tar reader
 // consumes it as a stream, so the archive is never buffered whole in memory.
 func extractTar(f *os.File, root string) error {
-	skip := func(flag byte) bool {
-		switch flag {
-		case tar.TypeSymlink, tar.TypeLink, tar.TypeChar, tar.TypeBlock, tar.TypeFifo:
-			return true // skip symlinks / hardlinks / devices
-		}
-		return false
-	}
-
 	// Pass 1: read headers only to detect the skill bundle's wrapper directory.
 	// The archive is on disk, so a second pass just rewinds and re-reads it —
 	// nothing is buffered whole in memory.
@@ -261,7 +279,7 @@ func extractTar(f *os.File, root string) error {
 			_ = closeR()
 			return err
 		}
-		if skip(hdr.Typeflag) {
+		if !tarEntryIsPlain(hdr) {
 			continue
 		}
 		members++
@@ -301,7 +319,7 @@ func extractTar(f *os.File, root string) error {
 		if err != nil {
 			return err
 		}
-		if skip(hdr.Typeflag) {
+		if !tarEntryIsPlain(hdr) {
 			continue
 		}
 		nm := stripTopDir(hdr.Name, top)

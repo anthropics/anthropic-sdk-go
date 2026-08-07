@@ -233,10 +233,14 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 		if credentialErr != nil {
 			return credentialErr
 		}
-		return rc.Apply(
+		opts := []option.RequestOption{
 			option.WithBaseURL(fmt.Sprintf("https://bedrock-runtime.%s.amazonaws.com", cfg.Region)),
 			option.WithMiddleware(middleware),
-		)
+		}
+		if cfg.HTTPClient != nil {
+			opts = append(opts, option.WithHTTPClient(cfg.HTTPClient))
+		}
+		return rc.Apply(opts...)
 	})
 }
 

@@ -362,6 +362,11 @@ func (b *bodyWithTimeout) Close() error {
 	return err
 }
 
+// perAttemptTimeout wraps context.WithTimeout; Execute is responsible for cancelling the returned CancelFunc between retry attempts.
+func perAttemptTimeout(parent context.Context, d time.Duration) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(parent, d)
+}
+
 func retryDelay(res *http.Response, retryCount int) time.Duration {
 	// If the backend tells us to wait a certain amount of time, use that value
 	if retryAfterDelay, ok := parseRetryAfterHeader(res); ok {
@@ -370,9 +375,7 @@ func retryDelay(res *http.Response, retryCount int) time.Duration {
 
 	maxDelay := 8 * time.Second
 	delay := time.Duration(0.5 * float64(time.Second) * math.Pow(2, float64(retryCount)))
-	if delay > maxDelay {
-		delay = maxDelay
-	}
+	delay = min(delay, maxDelay)
 
 	jitter := rand.Int63n(int64(delay / 4))
 	delay -= time.Duration(jitter)
@@ -429,16 +432,19 @@ func (cfg *RequestConfig) Execute() (err error) {
 
 	var res *http.Response
 	var cancel context.CancelFunc
+	defer func() {
+		if cancel != nil {
+			cancel()
+		}
+	}()
 	for retryCount := 0; retryCount <= cfg.MaxRetries; retryCount += 1 {
+		if cancel != nil {
+			cancel()
+			cancel = nil
+		}
 		ctx := cfg.Request.Context()
 		if cfg.RequestTimeout != time.Duration(0) && isBeforeContextDeadline(time.Now().Add(cfg.RequestTimeout), ctx) {
-			ctx, cancel = context.WithTimeout(ctx, cfg.RequestTimeout)
-			defer func() {
-				// The cancel function is nil if it was handed off to be handled in a different scope.
-				if cancel != nil {
-					cancel()
-				}
-			}()
+			ctx, cancel = perAttemptTimeout(ctx, cfg.RequestTimeout)
 		}
 
 		req := cfg.Request.Clone(ctx)

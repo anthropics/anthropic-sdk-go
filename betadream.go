@@ -19,6 +19,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 // BetaDreamService contains methods and other services that help with interacting
@@ -127,9 +128,10 @@ func (r *BetaDreamService) Cancel(ctx context.Context, dreamID string, body Beta
 }
 
 // An asynchronous memory-consolidation job that reads a memory store plus a set of
-// session transcripts and writes consolidated memories into a new output memory
-// store. The Dreams API is in research preview: the request and response shapes
-// are volatile and may change without the deprecation period that applies to
+// session transcripts and writes consolidated memories into an output memory store
+// — a new store by default, or an existing store chosen via output_behavior. The
+// Dreams API is in research preview: the request and response shapes are volatile
+// and may change without the deprecation period that applies to
 // generally-available endpoints.
 type BetaDream struct {
 	ID string `json:"id" api:"required"`
@@ -145,9 +147,13 @@ type BetaDream struct {
 	Instructions string                `json:"instructions" api:"required"`
 	// Model identifier and configuration applied to every pipeline stage. Same wire
 	// shape as the Agents API ModelConfig.
-	Model     BetaDreamModelConfig `json:"model" api:"required"`
-	Outputs   []BetaDreamOutput    `json:"outputs" api:"required"`
-	SessionID string               `json:"session_id" api:"required"`
+	Model BetaDreamModelConfig `json:"model" api:"required"`
+	// The default destination: the job creates a new output memory store as a clone of
+	// the memory_store input and writes the consolidated memories into it. The input
+	// store is never mutated.
+	OutputBehavior BetaDreamOutputBehaviorUnion `json:"output_behavior" api:"required"`
+	Outputs        []BetaDreamOutput            `json:"outputs" api:"required"`
+	SessionID      string                       `json:"session_id" api:"required"`
 	// Lifecycle status of a Dream.
 	//
 	// Any of "pending", "running", "completed", "failed", "canceled".
@@ -158,27 +164,131 @@ type BetaDream struct {
 	Usage BetaDreamUsage `json:"usage" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID           respjson.Field
-		ArchivedAt   respjson.Field
-		CreatedAt    respjson.Field
-		EndedAt      respjson.Field
-		Error        respjson.Field
-		Inputs       respjson.Field
-		Instructions respjson.Field
-		Model        respjson.Field
-		Outputs      respjson.Field
-		SessionID    respjson.Field
-		Status       respjson.Field
-		Type         respjson.Field
-		Usage        respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
+		ID             respjson.Field
+		ArchivedAt     respjson.Field
+		CreatedAt      respjson.Field
+		EndedAt        respjson.Field
+		Error          respjson.Field
+		Inputs         respjson.Field
+		Instructions   respjson.Field
+		Model          respjson.Field
+		OutputBehavior respjson.Field
+		Outputs        respjson.Field
+		SessionID      respjson.Field
+		Status         respjson.Field
+		Type           respjson.Field
+		Usage          respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
 func (r BetaDream) RawJSON() string { return r.JSON.raw }
 func (r *BetaDream) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaDreamOutputBehaviorUnion contains all possible properties and values from
+// [BetaDreamOutputBehaviorCreateNew], [BetaDreamOutputBehaviorUpdateExisting].
+//
+// Use the [BetaDreamOutputBehaviorUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaDreamOutputBehaviorUnion struct {
+	// Any of "create_new", "update_existing".
+	Type string `json:"type"`
+	// This field is from variant [BetaDreamOutputBehaviorUpdateExisting].
+	MemoryStoreID string `json:"memory_store_id"`
+	JSON          struct {
+		Type          respjson.Field
+		MemoryStoreID respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// anyBetaDreamOutputBehavior is implemented by each variant of
+// [BetaDreamOutputBehaviorUnion] to add type safety for the return type of
+// [BetaDreamOutputBehaviorUnion.AsAny]
+type anyBetaDreamOutputBehavior interface {
+	implBetaDreamOutputBehaviorUnion()
+}
+
+func (BetaDreamOutputBehaviorCreateNew) implBetaDreamOutputBehaviorUnion()      {}
+func (BetaDreamOutputBehaviorUpdateExisting) implBetaDreamOutputBehaviorUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaDreamOutputBehaviorUnion.AsAny().(type) {
+//	case anthropic.BetaDreamOutputBehaviorCreateNew:
+//	case anthropic.BetaDreamOutputBehaviorUpdateExisting:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaDreamOutputBehaviorUnion) AsAny() anyBetaDreamOutputBehavior {
+	switch u.Type {
+	case "create_new":
+		return u.AsCreateNew()
+	case "update_existing":
+		return u.AsUpdateExisting()
+	}
+	return nil
+}
+
+func (u BetaDreamOutputBehaviorUnion) AsCreateNew() (v BetaDreamOutputBehaviorCreateNew) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaDreamOutputBehaviorUnion) AsUpdateExisting() (v BetaDreamOutputBehaviorUpdateExisting) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaDreamOutputBehaviorUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaDreamOutputBehaviorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The default destination: the job creates a new output memory store as a clone of
+// the memory_store input and writes the consolidated memories into it. The input
+// store is never mutated.
+type BetaDreamOutputBehaviorCreateNew struct {
+	Type constant.CreateNew `json:"type" default:"create_new"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaDreamOutputBehaviorCreateNew) RawJSON() string { return r.JSON.raw }
+func (r *BetaDreamOutputBehaviorCreateNew) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The job writes the consolidated memories into this existing memory store instead
+// of creating one. In EAP the store must be the job's own memory_store input, so
+// the job consolidates the store in place.
+type BetaDreamOutputBehaviorUpdateExisting struct {
+	MemoryStoreID string                  `json:"memory_store_id" api:"required"`
+	Type          constant.UpdateExisting `json:"type" default:"update_existing"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		MemoryStoreID respjson.Field
+		Type          respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaDreamOutputBehaviorUpdateExisting) RawJSON() string { return r.JSON.raw }
+func (r *BetaDreamOutputBehaviorUpdateExisting) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -352,7 +462,9 @@ func init() {
 	)
 }
 
-// An input memory store the dream reads from. The dream never mutates this store.
+// An input memory store the dream reads from. The dream never mutates this store
+// unless it is also the destination: with output_behavior {type:
+// "update_existing"} the job consolidates this store in place.
 type BetaDreamMemoryStoreInput struct {
 	MemoryStoreID string `json:"memory_store_id" api:"required"`
 	// Any of "memory_store".
@@ -388,7 +500,9 @@ const (
 	BetaDreamMemoryStoreInputTypeMemoryStore BetaDreamMemoryStoreInputType = "memory_store"
 )
 
-// An input memory store the dream reads from. The dream never mutates this store.
+// An input memory store the dream reads from. The dream never mutates this store
+// unless it is also the destination: with output_behavior {type:
+// "update_existing"} the job consolidates this store in place.
 //
 // The properties MemoryStoreID, Type are required.
 type BetaDreamMemoryStoreInputParam struct {
@@ -597,6 +711,10 @@ type BetaDreamNewParams struct {
 	// Model identifier and configuration applied to every pipeline stage.
 	Model        BetaDreamNewParamsModelUnion `json:"model,omitzero" api:"required"`
 	Instructions param.Opt[string]            `json:"instructions,omitzero"`
+	// The default destination: the job creates a new output memory store as a clone of
+	// the memory_store input and writes the consolidated memories into it. The input
+	// store is never mutated.
+	OutputBehavior BetaDreamNewParamsOutputBehaviorUnion `json:"output_behavior,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -633,6 +751,102 @@ func (u *BetaDreamNewParamsModelUnion) asAny() any {
 		return u.OfBetaDreamModelConfig
 	}
 	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaDreamNewParamsOutputBehaviorUnion struct {
+	OfCreateNew      *BetaDreamNewParamsOutputBehaviorCreateNew      `json:",omitzero,inline"`
+	OfUpdateExisting *BetaDreamNewParamsOutputBehaviorUpdateExisting `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaDreamNewParamsOutputBehaviorUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCreateNew, u.OfUpdateExisting)
+}
+func (u *BetaDreamNewParamsOutputBehaviorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaDreamNewParamsOutputBehaviorUnion) asAny() any {
+	if !param.IsOmitted(u.OfCreateNew) {
+		return u.OfCreateNew
+	} else if !param.IsOmitted(u.OfUpdateExisting) {
+		return u.OfUpdateExisting
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaDreamNewParamsOutputBehaviorUnion) GetMemoryStoreID() *string {
+	if vt := u.OfUpdateExisting; vt != nil {
+		return &vt.MemoryStoreID
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaDreamNewParamsOutputBehaviorUnion) GetType() *string {
+	if vt := u.OfCreateNew; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfUpdateExisting; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaDreamNewParamsOutputBehaviorUnion](
+		"type",
+		apijson.Discriminator[BetaDreamNewParamsOutputBehaviorCreateNew]("create_new"),
+		apijson.Discriminator[BetaDreamNewParamsOutputBehaviorUpdateExisting]("update_existing"),
+	)
+}
+
+func NewBetaDreamNewParamsOutputBehaviorCreateNew() BetaDreamNewParamsOutputBehaviorCreateNew {
+	return BetaDreamNewParamsOutputBehaviorCreateNew{
+		Type: "create_new",
+	}
+}
+
+// The default destination: the job creates a new output memory store as a clone of
+// the memory_store input and writes the consolidated memories into it. The input
+// store is never mutated.
+//
+// This struct has a constant value, construct it with
+// [NewBetaDreamNewParamsOutputBehaviorCreateNew].
+type BetaDreamNewParamsOutputBehaviorCreateNew struct {
+	Type constant.CreateNew `json:"type" default:"create_new"`
+	paramObj
+}
+
+func (r BetaDreamNewParamsOutputBehaviorCreateNew) MarshalJSON() (data []byte, err error) {
+	type shadow BetaDreamNewParamsOutputBehaviorCreateNew
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaDreamNewParamsOutputBehaviorCreateNew) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The job writes the consolidated memories into this existing memory store instead
+// of creating one. In EAP the store must be the job's own memory_store input, so
+// the job consolidates the store in place.
+//
+// The properties MemoryStoreID, Type are required.
+type BetaDreamNewParamsOutputBehaviorUpdateExisting struct {
+	MemoryStoreID string `json:"memory_store_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "update_existing".
+	Type constant.UpdateExisting `json:"type" default:"update_existing"`
+	paramObj
+}
+
+func (r BetaDreamNewParamsOutputBehaviorUpdateExisting) MarshalJSON() (data []byte, err error) {
+	type shadow BetaDreamNewParamsOutputBehaviorUpdateExisting
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaDreamNewParamsOutputBehaviorUpdateExisting) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type BetaDreamGetParams struct {

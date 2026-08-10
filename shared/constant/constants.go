@@ -89,6 +89,7 @@ type ContentBlockLocation string                    // Always "content_block_loc
 type ContentBlockStart string                       // Always "content_block_start"
 type ContentBlockStop string                        // Always "content_block_stop"
 type Create string                                  // Always "create"
+type CreateNew string                               // Always "create_new"
 type Default string                                 // Always "default"
 type Delete string                                  // Always "delete"
 type DeploymentRunFailed string                     // Always "deployment_run.failed"
@@ -221,6 +222,7 @@ type TunnelCertificate string                       // Always "tunnel_certificat
 type TunnelToken string                             // Always "tunnel_token"
 type Unavailable string                             // Always "unavailable"
 type Unrestricted string                            // Always "unrestricted"
+type UpdateExisting string                          // Always "update_existing"
 type URL string                                     // Always "url"
 type VaultCredentialArchived string                 // Always "vault_credential.archived"
 type VaultCredentialCreated string                  // Always "vault_credential.created"
@@ -321,6 +323,7 @@ func (c ContentBlockLocation) Default() ContentBlockLocation     { return "conte
 func (c ContentBlockStart) Default() ContentBlockStart           { return "content_block_start" }
 func (c ContentBlockStop) Default() ContentBlockStop             { return "content_block_stop" }
 func (c Create) Default() Create                                 { return "create" }
+func (c CreateNew) Default() CreateNew                           { return "create_new" }
 func (c Default) Default() Default                               { return "default" }
 func (c Delete) Default() Delete                                 { return "delete" }
 func (c DeploymentRunFailed) Default() DeploymentRunFailed       { return "deployment_run.failed" }
@@ -483,6 +486,7 @@ func (c TunnelCertificate) Default() TunnelCertificate { return "tunnel_certific
 func (c TunnelToken) Default() TunnelToken             { return "tunnel_token" }
 func (c Unavailable) Default() Unavailable             { return "unavailable" }
 func (c Unrestricted) Default() Unrestricted           { return "unrestricted" }
+func (c UpdateExisting) Default() UpdateExisting       { return "update_existing" }
 func (c URL) Default() URL                             { return "url" }
 func (c VaultCredentialArchived) Default() VaultCredentialArchived {
 	return "vault_credential.archived"
@@ -581,6 +585,7 @@ func (c ContentBlockLocation) MarshalJSON() ([]byte, error)                { ret
 func (c ContentBlockStart) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c ContentBlockStop) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Create) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c CreateNew) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c Default) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Delete) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c DeploymentRunFailed) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
@@ -717,6 +722,7 @@ func (c TunnelCertificate) MarshalJSON() ([]byte, error)                 { retur
 func (c TunnelToken) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Unavailable) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Unrestricted) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c UpdateExisting) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c VaultCredentialArchived) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c VaultCredentialCreated) MarshalJSON() ([]byte, error)            { return marshalString(c) }

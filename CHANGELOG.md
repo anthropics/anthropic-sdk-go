@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.63.0 (2026-08-10)
+
+Full Changelog: [v1.62.0...v1.63.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.62.0...v1.63.0)
+
+### Features
+
+* **api:** add output_behavior to dream creation (create a new memory store or update the input store in place) ([ba999d5](https://github.com/anthropics/anthropic-sdk-go/commit/ba999d5edc6711e43e35ee2c2eb25c75fa478ebf))
+
+
+### Bug Fixes
+
+* **client:** add models ([a662a31](https://github.com/anthropics/anthropic-sdk-go/commit/a662a3168902606ef12dfc0bafbe68c04cbe21a1))
+* symlink-loop paths, special archive members, and 409 retry in the agent toolset and environment worker ([#226](https://github.com/anthropics/anthropic-sdk-go/issues/226)) ([82aa034](https://github.com/anthropics/anthropic-sdk-go/commit/82aa034b6cc238b2edbd88c451899f9f7bf1b02b))
+* **vertex:** preserve a user-supplied HTTP client by wrapping its transport with Google auth ([#242](https://github.com/anthropics/anthropic-sdk-go/issues/242)) ([8e85a8e](https://github.com/anthropics/anthropic-sdk-go/commit/8e85a8e7a522138521d7a0091b7bad9da131f4f2))
+
 ## 1.62.0 (2026-08-06)
 
 Full Changelog: [v1.61.0...v1.62.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.61.0...v1.62.0)

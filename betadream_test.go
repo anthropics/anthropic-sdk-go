@@ -37,8 +37,10 @@ func TestBetaDreamNewWithOptionalParams(t *testing.T) {
 			OfString: anthropic.String("string"),
 		},
 		Instructions: anthropic.String("x"),
-		OutputBehavior: anthropic.BetaDreamNewParamsOutputBehaviorUnion{
-			OfCreateNew: &anthropic.BetaDreamNewParamsOutputBehaviorCreateNew{},
+		OutputBehavior: anthropic.BetaOutputBehaviorUnionParam{
+			OfCreateNew: &anthropic.BetaOutputBehaviorCreateNewParam{
+				Type: anthropic.BetaOutputBehaviorCreateNewTypeCreateNew,
+			},
 		},
 		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})

@@ -460,6 +460,34 @@ func WithProfile(name string) RequestOption {
 	return withConfig(cfg, false)
 }
 
+// joinedOption is the [RequestOption] returned by [Join]. It is a distinct
+// type (rather than a RequestOptionFunc closure) so that
+// [HasWithoutEnvironmentDefaults] can look inside it.
+type joinedOption []RequestOption
+
+func (opts joinedOption) Apply(r *requestconfig.RequestConfig) error {
+	return r.Apply(opts...)
+}
+
+// Join returns a single [RequestOption] that applies opts in order, at the
+// position the joined option occupies in the caller's option list. It is
+// equivalent to passing opts individually at that position, and lets a
+// function that configures several aspects of a client return one option:
+//
+//	func WithPlatform(cfg Config) option.RequestOption {
+//		return option.Join(
+//			option.WithoutEnvironmentDefaults(),
+//			option.WithBaseURL(cfg.URL),
+//			option.WithMiddleware(cfg.middleware()),
+//		)
+//	}
+//
+// A [WithoutEnvironmentDefaults] marker nested inside a Join (at any depth)
+// is still recognized by anthropic.NewClient.
+func Join(opts ...RequestOption) RequestOption {
+	return joinedOption(opts)
+}
+
 // withoutEnvironmentDefaultsOption is the marker type returned by
 // [WithoutEnvironmentDefaults]. Its Apply is a no-op; it is detected by
 // [HasWithoutEnvironmentDefaults] before options are applied.
@@ -484,12 +512,18 @@ func WithoutEnvironmentDefaults() RequestOption {
 }
 
 // HasWithoutEnvironmentDefaults reports whether opts contains a
-// [WithoutEnvironmentDefaults] marker. Used by anthropic.NewClient to decide
-// whether to prepend anthropic.DefaultClientOptions.
+// [WithoutEnvironmentDefaults] marker, looking inside options combined with
+// [Join] at any depth. Used by anthropic.NewClient to decide whether to
+// prepend anthropic.DefaultClientOptions.
 func HasWithoutEnvironmentDefaults(opts []RequestOption) bool {
 	for _, o := range opts {
-		if _, ok := o.(withoutEnvironmentDefaultsOption); ok {
+		switch o := o.(type) {
+		case withoutEnvironmentDefaultsOption:
 			return true
+		case joinedOption:
+			if HasWithoutEnvironmentDefaults(o) {
+				return true
+			}
 		}
 	}
 	return false

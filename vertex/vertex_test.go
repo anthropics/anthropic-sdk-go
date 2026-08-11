@@ -335,3 +335,96 @@ func TestWithCredentialsInstallsGoogleClientByDefault(t *testing.T) {
 		})
 	}
 }
+
+// TestVertexClientIgnoresConfigStore is a regression test for the
+// first-party credential chain leaking into Vertex clients: a client
+// constructed with static Google credentials must never consult the shared
+// config store (ANTHROPIC_CONFIG_DIR), so no store-derived value — the
+// resolvable profile's workspace id or its access token — may reach the
+// wire. Authorization must stay the static OAuth token.
+func TestVertexClientIgnoresConfigStore(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("ANTHROPIC_AUTH_TOKEN", "")
+	unsetEnv(t, "ANTHROPIC_PROFILE")
+	unsetEnv(t, "ANTHROPIC_FEDERATION_RULE_ID")
+	unsetEnv(t, "ANTHROPIC_ORGANIZATION_ID")
+	unsetEnv(t, "ANTHROPIC_IDENTITY_TOKEN")
+	unsetEnv(t, "ANTHROPIC_IDENTITY_TOKEN_FILE")
+	unsetEnv(t, "ANTHROPIC_WORKSPACE_ID")
+	writeFakeConfigStore(t)
+
+	var wireHeaders http.Header
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		wireHeaders = r.Header.Clone()
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]any{
+			"id": "msg_test", "type": "message", "role": "assistant",
+			"content": []map[string]any{{"type": "text", "text": "hi"}},
+			"model":   "claude-3-sonnet", "stop_reason": "end_turn",
+			"usage": map[string]any{"input_tokens": 1, "output_tokens": 1},
+		})
+	}))
+	t.Cleanup(server.Close)
+
+	creds := &google.Credentials{
+		TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: "fake-vertex-access-token"}),
+	}
+	client := anthropic.NewClient(
+		WithCredentials(context.Background(), "us-central1", "test-project", creds),
+		sdkoption.WithBaseURL(server.URL),
+	)
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:     "claude-3-sonnet",
+		MaxTokens: 1,
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+		},
+	})
+	if err != nil {
+		t.Fatalf("Request failed: %v", err)
+	}
+
+	if got, ok := wireHeaders[http.CanonicalHeaderKey("anthropic-workspace-id")]; ok {
+		t.Errorf("Expected no anthropic-workspace-id header, got %q", got)
+	}
+	if got := wireHeaders.Get("X-Api-Key"); got != "" {
+		t.Errorf("Expected no X-Api-Key header, got %q", got)
+	}
+	if auth := wireHeaders.Get("Authorization"); auth != "Bearer fake-vertex-access-token" {
+		t.Errorf("Expected the static OAuth Authorization on the wire, got %q", auth)
+	}
+}
+
+// writeFakeConfigStore points ANTHROPIC_CONFIG_DIR at a temp config store
+// holding a resolvable default profile with a workspace id, so a client
+// that (incorrectly) walks the first-party credential chain would pick it
+// up. Values are deliberately fake.
+func writeFakeConfigStore(t *testing.T) {
+	t.Helper()
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "configs"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(dir, "credentials"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "configs", "default.json"), []byte(`{
+		"authentication": {"type": "user_oauth"},
+		"workspace_id": "wrkspc_fake_store_value"
+	}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "credentials", "default.json"),
+		[]byte(`{"type":"oauth_token","access_token":"fake-store-access-token"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("ANTHROPIC_CONFIG_DIR", dir)
+}
+
+// unsetEnv unsets an env var for the duration of the test, restoring the
+// original value afterwards (t.Setenv registers the restore).
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	t.Setenv(key, "")
+	os.Unsetenv(key)
+}

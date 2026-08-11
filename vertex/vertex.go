@@ -36,6 +36,10 @@ const cloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
 // Register any [sdkoption.WithMiddleware] before this option so your
 // middleware observes Anthropic-shaped requests; see [WithCredentials].
 //
+// Like [WithCredentials], the returned option includes
+// [sdkoption.WithoutEnvironmentDefaults], so first-party credential sources
+// never apply to a client constructed with it.
+//
 // [Application Default Credentials]: https://cloud.google.com/docs/authentication/application-default-credentials
 func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes ...string) sdkoption.RequestOption {
 	if region == "" {
@@ -75,6 +79,13 @@ func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes
 // option: its transport is wrapped with OAuth authorization and its other
 // settings (Timeout, CheckRedirect, Jar) are preserved. Passed after this
 // option, it replaces the Vertex-configured client entirely.
+//
+// The returned option is an [sdkoption.Join] of
+// [sdkoption.WithoutEnvironmentDefaults] and the Vertex configuration, so a
+// client constructed with it skips the SDK's first-party credential autoload
+// entirely: environment credentials and profiles from the shared config
+// store (ANTHROPIC_API_KEY, ANTHROPIC_PROFILE, ANTHROPIC_CONFIG_DIR) never
+// apply to Vertex requests.
 func WithCredentials(ctx context.Context, region string, projectID string, creds *google.Credentials) sdkoption.RequestOption {
 	defaultClient, _, err := transport.NewHTTPClient(ctx, option.WithTokenSource(creds.TokenSource))
 	if err != nil {
@@ -94,7 +105,7 @@ func WithCredentials(ctx context.Context, region string, projectID string, creds
 		baseURL = fmt.Sprintf("https://%s-aiplatform.googleapis.com/", region)
 	}
 
-	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+	return sdkoption.Join(sdkoption.WithoutEnvironmentDefaults(), requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		client := defaultClient
 		if rc.HTTPClient != nil && rc.HTTPClient != http.DefaultClient {
 			client = authorizeClient(rc.HTTPClient, creds)
@@ -104,7 +115,7 @@ func WithCredentials(ctx context.Context, region string, projectID string, creds
 			sdkoption.WithMiddleware(middleware),
 			sdkoption.WithHTTPClient(client),
 		)
-	})
+	}))
 }
 
 // authorizeClient returns a shallow copy of client whose transport attaches

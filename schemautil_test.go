@@ -2,6 +2,7 @@ package anthropic
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/invopop/jsonschema"
@@ -352,6 +353,63 @@ func TestTransformSchemaFromReflector(t *testing.T) {
 	desc, _ := quantitySchema["description"].(string)
 	if desc == "" {
 		t.Error("expected quantity to have a description with the minimum constraint")
+	}
+}
+
+// Keywords like maxLength and maxItems are pointer-typed on jsonschema.Schema, so
+// the description must render the pointed-to value rather than the address.
+func TestTransformSchemaFromReflectorPointerKeywords(t *testing.T) {
+	type Input struct {
+		Code string   `json:"code" jsonschema:"minLength=2,maxLength=8"`
+		Tags []string `json:"tags" jsonschema:"maxItems=3"`
+	}
+
+	reflector := jsonschema.Reflector{DoNotReference: true}
+	schema := reflector.Reflect(&Input{})
+	transformSchema(schema)
+
+	tests := []struct {
+		property string
+		want     string
+	}{
+		{"code", "{maxLength: 8, minLength: 2}"},
+		{"tags", "{maxItems: 3}"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.property+" keywords render as values in the description", func(t *testing.T) {
+			prop, ok := schema.Properties.Get(tt.property)
+			if !ok {
+				t.Fatalf("expected property %q", tt.property)
+			}
+			if strings.Contains(prop.Description, "0x") {
+				t.Errorf("description contains a pointer address: %q", prop.Description)
+			}
+			if prop.Description != tt.want {
+				t.Errorf("description = %q, want %q", prop.Description, tt.want)
+			}
+		})
+	}
+}
+
+func TestFormatExtraValue(t *testing.T) {
+	tests := []struct {
+		name string
+		v    any
+		want string
+	}{
+		{"pointer to integer renders the value", ptr(uint64(8)), "8"},
+		{"nil pointer renders as null", (*uint64)(nil), "null"},
+		{"untyped nil renders as null", nil, "null"},
+		{"plain integer", uint64(3), "3"},
+		{"string stays unquoted", "date", "date"},
+		{"pointer to schema is JSON-marshaled", &jsonschema.Schema{Type: "string"}, `{"type":"string"}`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := formatExtraValue(tt.v); got != tt.want {
+				t.Errorf("formatExtraValue(%#v) = %q, want %q", tt.v, got, tt.want)
+			}
+		})
 	}
 }
 

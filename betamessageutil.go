@@ -28,14 +28,17 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 	case "message_start":
 		*acc = event.Message
 	case "message_delta":
+		// stop_reason, stop_sequence and stop_details are always sent and null is
+		// their final value when the turn carries no such detail.
 		acc.StopReason = event.Delta.StopReason
 		acc.StopSequence = event.Delta.StopSequence
-		if event.Delta.JSON.StopDetails.Valid() {
-			acc.StopDetails = event.Delta.StopDetails
-		}
+		acc.StopDetails = event.Delta.StopDetails
 		if event.Delta.JSON.Container.Valid() {
 			acc.Container = event.Delta.Container
 		}
+		// Every usage count here is a cumulative whole-message total, so it
+		// overwrites rather than adds; the ones that do not apply are omitted, and
+		// message_start keeps the last word on those.
 		acc.Usage.OutputTokens = event.Usage.OutputTokens
 		if event.Usage.JSON.InputTokens.Valid() {
 			acc.Usage.InputTokens = event.Usage.InputTokens

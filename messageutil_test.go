@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/tidwall/gjson"
+
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
@@ -138,5 +140,116 @@ func assertNoZeroExportedFields(t *testing.T, union any) {
 		if variant.Field(i).IsZero() {
 			t.Errorf("Expected %s.%s to be populated by toParamUnion, got the zero value", vt.Name(), field.Name)
 		}
+	}
+}
+
+// messageStartWithUsage seeds the fields message_delta never re-sends, so a
+// test can tell "the delta overwrote it" from "the delta left it alone".
+const messageStartWithUsage = `{"type":"message_start","message":{"id":"msg_1","type":"message","role":"assistant","content":[],"stop_reason":null,"stop_sequence":null,"stop_details":null,"usage":{"input_tokens":10,"output_tokens":1,"cache_creation_input_tokens":2,"cache_read_input_tokens":3,"cache_creation":{"ephemeral_5m_input_tokens":2,"ephemeral_1h_input_tokens":0},"service_tier":"standard"}}}`
+
+// accumulateMessage folds raw stream events into a Message the way a caller of
+// Messages.NewStreaming does.
+func accumulateMessage(t *testing.T, events ...string) anthropic.Message {
+	t.Helper()
+	message := anthropic.Message{}
+	for _, raw := range events {
+		event := anthropic.MessageStreamEventUnion{}
+		if err := event.UnmarshalJSON([]byte(raw)); err != nil {
+			t.Fatalf("Failed to unmarshal event %s: %v", raw, err)
+		}
+		if err := message.Accumulate(event); err != nil {
+			t.Fatalf("Accumulate(%s): %v", raw, err)
+		}
+	}
+	return message
+}
+
+// TestAccumulateMessageDeltaAppliesEveryField pins the accumulated Message to
+// what the non-streaming Message would hold: every value the final
+// message_delta carries reaches it.
+func TestAccumulateMessageDeltaAppliesEveryField(t *testing.T) {
+	message := accumulateMessage(t,
+		messageStartWithUsage,
+		`{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null,"stop_details":null,"container":{"id":"container_1","expires_at":"2025-01-01T00:00:00Z"}},"usage":{"input_tokens":12,"output_tokens":99,"cache_creation_input_tokens":4,"cache_read_input_tokens":5,"server_tool_use":{"web_search_requests":2,"web_fetch_requests":1},"output_tokens_details":{"thinking_tokens":7}}}`,
+		`{"type":"message_stop"}`,
+	)
+
+	if message.Container.ID != "container_1" {
+		t.Errorf("Expected container from the delta, got %q", message.Container.ID)
+	}
+	if got := gjson.Get(message.RawJSON(), "container.id").String(); got != "container_1" {
+		t.Errorf("Expected container in the accumulated JSON, got %q", got)
+	}
+	if message.StopReason != anthropic.StopReasonEndTurn {
+		t.Errorf("Expected stop_reason end_turn, got %q", message.StopReason)
+	}
+	if message.Usage.OutputTokensDetails.ThinkingTokens != 7 {
+		t.Errorf("Expected output_tokens_details from the delta, got %d", message.Usage.OutputTokensDetails.ThinkingTokens)
+	}
+	if message.Usage.ServerToolUse.WebSearchRequests != 2 || message.Usage.ServerToolUse.WebFetchRequests != 1 {
+		t.Errorf("Expected server_tool_use from the delta, got %+v", message.Usage.ServerToolUse)
+	}
+	// Cumulative totals: the delta's value replaces the message_start one.
+	if message.Usage.InputTokens != 12 || message.Usage.OutputTokens != 99 {
+		t.Errorf("Expected input/output tokens 12/99, got %d/%d", message.Usage.InputTokens, message.Usage.OutputTokens)
+	}
+	if message.Usage.CacheCreationInputTokens != 4 || message.Usage.CacheReadInputTokens != 5 {
+		t.Errorf("Expected cache tokens 4/5, got %d/%d", message.Usage.CacheCreationInputTokens, message.Usage.CacheReadInputTokens)
+	}
+}
+
+// TestAccumulateMessageDeltaKeepsOmittedUsage covers the other half of the
+// contract: message_delta omits the counters that do not apply, and it never
+// re-sends service_tier or the cache_creation breakdown at all.
+func TestAccumulateMessageDeltaKeepsOmittedUsage(t *testing.T) {
+	message := accumulateMessage(t,
+		messageStartWithUsage,
+		`{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null,"stop_details":null},"usage":{"output_tokens":25}}`,
+		`{"type":"message_stop"}`,
+	)
+
+	if message.Usage.OutputTokens != 25 {
+		t.Errorf("Expected output_tokens to be overwritten with 25, got %d", message.Usage.OutputTokens)
+	}
+	if message.Usage.InputTokens != 10 {
+		t.Errorf("Expected input_tokens to keep the message_start value 10, got %d", message.Usage.InputTokens)
+	}
+	if message.Usage.CacheCreationInputTokens != 2 || message.Usage.CacheReadInputTokens != 3 {
+		t.Errorf("Expected cache tokens to keep the message_start values 2/3, got %d/%d", message.Usage.CacheCreationInputTokens, message.Usage.CacheReadInputTokens)
+	}
+	if message.Usage.CacheCreation.Ephemeral5mInputTokens != 2 {
+		t.Errorf("Expected cache_creation to survive, got %+v", message.Usage.CacheCreation)
+	}
+	if message.Usage.ServiceTier != anthropic.UsageServiceTierStandard {
+		t.Errorf("Expected service_tier to survive, got %q", message.Usage.ServiceTier)
+	}
+	if got := gjson.Get(message.RawJSON(), "usage.service_tier").String(); got != "standard" {
+		t.Errorf("Expected service_tier in the accumulated JSON, got %q", got)
+	}
+	if message.ID != "msg_1" || message.Role != "assistant" {
+		t.Errorf("Expected id/role to survive, got %q/%q", message.ID, message.Role)
+	}
+}
+
+// TestAccumulateMessageDeltaStopDetails checks the refusal detail reaches the
+// message, and that the last delta wins even when its stop_details is null —
+// the key is always sent and null is a meaningful final value, as it is for
+// stop_reason and stop_sequence.
+func TestAccumulateMessageDeltaStopDetails(t *testing.T) {
+	message := accumulateMessage(t,
+		messageStartWithUsage,
+		`{"type":"message_delta","delta":{"stop_reason":"refusal","stop_sequence":null,"stop_details":{"type":"refusal","category":"bio","explanation":"nope"}},"usage":{"output_tokens":5}}`,
+	)
+	if message.StopDetails.Category != anthropic.RefusalStopDetailsCategoryBio {
+		t.Errorf("Expected stop_details from the delta, got %+v", message.StopDetails)
+	}
+
+	message = accumulateMessage(t,
+		messageStartWithUsage,
+		`{"type":"message_delta","delta":{"stop_reason":"refusal","stop_sequence":null,"stop_details":{"type":"refusal","category":"bio","explanation":"nope"}},"usage":{"output_tokens":5}}`,
+		`{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null,"stop_details":null},"usage":{"output_tokens":9}}`,
+	)
+	if message.StopDetails.Category != "" {
+		t.Errorf("Expected the last delta's null stop_details to win, got %+v", message.StopDetails)
 	}
 }

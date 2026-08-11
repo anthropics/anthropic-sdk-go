@@ -9,6 +9,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -532,4 +534,90 @@ func TestBedrockStreamingEndToEnd(t *testing.T) {
 			t.Errorf("Expected event %d to be %q, got %q", i, expected, gotTypes[i])
 		}
 	}
+}
+
+// TestBedrockClientIgnoresConfigStore is a regression test for the
+// first-party credential chain leaking into Bedrock clients: a client
+// constructed with static AWS credentials must never consult the shared
+// config store (ANTHROPIC_CONFIG_DIR), so no store-derived value — the
+// resolvable profile's workspace id or its access token — may reach the
+// wire. Authorization must stay a SigV4 signature from the static AWS
+// credentials.
+func TestBedrockClientIgnoresConfigStore(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("ANTHROPIC_AUTH_TOKEN", "")
+	unsetEnv(t, "ANTHROPIC_PROFILE")
+	unsetEnv(t, "ANTHROPIC_FEDERATION_RULE_ID")
+	unsetEnv(t, "ANTHROPIC_ORGANIZATION_ID")
+	unsetEnv(t, "ANTHROPIC_IDENTITY_TOKEN")
+	unsetEnv(t, "ANTHROPIC_IDENTITY_TOKEN_FILE")
+	unsetEnv(t, "ANTHROPIC_WORKSPACE_ID")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+	writeFakeConfigStore(t)
+
+	var wireHeaders http.Header
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		wireHeaders = r.Header.Clone()
+		writeMessagesResponse(w)
+	}))
+	t.Cleanup(server.Close)
+
+	client := anthropic.NewClient(
+		WithConfig(makeStaticAWSConfig("us-east-1")),
+		option.WithBaseURL(server.URL),
+	)
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:     "claude-3-sonnet",
+		MaxTokens: 1,
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+		},
+	})
+	if err != nil {
+		t.Fatalf("Request failed: %v", err)
+	}
+
+	if got, ok := wireHeaders[http.CanonicalHeaderKey("anthropic-workspace-id")]; ok {
+		t.Errorf("Expected no anthropic-workspace-id header, got %q", got)
+	}
+	if got := wireHeaders.Get("X-Api-Key"); got != "" {
+		t.Errorf("Expected no X-Api-Key header, got %q", got)
+	}
+	if auth := wireHeaders.Get("Authorization"); !strings.HasPrefix(auth, "AWS4-HMAC-SHA256 Credential=test-access-key/") {
+		t.Errorf("Expected SigV4 Authorization from the static AWS credentials, got %q", auth)
+	}
+}
+
+// writeFakeConfigStore points ANTHROPIC_CONFIG_DIR at a temp config store
+// holding a resolvable default profile with a workspace id, so a client
+// that (incorrectly) walks the first-party credential chain would pick it
+// up. Values are deliberately fake.
+func writeFakeConfigStore(t *testing.T) {
+	t.Helper()
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "configs"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(dir, "credentials"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "configs", "default.json"), []byte(`{
+		"authentication": {"type": "user_oauth"},
+		"workspace_id": "wrkspc_fake_store_value"
+	}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "credentials", "default.json"),
+		[]byte(`{"type":"oauth_token","access_token":"fake-store-access-token"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("ANTHROPIC_CONFIG_DIR", dir)
+}
+
+// unsetEnv unsets an env var for the duration of the test, restoring the
+// original value afterwards (t.Setenv registers the restore).
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	t.Setenv(key, "")
+	os.Unsetenv(key)
 }

@@ -1555,3 +1555,209 @@ func TestDefaultClient_NoExplicitProfileFallsThrough(t *testing.T) {
 		t.Errorf("expected aggregated error, got: %v", err)
 	}
 }
+
+type recordedRequest struct {
+	method string
+	url    string
+	auth   string
+}
+
+type recordingHandler struct {
+	mu   sync.Mutex
+	reqs []recordedRequest
+}
+
+func (h *recordingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.mu.Lock()
+	h.reqs = append(h.reqs, recordedRequest{method: r.Method, url: r.URL.String(), auth: r.Header.Get("Authorization")})
+	h.mu.Unlock()
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{}`))
+}
+
+func (h *recordingHandler) requests() []recordedRequest {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return append([]recordedRequest(nil), h.reqs...)
+}
+
+func assertNoCredentials(t *testing.T, reqs []recordedRequest) {
+	t.Helper()
+	for _, r := range reqs {
+		if strings.Contains(r.url, "/v1/oauth/token") {
+			t.Errorf("token exchange was sent to a foreign origin: %s %s", r.method, r.url)
+		}
+		if r.auth != "" {
+			t.Errorf("credential was sent to a foreign origin: %s %s Authorization=%q", r.method, r.url, r.auth)
+		}
+	}
+}
+
+func federationServer(t *testing.T) (*httptest.Server, *recordingHandler, *atomic.Int32) {
+	t.Helper()
+	var exchanges atomic.Int32
+	api := &recordingHandler{}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/oauth/token" {
+			exchanges.Add(1)
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]any{"access_token": "exchanged-tok"})
+			return
+		}
+		api.ServeHTTP(w, r)
+	}))
+	t.Cleanup(server.Close)
+	return server, api, &exchanges
+}
+
+func TestIntegration_AbsoluteURLForeignHost_FederationProvider(t *testing.T) {
+	unsetEnv(t, "ANTHROPIC_API_KEY")
+	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
+	isolateAuthEnv(t)
+
+	base, baseAPI, exchanges := federationServer(t)
+	attacker := &recordingHandler{}
+	attackerServer := httptest.NewServer(attacker)
+	defer attackerServer.Close()
+
+	var identityCalls atomic.Int32
+	client := anthropic.NewClient(
+		option.WithMaxRetries(0),
+		option.WithBaseURL(base.URL),
+		option.WithFederationTokenProvider(
+			func(context.Context) (string, error) {
+				identityCalls.Add(1)
+				return "secret-jwt", nil
+			},
+			option.FederationOptions{FederationRuleID: "rule-1", OrganizationID: "org-1"},
+		),
+	)
+
+	err := client.Get(context.Background(), attackerServer.URL+"/v1/collect", nil, nil)
+	assertNoCredentials(t, attacker.requests())
+	if err != nil {
+		t.Fatalf("foreign-host request: %v", err)
+	}
+	if got := identityCalls.Load(); got != 0 {
+		t.Errorf("identity token was fetched %d times for a foreign-host request, want 0", got)
+	}
+	if got := exchanges.Load(); got != 0 {
+		t.Errorf("token exchange ran %d times for a foreign-host request, want 0", got)
+	}
+
+	if err := client.Get(context.Background(), "/v1/models", nil, nil); err != nil {
+		t.Fatalf("same-origin request: %v", err)
+	}
+	if got := exchanges.Load(); got != 1 {
+		t.Fatalf("token exchange ran %d times at the configured base URL, want 1", got)
+	}
+	reqs := baseAPI.requests()
+	if len(reqs) != 1 || reqs[0].auth != "Bearer exchanged-tok" {
+		t.Fatalf("configured base URL got %+v, want one request with the exchanged bearer", reqs)
+	}
+	assertNoCredentials(t, attacker.requests())
+}
+
+// Same as above for a config-file profile with no base_url of its own.
+func TestIntegration_AbsoluteURLForeignHost_ProfileFederation(t *testing.T) {
+	unsetEnv(t, "ANTHROPIC_API_KEY")
+	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
+	isolateAuthEnv(t)
+
+	base, baseAPI, exchanges := federationServer(t)
+	attacker := &recordingHandler{}
+	attackerServer := httptest.NewServer(attacker)
+	defer attackerServer.Close()
+
+	dir := t.TempDir()
+	tokenPath := filepath.Join(dir, "identity-token")
+	os.WriteFile(tokenPath, []byte("secret-jwt"), 0600)
+	client := anthropic.NewClient(
+		option.WithMaxRetries(0),
+		option.WithBaseURL(base.URL),
+		option.WithConfig(&config.Config{
+			OrganizationID: "org-1",
+			AuthenticationInfo: &config.AuthenticationInfo{
+				Type:            config.AuthenticationTypeOIDCFederation,
+				CredentialsPath: filepath.Join(dir, "credentials", "creds.json"),
+				OIDCFederation: &config.OIDCFederation{
+					FederationRuleID: "rule-1",
+					IdentityToken:    &config.IdentityTokenConfig{Source: config.IdentityTokenSourceFile, Path: tokenPath},
+				},
+			},
+		}),
+	)
+
+	err := client.Post(context.Background(), attackerServer.URL+"/v1/collect", nil, nil)
+	assertNoCredentials(t, attacker.requests())
+	if err != nil {
+		t.Fatalf("foreign-host request: %v", err)
+	}
+	if got := exchanges.Load(); got != 0 {
+		t.Errorf("token exchange ran %d times for a foreign-host request, want 0", got)
+	}
+
+	if err := client.Get(context.Background(), "/v1/models", nil, nil); err != nil {
+		t.Fatalf("same-origin request: %v", err)
+	}
+	if got := exchanges.Load(); got != 1 {
+		t.Fatalf("token exchange ran %d times at the configured base URL, want 1", got)
+	}
+	if reqs := baseAPI.requests(); len(reqs) != 1 || reqs[0].auth != "Bearer exchanged-tok" {
+		t.Fatalf("configured base URL got %+v, want one request with the exchanged bearer", reqs)
+	}
+	assertNoCredentials(t, attacker.requests())
+}
+
+// recordingTransport records requests for origins no test server listens on.
+type recordingTransport struct {
+	recordingHandler
+}
+
+func (rt *recordingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	rec := httptest.NewRecorder()
+	rt.ServeHTTP(rec, r)
+	resp := rec.Result()
+	resp.Request = r
+	return resp, nil
+}
+
+func TestIntegration_AbsoluteURLSchemeDowngrade_NoCredentials(t *testing.T) {
+	unsetEnv(t, "ANTHROPIC_API_KEY")
+	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
+	isolateAuthEnv(t)
+
+	credPath := filepath.Join(t.TempDir(), "credentials.json")
+	os.WriteFile(credPath, []byte(`{"type":"oauth_token","access_token":"static-tok"}`), 0600)
+
+	transport := &recordingTransport{}
+	client := anthropic.NewClient(
+		option.WithHTTPClient(&http.Client{Transport: transport}),
+		option.WithBaseURL("https://api.example.test"),
+		option.WithConfig(&config.Config{
+			AuthenticationInfo: &config.AuthenticationInfo{
+				Type:            config.AuthenticationTypeUserOAuth,
+				CredentialsPath: credPath,
+				UserOAuth:       &config.UserOAuth{},
+			},
+		}),
+	)
+
+	if err := client.Get(context.Background(), "https://api.example.test/v1/models", nil, nil); err != nil {
+		t.Fatalf("same-origin absolute URL: %v", err)
+	}
+	if reqs := transport.requests(); len(reqs) != 1 || reqs[0].auth != "Bearer static-tok" {
+		t.Fatalf("same-origin absolute URL got %+v, want the bearer attached", reqs)
+	}
+
+	if err := client.Get(context.Background(), "http://api.example.test/v1/models", nil, nil); err != nil {
+		t.Fatalf("downgraded absolute URL: %v", err)
+	}
+	reqs := transport.requests()
+	if len(reqs) != 2 {
+		t.Fatalf("got %d requests, want 2", len(reqs))
+	}
+	if reqs[1].auth != "" {
+		t.Fatalf("bearer was attached to cleartext request %s: Authorization=%q", reqs[1].url, reqs[1].auth)
+	}
+}

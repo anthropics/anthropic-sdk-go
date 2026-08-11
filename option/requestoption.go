@@ -112,10 +112,8 @@ func IdentityTokenFile(path string) IdentityTokenFunc {
 // provider is called on each token exchange to fetch a fresh JWT.
 // opts.FederationRuleID and opts.OrganizationID are required.
 //
-// The auth middleware is constructed once and reused across requests, so the
-// [auth.TokenCache] built by [auth.WithAuthMiddleware] is shared — a fresh
-// access token is cached in memory and only re-exchanged when it enters the
-// refresh window.
+// The [auth.TokenCache] built by [auth.WithAuthMiddleware] is shared across
+// requests, so a token is only re-exchanged when it enters the refresh window.
 func WithFederationTokenProvider(provider IdentityTokenFunc, opts FederationOptions) RequestOption {
 	switch {
 	case provider == nil:
@@ -381,9 +379,7 @@ func WithRequestTimeout(dur time.Duration) RequestOption {
 	})
 }
 
-// withConfigClientKey identifies the HTTP transport a per-WithConfig
-// auth.Middleware should bind to. Mirrors auth.clientKey so the lazily-
-// constructed bearer middleware is cached per transport.
+// withConfigClientKey mirrors auth.clientKey: one auth.TokenCache per transport.
 type withConfigClientKey struct {
 	httpClient *http.Client
 	customDoer requestconfig.HTTPDoer
@@ -536,8 +532,8 @@ func withConfig(cfg *config.Config, quiet bool) RequestOption {
 		provider    auth.TokenProvider
 		resolveErr  error
 
-		mwMu sync.Mutex
-		mwBy = map[withConfigClientKey]auth.Middleware{}
+		cacheMu sync.Mutex
+		cacheBy = map[withConfigClientKey]*auth.TokenCache{}
 	)
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		// Non-credential config — applied unconditionally so a profile's
@@ -603,14 +599,14 @@ func withConfig(cfg *config.Config, quiet bool) RequestOption {
 				handler = rc.CustomHTTPDoer.Do
 			}
 			key := withConfigClientKey{httpClient: rc.HTTPClient, customDoer: rc.CustomHTTPDoer}
-			mwMu.Lock()
-			inner, ok := mwBy[key]
+			cacheMu.Lock()
+			cache, ok := cacheBy[key]
 			if !ok {
-				inner = auth.NewProviderMiddleware(provider, handler)
-				mwBy[key] = inner
+				cache = auth.NewTokenCache(provider, handler)
+				cacheBy[key] = cache
 			}
-			mwMu.Unlock()
-			return inner(req, next)
+			cacheMu.Unlock()
+			return auth.NewMiddleware(cache, rc)(req, next)
 		}
 		r.Middlewares = append(r.Middlewares, credCheck)
 		return nil

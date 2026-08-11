@@ -47,9 +47,8 @@ type refreshState struct {
 }
 
 // NewTokenCache returns a [TokenCache] that delegates to the given provider.
-// The handler is passed through to the provider on every fetch. The baseURL
-// is resolved per-call in [TokenCache.Token] so the cache picks up whatever
-// base URL the HTTP request is actually being sent to.
+// The handler is passed through to the provider on every fetch; the base URL
+// to exchange at is supplied per call to [TokenCache.Token].
 func NewTokenCache(provider TokenProvider, handler func(*http.Request) (*http.Response, error)) *TokenCache {
 	return &TokenCache{provider: provider, httpHandler: handler}
 }

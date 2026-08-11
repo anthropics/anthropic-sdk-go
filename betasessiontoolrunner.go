@@ -1369,13 +1369,15 @@ func sleepCtx(ctx context.Context, d time.Duration) {
 }
 
 // isFatal4xxStatus reports whether err is a client error that will not succeed
-// on retry. 408 (timeout) and 429 (rate-limited) are excluded so callers can
-// back off rather than tear down.
+// on retry. 408 (timeout), 409 (conflict) and 429 (rate-limited) are excluded
+// so callers back off rather than tear down, mirroring the statuses the core
+// client itself retries (internal/requestconfig). Keep in step with
+// lib/environments.isFatal4xx, the environment worker's copy.
 func isFatal4xxStatus(err error) bool {
 	var apiErr *Error
 	if !errors.As(err, &apiErr) {
 		return false
 	}
 	c := apiErr.StatusCode
-	return c >= 400 && c < 500 && c != 408 && c != 429
+	return c >= 400 && c < 500 && c != 408 && c != 409 && c != 429
 }

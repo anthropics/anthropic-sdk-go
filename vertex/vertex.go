@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 
+	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
@@ -69,8 +70,13 @@ func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes
 // Ordered this way, your middleware observes Anthropic-shaped requests
 // (POST /v1/messages with the model in the body) — identical to the
 // first-party API.
+//
+// A custom [sdkoption.WithHTTPClient] is honored when it is passed before this
+// option: its transport is wrapped with OAuth authorization and its other
+// settings (Timeout, CheckRedirect, Jar) are preserved. Passed after this
+// option, it replaces the Vertex-configured client entirely.
 func WithCredentials(ctx context.Context, region string, projectID string, creds *google.Credentials) sdkoption.RequestOption {
-	client, _, err := transport.NewHTTPClient(ctx, option.WithTokenSource(creds.TokenSource))
+	defaultClient, _, err := transport.NewHTTPClient(ctx, option.WithTokenSource(creds.TokenSource))
 	if err != nil {
 		panic(fmt.Errorf("failed to create HTTP client: %v", err))
 	}
@@ -89,12 +95,34 @@ func WithCredentials(ctx context.Context, region string, projectID string, creds
 	}
 
 	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+		client := defaultClient
+		if rc.HTTPClient != nil && rc.HTTPClient != http.DefaultClient {
+			client = authorizeClient(rc.HTTPClient, creds)
+		}
 		return rc.Apply(
 			sdkoption.WithBaseURL(baseURL),
 			sdkoption.WithMiddleware(middleware),
 			sdkoption.WithHTTPClient(client),
 		)
 	})
+}
+
+// authorizeClient returns a shallow copy of client whose transport attaches
+// OAuth authorization from creds; the caller's client is not mutated. Only
+// authorization is layered on — a user-supplied transport is otherwise used
+// as-is.
+func authorizeClient(client *http.Client, creds *google.Credentials) *http.Client {
+	base := client.Transport
+	if base == nil {
+		base = http.DefaultTransport
+	}
+	if authed, ok := base.(*oauth2.Transport); ok && authed.Source == creds.TokenSource {
+		// Already wrapped by an earlier apply of this option.
+		return client
+	}
+	wrapped := *client
+	wrapped.Transport = &oauth2.Transport{Base: base, Source: creds.TokenSource}
+	return &wrapped
 }
 
 func vertexMiddleware(region, projectID string) sdkoption.Middleware {

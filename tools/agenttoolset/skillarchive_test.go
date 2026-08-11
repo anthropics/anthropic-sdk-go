@@ -8,8 +8,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func zipBytes(t *testing.T, entries map[string]string) []byte {
@@ -284,6 +287,224 @@ func TestExtractTar_Pass1ByteBound(t *testing.T) {
 		t.Fatalf("expected pass-1 byte-budget error, got: %v", err)
 	}
 	requireDestAbsent(t, dest)
+}
+
+type tarMember struct {
+	hdr  tar.Header
+	body string
+}
+
+// rawTarBytes writes members in order as an uncompressed tar stream. A member
+// whose Typeflag is tar.TypeRegA is written as TypeReg and then patched back
+// to the legacy '\x00' flag on the wire, since tar.Writer refuses to emit it.
+func rawTarBytes(t *testing.T, members ...tarMember) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
+	var legacyOffsets []int
+	for _, m := range members {
+		hdr := m.hdr
+		hdr.Size = int64(len(m.body))
+		if hdr.Typeflag == tar.TypeRegA {
+			hdr.Typeflag = tar.TypeReg
+			require.NoError(t, tw.Flush())
+			legacyOffsets = append(legacyOffsets, buf.Len())
+		}
+		require.NoError(t, tw.WriteHeader(&hdr), "tar header %q", hdr.Name)
+		if len(m.body) > 0 {
+			_, err := tw.Write([]byte(m.body))
+			require.NoError(t, err, "tar write %q", hdr.Name)
+		}
+	}
+	require.NoError(t, tw.Close())
+	out := buf.Bytes()
+	for _, off := range legacyOffsets {
+		block := out[off : off+512]
+		block[156] = tar.TypeRegA
+		copy(block[148:156], "        ")
+		var sum int
+		for _, b := range block {
+			sum += int(b)
+		}
+		copy(block[148:156], fmt.Sprintf("%06o\x00 ", sum))
+	}
+	return out
+}
+
+type zipMember struct {
+	hdr  zip.FileHeader
+	body string
+}
+
+// Unix st_mode type bits as they appear in a zip entry's external attributes.
+const (
+	zipUnixHost = 3 << 8
+	sIFDIR      = 0o040000
+	sIFIFO      = 0o010000
+	sIFLNK      = 0o120000
+)
+
+func rawZipBytes(t *testing.T, members ...zipMember) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	for _, m := range members {
+		hdr := m.hdr
+		w, err := zw.CreateHeader(&hdr)
+		require.NoError(t, err, "zip header %q", hdr.Name)
+		_, err = w.Write([]byte(m.body))
+		require.NoError(t, err, "zip write %q", hdr.Name)
+	}
+	require.NoError(t, zw.Close())
+	return buf.Bytes()
+}
+
+// requireOnlyPlainEntries asserts that every entry under dir, checked with
+// lstat, is a regular file or a directory.
+func requireOnlyPlainEntries(t *testing.T, dir string) {
+	t.Helper()
+	require.NoError(t, filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
+		require.NoError(t, err)
+		require.True(t, d.Type().IsRegular() || d.IsDir(), "%s is neither a regular file nor a directory (%v)", p, d.Type())
+		return nil
+	}))
+}
+
+func TestExtractSkillArchive_SkipsSpecialMembers(t *testing.T) {
+	tests := []struct {
+		description string
+		data        func(t *testing.T) []byte
+		wantFiles   map[string]string
+		wantDirs    []string
+		wantModes   map[string]os.FileMode
+		wantAbsent  []string
+	}{
+		{
+			description: "tar symlink, hardlink, FIFO and device members are skipped and the rest extracted with the wrapper stripped",
+			data: func(t *testing.T) []byte {
+				return rawTarBytes(t,
+					tarMember{hdr: tar.Header{Name: "pdf/SKILL.md", Typeflag: tar.TypeReg}, body: "# PDF"},
+					tarMember{hdr: tar.Header{Name: "pdf/scripts/run.sh", Typeflag: tar.TypeReg, Mode: 0o755}, body: "#!/bin/sh"},
+					tarMember{hdr: tar.Header{Name: "pdf/old", Typeflag: tar.TypeRegA}, body: "legacy"},
+					tarMember{hdr: tar.Header{Name: "pdf/abs", Typeflag: tar.TypeSymlink, Linkname: "/etc/passwd"}},
+					tarMember{hdr: tar.Header{Name: "pdf/rel", Typeflag: tar.TypeSymlink, Linkname: "SKILL.md"}},
+					tarMember{hdr: tar.Header{Name: "pdf/hl", Typeflag: tar.TypeLink, Linkname: "pdf/SKILL.md"}},
+					tarMember{hdr: tar.Header{Name: "pdf/fifo", Typeflag: tar.TypeFifo}},
+					tarMember{hdr: tar.Header{Name: "pdf/dev", Typeflag: tar.TypeChar, Devmajor: 1, Devminor: 3}},
+				)
+			},
+			wantFiles:  map[string]string{"SKILL.md": "# PDF", "scripts/run.sh": "#!/bin/sh", "old": "legacy"},
+			wantModes:  map[string]os.FileMode{"scripts/run.sh": 0o755},
+			wantAbsent: []string{"abs", "rel", "hl", "fifo", "dev", "pdf"},
+		},
+		{
+			description: "a top-level tar symlink does not defeat wrapper stripping",
+			data: func(t *testing.T) []byte {
+				return rawTarBytes(t,
+					tarMember{hdr: tar.Header{Name: "link", Typeflag: tar.TypeSymlink, Linkname: "/tmp"}},
+					tarMember{hdr: tar.Header{Name: "pdf/SKILL.md", Typeflag: tar.TypeReg}, body: "# PDF"},
+				)
+			},
+			wantFiles:  map[string]string{"SKILL.md": "# PDF"},
+			wantAbsent: []string{"link", "pdf"},
+		},
+		{
+			description: "a git-archive style PAX global header is not written out as a file and does not defeat wrapper stripping",
+			data: func(t *testing.T) []byte {
+				return rawTarBytes(t,
+					tarMember{hdr: tar.Header{Name: "pax_global_header", Typeflag: tar.TypeXGlobalHeader, PAXRecords: map[string]string{"comment": "0123abcd"}, Format: tar.FormatPAX}},
+					tarMember{hdr: tar.Header{Name: "pdf/SKILL.md", Typeflag: tar.TypeReg}, body: "# PDF"},
+				)
+			},
+			wantFiles:  map[string]string{"SKILL.md": "# PDF"},
+			wantAbsent: []string{"pax_global_header", "pdf"},
+		},
+		{
+			description: "a tar symlink named ../x is skipped and nothing named x appears beside dest",
+			data: func(t *testing.T) []byte {
+				return rawTarBytes(t,
+					tarMember{hdr: tar.Header{Name: "../x", Typeflag: tar.TypeSymlink, Linkname: "/etc"}},
+					tarMember{hdr: tar.Header{Name: "pdf/SKILL.md", Typeflag: tar.TypeReg}, body: "# PDF"},
+				)
+			},
+			wantFiles:  map[string]string{"SKILL.md": "# PDF"},
+			wantAbsent: []string{"x", "../x", "pdf"},
+		},
+		{
+			description: "zip Unix-host symlink and FIFO entries are skipped, not written out as regular files",
+			data: func(t *testing.T) []byte {
+				return rawZipBytes(t,
+					zipMember{hdr: zip.FileHeader{Name: "pdf/SKILL.md"}, body: "# PDF"},
+					zipMember{hdr: zip.FileHeader{Name: "pdf/lnk", CreatorVersion: zipUnixHost, ExternalAttrs: (sIFLNK | 0o777) << 16}, body: "/etc/passwd"},
+					zipMember{hdr: zip.FileHeader{Name: "pdf/fifo", CreatorVersion: zipUnixHost, ExternalAttrs: (sIFIFO | 0o644) << 16}},
+				)
+			},
+			wantFiles:  map[string]string{"SKILL.md": "# PDF"},
+			wantAbsent: []string{"lnk", "fifo", "pdf"},
+		},
+		{
+			description: "zip symlink type bits on a non-Unix-host entry are not a mode, so the entry is a regular file",
+			data: func(t *testing.T) []byte {
+				return rawZipBytes(t,
+					zipMember{hdr: zip.FileHeader{Name: "pdf/SKILL.md"}, body: "# PDF"},
+					zipMember{hdr: zip.FileHeader{Name: "pdf/lnk", CreatorVersion: 0, ExternalAttrs: (sIFLNK | 0o777) << 16}, body: "/etc/passwd"},
+				)
+			},
+			wantFiles:  map[string]string{"SKILL.md": "# PDF", "lnk": "/etc/passwd"},
+			wantAbsent: []string{"pdf"},
+		},
+		{
+			description: "zip Unix-host entries with zero type bits are files and S_IFDIR without a trailing slash is a directory",
+			data: func(t *testing.T) []byte {
+				return rawZipBytes(t,
+					zipMember{hdr: zip.FileHeader{Name: "pdf/SKILL.md", CreatorVersion: zipUnixHost, ExternalAttrs: 0o600 << 16}, body: "# PDF"},
+					zipMember{hdr: zip.FileHeader{Name: "pdf/run.sh", CreatorVersion: zipUnixHost, ExternalAttrs: 0o755 << 16}, body: "#!/bin/sh"},
+					zipMember{hdr: zip.FileHeader{Name: "pdf/sub", CreatorVersion: zipUnixHost, ExternalAttrs: (sIFDIR | 0o755) << 16}},
+				)
+			},
+			wantFiles:  map[string]string{"SKILL.md": "# PDF", "run.sh": "#!/bin/sh"},
+			wantModes:  map[string]os.FileMode{"run.sh": 0o755},
+			wantDirs:   []string{"sub"},
+			wantAbsent: []string{"pdf"},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			parent := t.TempDir()
+			dest := filepath.Join(parent, "s")
+			require.NoError(t, extractArchiveBytes(t, tc.data(t), dest))
+
+			for rel, want := range tc.wantFiles {
+				fi, err := os.Lstat(filepath.Join(dest, rel))
+				require.NoError(t, err)
+				require.True(t, fi.Mode().IsRegular(), "%s must be a regular file, got %v", rel, fi.Mode())
+				got, err := os.ReadFile(filepath.Join(dest, rel))
+				require.NoError(t, err)
+				require.Equal(t, want, string(got), rel)
+			}
+			if runtime.GOOS != "windows" {
+				for rel, want := range tc.wantModes {
+					fi, err := os.Lstat(filepath.Join(dest, rel))
+					require.NoError(t, err)
+					require.Equal(t, want, fi.Mode().Perm(), rel)
+				}
+			}
+			for _, rel := range tc.wantDirs {
+				fi, err := os.Lstat(filepath.Join(dest, rel))
+				require.NoError(t, err)
+				require.True(t, fi.IsDir(), "%s must be a directory, got %v", rel, fi.Mode())
+			}
+			for _, rel := range tc.wantAbsent {
+				_, err := os.Lstat(filepath.Join(dest, rel))
+				require.ErrorIs(t, err, os.ErrNotExist, "%s must not exist", rel)
+			}
+			requireOnlyPlainEntries(t, dest)
+			siblings, err := os.ReadDir(parent)
+			require.NoError(t, err)
+			require.Len(t, siblings, 1, "nothing may be created outside dest")
+		})
+	}
 }
 
 func TestExtractSkillArchive_ConfinesTraversal(t *testing.T) {

@@ -677,6 +677,32 @@ func TestSessionToolRunner_SendRetriesOnTransientError(t *testing.T) {
 	require.GreaterOrEqual(t, attempts.Load(), int32(2))
 }
 
+func TestIsFatal4xxStatus(t *testing.T) {
+	tests := []struct {
+		description string
+		err         error
+		want        bool
+	}{
+		{"400 is fatal because the request body cannot succeed on retry", &Error{StatusCode: 400}, true},
+		{"401 is fatal because a bad credential never starts working", &Error{StatusCode: 401}, true},
+		{"403 is fatal because a forbidden caller stays forbidden", &Error{StatusCode: 403}, true},
+		{"404 is fatal because a missing session stays missing", &Error{StatusCode: 404}, true},
+		{"408 is excluded because timeouts deserve backoff, not teardown", &Error{StatusCode: 408}, false},
+		{"409 is excluded because a conflict is retried by the core client too", &Error{StatusCode: 409}, false},
+		{"412 stays fatal", &Error{StatusCode: 412}, true},
+		{"422 is fatal because an unprocessable request cannot succeed on retry", &Error{StatusCode: 422}, true},
+		{"429 is excluded because rate-limits deserve backoff, not teardown", &Error{StatusCode: 429}, false},
+		{"500 is excluded because server-side errors retry, not abort", &Error{StatusCode: 500}, false},
+		{"non-api error is never classified as a permanent client error", fmt.Errorf("409 conflict"), false},
+		{"nil error is not fatal", nil, false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			require.Equal(t, tc.want, isFatal4xxStatus(tc.err))
+		})
+	}
+}
+
 // TestToToolResultContent_BlockPassthrough verifies that block kinds shared by
 // both unions round-trip natively, and block kinds the destination union
 // cannot represent fall back to a text block holding the raw JSON.

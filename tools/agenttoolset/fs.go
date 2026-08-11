@@ -127,11 +127,9 @@ func execRead(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 	if endLine := int(in.ViewRange[1]); endLine > 0 && endLine < end {
 		end = endLine
 	}
-	// Guard against an inverted range (end_line < start_line): slicing
-	// lines[start:end] with end < start panics, and a confused or
-	// prompt-injected model can crash the whole runner with one tool call.
+	// An inverted range selects nothing; without this lines[start:end] panics.
 	if end < start {
-		return errorf("read: view_range end line %d is before start line %d", in.ViewRange[1], in.ViewRange[0])
+		return "", false
 	}
 	return strings.Join(lines[start:end], "\n"), false
 }

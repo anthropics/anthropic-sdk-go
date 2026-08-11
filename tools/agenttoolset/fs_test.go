@@ -3,8 +3,10 @@ package agenttoolset
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -59,9 +61,24 @@ func TestExecRead(t *testing.T) {
 			wantErr:     true,
 		},
 		{
-			description: "inverted view_range is rejected instead of panicking the runner with a slice-bounds error",
+			description: "inverted view_range selects nothing and returns empty content rather than an error or a slice-bounds panic",
 			input:       map[string]any{"file_path": "a.txt", "view_range": []int{3, 1}},
-			wantErr:     true,
+			want:        "",
+		},
+		{
+			description: "empty view_range reads the whole file like an omitted one",
+			input:       map[string]any{"file_path": "a.txt", "view_range": []int{}},
+			want:        "line1\nline2\nline3",
+		},
+		{
+			description: "end_line of 0 reads through to the end of the file",
+			input:       map[string]any{"file_path": "a.txt", "view_range": []int{2, 0}},
+			want:        "line2\nline3",
+		},
+		{
+			description: "start_line past the end of the file returns empty content",
+			input:       map[string]any{"file_path": "a.txt", "view_range": []int{10, 12}},
+			want:        "",
 		},
 	}
 
@@ -129,6 +146,103 @@ func TestExecWrite(t *testing.T) {
 		data, _ := os.ReadFile(filepath.Join(work, "ow.txt"))
 		require.Equal(t, "second", string(data))
 	})
+}
+
+func TestExecReadRejectsSymlinkLoop(t *testing.T) {
+	work, _ := symlinkLoopFixture(t)
+	tool := BetaReadTool(&AgentToolContext{Workdir: work})
+
+	out, isErr := runTool(t, tool, mustJSON(t, map[string]any{"file_path": "loop_a"}))
+	require.True(t, isErr)
+	require.Equal(t, `read: path "loop_a": too many levels of symbolic links`, out)
+
+	for _, p := range []string{"loop_a/../evil_link", "L"} {
+		out, isErr := runTool(t, tool, mustJSON(t, map[string]any{"file_path": p}))
+		require.True(t, isErr, "file_path=%q output=%q", p, out)
+		require.NotContains(t, out, "SECRET", "file_path=%q", p)
+	}
+}
+
+func TestExecWriteRejectsSymlinkLoop(t *testing.T) {
+	work, _ := symlinkLoopFixture(t)
+	before, err := os.ReadDir(work)
+	require.NoError(t, err)
+
+	out, isErr := runTool(t, BetaWriteTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{
+		"file_path": "loop_a/child.txt", "content": "x",
+	}))
+	require.True(t, isErr)
+	require.Equal(t, `write: path "loop_a/child.txt": too many levels of symbolic links`, out)
+
+	after, err := os.ReadDir(work)
+	require.NoError(t, err)
+	names := func(es []os.DirEntry) []string {
+		out := make([]string, len(es))
+		for i, e := range es {
+			out[i] = e.Name()
+		}
+		return out
+	}
+	require.Equal(t, names(before), names(after), "a rejected write must not create anything in the workdir")
+}
+
+func TestExecWriteThroughDanglingInsideSymlink(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.Symlink(filepath.Join("newdir", "f.txt"), filepath.Join(work, "d")))
+
+	out, isErr := runTool(t, BetaWriteTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{
+		"file_path": "d", "content": "via-link",
+	}))
+	require.False(t, isErr, "output=%q", out)
+	data, err := os.ReadFile(filepath.Join(work, "newdir", "f.txt"))
+	require.NoError(t, err)
+	require.Equal(t, "via-link", string(data))
+}
+
+func TestExecReadFollowsSymlinkChainInsideWorkdir(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(work, "real.txt"), []byte("target"), 0o644))
+	require.NoError(t, os.Symlink("real.txt", filepath.Join(work, "c2")))
+	require.NoError(t, os.Symlink("c2", filepath.Join(work, "c1")))
+	require.NoError(t, os.Symlink("c1", filepath.Join(work, "c0")))
+
+	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{"file_path": "c0"}))
+	require.False(t, isErr, "output=%q", out)
+	require.Equal(t, "target", out)
+}
+
+// Only symlink reads count against the resolver's hop cap, so a new file
+// under more missing directories than the cap allows still resolves.
+func TestExecWriteDeepMissingPathIsNotASymlinkLoop(t *testing.T) {
+	work := t.TempDir()
+	parts := make([]string, 0, 51)
+	for i := range 50 {
+		parts = append(parts, fmt.Sprintf("d%d", i))
+	}
+	parts = append(parts, "f.txt")
+	rel := filepath.Join(parts...)
+
+	out, isErr := runTool(t, BetaWriteTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{
+		"file_path": rel, "content": "deep",
+	}))
+	require.False(t, isErr, "output=%q", out)
+	data, err := os.ReadFile(filepath.Join(work, rel))
+	require.NoError(t, err)
+	require.Equal(t, "deep", string(data))
+}
+
+func TestExecReadUnderUnreadableDirReportsPermissionDenied(t *testing.T) {
+	if runtime.GOOS == "windows" || os.Geteuid() == 0 {
+		t.Skip("directory permission bits are not enforced for this user")
+	}
+	work := t.TempDir()
+	noperm := filepath.Join(work, "noperm")
+	require.NoError(t, os.Mkdir(noperm, 0o000))
+	t.Cleanup(func() { _ = os.Chmod(noperm, 0o755) })
+
+	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{"file_path": "noperm/x"}))
+	require.True(t, isErr)
+	require.Equal(t, `read: path "noperm/x": permission denied`, out)
 }
 
 func TestExecEdit(t *testing.T) {

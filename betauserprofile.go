@@ -150,8 +150,8 @@ type BetaUserProfile struct {
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// Platform's own identifier for this user. Not enforced unique.
 	ExternalID string `json:"external_id" api:"nullable"`
-	// Display name of the entity this profile represents. For `resold` this is the
-	// resold-to company's name.
+	// Real-world name of the entity this profile represents (company or individual).
+	// For `resold` this is the resold-to company's name.
 	Name string `json:"name" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -257,9 +257,9 @@ type BetaUserProfileNewParams struct {
 	// Platform's own identifier for this user. Not enforced unique. Maximum 255
 	// characters.
 	ExternalID param.Opt[string] `json:"external_id,omitzero"`
-	// Display name of the entity this profile represents. Required when relationship
-	// is `resold` (the resold-to company's name); optional otherwise. Maximum 255
-	// characters.
+	// Optional for all profiles. Real-world name of the entity this profile represents
+	// (company or individual); for `resold` profiles, the resold-to company's name
+	// where known. Maximum 255 characters.
 	Name param.Opt[string] `json:"name,omitzero"`
 	// Free-form key-value data to attach to this user profile. Maximum 16 keys, with
 	// keys up to 64 characters and values up to 512 characters. Values must be

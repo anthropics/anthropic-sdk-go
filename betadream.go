@@ -419,7 +419,7 @@ func (r *BetaDreamMemoryStoreInputParam) UnmarshalJSON(data []byte) error {
 // Model identifier and configuration applied to every pipeline stage. Same wire
 // shape as the Agents API ModelConfig.
 type BetaDreamModelConfig struct {
-	// Model identifier, e.g. "claude-opus-4-7". 1-256 characters.
+	// Model identifier, e.g. "claude-opus-5". 1-256 characters.
 	ID string `json:"id" api:"required"`
 	// Inference speed mode. `fast` provides significantly faster output token
 	// generation at premium pricing. Not all models support `fast`; invalid
@@ -456,7 +456,7 @@ const (
 //
 // The property ID is required.
 type BetaDreamModelConfigParam struct {
-	// Model identifier, e.g. "claude-opus-4-7". 1-256 characters.
+	// Model identifier, e.g. "claude-opus-5". 1-256 characters.
 	ID string `json:"id" api:"required"`
 	// Inference speed mode. `fast` provides significantly faster output token
 	// generation at premium pricing. Not all models support `fast`; invalid

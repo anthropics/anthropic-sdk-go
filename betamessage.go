@@ -3075,12 +3075,6 @@ func NewBetaContainerUploadBlock(fileID string) BetaContentBlockParamUnion {
 	return BetaContentBlockParamUnion{OfContainerUpload: &containerUpload}
 }
 
-func NewBetaMidConvSystemBlock(content []BetaMidConversationSystemBlockParamContentUnion) BetaContentBlockParamUnion {
-	var midConvSystem BetaMidConversationSystemBlockParam
-	midConvSystem.Content = content
-	return BetaContentBlockParamUnion{OfMidConvSystem: &midConvSystem}
-}
-
 func NewBetaToolAdditionBlock[
 	T BetaToolChangeToolReferenceParam | BetaToolChangeMCPToolReferenceParam | BetaToolChangeMCPToolsetReferenceParam,
 ](tool T) BetaContentBlockParamUnion {
@@ -3142,7 +3136,6 @@ type BetaContentBlockParamUnion struct {
 	OfMCPToolResult                     *BetaRequestMCPToolResultBlockParam              `json:",omitzero,inline"`
 	OfContainerUpload                   *BetaContainerUploadBlockParam                   `json:",omitzero,inline"`
 	OfCompaction                        *BetaCompactionBlockParam                        `json:",omitzero,inline"`
-	OfMidConvSystem                     *BetaMidConversationSystemBlockParam             `json:",omitzero,inline"`
 	OfToolAddition                      *BetaRequestToolAdditionBlockParam               `json:",omitzero,inline"`
 	OfToolRemoval                       *BetaRequestToolRemovalBlockParam                `json:",omitzero,inline"`
 	OfFallback                          *BetaFallbackBlockParam                          `json:",omitzero,inline"`
@@ -3170,7 +3163,6 @@ func (u BetaContentBlockParamUnion) MarshalJSON() ([]byte, error) {
 		u.OfMCPToolResult,
 		u.OfContainerUpload,
 		u.OfCompaction,
-		u.OfMidConvSystem,
 		u.OfToolAddition,
 		u.OfToolRemoval,
 		u.OfFallback)
@@ -3220,8 +3212,6 @@ func (u *BetaContentBlockParamUnion) asAny() any {
 		return u.OfContainerUpload
 	} else if !param.IsOmitted(u.OfCompaction) {
 		return u.OfCompaction
-	} else if !param.IsOmitted(u.OfMidConvSystem) {
-		return u.OfMidConvSystem
 	} else if !param.IsOmitted(u.OfToolAddition) {
 		return u.OfToolAddition
 	} else if !param.IsOmitted(u.OfToolRemoval) {
@@ -3362,8 +3352,6 @@ func (u BetaContentBlockParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfCompaction; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfMidConvSystem; vt != nil {
-		return (*string)(&vt.Type)
 	} else if vt := u.OfToolAddition; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfToolRemoval; vt != nil {
@@ -3479,8 +3467,6 @@ func (u BetaContentBlockParamUnion) GetCacheControl() *BetaCacheControlEphemeral
 	} else if vt := u.OfContainerUpload; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfCompaction; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfMidConvSystem; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfToolAddition; vt != nil {
 		return &vt.CacheControl
@@ -3655,8 +3641,6 @@ func (u BetaContentBlockParamUnion) GetContent() (res betaContentBlockParamUnion
 		res.any = vt.Content.asAny()
 	} else if vt := u.OfCompaction; vt != nil && vt.Content.Valid() {
 		res.any = &vt.Content.Value
-	} else if vt := u.OfMidConvSystem; vt != nil {
-		res.any = &vt.Content
 	}
 	return
 }
@@ -3675,8 +3659,7 @@ func (u BetaContentBlockParamUnion) GetContent() (res betaContentBlockParamUnion
 // [*BetaTextEditorCodeExecutionCreateResultBlockParam],
 // [*BetaTextEditorCodeExecutionStrReplaceResultBlockParam],
 // [*BetaToolSearchToolResultErrorParam],
-// [*BetaToolSearchToolSearchResultBlockParam], [*string],
-// [\*[]BetaMidConversationSystemBlockParamContentUnion]
+// [*BetaToolSearchToolSearchResultBlockParam], [*string]
 type betaContentBlockParamUnionContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -3702,7 +3685,6 @@ type betaContentBlockParamUnionContent struct{ any }
 //	case *anthropic.BetaToolSearchToolResultErrorParam:
 //	case *anthropic.BetaToolSearchToolSearchResultBlockParam:
 //	case *string:
-//	case *[]anthropic.BetaMidConversationSystemBlockParamContentUnion:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -4142,7 +4124,6 @@ func init() {
 		apijson.Discriminator[BetaRequestMCPToolResultBlockParam]("mcp_tool_result"),
 		apijson.Discriminator[BetaContainerUploadBlockParam]("container_upload"),
 		apijson.Discriminator[BetaCompactionBlockParam]("compaction"),
-		apijson.Discriminator[BetaMidConversationSystemBlockParam]("mid_conv_system"),
 		apijson.Discriminator[BetaRequestToolAdditionBlockParam]("tool_addition"),
 		apijson.Discriminator[BetaRequestToolRemovalBlockParam]("tool_removal"),
 		apijson.Discriminator[BetaFallbackBlockParam]("fallback"),
@@ -6405,169 +6386,6 @@ func (r BetaMetadataParam) MarshalJSON() (data []byte, err error) {
 }
 func (r *BetaMetadataParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-// System instructions that appear mid-conversation.
-//
-// Use this block to provide or update system-level instructions at a specific
-// point in the conversation, rather than only via the top-level `system`
-// parameter.
-//
-// The properties Content, Type are required.
-type BetaMidConversationSystemBlockParam struct {
-	// System instruction text blocks.
-	Content []BetaMidConversationSystemBlockParamContentUnion `json:"content,omitzero" api:"required"`
-	// Create a cache control breakpoint at this content block.
-	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// This field can be elided, and will marshal its zero value as "mid_conv_system".
-	Type constant.MidConvSystem `json:"type" default:"mid_conv_system"`
-	paramObj
-}
-
-func (r BetaMidConversationSystemBlockParam) MarshalJSON() (data []byte, err error) {
-	type shadow BetaMidConversationSystemBlockParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *BetaMidConversationSystemBlockParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Only one field can be non-zero.
-//
-// Use [param.IsOmitted] to confirm if a field is set.
-type BetaMidConversationSystemBlockParamContentUnion struct {
-	OfText         *BetaTextBlockParam                `json:",omitzero,inline"`
-	OfToolAddition *BetaRequestToolAdditionBlockParam `json:",omitzero,inline"`
-	OfToolRemoval  *BetaRequestToolRemovalBlockParam  `json:",omitzero,inline"`
-	paramUnion
-}
-
-func (u BetaMidConversationSystemBlockParamContentUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfText, u.OfToolAddition, u.OfToolRemoval)
-}
-func (u *BetaMidConversationSystemBlockParamContentUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, u)
-}
-
-func (u *BetaMidConversationSystemBlockParamContentUnion) asAny() any {
-	if !param.IsOmitted(u.OfText) {
-		return u.OfText
-	} else if !param.IsOmitted(u.OfToolAddition) {
-		return u.OfToolAddition
-	} else if !param.IsOmitted(u.OfToolRemoval) {
-		return u.OfToolRemoval
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaMidConversationSystemBlockParamContentUnion) GetText() *string {
-	if vt := u.OfText; vt != nil {
-		return &vt.Text
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaMidConversationSystemBlockParamContentUnion) GetCitations() []BetaTextCitationParamUnion {
-	if vt := u.OfText; vt != nil {
-		return vt.Citations
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u BetaMidConversationSystemBlockParamContentUnion) GetType() *string {
-	if vt := u.OfText; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfToolAddition; vt != nil {
-		return (*string)(&vt.Type)
-	} else if vt := u.OfToolRemoval; vt != nil {
-		return (*string)(&vt.Type)
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's CacheControl property, if present.
-func (u BetaMidConversationSystemBlockParamContentUnion) GetCacheControl() *BetaCacheControlEphemeralParam {
-	if vt := u.OfText; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfToolAddition; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfToolRemoval; vt != nil {
-		return &vt.CacheControl
-	}
-	return nil
-}
-
-// Returns a subunion which exports methods to access subproperties
-//
-// Or use AsAny() to get the underlying value
-func (u BetaMidConversationSystemBlockParamContentUnion) GetTool() (res betaMidConversationSystemBlockParamContentUnionTool) {
-	if vt := u.OfToolAddition; vt != nil {
-		res.any = vt.Tool.asAny()
-	} else if vt := u.OfToolRemoval; vt != nil {
-		res.any = vt.Tool.asAny()
-	}
-	return
-}
-
-// Can have the runtime types [*BetaToolChangeToolReferenceParam],
-// [*BetaToolChangeMCPToolReferenceParam],
-// [*BetaToolChangeMCPToolsetReferenceParam]
-type betaMidConversationSystemBlockParamContentUnionTool struct{ any }
-
-// Use the following switch statement to get the type of the union:
-//
-//	switch u.AsAny().(type) {
-//	case *anthropic.BetaToolChangeToolReferenceParam:
-//	case *anthropic.BetaToolChangeMCPToolReferenceParam:
-//	case *anthropic.BetaToolChangeMCPToolsetReferenceParam:
-//	default:
-//	    fmt.Errorf("not present")
-//	}
-func (u betaMidConversationSystemBlockParamContentUnionTool) AsAny() any { return u.any }
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u betaMidConversationSystemBlockParamContentUnionTool) GetName() *string {
-	switch vt := u.any.(type) {
-	case *BetaRequestToolAdditionBlockToolUnionParam:
-		return vt.GetName()
-	case *BetaRequestToolRemovalBlockToolUnionParam:
-		return vt.GetName()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u betaMidConversationSystemBlockParamContentUnionTool) GetType() *string {
-	switch vt := u.any.(type) {
-	case *BetaRequestToolAdditionBlockToolUnionParam:
-		return vt.GetType()
-	case *BetaRequestToolRemovalBlockToolUnionParam:
-		return vt.GetType()
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
-func (u betaMidConversationSystemBlockParamContentUnionTool) GetServerName() *string {
-	switch vt := u.any.(type) {
-	case *BetaRequestToolAdditionBlockToolUnionParam:
-		return vt.GetServerName()
-	case *BetaRequestToolRemovalBlockToolUnionParam:
-		return vt.GetServerName()
-	}
-	return nil
-}
-
-func init() {
-	apijson.RegisterUnion[BetaMidConversationSystemBlockParamContentUnion](
-		"type",
-		apijson.Discriminator[BetaTextBlockParam]("text"),
-		apijson.Discriminator[BetaRequestToolAdditionBlockParam]("tool_addition"),
-		apijson.Discriminator[BetaRequestToolRemovalBlockParam]("tool_removal"),
-	)
 }
 
 type BetaOutputConfigParam struct {

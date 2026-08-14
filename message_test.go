@@ -47,7 +47,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_6,
+		Model: anthropic.ModelClaudeOpus5,
 		CacheControl: anthropic.CacheControlEphemeralParam{
 			TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 		},
@@ -162,7 +162,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_6,
+		Model: anthropic.ModelClaudeOpus5,
 		CacheControl: anthropic.CacheControlEphemeralParam{
 			TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 		},

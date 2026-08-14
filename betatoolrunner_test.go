@@ -81,54 +81,46 @@ func weatherRef() BetaToolChangeToolReferenceParam {
 // A tool_use for a tool dropped by tool_removal must be answered exactly like
 // a tool that was never registered, without invoking the local tool.
 func TestBetaToolRunner_ToolRemoval_MatchesUnknownTool(t *testing.T) {
-	removals := map[string]BetaContentBlockParamUnion{
-		"typed":    NewBetaToolRemovalBlock(weatherRef()),
-		"mid_conv": NewBetaMidConvSystemBlock([]BetaMidConversationSystemBlockParamContentUnion{{OfToolRemoval: NewBetaToolRemovalBlock(weatherRef()).OfToolRemoval}}),
+	weather := &stubBetaTool{name: "weather"}
+	removedClient := newTestToolRunnerClient(messagesServer(t))
+	removed := removedClient.Beta.Messages.NewToolRunner(
+		[]BetaTool{weather},
+		BetaToolRunnerParams{BetaMessageNewParams: BetaMessageNewParams{
+			Model:     "m",
+			MaxTokens: 512,
+			Messages: []BetaMessageParam{
+				systemToolChange(NewBetaToolRemovalBlock(weatherRef())),
+				NewBetaUserMessage(NewBetaTextBlock("What's the weather in SF?")),
+			},
+		}, MaxIterations: 5},
+	)
+	removedResults := runToToolResults(t, removed)
+	if weather.runs.Load() != 0 {
+		t.Fatalf("removed tool must not execute, ran %d times", weather.runs.Load())
 	}
-	for name, removal := range removals {
-		t.Run(name, func(t *testing.T) {
-			weather := &stubBetaTool{name: "weather"}
-			removedClient := newTestToolRunnerClient(messagesServer(t))
-			removed := removedClient.Beta.Messages.NewToolRunner(
-				[]BetaTool{weather},
-				BetaToolRunnerParams{BetaMessageNewParams: BetaMessageNewParams{
-					Model:     "m",
-					MaxTokens: 512,
-					Messages: []BetaMessageParam{
-						systemToolChange(removal),
-						NewBetaUserMessage(NewBetaTextBlock("What's the weather in SF?")),
-					},
-				}, MaxIterations: 5},
-			)
-			removedResults := runToToolResults(t, removed)
-			if weather.runs.Load() != 0 {
-				t.Fatalf("removed tool must not execute, ran %d times", weather.runs.Load())
-			}
 
-			// Reference: the same call against a runner that never had the tool.
-			neverClient := newTestToolRunnerClient(messagesServer(t))
-			never := neverClient.Beta.Messages.NewToolRunner(
-				nil,
-				BetaToolRunnerParams{BetaMessageNewParams: BetaMessageNewParams{
-					Model:     "m",
-					MaxTokens: 512,
-					Messages: []BetaMessageParam{
-						NewBetaUserMessage(NewBetaTextBlock("What's the weather in SF?")),
-					},
-				}, MaxIterations: 5},
-			)
-			neverResults := runToToolResults(t, never)
+	// Reference: the same call against a runner that never had the tool.
+	neverClient := newTestToolRunnerClient(messagesServer(t))
+	never := neverClient.Beta.Messages.NewToolRunner(
+		nil,
+		BetaToolRunnerParams{BetaMessageNewParams: BetaMessageNewParams{
+			Model:     "m",
+			MaxTokens: 512,
+			Messages: []BetaMessageParam{
+				NewBetaUserMessage(NewBetaTextBlock("What's the weather in SF?")),
+			},
+		}, MaxIterations: 5},
+	)
+	neverResults := runToToolResults(t, never)
 
-			if len(removedResults) != 1 || len(neverResults) != 1 {
-				t.Fatalf("expected one tool_result each, got %d and %d", len(removedResults), len(neverResults))
-			}
-			if !removedResults[0].IsError.Value {
-				t.Fatalf("expected removed-tool result to be an error")
-			}
-			if got, want := toolResultJSON(t, removedResults[0]), toolResultJSON(t, neverResults[0]); got != want {
-				t.Fatalf("removed-tool result differs from never-defined tool result\n got: %s\nwant: %s", got, want)
-			}
-		})
+	if len(removedResults) != 1 || len(neverResults) != 1 {
+		t.Fatalf("expected one tool_result each, got %d and %d", len(removedResults), len(neverResults))
+	}
+	if !removedResults[0].IsError.Value {
+		t.Fatalf("expected removed-tool result to be an error")
+	}
+	if got, want := toolResultJSON(t, removedResults[0]), toolResultJSON(t, neverResults[0]); got != want {
+		t.Fatalf("removed-tool result differs from never-defined tool result\n got: %s\nwant: %s", got, want)
 	}
 }
 

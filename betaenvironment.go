@@ -344,7 +344,7 @@ type BetaEnvironment struct {
 	Config BetaEnvironmentConfigUnion `json:"config" api:"required"`
 	// RFC 3339 timestamp when environment was created
 	CreatedAt string `json:"created_at" api:"required"`
-	// User-provided description for the environment
+	// User-provided description for the environment; null when unset
 	Description string `json:"description" api:"required"`
 	// User-provided metadata key-value pairs
 	Metadata map[string]string `json:"metadata" api:"required"`

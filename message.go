@@ -2057,12 +2057,6 @@ func NewContainerUploadBlock(fileID string) ContentBlockParamUnion {
 	return ContentBlockParamUnion{OfContainerUpload: &containerUpload}
 }
 
-func NewMidConvSystemBlock(content []TextBlockParam) ContentBlockParamUnion {
-	var midConvSystem MidConversationSystemBlockParam
-	midConvSystem.Content = content
-	return ContentBlockParamUnion{OfMidConvSystem: &midConvSystem}
-}
-
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
@@ -2083,7 +2077,6 @@ type ContentBlockParamUnion struct {
 	OfTextEditorCodeExecutionToolResult *TextEditorCodeExecutionToolResultBlockParam `json:",omitzero,inline"`
 	OfToolSearchToolResult              *ToolSearchToolResultBlockParam              `json:",omitzero,inline"`
 	OfContainerUpload                   *ContainerUploadBlockParam                   `json:",omitzero,inline"`
-	OfMidConvSystem                     *MidConversationSystemBlockParam             `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -2103,8 +2096,7 @@ func (u ContentBlockParamUnion) MarshalJSON() ([]byte, error) {
 		u.OfBashCodeExecutionToolResult,
 		u.OfTextEditorCodeExecutionToolResult,
 		u.OfToolSearchToolResult,
-		u.OfContainerUpload,
-		u.OfMidConvSystem)
+		u.OfContainerUpload)
 }
 func (u *ContentBlockParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -2143,8 +2135,6 @@ func (u *ContentBlockParamUnion) asAny() any {
 		return u.OfToolSearchToolResult
 	} else if !param.IsOmitted(u.OfContainerUpload) {
 		return u.OfContainerUpload
-	} else if !param.IsOmitted(u.OfMidConvSystem) {
-		return u.OfMidConvSystem
 	}
 	return nil
 }
@@ -2239,8 +2229,6 @@ func (u ContentBlockParamUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfContainerUpload; vt != nil {
 		return (*string)(&vt.Type)
-	} else if vt := u.OfMidConvSystem; vt != nil {
-		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -2324,8 +2312,6 @@ func (u ContentBlockParamUnion) GetCacheControl() *CacheControlEphemeralParam {
 	} else if vt := u.OfToolSearchToolResult; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfContainerUpload; vt != nil {
-		return &vt.CacheControl
-	} else if vt := u.OfMidConvSystem; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil
@@ -2474,8 +2460,6 @@ func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent)
 		res.any = vt.Content.asAny()
 	} else if vt := u.OfToolSearchToolResult; vt != nil {
 		res.any = vt.Content.asAny()
-	} else if vt := u.OfMidConvSystem; vt != nil {
-		res.any = &vt.Content
 	}
 	return
 }
@@ -2881,7 +2865,6 @@ func init() {
 		apijson.Discriminator[TextEditorCodeExecutionToolResultBlockParam]("text_editor_code_execution_tool_result"),
 		apijson.Discriminator[ToolSearchToolResultBlockParam]("tool_search_tool_result"),
 		apijson.Discriminator[ContainerUploadBlockParam]("container_upload"),
-		apijson.Discriminator[MidConversationSystemBlockParam]("mid_conv_system"),
 	)
 }
 
@@ -4248,31 +4231,6 @@ func (r MetadataParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *MetadataParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// System instructions that appear mid-conversation.
-//
-// Use this block to provide or update system-level instructions at a specific
-// point in the conversation, rather than only via the top-level `system`
-// parameter.
-//
-// The properties Content, Type are required.
-type MidConversationSystemBlockParam struct {
-	// System instruction text blocks.
-	Content []TextBlockParam `json:"content,omitzero" api:"required"`
-	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// This field can be elided, and will marshal its zero value as "mid_conv_system".
-	Type constant.MidConvSystem `json:"type" default:"mid_conv_system"`
-	paramObj
-}
-
-func (r MidConversationSystemBlockParam) MarshalJSON() (data []byte, err error) {
-	type shadow MidConversationSystemBlockParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *MidConversationSystemBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

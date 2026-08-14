@@ -28,7 +28,7 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Agents.New(context.TODO(), anthropic.BetaAgentNewParams{
 		Model: anthropic.BetaManagedAgentsModelConfigParams{
-			ID: anthropic.BetaManagedAgentsModelClaudeOpus4_8,
+			ID: anthropic.BetaManagedAgentsModelClaudeOpus5,
 			Effort: anthropic.BetaManagedAgentsModelConfigParamsEffortUnion{
 				OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel: anthropic.String("low"),
 			},
@@ -152,7 +152,7 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 				"foo": "string",
 			},
 			Model: anthropic.BetaManagedAgentsModelConfigParams{
-				ID: anthropic.BetaManagedAgentsModelClaudeOpus4_8,
+				ID: anthropic.BetaManagedAgentsModelClaudeOpus5,
 				Effort: anthropic.BetaManagedAgentsModelConfigParamsEffortUnion{
 					OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel: anthropic.String("low"),
 				},

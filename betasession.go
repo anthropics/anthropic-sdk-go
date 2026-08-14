@@ -278,7 +278,7 @@ type BetaManagedAgentsAgentWithOverridesParams struct {
 	// Replacement MCP server list. Full replacement: the provided array becomes the
 	// MCP servers. Send an empty array to clear; omit to preserve the agent's servers.
 	MCPServers []BetaManagedAgentsURLMCPServerParams `json:"mcp_servers,omitzero"`
-	// Replacement model. Accepts the model string, e.g. `claude-opus-4-6`, or a
+	// Replacement model. Accepts the model string, e.g. `claude-opus-5`, or a
 	// `model_config` object. Omit to use the agent's model.
 	Model BetaManagedAgentsModelConfigParams `json:"model,omitzero"`
 	// Replacement skill list. Full replacement: the provided array becomes the skills.

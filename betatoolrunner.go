@@ -244,24 +244,6 @@ func applyToolChange(block BetaContentBlockParamUnion, available map[string]stru
 		if name, ok := additionRefName(block.OfToolAddition.Tool); ok {
 			available[name] = struct{}{}
 		}
-	case block.OfMidConvSystem != nil:
-		// Nested wrapper: same handling, one level down.
-		for _, inner := range block.OfMidConvSystem.Content {
-			switch {
-			case inner.OfToolRemoval != nil:
-				if name, ok := removalRefName(inner.OfToolRemoval.Tool); ok {
-					delete(available, name)
-				}
-			case inner.OfToolAddition != nil:
-				if name, ok := additionRefName(inner.OfToolAddition.Tool); ok {
-					available[name] = struct{}{}
-				}
-			default:
-				// forward-compat no-op
-			}
-		}
-	default:
-		// forward-compat no-op
 	}
 }
 

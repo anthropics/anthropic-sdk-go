@@ -308,3 +308,127 @@ func TestExecuteToolsSkipsMaxTokensTurn(t *testing.T) {
 		})
 	}
 }
+
+// containerServer scripts POST /v1/messages like messagesServer, but the
+// first turn ran in a server-assigned container; it records each request body.
+func containerServer(t *testing.T, bodies *[]map[string]any) *httptest.Server {
+	t.Helper()
+	var calls atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var got map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&got); err != nil {
+			t.Errorf("decode request body: %v", err)
+		}
+		*bodies = append(*bodies, got)
+		var body string
+		if calls.Add(1) == 1 {
+			body = `{"id":"msg_1","type":"message","role":"assistant","model":"m","content":[{"type":"tool_use","id":"toolu_1","name":"weather","input":{"city":"SF"}}],"container":{"id":"container_123","expires_at":"2025-01-01T00:00:00Z","skills":[]},"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`
+		} else {
+			body = `{"id":"msg_2","type":"message","role":"assistant","model":"m","content":[{"type":"text","text":"done"}],"container":null,"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(body))
+	}))
+	t.Cleanup(server.Close)
+	return server
+}
+
+// The follow-up request must name the container the previous turn ran in,
+// unless the caller pinned a container themselves.
+func TestBetaToolRunner_ForwardsContainer(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		pinned BetaMessageNewParamsContainerUnion
+		want   any
+	}{
+		{"adopts server container", BetaMessageNewParamsContainerUnion{}, "container_123"},
+		{"keeps pinned id", BetaMessageNewParamsContainerUnion{OfString: String("container_mine")}, "container_mine"},
+		{"fills pinned params without id", BetaMessageNewParamsContainerUnion{OfContainers: &BetaContainerParams{}}, map[string]any{"id": "container_123"}},
+		{"keeps pinned params id", BetaMessageNewParamsContainerUnion{OfContainers: &BetaContainerParams{ID: String("container_mine")}}, map[string]any{"id": "container_mine"}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			var bodies []map[string]any
+			client := newTestToolRunnerClient(containerServer(t, &bodies))
+			runner := client.Beta.Messages.NewToolRunner(
+				[]BetaTool{&stubBetaTool{name: "weather"}},
+				BetaToolRunnerParams{BetaMessageNewParams: BetaMessageNewParams{
+					Model:     "m",
+					MaxTokens: 512,
+					Container: tt.pinned,
+					Messages:  []BetaMessageParam{NewBetaUserMessage(NewBetaTextBlock("What's the weather in SF?"))},
+				}, MaxIterations: 5},
+			)
+			if _, err := runner.RunToCompletion(context.Background()); err != nil {
+				t.Fatalf("RunToCompletion: %v", err)
+			}
+			if len(bodies) != 2 {
+				t.Fatalf("expected 2 requests, got %d", len(bodies))
+			}
+			gotJSON, _ := json.Marshal(bodies[1]["container"])
+			wantJSON, _ := json.Marshal(tt.want)
+			if string(gotJSON) != string(wantJSON) {
+				t.Fatalf("follow-up container = %s, want %s", gotJSON, wantJSON)
+			}
+		})
+	}
+}
+
+func TestBetaToolRunnerStreaming_ForwardsContainer(t *testing.T) {
+	var bodies []map[string]any
+	var calls atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var got map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&got); err != nil {
+			t.Errorf("decode request body: %v", err)
+		}
+		bodies = append(bodies, got)
+		w.Header().Set("Content-Type", "text/event-stream")
+		var events []string
+		if calls.Add(1) == 1 {
+			events = []string{
+				`event: message_start` + "\n" + `data: {"type":"message_start","message":{"id":"msg_1","type":"message","role":"assistant","model":"m","content":[],"container":null,"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}}`,
+				`event: content_block_start` + "\n" + `data: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_1","name":"weather","input":{}}}`,
+				`event: content_block_delta` + "\n" + `data: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"{\"city\":\"SF\"}"}}`,
+				`event: content_block_stop` + "\n" + `data: {"type":"content_block_stop","index":0}`,
+				`event: message_delta` + "\n" + `data: {"type":"message_delta","delta":{"stop_reason":"tool_use","stop_sequence":null,"container":{"id":"container_123","expires_at":"2025-01-01T00:00:00Z","skills":[]}},"usage":{"output_tokens":5}}`,
+				`event: message_stop` + "\n" + `data: {"type":"message_stop"}`,
+			}
+		} else {
+			events = []string{
+				`event: message_start` + "\n" + `data: {"type":"message_start","message":{"id":"msg_2","type":"message","role":"assistant","model":"m","content":[],"container":null,"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}}`,
+				`event: content_block_start` + "\n" + `data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}`,
+				`event: content_block_delta` + "\n" + `data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"done"}}`,
+				`event: content_block_stop` + "\n" + `data: {"type":"content_block_stop","index":0}`,
+				`event: message_delta` + "\n" + `data: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"output_tokens":5}}`,
+				`event: message_stop` + "\n" + `data: {"type":"message_stop"}`,
+			}
+		}
+		for _, e := range events {
+			_, _ = w.Write([]byte(e + "\n\n"))
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	client := newTestToolRunnerClient(server)
+	runner := client.Beta.Messages.NewToolRunnerStreaming(
+		[]BetaTool{&stubBetaTool{name: "weather"}},
+		BetaToolRunnerParams{BetaMessageNewParams: BetaMessageNewParams{
+			Model:     "m",
+			MaxTokens: 512,
+			Messages:  []BetaMessageParam{NewBetaUserMessage(NewBetaTextBlock("What's the weather in SF?"))},
+		}, MaxIterations: 5},
+	)
+	for events := range runner.AllStreaming(context.Background()) {
+		for _, err := range events {
+			if err != nil {
+				t.Fatalf("streaming: %v", err)
+			}
+		}
+	}
+	if len(bodies) != 2 {
+		t.Fatalf("expected 2 requests, got %d", len(bodies))
+	}
+	if got := bodies[1]["container"]; got != "container_123" {
+		t.Fatalf("follow-up container = %v, want container_123", got)
+	}
+}

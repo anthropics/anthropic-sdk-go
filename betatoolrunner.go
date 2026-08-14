@@ -114,6 +114,27 @@ func (b *betaToolRunnerBase) Err() error {
 	return b.err
 }
 
+// adoptContainer carries the container the last turn ran in onto the next
+// request: container-bound server tools reject a follow-up that omits it, so
+// its id is forwarded unless the caller pinned one themselves.
+func (b *betaToolRunnerBase) adoptContainer(message *BetaMessage) {
+	id := message.Container.ID
+	if id == "" {
+		return
+	}
+	container := &b.Params.Container
+	switch {
+	case container.OfContainers != nil:
+		if !container.OfContainers.ID.Valid() {
+			pinned := *container.OfContainers
+			pinned.ID = String(id)
+			container.OfContainers = &pinned
+		}
+	case !container.OfString.Valid():
+		container.OfString = String(id)
+	}
+}
+
 // executeTools processes any tool use blocks in the given message and returns a tool result message.
 // Returns:
 //   - (result, nil) if tools executed successfully
@@ -369,6 +390,7 @@ func (r *BetaToolRunner) NextMessage(ctx context.Context) (*BetaMessage, error) 
 
 	r.lastMessage = message
 	r.Params.Messages = append(r.Params.Messages, message.ToParam())
+	r.adoptContainer(message)
 
 	return message, nil
 }
@@ -510,6 +532,7 @@ func (r *BetaToolRunnerStreaming) NextStreaming(ctx context.Context) iter.Seq2[B
 
 		r.lastMessage = finalMessage
 		r.Params.Messages = append(r.Params.Messages, finalMessage.ToParam())
+		r.adoptContainer(finalMessage)
 	}
 }
 

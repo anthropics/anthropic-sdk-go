@@ -112,10 +112,8 @@ func IdentityTokenFile(path string) IdentityTokenFunc {
 // provider is called on each token exchange to fetch a fresh JWT.
 // opts.FederationRuleID and opts.OrganizationID are required.
 //
-// The auth middleware is constructed once and reused across requests, so the
-// [auth.TokenCache] built by [auth.WithAuthMiddleware] is shared — a fresh
-// access token is cached in memory and only re-exchanged when it enters the
-// refresh window.
+// The [auth.TokenCache] built by [auth.WithAuthMiddleware] is shared across
+// requests, so a token is only re-exchanged when it enters the refresh window.
 func WithFederationTokenProvider(provider IdentityTokenFunc, opts FederationOptions) RequestOption {
 	switch {
 	case provider == nil:
@@ -381,9 +379,7 @@ func WithRequestTimeout(dur time.Duration) RequestOption {
 	})
 }
 
-// withConfigClientKey identifies the HTTP transport a per-WithConfig
-// auth.Middleware should bind to. Mirrors auth.clientKey so the lazily-
-// constructed bearer middleware is cached per transport.
+// withConfigClientKey mirrors auth.clientKey: one auth.TokenCache per transport.
 type withConfigClientKey struct {
 	httpClient *http.Client
 	customDoer requestconfig.HTTPDoer
@@ -460,6 +456,34 @@ func WithProfile(name string) RequestOption {
 	return withConfig(cfg, false)
 }
 
+// joinedOption is the [RequestOption] returned by [Join]. It is a distinct
+// type (rather than a RequestOptionFunc closure) so that
+// [HasWithoutEnvironmentDefaults] can look inside it.
+type joinedOption []RequestOption
+
+func (opts joinedOption) Apply(r *requestconfig.RequestConfig) error {
+	return r.Apply(opts...)
+}
+
+// Join returns a single [RequestOption] that applies opts in order, at the
+// position the joined option occupies in the caller's option list. It is
+// equivalent to passing opts individually at that position, and lets a
+// function that configures several aspects of a client return one option:
+//
+//	func WithPlatform(cfg Config) option.RequestOption {
+//		return option.Join(
+//			option.WithoutEnvironmentDefaults(),
+//			option.WithBaseURL(cfg.URL),
+//			option.WithMiddleware(cfg.middleware()),
+//		)
+//	}
+//
+// A [WithoutEnvironmentDefaults] marker nested inside a Join (at any depth)
+// is still recognized by anthropic.NewClient.
+func Join(opts ...RequestOption) RequestOption {
+	return joinedOption(opts)
+}
+
 // withoutEnvironmentDefaultsOption is the marker type returned by
 // [WithoutEnvironmentDefaults]. Its Apply is a no-op; it is detected by
 // [HasWithoutEnvironmentDefaults] before options are applied.
@@ -484,12 +508,18 @@ func WithoutEnvironmentDefaults() RequestOption {
 }
 
 // HasWithoutEnvironmentDefaults reports whether opts contains a
-// [WithoutEnvironmentDefaults] marker. Used by anthropic.NewClient to decide
-// whether to prepend anthropic.DefaultClientOptions.
+// [WithoutEnvironmentDefaults] marker, looking inside options combined with
+// [Join] at any depth. Used by anthropic.NewClient to decide whether to
+// prepend anthropic.DefaultClientOptions.
 func HasWithoutEnvironmentDefaults(opts []RequestOption) bool {
 	for _, o := range opts {
-		if _, ok := o.(withoutEnvironmentDefaultsOption); ok {
+		switch o := o.(type) {
+		case withoutEnvironmentDefaultsOption:
 			return true
+		case joinedOption:
+			if HasWithoutEnvironmentDefaults(o) {
+				return true
+			}
 		}
 	}
 	return false
@@ -502,8 +532,8 @@ func withConfig(cfg *config.Config, quiet bool) RequestOption {
 		provider    auth.TokenProvider
 		resolveErr  error
 
-		mwMu sync.Mutex
-		mwBy = map[withConfigClientKey]auth.Middleware{}
+		cacheMu sync.Mutex
+		cacheBy = map[withConfigClientKey]*auth.TokenCache{}
 	)
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		// Non-credential config — applied unconditionally so a profile's
@@ -569,14 +599,14 @@ func withConfig(cfg *config.Config, quiet bool) RequestOption {
 				handler = rc.CustomHTTPDoer.Do
 			}
 			key := withConfigClientKey{httpClient: rc.HTTPClient, customDoer: rc.CustomHTTPDoer}
-			mwMu.Lock()
-			inner, ok := mwBy[key]
+			cacheMu.Lock()
+			cache, ok := cacheBy[key]
 			if !ok {
-				inner = auth.NewProviderMiddleware(provider, handler)
-				mwBy[key] = inner
+				cache = auth.NewTokenCache(provider, handler)
+				cacheBy[key] = cache
 			}
-			mwMu.Unlock()
-			return inner(req, next)
+			cacheMu.Unlock()
+			return auth.NewMiddleware(cache, rc)(req, next)
 		}
 		r.Middlewares = append(r.Middlewares, credCheck)
 		return nil

@@ -179,7 +179,9 @@ func transformSchemaMap(jsonSchema map[string]any) map[string]any {
 // formatExtraValue renders a value extracted from the schema for inclusion in
 // the description. Composite values (*Schema, []*Schema, maps) are
 // JSON-marshaled so they render readably instead of as Go pointer dumps.
-// Scalars use %v so strings stay unquoted.
+// Scalars use %v so strings stay unquoted. Pointers are dereferenced first:
+// many keywords (maxLength, maxItems, ...) are pointer-typed on the schema
+// struct, and %v on a pointer prints its address.
 func formatExtraValue(v any) string {
 	rv := reflect.ValueOf(v)
 	for rv.Kind() == reflect.Pointer {
@@ -188,13 +190,17 @@ func formatExtraValue(v any) string {
 		}
 		rv = rv.Elem()
 	}
+	// A JSON null in Extras arrives as an untyped nil, which has no Kind.
+	if !rv.IsValid() {
+		return "null"
+	}
 	switch rv.Kind() {
 	case reflect.Slice, reflect.Array, reflect.Map, reflect.Struct:
 		if b, err := json.Marshal(v); err == nil {
 			return string(b)
 		}
 	}
-	return fmt.Sprintf("%v", v)
+	return fmt.Sprintf("%v", rv.Interface())
 }
 
 // hasExportedContent reports whether any exported field on the schema is non-zero.

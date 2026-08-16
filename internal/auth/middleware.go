@@ -1,8 +1,10 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -24,27 +26,24 @@ func applyBearerAuth(req *http.Request, token string) {
 
 type authMiddlewareFunc func(*http.Request, func(*http.Request) (*http.Response, error)) (*http.Response, error)
 
-// Middleware is the bearer-auth HTTP middleware function shape. Exported so
-// callers that construct the middleware lazily inside another middleware
-// (e.g. option.WithConfig's deferred resolve) can hold the value.
-type Middleware = authMiddlewareFunc
-
-// NewProviderMiddleware constructs a bearer-auth middleware bound to provider
-// and the given HTTP handler. Prefer [WithAuthMiddleware] when auth can be
-// installed at option-Apply time; use this only when the [TokenProvider]
-// isn't known until request time.
-func NewProviderMiddleware(provider TokenProvider, handler func(*http.Request) (*http.Response, error)) Middleware {
-	return authMiddleware(NewTokenCache(provider, handler))
-}
-
-func authMiddleware(cache *TokenCache) authMiddlewareFunc {
+// NewMiddleware returns bearer-auth middleware serving tokens from cache.
+// Tokens are exchanged at, and only attached to requests for, cfg.BaseURL —
+// a request path may be an absolute URL for some other host.
+func NewMiddleware(cache *TokenCache, cfg *requestconfig.RequestConfig) authMiddlewareFunc {
 	return func(req *http.Request, next func(*http.Request) (*http.Response, error)) (*http.Response, error) {
 		// Skip if static auth headers are already set.
 		if req.Header.Get("X-Api-Key") != "" || req.Header.Get("Authorization") != "" {
 			return next(req)
 		}
 
-		baseURL := req.URL.Scheme + "://" + req.URL.Host
+		if cfg.BaseURL == nil {
+			return nil, errors.New("cannot resolve credentials: client base URL is not set")
+		}
+		if !sameOrigin(req.URL, cfg.BaseURL) {
+			return next(req)
+		}
+		baseURL := cfg.BaseURL.Scheme + "://" + cfg.BaseURL.Host
+
 		token, err := cache.Token(req.Context(), baseURL)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get credentials token: %w", err)
@@ -97,6 +96,10 @@ func authMiddleware(cache *TokenCache) authMiddlewareFunc {
 	}
 }
 
+func sameOrigin(u, base *url.URL) bool {
+	return strings.EqualFold(u.Scheme, base.Scheme) && strings.EqualFold(u.Host, base.Host)
+}
+
 // clientKey identifies the HTTP transport a [TokenCache] should bind to.
 // Keying the per-option cache map on this struct ensures two clients that
 // share the same [WithAuthMiddleware] option value each get their own cache
@@ -118,10 +121,8 @@ type clientKey struct {
 // exactly once and reused for every request so its in-memory token, refresh
 // state, and 401 invalidation signal are preserved.
 //
-// The base URL for token-exchange / refresh HTTP calls is derived from the
-// outgoing request URL at the moment the middleware runs, so this option can
-// be listed in any order relative to [option.WithBaseURL] /
-// [option.WithEnvironmentProduction].
+// The base URL is read at request time, so this option can be listed in any
+// order relative to [option.WithBaseURL] / [option.WithEnvironmentProduction].
 //
 // If the request already has an X-Api-Key or Authorization header set
 // (e.g. via [option.WithAPIKey] or [option.WithAuthToken]), the middleware
@@ -129,25 +130,24 @@ type clientKey struct {
 func WithAuthMiddleware(provider TokenProvider) requestconfig.RequestOptionFunc {
 	var (
 		mu    sync.Mutex
-		byKey = map[clientKey]authMiddlewareFunc{}
+		byKey = map[clientKey]*TokenCache{}
 	)
 	return func(r *requestconfig.RequestConfig) error {
 		key := clientKey{httpClient: r.HTTPClient, customDoer: r.CustomHTTPDoer}
 
 		mu.Lock()
-		mw, ok := byKey[key]
+		cache, ok := byKey[key]
 		if !ok {
 			handler := r.HTTPClient.Do
 			if r.CustomHTTPDoer != nil {
 				handler = r.CustomHTTPDoer.Do
 			}
-			cache := NewTokenCache(provider, handler)
-			mw = authMiddleware(cache)
-			byKey[key] = mw
+			cache = NewTokenCache(provider, handler)
+			byKey[key] = cache
 		}
 		mu.Unlock()
 
-		r.Middlewares = append(r.Middlewares, mw)
+		r.Middlewares = append(r.Middlewares, NewMiddleware(cache, r))
 		return nil
 	}
 }

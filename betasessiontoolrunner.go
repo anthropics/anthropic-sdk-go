@@ -1106,7 +1106,8 @@ func textOnlyResult(s string) []BetaToolResultBlockParamContentUnion {
 
 // toToolResultContent converts tool result blocks for a user.tool_result event
 // by JSON round-tripping each block into the event content union, falling back
-// to a text block holding the raw JSON when the round-trip is incomplete.
+// to a text block holding the raw JSON when the round-trip is incomplete. Empty
+// text blocks are posted as "(no output)".
 func toToolResultContent(blocks []BetaToolResultBlockParamContentUnion) []BetaManagedAgentsUserToolResultEventParamsContentUnion {
 	out := make([]BetaManagedAgentsUserToolResultEventParamsContentUnion, 0, len(blocks))
 	for _, b := range blocks {
@@ -1116,6 +1117,11 @@ func toToolResultContent(blocks []BetaToolResultBlockParamContentUnion) []BetaMa
 		}
 		var dst BetaManagedAgentsUserToolResultEventParamsContentUnion
 		if json.Unmarshal(raw, &dst) == nil && roundTripComplete(&dst) {
+			// The Sessions API rejects empty text blocks; a tool that
+			// succeeds silently must still produce a postable result.
+			if dst.OfText != nil && dst.OfText.Text == "" {
+				dst.OfText.Text = "(no output)"
+			}
 			out = append(out, dst)
 			continue
 		}

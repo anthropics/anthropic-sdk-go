@@ -183,6 +183,10 @@ func (b *sseTranslatingBody) emit(eventType string, data []byte) {
 //
 // Register any [option.WithMiddleware] before this option so your middleware
 // observes Anthropic-shaped requests and responses; see [WithConfig].
+//
+// Like [WithConfig], the returned option includes
+// [option.WithoutEnvironmentDefaults], so first-party credential sources
+// never apply to a client constructed with it.
 func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptions) error) option.RequestOption {
 	cfg, err := config.LoadDefaultConfig(ctx, optFns...)
 	if err != nil {
@@ -214,6 +218,12 @@ func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptio
 // Note that mutating the request after the Bedrock middleware has signed it
 // invalidates the SigV4 signature, so body- or header-mutating middleware
 // must be registered before this option.
+//
+// The returned option is an [option.Join] of [option.WithoutEnvironmentDefaults]
+// and the Bedrock configuration, so a client constructed with it skips the
+// SDK's first-party credential autoload entirely: environment credentials
+// and profiles from the shared config store (ANTHROPIC_API_KEY,
+// ANTHROPIC_PROFILE, ANTHROPIC_CONFIG_DIR) never apply to Bedrock requests.
 func WithConfig(cfg aws.Config) option.RequestOption {
 	var credentialErr error
 
@@ -229,7 +239,7 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 	signer := v4.NewSigner()
 	middleware := bedrockMiddleware(signer, cfg)
 
-	return requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+	return option.Join(option.WithoutEnvironmentDefaults(), requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		if credentialErr != nil {
 			return credentialErr
 		}
@@ -237,7 +247,7 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 			option.WithBaseURL(fmt.Sprintf("https://bedrock-runtime.%s.amazonaws.com", cfg.Region)),
 			option.WithMiddleware(middleware),
 		)
-	})
+	}))
 }
 
 func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {

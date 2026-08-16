@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.63.1 (2026-08-13)
+
+Full Changelog: [v1.63.0...v1.63.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.63.0...v1.63.1)
+
+### Bug Fixes
+
+* **auth:** pin token exchange to the configured base URL and skip auth for other origins ([#258](https://github.com/anthropics/anthropic-sdk-go/issues/258)) ([6e4141c](https://github.com/anthropics/anthropic-sdk-go/commit/6e4141c68b5da647436ec07f76b69efd3cb87ed4))
+* **client:** apply stop_details from every message_delta when accumulating ([#253](https://github.com/anthropics/anthropic-sdk-go/issues/253)) ([c197a64](https://github.com/anthropics/anthropic-sdk-go/commit/c197a64a24952321446ca9353dfa5c6b4744d53f))
+* **client:** properly render maxLength and maxItems in generated schemas ([84a57f5](https://github.com/anthropics/anthropic-sdk-go/commit/84a57f524e1ff5a861a1a4a94f7f2b80fde7cd10))
+* **sessions:** post "(no output)" for empty text tool results instead of an empty text block ([#236](https://github.com/anthropics/anthropic-sdk-go/issues/236)) ([a588842](https://github.com/anthropics/anthropic-sdk-go/commit/a5888424590b0e02304fb70e4f35fdeeb9dceb93))
+
+
+### Chores
+
+* **ci:** run breaking-change detection as a ci.yml job on every push ([29aebdb](https://github.com/anthropics/anthropic-sdk-go/commit/29aebdb5be201df32a4a3a71352f1a2f69ed2768))
+
+
+### Documentation
+
+* **api:** clarify that user profile name is optional for resold profiles ([1039f95](https://github.com/anthropics/anthropic-sdk-go/commit/1039f956732621fb1d533d9ea277291e4dec4bee))
+
 ## 1.63.0 (2026-08-10)
 
 Full Changelog: [v1.62.0...v1.63.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.62.0...v1.63.0)

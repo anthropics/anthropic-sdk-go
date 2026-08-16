@@ -290,6 +290,42 @@ func TestSessionToolRunner_YieldsAndPostsResult(t *testing.T) {
 	require.NoError(t, r.Close())
 }
 
+func TestSessionToolRunner_EmptyTextResultPostsPlaceholder(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, []string{
+			sseLine("agent.tool_use", toolUseEvt("evt_1", "silent", map[string]any{})),
+		}, true)
+	}
+	var posted atomic.Value
+	server.HandleSend = func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		posted.Store(string(body))
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+
+	// A tool that succeeds with no output (e.g. bash `true`) yields a single
+	// empty text block; the Sessions API rejects those, so the runner must
+	// post a non-empty placeholder instead of wedging the session on a 400.
+	silent := &stubBetaTool{name: "silent", run: func(context.Context, json.RawMessage) (string, bool) {
+		return "", false
+	}}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{silent}, 500*time.Millisecond)
+
+	require.True(t, r.Next())
+	call := r.Current()
+	require.True(t, call.Posted)
+	require.False(t, call.IsError)
+	body, _ := posted.Load().(string)
+	require.NotContains(t, body, `"text":""`, "an empty text block must never reach the wire")
+	require.Contains(t, body, `"text":"(no output)"`)
+	require.Equal(t, "(no output)", dispatchedResultText(call))
+	require.NoError(t, r.Close())
+}
+
 func TestSessionToolRunner_DispatchesCustomTool(t *testing.T) {
 	server := newSessionEventsServer(t)
 	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
@@ -792,6 +828,20 @@ func TestToToolResultContent_BlockPassthrough(t *testing.T) {
 	require.NotNil(t, custom[1].OfImage)
 	require.NotNil(t, custom[2].OfDocument)
 	require.NotNil(t, custom[5].OfSearchResult)
+}
+
+func TestToToolResultContent_EmptyTextBecomesPlaceholder(t *testing.T) {
+	got := toToolResultContent([]BetaToolResultBlockParamContentUnion{
+		{OfText: &BetaTextBlockParam{Text: ""}},
+		{OfText: &BetaTextBlockParam{Text: "kept"}},
+	})
+	require.Len(t, got, 2)
+	require.Equal(t, "(no output)", got[0].OfText.Text)
+	require.Equal(t, "kept", got[1].OfText.Text, "non-empty text is unchanged")
+
+	custom := toCustomToolResultContent([]BetaToolResultBlockParamContentUnion{{OfText: &BetaTextBlockParam{Text: ""}}})
+	require.Len(t, custom, 1)
+	require.Equal(t, "(no output)", custom[0].OfText.Text, "custom tool results get the same placeholder")
 }
 
 // ===== tool calls that need user approval =====

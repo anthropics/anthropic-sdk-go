@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go/option"
@@ -132,6 +134,34 @@ func TestSchemaToRaw(t *testing.T) {
 		_, err := schemaToRaw(&s)
 		if err == nil {
 			t.Fatal("expected error for pointer to string")
+		}
+	})
+
+	t.Run("struct pointer with invalid typeless field returns error and does not cache", func(t *testing.T) {
+		clearSchemaCache()
+
+		type invalidStruct struct {
+			Data any `json:"data" jsonschema:"description=orphan description without type"`
+		}
+
+		_, err := schemaToRaw(&invalidStruct{})
+		if err == nil {
+			t.Fatal("expected error for struct with typeless described field")
+		}
+		if !strings.Contains(err.Error(), "$.properties.data") {
+			t.Errorf("expected error to contain property path '$.properties.data', got: %v", err)
+		}
+
+		// Ensure failed transformation was not stored in schemaCache
+		typ := reflect.TypeOf(invalidStruct{})
+		if _, ok := schemaCache.Load(typ); ok {
+			t.Error("expected invalid schema not to be stored in schemaCache")
+		}
+
+		// Second invocation should still fail rather than returning cached corrupted schema
+		_, err2 := schemaToRaw(&invalidStruct{})
+		if err2 == nil {
+			t.Fatal("expected second call to also return error")
 		}
 	})
 }

@@ -202,6 +202,10 @@ type FileMetadata struct {
 	Type constant.File `json:"type" default:"file"`
 	// Whether the file can be downloaded.
 	Downloadable bool `json:"downloadable"`
+	// RFC 3339 datetime string representing when the file will expire and become
+	// unavailable for download. Null if the file does not expire. For files uploaded
+	// with `expires_in_seconds`, this is the upload time plus that value.
+	ExpiresAt time.Time `json:"expires_at" api:"nullable" format:"date-time"`
 	// The scope of this file, indicating the context in which it was created (e.g., a
 	// session).
 	Scope BetaFileScope `json:"scope" api:"nullable"`
@@ -214,6 +218,7 @@ type FileMetadata struct {
 		SizeBytes    respjson.Field
 		Type         respjson.Field
 		Downloadable respjson.Field
+		ExpiresAt    respjson.Field
 		Scope        respjson.Field
 		ExtraFields  map[string]respjson.Field
 		raw          string
@@ -274,6 +279,9 @@ type BetaFileGetMetadataParams struct {
 type BetaFileUploadParams struct {
 	// The file to upload
 	File io.Reader `json:"file,omitzero" api:"required" format:"binary"`
+	// Seconds from upload until the file expires and its bytes become permanently
+	// unavailable. Must be between 3600 (one hour) and 7776000 (ninety days).
+	ExpiresInSeconds param.Opt[int64] `json:"expires_in_seconds,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

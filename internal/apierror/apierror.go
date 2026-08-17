@@ -22,10 +22,11 @@ type Error struct {
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
-	StatusCode int
-	Request    *http.Request
-	Response   *http.Response
-	RequestID  string
+	StatusCode  int
+	Request     *http.Request
+	Response    *http.Response
+	RequestID   string
+	WorkspaceID string
 
 	errorType shared.ErrorType
 }
@@ -64,6 +65,9 @@ func (r *Error) Error() string {
 
 	if r.RequestID != "" {
 		statusInfo += fmt.Sprintf(" (Request-ID: %s)", r.RequestID)
+	}
+	if r.WorkspaceID != "" {
+		statusInfo += fmt.Sprintf(" (Workspace-ID: %s)", r.WorkspaceID)
 	}
 
 	return fmt.Sprintf("%s %s", statusInfo, r.JSON.raw)

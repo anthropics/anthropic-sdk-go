@@ -507,7 +507,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 		res.Body = io.NopCloser(bytes.NewBuffer(contents))
 
 		// Load the contents into the error format if it is provided.
-		aerr := apierror.Error{Request: cfg.Request, Response: res, StatusCode: res.StatusCode, RequestID: res.Header.Get("request-id")}
+		aerr := apierror.Error{Request: cfg.Request, Response: res, StatusCode: res.StatusCode, RequestID: res.Header.Get("request-id"), WorkspaceID: res.Header.Get("anthropic-workspace-id")}
 		err = aerr.UnmarshalJSON(contents)
 		if err != nil {
 			return err

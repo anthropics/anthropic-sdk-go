@@ -19,7 +19,7 @@ func TestStreamingErrorType(t *testing.T) {
 	sseBody := "event: error\ndata: {\"type\":\"error\",\"error\":{\"type\":\"overloaded_error\",\"message\":\"Overloaded\"}}\n\n"
 	httpResp := &http.Response{
 		StatusCode: 200,
-		Header:     http.Header{"Request-Id": []string{"req_stream123"}},
+		Header:     http.Header{"Request-Id": []string{"req_stream123"}, "Anthropic-Workspace-Id": []string{"wrkspc_123"}},
 		Body:       io.NopCloser(strings.NewReader(sseBody)),
 		Request:    mustNewRequest("POST", "https://api.anthropic.com/v1/messages"),
 	}
@@ -34,7 +34,9 @@ func TestStreamingErrorType(t *testing.T) {
 	assert.Equal(t, shared.ErrorTypeOverloadedError, apierr.Type())
 	assert.Equal(t, 200, apierr.StatusCode)
 	assert.Equal(t, "req_stream123", apierr.RequestID)
+	assert.Equal(t, "wrkspc_123", apierr.WorkspaceID)
 	assert.Contains(t, apierr.Error(), "200 OK")
+	assert.Contains(t, apierr.Error(), "(Request-ID: req_stream123) (Workspace-ID: wrkspc_123)")
 	assert.Contains(t, apierr.Error(), "overloaded_error")
 }
 

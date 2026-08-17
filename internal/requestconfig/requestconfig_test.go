@@ -26,6 +26,7 @@ func TestErrorWithRequestID(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set the request-id header - using the same header name as in the code
 		w.Header().Set("request-id", "req_123456789")
+		w.Header().Set("anthropic-workspace-id", "wrkspc_123")
 		// Return a 400 error with error JSON
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`{"error":{"type":"invalid_request_error","message":"Invalid request"}}`))
@@ -55,10 +56,12 @@ func TestErrorWithRequestID(t *testing.T) {
 	// Verify that RequestID field was properly set from the header
 	expectedRequestID := "req_123456789"
 	assert.Equal(t, expectedRequestID, apiErr.RequestID, "Expected RequestID to be %s, got %s", expectedRequestID, apiErr.RequestID)
+	assert.Equal(t, "wrkspc_123", apiErr.WorkspaceID)
 
 	// Verify that the error message includes the RequestID
 	errorMsg := apiErr.Error()
 	assert.Contains(t, errorMsg, "Request-ID: req_123456789", "Error message should contain request ID")
+	assert.Contains(t, errorMsg, "Workspace-ID: wrkspc_123", "Error message should contain workspace ID")
 }
 
 func TestErrorType(t *testing.T) {

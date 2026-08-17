@@ -19,6 +19,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 // BetaMemoryStoreMemoryVersionService contains methods and other services that
@@ -112,7 +113,7 @@ func (r *BetaMemoryStoreMemoryVersionService) Redact(ctx context.Context, memory
 
 // BetaManagedAgentsActorUnion contains all possible properties and values from
 // [BetaManagedAgentsSessionActor], [BetaManagedAgentsAPIActor],
-// [BetaManagedAgentsUserActor].
+// [BetaManagedAgentsUserActor], [BetaManagedAgentsServiceAccountActor].
 //
 // Use the [BetaManagedAgentsActorUnion.AsAny] method to switch on the variant.
 //
@@ -120,18 +121,21 @@ func (r *BetaMemoryStoreMemoryVersionService) Redact(ctx context.Context, memory
 type BetaManagedAgentsActorUnion struct {
 	// This field is from variant [BetaManagedAgentsSessionActor].
 	SessionID string `json:"session_id"`
-	// Any of "session_actor", "api_actor", "user_actor".
+	// Any of "session_actor", "api_actor", "user_actor", "service_account_actor".
 	Type string `json:"type"`
 	// This field is from variant [BetaManagedAgentsAPIActor].
 	APIKeyID string `json:"api_key_id"`
 	// This field is from variant [BetaManagedAgentsUserActor].
 	UserID string `json:"user_id"`
-	JSON   struct {
-		SessionID respjson.Field
-		Type      respjson.Field
-		APIKeyID  respjson.Field
-		UserID    respjson.Field
-		raw       string
+	// This field is from variant [BetaManagedAgentsServiceAccountActor].
+	ServiceAccountID string `json:"service_account_id"`
+	JSON             struct {
+		SessionID        respjson.Field
+		Type             respjson.Field
+		APIKeyID         respjson.Field
+		UserID           respjson.Field
+		ServiceAccountID respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -142,9 +146,10 @@ type anyBetaManagedAgentsActor interface {
 	implBetaManagedAgentsActorUnion()
 }
 
-func (BetaManagedAgentsSessionActor) implBetaManagedAgentsActorUnion() {}
-func (BetaManagedAgentsAPIActor) implBetaManagedAgentsActorUnion()     {}
-func (BetaManagedAgentsUserActor) implBetaManagedAgentsActorUnion()    {}
+func (BetaManagedAgentsSessionActor) implBetaManagedAgentsActorUnion()        {}
+func (BetaManagedAgentsAPIActor) implBetaManagedAgentsActorUnion()            {}
+func (BetaManagedAgentsUserActor) implBetaManagedAgentsActorUnion()           {}
+func (BetaManagedAgentsServiceAccountActor) implBetaManagedAgentsActorUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -152,6 +157,7 @@ func (BetaManagedAgentsUserActor) implBetaManagedAgentsActorUnion()    {}
 //	case anthropic.BetaManagedAgentsSessionActor:
 //	case anthropic.BetaManagedAgentsAPIActor:
 //	case anthropic.BetaManagedAgentsUserActor:
+//	case anthropic.BetaManagedAgentsServiceAccountActor:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -163,6 +169,8 @@ func (u BetaManagedAgentsActorUnion) AsAny() anyBetaManagedAgentsActor {
 		return u.AsAPIActor()
 	case "user_actor":
 		return u.AsUserActor()
+	case "service_account_actor":
+		return u.AsServiceAccountActor()
 	}
 	return nil
 }
@@ -178,6 +186,11 @@ func (u BetaManagedAgentsActorUnion) AsAPIActor() (v BetaManagedAgentsAPIActor) 
 }
 
 func (u BetaManagedAgentsActorUnion) AsUserActor() (v BetaManagedAgentsUserActor) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsActorUnion) AsServiceAccountActor() (v BetaManagedAgentsServiceAccountActor) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -312,6 +325,27 @@ const (
 	BetaManagedAgentsMemoryVersionOperationDeleted  BetaManagedAgentsMemoryVersionOperation = "deleted"
 )
 
+// Attribution for a write made by a workload authenticated as a service account,
+// for example via Workload Identity Federation.
+type BetaManagedAgentsServiceAccountActor struct {
+	// ID of the service account that performed the write (a `svac_...` value).
+	ServiceAccountID string                       `json:"service_account_id" api:"required"`
+	Type             constant.ServiceAccountActor `json:"type" default:"service_account_actor"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ServiceAccountID respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsServiceAccountActor) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsServiceAccountActor) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Attribution for a write made by an agent during a session, through the mounted
 // filesystem at `/mnt/memory/`.
 type BetaManagedAgentsSessionActor struct {
@@ -402,6 +436,8 @@ type BetaMemoryStoreMemoryVersionListParams struct {
 	MemoryID param.Opt[string] `query:"memory_id,omitzero" json:"-"`
 	// Query parameter for page
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Query parameter for service_account_id
+	ServiceAccountID param.Opt[string] `query:"service_account_id,omitzero" json:"-"`
 	// Query parameter for session_id
 	SessionID param.Opt[string] `query:"session_id,omitzero" json:"-"`
 	// Query parameter for operation

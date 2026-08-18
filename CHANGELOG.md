@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.64.0 (2026-08-18)
+
+Full Changelog: [v1.63.1...v1.64.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.63.1...v1.64.0)
+
+### Features
+
+* **api:** additions to files and memory stores ([5c105da](https://github.com/anthropics/anthropic-sdk-go/commit/5c105daf4a37f0731775cbd7ec273d54b743ad40))
+* **api:** updates to skill, files, and user profiles ([a0061d6](https://github.com/anthropics/anthropic-sdk-go/commit/a0061d65983357dc4957eed0d3db767a565ba806))
+
+
+### Bug Fixes
+
+* **api:** remove unsupported mid_conv_system content block ([bced0f9](https://github.com/anthropics/anthropic-sdk-go/commit/bced0f9ac92c24943141bb3b12c93b3bd4f6416e))
+* **session-runner:** retry tool-result sends for at least the lease TTL ([#299](https://github.com/anthropics/anthropic-sdk-go/issues/299)) ([ebc9533](https://github.com/anthropics/anthropic-sdk-go/commit/ebc9533f6f2769d77621e9baabbcc32600b7b050))
+* **tool-runner:** forward the server-assigned container on follow-up requests ([#277](https://github.com/anthropics/anthropic-sdk-go/issues/277)) ([860620c](https://github.com/anthropics/anthropic-sdk-go/commit/860620c47a6a38bb6156321e29faa9fd4462c0b1))
+* **toolrunner:** don't yield the final message twice from All() ([#314](https://github.com/anthropics/anthropic-sdk-go/issues/314)) ([1e418f0](https://github.com/anthropics/anthropic-sdk-go/commit/1e418f091d043f68e252bfef91b1e1e37a95cb6d))
+
+
+### Chores
+
+* **internal:** remove leftover prism references ([a1d9eab](https://github.com/anthropics/anthropic-sdk-go/commit/a1d9eabf77975e8242f5b7623e202abae7547fe5))
+
 ## 1.63.1 (2026-08-13)
 
 Full Changelog: [v1.63.0...v1.63.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.63.0...v1.63.1)

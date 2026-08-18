@@ -26,6 +26,7 @@ func TestBetaUserProfileNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.UserProfiles.New(context.TODO(), anthropic.BetaUserProfileNewParams{
+		AccessType:   anthropic.BetaUserProfileNewParamsAccessTypeApplication,
 		ExternalID:   anthropic.String("user_12345"),
 		Metadata:     map[string]string{},
 		Name:         anthropic.String("x"),
@@ -85,6 +86,7 @@ func TestBetaUserProfileUpdateWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"uprof_011CZkZCu8hGbp5mYRQgUmz9",
 		anthropic.BetaUserProfileUpdateParams{
+			AccessType: anthropic.BetaUserProfileUpdateParamsAccessTypeApplication,
 			ExternalID: anthropic.String("user_12345"),
 			Metadata: map[string]string{
 				"foo": "string",

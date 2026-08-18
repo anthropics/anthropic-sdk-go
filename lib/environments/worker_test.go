@@ -3,6 +3,7 @@ package environments
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	anthropic "github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/stretchr/testify/require"
 )
@@ -233,6 +235,95 @@ func TestEnvironmentWorker_ThreadsCustomRequestOptions(t *testing.T) {
 	for suffix, seen := range want {
 		require.True(t, seen, "expected a request to %q but none was recorded", suffix)
 	}
+}
+
+// TestEnvironmentWorker_LeaseTTLBoundsSendRetryWindow pins the wiring from
+// the lease heartbeat to the runner (internal/sendwindow on the session ctx):
+// the server-reported ttl_seconds becomes the runner's tool-result send retry
+// window, so a send that keeps failing
+// transiently is abandoned once the lease TTL has passed rather than after
+// the runner's standalone 5m default.
+func TestEnvironmentWorker_LeaseTTLBoundsSendRetryWindow(t *testing.T) {
+	server := newFakeWorkServer(t)
+
+	server.HandleSessionGet = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"agent":{"skills":[]}}`))
+	}
+	server.HandleHeartbeat = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"last_heartbeat":"2026-05-11T12:00:00Z","lease_extended":true,"state":"active","ttl_seconds":1,"type":"work_heartbeat"}`))
+	}
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"data":[],"first_id":null,"has_more":false,"last_id":null}`))
+	}
+	var firstSend, lastSend atomic.Int64 // unix nanos
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		now := time.Now().UnixNano()
+		firstSend.CompareAndSwap(0, now)
+		lastSend.Store(now)
+		http.Error(w, "unavailable", http.StatusServiceUnavailable)
+	}
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		flusher, ok := w.(http.Flusher)
+		require.True(t, ok, "stream response writer must support flushing")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("event: agent.tool_use\n" +
+			`data: {"type":"agent.tool_use","id":"evt_1","name":"echo","input":{},"processed_at":"2026-05-11T12:00:00Z"}` +
+			"\n\n"))
+		flusher.Flush()
+		// Keep the session open well past the 1s lease TTL so only the send
+		// retry window — not session termination — can end the retries.
+		select {
+		case <-time.After(3 * time.Second):
+		case <-r.Context().Done():
+			return
+		}
+		_, _ = w.Write([]byte("event: session.status_terminated\n" +
+			`data: {"type":"session.status_terminated","id":"evt_term","processed_at":"2026-05-11T12:00:00Z"}` +
+			"\n\n"))
+		flusher.Flush()
+	}
+	server.HandleStop = func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}
+
+	worker := NewEnvironmentWorker(server.Client(), EnvironmentWorkerOptions{
+		EnvironmentID:  "env_1",
+		EnvironmentKey: "env_key",
+		Workdir:        t.TempDir(),
+		Tools:          []anthropic.BetaTool{echoTool{}},
+		Logger:         silentLogger,
+	})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	require.NoError(t, worker.HandleItem(ctx, HandleItemOptions{
+		WorkID:        "work_1",
+		EnvironmentID: "env_1",
+		SessionID:     "sesn_test",
+	}))
+
+	first, last := firstSend.Load(), lastSend.Load()
+	require.NotZero(t, first, "the send should have been attempted")
+	require.Greater(t, last, first, "the send should have been retried")
+	require.Less(t, time.Duration(last-first), 1500*time.Millisecond,
+		"retries must stop once the 1s lease TTL has passed; under the 5m default they would continue until the session terminated ~3s later")
+}
+
+// echoTool is a minimal anthropic.BetaTool for driving the runner inside the
+// worker composition.
+type echoTool struct{}
+
+func (echoTool) Name() string        { return "echo" }
+func (echoTool) Description() string { return "echo" }
+func (echoTool) InputSchema() anthropic.BetaToolInputSchemaParam {
+	return anthropic.BetaToolInputSchemaParam{Properties: map[string]any{}}
+}
+func (echoTool) Execute(context.Context, json.RawMessage) ([]anthropic.BetaToolResultBlockParamContentUnion, error) {
+	return []anthropic.BetaToolResultBlockParamContentUnion{{OfText: &anthropic.BetaTextBlockParam{Text: "ok"}}}, nil
 }
 
 // TestEnvironmentWorker_HeartbeatStartsBeforeSkillSetup pins the invariant

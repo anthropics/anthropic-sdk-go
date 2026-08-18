@@ -10,6 +10,7 @@ import (
 	"time"
 
 	anthropic "github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/internal/sendwindow"
 	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
@@ -282,11 +283,15 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	hbStopOpts = append(hbStopOpts, w.opts.RequestOptions...)
 	hbStopOpts = append(hbStopOpts, helperOpts...)
 
+	// The heartbeat records each server-reported lease TTL here; the runner
+	// picks it up from sessCtx as its tool-result send retry window.
+	var leaseTTL sendwindow.Window
+
 	// Per-session context: cancelled when the outer ctx is cancelled (it is a
 	// child), when the session runner finishes, or when the lease heartbeat
 	// says to stop. Constructed BEFORE skill setup so the heartbeat goroutine
 	// below can use it.
-	sessCtx, sessCancel := context.WithCancel(ctx)
+	sessCtx, sessCancel := context.WithCancel(sendwindow.NewContext(ctx, &leaseTTL))
 	defer sessCancel()
 
 	// Start the lease heartbeat BEFORE skill setup. The poller already acked
@@ -300,7 +305,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	hbDone := make(chan struct{})
 	go func() {
 		defer close(hbDone)
-		runHeartbeat(sessCtx, sessCancel, w.client, work, hbStopOpts, log)
+		runHeartbeat(sessCtx, sessCancel, w.client, work, hbStopOpts, log, &leaseTTL)
 	}()
 
 	env := &agenttoolset.AgentToolContext{
@@ -416,8 +421,9 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 // bounded by a staleness ceiling: if more than the last known TTL has elapsed
 // since the most recent successful beat, the lease is presumed expired
 // server-side and the session is cancelled rather than executing tools
-// against a session another worker may also have claimed.
-func runHeartbeat(ctx context.Context, cancel context.CancelFunc, client anthropic.Client, work *anthropic.BetaSelfHostedWork, reqOpts []option.RequestOption, log *slog.Logger) {
+// against a session another worker may also have claimed. leaseTTL is updated
+// with the server-reported TTL after every successful beat.
+func runHeartbeat(ctx context.Context, cancel context.CancelFunc, client anthropic.Client, work *anthropic.BetaSelfHostedWork, reqOpts []option.RequestOption, log *slog.Logger, leaseTTL *sendwindow.Window) {
 	interval := heartbeatDefault
 	// ttl tracks the last server-reported TTL. It bounds the staleness
 	// ceiling: a run of transient errors lasting longer than this means the
@@ -488,6 +494,7 @@ func runHeartbeat(ctx context.Context, cancel context.CancelFunc, client anthrop
 		if resp.TTLSeconds > 0 {
 			ttl = max(time.Duration(resp.TTLSeconds)*time.Second, heartbeatFloor)
 			interval = clampDur(ttl/2, heartbeatFloor, heartbeatDefault)
+			leaseTTL.Set(ttl)
 		}
 		switch resp.State {
 		case anthropic.BetaSelfHostedWorkHeartbeatResponseStateStopping,

@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/anthropics/anthropic-sdk-go/internal/sendwindow"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/stretchr/testify/require"
@@ -675,42 +676,116 @@ func TestSessionToolRunner_IdleTimeoutEndsIteration(t *testing.T) {
 	require.ErrorIs(t, r.Err(), ErrIdleTimeout)
 }
 
+// shrinkSendBackoff makes tool-result send retries back off in milliseconds
+// for the duration of the test.
+func shrinkSendBackoff(t *testing.T) {
+	prevStart, prevCap := sessionRunnerSendBackoffStart, sessionRunnerSendBackoffCap
+	sessionRunnerSendBackoffStart, sessionRunnerSendBackoffCap = 20*time.Millisecond, 50*time.Millisecond
+	t.Cleanup(func() { sessionRunnerSendBackoffStart, sessionRunnerSendBackoffCap = prevStart, prevCap })
+}
+
+// alwaysToolUse streams a single agent.tool_use for "echo" and holds the
+// connection open.
+func alwaysToolUse(w http.ResponseWriter, r *http.Request) {
+	streamWriter(w, r, []string{
+		sseLine("agent.tool_use", toolUseEvt("evt_1", "echo", map[string]any{})),
+	}, true)
+}
+
+// TestSessionToolRunner_SendRetriesOnTransientError covers the regression
+// where a tool-result send gave up after three attempts while the enclosing
+// worker kept the lease alive, stranding the call: transient failures keep
+// being retried with backoff until the send lands.
 func TestSessionToolRunner_SendRetriesOnTransientError(t *testing.T) {
+	shrinkSendBackoff(t)
 	server := newSessionEventsServer(t)
-	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
-		streamWriter(w, r, []string{
-			sseLine("agent.tool_use", toolUseEvt("evt_1", "echo", map[string]any{})),
-		}, true)
-	}
+	server.HandleStream = alwaysToolUse
 	var attempts atomic.Int32
 	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
-		if attempts.Add(1) == 1 {
-			http.Error(w, "boom", http.StatusInternalServerError)
+		if attempts.Add(1) <= 3 {
+			http.Error(w, "boom", http.StatusServiceUnavailable)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(sendOK()))
 	}
 
-	echo := &stubBetaTool{name: "echo"}
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
 	defer cancel()
-	// Shrink the per-attempt send timeout via the options surface so the test
-	// stays quick without mutating package-level state.
-	maxIdle := 500 * time.Millisecond
-	client := server.Client()
-	r := client.Beta.Sessions.Events.NewToolRunner(ctx, "sesn_test", SessionToolRunnerOptions{
-		Tools:       []BetaTool{echo},
-		MaxIdle:     &maxIdle,
-		Logger:      sessionRunnerSilentLogger,
-		SendTimeout: 2 * time.Second,
-	})
-	t.Cleanup(func() { _ = r.Close() })
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{&stubBetaTool{name: "echo"}}, 500*time.Millisecond)
 
 	require.True(t, r.Next())
-	call := r.Current()
-	require.True(t, call.Posted, "send should succeed after a retry")
-	require.GreaterOrEqual(t, attempts.Load(), int32(2))
+	require.True(t, r.Current().Posted, "send should keep retrying past three attempts and land")
+	require.Equal(t, int32(4), attempts.Load())
+}
+
+// TestSessionToolRunner_SendGivesUpAfterRetryWindow checks the retry loop is
+// bounded by the send retry window (supplied here the way EnvironmentWorker
+// supplies the lease TTL, via internal/sendwindow): a send that never succeeds
+// is retried for the whole window, then surfaced with Posted=false.
+func TestSessionToolRunner_SendGivesUpAfterRetryWindow(t *testing.T) {
+	shrinkSendBackoff(t)
+	server := newSessionEventsServer(t)
+	server.HandleStream = alwaysToolUse
+	var attempts atomic.Int32
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		attempts.Add(1)
+		http.Error(w, "boom", http.StatusInternalServerError)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	defer cancel()
+	window := 300 * time.Millisecond
+	var w sendwindow.Window
+	w.Set(window)
+	r := newShortIdleRunner(t, sendwindow.NewContext(ctx, &w), server.Client(), []BetaTool{&stubBetaTool{name: "echo"}}, 500*time.Millisecond)
+
+	start := time.Now()
+	require.True(t, r.Next())
+	elapsed := time.Since(start)
+	require.False(t, r.Current().Posted, "send should give up once the retry window is exhausted")
+	require.GreaterOrEqual(t, elapsed, window, "retries should span the whole window")
+	require.Less(t, elapsed, window+2*time.Second)
+	require.GreaterOrEqual(t, attempts.Load(), int32(3))
+}
+
+// TestSessionToolRunner_SendRetryWindowUpdateAppliesMidRetry checks that a
+// window that changes while a send is already retrying bounds that send —
+// EnvironmentWorker updates it with the lease TTL each heartbeat reports.
+func TestSessionToolRunner_SendRetryWindowUpdateAppliesMidRetry(t *testing.T) {
+	shrinkSendBackoff(t)
+	server := newSessionEventsServer(t)
+	server.HandleStream = alwaysToolUse
+	firstSend := make(chan struct{})
+	var sendOnce sync.Once
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		sendOnce.Do(func() { close(firstSend) })
+		http.Error(w, "boom", http.StatusInternalServerError)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	defer cancel()
+	var w sendwindow.Window
+	r := newShortIdleRunner(t, sendwindow.NewContext(ctx, &w), server.Client(), []BetaTool{&stubBetaTool{name: "echo"}}, 500*time.Millisecond)
+
+	done := make(chan DispatchedToolCall, 1)
+	go func() {
+		require.True(t, r.Next())
+		done <- r.Current()
+	}()
+	select {
+	case <-firstSend:
+	case <-ctx.Done():
+		t.Fatal("send never attempted")
+	}
+	time.Sleep(200 * time.Millisecond) // still retrying under the 5m default
+	w.Set(100 * time.Millisecond)
+	select {
+	case call := <-done:
+		require.False(t, call.Posted)
+	case <-time.After(2 * time.Second):
+		t.Fatal("the shortened window must cut off the retry loop that started under the 5m default")
+	}
 }
 
 func TestIsFatal4xxStatus(t *testing.T) {

@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/anthropics/anthropic-sdk-go/internal/sendwindow"
 	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
@@ -28,9 +29,14 @@ const (
 	// sessionRunnerStreamHealthyAfter is how long a stream must stay open
 	// before the reconnect backoff resets.
 	sessionRunnerStreamHealthyAfter = 5 * time.Second
-	sessionRunnerSendRetries        = 3
 	sessionRunnerResultsBuffer      = 32 // enough to absorb a brief consumer pause without back-pressuring dispatch
 	sessionRunnerToolUseQueueBuffer = 32
+)
+
+// Backoff between tool-result send retries; vars so tests can shrink them.
+var (
+	sessionRunnerSendBackoffStart = 1 * time.Second
+	sessionRunnerSendBackoffCap   = 30 * time.Second
 )
 
 // Defaults for the tunable per-runner timeouts. Each is overridable via the
@@ -42,6 +48,13 @@ const (
 	defaultSessionRunnerSendTimeout  = 15 * time.Second
 	defaultSessionRunnerDrainTimeout = 30 * time.Second
 )
+
+// defaultSessionRunnerSendRetryWindow bounds how long a transiently failing
+// tool-result send keeps retrying when the runner is used on its own: the
+// server's default work-item lease TTL. lib/environments.EnvironmentWorker
+// overrides it with the live TTL from each lease heartbeat (internal/sendwindow),
+// so a send is only abandoned once the lease can no longer be ours.
+const defaultSessionRunnerSendRetryWindow = 5 * time.Minute
 
 // Sentinel errors returned via (*SessionToolRunner).Err so consumers can
 // distinguish normal end-of-session from idle bailout.
@@ -112,8 +125,8 @@ type SessionToolRunnerOptions struct {
 	ToolTimeout time.Duration
 
 	// SendTimeout bounds a single attempt to post a tool-result event back to
-	// the session (the runner still retries transient failures up to
-	// sessionRunnerSendRetries times). Zero uses the default of 15s.
+	// the session; transient failures are retried with exponential backoff
+	// for a bounded window (5m by default). Zero uses the default of 15s.
 	SendTimeout time.Duration
 
 	// DrainTimeout bounds how long Close waits for in-flight tool executions
@@ -301,6 +314,10 @@ type SessionToolRunner struct {
 	// confirmation-gated tool work is outstanding.
 	idle *idleClock
 
+	// sendWindow overrides defaultSessionRunnerSendRetryWindow when carried on
+	// the construction ctx (EnvironmentWorker's live lease TTL); nil otherwise.
+	sendWindow *sendwindow.Window
+
 	// constructErr is set only at construction and is immutable thereafter;
 	// safe to read without a lock. Used to bail out of Next/start when required
 	// options are missing.
@@ -351,6 +368,7 @@ func (r *BetaSessionEventService) NewToolRunner(ctx context.Context, sessionID s
 		reqOpts:      reqOpts,
 		ctx:          internalCtx,
 		cancel:       cancel,
+		sendWindow:   sendwindow.FromContext(ctx),
 		seen:         map[string]struct{}{},
 		answered:     map[string]struct{}{},
 	}
@@ -970,6 +988,15 @@ func (r *SessionToolRunner) sendTimeout() time.Duration {
 	return defaultSessionRunnerSendTimeout
 }
 
+// sendRetryWindow returns how long a transiently failing tool-result send keeps
+// retrying: the ctx-carried window when set, else defaultSessionRunnerSendRetryWindow.
+func (r *SessionToolRunner) sendRetryWindow() time.Duration {
+	if d := r.sendWindow.Get(); d > 0 {
+		return d
+	}
+	return defaultSessionRunnerSendRetryWindow
+}
+
 // drainTimeout returns how long Close waits for in-flight tools: opts.DrainTimeout
 // when set to a positive value, otherwise defaultSessionRunnerDrainTimeout.
 func (r *SessionToolRunner) drainTimeout() time.Duration {
@@ -1198,15 +1225,18 @@ func (r *SessionToolRunner) postCall(ctx context.Context, call DispatchedToolCal
 }
 
 // sendResult posts a tool-result event (user.tool_result or
-// user.custom_tool_result). Returns true on success. Retries up to
-// sessionRunnerSendRetries times on transient failures, backing off between
-// attempts but NOT after the final one; a permanent 4xx short-circuits and
-// returns false.
+// user.custom_tool_result). Returns true on success. Transient failures are
+// retried with jittered exponential backoff until sendRetryWindow (re-read on
+// each failure, so a lease TTL learned mid-retry applies) has elapsed since the
+// first attempt; a permanent 4xx or ctx cancellation short-circuits and returns
+// false.
 func (r *SessionToolRunner) sendResult(ctx context.Context, event BetaManagedAgentsEventParamsUnion, toolUseID string) bool {
 	params := BetaSessionEventSendParams{
 		Events: []BetaManagedAgentsEventParamsUnion{event},
 	}
-	for attempt := range sessionRunnerSendRetries {
+	start := time.Now()
+	backoff := sessionRunnerSendBackoffStart
+	for attempt := 1; ; attempt++ {
 		sendCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), r.sendTimeout())
 		_, err := r.eventService.Send(sendCtx, r.sessionID, params, r.reqOpts...)
 		cancel()
@@ -1223,17 +1253,23 @@ func (r *SessionToolRunner) sendResult(ctx context.Context, event BetaManagedAge
 				slog.String("tool_use_id", toolUseID))
 			return false
 		}
+		remaining := r.sendRetryWindow() - time.Since(start)
+		if remaining <= 0 {
+			r.log.Error("tool result send failed; retry window exhausted",
+				slog.String("tool_use_id", toolUseID),
+				slog.Int("attempts", attempt),
+				slog.Any("error", err))
+			return false
+		}
+		wait := min(jitterDuration(backoff), remaining)
 		r.log.Warn("tool result send failed; retrying",
 			slog.String("tool_use_id", toolUseID),
-			slog.Int("attempt", attempt+1),
+			slog.Int("attempt", attempt),
+			slog.Duration("backoff", wait),
 			slog.Any("error", err))
-		// Don't back off after the final attempt — there is no retry left to
-		// wait for, so sleeping would only delay returning the failure.
-		if attempt < sessionRunnerSendRetries-1 {
-			sleepCtx(ctx, time.Duration(attempt+1)*time.Second)
-		}
+		sleepCtx(ctx, wait)
+		backoff = min(backoff*2, sessionRunnerSendBackoffCap)
 	}
-	return false
 }
 
 func (r *SessionToolRunner) markSeen(id string) bool {

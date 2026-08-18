@@ -3,6 +3,7 @@ package anthropic
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -422,5 +423,127 @@ func TestBetaToolRunnerStreaming_ForwardsContainer(t *testing.T) {
 	}
 	if got := bodies[1]["container"]; got != "container_123" {
 		t.Fatalf("follow-up container = %v, want container_123", got)
+	}
+}
+
+// toolUseServer answers every POST /v1/messages with a fresh tool_use turn
+// (msg_1, msg_2, ...), so a runner only stops at MaxIterations.
+func toolUseServer(t *testing.T, streaming bool) (*httptest.Server, *atomic.Int32) {
+	t.Helper()
+	var calls atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		n := calls.Add(1)
+		if !streaming {
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `{"id":"msg_%d","type":"message","role":"assistant","model":"m","content":[{"type":"tool_use","id":"toolu_%d","name":"weather","input":{"city":"SF"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`, n, n)
+			return
+		}
+		w.Header().Set("Content-Type", "text/event-stream")
+		for _, e := range []string{
+			fmt.Sprintf(`event: message_start`+"\n"+`data: {"type":"message_start","message":{"id":"msg_%d","type":"message","role":"assistant","model":"m","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}}`, n),
+			fmt.Sprintf(`event: content_block_start`+"\n"+`data: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_%d","name":"weather","input":{}}}`, n),
+			`event: content_block_delta` + "\n" + `data: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"{\"city\":\"SF\"}"}}`,
+			`event: content_block_stop` + "\n" + `data: {"type":"content_block_stop","index":0}`,
+			`event: message_delta` + "\n" + `data: {"type":"message_delta","delta":{"stop_reason":"tool_use","stop_sequence":null},"usage":{"output_tokens":5}}`,
+			`event: message_stop` + "\n" + `data: {"type":"message_stop"}`,
+		} {
+			_, _ = w.Write([]byte(e + "\n\n"))
+		}
+	}))
+	t.Cleanup(server.Close)
+	return server, &calls
+}
+
+func newCappedRunnerParams(maxIterations int) BetaToolRunnerParams {
+	return BetaToolRunnerParams{BetaMessageNewParams: BetaMessageNewParams{
+		Model:     "m",
+		MaxTokens: 512,
+		Messages:  []BetaMessageParam{NewBetaUserMessage(NewBetaTextBlock("What's the weather in SF?"))},
+	}, MaxIterations: maxIterations}
+}
+
+func requireYieldedOnce(t *testing.T, ids []string, want ...string) {
+	t.Helper()
+	if fmt.Sprint(ids) != fmt.Sprint(want) {
+		t.Fatalf("yielded messages = %v, want %v", ids, want)
+	}
+}
+
+// All() yields one message per API call: at MaxIterations the K-th message is
+// yielded once and no further request is made.
+func TestBetaToolRunner_All_MaxIterationsYieldsEachMessageOnce(t *testing.T) {
+	const maxIterations = 3
+	server, calls := toolUseServer(t, false)
+	client := newTestToolRunnerClient(server)
+	runner := client.Beta.Messages.NewToolRunner([]BetaTool{&stubBetaTool{name: "weather"}}, newCappedRunnerParams(maxIterations))
+
+	var ids []string
+	for msg, err := range runner.All(context.Background()) {
+		if err != nil {
+			t.Fatalf("All: %v", err)
+		}
+		ids = append(ids, msg.ID)
+	}
+	requireYieldedOnce(t, ids, "msg_1", "msg_2", "msg_3")
+	if got := calls.Load(); got != maxIterations {
+		t.Fatalf("expected %d requests, got %d", maxIterations, got)
+	}
+	if got := runner.IterationCount(); got != maxIterations {
+		t.Fatalf("expected IterationCount %d, got %d", maxIterations, got)
+	}
+	if msg, err := runner.NextMessage(context.Background()); msg != nil || err != nil {
+		t.Fatalf("NextMessage after completion = (%v, %v), want (nil, nil)", msg, err)
+	}
+}
+
+// All() yields the final answer once when the model stops using tools.
+func TestBetaToolRunner_All_YieldsFinalMessageOnce(t *testing.T) {
+	client := newTestToolRunnerClient(messagesServer(t))
+	runner := client.Beta.Messages.NewToolRunner([]BetaTool{&stubBetaTool{name: "weather"}}, newCappedRunnerParams(0))
+
+	var ids []string
+	for msg, err := range runner.All(context.Background()) {
+		if err != nil {
+			t.Fatalf("All: %v", err)
+		}
+		ids = append(ids, msg.ID)
+	}
+	requireYieldedOnce(t, ids, "msg_1", "msg_2")
+	if got := runner.IterationCount(); got != 2 {
+		t.Fatalf("expected IterationCount 2, got %d", got)
+	}
+	if last := runner.LastMessage(); last == nil || last.ID != "msg_2" {
+		t.Fatalf("LastMessage = %v, want msg_2", last)
+	}
+}
+
+// AllStreaming streams one turn per API call: at MaxIterations no message is
+// streamed twice and no further request is made.
+func TestBetaToolRunnerStreaming_AllStreaming_MaxIterationsStreamsEachMessageOnce(t *testing.T) {
+	const maxIterations = 3
+	server, calls := toolUseServer(t, true)
+	client := newTestToolRunnerClient(server)
+	runner := client.Beta.Messages.NewToolRunnerStreaming([]BetaTool{&stubBetaTool{name: "weather"}}, newCappedRunnerParams(maxIterations))
+
+	var ids []string
+	for events, err := range runner.AllStreaming(context.Background()) {
+		if err != nil {
+			t.Fatalf("AllStreaming: %v", err)
+		}
+		for event, err := range events {
+			if err != nil {
+				t.Fatalf("streaming: %v", err)
+			}
+			if start, ok := event.AsAny().(BetaRawMessageStartEvent); ok {
+				ids = append(ids, start.Message.ID)
+			}
+		}
+	}
+	requireYieldedOnce(t, ids, "msg_1", "msg_2", "msg_3")
+	if got := calls.Load(); got != maxIterations {
+		t.Fatalf("expected %d requests, got %d", maxIterations, got)
+	}
+	if last := runner.LastMessage(); last == nil || last.ID != "msg_3" {
+		t.Fatalf("LastMessage = %v, want msg_3", last)
 	}
 }

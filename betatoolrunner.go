@@ -341,7 +341,7 @@ func (r *BetaToolRunner) NextMessage(ctx context.Context) (*BetaMessage, error) 
 	// Check iteration limit
 	if r.Params.MaxIterations > 0 && r.iterationCount >= r.Params.MaxIterations {
 		r.completed = true
-		return r.lastMessage, nil
+		return nil, nil
 	}
 
 	// Execute any pending tool calls from the last message
@@ -354,7 +354,7 @@ func (r *BetaToolRunner) NextMessage(ctx context.Context) (*BetaMessage, error) 
 		if toolMessage == nil {
 			// No tools to execute, conversation is complete
 			r.completed = true
-			return r.lastMessage, nil
+			return nil, nil
 		}
 		r.Params.Messages = append(r.Params.Messages, *toolMessage)
 	}

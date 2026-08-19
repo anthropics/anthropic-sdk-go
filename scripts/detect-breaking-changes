@@ -12,6 +12,9 @@ TEST_PATHS=(
 	message_test.go
 	messagebatch_test.go
 	model_test.go
+	file_test.go
+	skill_test.go
+	skillversion_test.go
 	betamodel_test.go
 	betamessage_test.go
 	betamessagebatch_test.go

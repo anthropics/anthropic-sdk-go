@@ -376,6 +376,7 @@ func (r BetaToolUseBlock) ToParam() BetaToolUseBlockParam {
 	p.ID = r.ID
 	p.Input = r.Input
 	p.Name = r.Name
+	p.ToolsetName = paramutil.ToOpt(r.ToolsetName, r.JSON.ToolsetName)
 	return p
 }
 

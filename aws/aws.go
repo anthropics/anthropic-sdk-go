@@ -67,6 +67,8 @@ type Client struct {
 	Completions anthropic.CompletionService
 	Messages    anthropic.MessageService
 	Models      anthropic.ModelService
+	Files       anthropic.FileService
+	Skills      anthropic.SkillService
 	Beta        anthropic.BetaService
 }
 
@@ -101,6 +103,8 @@ func NewClient(ctx context.Context, cfg ClientConfig, opts ...option.RequestOpti
 		Completions: anthropic.NewCompletionService(opts...),
 		Messages:    anthropic.NewMessageService(opts...),
 		Models:      anthropic.NewModelService(opts...),
+		Files:       anthropic.NewFileService(opts...),
+		Skills:      anthropic.NewSkillService(opts...),
 		Beta:        anthropic.NewBetaService(opts...),
 	}, nil
 }

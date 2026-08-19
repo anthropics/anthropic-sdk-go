@@ -631,8 +631,6 @@ type MessageBatchNewParamsRequestParams struct {
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero" api:"required"`
-	// Container identifier for reuse across requests.
-	Container param.Opt[string] `json:"container,omitzero"`
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
@@ -676,6 +674,8 @@ type MessageBatchNewParamsRequestParams struct {
 	// setting top_p. A value >= 0.99 will be accepted for backwards compatibility, all
 	// other values will be rejected with a 400 error.
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
+	// Container identifier for reuse across requests.
+	Container MessageCreateParamsContainerUnion `json:"container,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`

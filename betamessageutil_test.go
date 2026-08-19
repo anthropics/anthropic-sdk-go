@@ -54,6 +54,33 @@ func TestBetaTextCitationToParamKeepsAllFields(t *testing.T) {
 	})
 }
 
+func TestBetaToolUseToParamKeepsToolsetName(t *testing.T) {
+	t.Run("toolset member keeps toolset_name", func(t *testing.T) {
+		result := unmarshalBetaContentBlockParam(t, `{"type":"tool_use","id":"toolu_1","name":"screenshot","input":{},"toolset_name":"computer","caller":{"type":"direct"}}`)
+		if result.OfToolUse == nil {
+			t.Fatal("Expected OfToolUse to be non-nil")
+		}
+		b, err := json.Marshal(result)
+		if err != nil {
+			t.Fatalf("Failed to marshal param: %v", err)
+		}
+		if got := gjson.GetBytes(b, "toolset_name").String(); got != "computer" {
+			t.Errorf("Expected toolset_name to survive ToParam, got %q in %s", got, b)
+		}
+	})
+
+	t.Run("non-member omits toolset_name", func(t *testing.T) {
+		result := unmarshalBetaContentBlockParam(t, `{"type":"tool_use","id":"toolu_1","name":"get_weather","input":{}}`)
+		b, err := json.Marshal(result)
+		if err != nil {
+			t.Fatalf("Failed to marshal param: %v", err)
+		}
+		if gjson.GetBytes(b, "toolset_name").Exists() {
+			t.Errorf("Expected toolset_name to be omitted, got %s", b)
+		}
+	})
+}
+
 func TestBetaAccumulatePreservesWireJSON(t *testing.T) {
 	toolResult := `{"type":"bash_code_execution_tool_result","tool_use_id":"srvtoolu_01","content":{"type":"bash_code_execution_result","stdout":"","stderr":"","return_code":0,"content":[{"type":"bash_code_execution_output","file_id":"file_011ABC"}]}}`
 	events := []string{

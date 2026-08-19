@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.65.0 (2026-08-19)
+
+Full Changelog: [v1.64.0...v1.65.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.64.0...v1.65.0)
+
+### Features
+
+* **api:** Files and Skills APIs are now GA; add computer use and browser use toolsets ([e7be7af](https://github.com/anthropics/anthropic-sdk-go/commit/e7be7af468408ca98adae858777d47a71487c4f8))
+
 ## 1.64.0 (2026-08-18)
 
 Full Changelog: [v1.63.1...v1.64.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.63.1...v1.64.0)

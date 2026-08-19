@@ -465,6 +465,1035 @@ func (r *BashCodeExecutionToolResultErrorParam) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// `close_tab`'s config overrides.
+type BrowserCloseTabConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserCloseTabConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserCloseTabConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserCloseTabConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `double_click`'s config overrides.
+type BrowserDoubleClickConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserDoubleClickConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserDoubleClickConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserDoubleClickConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `file_upload`'s config overrides.
+type BrowserFileUploadConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserFileUploadConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserFileUploadConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserFileUploadConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `find`'s config overrides.
+type BrowserFindConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserFindConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserFindConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserFindConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `form_input`'s config overrides.
+type BrowserFormInputConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserFormInputConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserFormInputConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserFormInputConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `get_page_text`'s config overrides.
+type BrowserGetPageTextConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserGetPageTextConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserGetPageTextConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserGetPageTextConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `hold_key`'s config overrides.
+type BrowserHoldKeyConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserHoldKeyConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserHoldKeyConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserHoldKeyConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `hover`'s config overrides.
+type BrowserHoverConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserHoverConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserHoverConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserHoverConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `javascript_exec`'s config overrides.
+type BrowserJavascriptExecConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserJavascriptExecConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserJavascriptExecConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserJavascriptExecConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `key`'s config overrides.
+type BrowserKeyConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserKeyConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserKeyConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserKeyConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `left_click`'s config overrides.
+type BrowserLeftClickConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserLeftClickConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserLeftClickConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserLeftClickConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `left_click_drag`'s config overrides.
+type BrowserLeftClickDragConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserLeftClickDragConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserLeftClickDragConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserLeftClickDragConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `left_mouse_down`'s config overrides.
+type BrowserLeftMouseDownConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserLeftMouseDownConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserLeftMouseDownConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserLeftMouseDownConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `left_mouse_up`'s config overrides.
+type BrowserLeftMouseUpConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserLeftMouseUpConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserLeftMouseUpConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserLeftMouseUpConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `list_tabs`'s config overrides.
+type BrowserListTabsConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserListTabsConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserListTabsConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserListTabsConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `middle_click`'s config overrides.
+type BrowserMiddleClickConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserMiddleClickConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserMiddleClickConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserMiddleClickConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `mouse_move`'s config overrides.
+type BrowserMouseMoveConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserMouseMoveConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserMouseMoveConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserMouseMoveConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `navigate`'s config overrides.
+type BrowserNavigateConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserNavigateConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserNavigateConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserNavigateConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `new_tab`'s config overrides.
+type BrowserNewTabConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserNewTabConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserNewTabConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserNewTabConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `read_console`'s config overrides.
+type BrowserReadConsoleConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserReadConsoleConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserReadConsoleConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserReadConsoleConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `read_network`'s config overrides.
+type BrowserReadNetworkConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserReadNetworkConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserReadNetworkConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserReadNetworkConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `read_page`'s config overrides.
+type BrowserReadPageConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserReadPageConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserReadPageConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserReadPageConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `right_click`'s config overrides.
+type BrowserRightClickConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserRightClickConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserRightClickConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserRightClickConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `screenshot`'s config overrides.
+type BrowserScreenshotConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserScreenshotConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserScreenshotConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserScreenshotConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `scroll`'s config overrides.
+type BrowserScrollConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserScrollConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserScrollConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserScrollConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `scroll_to`'s config overrides.
+type BrowserScrollToConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserScrollToConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserScrollToConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserScrollToConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The caller's browser state after a browser toolset member call — the full
+// inventory of open tabs, which tab is active, and any side effects (tabs opened,
+// download state changes) the call produced.
+//
+// At most one per `tool_result`, only on a non-error result answering a browser
+// toolset member `tool_use`. The server renders the model-visible text from it;
+// the model never sees the raw fields.
+//
+// The properties Tabs, Type are required.
+type BrowserStateBlockParam struct {
+	// All tabs open in the browser after this call — the full inventory, not a delta.
+	// May be empty. Whenever non-empty, exactly one entry carries `active: true`.
+	Tabs []BrowserStateTabEntryParam `json:"tabs,omitzero" api:"required"`
+	// Tabs opened and download state changes during this call. "Nothing to report" is
+	// expressed by omitting the field, never by an empty list.
+	StateChanges []BrowserStateChangeUnionParam `json:"state_changes,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// This field can be elided, and will marshal its zero value as "browser_state".
+	Type constant.BrowserState `json:"type" default:"browser_state"`
+	paramObj
+}
+
+func (r BrowserStateBlockParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserStateBlockParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserStateBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func BrowserStateChangeParamOfTabOpened(tabID string) BrowserStateChangeUnionParam {
+	var tabOpened BrowserStateChangeTabOpenedParam
+	tabOpened.TabID = tabID
+	return BrowserStateChangeUnionParam{OfTabOpened: &tabOpened}
+}
+
+func BrowserStateChangeParamOfDownloadStarted(downloadID string, url string) BrowserStateChangeUnionParam {
+	var downloadStarted BrowserStateChangeDownloadStartedParam
+	downloadStarted.DownloadID = downloadID
+	downloadStarted.URL = url
+	return BrowserStateChangeUnionParam{OfDownloadStarted: &downloadStarted}
+}
+
+func BrowserStateChangeParamOfDownloadCompleted(downloadID string, url string) BrowserStateChangeUnionParam {
+	var downloadCompleted BrowserStateChangeDownloadCompletedParam
+	downloadCompleted.DownloadID = downloadID
+	downloadCompleted.URL = url
+	return BrowserStateChangeUnionParam{OfDownloadCompleted: &downloadCompleted}
+}
+
+func BrowserStateChangeParamOfDownloadFailed(downloadID string, url string) BrowserStateChangeUnionParam {
+	var downloadFailed BrowserStateChangeDownloadFailedParam
+	downloadFailed.DownloadID = downloadID
+	downloadFailed.URL = url
+	return BrowserStateChangeUnionParam{OfDownloadFailed: &downloadFailed}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BrowserStateChangeUnionParam struct {
+	OfTabOpened         *BrowserStateChangeTabOpenedParam         `json:",omitzero,inline"`
+	OfDownloadStarted   *BrowserStateChangeDownloadStartedParam   `json:",omitzero,inline"`
+	OfDownloadCompleted *BrowserStateChangeDownloadCompletedParam `json:",omitzero,inline"`
+	OfDownloadFailed    *BrowserStateChangeDownloadFailedParam    `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BrowserStateChangeUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfTabOpened, u.OfDownloadStarted, u.OfDownloadCompleted, u.OfDownloadFailed)
+}
+func (u *BrowserStateChangeUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BrowserStateChangeUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfTabOpened) {
+		return u.OfTabOpened
+	} else if !param.IsOmitted(u.OfDownloadStarted) {
+		return u.OfDownloadStarted
+	} else if !param.IsOmitted(u.OfDownloadCompleted) {
+		return u.OfDownloadCompleted
+	} else if !param.IsOmitted(u.OfDownloadFailed) {
+		return u.OfDownloadFailed
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BrowserStateChangeUnionParam) GetTabID() *string {
+	if vt := u.OfTabOpened; vt != nil {
+		return &vt.TabID
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BrowserStateChangeUnionParam) GetPath() *string {
+	if vt := u.OfDownloadCompleted; vt != nil && vt.Path.Valid() {
+		return &vt.Path.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BrowserStateChangeUnionParam) GetSizeBytes() *int64 {
+	if vt := u.OfDownloadCompleted; vt != nil && vt.SizeBytes.Valid() {
+		return &vt.SizeBytes.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BrowserStateChangeUnionParam) GetError() *string {
+	if vt := u.OfDownloadFailed; vt != nil && vt.Error.Valid() {
+		return &vt.Error.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BrowserStateChangeUnionParam) GetType() *string {
+	if vt := u.OfTabOpened; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfDownloadStarted; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfDownloadCompleted; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfDownloadFailed; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BrowserStateChangeUnionParam) GetDownloadID() *string {
+	if vt := u.OfDownloadStarted; vt != nil {
+		return (*string)(&vt.DownloadID)
+	} else if vt := u.OfDownloadCompleted; vt != nil {
+		return (*string)(&vt.DownloadID)
+	} else if vt := u.OfDownloadFailed; vt != nil {
+		return (*string)(&vt.DownloadID)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BrowserStateChangeUnionParam) GetURL() *string {
+	if vt := u.OfDownloadStarted; vt != nil {
+		return (*string)(&vt.URL)
+	} else if vt := u.OfDownloadCompleted; vt != nil {
+		return (*string)(&vt.URL)
+	} else if vt := u.OfDownloadFailed; vt != nil {
+		return (*string)(&vt.URL)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BrowserStateChangeUnionParam](
+		"type",
+		apijson.Discriminator[BrowserStateChangeTabOpenedParam]("tab_opened"),
+		apijson.Discriminator[BrowserStateChangeDownloadStartedParam]("download_started"),
+		apijson.Discriminator[BrowserStateChangeDownloadCompletedParam]("download_completed"),
+		apijson.Discriminator[BrowserStateChangeDownloadFailedParam]("download_failed"),
+	)
+}
+
+// A file download that finished during this call, reported with the same
+// `download_id` as its `download_started` — or without a prior `download_started`,
+// when the download finished during the call that started it (at most one state
+// change per `download_id` per result).
+//
+// The properties DownloadID, Type, URL are required.
+type BrowserStateChangeDownloadCompletedParam struct {
+	// The caller-assigned identifier for this download, stable across the state
+	// changes reporting it.
+	DownloadID string `json:"download_id" api:"required"`
+	// The final post-redirect URL the download was served from.
+	URL string `json:"url" api:"required"`
+	// Where the executor saved the file, on the executor's filesystem. Only included
+	// when another tool in the same environment can read the file at that path.
+	Path param.Opt[string] `json:"path,omitzero"`
+	// The completed download's size.
+	SizeBytes param.Opt[int64] `json:"size_bytes,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "download_completed".
+	Type constant.DownloadCompleted `json:"type" default:"download_completed"`
+	paramObj
+}
+
+func (r BrowserStateChangeDownloadCompletedParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserStateChangeDownloadCompletedParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserStateChangeDownloadCompletedParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A file download that failed — or was cancelled — during this call.
+//
+// The properties DownloadID, Type, URL are required.
+type BrowserStateChangeDownloadFailedParam struct {
+	// The caller-assigned identifier for this download, stable across the state
+	// changes reporting it.
+	DownloadID string `json:"download_id" api:"required"`
+	// The final post-redirect URL the download was served from.
+	URL string `json:"url" api:"required"`
+	// The failure or cancellation detail, when known.
+	Error param.Opt[string] `json:"error,omitzero"`
+	// This field can be elided, and will marshal its zero value as "download_failed".
+	Type constant.DownloadFailed `json:"type" default:"download_failed"`
+	paramObj
+}
+
+func (r BrowserStateChangeDownloadFailedParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserStateChangeDownloadFailedParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserStateChangeDownloadFailedParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A file download that started during this call.
+//
+// The properties DownloadID, Type, URL are required.
+type BrowserStateChangeDownloadStartedParam struct {
+	// The caller-assigned identifier for this download, stable across the state
+	// changes reporting it.
+	DownloadID string `json:"download_id" api:"required"`
+	// The final post-redirect URL the download was served from.
+	URL string `json:"url" api:"required"`
+	// This field can be elided, and will marshal its zero value as "download_started".
+	Type constant.DownloadStarted `json:"type" default:"download_started"`
+	paramObj
+}
+
+func (r BrowserStateChangeDownloadStartedParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserStateChangeDownloadStartedParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserStateChangeDownloadStartedParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A tab this call's execution opened that remains open at its end — the creation
+// delta of the `tabs` inventory, not an event log.
+//
+// Carries only the `tab_id`; the tab's `title` and `url` live on its `tabs` entry,
+// which must include the same `tab_id`. A tab opened during a failed call gets no
+// deferred `tab_opened`; it simply appears in the next result's `tabs` inventory.
+//
+// The properties TabID, Type are required.
+type BrowserStateChangeTabOpenedParam struct {
+	// The `tab_id` of the opened tab, present in `tabs`.
+	TabID string `json:"tab_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "tab_opened".
+	Type constant.TabOpened `json:"type" default:"tab_opened"`
+	paramObj
+}
+
+func (r BrowserStateChangeTabOpenedParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserStateChangeTabOpenedParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserStateChangeTabOpenedParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One open browser tab reported in a `browser_state` block's `tabs` inventory.
+//
+// `tab_id` is the caller-assigned identifier for the tab; `title` and `url`
+// describe the page the tab is currently showing and may be empty strings (a blank
+// tab legitimately has both empty). `active` marks the tab that is active after
+// this call; whenever `tabs` is non-empty, exactly one entry is marked.
+//
+// The properties TabID, Title, URL are required.
+type BrowserStateTabEntryParam struct {
+	// The caller-assigned identifier for this tab, unique within the inventory.
+	TabID string `json:"tab_id" api:"required"`
+	// The title of the page the tab is showing. May be empty.
+	Title string `json:"title" api:"required"`
+	// The URL of the page the tab is showing. May be empty.
+	URL string `json:"url" api:"required"`
+	// Whether this tab is the active tab after this call. Whenever `tabs` is
+	// non-empty, exactly one entry is marked `active: true`.
+	Active param.Opt[bool] `json:"active,omitzero"`
+	paramObj
+}
+
+func (r BrowserStateTabEntryParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserStateTabEntryParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserStateTabEntryParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `switch_tab`'s config overrides.
+type BrowserSwitchTabConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserSwitchTabConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserSwitchTabConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserSwitchTabConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The browser toolset: a single `tools[]` entry (carrying no `name`) that declares
+// the browser tool family. The model is served the family's tool with any members
+// disabled via `configs` removed from its schema.
+//
+// The property Type is required.
+type BrowserToolset20260801Param struct {
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120",
+	// "code_execution_20260521".
+	AllowedCallers []string `json:"allowed_callers,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Per-member configuration for `browser_toolset_20260801`: one optional field per
+	// member tool, keyed by the member name — the same name the member's `tool_use`
+	// blocks carry. Every member is an accepted key, and a member's defaults apply
+	// wherever its key is absent. Unknown keys are rejected: the field set is this
+	// toolset version's complete member set.
+	Configs BrowserToolsetConfigsParam `json:"configs,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "browser_toolset_20260801".
+	Type constant.BrowserToolset20260801 `json:"type" default:"browser_toolset_20260801"`
+	paramObj
+}
+
+func (r BrowserToolset20260801Param) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserToolset20260801Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserToolset20260801Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-member configuration for `browser_toolset_20260801`: one optional field per
+// member tool, keyed by the member name — the same name the member's `tool_use`
+// blocks carry. Every member is an accepted key, and a member's defaults apply
+// wherever its key is absent. Unknown keys are rejected: the field set is this
+// toolset version's complete member set.
+type BrowserToolsetConfigsParam struct {
+	// `close_tab`'s config overrides.
+	CloseTab BrowserCloseTabConfigParam `json:"close_tab,omitzero"`
+	// `double_click`'s config overrides.
+	DoubleClick BrowserDoubleClickConfigParam `json:"double_click,omitzero"`
+	// `file_upload`'s config overrides.
+	FileUpload BrowserFileUploadConfigParam `json:"file_upload,omitzero"`
+	// `find`'s config overrides.
+	Find BrowserFindConfigParam `json:"find,omitzero"`
+	// `form_input`'s config overrides.
+	FormInput BrowserFormInputConfigParam `json:"form_input,omitzero"`
+	// `get_page_text`'s config overrides.
+	GetPageText BrowserGetPageTextConfigParam `json:"get_page_text,omitzero"`
+	// `hold_key`'s config overrides.
+	HoldKey BrowserHoldKeyConfigParam `json:"hold_key,omitzero"`
+	// `hover`'s config overrides.
+	Hover BrowserHoverConfigParam `json:"hover,omitzero"`
+	// `javascript_exec`'s config overrides.
+	JavascriptExec BrowserJavascriptExecConfigParam `json:"javascript_exec,omitzero"`
+	// `key`'s config overrides.
+	Key BrowserKeyConfigParam `json:"key,omitzero"`
+	// `left_click`'s config overrides.
+	LeftClick BrowserLeftClickConfigParam `json:"left_click,omitzero"`
+	// `left_click_drag`'s config overrides.
+	LeftClickDrag BrowserLeftClickDragConfigParam `json:"left_click_drag,omitzero"`
+	// `left_mouse_down`'s config overrides.
+	LeftMouseDown BrowserLeftMouseDownConfigParam `json:"left_mouse_down,omitzero"`
+	// `left_mouse_up`'s config overrides.
+	LeftMouseUp BrowserLeftMouseUpConfigParam `json:"left_mouse_up,omitzero"`
+	// `list_tabs`'s config overrides.
+	ListTabs BrowserListTabsConfigParam `json:"list_tabs,omitzero"`
+	// `middle_click`'s config overrides.
+	MiddleClick BrowserMiddleClickConfigParam `json:"middle_click,omitzero"`
+	// `mouse_move`'s config overrides.
+	MouseMove BrowserMouseMoveConfigParam `json:"mouse_move,omitzero"`
+	// `navigate`'s config overrides.
+	Navigate BrowserNavigateConfigParam `json:"navigate,omitzero"`
+	// `new_tab`'s config overrides.
+	NewTab BrowserNewTabConfigParam `json:"new_tab,omitzero"`
+	// `read_console`'s config overrides.
+	ReadConsole BrowserReadConsoleConfigParam `json:"read_console,omitzero"`
+	// `read_network`'s config overrides.
+	ReadNetwork BrowserReadNetworkConfigParam `json:"read_network,omitzero"`
+	// `read_page`'s config overrides.
+	ReadPage BrowserReadPageConfigParam `json:"read_page,omitzero"`
+	// `right_click`'s config overrides.
+	RightClick BrowserRightClickConfigParam `json:"right_click,omitzero"`
+	// `screenshot`'s config overrides.
+	Screenshot BrowserScreenshotConfigParam `json:"screenshot,omitzero"`
+	// `scroll`'s config overrides.
+	Scroll BrowserScrollConfigParam `json:"scroll,omitzero"`
+	// `scroll_to`'s config overrides.
+	ScrollTo BrowserScrollToConfigParam `json:"scroll_to,omitzero"`
+	// `switch_tab`'s config overrides.
+	SwitchTab BrowserSwitchTabConfigParam `json:"switch_tab,omitzero"`
+	// `triple_click`'s config overrides.
+	TripleClick BrowserTripleClickConfigParam `json:"triple_click,omitzero"`
+	// `type`'s config overrides.
+	Type BrowserTypeConfigParam `json:"type,omitzero"`
+	// `wait`'s config overrides.
+	Wait BrowserWaitConfigParam `json:"wait,omitzero"`
+	// `zoom`'s config overrides.
+	Zoom BrowserZoomConfigParam `json:"zoom,omitzero"`
+	paramObj
+}
+
+func (r BrowserToolsetConfigsParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserToolsetConfigsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserToolsetConfigsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `triple_click`'s config overrides.
+type BrowserTripleClickConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserTripleClickConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserTripleClickConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserTripleClickConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `type`'s config overrides.
+type BrowserTypeConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserTypeConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserTypeConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserTypeConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `wait`'s config overrides.
+type BrowserWaitConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserWaitConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserWaitConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserWaitConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `zoom`'s config overrides.
+type BrowserZoomConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r BrowserZoomConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BrowserZoomConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BrowserZoomConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 func NewCacheControlEphemeralParam() CacheControlEphemeralParam {
 	return CacheControlEphemeralParam{
 		Type: "ephemeral",
@@ -1465,6 +2494,431 @@ func (r *CodeExecutionToolResultErrorParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// `cursor_position`'s config overrides.
+type ComputerCursorPositionConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerCursorPositionConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerCursorPositionConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerCursorPositionConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `double_click`'s config overrides.
+type ComputerDoubleClickConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerDoubleClickConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerDoubleClickConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerDoubleClickConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `hold_key`'s config overrides.
+type ComputerHoldKeyConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerHoldKeyConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerHoldKeyConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerHoldKeyConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `key`'s config overrides.
+type ComputerKeyConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerKeyConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerKeyConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerKeyConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `left_click`'s config overrides.
+type ComputerLeftClickConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerLeftClickConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerLeftClickConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerLeftClickConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `left_click_drag`'s config overrides.
+type ComputerLeftClickDragConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerLeftClickDragConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerLeftClickDragConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerLeftClickDragConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `left_mouse_down`'s config overrides.
+type ComputerLeftMouseDownConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerLeftMouseDownConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerLeftMouseDownConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerLeftMouseDownConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `left_mouse_up`'s config overrides.
+type ComputerLeftMouseUpConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerLeftMouseUpConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerLeftMouseUpConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerLeftMouseUpConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `middle_click`'s config overrides.
+type ComputerMiddleClickConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerMiddleClickConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerMiddleClickConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerMiddleClickConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `mouse_move`'s config overrides.
+type ComputerMouseMoveConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerMouseMoveConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerMouseMoveConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerMouseMoveConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `right_click`'s config overrides.
+type ComputerRightClickConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerRightClickConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerRightClickConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerRightClickConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `screenshot`'s config overrides.
+type ComputerScreenshotConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerScreenshotConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerScreenshotConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerScreenshotConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `scroll`'s config overrides.
+type ComputerScrollConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerScrollConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerScrollConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerScrollConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The computer toolset: a single `tools[]` entry (carrying no `name`) that
+// declares the computer tool family. The model is served the family's tool with
+// any members disabled via `configs` removed from its schema. Every member is
+// enabled by default, zoom included. The single-tool options `display_number` and
+// `enable_zoom` are not fields of a toolset entry — it carries only `type`,
+// `configs`, and `cache_control`; zoom is controlled via `configs.zoom.enabled`.
+//
+// The property Type is required.
+type ComputerToolset20260801Param struct {
+	// Any of "direct", "code_execution_20250825", "code_execution_20260120",
+	// "code_execution_20260521".
+	AllowedCallers []string `json:"allowed_callers,omitzero"`
+	// Create a cache control breakpoint at this content block.
+	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Per-member configuration for `computer_toolset_20260801`: one optional field per
+	// member tool, keyed by the member name — the same name the member's `tool_use`
+	// blocks carry. Every member is an accepted key, and a member's defaults apply
+	// wherever its key is absent. Unknown keys are rejected: the field set is this
+	// toolset version's complete member set.
+	Configs ComputerToolsetConfigsParam `json:"configs,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "computer_toolset_20260801".
+	Type constant.ComputerToolset20260801 `json:"type" default:"computer_toolset_20260801"`
+	paramObj
+}
+
+func (r ComputerToolset20260801Param) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerToolset20260801Param
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerToolset20260801Param) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Per-member configuration for `computer_toolset_20260801`: one optional field per
+// member tool, keyed by the member name — the same name the member's `tool_use`
+// blocks carry. Every member is an accepted key, and a member's defaults apply
+// wherever its key is absent. Unknown keys are rejected: the field set is this
+// toolset version's complete member set.
+type ComputerToolsetConfigsParam struct {
+	// `cursor_position`'s config overrides.
+	CursorPosition ComputerCursorPositionConfigParam `json:"cursor_position,omitzero"`
+	// `double_click`'s config overrides.
+	DoubleClick ComputerDoubleClickConfigParam `json:"double_click,omitzero"`
+	// `hold_key`'s config overrides.
+	HoldKey ComputerHoldKeyConfigParam `json:"hold_key,omitzero"`
+	// `key`'s config overrides.
+	Key ComputerKeyConfigParam `json:"key,omitzero"`
+	// `left_click`'s config overrides.
+	LeftClick ComputerLeftClickConfigParam `json:"left_click,omitzero"`
+	// `left_click_drag`'s config overrides.
+	LeftClickDrag ComputerLeftClickDragConfigParam `json:"left_click_drag,omitzero"`
+	// `left_mouse_down`'s config overrides.
+	LeftMouseDown ComputerLeftMouseDownConfigParam `json:"left_mouse_down,omitzero"`
+	// `left_mouse_up`'s config overrides.
+	LeftMouseUp ComputerLeftMouseUpConfigParam `json:"left_mouse_up,omitzero"`
+	// `middle_click`'s config overrides.
+	MiddleClick ComputerMiddleClickConfigParam `json:"middle_click,omitzero"`
+	// `mouse_move`'s config overrides.
+	MouseMove ComputerMouseMoveConfigParam `json:"mouse_move,omitzero"`
+	// `right_click`'s config overrides.
+	RightClick ComputerRightClickConfigParam `json:"right_click,omitzero"`
+	// `screenshot`'s config overrides.
+	Screenshot ComputerScreenshotConfigParam `json:"screenshot,omitzero"`
+	// `scroll`'s config overrides.
+	Scroll ComputerScrollConfigParam `json:"scroll,omitzero"`
+	// `triple_click`'s config overrides.
+	TripleClick ComputerTripleClickConfigParam `json:"triple_click,omitzero"`
+	// `type`'s config overrides.
+	Type ComputerTypeConfigParam `json:"type,omitzero"`
+	// `wait`'s config overrides.
+	Wait ComputerWaitConfigParam `json:"wait,omitzero"`
+	// `zoom`'s config overrides.
+	Zoom ComputerZoomConfigParam `json:"zoom,omitzero"`
+	paramObj
+}
+
+func (r ComputerToolsetConfigsParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerToolsetConfigsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerToolsetConfigsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `triple_click`'s config overrides.
+type ComputerTripleClickConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerTripleClickConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerTripleClickConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerTripleClickConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `type`'s config overrides.
+type ComputerTypeConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerTypeConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerTypeConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerTypeConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `wait`'s config overrides.
+type ComputerWaitConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerWaitConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerWaitConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerWaitConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `zoom`'s config overrides.
+type ComputerZoomConfigParam struct {
+	// Defer loading for this member. Must resolve to the same value on every enabled
+	// member of the toolset.
+	DeferLoading param.Opt[bool] `json:"defer_loading,omitzero"`
+	// Whether this member is offered to the model. Default is per member, per the
+	// toolset's documentation. A member whose enabled resolves false is withheld from
+	// the served schema.
+	Enabled param.Opt[bool] `json:"enabled,omitzero"`
+	paramObj
+}
+
+func (r ComputerZoomConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow ComputerZoomConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ComputerZoomConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Information about the container used in the request (for the code execution
 // tool)
 type Container struct {
@@ -1472,10 +2926,13 @@ type Container struct {
 	ID string `json:"id" api:"required"`
 	// The time at which the container will expire.
 	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
+	// Skills loaded in the container
+	Skills []ContainerSkill `json:"skills" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
 		ExpiresAt   respjson.Field
+		Skills      respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -1486,6 +2943,57 @@ func (r Container) RawJSON() string { return r.JSON.raw }
 func (r *Container) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Container parameters with skills to be loaded.
+type ContainerParams struct {
+	// Container id
+	ID param.Opt[string] `json:"id,omitzero"`
+	// List of skills to load in the container
+	Skills []SkillParams `json:"skills,omitzero"`
+	paramObj
+}
+
+func (r ContainerParams) MarshalJSON() (data []byte, err error) {
+	type shadow ContainerParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ContainerParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A skill that was loaded in a container (response model).
+type ContainerSkill struct {
+	// Skill ID
+	SkillID string `json:"skill_id" api:"required"`
+	// Type of skill - either 'anthropic' (built-in) or 'custom' (user-defined)
+	//
+	// Any of "anthropic", "custom".
+	Type ContainerSkillType `json:"type" api:"required"`
+	// Skill version or 'latest' for most recent version
+	Version string `json:"version" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		SkillID     respjson.Field
+		Type        respjson.Field
+		Version     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ContainerSkill) RawJSON() string { return r.JSON.raw }
+func (r *ContainerSkill) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Type of skill - either 'anthropic' (built-in) or 'custom' (user-defined)
+type ContainerSkillType string
+
+const (
+	ContainerSkillTypeAnthropic ContainerSkillType = "anthropic"
+	ContainerSkillTypeCustom    ContainerSkillType = "custom"
+)
 
 // Response model for a file uploaded to the container.
 type ContainerUploadBlock struct {
@@ -1560,6 +3068,8 @@ type ContentBlockUnion struct {
 	Caller ContentBlockUnionCaller `json:"caller"`
 	Input  any                     `json:"input"`
 	Name   string                  `json:"name"`
+	// This field is from variant [ToolUseBlock].
+	ToolsetName string `json:"toolset_name"`
 	// This field is a union of [WebSearchToolResultBlockContentUnion],
 	// [WebFetchToolResultBlockContentUnion],
 	// [CodeExecutionToolResultBlockContentUnion],
@@ -1571,20 +3081,21 @@ type ContentBlockUnion struct {
 	// This field is from variant [ContainerUploadBlock].
 	FileID string `json:"file_id"`
 	JSON   struct {
-		Citations respjson.Field
-		Text      respjson.Field
-		Type      respjson.Field
-		Signature respjson.Field
-		Thinking  respjson.Field
-		Data      respjson.Field
-		ID        respjson.Field
-		Caller    respjson.Field
-		Input     respjson.Field
-		Name      respjson.Field
-		Content   respjson.Field
-		ToolUseID respjson.Field
-		FileID    respjson.Field
-		raw       string
+		Citations   respjson.Field
+		Text        respjson.Field
+		Type        respjson.Field
+		Signature   respjson.Field
+		Thinking    respjson.Field
+		Data        respjson.Field
+		ID          respjson.Field
+		Caller      respjson.Field
+		Input       respjson.Field
+		Name        respjson.Field
+		ToolsetName respjson.Field
+		Content     respjson.Field
+		ToolUseID   respjson.Field
+		FileID      respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
@@ -1867,19 +3378,23 @@ func NewTextBlock(text string) ContentBlockParamUnion {
 	return ContentBlockParamUnion{OfText: &variant}
 }
 
-func NewImageBlock[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockParamUnion {
+func NewImageBlock[
+	T Base64ImageSourceParam | URLImageSourceParam | FileImageSourceParam,
+](source T) ContentBlockParamUnion {
 	var image ImageBlockParam
 	switch v := any(source).(type) {
 	case Base64ImageSourceParam:
 		image.Source.OfBase64 = &v
 	case URLImageSourceParam:
 		image.Source.OfURL = &v
+	case FileImageSourceParam:
+		image.Source.OfFile = &v
 	}
 	return ContentBlockParamUnion{OfImage: &image}
 }
 
 func NewDocumentBlock[
-	T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam,
+	T Base64PDFSourceParam | PlainTextSourceParam | ContentBlockSourceParam | URLPDFSourceParam | FileDocumentSourceParam,
 ](source T) ContentBlockParamUnion {
 	var document DocumentBlockParam
 	switch v := any(source).(type) {
@@ -1891,6 +3406,8 @@ func NewDocumentBlock[
 		document.Source.OfContent = &v
 	case URLPDFSourceParam:
 		document.Source.OfURL = &v
+	case FileDocumentSourceParam:
+		document.Source.OfFile = &v
 	}
 	return ContentBlockParamUnion{OfDocument: &document}
 }
@@ -2125,6 +3642,14 @@ func (u ContentBlockParamUnion) GetText() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockParamUnion) GetTransformations() *ImageTransformationsParam {
+	if vt := u.OfImage; vt != nil {
+		return &vt.Transformations
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetContext() *string {
 	if vt := u.OfDocument; vt != nil && vt.Context.Valid() {
 		return &vt.Context.Value
@@ -2241,6 +3766,16 @@ func (u ContentBlockParamUnion) GetName() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockParamUnion) GetToolsetName() *string {
+	if vt := u.OfToolUse; vt != nil && vt.ToolsetName.Valid() {
+		return &vt.ToolsetName.Value
+	} else if vt := u.OfToolResult; vt != nil && vt.ToolsetName.Valid() {
+		return &vt.ToolsetName.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetToolUseID() *string {
 	if vt := u.OfToolResult; vt != nil {
 		return (*string)(&vt.ToolUseID)
@@ -2345,8 +3880,9 @@ func (u ContentBlockParamUnion) GetSource() (res contentBlockParamUnionSource) {
 }
 
 // Can have the runtime types [*Base64ImageSourceParam], [*URLImageSourceParam],
-// [*Base64PDFSourceParam], [*PlainTextSourceParam], [*ContentBlockSourceParam],
-// [*URLPDFSourceParam], [*string]
+// [*FileImageSourceParam], [*Base64PDFSourceParam], [*PlainTextSourceParam],
+// [*ContentBlockSourceParam], [*URLPDFSourceParam], [*FileDocumentSourceParam],
+// [*string]
 type contentBlockParamUnionSource struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -2354,10 +3890,12 @@ type contentBlockParamUnionSource struct{ any }
 //	switch u.AsAny().(type) {
 //	case *anthropic.Base64ImageSourceParam:
 //	case *anthropic.URLImageSourceParam:
+//	case *anthropic.FileImageSourceParam:
 //	case *anthropic.Base64PDFSourceParam:
 //	case *anthropic.PlainTextSourceParam:
 //	case *anthropic.ContentBlockSourceParam:
 //	case *anthropic.URLPDFSourceParam:
+//	case *anthropic.FileDocumentSourceParam:
 //	case *string:
 //	default:
 //	    fmt.Errorf("not present")
@@ -2413,6 +3951,17 @@ func (u contentBlockParamUnionSource) GetURL() *string {
 		return vt.GetURL()
 	case *DocumentBlockParamSourceUnion:
 		return vt.GetURL()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u contentBlockParamUnionSource) GetFileID() *string {
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetFileID()
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetFileID()
 	}
 	return nil
 }
@@ -2864,13 +4413,17 @@ func ContentBlockSourceContentItemParamOfText(text string) ContentBlockSourceCon
 	return ContentBlockSourceContentItemUnionParam{OfText: &variant}
 }
 
-func ContentBlockSourceContentItemParamOfImage[T Base64ImageSourceParam | URLImageSourceParam](source T) ContentBlockSourceContentItemUnionParam {
+func ContentBlockSourceContentItemParamOfImage[
+	T Base64ImageSourceParam | URLImageSourceParam | FileImageSourceParam,
+](source T) ContentBlockSourceContentItemUnionParam {
 	var image ImageBlockParam
 	switch v := any(source).(type) {
 	case Base64ImageSourceParam:
 		image.Source.OfBase64 = &v
 	case URLImageSourceParam:
 		image.Source.OfURL = &v
+	case FileImageSourceParam:
+		image.Source.OfFile = &v
 	}
 	return ContentBlockSourceContentItemUnionParam{OfImage: &image}
 }
@@ -2920,6 +4473,14 @@ func (u ContentBlockSourceContentItemUnionParam) GetCitations() []TextCitationPa
 func (u ContentBlockSourceContentItemUnionParam) GetSource() *ImageBlockParamSourceUnion {
 	if vt := u.OfImage; vt != nil {
 		return &vt.Source
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ContentBlockSourceContentItemUnionParam) GetTransformations() *ImageTransformationsParam {
+	if vt := u.OfImage; vt != nil {
+		return &vt.Transformations
 	}
 	return nil
 }
@@ -3117,11 +4678,16 @@ type DocumentBlockParamSourceUnion struct {
 	OfText    *PlainTextSourceParam    `json:",omitzero,inline"`
 	OfContent *ContentBlockSourceParam `json:",omitzero,inline"`
 	OfURL     *URLPDFSourceParam       `json:",omitzero,inline"`
+	OfFile    *FileDocumentSourceParam `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u DocumentBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBase64, u.OfText, u.OfContent, u.OfURL)
+	return param.MarshalUnion(u, u.OfBase64,
+		u.OfText,
+		u.OfContent,
+		u.OfURL,
+		u.OfFile)
 }
 func (u *DocumentBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3136,6 +4702,8 @@ func (u *DocumentBlockParamSourceUnion) asAny() any {
 		return u.OfContent
 	} else if !param.IsOmitted(u.OfURL) {
 		return u.OfURL
+	} else if !param.IsOmitted(u.OfFile) {
+		return u.OfFile
 	}
 	return nil
 }
@@ -3152,6 +4720,14 @@ func (u DocumentBlockParamSourceUnion) GetContent() *ContentBlockSourceContentUn
 func (u DocumentBlockParamSourceUnion) GetURL() *string {
 	if vt := u.OfURL; vt != nil {
 		return &vt.URL
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u DocumentBlockParamSourceUnion) GetFileID() *string {
+	if vt := u.OfFile; vt != nil {
+		return &vt.FileID
 	}
 	return nil
 }
@@ -3186,6 +4762,8 @@ func (u DocumentBlockParamSourceUnion) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfURL; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfFile; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -3197,6 +4775,7 @@ func init() {
 		apijson.Discriminator[PlainTextSourceParam]("text"),
 		apijson.Discriminator[ContentBlockSourceParam]("content"),
 		apijson.Discriminator[URLPDFSourceParam]("url"),
+		apijson.Discriminator[FileDocumentSourceParam]("file"),
 	)
 }
 
@@ -3247,11 +4826,48 @@ func (r *EncryptedCodeExecutionResultBlockParam) UnmarshalJSON(data []byte) erro
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties FileID, Type are required.
+type FileDocumentSourceParam struct {
+	FileID string `json:"file_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "file".
+	Type constant.File `json:"type" default:"file"`
+	paramObj
+}
+
+func (r FileDocumentSourceParam) MarshalJSON() (data []byte, err error) {
+	type shadow FileDocumentSourceParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *FileDocumentSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties FileID, Type are required.
+type FileImageSourceParam struct {
+	FileID string `json:"file_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "file".
+	Type constant.File `json:"type" default:"file"`
+	paramObj
+}
+
+func (r FileImageSourceParam) MarshalJSON() (data []byte, err error) {
+	type shadow FileImageSourceParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *FileImageSourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The properties Source, Type are required.
 type ImageBlockParam struct {
 	Source ImageBlockParamSourceUnion `json:"source,omitzero" api:"required"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Configures the transformations the server applies to this image before the model
+	// observes it. Each key names a condition the server transforms images for; its
+	// value selects the transformation applied. Omitted keys keep their default
+	// behavior, and an empty object is equivalent to omitting the field.
+	Transformations ImageTransformationsParam `json:"transformations,omitzero"`
 	// This field can be elided, and will marshal its zero value as "image".
 	Type constant.Image `json:"type" default:"image"`
 	paramObj
@@ -3271,11 +4887,12 @@ func (r *ImageBlockParam) UnmarshalJSON(data []byte) error {
 type ImageBlockParamSourceUnion struct {
 	OfBase64 *Base64ImageSourceParam `json:",omitzero,inline"`
 	OfURL    *URLImageSourceParam    `json:",omitzero,inline"`
+	OfFile   *FileImageSourceParam   `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ImageBlockParamSourceUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfBase64, u.OfURL)
+	return param.MarshalUnion(u, u.OfBase64, u.OfURL, u.OfFile)
 }
 func (u *ImageBlockParamSourceUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3286,6 +4903,8 @@ func (u *ImageBlockParamSourceUnion) asAny() any {
 		return u.OfBase64
 	} else if !param.IsOmitted(u.OfURL) {
 		return u.OfURL
+	} else if !param.IsOmitted(u.OfFile) {
+		return u.OfFile
 	}
 	return nil
 }
@@ -3315,10 +4934,20 @@ func (u ImageBlockParamSourceUnion) GetURL() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u ImageBlockParamSourceUnion) GetFileID() *string {
+	if vt := u.OfFile; vt != nil {
+		return &vt.FileID
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u ImageBlockParamSourceUnion) GetType() *string {
 	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfURL; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfFile; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -3329,8 +4958,47 @@ func init() {
 		"type",
 		apijson.Discriminator[Base64ImageSourceParam]("base64"),
 		apijson.Discriminator[URLImageSourceParam]("url"),
+		apijson.Discriminator[FileImageSourceParam]("file"),
 	)
 }
+
+// Configures the transformations the server applies to this image before the model
+// observes it. Each key names a condition the server transforms images for; its
+// value selects the transformation applied. Omitted keys keep their default
+// behavior, and an empty object is equivalent to omitting the field.
+type ImageTransformationsParam struct {
+	// What the server does when this image exceeds the model's maximum image size.
+	// `"downsize"` (the default) scales the image down to fit, which changes the
+	// dimensions the model observes without telling you. `"error"` instead rejects the
+	// request with a 400 error naming the image's dimensions and the largest
+	// dimensions that fit, so you can scale the image deliberately — your image is
+	// never silently scaled down.
+	//
+	// Any of "downsize", "error".
+	OversizedImage ImageTransformationsParamOversizedImage `json:"oversized_image,omitzero"`
+	paramObj
+}
+
+func (r ImageTransformationsParam) MarshalJSON() (data []byte, err error) {
+	type shadow ImageTransformationsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ImageTransformationsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// What the server does when this image exceeds the model's maximum image size.
+// `"downsize"` (the default) scales the image down to fit, which changes the
+// dimensions the model observes without telling you. `"error"` instead rejects the
+// request with a 400 error naming the image's dimensions and the largest
+// dimensions that fit, so you can scale the image deliberately — your image is
+// never silently scaled down.
+type ImageTransformationsParamOversizedImage string
+
+const (
+	ImageTransformationsParamOversizedImageDownsize ImageTransformationsParamOversizedImage = "downsize"
+	ImageTransformationsParamOversizedImageError    ImageTransformationsParamOversizedImage = "error"
+)
 
 type InputJSONDelta struct {
 	PartialJSON string                  `json:"partial_json" api:"required"`
@@ -3550,7 +5218,9 @@ type MessageCountTokensToolUnionParam struct {
 	OfCodeExecutionTool20250825   *CodeExecutionTool20250825Param   `json:",omitzero,inline"`
 	OfCodeExecutionTool20260120   *CodeExecutionTool20260120Param   `json:",omitzero,inline"`
 	OfCodeExecutionTool20260521   *CodeExecutionTool20260521Param   `json:",omitzero,inline"`
+	OfBrowserToolset20260801      *BrowserToolset20260801Param      `json:",omitzero,inline"`
 	OfMemoryTool20250818          *MemoryTool20250818Param          `json:",omitzero,inline"`
+	OfComputerToolset20260801     *ComputerToolset20260801Param     `json:",omitzero,inline"`
 	OfTextEditor20250124          *ToolTextEditor20250124Param      `json:",omitzero,inline"`
 	OfTextEditor20250429          *ToolTextEditor20250429Param      `json:",omitzero,inline"`
 	OfTextEditor20250728          *ToolTextEditor20250728Param      `json:",omitzero,inline"`
@@ -3573,7 +5243,9 @@ func (u MessageCountTokensToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfCodeExecutionTool20250825,
 		u.OfCodeExecutionTool20260120,
 		u.OfCodeExecutionTool20260521,
+		u.OfBrowserToolset20260801,
 		u.OfMemoryTool20250818,
+		u.OfComputerToolset20260801,
 		u.OfTextEditor20250124,
 		u.OfTextEditor20250429,
 		u.OfTextEditor20250728,
@@ -3604,8 +5276,12 @@ func (u *MessageCountTokensToolUnionParam) asAny() any {
 		return u.OfCodeExecutionTool20260120
 	} else if !param.IsOmitted(u.OfCodeExecutionTool20260521) {
 		return u.OfCodeExecutionTool20260521
+	} else if !param.IsOmitted(u.OfBrowserToolset20260801) {
+		return u.OfBrowserToolset20260801
 	} else if !param.IsOmitted(u.OfMemoryTool20250818) {
 		return u.OfMemoryTool20250818
+	} else if !param.IsOmitted(u.OfComputerToolset20260801) {
+		return u.OfComputerToolset20260801
 	} else if !param.IsOmitted(u.OfTextEditor20250124) {
 		return u.OfTextEditor20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250429) {
@@ -3812,7 +5488,11 @@ func (u MessageCountTokensToolUnionParam) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfBrowserToolset20260801; vt != nil {
+		return (*string)(&vt.Type)
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfComputerToolset20260801; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Type)
@@ -3911,7 +5591,11 @@ func (u MessageCountTokensToolUnionParam) GetAllowedCallers() []string {
 		return vt.AllowedCallers
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
 		return vt.AllowedCallers
+	} else if vt := u.OfBrowserToolset20260801; vt != nil {
+		return vt.AllowedCallers
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
+		return vt.AllowedCallers
+	} else if vt := u.OfComputerToolset20260801; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return vt.AllowedCallers
@@ -3955,7 +5639,11 @@ func (u MessageCountTokensToolUnionParam) GetCacheControl() *CacheControlEphemer
 		return &vt.CacheControl
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
 		return &vt.CacheControl
+	} else if vt := u.OfBrowserToolset20260801; vt != nil {
+		return &vt.CacheControl
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfComputerToolset20260801; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return &vt.CacheControl
@@ -4000,6 +5688,956 @@ func (u MessageCountTokensToolUnionParam) GetInputExamples() []map[string]any {
 		return vt.InputExamples
 	} else if vt := u.OfTextEditor20250728; vt != nil {
 		return vt.InputExamples
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u MessageCountTokensToolUnionParam) GetConfigs() (res messageCountTokensToolUnionParamConfigs) {
+	if vt := u.OfBrowserToolset20260801; vt != nil {
+		res.any = &vt.Configs
+	} else if vt := u.OfComputerToolset20260801; vt != nil {
+		res.any = &vt.Configs
+	}
+	return
+}
+
+// Can have the runtime types [*BrowserToolsetConfigsParam],
+// [*ComputerToolsetConfigsParam]
+type messageCountTokensToolUnionParamConfigs struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserToolsetConfigsParam:
+//	case *anthropic.ComputerToolsetConfigsParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigs) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetCloseTab() *BrowserCloseTabConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.CloseTab
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetFileUpload() *BrowserFileUploadConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.FileUpload
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetFind() *BrowserFindConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.Find
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetFormInput() *BrowserFormInputConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.FormInput
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetGetPageText() *BrowserGetPageTextConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.GetPageText
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetHover() *BrowserHoverConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.Hover
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetJavascriptExec() *BrowserJavascriptExecConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.JavascriptExec
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetListTabs() *BrowserListTabsConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.ListTabs
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetNavigate() *BrowserNavigateConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.Navigate
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetNewTab() *BrowserNewTabConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.NewTab
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetReadConsole() *BrowserReadConsoleConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.ReadConsole
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetReadNetwork() *BrowserReadNetworkConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.ReadNetwork
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetReadPage() *BrowserReadPageConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.ReadPage
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetScrollTo() *BrowserScrollToConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.ScrollTo
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetSwitchTab() *BrowserSwitchTabConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.SwitchTab
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigs) GetCursorPosition() *ComputerCursorPositionConfigParam {
+	switch vt := u.any.(type) {
+	case *ComputerToolsetConfigsParam:
+		return &vt.CursorPosition
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetDoubleClick() (res messageCountTokensToolUnionParamConfigsDoubleClick) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.DoubleClick
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.DoubleClick
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserDoubleClickConfigParam],
+// [*ComputerDoubleClickConfigParam]
+type messageCountTokensToolUnionParamConfigsDoubleClick struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserDoubleClickConfigParam:
+//	case *anthropic.ComputerDoubleClickConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsDoubleClick) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsDoubleClick) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserDoubleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerDoubleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsDoubleClick) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserDoubleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerDoubleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetHoldKey() (res messageCountTokensToolUnionParamConfigsHoldKey) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.HoldKey
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.HoldKey
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserHoldKeyConfigParam],
+// [*ComputerHoldKeyConfigParam]
+type messageCountTokensToolUnionParamConfigsHoldKey struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserHoldKeyConfigParam:
+//	case *anthropic.ComputerHoldKeyConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsHoldKey) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsHoldKey) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserHoldKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerHoldKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsHoldKey) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserHoldKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerHoldKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetKey() (res messageCountTokensToolUnionParamConfigsKey) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Key
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Key
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserKeyConfigParam], [*ComputerKeyConfigParam]
+type messageCountTokensToolUnionParamConfigsKey struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserKeyConfigParam:
+//	case *anthropic.ComputerKeyConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsKey) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsKey) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsKey) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetLeftClick() (res messageCountTokensToolUnionParamConfigsLeftClick) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.LeftClick
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.LeftClick
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserLeftClickConfigParam],
+// [*ComputerLeftClickConfigParam]
+type messageCountTokensToolUnionParamConfigsLeftClick struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserLeftClickConfigParam:
+//	case *anthropic.ComputerLeftClickConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsLeftClick) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsLeftClick) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerLeftClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsLeftClick) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerLeftClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetLeftClickDrag() (res messageCountTokensToolUnionParamConfigsLeftClickDrag) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.LeftClickDrag
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.LeftClickDrag
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserLeftClickDragConfigParam],
+// [*ComputerLeftClickDragConfigParam]
+type messageCountTokensToolUnionParamConfigsLeftClickDrag struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserLeftClickDragConfigParam:
+//	case *anthropic.ComputerLeftClickDragConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsLeftClickDrag) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsLeftClickDrag) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftClickDragConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerLeftClickDragConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsLeftClickDrag) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftClickDragConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerLeftClickDragConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetLeftMouseDown() (res messageCountTokensToolUnionParamConfigsLeftMouseDown) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.LeftMouseDown
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.LeftMouseDown
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserLeftMouseDownConfigParam],
+// [*ComputerLeftMouseDownConfigParam]
+type messageCountTokensToolUnionParamConfigsLeftMouseDown struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserLeftMouseDownConfigParam:
+//	case *anthropic.ComputerLeftMouseDownConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsLeftMouseDown) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsLeftMouseDown) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftMouseDownConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerLeftMouseDownConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsLeftMouseDown) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftMouseDownConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerLeftMouseDownConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetLeftMouseUp() (res messageCountTokensToolUnionParamConfigsLeftMouseUp) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.LeftMouseUp
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.LeftMouseUp
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserLeftMouseUpConfigParam],
+// [*ComputerLeftMouseUpConfigParam]
+type messageCountTokensToolUnionParamConfigsLeftMouseUp struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserLeftMouseUpConfigParam:
+//	case *anthropic.ComputerLeftMouseUpConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsLeftMouseUp) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsLeftMouseUp) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftMouseUpConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerLeftMouseUpConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsLeftMouseUp) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftMouseUpConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerLeftMouseUpConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetMiddleClick() (res messageCountTokensToolUnionParamConfigsMiddleClick) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.MiddleClick
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.MiddleClick
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserMiddleClickConfigParam],
+// [*ComputerMiddleClickConfigParam]
+type messageCountTokensToolUnionParamConfigsMiddleClick struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserMiddleClickConfigParam:
+//	case *anthropic.ComputerMiddleClickConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsMiddleClick) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsMiddleClick) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserMiddleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerMiddleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsMiddleClick) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserMiddleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerMiddleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetMouseMove() (res messageCountTokensToolUnionParamConfigsMouseMove) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.MouseMove
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.MouseMove
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserMouseMoveConfigParam],
+// [*ComputerMouseMoveConfigParam]
+type messageCountTokensToolUnionParamConfigsMouseMove struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserMouseMoveConfigParam:
+//	case *anthropic.ComputerMouseMoveConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsMouseMove) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsMouseMove) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserMouseMoveConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerMouseMoveConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsMouseMove) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserMouseMoveConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerMouseMoveConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetRightClick() (res messageCountTokensToolUnionParamConfigsRightClick) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.RightClick
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.RightClick
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserRightClickConfigParam],
+// [*ComputerRightClickConfigParam]
+type messageCountTokensToolUnionParamConfigsRightClick struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserRightClickConfigParam:
+//	case *anthropic.ComputerRightClickConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsRightClick) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsRightClick) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserRightClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerRightClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsRightClick) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserRightClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerRightClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetScreenshot() (res messageCountTokensToolUnionParamConfigsScreenshot) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Screenshot
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Screenshot
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserScreenshotConfigParam],
+// [*ComputerScreenshotConfigParam]
+type messageCountTokensToolUnionParamConfigsScreenshot struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserScreenshotConfigParam:
+//	case *anthropic.ComputerScreenshotConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsScreenshot) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsScreenshot) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserScreenshotConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerScreenshotConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsScreenshot) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserScreenshotConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerScreenshotConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetScroll() (res messageCountTokensToolUnionParamConfigsScroll) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Scroll
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Scroll
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserScrollConfigParam],
+// [*ComputerScrollConfigParam]
+type messageCountTokensToolUnionParamConfigsScroll struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserScrollConfigParam:
+//	case *anthropic.ComputerScrollConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsScroll) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsScroll) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserScrollConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerScrollConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsScroll) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserScrollConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerScrollConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetTripleClick() (res messageCountTokensToolUnionParamConfigsTripleClick) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.TripleClick
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.TripleClick
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserTripleClickConfigParam],
+// [*ComputerTripleClickConfigParam]
+type messageCountTokensToolUnionParamConfigsTripleClick struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserTripleClickConfigParam:
+//	case *anthropic.ComputerTripleClickConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsTripleClick) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsTripleClick) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserTripleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerTripleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsTripleClick) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserTripleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerTripleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetType() (res messageCountTokensToolUnionParamConfigsType) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Type
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Type
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserTypeConfigParam], [*ComputerTypeConfigParam]
+type messageCountTokensToolUnionParamConfigsType struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserTypeConfigParam:
+//	case *anthropic.ComputerTypeConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsType) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsType) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserTypeConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerTypeConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsType) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserTypeConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerTypeConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetWait() (res messageCountTokensToolUnionParamConfigsWait) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Wait
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Wait
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserWaitConfigParam], [*ComputerWaitConfigParam]
+type messageCountTokensToolUnionParamConfigsWait struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserWaitConfigParam:
+//	case *anthropic.ComputerWaitConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsWait) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsWait) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserWaitConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerWaitConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsWait) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserWaitConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerWaitConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u messageCountTokensToolUnionParamConfigs) GetZoom() (res messageCountTokensToolUnionParamConfigsZoom) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Zoom
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Zoom
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserZoomConfigParam], [*ComputerZoomConfigParam]
+type messageCountTokensToolUnionParamConfigsZoom struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserZoomConfigParam:
+//	case *anthropic.ComputerZoomConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageCountTokensToolUnionParamConfigsZoom) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsZoom) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserZoomConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerZoomConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u messageCountTokensToolUnionParamConfigsZoom) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserZoomConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerZoomConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
 	}
 	return nil
 }
@@ -4068,6 +6706,31 @@ func (u MessageCountTokensToolUnionParam) GetCitations() *CitationsConfigParam {
 		return &vt.Citations
 	} else if vt := u.OfWebFetchTool20260318; vt != nil {
 		return &vt.Citations
+	}
+	return nil
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type MessageCreateParamsContainerUnion struct {
+	OfContainers *ContainerParams  `json:",omitzero,inline"`
+	OfString     param.Opt[string] `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u MessageCreateParamsContainerUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfContainers, u.OfString)
+}
+func (u *MessageCreateParamsContainerUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *MessageCreateParamsContainerUnion) asAny() any {
+	if !param.IsOmitted(u.OfContainers) {
+		return u.OfContainers
+	} else if !param.IsOmitted(u.OfString) {
+		return &u.OfString.Value
 	}
 	return nil
 }
@@ -4477,6 +7140,8 @@ type ContentBlockStartEventContentBlockUnion struct {
 	Caller ContentBlockStartEventContentBlockUnionCaller `json:"caller"`
 	Input  any                                           `json:"input"`
 	Name   string                                        `json:"name"`
+	// This field is from variant [ToolUseBlock].
+	ToolsetName string `json:"toolset_name"`
 	// This field is a union of [WebSearchToolResultBlockContentUnion],
 	// [WebFetchToolResultBlockContentUnion],
 	// [CodeExecutionToolResultBlockContentUnion],
@@ -4488,20 +7153,21 @@ type ContentBlockStartEventContentBlockUnion struct {
 	// This field is from variant [ContainerUploadBlock].
 	FileID string `json:"file_id"`
 	JSON   struct {
-		Citations respjson.Field
-		Text      respjson.Field
-		Type      respjson.Field
-		Signature respjson.Field
-		Thinking  respjson.Field
-		Data      respjson.Field
-		ID        respjson.Field
-		Caller    respjson.Field
-		Input     respjson.Field
-		Name      respjson.Field
-		Content   respjson.Field
-		ToolUseID respjson.Field
-		FileID    respjson.Field
-		raw       string
+		Citations   respjson.Field
+		Text        respjson.Field
+		Type        respjson.Field
+		Signature   respjson.Field
+		Thinking    respjson.Field
+		Data        respjson.Field
+		ID          respjson.Field
+		Caller      respjson.Field
+		Input       respjson.Field
+		Name        respjson.Field
+		ToolsetName respjson.Field
+		Content     respjson.Field
+		ToolUseID   respjson.Field
+		FileID      respjson.Field
+		raw         string
 	} `json:"-"`
 }
 
@@ -5497,6 +8163,37 @@ func (r SignatureDelta) RawJSON() string { return r.JSON.raw }
 func (r *SignatureDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Specification for a skill to be loaded in a container (request model).
+//
+// The properties SkillID, Type are required.
+type SkillParams struct {
+	// Skill ID
+	SkillID string `json:"skill_id" api:"required"`
+	// Type of skill - either 'anthropic' (built-in) or 'custom' (user-defined)
+	//
+	// Any of "anthropic", "custom".
+	Type SkillParamsType `json:"type,omitzero" api:"required"`
+	// Skill version or 'latest' for most recent version
+	Version param.Opt[string] `json:"version,omitzero"`
+	paramObj
+}
+
+func (r SkillParams) MarshalJSON() (data []byte, err error) {
+	type shadow SkillParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SkillParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Type of skill - either 'anthropic' (built-in) or 'custom' (user-defined)
+type SkillParamsType string
+
+const (
+	SkillParamsTypeAnthropic SkillParamsType = "anthropic"
+	SkillParamsTypeCustom    SkillParamsType = "custom"
+)
 
 type StopReason string
 
@@ -6931,8 +9628,10 @@ func (r *ToolReferenceBlockParam) UnmarshalJSON(data []byte) error {
 
 // The properties ToolUseID, Type are required.
 type ToolResultBlockParam struct {
-	ToolUseID string          `json:"tool_use_id" api:"required"`
-	IsError   param.Opt[bool] `json:"is_error,omitzero"`
+	ToolUseID string `json:"tool_use_id" api:"required"`
+	// For a toolset member tool_result, the toolset family of the paired tool_use.
+	ToolsetName param.Opt[string] `json:"toolset_name,omitzero"`
+	IsError     param.Opt[bool]   `json:"is_error,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam         `json:"cache_control,omitzero"`
 	Content      []ToolResultBlockParamContentUnion `json:"content,omitzero"`
@@ -6958,6 +9657,7 @@ type ToolResultBlockParamContentUnion struct {
 	OfSearchResult  *SearchResultBlockParam  `json:",omitzero,inline"`
 	OfDocument      *DocumentBlockParam      `json:",omitzero,inline"`
 	OfToolReference *ToolReferenceBlockParam `json:",omitzero,inline"`
+	OfBrowserState  *BrowserStateBlockParam  `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -6966,7 +9666,8 @@ func (u ToolResultBlockParamContentUnion) MarshalJSON() ([]byte, error) {
 		u.OfImage,
 		u.OfSearchResult,
 		u.OfDocument,
-		u.OfToolReference)
+		u.OfToolReference,
+		u.OfBrowserState)
 }
 func (u *ToolResultBlockParamContentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -6983,6 +9684,8 @@ func (u *ToolResultBlockParamContentUnion) asAny() any {
 		return u.OfDocument
 	} else if !param.IsOmitted(u.OfToolReference) {
 		return u.OfToolReference
+	} else if !param.IsOmitted(u.OfBrowserState) {
+		return u.OfBrowserState
 	}
 	return nil
 }
@@ -6991,6 +9694,14 @@ func (u *ToolResultBlockParamContentUnion) asAny() any {
 func (u ToolResultBlockParamContentUnion) GetText() *string {
 	if vt := u.OfText; vt != nil {
 		return &vt.Text
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ToolResultBlockParamContentUnion) GetTransformations() *ImageTransformationsParam {
+	if vt := u.OfImage; vt != nil {
+		return &vt.Transformations
 	}
 	return nil
 }
@@ -7020,6 +9731,22 @@ func (u ToolResultBlockParamContentUnion) GetToolName() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
+func (u ToolResultBlockParamContentUnion) GetTabs() []BrowserStateTabEntryParam {
+	if vt := u.OfBrowserState; vt != nil {
+		return vt.Tabs
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u ToolResultBlockParamContentUnion) GetStateChanges() []BrowserStateChangeUnionParam {
+	if vt := u.OfBrowserState; vt != nil {
+		return vt.StateChanges
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
 func (u ToolResultBlockParamContentUnion) GetType() *string {
 	if vt := u.OfText; vt != nil {
 		return (*string)(&vt.Type)
@@ -7030,6 +9757,8 @@ func (u ToolResultBlockParamContentUnion) GetType() *string {
 	} else if vt := u.OfDocument; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfToolReference; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfBrowserState; vt != nil {
 		return (*string)(&vt.Type)
 	}
 	return nil
@@ -7056,6 +9785,8 @@ func (u ToolResultBlockParamContentUnion) GetCacheControl() *CacheControlEphemer
 	} else if vt := u.OfDocument; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfToolReference; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfBrowserState; vt != nil {
 		return &vt.CacheControl
 	}
 	return nil
@@ -7112,8 +9843,9 @@ func (u ToolResultBlockParamContentUnion) GetSource() (res toolResultBlockParamC
 }
 
 // Can have the runtime types [*Base64ImageSourceParam], [*URLImageSourceParam],
-// [*string], [*Base64PDFSourceParam], [*PlainTextSourceParam],
-// [*ContentBlockSourceParam], [*URLPDFSourceParam]
+// [*FileImageSourceParam], [*string], [*Base64PDFSourceParam],
+// [*PlainTextSourceParam], [*ContentBlockSourceParam], [*URLPDFSourceParam],
+// [*FileDocumentSourceParam]
 type toolResultBlockParamContentUnionSource struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -7121,11 +9853,13 @@ type toolResultBlockParamContentUnionSource struct{ any }
 //	switch u.AsAny().(type) {
 //	case *anthropic.Base64ImageSourceParam:
 //	case *anthropic.URLImageSourceParam:
+//	case *anthropic.FileImageSourceParam:
 //	case *string:
 //	case *anthropic.Base64PDFSourceParam:
 //	case *anthropic.PlainTextSourceParam:
 //	case *anthropic.ContentBlockSourceParam:
 //	case *anthropic.URLPDFSourceParam:
+//	case *anthropic.FileDocumentSourceParam:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -7184,6 +9918,17 @@ func (u toolResultBlockParamContentUnionSource) GetURL() *string {
 	return nil
 }
 
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolResultBlockParamContentUnionSource) GetFileID() *string {
+	switch vt := u.any.(type) {
+	case *ImageBlockParamSourceUnion:
+		return vt.GetFileID()
+	case *DocumentBlockParamSourceUnion:
+		return vt.GetFileID()
+	}
+	return nil
+}
+
 func init() {
 	apijson.RegisterUnion[ToolResultBlockParamContentUnion](
 		"type",
@@ -7192,6 +9937,7 @@ func init() {
 		apijson.Discriminator[SearchResultBlockParam]("search_result"),
 		apijson.Discriminator[DocumentBlockParam]("document"),
 		apijson.Discriminator[ToolReferenceBlockParam]("tool_reference"),
+		apijson.Discriminator[BrowserStateBlockParam]("browser_state"),
 	)
 }
 
@@ -7630,7 +10376,9 @@ type ToolUnionParam struct {
 	OfCodeExecutionTool20250825   *CodeExecutionTool20250825Param   `json:",omitzero,inline"`
 	OfCodeExecutionTool20260120   *CodeExecutionTool20260120Param   `json:",omitzero,inline"`
 	OfCodeExecutionTool20260521   *CodeExecutionTool20260521Param   `json:",omitzero,inline"`
+	OfBrowserToolset20260801      *BrowserToolset20260801Param      `json:",omitzero,inline"`
 	OfMemoryTool20250818          *MemoryTool20250818Param          `json:",omitzero,inline"`
+	OfComputerToolset20260801     *ComputerToolset20260801Param     `json:",omitzero,inline"`
 	OfTextEditor20250124          *ToolTextEditor20250124Param      `json:",omitzero,inline"`
 	OfTextEditor20250429          *ToolTextEditor20250429Param      `json:",omitzero,inline"`
 	OfTextEditor20250728          *ToolTextEditor20250728Param      `json:",omitzero,inline"`
@@ -7653,7 +10401,9 @@ func (u ToolUnionParam) MarshalJSON() ([]byte, error) {
 		u.OfCodeExecutionTool20250825,
 		u.OfCodeExecutionTool20260120,
 		u.OfCodeExecutionTool20260521,
+		u.OfBrowserToolset20260801,
 		u.OfMemoryTool20250818,
+		u.OfComputerToolset20260801,
 		u.OfTextEditor20250124,
 		u.OfTextEditor20250429,
 		u.OfTextEditor20250728,
@@ -7684,8 +10434,12 @@ func (u *ToolUnionParam) asAny() any {
 		return u.OfCodeExecutionTool20260120
 	} else if !param.IsOmitted(u.OfCodeExecutionTool20260521) {
 		return u.OfCodeExecutionTool20260521
+	} else if !param.IsOmitted(u.OfBrowserToolset20260801) {
+		return u.OfBrowserToolset20260801
 	} else if !param.IsOmitted(u.OfMemoryTool20250818) {
 		return u.OfMemoryTool20250818
+	} else if !param.IsOmitted(u.OfComputerToolset20260801) {
+		return u.OfComputerToolset20260801
 	} else if !param.IsOmitted(u.OfTextEditor20250124) {
 		return u.OfTextEditor20250124
 	} else if !param.IsOmitted(u.OfTextEditor20250429) {
@@ -7892,7 +10646,11 @@ func (u ToolUnionParam) GetType() *string {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfBrowserToolset20260801; vt != nil {
+		return (*string)(&vt.Type)
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfComputerToolset20260801; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return (*string)(&vt.Type)
@@ -7991,7 +10749,11 @@ func (u ToolUnionParam) GetAllowedCallers() []string {
 		return vt.AllowedCallers
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
 		return vt.AllowedCallers
+	} else if vt := u.OfBrowserToolset20260801; vt != nil {
+		return vt.AllowedCallers
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
+		return vt.AllowedCallers
+	} else if vt := u.OfComputerToolset20260801; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return vt.AllowedCallers
@@ -8035,7 +10797,11 @@ func (u ToolUnionParam) GetCacheControl() *CacheControlEphemeralParam {
 		return &vt.CacheControl
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
 		return &vt.CacheControl
+	} else if vt := u.OfBrowserToolset20260801; vt != nil {
+		return &vt.CacheControl
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfComputerToolset20260801; vt != nil {
 		return &vt.CacheControl
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return &vt.CacheControl
@@ -8080,6 +10846,956 @@ func (u ToolUnionParam) GetInputExamples() []map[string]any {
 		return vt.InputExamples
 	} else if vt := u.OfTextEditor20250728; vt != nil {
 		return vt.InputExamples
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u ToolUnionParam) GetConfigs() (res toolUnionParamConfigs) {
+	if vt := u.OfBrowserToolset20260801; vt != nil {
+		res.any = &vt.Configs
+	} else if vt := u.OfComputerToolset20260801; vt != nil {
+		res.any = &vt.Configs
+	}
+	return
+}
+
+// Can have the runtime types [*BrowserToolsetConfigsParam],
+// [*ComputerToolsetConfigsParam]
+type toolUnionParamConfigs struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserToolsetConfigsParam:
+//	case *anthropic.ComputerToolsetConfigsParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigs) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetCloseTab() *BrowserCloseTabConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.CloseTab
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetFileUpload() *BrowserFileUploadConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.FileUpload
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetFind() *BrowserFindConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.Find
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetFormInput() *BrowserFormInputConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.FormInput
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetGetPageText() *BrowserGetPageTextConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.GetPageText
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetHover() *BrowserHoverConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.Hover
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetJavascriptExec() *BrowserJavascriptExecConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.JavascriptExec
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetListTabs() *BrowserListTabsConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.ListTabs
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetNavigate() *BrowserNavigateConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.Navigate
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetNewTab() *BrowserNewTabConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.NewTab
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetReadConsole() *BrowserReadConsoleConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.ReadConsole
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetReadNetwork() *BrowserReadNetworkConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.ReadNetwork
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetReadPage() *BrowserReadPageConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.ReadPage
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetScrollTo() *BrowserScrollToConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.ScrollTo
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetSwitchTab() *BrowserSwitchTabConfigParam {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		return &vt.SwitchTab
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigs) GetCursorPosition() *ComputerCursorPositionConfigParam {
+	switch vt := u.any.(type) {
+	case *ComputerToolsetConfigsParam:
+		return &vt.CursorPosition
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetDoubleClick() (res toolUnionParamConfigsDoubleClick) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.DoubleClick
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.DoubleClick
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserDoubleClickConfigParam],
+// [*ComputerDoubleClickConfigParam]
+type toolUnionParamConfigsDoubleClick struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserDoubleClickConfigParam:
+//	case *anthropic.ComputerDoubleClickConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsDoubleClick) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsDoubleClick) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserDoubleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerDoubleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsDoubleClick) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserDoubleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerDoubleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetHoldKey() (res toolUnionParamConfigsHoldKey) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.HoldKey
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.HoldKey
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserHoldKeyConfigParam],
+// [*ComputerHoldKeyConfigParam]
+type toolUnionParamConfigsHoldKey struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserHoldKeyConfigParam:
+//	case *anthropic.ComputerHoldKeyConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsHoldKey) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsHoldKey) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserHoldKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerHoldKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsHoldKey) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserHoldKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerHoldKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetKey() (res toolUnionParamConfigsKey) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Key
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Key
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserKeyConfigParam], [*ComputerKeyConfigParam]
+type toolUnionParamConfigsKey struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserKeyConfigParam:
+//	case *anthropic.ComputerKeyConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsKey) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsKey) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsKey) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerKeyConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetLeftClick() (res toolUnionParamConfigsLeftClick) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.LeftClick
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.LeftClick
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserLeftClickConfigParam],
+// [*ComputerLeftClickConfigParam]
+type toolUnionParamConfigsLeftClick struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserLeftClickConfigParam:
+//	case *anthropic.ComputerLeftClickConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsLeftClick) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsLeftClick) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerLeftClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsLeftClick) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerLeftClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetLeftClickDrag() (res toolUnionParamConfigsLeftClickDrag) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.LeftClickDrag
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.LeftClickDrag
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserLeftClickDragConfigParam],
+// [*ComputerLeftClickDragConfigParam]
+type toolUnionParamConfigsLeftClickDrag struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserLeftClickDragConfigParam:
+//	case *anthropic.ComputerLeftClickDragConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsLeftClickDrag) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsLeftClickDrag) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftClickDragConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerLeftClickDragConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsLeftClickDrag) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftClickDragConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerLeftClickDragConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetLeftMouseDown() (res toolUnionParamConfigsLeftMouseDown) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.LeftMouseDown
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.LeftMouseDown
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserLeftMouseDownConfigParam],
+// [*ComputerLeftMouseDownConfigParam]
+type toolUnionParamConfigsLeftMouseDown struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserLeftMouseDownConfigParam:
+//	case *anthropic.ComputerLeftMouseDownConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsLeftMouseDown) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsLeftMouseDown) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftMouseDownConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerLeftMouseDownConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsLeftMouseDown) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftMouseDownConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerLeftMouseDownConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetLeftMouseUp() (res toolUnionParamConfigsLeftMouseUp) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.LeftMouseUp
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.LeftMouseUp
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserLeftMouseUpConfigParam],
+// [*ComputerLeftMouseUpConfigParam]
+type toolUnionParamConfigsLeftMouseUp struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserLeftMouseUpConfigParam:
+//	case *anthropic.ComputerLeftMouseUpConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsLeftMouseUp) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsLeftMouseUp) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftMouseUpConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerLeftMouseUpConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsLeftMouseUp) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserLeftMouseUpConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerLeftMouseUpConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetMiddleClick() (res toolUnionParamConfigsMiddleClick) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.MiddleClick
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.MiddleClick
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserMiddleClickConfigParam],
+// [*ComputerMiddleClickConfigParam]
+type toolUnionParamConfigsMiddleClick struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserMiddleClickConfigParam:
+//	case *anthropic.ComputerMiddleClickConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsMiddleClick) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsMiddleClick) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserMiddleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerMiddleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsMiddleClick) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserMiddleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerMiddleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetMouseMove() (res toolUnionParamConfigsMouseMove) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.MouseMove
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.MouseMove
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserMouseMoveConfigParam],
+// [*ComputerMouseMoveConfigParam]
+type toolUnionParamConfigsMouseMove struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserMouseMoveConfigParam:
+//	case *anthropic.ComputerMouseMoveConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsMouseMove) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsMouseMove) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserMouseMoveConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerMouseMoveConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsMouseMove) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserMouseMoveConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerMouseMoveConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetRightClick() (res toolUnionParamConfigsRightClick) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.RightClick
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.RightClick
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserRightClickConfigParam],
+// [*ComputerRightClickConfigParam]
+type toolUnionParamConfigsRightClick struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserRightClickConfigParam:
+//	case *anthropic.ComputerRightClickConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsRightClick) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsRightClick) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserRightClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerRightClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsRightClick) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserRightClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerRightClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetScreenshot() (res toolUnionParamConfigsScreenshot) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Screenshot
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Screenshot
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserScreenshotConfigParam],
+// [*ComputerScreenshotConfigParam]
+type toolUnionParamConfigsScreenshot struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserScreenshotConfigParam:
+//	case *anthropic.ComputerScreenshotConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsScreenshot) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsScreenshot) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserScreenshotConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerScreenshotConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsScreenshot) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserScreenshotConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerScreenshotConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetScroll() (res toolUnionParamConfigsScroll) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Scroll
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Scroll
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserScrollConfigParam],
+// [*ComputerScrollConfigParam]
+type toolUnionParamConfigsScroll struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserScrollConfigParam:
+//	case *anthropic.ComputerScrollConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsScroll) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsScroll) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserScrollConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerScrollConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsScroll) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserScrollConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerScrollConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetTripleClick() (res toolUnionParamConfigsTripleClick) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.TripleClick
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.TripleClick
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserTripleClickConfigParam],
+// [*ComputerTripleClickConfigParam]
+type toolUnionParamConfigsTripleClick struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserTripleClickConfigParam:
+//	case *anthropic.ComputerTripleClickConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsTripleClick) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsTripleClick) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserTripleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerTripleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsTripleClick) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserTripleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerTripleClickConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetType() (res toolUnionParamConfigsType) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Type
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Type
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserTypeConfigParam], [*ComputerTypeConfigParam]
+type toolUnionParamConfigsType struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserTypeConfigParam:
+//	case *anthropic.ComputerTypeConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsType) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsType) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserTypeConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerTypeConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsType) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserTypeConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerTypeConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetWait() (res toolUnionParamConfigsWait) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Wait
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Wait
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserWaitConfigParam], [*ComputerWaitConfigParam]
+type toolUnionParamConfigsWait struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserWaitConfigParam:
+//	case *anthropic.ComputerWaitConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsWait) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsWait) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserWaitConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerWaitConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsWait) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserWaitConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerWaitConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u toolUnionParamConfigs) GetZoom() (res toolUnionParamConfigsZoom) {
+	switch vt := u.any.(type) {
+	case *BrowserToolsetConfigsParam:
+		res.any = &vt.Zoom
+	case *ComputerToolsetConfigsParam:
+		res.any = &vt.Zoom
+	}
+	return res
+}
+
+// Can have the runtime types [*BrowserZoomConfigParam], [*ComputerZoomConfigParam]
+type toolUnionParamConfigsZoom struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BrowserZoomConfigParam:
+//	case *anthropic.ComputerZoomConfigParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u toolUnionParamConfigsZoom) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsZoom) GetDeferLoading() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserZoomConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	case *ComputerZoomConfigParam:
+		return paramutil.AddrIfPresent(vt.DeferLoading)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u toolUnionParamConfigsZoom) GetEnabled() *bool {
+	switch vt := u.any.(type) {
+	case *BrowserZoomConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
+	case *ComputerZoomConfigParam:
+		return paramutil.AddrIfPresent(vt.Enabled)
 	}
 	return nil
 }
@@ -8159,6 +11875,8 @@ type ToolUseBlock struct {
 	Input  map[string]any          `json:"input" api:"required"`
 	Name   string                  `json:"name" api:"required"`
 	Type   constant.ToolUse        `json:"type" default:"tool_use"`
+	// For a toolset member tool_use, the toolset family.
+	ToolsetName string `json:"toolset_name" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -8166,6 +11884,7 @@ type ToolUseBlock struct {
 		Input       respjson.Field
 		Name        respjson.Field
 		Type        respjson.Field
+		ToolsetName respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
 	} `json:"-"`
@@ -8253,6 +11972,8 @@ type ToolUseBlockParam struct {
 	ID    string         `json:"id" api:"required"`
 	Input map[string]any `json:"input,omitzero" api:"required"`
 	Name  string         `json:"name" api:"required"`
+	// For a toolset member tool_use, the toolset family this member belongs to.
+	ToolsetName param.Opt[string] `json:"toolset_name,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Tool invocation directly from the model.
@@ -9616,8 +13337,6 @@ type MessageNewParams struct {
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	Model Model `json:"model,omitzero" api:"required"`
-	// Container identifier for reuse across requests.
-	Container param.Opt[string] `json:"container,omitzero"`
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
@@ -9648,6 +13367,8 @@ type MessageNewParams struct {
 	// The user profile ID to attribute this request to. Use when acting on behalf of a
 	// party other than your organization. Requires the `user-profiles` beta header.
 	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`
+	// Container identifier for reuse across requests.
+	Container MessageCreateParamsContainerUnion `json:"container,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`

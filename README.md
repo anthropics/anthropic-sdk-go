@@ -406,17 +406,17 @@ which can be used to wrap any `io.Reader` with the appropriate file name and con
 ```go
 // A file from the file system
 file, err := os.Open("/path/to/file")
-anthropic.BetaFileUploadParams{
+anthropic.FileUploadParams{
 	File: file,
 }
 
 // A file from a string
-anthropic.BetaFileUploadParams{
+anthropic.FileUploadParams{
 	File: strings.NewReader("my file contents"),
 }
 
 // With a custom filename and contentType
-anthropic.BetaFileUploadParams{
+anthropic.FileUploadParams{
 	File: anthropic.File(strings.NewReader(`{"hello": "foo"}`), "file.go", "application/json"),
 }
 ```

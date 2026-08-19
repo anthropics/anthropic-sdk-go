@@ -109,6 +109,7 @@ type Document string                                // Always "document"
 type DownloadCompleted string                       // Always "download_completed"
 type DownloadFailed string                          // Always "download_failed"
 type DownloadStarted string                         // Always "download_started"
+type Edit string                                    // Always "edit"
 type Enabled string                                 // Always "enabled"
 type EncryptedCodeExecutionResult string            // Always "encrypted_code_execution_result"
 type Environment string                             // Always "environment"
@@ -124,6 +125,8 @@ type Expired string                                 // Always "expired"
 type Fallback string                                // Always "fallback"
 type FallbackMessage string                         // Always "fallback_message"
 type File string                                    // Always "file"
+type Glob string                                    // Always "glob"
+type Grep string                                    // Always "grep"
 type Image string                                   // Always "image"
 type InputJSONDelta string                          // Always "input_json_delta"
 type InputTokens string                             // Always "input_tokens"
@@ -159,6 +162,7 @@ type PageLocation string                            // Always "page_location"
 type PermissionError string                         // Always "permission_error"
 type PreviousMessageNotFound string                 // Always "previous_message_not_found"
 type RateLimitError string                          // Always "rate_limit_error"
+type Read string                                    // Always "read"
 type RedactedThinking string                        // Always "redacted_thinking"
 type Redeemed string                                // Always "redeemed"
 type Refusal string                                 // Always "refusal"
@@ -260,6 +264,7 @@ type WebSearchToolResultError string                // Always "web_search_tool_r
 type Work string                                    // Always "work"
 type WorkHeartbeat string                           // Always "work_heartbeat"
 type WorkQueueStats string                          // Always "work_queue_stats"
+type Write string                                   // Always "write"
 
 func (c Adaptive) Default() Adaptive                             { return "adaptive" }
 func (c Advisor) Default() Advisor                               { return "advisor" }
@@ -354,6 +359,7 @@ func (c Document) Default() Document                             { return "docum
 func (c DownloadCompleted) Default() DownloadCompleted           { return "download_completed" }
 func (c DownloadFailed) Default() DownloadFailed                 { return "download_failed" }
 func (c DownloadStarted) Default() DownloadStarted               { return "download_started" }
+func (c Edit) Default() Edit                                     { return "edit" }
 func (c Enabled) Default() Enabled                               { return "enabled" }
 func (c EncryptedCodeExecutionResult) Default() EncryptedCodeExecutionResult {
 	return "encrypted_code_execution_result"
@@ -371,6 +377,8 @@ func (c Expired) Default() Expired                         { return "expired" }
 func (c Fallback) Default() Fallback                       { return "fallback" }
 func (c FallbackMessage) Default() FallbackMessage         { return "fallback_message" }
 func (c File) Default() File                               { return "file" }
+func (c Glob) Default() Glob                               { return "glob" }
+func (c Grep) Default() Grep                               { return "grep" }
 func (c Image) Default() Image                             { return "image" }
 func (c InputJSONDelta) Default() InputJSONDelta           { return "input_json_delta" }
 func (c InputTokens) Default() InputTokens                 { return "input_tokens" }
@@ -408,6 +416,7 @@ func (c PreviousMessageNotFound) Default() PreviousMessageNotFound {
 	return "previous_message_not_found"
 }
 func (c RateLimitError) Default() RateLimitError             { return "rate_limit_error" }
+func (c Read) Default() Read                                 { return "read" }
 func (c RedactedThinking) Default() RedactedThinking         { return "redacted_thinking" }
 func (c Redeemed) Default() Redeemed                         { return "redeemed" }
 func (c Refusal) Default() Refusal                           { return "refusal" }
@@ -545,6 +554,7 @@ func (c WebSearchToolResultError) Default() WebSearchToolResultError {
 func (c Work) Default() Work                     { return "work" }
 func (c WorkHeartbeat) Default() WorkHeartbeat   { return "work_heartbeat" }
 func (c WorkQueueStats) Default() WorkQueueStats { return "work_queue_stats" }
+func (c Write) Default() Write                   { return "write" }
 
 func (c Adaptive) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Advisor) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -625,6 +635,7 @@ func (c Document) MarshalJSON() ([]byte, error)                            { ret
 func (c DownloadCompleted) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c DownloadFailed) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c DownloadStarted) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c Edit) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Enabled) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c EncryptedCodeExecutionResult) MarshalJSON() ([]byte, error)        { return marshalString(c) }
 func (c Environment) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
@@ -640,6 +651,8 @@ func (c Expired) MarshalJSON() ([]byte, error)                             { ret
 func (c Fallback) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c FallbackMessage) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c File) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
+func (c Glob) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
+func (c Grep) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Image) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c InputJSONDelta) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c InputTokens) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
@@ -675,6 +688,7 @@ func (c PageLocation) MarshalJSON() ([]byte, error)                        { ret
 func (c PermissionError) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c PreviousMessageNotFound) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c RateLimitError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c Read) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c RedactedThinking) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c Redeemed) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Refusal) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -780,6 +794,7 @@ func (c WebSearchToolResultError) MarshalJSON() ([]byte, error)          { retur
 func (c Work) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c WorkHeartbeat) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c WorkQueueStats) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c Write) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 
 type constant[T any] interface {
 	Constant[T]

@@ -740,35 +740,44 @@ Methods:
 
 Params Types:
 
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolConfigParams">BetaManagedAgentsAgentToolConfigParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolConfigParamsUnion">BetaManagedAgentsAgentToolConfigParamsUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolsetDefaultConfigParams">BetaManagedAgentsAgentToolsetDefaultConfigParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolset20260401Params">BetaManagedAgentsAgentToolset20260401Params</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAlwaysAllowPolicyParam">BetaManagedAgentsAlwaysAllowPolicyParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAlwaysAskPolicyParam">BetaManagedAgentsAlwaysAskPolicyParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAnthropicSkillParams">BetaManagedAgentsAnthropicSkillParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsBashToolConfigParams">BetaManagedAgentsBashToolConfigParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsCustomSkillParams">BetaManagedAgentsCustomSkillParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsCustomToolInputSchemaParam">BetaManagedAgentsCustomToolInputSchemaParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsCustomToolParams">BetaManagedAgentsCustomToolParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEditToolConfigParams">BetaManagedAgentsEditToolConfigParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEffortHighParam">BetaManagedAgentsEffortHighParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEffortLowParam">BetaManagedAgentsEffortLowParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEffortMaxParam">BetaManagedAgentsEffortMaxParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEffortMediumParam">BetaManagedAgentsEffortMediumParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEffortXhighParam">BetaManagedAgentsEffortXhighParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsGlobToolConfigParams">BetaManagedAgentsGlobToolConfigParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsGrepToolConfigParams">BetaManagedAgentsGrepToolConfigParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsMCPToolConfigParams">BetaManagedAgentsMCPToolConfigParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsMCPToolsetDefaultConfigParams">BetaManagedAgentsMCPToolsetDefaultConfigParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsMCPToolsetParams">BetaManagedAgentsMCPToolsetParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsModel">BetaManagedAgentsModel</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsModelConfigParams">BetaManagedAgentsModelConfigParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsMultiagentSelfParams">BetaManagedAgentsMultiagentSelfParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsReadToolConfigParams">BetaManagedAgentsReadToolConfigParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsSkillParamsUnion">BetaManagedAgentsSkillParamsUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsURLMCPServerParams">BetaManagedAgentsURLMCPServerParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsUserLocationParam">BetaManagedAgentsUserLocationParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsWebFetchToolConfigParams">BetaManagedAgentsWebFetchToolConfigParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsWebSearchToolConfigParams">BetaManagedAgentsWebSearchToolConfigParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsWriteToolConfigParams">BetaManagedAgentsWriteToolConfigParams</a>
 
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAdvisor">BetaManagedAgentsAdvisor</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgent">BetaManagedAgentsAgent</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentReference">BetaManagedAgentsAgentReference</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolConfig">BetaManagedAgentsAgentToolConfig</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolConfigUnion">BetaManagedAgentsAgentToolConfigUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolsetDefaultConfig">BetaManagedAgentsAgentToolsetDefaultConfig</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolset20260401">BetaManagedAgentsAgentToolset20260401</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolset20260401BashInput">BetaManagedAgentsAgentToolset20260401BashInput</a>
@@ -780,21 +789,30 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAlwaysAllowPolicy">BetaManagedAgentsAlwaysAllowPolicy</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAlwaysAskPolicy">BetaManagedAgentsAlwaysAskPolicy</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAnthropicSkill">BetaManagedAgentsAnthropicSkill</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsBashToolConfig">BetaManagedAgentsBashToolConfig</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsCustomSkill">BetaManagedAgentsCustomSkill</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsCustomTool">BetaManagedAgentsCustomTool</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsCustomToolInputSchema">BetaManagedAgentsCustomToolInputSchema</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEditToolConfig">BetaManagedAgentsEditToolConfig</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEffortHigh">BetaManagedAgentsEffortHigh</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEffortLow">BetaManagedAgentsEffortLow</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEffortMax">BetaManagedAgentsEffortMax</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEffortMedium">BetaManagedAgentsEffortMedium</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsEffortXhigh">BetaManagedAgentsEffortXhigh</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsGlobToolConfig">BetaManagedAgentsGlobToolConfig</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsGrepToolConfig">BetaManagedAgentsGrepToolConfig</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsMCPServerURLDefinition">BetaManagedAgentsMCPServerURLDefinition</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsMCPToolConfig">BetaManagedAgentsMCPToolConfig</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsMCPToolset">BetaManagedAgentsMCPToolset</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsMCPToolsetDefaultConfig">BetaManagedAgentsMCPToolsetDefaultConfig</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsModel">BetaManagedAgentsModel</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsModelConfig">BetaManagedAgentsModelConfig</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsReadToolConfig">BetaManagedAgentsReadToolConfig</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsSessionThreadAgent">BetaManagedAgentsSessionThreadAgent</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsUserLocation">BetaManagedAgentsUserLocation</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsWebFetchToolConfig">BetaManagedAgentsWebFetchToolConfig</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsWebSearchToolConfig">BetaManagedAgentsWebSearchToolConfig</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsWriteToolConfig">BetaManagedAgentsWriteToolConfig</a>
 
 Methods:
 

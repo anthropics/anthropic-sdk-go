@@ -2,6 +2,7 @@ package agenttoolset
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -26,7 +27,8 @@ const (
 
 const truncationNotice = "[output truncated]"
 
-// BetaGlobTool returns an anthropic.BetaTool that globs under env.Workdir.
+// BetaGlobTool returns an anthropic.BetaTool that globs under env.Workdir or
+// an allowed root.
 func BetaGlobTool(env *AgentToolContext) anthropic.BetaTool {
 	return &funcTool{
 		name:        "glob",
@@ -41,7 +43,7 @@ func BetaGlobTool(env *AgentToolContext) anthropic.BetaTool {
 }
 
 // BetaGrepTool returns an anthropic.BetaTool that searches file contents under
-// env.Workdir.
+// env.Workdir or an allowed root.
 func BetaGrepTool(env *AgentToolContext) anthropic.BetaTool {
 	return &funcTool{
 		name:        "grep",
@@ -64,30 +66,21 @@ func execGlob(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 		return errorf("glob: pattern is required")
 	}
 
-	root := env.Workdir
-	pattern := in.Pattern
-	if filepath.IsAbs(pattern) {
-		if !env.UnrestrictedPaths {
-			return errorf("glob: absolute pattern not permitted")
-		}
-		root = "/"
-		pattern = strings.TrimPrefix(pattern, "/")
-	} else if in.Path != "" {
-		p, err := resolvePath(env, in.Path)
-		if err != nil {
-			return errorf("glob: %v", err)
-		}
-		root = p
+	if filepath.IsAbs(in.Pattern) {
+		return errorf("glob: absolute pattern not permitted; pass a relative pattern (and optionally path)")
 	}
-
 	// Reject a ".." segment in the pattern itself. The WalkDir below is rooted
 	// at the (confined) root and matches against paths relative to it, so a
 	// "../.." pattern matches nothing today — but rejecting it outright keeps
 	// the confinement explicit and consistent with the other SDKs' glob tools,
 	// which feed the pattern to a filesystem globber where ".." would escape
 	// the workdir.
-	if !env.UnrestrictedPaths && hasParentDirSegment(pattern) {
-		return errorf("glob: pattern %q must not contain a %q segment", pattern, "..")
+	if hasParentDirSegment(in.Pattern) {
+		return errorf("glob: pattern %q must not contain a %q segment", in.Pattern, "..")
+	}
+	root, err := resolvePath(env, cmp.Or(in.Path, "."))
+	if err != nil {
+		return errorf("glob: %v", err)
 	}
 
 	type entry struct {
@@ -102,7 +95,7 @@ func execGlob(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 	var entries []entry
 	visited := 0
 	errStop := errors.New("stop")
-	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, walkErr error) error {
+	err = filepath.WalkDir(root, func(p string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return nil
 		}
@@ -117,7 +110,7 @@ func execGlob(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 		if relErr != nil {
 			return nil
 		}
-		if !globMatch(pattern, filepath.ToSlash(rel)) {
+		if !globMatch(in.Pattern, filepath.ToSlash(rel)) {
 			return nil
 		}
 		var mt int64
@@ -219,13 +212,9 @@ func execGrep(ctx context.Context, raw json.RawMessage, env *AgentToolContext) (
 	if in.Pattern == "" {
 		return errorf("grep: pattern is required")
 	}
-	searchPath := env.Workdir
-	if in.Path != "" {
-		p, err := resolvePath(env, in.Path)
-		if err != nil {
-			return errorf("grep: %v", err)
-		}
-		searchPath = p
+	searchPath, err := resolvePath(env, cmp.Or(in.Path, "."))
+	if err != nil {
+		return errorf("grep: %v", err)
 	}
 
 	if rg, err := exec.LookPath("rg"); err == nil {

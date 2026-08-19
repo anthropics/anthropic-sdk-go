@@ -1,10 +1,10 @@
 // Package environments provides helpers for running self-hosted environment
 // workers: the control-plane [WorkPoller] (claim work items and hand them
 // back) and the [EnvironmentWorker] composition (poll + skills + run the
-// session tools while heartbeating + force-stop + loop). They are designed
-// to feel at home alongside the SDK's other iterators (ssestream.Stream[T],
-// BetaToolRunner): pull-style Next/Current/Err/Close plus a Go 1.23
-// range-over-func All().
+// session tools while heartbeating + force-stop unless the lease was lost +
+// loop). They are designed to feel at home alongside the SDK's other
+// iterators (ssestream.Stream[T], BetaToolRunner): pull-style
+// Next/Current/Err/Close plus a Go 1.23 range-over-func All().
 //
 // The per-session tool-execution loop itself lives next to the Messages tool
 // runner as [github.com/anthropics/anthropic-sdk-go.SessionToolRunner]
@@ -108,7 +108,32 @@ const (
 	// stopTimeout bounds the deferred Stop call so a slow server cannot
 	// stall the consumer's next iteration or Close indefinitely.
 	stopTimeout = 10 * time.Second
+
+	idleReportInterval = 5 * time.Minute
 )
+
+// idleLog keeps an idle poll loop visible in the logs without an INFO line per
+// poll: the first empty poll after start-up or after a claim logs at INFO,
+// later ones at DEBUG, with an INFO reminder every idleReportInterval.
+type idleLog struct {
+	since      time.Time
+	lastReport time.Time
+}
+
+func (l *idleLog) onEmptyPoll(ctx context.Context, log *slog.Logger, now time.Time) {
+	switch {
+	case l.since.IsZero():
+		l.since, l.lastReport = now, now
+		log.InfoContext(ctx, "idle; polling for work")
+	case now.Sub(l.lastReport) >= idleReportInterval:
+		l.lastReport = now
+		log.InfoContext(ctx, fmt.Sprintf("still polling; idle for %s", now.Sub(l.since).Round(time.Second)))
+	default:
+		log.DebugContext(ctx, "poll returned no work")
+	}
+}
+
+func (l *idleLog) onClaim() { l.since = time.Time{} }
 
 // WorkPollerOptions configures a WorkPoller.
 type WorkPollerOptions struct {
@@ -143,6 +168,19 @@ type WorkPollerOptions struct {
 	// single non-blocking pass.
 	Drain bool
 
+	// AutoStop controls whether the poller posts work.stop itself for each
+	// yielded item once the consumer is done with it (the next Next call or
+	// Close). Omitted (zero value) means on: the poller owns the whole
+	// work-item lifecycle. Set param.NewOpt(false) when the consumer stops or
+	// releases each item itself — as [EnvironmentWorker.Run] does, and as a
+	// dispatcher handing items to another process should — so the item is
+	// not stopped twice or taken from whoever owns it by then.
+	//
+	// Orthogonal to Drain: AutoStop is per-item lifecycle, Drain is loop
+	// termination. The long-running runner is Drain false with AutoStop on
+	// (the defaults); drain-and-dispatch is Drain true with AutoStop off.
+	AutoStop param.Opt[bool]
+
 	// BlockMs is the long-poll block_ms forwarded to work.poll — how long
 	// the server holds an empty poll open. Three states:
 	//   - omitted (zero value): the poller uses the default of 999ms (the
@@ -167,8 +205,9 @@ type WorkPollerOptions struct {
 // WorkPoller long-polls an environment's work queue, claims items, and posts
 // ack — yielding each claimed [anthropic.BetaSelfHostedWork] to the consumer
 // via Next/Current. After the consumer finishes with a yielded item (the next
-// Next call or Close), the poller posts Stop for that work item. Poll, Ack and
-// Stop are all authorized with the environment key.
+// Next call or Close), the poller posts Stop for that work item unless
+// [WorkPollerOptions.AutoStop] is off. Poll, Ack and Stop are all authorized
+// with the environment key.
 //
 // A WorkPoller is NOT safe for concurrent use. All methods must be called
 // from a single goroutine. Always pair construction with a Close, ideally
@@ -200,6 +239,13 @@ type WorkPoller struct {
 	failures    int    // consecutive poll failures, for poll backoff
 	discards    int    // consecutive unprocessable items, for discard backoff
 	closed      bool
+	autoStop    bool
+
+	idle idleLog
+	// now is the clock for idle logging and emptyPollWait the base wait between
+	// empty polls (jittered up to three times it); tests replace both.
+	now           func() time.Time
+	emptyPollWait time.Duration
 }
 
 // NewWorkPoller returns a WorkPoller bound to ctx and client. WorkerID
@@ -223,10 +269,13 @@ func NewWorkPoller(ctx context.Context, client anthropic.Client, opts WorkPoller
 		slog.String("environment_id", opts.EnvironmentID),
 	)
 	p := &WorkPoller{
-		ctx:    ctx,
-		client: client,
-		opts:   opts,
-		log:    log,
+		ctx:           ctx,
+		client:        client,
+		opts:          opts,
+		log:           log,
+		autoStop:      opts.AutoStop.Or(true),
+		now:           time.Now,
+		emptyPollWait: time.Second,
 	}
 	switch {
 	case opts.EnvironmentID == "":
@@ -335,9 +384,11 @@ func (p *WorkPoller) Next() bool {
 				p.log.InfoContext(p.ctx, "work queue drained")
 				return false
 			}
-			sleep(p.ctx, jitter(time.Second, 3*time.Second))
+			p.idle.onEmptyPoll(p.ctx, p.log, p.now())
+			sleep(p.ctx, jitter(p.emptyPollWait, 3*p.emptyPollWait))
 			continue
 		}
+		p.idle.onClaim()
 
 		log := p.log.With(slog.String("work_id", work.ID),
 			slog.String("work_type", string(work.Data.Type)))
@@ -361,7 +412,9 @@ func (p *WorkPoller) Next() bool {
 
 		p.discards = 0
 		p.current = work
-		p.pendingStop = p.makeStopClosure(work.ID, work.EnvironmentID, reqOpts, log)
+		if p.autoStop {
+			p.pendingStop = p.makeStopClosure(work.ID, work.EnvironmentID, reqOpts, log)
+		}
 		return true
 	}
 }

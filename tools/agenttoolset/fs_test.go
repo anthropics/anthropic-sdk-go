@@ -423,3 +423,99 @@ func TestExecReadRejectsDirectoryEvenWhenUncapped(t *testing.T) {
 	require.True(t, isErr)
 	require.Contains(t, out, "not a regular file")
 }
+
+// TestFileToolsConfinementMatrix drives the full path policy through the real
+// tools: the workdir works, a memory folder mounted outside it works, a
+// read-only memory folder reads but refuses writes, and everywhere else is
+// refused.
+func TestFileToolsConfinementMatrix(t *testing.T) {
+	tmp := t.TempDir()
+	work := filepath.Join(tmp, "work")
+	notes := filepath.Join(tmp, "mnt", "notes")
+	facts := filepath.Join(tmp, "mnt", "facts")
+	outside := filepath.Join(tmp, "outside")
+	for _, d := range []string{work, notes, facts, outside} {
+		require.NoError(t, os.MkdirAll(d, 0o755))
+	}
+	require.NoError(t, os.WriteFile(filepath.Join(facts, "facts.md"), []byte("immutable"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(outside, "secret.txt"), []byte("secret"), 0o644))
+
+	env := &AgentToolContext{Workdir: work, AllowedRoots: []string{notes, facts}, ReadOnlyRoots: []string{facts}}
+	read, write, edit := BetaReadTool(env), BetaWriteTool(env), BetaEditTool(env)
+	const refused = "is outside the session's working directory and its other permitted directories"
+
+	msg, isErr := runTool(t, write, mustJSON(t, map[string]any{"file_path": "w.txt", "content": "in workdir"}))
+	require.False(t, isErr, msg)
+	got, err := os.ReadFile(filepath.Join(work, "w.txt"))
+	require.NoError(t, err)
+	require.Equal(t, "in workdir", string(got))
+
+	note := filepath.Join(notes, "note.md")
+	msg, isErr = runTool(t, write, mustJSON(t, map[string]any{"file_path": note, "content": "remembered"}))
+	require.False(t, isErr, msg)
+	msg, isErr = runTool(t, read, mustJSON(t, map[string]any{"file_path": note}))
+	require.False(t, isErr, msg)
+	require.Equal(t, "remembered", msg)
+	msg, isErr = runTool(t, edit, mustJSON(t, map[string]any{"file_path": note, "old_string": "remembered", "new_string": "edited"}))
+	require.False(t, isErr, msg)
+	got, err = os.ReadFile(note)
+	require.NoError(t, err)
+	require.Equal(t, "edited", string(got))
+
+	msg, isErr = runTool(t, read, mustJSON(t, map[string]any{"file_path": filepath.Join(facts, "facts.md")}))
+	require.False(t, isErr, msg)
+	require.Equal(t, "immutable", msg)
+	msg, isErr = runTool(t, write, mustJSON(t, map[string]any{"file_path": filepath.Join(facts, "facts.md"), "content": "x"}))
+	require.True(t, isErr)
+	require.Contains(t, msg, "read-only")
+	got, err = os.ReadFile(filepath.Join(facts, "facts.md"))
+	require.NoError(t, err)
+	require.Equal(t, "immutable", string(got))
+
+	msg, isErr = runTool(t, read, mustJSON(t, map[string]any{"file_path": filepath.Join(outside, "secret.txt")}))
+	require.True(t, isErr)
+	require.Contains(t, msg, refused)
+	msg, isErr = runTool(t, write, mustJSON(t, map[string]any{"file_path": filepath.Join(outside, "new.txt"), "content": "x"}))
+	require.True(t, isErr)
+	require.Contains(t, msg, refused)
+	require.NoFileExists(t, filepath.Join(outside, "new.txt"))
+}
+
+func TestWriteAndEditToolsRefuseReadOnlyRoots(t *testing.T) {
+	work := t.TempDir()
+	ro := filepath.Join(work, "memory", "notes")
+	require.NoError(t, os.MkdirAll(ro, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(ro, "facts.md"), []byte("immutable"), 0o644))
+
+	env := &AgentToolContext{Workdir: work, ReadOnlyRoots: []string{ro}}
+	write := BetaWriteTool(env)
+	edit := BetaEditTool(env)
+
+	// Overwriting an existing file, creating a new one, and editing in place
+	// are all refused with an error naming the read-only directory.
+	for _, input := range []map[string]any{
+		{"file_path": "memory/notes/facts.md", "content": "overwritten"},
+		{"file_path": "memory/notes/new.md", "content": "new"},
+	} {
+		msg, isErr := runTool(t, write, mustJSON(t, input))
+		require.True(t, isErr, "write into a read-only root must fail: %v", input)
+		require.Contains(t, msg, "read-only")
+	}
+	msg, isErr := runTool(t, edit, mustJSON(t, map[string]any{
+		"file_path": "memory/notes/facts.md", "old_string": "immutable", "new_string": "x",
+	}))
+	require.True(t, isErr)
+	require.Contains(t, msg, "read-only")
+
+	got, err := os.ReadFile(filepath.Join(ro, "facts.md"))
+	require.NoError(t, err)
+	require.Equal(t, "immutable", string(got))
+	require.NoFileExists(t, filepath.Join(ro, "new.md"))
+
+	// Paths outside the read-only root are unaffected.
+	msg, isErr = runTool(t, write, mustJSON(t, map[string]any{"file_path": "scratch.txt", "content": "ok"}))
+	require.False(t, isErr, msg)
+	got, err = os.ReadFile(filepath.Join(work, "scratch.txt"))
+	require.NoError(t, err)
+	require.Equal(t, "ok", string(got))
+}

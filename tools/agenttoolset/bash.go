@@ -292,8 +292,8 @@ func cleanOutput(b []byte, truncated bool) string {
 // persists across calls; the returned tool implements io.Closer.
 //
 // bash is the one explicitly-unrestricted tool in the set — it runs /bin/bash
-// directly and ignores AgentToolContext.UnrestrictedPaths. Run it inside a sandbox you
-// control.
+// directly and ignores the AgentToolContext path policy (Workdir/AllowedRoots/
+// ReadOnlyRoots). Run it inside a sandbox you control.
 func BetaBashTool(env *AgentToolContext) anthropic.BetaTool {
 	return &bashTool{env: env}
 }
@@ -319,6 +319,9 @@ func (t *bashTool) InputSchema() anthropic.BetaToolInputSchemaParam {
 }
 
 func (t *bashTool) Execute(ctx context.Context, raw json.RawMessage) ([]anthropic.BetaToolResultBlockParamContentUnion, error) {
+	if err := rejectUnrestrictedPaths(t.env); err != nil {
+		return nil, err
+	}
 	content, isErr := t.run(ctx, raw)
 	if isErr {
 		return nil, &ToolError{Content: content}

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.66.0 (2026-08-19)
+
+Full Changelog: [v1.65.0...v1.66.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.65.0...v1.66.0)
+
+### Features
+
+* **api:** managed agents web search config and self hosted sandbox memory ([694b03a](https://github.com/anthropics/anthropic-sdk-go/commit/694b03a4a6e3318b0a6175ff988f635049187f29))
+
 ## 1.65.0 (2026-08-19)
 
 Full Changelog: [v1.64.0...v1.65.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.64.0...v1.65.0)

@@ -69,9 +69,9 @@ func main() {
 	}
 	defer skillFile.Close()
 
-	skill, err := client.Beta.Skills.New(ctx, anthropic.BetaSkillNewParams{
-		DisplayTitle: param.NewOpt(fmt.Sprintf("comprehensive-greeting-%d", time.Now().UnixMilli())),
-		Files:        []io.Reader{namedReader{skillFile, "greeting/SKILL.md"}},
+	skill, err := client.Skills.New(ctx, anthropic.SkillNewParams{
+		DisplayName: param.NewOpt(fmt.Sprintf("comprehensive-greeting-%d", time.Now().UnixMilli())),
+		Files:       []io.Reader{namedReader{skillFile, "greeting/SKILL.md"}},
 	})
 	if err != nil {
 		panic(err)

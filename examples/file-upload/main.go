@@ -18,9 +18,8 @@ func main() {
 		return
 	}
 
-	fileUploadResult, err := client.Beta.Files.Upload(ctx, anthropic.BetaFileUploadParams{
-		File:  anthropic.File(myFile, "file.txt", "text/plain"),
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaFilesAPI2025_04_14},
+	fileUploadResult, err := client.Files.Upload(ctx, anthropic.FileUploadParams{
+		File: anthropic.File(myFile, "file.txt", "text/plain"),
 	})
 	if err != nil {
 		fmt.Printf("Error uploading file: %v\n", err)
@@ -29,18 +28,17 @@ func main() {
 	content := "Write me a summary of my file.txt file in the style of a Shakespearean sonnet.\n\n"
 	println("[user]: " + content)
 
-	message, err := client.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
+	message, err := client.Messages.New(ctx, anthropic.MessageNewParams{
 		MaxTokens: 1024,
-		Messages: []anthropic.BetaMessageParam{
-			anthropic.NewBetaUserMessage(
-				anthropic.NewBetaTextBlock(content),
-				anthropic.NewBetaDocumentBlock(anthropic.BetaFileDocumentSourceParam{
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(
+				anthropic.NewTextBlock(content),
+				anthropic.NewDocumentBlock(anthropic.FileDocumentSourceParam{
 					FileID: fileUploadResult.ID,
 				}),
 			),
 		},
 		Model: anthropic.ModelClaudeSonnet5,
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaFilesAPI2025_04_14},
 	})
 	if err != nil {
 		fmt.Printf("Error creating message: %v\n", err)

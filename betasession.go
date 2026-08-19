@@ -388,14 +388,14 @@ func (u BetaManagedAgentsAgentWithOverridesParamsToolUnion) GetConfigs() (res be
 	return
 }
 
-// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParams],
+// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParamsUnion],
 // [_[]BetaManagedAgentsMCPToolConfigParams]
 type betaManagedAgentsAgentWithOverridesParamsToolUnionConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:
 //
 //	switch u.AsAny().(type) {
-//	case *[]anthropic.BetaManagedAgentsAgentToolConfigParams:
+//	case *[]anthropic.BetaManagedAgentsAgentToolConfigParamsUnion:
 //	case *[]anthropic.BetaManagedAgentsMCPToolConfigParams:
 //	default:
 //	    fmt.Errorf("not present")
@@ -1417,7 +1417,7 @@ func (r *BetaManagedAgentsSessionAgentSkillUnion) UnmarshalJSON(data []byte) err
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsSessionAgentToolUnion struct {
-	// This field is a union of [[]BetaManagedAgentsAgentToolConfig],
+	// This field is a union of [[]BetaManagedAgentsAgentToolConfigUnion],
 	// [[]BetaManagedAgentsMCPToolConfig]
 	Configs BetaManagedAgentsSessionAgentToolUnionConfigs `json:"configs"`
 	// This field is a union of [BetaManagedAgentsAgentToolsetDefaultConfig],
@@ -1512,8 +1512,8 @@ func (r *BetaManagedAgentsSessionAgentToolUnion) UnmarshalJSON(data []byte) erro
 // OfBetaManagedAgentsMCPToolConfigArray]
 type BetaManagedAgentsSessionAgentToolUnionConfigs struct {
 	// This field will be present if the value is a
-	// [[]BetaManagedAgentsAgentToolConfig] instead of an object.
-	OfBetaManagedAgentsAgentToolConfigArray []BetaManagedAgentsAgentToolConfig `json:",inline"`
+	// [[]BetaManagedAgentsAgentToolConfigUnion] instead of an object.
+	OfBetaManagedAgentsAgentToolConfigArray []BetaManagedAgentsAgentToolConfigUnion `json:",inline"`
 	// This field will be present if the value is a [[]BetaManagedAgentsMCPToolConfig]
 	// instead of an object.
 	OfBetaManagedAgentsMCPToolConfigArray []BetaManagedAgentsMCPToolConfig `json:",inline"`
@@ -1682,14 +1682,14 @@ func (u BetaManagedAgentsSessionAgentUpdateToolUnionParam) GetConfigs() (res bet
 	return
 }
 
-// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParams],
+// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParamsUnion],
 // [_[]BetaManagedAgentsMCPToolConfigParams]
 type betaManagedAgentsSessionAgentUpdateToolUnionParamConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:
 //
 //	switch u.AsAny().(type) {
-//	case *[]anthropic.BetaManagedAgentsAgentToolConfigParams:
+//	case *[]anthropic.BetaManagedAgentsAgentToolConfigParamsUnion:
 //	case *[]anthropic.BetaManagedAgentsMCPToolConfigParams:
 //	default:
 //	    fmt.Errorf("not present")

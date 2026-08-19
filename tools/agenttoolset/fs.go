@@ -32,7 +32,7 @@ func resolveMaxBytes(configured, def int64) (limit int64, capped bool) {
 }
 
 // BetaReadTool returns an anthropic.BetaTool that reads file contents under
-// env.Workdir.
+// env.Workdir or an allowed root.
 func BetaReadTool(env *AgentToolContext) anthropic.BetaTool {
 	return &funcTool{
 		name:        "read",
@@ -51,7 +51,7 @@ func BetaReadTool(env *AgentToolContext) anthropic.BetaTool {
 }
 
 // BetaWriteTool returns an anthropic.BetaTool that writes file contents under
-// env.Workdir, creating parent directories as needed.
+// env.Workdir or an allowed root, creating parent directories as needed.
 func BetaWriteTool(env *AgentToolContext) anthropic.BetaTool {
 	return &funcTool{
 		name:        "write",
@@ -66,7 +66,7 @@ func BetaWriteTool(env *AgentToolContext) anthropic.BetaTool {
 }
 
 // BetaEditTool returns an anthropic.BetaTool that performs unique-match string
-// replacement in a file under env.Workdir.
+// replacement in a file under env.Workdir or an allowed root.
 func BetaEditTool(env *AgentToolContext) anthropic.BetaTool {
 	return &funcTool{
 		name:        "edit",
@@ -142,7 +142,7 @@ func execWrite(_ context.Context, raw json.RawMessage, env *AgentToolContext) (s
 	if in.FilePath == "" {
 		return errorf("write: file_path is required")
 	}
-	path, err := resolvePath(env, in.FilePath)
+	path, err := resolveWritablePath(env, in.FilePath)
 	if err != nil {
 		return errorf("write: %v", err)
 	}
@@ -168,7 +168,7 @@ func execEdit(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 	if in.OldString == "" {
 		return errorf("edit: old_string is required")
 	}
-	path, err := resolvePath(env, in.FilePath)
+	path, err := resolveWritablePath(env, in.FilePath)
 	if err != nil {
 		return errorf("edit: %v", err)
 	}

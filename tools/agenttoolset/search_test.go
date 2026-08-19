@@ -31,7 +31,7 @@ func TestExecGlob(t *testing.T) {
 		description string
 		pattern     string
 		assert      func(t *testing.T, lines []string)
-		wantErr     bool
+		wantErr     string
 	}{
 		{
 			description: "doublestar pattern matches across directories and excludes non-matching extensions",
@@ -54,30 +54,34 @@ func TestExecGlob(t *testing.T) {
 		{
 			description: "empty pattern is rejected before walking the filesystem",
 			pattern:     "",
-			wantErr:     true,
+			wantErr:     "pattern is required",
 		},
 		{
-			description: "absolute pattern is rejected when UnrestrictedPaths is false",
+			description: "absolute pattern is always rejected",
 			pattern:     "/etc/*",
-			wantErr:     true,
+			wantErr:     "pass a relative pattern",
 		},
 		{
 			description: "pattern containing a .. segment is rejected so it cannot escape the workdir",
 			pattern:     "../*.go",
-			wantErr:     true,
+			wantErr:     "must not contain",
 		},
 		{
 			description: "doublestar pattern with an embedded .. segment is also rejected",
 			pattern:     "**/../*.go",
-			wantErr:     true,
+			wantErr:     "must not contain",
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.description, func(t *testing.T) {
 			out, isErr := execGlob(context.Background(), mustJSON(t, map[string]any{"pattern": tc.pattern}), env)
-			require.Equal(t, tc.wantErr, isErr, "output=%q", out)
-			if tc.wantErr || tc.assert == nil {
+			require.Equal(t, tc.wantErr != "", isErr, "output=%q", out)
+			if tc.wantErr != "" {
+				require.Contains(t, out, tc.wantErr)
+				return
+			}
+			if tc.assert == nil {
 				return
 			}
 			tc.assert(t, strings.Split(strings.TrimSpace(out), "\n"))
@@ -96,6 +100,62 @@ func TestExecGlob(t *testing.T) {
 		require.Contains(t, out, "c.go")
 		require.NotContains(t, out, "a.go")
 	})
+
+	t.Run("a symlinked workdir is searched through its canonical path by default", func(t *testing.T) {
+		link := filepath.Join(t.TempDir(), "link")
+		require.NoError(t, os.Symlink(work, link))
+		out, isErr := execGlob(context.Background(), mustJSON(t, map[string]any{"pattern": "**/*.go"}), &AgentToolContext{Workdir: link})
+		require.False(t, isErr, "output=%q", out)
+		lines := strings.Split(strings.TrimSpace(out), "\n")
+		require.Len(t, lines, 3)
+		for _, l := range lines {
+			require.True(t, strings.HasPrefix(l, canonicalRoot(work)+string(filepath.Separator)), "result %q is not under the canonical workdir", l)
+		}
+	})
+}
+
+// TestGlobAndGrepReachAnAllowedRoot: a memory folder mounted outside the
+// workdir is searchable when listed in AllowedRoots, and a directory that is
+// in neither is refused by both tools.
+func TestGlobAndGrepReachAnAllowedRoot(t *testing.T) {
+	tmp := t.TempDir()
+	work := filepath.Join(tmp, "work")
+	mount := filepath.Join(tmp, "mnt", "notes")
+	outside := filepath.Join(tmp, "outside")
+	for _, d := range []string{work, mount, outside} {
+		require.NoError(t, os.MkdirAll(d, 0o755))
+	}
+	require.NoError(t, os.WriteFile(filepath.Join(mount, "note.md"), []byte("remembered fact"), 0o644))
+	env := &AgentToolContext{Workdir: work, AllowedRoots: []string{mount}}
+	const refused = "is outside the session's working directory and its other permitted directories"
+
+	out, isErr := execGlob(context.Background(), mustJSON(t, map[string]any{"pattern": "*.md", "path": mount}), env)
+	require.False(t, isErr, "output=%q", out)
+	require.Equal(t, filepath.Join(canonicalRoot(mount), "note.md"), out)
+
+	for _, tc := range []struct {
+		description string
+		hidePath    bool
+	}{
+		{description: "grep via ripgrep when it is on PATH"},
+		{description: "grep via the built-in walker", hidePath: true},
+	} {
+		t.Run(tc.description, func(t *testing.T) {
+			if tc.hidePath {
+				t.Setenv("PATH", "")
+			}
+			out, isErr := execGrep(context.Background(), mustJSON(t, map[string]any{"pattern": "remembered", "path": mount}), env)
+			require.False(t, isErr, "output=%q", out)
+			require.Contains(t, out, "note.md")
+		})
+	}
+
+	out, isErr = execGlob(context.Background(), mustJSON(t, map[string]any{"pattern": "*", "path": outside}), env)
+	require.True(t, isErr)
+	require.Contains(t, out, refused)
+	out, isErr = execGrep(context.Background(), mustJSON(t, map[string]any{"pattern": "x", "path": outside}), env)
+	require.True(t, isErr)
+	require.Contains(t, out, refused)
 }
 
 func TestExecGrep(t *testing.T) {

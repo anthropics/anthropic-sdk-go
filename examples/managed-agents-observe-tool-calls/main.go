@@ -140,8 +140,10 @@ func main() {
 	// 2. Build the per-session agent tool context: the workdir the file tools
 	//    confine to, plus the skills SetupSkills downloads into {workdir}/skills/.
 	//    Cleanup removes them again.
+	//    SetupSkillsFromSession takes the session, never an id: the create response above
+	//    already carries the resolved agent, so no second fetch is needed.
 	env := &agenttoolset.AgentToolContext{Workdir: workdir()}
-	if err := env.SetupSkills(ctx, client, session.ID); err != nil {
+	if err := env.SetupSkillsFromSession(ctx, client, session); err != nil {
 		logger.Warn("skill setup failed", slog.Any("error", err))
 	}
 	defer func() {
@@ -255,11 +257,19 @@ func observeAsSelfHostedWorker(ctx context.Context, client anthropic.Client, log
 		log := logger.With(slog.String("work_id", work.ID), slog.String("session_id", sessionID))
 		log.Info("claimed work")
 
-		// Per-session agent tool context + skills. The session lookup and skill
-		// download are environment-scoped, so they need the environment key
-		// (envKeyOpts) just like the heartbeat and the runner below.
+		// Per-session agent tool context + skills. The work item carries only
+		// the session id, so fetch the session once here and hand that snapshot
+		// to SetupSkills — it never looks the session up itself. The lookup and
+		// the skill download are environment-scoped, so they need the
+		// environment key (envKeyOpts) just like the heartbeat and the runner
+		// below.
+		session, err := client.Beta.Sessions.Get(ctx, sessionID, anthropic.BetaSessionGetParams{}, envKeyOpts...)
+		if err != nil {
+			log.Warn("session lookup failed", slog.Any("error", err))
+			continue
+		}
 		env := &agenttoolset.AgentToolContext{Workdir: workdir()}
-		if err := env.SetupSkills(ctx, client, sessionID, envKeyOpts...); err != nil {
+		if err := env.SetupSkillsFromSession(ctx, client, session, envKeyOpts...); err != nil {
 			log.Warn("skill setup failed", slog.Any("error", err))
 		}
 		tools := append(agenttoolset.BetaAgentToolset20260401(env), currentTimeTool{})

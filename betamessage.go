@@ -9801,7 +9801,7 @@ type BetaSkill struct {
 	//
 	// Any of "anthropic", "custom".
 	Type BetaSkillType `json:"type" api:"required"`
-	// Skill version or 'latest' for most recent version
+	// The resolved version: a skill version ID for custom skills.
 	Version string `json:"version" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {

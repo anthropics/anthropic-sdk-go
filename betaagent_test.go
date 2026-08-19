@@ -66,13 +66,15 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 		Tools: []anthropic.BetaAgentNewParamsToolUnion{{
 			OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{
 				Type: anthropic.BetaManagedAgentsAgentToolset20260401ParamsTypeAgentToolset20260401,
-				Configs: []anthropic.BetaManagedAgentsAgentToolConfigParams{{
-					Name:    anthropic.BetaManagedAgentsAgentToolConfigParamsNameBash,
-					Enabled: anthropic.Bool(true),
-					PermissionPolicy: anthropic.BetaManagedAgentsAgentToolConfigParamsPermissionPolicyUnion{
-						OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
-							Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
+				Configs: []anthropic.BetaManagedAgentsAgentToolConfigParamsUnion{{
+					OfBash: &anthropic.BetaManagedAgentsBashToolConfigParams{
+						Enabled: anthropic.Bool(true),
+						PermissionPolicy: anthropic.BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion{
+							OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
+								Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
+							},
 						},
+						Type: anthropic.BetaManagedAgentsBashToolConfigParamsTypeBash,
 					},
 				}},
 				DefaultConfig: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParams{
@@ -181,13 +183,15 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 			Tools: []anthropic.BetaAgentUpdateParamsToolUnion{{
 				OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{
 					Type: anthropic.BetaManagedAgentsAgentToolset20260401ParamsTypeAgentToolset20260401,
-					Configs: []anthropic.BetaManagedAgentsAgentToolConfigParams{{
-						Name:    anthropic.BetaManagedAgentsAgentToolConfigParamsNameBash,
-						Enabled: anthropic.Bool(true),
-						PermissionPolicy: anthropic.BetaManagedAgentsAgentToolConfigParamsPermissionPolicyUnion{
-							OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
-								Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
+					Configs: []anthropic.BetaManagedAgentsAgentToolConfigParamsUnion{{
+						OfBash: &anthropic.BetaManagedAgentsBashToolConfigParams{
+							Enabled: anthropic.Bool(true),
+							PermissionPolicy: anthropic.BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion{
+								OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
+									Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
+								},
 							},
+							Type: anthropic.BetaManagedAgentsBashToolConfigParamsTypeBash,
 						},
 					}},
 					DefaultConfig: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParams{

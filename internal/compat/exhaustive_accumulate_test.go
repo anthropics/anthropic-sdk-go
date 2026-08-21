@@ -43,27 +43,12 @@ func TestAccumulateExhaustive(t *testing.T) {
 	}
 }
 
-// variants lists the wire discriminant of every variant of a union: the types
-// implementing the interface AsAny returns, read from each one's Type field.
+// variants lists the wire discriminant of every variant of a union.
 func variants(t *testing.T, union any) []string {
 	t.Helper()
-	typ := reflect.TypeOf(union)
-	asAny, ok := typ.MethodByName("AsAny")
-	if !ok {
-		t.Fatalf("%s has no AsAny", typ.Name())
-	}
-	variant := asAny.Type.Out(0)
 	var out []string
-	for i := range typ.NumMethod() {
-		ret := typ.Method(i).Type
-		if ret.NumOut() != 1 || ret.Out(0) == variant || !ret.Out(0).Implements(variant) {
-			continue
-		}
-		field, ok := ret.Out(0).FieldByName("Type")
-		if !ok {
-			t.Fatalf("%s: variant %s has no Type field", typ.Name(), ret.Out(0).Name())
-		}
-		out = append(out, field.Tag.Get("default"))
+	for _, v := range unionVariants(reflect.TypeOf(union)) {
+		out = append(out, wireType(t, v))
 	}
 	return out
 }

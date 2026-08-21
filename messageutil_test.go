@@ -57,6 +57,17 @@ func TestContentBlockUnionToParam(t *testing.T) {
 			t.Errorf("Expected 1 search result in param, got %d", len(result.OfWebSearchToolResult.Content.OfWebSearchToolResultBlockItem))
 		}
 	})
+
+	t.Run("ToolUseBlock keeps unknown caller", func(t *testing.T) {
+		result := unmarshalContentBlockParam(t, `{"type":"tool_use","id":"toolu_1","name":"f","input":{},"caller":{"type":"future_caller","x":1}}`)
+		b, err := json.Marshal(result)
+		if err != nil {
+			t.Fatalf("Failed to marshal: %v", err)
+		}
+		if got := gjson.GetBytes(b, "caller").Raw; got != `{"type":"future_caller","x":1}` {
+			t.Errorf("Expected unknown caller to survive ToParam, got %s", got)
+		}
+	})
 }
 
 func TestTextCitationToParamKeepsAllFields(t *testing.T) {

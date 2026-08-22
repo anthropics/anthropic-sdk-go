@@ -114,6 +114,27 @@ func (b *betaToolRunnerBase) Err() error {
 	return b.err
 }
 
+// adoptContainer carries the container the last turn ran in onto the next
+// request: container-bound server tools reject a follow-up that omits it, so
+// its id is forwarded unless the caller pinned one themselves.
+func (b *betaToolRunnerBase) adoptContainer(message *BetaMessage) {
+	id := message.Container.ID
+	if id == "" {
+		return
+	}
+	container := &b.Params.Container
+	switch {
+	case container.OfContainers != nil:
+		if !container.OfContainers.ID.Valid() {
+			pinned := *container.OfContainers
+			pinned.ID = String(id)
+			container.OfContainers = &pinned
+		}
+	case !container.OfString.Valid():
+		container.OfString = String(id)
+	}
+}
+
 // executeTools processes any tool use blocks in the given message and returns a tool result message.
 // Returns:
 //   - (result, nil) if tools executed successfully
@@ -223,24 +244,6 @@ func applyToolChange(block BetaContentBlockParamUnion, available map[string]stru
 		if name, ok := additionRefName(block.OfToolAddition.Tool); ok {
 			available[name] = struct{}{}
 		}
-	case block.OfMidConvSystem != nil:
-		// Nested wrapper: same handling, one level down.
-		for _, inner := range block.OfMidConvSystem.Content {
-			switch {
-			case inner.OfToolRemoval != nil:
-				if name, ok := removalRefName(inner.OfToolRemoval.Tool); ok {
-					delete(available, name)
-				}
-			case inner.OfToolAddition != nil:
-				if name, ok := additionRefName(inner.OfToolAddition.Tool); ok {
-					available[name] = struct{}{}
-				}
-			default:
-				// forward-compat no-op
-			}
-		}
-	default:
-		// forward-compat no-op
 	}
 }
 
@@ -338,7 +341,7 @@ func (r *BetaToolRunner) NextMessage(ctx context.Context) (*BetaMessage, error) 
 	// Check iteration limit
 	if r.Params.MaxIterations > 0 && r.iterationCount >= r.Params.MaxIterations {
 		r.completed = true
-		return r.lastMessage, nil
+		return nil, nil
 	}
 
 	// Execute any pending tool calls from the last message
@@ -351,7 +354,7 @@ func (r *BetaToolRunner) NextMessage(ctx context.Context) (*BetaMessage, error) 
 		if toolMessage == nil {
 			// No tools to execute, conversation is complete
 			r.completed = true
-			return r.lastMessage, nil
+			return nil, nil
 		}
 		r.Params.Messages = append(r.Params.Messages, *toolMessage)
 	}
@@ -369,6 +372,7 @@ func (r *BetaToolRunner) NextMessage(ctx context.Context) (*BetaMessage, error) 
 
 	r.lastMessage = message
 	r.Params.Messages = append(r.Params.Messages, message.ToParam())
+	r.adoptContainer(message)
 
 	return message, nil
 }
@@ -510,6 +514,7 @@ func (r *BetaToolRunnerStreaming) NextStreaming(ctx context.Context) iter.Seq2[B
 
 		r.lastMessage = finalMessage
 		r.Params.Messages = append(r.Params.Messages, finalMessage.ToParam())
+		r.adoptContainer(finalMessage)
 	}
 }
 

@@ -45,7 +45,7 @@ func NewBetaFileService(opts ...option.RequestOption) (r BetaFileService) {
 }
 
 // List Files
-func (r *BetaFileService) List(ctx context.Context, params BetaFileListParams, opts ...option.RequestOption) (res *pagination.Page[FileMetadata], err error) {
+func (r *BetaFileService) List(ctx context.Context, params BetaFileListParams, opts ...option.RequestOption) (res *pagination.Page[BetaFileMetadata], err error) {
 	var raw *http.Response
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
@@ -66,12 +66,12 @@ func (r *BetaFileService) List(ctx context.Context, params BetaFileListParams, o
 }
 
 // List Files
-func (r *BetaFileService) ListAutoPaging(ctx context.Context, params BetaFileListParams, opts ...option.RequestOption) *pagination.PageAutoPager[FileMetadata] {
+func (r *BetaFileService) ListAutoPaging(ctx context.Context, params BetaFileListParams, opts ...option.RequestOption) *pagination.PageAutoPager[BetaFileMetadata] {
 	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete File
-func (r *BetaFileService) Delete(ctx context.Context, fileID string, body BetaFileDeleteParams, opts ...option.RequestOption) (res *DeletedFile, err error) {
+func (r *BetaFileService) Delete(ctx context.Context, fileID string, body BetaFileDeleteParams, opts ...option.RequestOption) (res *BetaDeletedFile, err error) {
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
@@ -103,7 +103,7 @@ func (r *BetaFileService) Download(ctx context.Context, fileID string, query Bet
 }
 
 // Get File Metadata
-func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query BetaFileGetMetadataParams, opts ...option.RequestOption) (res *FileMetadata, err error) {
+func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query BetaFileGetMetadataParams, opts ...option.RequestOption) (res *BetaFileMetadata, err error) {
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
@@ -119,7 +119,7 @@ func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query 
 }
 
 // Upload File
-func (r *BetaFileService) Upload(ctx context.Context, params BetaFileUploadParams, opts ...option.RequestOption) (res *FileMetadata, err error) {
+func (r *BetaFileService) Upload(ctx context.Context, params BetaFileUploadParams, opts ...option.RequestOption) (res *BetaFileMetadata, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
@@ -130,27 +130,7 @@ func (r *BetaFileService) Upload(ctx context.Context, params BetaFileUploadParam
 	return res, err
 }
 
-type BetaFileScope struct {
-	// The ID of the scoping resource (e.g., the session ID).
-	ID string `json:"id" api:"required"`
-	// The type of scope (e.g., `"session"`).
-	Type constant.Session `json:"type" default:"session"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID          respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaFileScope) RawJSON() string { return r.JSON.raw }
-func (r *BetaFileScope) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type DeletedFile struct {
+type BetaDeletedFile struct {
 	// ID of the deleted file.
 	ID string `json:"id" api:"required"`
 	// Deleted object type.
@@ -158,7 +138,7 @@ type DeletedFile struct {
 	// For file deletion, this is always `"file_deleted"`.
 	//
 	// Any of "file_deleted".
-	Type DeletedFileType `json:"type"`
+	Type BetaDeletedFileType `json:"type"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -169,21 +149,21 @@ type DeletedFile struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r DeletedFile) RawJSON() string { return r.JSON.raw }
-func (r *DeletedFile) UnmarshalJSON(data []byte) error {
+func (r BetaDeletedFile) RawJSON() string { return r.JSON.raw }
+func (r *BetaDeletedFile) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // Deleted object type.
 //
 // For file deletion, this is always `"file_deleted"`.
-type DeletedFileType string
+type BetaDeletedFileType string
 
 const (
-	DeletedFileTypeFileDeleted DeletedFileType = "file_deleted"
+	BetaDeletedFileTypeFileDeleted BetaDeletedFileType = "file_deleted"
 )
 
-type FileMetadata struct {
+type BetaFileMetadata struct {
 	// Unique object identifier.
 	//
 	// The format and length of IDs may change over time.
@@ -221,8 +201,28 @@ type FileMetadata struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r FileMetadata) RawJSON() string { return r.JSON.raw }
-func (r *FileMetadata) UnmarshalJSON(data []byte) error {
+func (r BetaFileMetadata) RawJSON() string { return r.JSON.raw }
+func (r *BetaFileMetadata) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaFileScope struct {
+	// The ID of the scoping resource (e.g., the session ID).
+	ID string `json:"id" api:"required"`
+	// The type of scope (e.g., `"session"`).
+	Type constant.Session `json:"type" default:"session"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaFileScope) RawJSON() string { return r.JSON.raw }
+func (r *BetaFileScope) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

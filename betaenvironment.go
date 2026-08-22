@@ -344,7 +344,7 @@ type BetaEnvironment struct {
 	Config BetaEnvironmentConfigUnion `json:"config" api:"required"`
 	// RFC 3339 timestamp when environment was created
 	CreatedAt string `json:"created_at" api:"required"`
-	// User-provided description for the environment
+	// User-provided description for the environment; null when unset
 	Description string `json:"description" api:"required"`
 	// User-provided metadata key-value pairs
 	Metadata map[string]string `json:"metadata" api:"required"`
@@ -829,7 +829,8 @@ type BetaEnvironmentGetParams struct {
 }
 
 type BetaEnvironmentUpdateParams struct {
-	// Updated description of the environment
+	// Updated description of the environment. Omit to preserve; null clears to null;
+	// an empty string is stored as an empty string.
 	Description param.Opt[string] `json:"description,omitzero"`
 	// Updated name for the environment
 	Name param.Opt[string] `json:"name,omitzero"`

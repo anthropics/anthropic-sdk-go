@@ -28,7 +28,7 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Agents.New(context.TODO(), anthropic.BetaAgentNewParams{
 		Model: anthropic.BetaManagedAgentsModelConfigParams{
-			ID: anthropic.BetaManagedAgentsModelClaudeOpus4_8,
+			ID: anthropic.BetaManagedAgentsModelClaudeOpus5,
 			Effort: anthropic.BetaManagedAgentsModelConfigParamsEffortUnion{
 				OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel: anthropic.String("low"),
 			},
@@ -66,13 +66,15 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 		Tools: []anthropic.BetaAgentNewParamsToolUnion{{
 			OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{
 				Type: anthropic.BetaManagedAgentsAgentToolset20260401ParamsTypeAgentToolset20260401,
-				Configs: []anthropic.BetaManagedAgentsAgentToolConfigParams{{
-					Name:    anthropic.BetaManagedAgentsAgentToolConfigParamsNameBash,
-					Enabled: anthropic.Bool(true),
-					PermissionPolicy: anthropic.BetaManagedAgentsAgentToolConfigParamsPermissionPolicyUnion{
-						OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
-							Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
+				Configs: []anthropic.BetaManagedAgentsAgentToolConfigParamsUnion{{
+					OfBash: &anthropic.BetaManagedAgentsBashToolConfigParams{
+						Enabled: anthropic.Bool(true),
+						PermissionPolicy: anthropic.BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion{
+							OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
+								Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
+							},
 						},
+						Type: anthropic.BetaManagedAgentsBashToolConfigParamsTypeBash,
 					},
 				}},
 				DefaultConfig: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParams{
@@ -152,7 +154,7 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 				"foo": "string",
 			},
 			Model: anthropic.BetaManagedAgentsModelConfigParams{
-				ID: anthropic.BetaManagedAgentsModelClaudeOpus4_8,
+				ID: anthropic.BetaManagedAgentsModelClaudeOpus5,
 				Effort: anthropic.BetaManagedAgentsModelConfigParamsEffortUnion{
 					OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel: anthropic.String("low"),
 				},
@@ -181,13 +183,15 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 			Tools: []anthropic.BetaAgentUpdateParamsToolUnion{{
 				OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{
 					Type: anthropic.BetaManagedAgentsAgentToolset20260401ParamsTypeAgentToolset20260401,
-					Configs: []anthropic.BetaManagedAgentsAgentToolConfigParams{{
-						Name:    anthropic.BetaManagedAgentsAgentToolConfigParamsNameBash,
-						Enabled: anthropic.Bool(true),
-						PermissionPolicy: anthropic.BetaManagedAgentsAgentToolConfigParamsPermissionPolicyUnion{
-							OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
-								Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
+					Configs: []anthropic.BetaManagedAgentsAgentToolConfigParamsUnion{{
+						OfBash: &anthropic.BetaManagedAgentsBashToolConfigParams{
+							Enabled: anthropic.Bool(true),
+							PermissionPolicy: anthropic.BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion{
+								OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
+									Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
+								},
 							},
+							Type: anthropic.BetaManagedAgentsBashToolConfigParamsTypeBash,
 						},
 					}},
 					DefaultConfig: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParams{

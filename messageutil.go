@@ -249,6 +249,7 @@ func (r ToolUseBlock) ToParam() ToolUseBlockParam {
 	toolUse.ID = r.ID
 	toolUse.Input = r.Input
 	toolUse.Name = r.Name
+	toolUse.ToolsetName = paramutil.ToOpt(r.ToolsetName, r.JSON.ToolsetName)
 	return toolUse
 }
 

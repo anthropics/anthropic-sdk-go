@@ -1,7 +1,8 @@
 // Package agenttoolset provides Node-equivalent local executors for the
 // `agent_toolset_20260401` tool set — `bash`, `read`, `write`, `edit`, `glob`,
-// `grep` — plus the workdir/skills [AgentToolContext] and the skill-download helper
-// ([AgentToolContext.SetupSkills]).
+// `grep` — plus the workdir/skills [AgentToolContext] and the skill-download
+// helpers ([AgentToolContext.SetupSkillsFromSession], and the deprecated
+// [AgentToolContext.SetupSkills] for a caller holding only a session id).
 //
 // This mirrors the SDK's other first-class tool modules: it is the explicit
 // entry point for these implementations. Importing it pulls in os/exec, a PTY
@@ -21,13 +22,13 @@
 // Trust model — two tiers:
 //
 //   - The file tools ([BetaReadTool], [BetaWriteTool], [BetaEditTool],
-//     [BetaGlobTool], [BetaGrepTool]) confine to Workdir unless
-//     UnrestrictedPaths is set. resolvePath canonicalizes the target —
-//     resolving every symlink, including the leaf, even a dangling one — before
-//     the workdir check and returns that canonical path for the operation, so a
-//     symlink inside the workdir that points outside it neither passes the check
-//     nor gets followed afterwards. This is a real boundary, not a lexical hint
-//     (modulo the residual TOCTOU noted on resolvePath).
+//     [BetaGlobTool], [BetaGrepTool]) confine to Workdir plus any
+//     AllowedRoots. resolvePath canonicalizes the target — resolving every
+//     symlink, including the leaf, even a dangling one — before the
+//     containment check and returns that canonical path for the operation, so
+//     a symlink inside a permitted root that points outside it neither passes
+//     the check nor gets followed afterwards. This is a real boundary, not a
+//     lexical hint (modulo the residual TOCTOU noted on resolvePath).
 //   - [BetaBashTool] runs an unrestricted /bin/bash and cannot be confined. Run
 //     it — and, for defense in depth, the whole toolset — inside a sandbox the
 //     host controls (e.g. a self-hosted environment runner).
@@ -52,15 +53,24 @@ import (
 // executors need.
 //
 // See the package-level trust model: the file tools resolve paths against
-// Workdir and reject escapes (symlinks resolved) unless UnrestrictedPaths is
-// set; [BetaBashTool] runs an unrestricted /bin/bash regardless.
+// Workdir and reject anything outside Workdir and AllowedRoots (symlinks
+// resolved); [BetaBashTool] runs an unrestricted /bin/bash regardless.
 type AgentToolContext struct {
 	// Workdir is the base directory for resolving relative tool paths.
 	Workdir string
-	// UnrestrictedPaths controls whether the file tools accept paths that
-	// resolve outside Workdir. When false (default) they are rejected.
-	// Does not constrain [BetaBashTool].
+	// Deprecated: no longer supported and slated for removal. The file tools are
+	// always confined to Workdir plus AllowedRoots, so a true value is not
+	// reinterpreted: every call to a tool built from this context fails with
+	// ErrUnrestrictedPathsUnsupported instead. List extra directories the file
+	// tools may reach in AllowedRoots.
 	UnrestrictedPaths bool
+	// AllowedRoots are directories outside Workdir the file tools may also
+	// reach; the environment worker sets this to the session's memory-store
+	// folders. Entries are resolved (symlinks followed) on every call, so an
+	// entry reaches whatever it points at when the tool runs; empty entries are
+	// ignored and relative entries resolve against the process working
+	// directory, like Workdir. Does not constrain [BetaBashTool].
+	AllowedRoots []string
 
 	// MaxFileBytes caps the size of a file the read and edit tools will load
 	// into memory (both read the whole file). Zero (the default) uses the
@@ -83,6 +93,18 @@ type AgentToolContext struct {
 	// ANTHROPIC_* credentials into a model-driven shell. Populate Env with only
 	// the variables the tools need.
 	Env map[string]string
+
+	// ReadOnlyRoots are directories the write and edit tools refuse to
+	// modify, resolved on every call like AllowedRoots. The environment worker
+	// sets this to the roots of read-only memory stores so the agent sees the
+	// error at write time instead of the change silently never syncing; the
+	// mechanism is generic to any directory. Does not constrain [BetaBashTool].
+	ReadOnlyRoots []string
+
+	// downloadedSkillDirs are the per-skill directories
+	// [AgentToolContext.SetupSkillsFromSession] created under {Workdir}/skills;
+	// [AgentToolContext.Cleanup] removes exactly these and nothing else.
+	downloadedSkillDirs []string
 }
 
 // BetaAgentToolset20260401 returns the six built-in agent_toolset_20260401
@@ -92,6 +114,8 @@ type AgentToolContext struct {
 //
 // [BetaBashTool] keeps a persistent shell open until its Close is called;
 // [CloseAll] releases every tool in the slice that implements io.Closer.
+// Every tool call fails with [ErrUnrestrictedPathsUnsupported] while the
+// deprecated env.UnrestrictedPaths is set.
 func BetaAgentToolset20260401(env *AgentToolContext) []anthropic.BetaTool {
 	return []anthropic.BetaTool{
 		BetaBashTool(env),
@@ -101,6 +125,19 @@ func BetaAgentToolset20260401(env *AgentToolContext) []anthropic.BetaTool {
 		BetaGlobTool(env),
 		BetaGrepTool(env),
 	}
+}
+
+// ErrUnrestrictedPathsUnsupported is what every tool call returns, resolvePath
+// returns, and the environment worker's Run/HandleItem wrap, when the
+// deprecated UnrestrictedPaths option is set.
+var ErrUnrestrictedPathsUnsupported = errors.New(
+	"agenttoolset: UnrestrictedPaths is no longer supported; remove it and list any extra directories the file tools may reach in AllowedRoots")
+
+func rejectUnrestrictedPaths(env *AgentToolContext) error {
+	if env.UnrestrictedPaths {
+		return ErrUnrestrictedPathsUnsupported
+	}
+	return nil
 }
 
 // CloseAll releases resources held by any tools that implement io.Closer. Each
@@ -143,6 +180,9 @@ func (t *funcTool) Name() string                                    { return t.n
 func (t *funcTool) Description() string                             { return t.description }
 func (t *funcTool) InputSchema() anthropic.BetaToolInputSchemaParam { return t.schema }
 func (t *funcTool) Execute(ctx context.Context, input json.RawMessage) ([]anthropic.BetaToolResultBlockParamContentUnion, error) {
+	if err := rejectUnrestrictedPaths(t.env); err != nil {
+		return nil, err
+	}
 	content, isErr := t.run(ctx, input, t.env)
 	if isErr {
 		return nil, &ToolError{Content: content}
@@ -192,16 +232,18 @@ func fsErrorMessage(err error) string {
 	return "i/o error"
 }
 
-// resolvePath resolves p against env.Workdir. Absolute and relative inputs go
-// through the same canonicalise-then-contain check — an absolute path that
-// lands inside the workdir is permitted, only paths that resolve outside are
-// rejected. Every symlink in p (including the leaf, even a dangling one) is
-// resolved before the workdir check, and the resolved path is what the tool
-// then operates on, so a symlink inside the workdir that points outside it can
-// neither pass the check nor be followed afterwards. ".." is collapsed
-// lexically before any symlink is followed, and a path whose symlinks cannot
-// be resolved (a loop, an unreadable component) is rejected rather than used
-// as given. See the package-level trust model.
+// resolvePath resolves p against env.Workdir and rejects results outside the
+// permitted roots: Workdir plus each non-empty entry of env.AllowedRoots.
+// Absolute and relative inputs go through the same canonicalise-then-contain
+// check — an absolute path that lands inside a permitted root is accepted,
+// only paths that resolve outside all of them are rejected. Every symlink in p
+// (including the leaf, even a dangling one) is resolved before the check, the
+// roots are resolved the same way on every call, and the resolved path is what
+// the tool then operates on, so a symlink inside a permitted root that points
+// outside it can neither pass the check nor be followed afterwards. ".." is
+// collapsed lexically before any symlink is followed, and a path whose
+// symlinks cannot be resolved (a loop, an unreadable component) is rejected
+// rather than used as given. See the package-level trust model.
 //
 // Residual TOCTOU: a component could still be swapped for a symlink between this
 // call and the eventual filesystem operation. Closing that fully needs
@@ -209,25 +251,91 @@ func fsErrorMessage(err error) string {
 // same residual exposure exists in the SDK's other file-tool helpers and is why
 // a sandbox is still recommended for the toolset as a whole.
 func resolvePath(env *AgentToolContext, p string) (string, error) {
-	if env.UnrestrictedPaths && filepath.IsAbs(p) {
-		return filepath.Clean(p), nil
+	if err := rejectUnrestrictedPaths(env); err != nil {
+		return "", err
 	}
-	root := realpathOrSelf(absOrSelf(env.Workdir))
+	root := canonicalRoot(env.Workdir)
 	abs := filepath.Clean(p)
 	if !filepath.IsAbs(p) {
 		abs = filepath.Join(root, p)
-	}
-	if env.UnrestrictedPaths {
-		return abs, nil
 	}
 	real, err := canonicalize(abs)
 	if err != nil {
 		return "", fmt.Errorf("path %q: %s", p, fsErrorMessage(err))
 	}
-	if real != root && !strings.HasPrefix(real, root+string(filepath.Separator)) {
-		return "", fmt.Errorf("path %q escapes workdir", p)
+	if within(real, root) {
+		return real, nil
+	}
+	hasOtherRoots := false
+	for _, r := range env.AllowedRoots {
+		if r == "" {
+			continue // names no directory; filepath.Abs would turn it into the cwd
+		}
+		hasOtherRoots = true
+		if within(real, canonicalRoot(r)) {
+			return real, nil
+		}
+	}
+	if hasOtherRoots {
+		return "", fmt.Errorf("path %q is outside the session's working directory and its other permitted directories", p)
+	}
+	return "", fmt.Errorf("path %q is outside the session's working directory", p)
+}
+
+// resolveWritablePath is resolvePath for the write and edit tools: the
+// resolved target must also lie outside every env.ReadOnlyRoots entry.
+func resolveWritablePath(env *AgentToolContext, p string) (string, error) {
+	real, err := resolvePath(env, p)
+	if err != nil {
+		return "", err
+	}
+	if ro := readOnlyRootFor(env, real); ro != "" {
+		return "", fmt.Errorf("%s is inside read-only directory %s", p, ro)
 	}
 	return real, nil
+}
+
+// readOnlyRootFor returns the entry of env.ReadOnlyRoots that target falls
+// under, or "". Roots resolve here on every call, symmetric with AllowedRoots
+// in resolvePath, so a symlinked store path cannot grant access on one side
+// while its write protection misses on the other. target is canonicalized
+// again so the comparison also holds for a caller that did not obtain it from
+// resolvePath, e.g. under a symlinked prefix such as /tmp on macOS.
+func readOnlyRootFor(env *AgentToolContext, target string) string {
+	if len(env.ReadOnlyRoots) == 0 {
+		return ""
+	}
+	tgt := filepath.Clean(target)
+	if real, err := canonicalize(tgt); err == nil {
+		tgt = real
+	}
+	for _, root := range env.ReadOnlyRoots {
+		if within(tgt, canonicalRoot(root)) {
+			return root
+		}
+	}
+	return ""
+}
+
+// within reports whether path equals root or lies beneath it, comparing whole
+// segments so /work does not contain /workextra. Both must be clean absolute
+// paths; root may be the filesystem root.
+func within(path, root string) bool {
+	sep := string(filepath.Separator)
+	return path == root || strings.HasPrefix(path, strings.TrimSuffix(root, sep)+sep)
+}
+
+// canonicalRoot resolves a configured root (Workdir, an AllowedRoots or
+// ReadOnlyRoots entry) the way resolvePath resolves targets, so both sides of
+// a containment check have had the same symlinks followed. A root whose
+// symlinks cannot be resolved is compared as its absolute path, which no
+// canonicalized target lies under, so it grants nothing.
+func canonicalRoot(r string) string {
+	abs := absOrSelf(r)
+	if real, err := canonicalize(abs); err == nil {
+		return real
+	}
+	return abs
 }
 
 func absOrSelf(p string) string {
@@ -235,13 +343,6 @@ func absOrSelf(p string) string {
 		return abs
 	}
 	return filepath.Clean(p)
-}
-
-func realpathOrSelf(p string) string {
-	if real, err := filepath.EvalSymlinks(p); err == nil {
-		return real
-	}
-	return p
 }
 
 var errSymlinkLoop = errors.New("too many levels of symbolic links")

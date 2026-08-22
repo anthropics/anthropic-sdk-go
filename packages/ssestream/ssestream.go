@@ -66,6 +66,7 @@ func (d *richErrorDecoder) newAPIError(errorJSON []byte) error {
 		aerr.Response = d.resp
 		aerr.StatusCode = d.resp.StatusCode
 		aerr.RequestID = d.resp.Header.Get("request-id")
+		aerr.WorkspaceID = d.resp.Header.Get("anthropic-workspace-id")
 	}
 	if aerr.UnmarshalJSON(errorJSON) != nil {
 		return fmt.Errorf("received error while streaming: %s", string(errorJSON))

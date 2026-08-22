@@ -51,11 +51,20 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_6,
+		Model: anthropic.ModelClaudeOpus5,
 		CacheControl: anthropic.CacheControlEphemeralParam{
 			TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 		},
-		Container:    anthropic.String("container"),
+		Container: anthropic.MessageCreateParamsContainerUnion{
+			OfContainers: &anthropic.ContainerParams{
+				ID: anthropic.String("id"),
+				Skills: []anthropic.SkillParams{{
+					SkillID: "pdf",
+					Type:    anthropic.SkillParamsTypeAnthropic,
+					Version: anthropic.String("latest"),
+				}},
+			},
+		},
 		InferenceGeo: anthropic.String("inference_geo"),
 		Metadata: anthropic.MetadataParam{
 			UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),
@@ -166,7 +175,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 			}},
 			Role: anthropic.MessageParamRoleUser,
 		}},
-		Model: anthropic.ModelClaudeOpus4_6,
+		Model: anthropic.ModelClaudeOpus5,
 		CacheControl: anthropic.CacheControlEphemeralParam{
 			TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 		},

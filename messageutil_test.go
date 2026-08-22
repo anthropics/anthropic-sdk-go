@@ -95,6 +95,33 @@ func TestTextCitationToParamKeepsAllFields(t *testing.T) {
 	})
 }
 
+func TestToolUseToParamKeepsToolsetName(t *testing.T) {
+	t.Run("toolset member keeps toolset_name", func(t *testing.T) {
+		result := unmarshalContentBlockParam(t, `{"type":"tool_use","id":"toolu_1","name":"screenshot","input":{},"toolset_name":"computer","caller":{"type":"direct"}}`)
+		if result.OfToolUse == nil {
+			t.Fatal("Expected OfToolUse to be non-nil")
+		}
+		b, err := json.Marshal(result)
+		if err != nil {
+			t.Fatalf("Failed to marshal param: %v", err)
+		}
+		if got := gjson.GetBytes(b, "toolset_name").String(); got != "computer" {
+			t.Errorf("Expected toolset_name to survive ToParam, got %q in %s", got, b)
+		}
+	})
+
+	t.Run("non-member omits toolset_name", func(t *testing.T) {
+		result := unmarshalContentBlockParam(t, `{"type":"tool_use","id":"toolu_1","name":"get_weather","input":{}}`)
+		b, err := json.Marshal(result)
+		if err != nil {
+			t.Fatalf("Failed to marshal param: %v", err)
+		}
+		if gjson.GetBytes(b, "toolset_name").Exists() {
+			t.Errorf("Expected toolset_name to be omitted, got %s", b)
+		}
+	})
+}
+
 // TestTextCitationToParamExhaustive guards against converter drift: every
 // citation variant round-trips fully-populated JSON, and every exported
 // field of the resulting param must be set — a spec-added field that the

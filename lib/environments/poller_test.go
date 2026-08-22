@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -158,6 +159,10 @@ type fakeWorkServer struct {
 
 	// Session lookup endpoint (skill setup).
 	HandleSessionGet http.HandlerFunc // GET /v1/sessions/{id}
+
+	// Memory-store endpoints (memory sync). One handler serves everything
+	// under /v1/memory_stores/.
+	HandleMemories http.HandlerFunc
 }
 
 func newFakeWorkServer(t *testing.T) *fakeWorkServer {
@@ -184,6 +189,9 @@ func (f *fakeWorkServer) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	f.mu.Unlock()
 
 	switch {
+	case strings.HasPrefix(r.URL.Path, "/v1/memory_stores/"):
+		require.NotNil(f.t, f.HandleMemories, "unscripted memory_stores call: %s", r.URL.Path)
+		f.HandleMemories(w, r)
 	case strings.HasSuffix(r.URL.Path, "/work/poll"):
 		require.NotNil(f.t, f.HandlePoll, "unscripted Poll call: %s", r.URL.Path)
 		f.HandlePoll(w, r)
@@ -212,8 +220,9 @@ func (f *fakeWorkServer) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "unexpected", http.StatusMethodNotAllowed)
 		}
 	case strings.Contains(r.URL.Path, "/sessions/"):
-		// Bare GET /v1/sessions/{id} — the SetupSkills session lookup. The
-		// /events{,/stream} cases above already handled the event endpoints.
+		// Bare GET /v1/sessions/{id} — the worker's one session lookup, shared
+		// by the skills and memory-store downloads. The /events{,/stream} cases
+		// above already handled the event endpoints.
 		require.NotNil(f.t, f.HandleSessionGet, "unscripted Sessions.Get call: %s", r.URL.Path)
 		f.HandleSessionGet(w, r)
 	default:
@@ -238,9 +247,14 @@ func (f *fakeWorkServer) Client() anthropic.Client {
 
 // workJSON returns a minimally-valid BetaSelfHostedWork JSON body. All
 // api:"required" fields are present so the SDK's strict unmarshal accepts
-// it. dataType is "session" or "health_check". The "secret" field is still
-// emitted (codegen marks it required) but the helper no longer reads it.
+// it. dataType is "session" or "health_check". The "secret" field is emitted
+// empty (codegen marks it required); workJSONWithSecret sets a real payload
+// for the tests covering the per-item work secret.
 func workJSON(workID, envID, dataType string) string {
+	return workJSONWithSecret(workID, envID, dataType, "")
+}
+
+func workJSONWithSecret(workID, envID, dataType, secret string) string {
 	ts := "2026-05-11T12:00:00Z"
 	data := map[string]any{"type": dataType, "id": "sesn_test"}
 	if dataType == "session" {
@@ -255,7 +269,7 @@ func workJSON(workID, envID, dataType string) string {
 		"environment_id":      envID,
 		"latest_heartbeat_at": ts,
 		"metadata":            map[string]string{},
-		"secret":              "unused-by-helper",
+		"secret":              secret,
 		"started_at":          ts,
 		"state":               "queued",
 		"stop_requested_at":   "",
@@ -777,6 +791,49 @@ func TestWorkPoller_DrainYieldsThenReturns(t *testing.T) {
 	require.Equal(t, 1, stopped, "the yielded item must still be stopped on drain exit")
 }
 
+// With AutoStop off the poller never posts Stop for a yielded item, neither
+// when the consumer advances nor on Close: the consumer owns the item's stop.
+func TestWorkPoller_AutoStopOffPostsNoStop(t *testing.T) {
+	server := newFakeWorkServer(t)
+	work := workJSON("work_1", "env_1", "session")
+
+	pollCount := 0
+	server.HandlePoll = func(w http.ResponseWriter, _ *http.Request) {
+		pollCount++
+		if pollCount == 1 {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(work))
+			return
+		}
+		writeEmptyPoll(w)
+	}
+	server.HandleAck = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(work))
+	}
+	server.HandleStop = func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	p := NewWorkPoller(ctx, server.Client(), WorkPollerOptions{
+		EnvironmentID:  "env_1",
+		EnvironmentKey: "env_key",
+		Drain:          true,
+		AutoStop:       param.NewOpt(false),
+		Logger:         silentLogger,
+	})
+
+	require.True(t, p.Next(), "first Next must yield the scripted work")
+	require.Equal(t, "work_1", p.Current().ID)
+	require.False(t, p.Next(), "second Next must drain-return on the empty queue")
+	require.NoError(t, p.Err())
+	require.NoError(t, p.Close())
+	require.Empty(t, callsEndingIn(server.Calls(), "/stop"), "with AutoStop off the poller must not stop the yielded item")
+}
+
 // TestWorkPoller_BlockMsWiring asserts how WorkPollerOptions.BlockMs and
 // ReclaimOlderThanMs map onto the poll query: omitted -> default 999,
 // param.Null -> omitted entirely (non-blocking), an explicit value passes
@@ -851,4 +908,125 @@ func TestWorkPoller_BlockMsWiring(t *testing.T) {
 			}
 		})
 	}
+}
+
+// lockedClock is a settable time source that a handler goroutine may advance
+// while the code under test reads it.
+type lockedClock struct {
+	mu  sync.Mutex
+	now time.Time
+}
+
+func (c *lockedClock) Now() time.Time {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.now
+}
+
+func (c *lockedClock) Advance(d time.Duration) {
+	c.mu.Lock()
+	c.now = c.now.Add(d)
+	c.mu.Unlock()
+}
+
+// recordsAt returns the captured log records at level, in order, with the
+// leading time attribute dropped so whole records compare stably.
+func recordsAt(logs string, level slog.Level) []string {
+	prefix := "level=" + level.String() + " "
+	var records []string
+	for _, line := range strings.Split(strings.TrimSpace(logs), "\n") {
+		if _, rec, ok := strings.Cut(line, " "); ok && strings.HasPrefix(rec, prefix) {
+			records = append(records, rec)
+		}
+	}
+	return records
+}
+
+// An idle poller shows up in the logs without an INFO line per poll: one INFO
+// line when it goes idle (after start-up or after releasing an item), DEBUG
+// per empty poll after that, and an INFO reminder every 5 minutes.
+func TestWorkPoller_LogsIdlePolling(t *testing.T) {
+	server := newFakeWorkServer(t)
+	work := workJSON("work_a", "env_1", "session")
+	clock := &lockedClock{now: time.Unix(0, 0)}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Three empty polls, a fourth 301 s later, a fifth, one claim, one more
+	// empty poll, then the run ends.
+	var polls atomic.Int32
+	server.HandlePoll = func(w http.ResponseWriter, r *http.Request) {
+		switch polls.Add(1) {
+		case 4:
+			clock.Advance(301 * time.Second)
+			writeEmptyPoll(w)
+		case 6:
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(work))
+		case 8:
+			cancel()
+			<-r.Context().Done()
+		default:
+			writeEmptyPoll(w)
+		}
+	}
+	server.HandleAck = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(work))
+	}
+	server.HandleStop = func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}
+
+	var logBuf bytes.Buffer
+	p := NewWorkPoller(ctx, server.Client(), WorkPollerOptions{
+		EnvironmentID:  "env_1",
+		EnvironmentKey: "env_key",
+		WorkerID:       "test-worker",
+		Logger:         captureLog(&logBuf),
+	})
+	p.now = clock.Now
+	p.emptyPollWait = 0
+	t.Cleanup(func() { _ = p.Close() })
+
+	require.True(t, p.Next())
+	require.Equal(t, "work_a", p.Current().ID)
+	require.False(t, p.Next())
+	require.NoError(t, p.Err())
+
+	const scope = " component=work-poller environment_id=env_1"
+	logs := logBuf.String()
+	require.Equal(t, []string{
+		`level=INFO msg="idle; polling for work"` + scope,
+		`level=INFO msg="still polling; idle for 5m1s"` + scope,
+		`level=INFO msg="claimed work"` + scope + ` work_id=work_a work_type=session`,
+		`level=INFO msg="idle; polling for work"` + scope,
+	}, recordsAt(logs, slog.LevelInfo))
+	debug := `level=DEBUG msg="poll returned no work"` + scope
+	require.Equal(t, []string{debug, debug, debug}, recordsAt(logs, slog.LevelDebug))
+}
+
+// A draining poller that finds the queue empty is finishing, not idling, so it
+// logs the drain and no idle line.
+func TestWorkPoller_DrainDoesNotLogIdle(t *testing.T) {
+	server := newFakeWorkServer(t)
+	server.HandlePoll = func(w http.ResponseWriter, _ *http.Request) { writeEmptyPoll(w) }
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var logBuf bytes.Buffer
+	p := NewWorkPoller(ctx, server.Client(), WorkPollerOptions{
+		EnvironmentID:  "env_1",
+		EnvironmentKey: "env_key",
+		WorkerID:       "test-worker",
+		Drain:          true,
+		Logger:         captureLog(&logBuf),
+	})
+	t.Cleanup(func() { _ = p.Close() })
+
+	require.False(t, p.Next())
+	require.NoError(t, p.Err())
+	logs := logBuf.String()
+	require.Contains(t, logs, `msg="work queue drained"`)
+	require.NotContains(t, logs, "idle; polling for work")
 }

@@ -631,7 +631,10 @@ var (
 )
 
 func stringEncoder(e *encodeState, v reflect.Value, opts encOpts) {
-	if v.Type() == numberType {
+	// SHIM(stdlibJSONNumber): encoding/json.Number is a distinct named string
+	// type from this package's Number. Treat both as JSON number tokens so
+	// values in any maps (tool input_schema minimum/maximum) are not quoted.
+	if isJSONNumber(v) {
 		numStr := v.String()
 		// In Go1.5 the empty string encodes to "0", while this is not a valid number literal
 		// we keep compatibility so check validity after this.
@@ -654,6 +657,15 @@ func stringEncoder(e *encodeState, v reflect.Value, opts encOpts) {
 	} else {
 		e.Write(appendString(e.AvailableBuffer(), v.String(), opts.escapeHTML))
 	}
+}
+
+// SHIM(stdlibJSONNumber): true for this package's Number and stdlib encoding/json.Number.
+func isJSONNumber(v reflect.Value) bool {
+	if v.Type() == numberType {
+		return true
+	}
+	t := v.Type()
+	return t.Kind() == reflect.String && t.PkgPath() == "encoding/json" && t.Name() == "Number"
 }
 
 // isValidNumber reports whether s is a valid JSON number literal.

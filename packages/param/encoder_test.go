@@ -619,3 +619,32 @@ func TestExtraFieldValuesEscaped(t *testing.T) {
 		t.Fatalf("expected %s, received %s", expected, b)
 	}
 }
+
+func TestExtraFieldStdlibJSONNumber(t *testing.T) {
+	s := StructWithAdditionalProperties{
+		First:  "f",
+		Second: 1,
+		ExtraFields: map[string]any{
+			"minimum": json.Number("1"),
+			"maximum": json.Number("9007199254740993"),
+		},
+	}
+
+	b, err := s.MarshalJSON()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.UseNumber()
+	var decoded map[string]any
+	if err := dec.Decode(&decoded); err != nil {
+		t.Fatalf("decode %s: %v", b, err)
+	}
+	if decoded["minimum"] != json.Number("1") {
+		t.Errorf("minimum: got %#v, want json.Number(1) in %s", decoded["minimum"], b)
+	}
+	if decoded["maximum"] != json.Number("9007199254740993") {
+		t.Errorf("maximum: got %#v, want exact integer in %s", decoded["maximum"], b)
+	}
+}

@@ -147,10 +147,11 @@ func (r *BetaMemoryStoreMemoryService) Delete(ctx context.Context, memoryID stri
 }
 
 // Tombstone returned by
-// [Delete a memory](/en/api/beta/memory_stores/memories/delete). The memory's
-// version history persists and remains listable via
-// [List memory versions](/en/api/beta/memory_stores/memory_versions/list) until
-// the store itself is deleted.
+// [Delete a memory](/en/api/beta/memory_stores/memories/delete). Deleting a memory
+// does not erase its version history: its versions remain listable via
+// [List memory versions](/en/api/beta/memory_stores/memory_versions/list) while
+// they are retained (each version is kept for at least the version retention
+// period after it was written, unless the store itself is deleted).
 type BetaManagedAgentsDeletedMemory struct {
 	// ID of the deleted memory (a `mem_...` value).
 	ID string `json:"id" api:"required"`
@@ -202,7 +203,7 @@ type BetaManagedAgentsMemory struct {
 	// ID of the `memory_version` representing this memory's current content (a
 	// `memver_...` value). This is the authoritative head pointer; `memory_version`
 	// objects do not carry an `is_latest` flag, so compare against this field instead.
-	// Enumerate the full history via
+	// Enumerate the history via
 	// [List memory versions](/en/api/beta/memory_stores/memory_versions/list).
 	MemoryVersionID string `json:"memory_version_id" api:"required"`
 	// Hierarchical path of the memory within the store, e.g. `/projects/foo/notes.md`.

@@ -251,6 +251,9 @@ type BetaCloudConfigParams struct {
 	// When versioning, use the version semantics relevant for the package manager,
 	// e.g. for `pip` use `package==1.0.0`. You are responsible for validating the
 	// package and version exist. Unversioned installs the latest.
+	//
+	// Under `limited` networking, requires `networking.allow_package_managers` to be
+	// `true`.
 	Packages BetaPackagesParams `json:"packages,omitzero"`
 	// Environment type
 	//
@@ -526,7 +529,8 @@ type BetaLimitedNetworkParams struct {
 	// those listed in the `allowed_hosts` array. Defaults to `false`.
 	AllowMCPServers param.Opt[bool] `json:"allow_mcp_servers,omitzero"`
 	// Permits outbound access to public package registries (PyPI, npm, etc.) beyond
-	// those listed in the `allowed_hosts` array. Defaults to `false`.
+	// those listed in the `allowed_hosts` array. Defaults to `false` on creation. Must
+	// be `true` when `packages` are specified.
 	AllowPackageManagers param.Opt[bool] `json:"allow_package_managers,omitzero"`
 	// Specifies domains the container can reach.
 	AllowedHosts []string `json:"allowed_hosts,omitzero"`
@@ -595,6 +599,9 @@ const (
 // When versioning, use the version semantics relevant for the package manager,
 // e.g. for `pip` use `package==1.0.0`. You are responsible for validating the
 // package and version exist. Unversioned installs the latest.
+//
+// Under `limited` networking, requires `networking.allow_package_managers` to be
+// `true`.
 type BetaPackagesParams struct {
 	// Ubuntu/Debian packages to install
 	Apt []string `json:"apt,omitzero"`

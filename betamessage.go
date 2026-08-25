@@ -10799,7 +10799,7 @@ type BetaThinkingConfigAdaptiveParam struct {
 	// redacted but a signature is returned for multi-turn continuity. Defaults to
 	// `summarized`.
 	//
-	// Any of "summarized", "omitted".
+	// Any of "summarized", "omitted", "updates".
 	Display BetaThinkingConfigAdaptiveDisplay `json:"display,omitzero"`
 	// This field can be elided, and will marshal its zero value as "adaptive".
 	Type constant.Adaptive `json:"type" default:"adaptive"`
@@ -10823,6 +10823,7 @@ type BetaThinkingConfigAdaptiveDisplay string
 const (
 	BetaThinkingConfigAdaptiveDisplaySummarized BetaThinkingConfigAdaptiveDisplay = "summarized"
 	BetaThinkingConfigAdaptiveDisplayOmitted    BetaThinkingConfigAdaptiveDisplay = "omitted"
+	BetaThinkingConfigAdaptiveDisplayUpdates    BetaThinkingConfigAdaptiveDisplay = "updates"
 )
 
 func NewBetaThinkingConfigDisabledParam() BetaThinkingConfigDisabledParam {
@@ -10863,7 +10864,7 @@ type BetaThinkingConfigEnabledParam struct {
 	// redacted but a signature is returned for multi-turn continuity. Defaults to
 	// `summarized`.
 	//
-	// Any of "summarized", "omitted".
+	// Any of "summarized", "omitted", "updates".
 	Display BetaThinkingConfigEnabledDisplay `json:"display,omitzero"`
 	// This field can be elided, and will marshal its zero value as "enabled".
 	Type constant.Enabled `json:"type" default:"enabled"`
@@ -10887,6 +10888,7 @@ type BetaThinkingConfigEnabledDisplay string
 const (
 	BetaThinkingConfigEnabledDisplaySummarized BetaThinkingConfigEnabledDisplay = "summarized"
 	BetaThinkingConfigEnabledDisplayOmitted    BetaThinkingConfigEnabledDisplay = "omitted"
+	BetaThinkingConfigEnabledDisplayUpdates    BetaThinkingConfigEnabledDisplay = "updates"
 )
 
 func BetaThinkingConfigParamOfEnabled(budgetTokens int64) BetaThinkingConfigParamUnion {

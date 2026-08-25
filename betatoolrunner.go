@@ -135,21 +135,59 @@ func (b *betaToolRunnerBase) adoptContainer(message *BetaMessage) {
 	}
 }
 
+// toolRunnerStep is what the runner does with a turn, decided by its stop reason.
+type toolRunnerStep int
+
+const (
+	// stepRunTools answers the turn's client tool calls and continues, or stops
+	// when there are none.
+	stepRunTools toolRunnerStep = iota
+	// stepResume sends the unfinished turn back unchanged, without executing
+	// any tool calls it carries, so the server continues it.
+	stepResume
+	// stepStop ends the conversation with the turn as the final message,
+	// without executing its tool calls.
+	stepStop
+)
+
+// determineNextStepFromStopReason classifies every generated stop reason
+// explicitly so a new one has to be placed in a bucket here; values unknown at
+// runtime stop like end_turn rather than erroring.
+func determineNextStepFromStopReason(reason BetaStopReason) toolRunnerStep {
+	switch reason {
+	case BetaStopReasonToolUse:
+		return stepRunTools
+	case BetaStopReasonPauseTurn:
+		// A long-running server tool paused the turn; sending it back unchanged
+		// resumes it.
+		return stepResume
+	case BetaStopReasonCompaction:
+		// pause_after_compaction hands the turn back before the model answers;
+		// sending it back unchanged continues it.
+		return stepResume
+	case BetaStopReasonRefusal:
+		// A refusal-terminated turn is terminal: its tool calls belong to a dead
+		// conversation — executing them fires side effects the caller never
+		// confirmed and produces tool_results that cannot be coherently replayed.
+		return stepStop
+	case BetaStopReasonMaxTokens, BetaStopReasonModelContextWindowExceeded:
+		// A cut-off turn left its last call's arguments incomplete.
+		return stepStop
+	case BetaStopReasonEndTurn, BetaStopReasonStopSequence:
+		return stepStop
+	default:
+		// An unrecognized stop reason stops like end_turn.
+		return stepStop
+	}
+}
+
 // executeTools processes any tool use blocks in the given message and returns a tool result message.
 // Returns:
 //   - (result, nil) if tools executed successfully
-//   - (nil, nil) if no tools to execute or the turn ended in a refusal
+//   - (nil, nil) if the turn did not stop for tool use or has no client tool calls
 //   - (nil, ctx.Err()) if context was cancelled
 func (b *betaToolRunnerBase) executeTools(ctx context.Context, message *BetaMessage) (*BetaMessageParam, error) {
-	// A refusal-terminated turn is terminal: its tool calls belong to a dead
-	// conversation — executing them fires side effects the caller never
-	// confirmed and produces tool_results that cannot be coherently replayed.
-	if message.StopReason == BetaStopReasonRefusal {
-		return nil, nil
-	}
-
-	// A cut-off turn left its last call's arguments incomplete.
-	if message.StopReason == BetaStopReasonMaxTokens || message.StopReason == BetaStopReasonModelContextWindowExceeded {
+	if determineNextStepFromStopReason(message.StopReason) != stepRunTools {
 		return nil, nil
 	}
 
@@ -351,12 +389,12 @@ func (r *BetaToolRunner) NextMessage(ctx context.Context) (*BetaMessage, error) 
 			r.err = err
 			return nil, err
 		}
-		if toolMessage == nil {
-			// No tools to execute, conversation is complete
+		if toolMessage != nil {
+			r.Params.Messages = append(r.Params.Messages, *toolMessage)
+		} else if determineNextStepFromStopReason(r.lastMessage.StopReason) != stepResume {
 			r.completed = true
 			return nil, nil
 		}
-		r.Params.Messages = append(r.Params.Messages, *toolMessage)
 	}
 
 	// Make API call
@@ -473,12 +511,12 @@ func (r *BetaToolRunnerStreaming) NextStreaming(ctx context.Context) iter.Seq2[B
 				yield(BetaRawMessageStreamEventUnion{}, err)
 				return
 			}
-			if toolMessage == nil {
-				// No tools to execute, conversation is complete
+			if toolMessage != nil {
+				r.Params.Messages = append(r.Params.Messages, *toolMessage)
+			} else if determineNextStepFromStopReason(r.lastMessage.StopReason) != stepResume {
 				r.completed = true
 				return
 			}
-			r.Params.Messages = append(r.Params.Messages, *toolMessage)
 		}
 
 		// Make streaming API call

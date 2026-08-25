@@ -102,9 +102,9 @@ rawTool, err := toolrunner.NewBetaToolFromBytes(
 The `BetaToolRunner` automatically handles the conversation loop between Claude and your tools. On each iteration, it:
 
 1. Sends the current messages to Claude
-2. If Claude responds with tool calls, executes them in parallel
-3. Adds the tool results to the conversation
-4. Repeats until Claude produces a final response (no tool calls)
+2. If the message's `StopReason` is `tool_use`, executes the requested tools in parallel and adds the results to the conversation
+3. If it is `pause_turn` or `compaction`, sends the turn back unchanged so the server can resume it
+4. Repeats until Claude stops for any other reason (e.g. `end_turn`, `max_tokens`), returning that final message without running tools
 
 ### Basic Usage
 
@@ -207,7 +207,7 @@ for !runner.IsCompleted() {
 
 ### Max Iterations
 
-Limit the number of API calls to prevent runaway loops. When set to 0 (the default), there is no limit and the runner continues until the model stops using tools:
+Limit the number of API calls to prevent runaway loops. When set to 0 (the default), there is no limit and the runner continues until the model's stop reason ends the loop:
 
 ```go
 runner := client.Beta.Messages.NewToolRunner(tools, anthropic.BetaToolRunnerParams{

@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.67.0 (2026-08-26)
+
+Full Changelog: [v1.66.0...v1.67.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.66.0...v1.67.0)
+
+### Features
+
+* **api:** add `updates` thinking display mode (beta) ([44fa7a6](https://github.com/anthropics/anthropic-sdk-go/commit/44fa7a6b087cb1b4355647b7ecb42c46eb6f1dba))
+* **api:** add missing anthropic-beta values ([118b499](https://github.com/anthropics/anthropic-sdk-go/commit/118b499229b44363152577e2bbf45d2f90ef3983))
+* **api:** add support for Organization API endpoints ([713c567](https://github.com/anthropics/anthropic-sdk-go/commit/713c567ef716aa62f9b0fadb24b3aaf8fb506095))
+
+
+### Bug Fixes
+
+* **messages:** add missing ToParam methods and exhaustiveness test ([#245](https://github.com/anthropics/anthropic-sdk-go/issues/245)) ([e385915](https://github.com/anthropics/anthropic-sdk-go/commit/e385915879ab975b0c31476088bdac6d59a9fc4f))
+* **tools:** keep the tool runner going on pause_turn ([#250](https://github.com/anthropics/anthropic-sdk-go/issues/250)) ([2fa015b](https://github.com/anthropics/anthropic-sdk-go/commit/2fa015bb89d7a07bbeb416aec85246f353eb4c98))
+
+
+### Chores
+
+* **docs:** clarify skill version `latest` support and memory version retention ([c5d5ac4](https://github.com/anthropics/anthropic-sdk-go/commit/c5d5ac46543c149dfd9ec5948ab99421104572aa))
+* **internal:** cancel superseded CI runs ([5413684](https://github.com/anthropics/anthropic-sdk-go/commit/541368421db45277ee3cea803c1a1705fdcfe2f2))
+
+
+### Documentation
+
+* **api:** clarify session thread agent and usage.iterations compaction descriptions (beta) ([e017f63](https://github.com/anthropics/anthropic-sdk-go/commit/e017f63e48aad5fef6f98ebdd5f9cbf93db33845))
+
 ## 1.66.0 (2026-08-19)
 
 Full Changelog: [v1.65.0...v1.66.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.65.0...v1.66.0)

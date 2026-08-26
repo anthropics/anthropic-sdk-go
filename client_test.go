@@ -4,6 +4,7 @@ package anthropic_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -280,6 +281,86 @@ func TestContextCancelDelay(t *testing.T) {
 	})
 	if err == nil {
 		t.Error("expected there to be a cancel error")
+	}
+}
+
+func TestRequestTimeoutRetried(t *testing.T) {
+	attempts := 0
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithHTTPClient(&http.Client{
+			Transport: &closureTransport{
+				fn: func(req *http.Request) (*http.Response, error) {
+					attempts++
+					<-req.Context().Done()
+					return nil, req.Context().Err()
+				},
+			},
+		}),
+	)
+	_, err := client.Messages.New(
+		context.Background(),
+		anthropic.MessageNewParams{
+			MaxTokens: 1024,
+			Messages: []anthropic.MessageParam{{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+				Role: anthropic.MessageParamRoleUser,
+			}},
+			Model: anthropic.ModelClaudeSonnet5,
+		},
+		option.WithRequestTimeout((10 * time.Millisecond)),
+		option.WithMaxRetries(1),
+	)
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Errorf("expected context.DeadlineExceeded after exhausting retries, got: %v", err)
+	}
+	if want := 2; attempts != want {
+		t.Errorf("Expected %d attempts, got %d", want, attempts)
+	}
+}
+
+func TestRequestTimeoutNotRetriedAfterContextDone(t *testing.T) {
+	attempts := 0
+	cancelCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithHTTPClient(&http.Client{
+			Transport: &closureTransport{
+				fn: func(req *http.Request) (*http.Response, error) {
+					attempts++
+					cancel()
+					<-req.Context().Done()
+					return nil, req.Context().Err()
+				},
+			},
+		}),
+	)
+	_, err := client.Messages.New(
+		cancelCtx,
+		anthropic.MessageNewParams{
+			MaxTokens: 1024,
+			Messages: []anthropic.MessageParam{{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+				Role: anthropic.MessageParamRoleUser,
+			}},
+			Model: anthropic.ModelClaudeSonnet5,
+		},
+		option.WithRequestTimeout(time.Second),
+	)
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("expected context.Canceled, got: %v", err)
+	}
+	if want := 1; attempts != want {
+		t.Errorf("Expected %d attempts, got %d", want, attempts)
 	}
 }
 

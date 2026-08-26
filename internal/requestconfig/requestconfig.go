@@ -430,9 +430,16 @@ func (cfg *RequestConfig) Execute() (err error) {
 	var res *http.Response
 	var cancel context.CancelFunc
 	for retryCount := 0; retryCount <= cfg.MaxRetries; retryCount += 1 {
-		ctx := cfg.Request.Context()
-		if cfg.RequestTimeout != time.Duration(0) && isBeforeContextDeadline(time.Now().Add(cfg.RequestTimeout), ctx) {
-			ctx, cancel = context.WithTimeout(ctx, cfg.RequestTimeout)
+		// callerCtx spans every attempt; ctx additionally carries this attempt's RequestTimeout, if any.
+		callerCtx := cfg.Request.Context()
+		ctx := callerCtx
+		// Release the previous attempt's timer before starting a new attempt.
+		if cancel != nil {
+			cancel()
+			cancel = nil
+		}
+		if cfg.RequestTimeout != time.Duration(0) && isBeforeContextDeadline(time.Now().Add(cfg.RequestTimeout), callerCtx) {
+			ctx, cancel = context.WithTimeout(callerCtx, cfg.RequestTimeout)
 			defer func() {
 				// The cancel function is nil if it was handed off to be handled in a different scope.
 				if cancel != nil {
@@ -447,8 +454,18 @@ func (cfg *RequestConfig) Execute() (err error) {
 		}
 
 		res, err = handler(req)
-		if ctx != nil && ctx.Err() != nil {
-			return ctx.Err()
+		// Once the caller's context is done there is nothing left to retry.
+		if callerErr := callerCtx.Err(); callerErr != nil {
+			return callerErr
+		}
+		// Only the per-attempt timeout expired: treat it like a connection error so it is retried,
+		// and surface the context error if this was the last attempt.
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			if res != nil && res.Body != nil {
+				_ = res.Body.Close()
+			}
+			res = nil
+			err = ctxErr
 		}
 		if !shouldRetry(cfg.Request, res) || retryCount >= cfg.MaxRetries {
 			break
@@ -473,8 +490,8 @@ func (cfg *RequestConfig) Execute() (err error) {
 		}
 
 		select {
-		case <-ctx.Done():
-			return ctx.Err()
+		case <-callerCtx.Done():
+			return callerCtx.Err()
 		case <-time.After(retryDelay(res, retryCount)):
 		}
 	}

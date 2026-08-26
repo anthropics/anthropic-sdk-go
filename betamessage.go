@@ -7766,11 +7766,25 @@ type BetaMessageDeltaUsage struct {
 	// Per-iteration token usage breakdown.
 	//
 	// Each entry represents one sampling iteration, with its own input/output token
-	// counts and cache statistics. This allows you to:
+	// counts and cache statistics, discriminated by `type`. For `message` entries
+	// (model sampling iterations, such as the turns of a server-side tool use loop),
+	// this allows you to:
 	//
 	// - Determine which iterations exceeded long context thresholds (>=200k tokens)
-	// - Calculate the true context window size from the last iteration
+	// - Calculate the context window size from the last `message` entry
 	// - Understand token accumulation across server-side tool use loops
+	//
+	// A `compaction` entry reports the token usage of the compaction operation itself
+	// — the server-side request that summarizes the context being closed — NOT the
+	// size of the context that was compacted away, and its token counts can be much
+	// smaller than that closed context (for example, a compaction that closes a
+	// ~200k-token context can report only a few thousand tokens). Do not derive the
+	// context window size from a `compaction` entry, even when it is the last entry. A
+	// `compaction` entry's tokens are not included in the top-level `usage` fields.
+	// When an input-token trigger is in effect (the default — 150,000 tokens unless
+	// configured otherwise), each `compaction` entry closes a context that had reached
+	// at least that threshold, though the context can exceed it by the final
+	// iteration's output and tool results.
 	Iterations BetaIterationsUsage `json:"iterations" api:"required"`
 	// The cumulative number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens" api:"required"`
@@ -14373,11 +14387,25 @@ type BetaUsage struct {
 	// Per-iteration token usage breakdown.
 	//
 	// Each entry represents one sampling iteration, with its own input/output token
-	// counts and cache statistics. This allows you to:
+	// counts and cache statistics, discriminated by `type`. For `message` entries
+	// (model sampling iterations, such as the turns of a server-side tool use loop),
+	// this allows you to:
 	//
 	// - Determine which iterations exceeded long context thresholds (>=200k tokens)
-	// - Calculate the true context window size from the last iteration
+	// - Calculate the context window size from the last `message` entry
 	// - Understand token accumulation across server-side tool use loops
+	//
+	// A `compaction` entry reports the token usage of the compaction operation itself
+	// — the server-side request that summarizes the context being closed — NOT the
+	// size of the context that was compacted away, and its token counts can be much
+	// smaller than that closed context (for example, a compaction that closes a
+	// ~200k-token context can report only a few thousand tokens). Do not derive the
+	// context window size from a `compaction` entry, even when it is the last entry. A
+	// `compaction` entry's tokens are not included in the top-level `usage` fields.
+	// When an input-token trigger is in effect (the default — 150,000 tokens unless
+	// configured otherwise), each `compaction` entry closes a context that had reached
+	// at least that threshold, though the context can exceed it by the final
+	// iteration's output and tool results.
 	Iterations BetaIterationsUsage `json:"iterations" api:"required"`
 	// The number of output tokens which were used.
 	OutputTokens int64 `json:"output_tokens" api:"required"`

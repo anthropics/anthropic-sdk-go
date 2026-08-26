@@ -117,7 +117,8 @@ func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string,
 type BetaManagedAgentsSessionThread struct {
 	// Unique identifier for this thread.
 	ID string `json:"id" api:"required"`
-	// A session-resolved multiagent roster entry.
+	// The resolved agent a session thread runs: a saved-agent snapshot, the platform
+	// advisor entry, or an inline-defined (ephemeral) agent snapshot.
 	Agent BetaManagedAgentsSessionThreadAgentUnion `json:"agent" api:"required"`
 	// A timestamp in RFC 3339 format
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`

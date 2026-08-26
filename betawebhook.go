@@ -36,6 +36,20 @@ func NewBetaWebhookService(opts ...option.RequestOption) (r BetaWebhookService) 
 	return
 }
 
+// Parses a webhook payload into an event without verifying its signature. Prefer
+// `unwrap()` unless you have already verified the signature yourself.
+func (r *BetaWebhookService) ParseUnverified(payload []byte, opts ...option.RequestOption) (*UnwrapWebhookEvent, error) {
+	res := &UnwrapWebhookEvent{}
+	err := res.UnmarshalJSON(payload)
+	if err != nil {
+		return res, err
+	}
+	return res, nil
+}
+
+// Verifies the webhook signature from the `webhook-id`, `webhook-timestamp` and
+// `webhook-signature` headers using your webhook signing key, then parses the
+// payload into an event. Fails if the signature is missing or invalid.
 func (r *BetaWebhookService) Unwrap(payload []byte, headers http.Header, opts ...option.RequestOption) (*UnwrapWebhookEvent, error) {
 	opts = slices.Concat(r.Options, opts)
 	cfg, err := requestconfig.PreRequestOptions(opts...)
@@ -450,6 +464,31 @@ type BetaWebhookEnvironmentUpdatedEventData struct {
 // Returns the unmodified JSON received from the API
 func (r BetaWebhookEnvironmentUpdatedEventData) RawJSON() string { return r.JSON.raw }
 func (r *BetaWebhookEnvironmentUpdatedEventData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type UnwrapWebhookEvent struct {
+	// Unique event identifier for idempotency.
+	ID string `json:"id" api:"required"`
+	// RFC 3339 timestamp when the event occurred.
+	CreatedAt time.Time                 `json:"created_at" api:"required" format:"date-time"`
+	Data      BetaWebhookEventDataUnion `json:"data" api:"required"`
+	// Object type. Always `event` for webhook payloads.
+	Type constant.Event `json:"type" default:"event"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		CreatedAt   respjson.Field
+		Data        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r UnwrapWebhookEvent) RawJSON() string { return r.JSON.raw }
+func (r *UnwrapWebhookEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1590,30 +1629,5 @@ type BetaWebhookVaultDeletedEventData struct {
 // Returns the unmodified JSON received from the API
 func (r BetaWebhookVaultDeletedEventData) RawJSON() string { return r.JSON.raw }
 func (r *BetaWebhookVaultDeletedEventData) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type UnwrapWebhookEvent struct {
-	// Unique event identifier for idempotency.
-	ID string `json:"id" api:"required"`
-	// RFC 3339 timestamp when the event occurred.
-	CreatedAt time.Time                 `json:"created_at" api:"required" format:"date-time"`
-	Data      BetaWebhookEventDataUnion `json:"data" api:"required"`
-	// Object type. Always `event` for webhook payloads.
-	Type constant.Event `json:"type" default:"event"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ID          respjson.Field
-		CreatedAt   respjson.Field
-		Data        respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r UnwrapWebhookEvent) RawJSON() string { return r.JSON.raw }
-func (r *UnwrapWebhookEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

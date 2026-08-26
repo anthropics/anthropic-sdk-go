@@ -1370,6 +1370,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWebhookEnvironmentCreatedEventData">BetaWebhookEnvironmentCreatedEventData</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWebhookEnvironmentDeletedEventData">BetaWebhookEnvironmentDeletedEventData</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWebhookEnvironmentUpdatedEventData">BetaWebhookEnvironmentUpdatedEventData</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#UnwrapWebhookEvent">UnwrapWebhookEvent</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWebhookEventDataUnion">BetaWebhookEventDataUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWebhookMemoryStoreArchivedEventData">BetaWebhookMemoryStoreArchivedEventData</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWebhookMemoryStoreCreatedEventData">BetaWebhookMemoryStoreCreatedEventData</a>
@@ -1398,7 +1399,6 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWebhookVaultCredentialDeletedEventData">BetaWebhookVaultCredentialDeletedEventData</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWebhookVaultCredentialRefreshFailedEventData">BetaWebhookVaultCredentialRefreshFailedEventData</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWebhookVaultDeletedEventData">BetaWebhookVaultDeletedEventData</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#UnwrapWebhookEvent">UnwrapWebhookEvent</a>
 
 ## UserProfiles
 

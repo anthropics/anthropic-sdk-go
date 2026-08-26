@@ -13,7 +13,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
-func TestBetaTunnelCertificateNewWithOptionalParams(t *testing.T) {
+func TestBetaOrganizationWorkspaceMemberGet(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -25,12 +25,11 @@ func TestBetaTunnelCertificateNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Beta.Tunnels.Certificates.New(
+	_, err := client.Beta.Organization.Workspaces.Members.Get(
 		context.TODO(),
-		"tunnel_id",
-		anthropic.BetaTunnelCertificateNewParams{
-			CACertificatePEM: "ca_certificate_pem",
-			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		"user_id",
+		anthropic.BetaOrganizationWorkspaceMemberGetParams{
+			WorkspaceID: "workspace_id",
 		},
 	)
 	if err != nil {
@@ -42,8 +41,7 @@ func TestBetaTunnelCertificateNewWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestBetaTunnelCertificateGetWithOptionalParams(t *testing.T) {
-	t.Skip("buildURL drops path-level query params (SDK-4349)")
+func TestBetaOrganizationWorkspaceMemberUpdate(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -55,12 +53,12 @@ func TestBetaTunnelCertificateGetWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Beta.Tunnels.Certificates.Get(
+	_, err := client.Beta.Organization.Workspaces.Members.Update(
 		context.TODO(),
-		"certificate_id",
-		anthropic.BetaTunnelCertificateGetParams{
-			TunnelID: "tunnel_id",
-			Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		"user_id",
+		anthropic.BetaOrganizationWorkspaceMemberUpdateParams{
+			WorkspaceID:   "workspace_id",
+			WorkspaceRole: anthropic.BetaWorkspaceRoleWorkspaceAdmin,
 		},
 	)
 	if err != nil {
@@ -72,8 +70,7 @@ func TestBetaTunnelCertificateGetWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestBetaTunnelCertificateListWithOptionalParams(t *testing.T) {
-	t.Skip("buildURL drops path-level query params (SDK-4349)")
+func TestBetaOrganizationWorkspaceMemberListWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -85,14 +82,13 @@ func TestBetaTunnelCertificateListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Beta.Tunnels.Certificates.List(
+	_, err := client.Beta.Organization.Workspaces.Members.List(
 		context.TODO(),
-		"tunnel_id",
-		anthropic.BetaTunnelCertificateListParams{
-			IncludeArchived: anthropic.Bool(true),
-			Limit:           anthropic.Int(0),
-			Page:            anthropic.String("page"),
-			Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		"workspace_id",
+		anthropic.BetaOrganizationWorkspaceMemberListParams{
+			AfterID:  anthropic.String("after_id"),
+			BeforeID: anthropic.String("before_id"),
+			Limit:    anthropic.Int(1),
 		},
 	)
 	if err != nil {
@@ -104,7 +100,7 @@ func TestBetaTunnelCertificateListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestBetaTunnelCertificateArchiveWithOptionalParams(t *testing.T) {
+func TestBetaOrganizationWorkspaceMemberAdd(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -116,12 +112,40 @@ func TestBetaTunnelCertificateArchiveWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Beta.Tunnels.Certificates.Archive(
+	_, err := client.Beta.Organization.Workspaces.Members.Add(
 		context.TODO(),
-		"certificate_id",
-		anthropic.BetaTunnelCertificateArchiveParams{
-			TunnelID: "tunnel_id",
-			Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		"workspace_id",
+		anthropic.BetaOrganizationWorkspaceMemberAddParams{
+			UserID:        "user_01WCz1FkmYMm4gnmykNKUu3Q",
+			WorkspaceRole: anthropic.BetaNoBillingWorkspaceRoleWorkspaceAdmin,
+		},
+	)
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestBetaOrganizationWorkspaceMemberRemove(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Beta.Organization.Workspaces.Members.Remove(
+		context.TODO(),
+		"user_id",
+		anthropic.BetaOrganizationWorkspaceMemberRemoveParams{
+			WorkspaceID: "workspace_id",
 		},
 	)
 	if err != nil {

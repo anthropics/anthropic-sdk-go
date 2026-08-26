@@ -100,3 +100,7 @@ const WebSearchToolResultErrorErrorCodeMaxUsesExceeded = WebSearchToolResultErro
 const WebSearchToolResultErrorErrorCodeTooManyRequests = WebSearchToolResultErrorCodeTooManyRequests
 const WebSearchToolResultErrorErrorCodeQueryTooLong = WebSearchToolResultErrorCodeQueryTooLong
 const WebSearchToolResultErrorErrorCodeRequestTooLarge = WebSearchToolResultErrorCodeRequestTooLarge
+
+// Deprecated: use [BetaCurrencyUSD]. Kept so code written before the USD
+// initialism casing continues to compile.
+const BetaCurrencyUsd = BetaCurrencyUSD

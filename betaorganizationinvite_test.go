@@ -13,7 +13,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
-func TestBetaTunnelCertificateNewWithOptionalParams(t *testing.T) {
+func TestBetaOrganizationInviteNewWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -25,14 +25,11 @@ func TestBetaTunnelCertificateNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Beta.Tunnels.Certificates.New(
-		context.TODO(),
-		"tunnel_id",
-		anthropic.BetaTunnelCertificateNewParams{
-			CACertificatePEM: "ca_certificate_pem",
-			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
-		},
-	)
+	_, err := client.Beta.Organization.Invites.New(context.TODO(), anthropic.BetaOrganizationInviteNewParams{
+		Email:        "user@emaildomain.com",
+		Role:         anthropic.BetaOrganizationInviteNewParamsRoleUser,
+		RBACGroupIDs: []string{"string"},
+	})
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -42,8 +39,7 @@ func TestBetaTunnelCertificateNewWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestBetaTunnelCertificateGetWithOptionalParams(t *testing.T) {
-	t.Skip("buildURL drops path-level query params (SDK-4349)")
+func TestBetaOrganizationInviteGet(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -55,14 +51,7 @@ func TestBetaTunnelCertificateGetWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Beta.Tunnels.Certificates.Get(
-		context.TODO(),
-		"certificate_id",
-		anthropic.BetaTunnelCertificateGetParams{
-			TunnelID: "tunnel_id",
-			Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
-		},
-	)
+	_, err := client.Beta.Organization.Invites.Get(context.TODO(), "invite_id")
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -72,8 +61,7 @@ func TestBetaTunnelCertificateGetWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestBetaTunnelCertificateListWithOptionalParams(t *testing.T) {
-	t.Skip("buildURL drops path-level query params (SDK-4349)")
+func TestBetaOrganizationInviteListWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -85,16 +73,14 @@ func TestBetaTunnelCertificateListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Beta.Tunnels.Certificates.List(
-		context.TODO(),
-		"tunnel_id",
-		anthropic.BetaTunnelCertificateListParams{
-			IncludeArchived: anthropic.Bool(true),
-			Limit:           anthropic.Int(0),
-			Page:            anthropic.String("page"),
-			Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
-		},
-	)
+	_, err := client.Beta.Organization.Invites.List(context.TODO(), anthropic.BetaOrganizationInviteListParams{
+		AfterID:  anthropic.String("after_id"),
+		BeforeID: anthropic.String("before_id"),
+		Email:    anthropic.String("dev@stainless.com"),
+		Limit:    anthropic.Int(1),
+		Roles:    []string{"string"},
+		Statuses: []string{"accepted"},
+	})
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -104,7 +90,7 @@ func TestBetaTunnelCertificateListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestBetaTunnelCertificateArchiveWithOptionalParams(t *testing.T) {
+func TestBetaOrganizationInviteDelete(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -116,14 +102,7 @@ func TestBetaTunnelCertificateArchiveWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Beta.Tunnels.Certificates.Archive(
-		context.TODO(),
-		"certificate_id",
-		anthropic.BetaTunnelCertificateArchiveParams{
-			TunnelID: "tunnel_id",
-			Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
-		},
-	)
+	_, err := client.Beta.Organization.Invites.Delete(context.TODO(), "invite_id")
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {

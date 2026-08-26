@@ -196,7 +196,7 @@ func (r *BetaTunnelCertificate) UnmarshalJSON(data []byte) error {
 type BetaTunnelCertificateNewParams struct {
 	// PEM-encoded X.509 CA certificate. Must contain exactly one certificate and no
 	// private-key material. Maximum 8KB.
-	CaCertificatePem string `json:"ca_certificate_pem" api:"required"`
+	CACertificatePEM string `json:"ca_certificate_pem" api:"required"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

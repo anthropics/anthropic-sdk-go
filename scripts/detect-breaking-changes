@@ -42,6 +42,21 @@ TEST_PATHS=(
 	betadream_test.go
 	betatunnel_test.go
 	betatunnelcertificate_test.go
+	betaorganization_test.go
+	betaorganizationapikey_test.go
+	betaorganizationexternalkey_test.go
+	betaorganizationfederationissuer_test.go
+	betaorganizationfederationrule_test.go
+	betaorganizationfederationruleworkspace_test.go
+	betaorganizationinvite_test.go
+	betaorganizationserviceaccount_test.go
+	betaorganizationserviceaccountworkspace_test.go
+	betaorganizationuser_test.go
+	betaorganizationworkspace_test.go
+	betaorganizationworkspaceratelimit_test.go
+	betaorganizationworkspacemember_test.go
+	betaorganizationworkspaceserviceaccount_test.go
+	betaorganizationratelimit_test.go
 	usage_test.go
 	paginationauto_test.go
 	paginationmanual_test.go

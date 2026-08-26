@@ -34,7 +34,7 @@ func TestBetaSessionNewWithOptionalParams(t *testing.T) {
 		Budget: anthropic.BetaManagedAgentsBudgetLimitParam{
 			MaxListCost: anthropic.BetaMonetaryAmountParam{
 				Amount:   "2500",
-				Currency: anthropic.BetaCurrencyUsd,
+				Currency: anthropic.BetaCurrencyUSD,
 			},
 			Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
 		},
@@ -150,7 +150,7 @@ func TestBetaSessionUpdateWithOptionalParams(t *testing.T) {
 			Budget: anthropic.BetaManagedAgentsBudgetLimitParam{
 				MaxListCost: anthropic.BetaMonetaryAmountParam{
 					Amount:   "2500",
-					Currency: anthropic.BetaCurrencyUsd,
+					Currency: anthropic.BetaCurrencyUSD,
 				},
 				Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
 			},

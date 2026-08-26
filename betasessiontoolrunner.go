@@ -489,7 +489,6 @@ func (r *SessionToolRunner) coordinate(g *errgroup.Group) {
 	groupErr := g.Wait()
 	r.setTerminalErr(groupErr)
 	r.drainInFlight()
-	r.cancel()
 	close(r.results)
 }
 
@@ -954,7 +953,7 @@ func (r *SessionToolRunner) dispatchLoop(ctx context.Context, in <-chan pendingT
 				if r.isAnswered(p.id()) {
 					return
 				}
-				r.surfaceCall(ctx, r.execute(ctx, p))
+				r.surfaceCall(r.execute(ctx, p))
 			}()
 		}
 	}
@@ -1378,7 +1377,7 @@ func (r *SessionToolRunner) applyVerdict(ctx context.Context, out chan<- pending
 	}
 	r.markAnswered(id)
 	r.log.Info("tool call denied; not executing", slog.String("tool", p.name()), slog.String("tool_use_id", id))
-	r.surfaceCall(ctx, DispatchedToolCall{
+	r.surfaceCall(DispatchedToolCall{
 		Custom:        p.custom,
 		ToolUse:       p.toolUse,
 		CustomToolUse: p.customToolUse,
@@ -1391,11 +1390,11 @@ func (r *SessionToolRunner) applyVerdict(ctx context.Context, out chan<- pending
 }
 
 // surfaceCall yields call to the consumer, tolerating a consumer that left
-// early (ctx cancelled). The underlying work already happened; only the
-// observability event is lost.
-func (r *SessionToolRunner) surfaceCall(ctx context.Context, call DispatchedToolCall) {
+// early (Close, or the caller's ctx was cancelled). The work already happened;
+// only the surfaced event is lost.
+func (r *SessionToolRunner) surfaceCall(call DispatchedToolCall) {
 	select {
-	case <-ctx.Done():
+	case <-r.ctx.Done():
 	case r.results <- call:
 	}
 }

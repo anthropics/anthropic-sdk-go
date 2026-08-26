@@ -35,6 +35,7 @@ type BetaService struct {
 	UserProfiles   BetaUserProfileService
 	Dreams         BetaDreamService
 	Tunnels        BetaTunnelService
+	Organization   BetaOrganizationService
 }
 
 // NewBetaService generates a new service that applies the given options to each
@@ -58,6 +59,7 @@ func NewBetaService(opts ...option.RequestOption) (r BetaService) {
 	r.UserProfiles = NewBetaUserProfileService(opts...)
 	r.Dreams = NewBetaDreamService(opts...)
 	r.Tunnels = NewBetaTunnelService(opts...)
+	r.Organization = NewBetaOrganizationService(opts...)
 	return
 }
 
@@ -104,6 +106,7 @@ const (
 	AnthropicBetaStructuredOutputs2025_11_13          AnthropicBeta = "structured-outputs-2025-11-13"
 	AnthropicBetaTaskBudgets2026_03_13                AnthropicBeta = "task-budgets-2026-03-13"
 	AnthropicBetaThinkingDisplayUpdates2026_08_18     AnthropicBeta = "thinking-display-updates-2026-08-18"
+	AnthropicBetaCEUserManagement2026_07_13           AnthropicBeta = "ce-user-management-2026-07-13"
 )
 
 type BetaAPIError struct {
@@ -163,7 +166,7 @@ func (r *BetaBillingError) UnmarshalJSON(data []byte) error {
 type BetaCurrency string
 
 const (
-	BetaCurrencyUsd BetaCurrency = "USD"
+	BetaCurrencyUSD BetaCurrency = "USD"
 )
 
 // BetaErrorUnion contains all possible properties and values from

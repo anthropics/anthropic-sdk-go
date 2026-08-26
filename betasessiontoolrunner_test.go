@@ -611,6 +611,55 @@ func TestSessionToolRunner_SessionTerminatedEndsIteration(t *testing.T) {
 	require.ErrorIs(t, r.Err(), ErrSessionTerminated)
 }
 
+// The session terminates as soon as the last result lands, so that call is
+// surfaced while the runner is already shutting down; it must still reach the
+// caller before Next reports the end.
+func TestSessionToolRunner_CallPostedAtTerminationIsYielded(t *testing.T) {
+	for i := range 20 {
+		server := newSessionEventsServer(t)
+		terminate := make(chan struct{})
+		streamGone := make(chan struct{})
+		var terminateOnce, goneOnce sync.Once
+		server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+			defer goneOnce.Do(func() { close(streamGone) })
+			w.Header().Set("Content-Type", "text/event-stream")
+			w.WriteHeader(http.StatusOK)
+			flusher := w.(http.Flusher)
+			_, _ = io.WriteString(w, sseLine("agent.tool_use", toolUseEvt("evt_1", "echo", map[string]any{})))
+			flusher.Flush()
+			select {
+			case <-terminate:
+			case <-r.Context().Done():
+				return
+			}
+			_, _ = io.WriteString(w, sseLine("session.status_terminated", plainEvt("evt_term", "session.status_terminated")))
+			flusher.Flush()
+			<-r.Context().Done()
+		}
+		server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+			// Acknowledge the post only once the runner has consumed the
+			// termination and dropped the stream.
+			terminateOnce.Do(func() { close(terminate) })
+			select {
+			case <-streamGone:
+			case <-time.After(2 * time.Second):
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(sendOK()))
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		t.Cleanup(cancel)
+		r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{&stubBetaTool{name: "echo"}}, 0)
+		require.Truef(t, r.Next(), "run %d: the call posted at termination was never yielded (err=%v)", i, r.Err())
+		require.Equal(t, "evt_1", r.Current().ToolUseID)
+		require.True(t, r.Current().Posted)
+		require.Falsef(t, r.Next(), "run %d: unexpected second yield: %+v", i, r.Current())
+		require.ErrorIs(t, r.Err(), ErrSessionTerminated)
+		require.NoError(t, r.Close())
+	}
+}
+
 // TestSessionToolRunner_ReconcileSurfacesSessionTerminatedFromHistory pins
 // the guarantee that reconcile() shuts down streamLoop when the listed
 // history contains a session.status_terminated or session.deleted event.

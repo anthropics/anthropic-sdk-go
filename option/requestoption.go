@@ -252,6 +252,10 @@ func WithRequestBody(contentType string, body any) RequestOption {
 // WithRequestTimeout returns a RequestOption that sets the timeout for
 // each request attempt. This should be smaller than the timeout defined in
 // the context, which spans all retries.
+//
+// An attempt that exceeds this timeout is retried (see [WithMaxRetries]) for as
+// long as the context passed to the method is not done, so a call can take up to
+// roughly (retries + 1) * dur plus backoff before it fails with context.DeadlineExceeded.
 func WithRequestTimeout(dur time.Duration) RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		r.RequestTimeout = dur

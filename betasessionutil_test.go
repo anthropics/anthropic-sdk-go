@@ -199,6 +199,18 @@ func TestBetaManagedAgentsEventAccumulator_OtherEventsAreNoOps(t *testing.T) {
 	}
 }
 
+func TestBetaManagedAgentsEventAccumulator_UnrecognizedEventTypeIsNoOp(t *testing.T) {
+	var acc BetaManagedAgentsEventAccumulator
+	feed(&acc,
+		eventStart(t, "evt_1"),
+		eventDelta(t, "evt_1", "Hi", 0),
+		sseEvent(t, `{"type":"session.some_future_event","id":"evt_1","result":{"type":"object"}}`),
+	)
+	if text := acc.AgentMessageText("evt_1"); text != "Hi" {
+		t.Fatalf("expected preview to be untouched by an unrecognized event type, got %q", text)
+	}
+}
+
 func TestBetaManagedAgentsEventAccumulator_MultiplePreviews(t *testing.T) {
 	var acc BetaManagedAgentsEventAccumulator
 	feed(&acc,

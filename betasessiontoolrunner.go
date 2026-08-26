@@ -765,7 +765,7 @@ func (r *SessionToolRunner) streamLoop(ctx context.Context, out chan<- pendingTo
 					r.routeToolEvent(ctx, out, pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse()})
 				}
 			case "user.tool_confirmation":
-				r.noteConfirmation(ctx, out, ev.ToolUseID, string(ev.Result))
+				r.noteConfirmation(ctx, out, ev.ToolUseID, string(ev.AsUserToolConfirmation().Result))
 			case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
 				r.markAnswered(ev.ToolUseID)
 			case string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult):
@@ -854,7 +854,7 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 			// is routed with its verdict already known. Skip already-answered
 			// calls so we don't re-record their verdict on every reconcile.
 			if !r.isAnswered(ev.ToolUseID) {
-				r.confirmationVerdicts[ev.ToolUseID] = string(ev.Result)
+				r.confirmationVerdicts[ev.ToolUseID] = string(ev.AsUserToolConfirmation().Result)
 			}
 		case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
 			r.markAnswered(ev.ToolUseID)

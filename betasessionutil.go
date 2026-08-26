@@ -33,33 +33,37 @@ func (acc *BetaManagedAgentsEventAccumulator) Accumulate(event BetaManagedAgents
 
 	switch event.Type {
 	case "event_start":
-		if event.Event.Type == "agent.message" {
-			acc.AgentMessages[event.Event.ID] = BetaManagedAgentsAgentMessageEvent{
-				ID:   event.Event.ID,
+		start := event.AsEventStart()
+		if start.Event.Type == "agent.message" {
+			preview := start.Event.AsAgentMessage()
+			acc.AgentMessages[preview.ID] = BetaManagedAgentsAgentMessageEvent{
+				ID:   preview.ID,
 				Type: BetaManagedAgentsAgentMessageEventTypeAgentMessage,
 			}
 		}
 
 	case "event_delta":
-		msg, ok := acc.AgentMessages[event.EventID]
+		delta := event.AsEventDelta()
+		msg, ok := acc.AgentMessages[delta.EventID]
 		if !ok || msg.JSON.ProcessedAt.Valid() {
 			return
 		}
-		idx := int(event.Delta.Index)
+		idx := int(delta.Delta.Index)
 		if idx < 0 || idx > len(msg.Content) {
 			return
 		}
 		if idx == len(msg.Content) {
 			var block BetaManagedAgentsAgentMessageEventContentUnion
-			_ = block.UnmarshalJSON([]byte(event.Delta.Content.RawJSON()))
+			_ = block.UnmarshalJSON([]byte(delta.Delta.Content.RawJSON()))
 			msg.Content = append(msg.Content, block)
 		} else {
-			msg.Content[idx].Text += event.Delta.Content.Text
+			msg.Content[idx].Text += delta.Delta.Content.Text
 		}
-		acc.AgentMessages[event.EventID] = msg
+		acc.AgentMessages[delta.EventID] = msg
 
 	case "agent.message":
-		acc.AgentMessages[event.ID] = event.AsAgentMessage()
+		msg := event.AsAgentMessage()
+		acc.AgentMessages[msg.ID] = msg
 
 	case "span.model_request_end":
 		for id, msg := range acc.AgentMessages {

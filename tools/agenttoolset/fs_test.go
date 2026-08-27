@@ -93,6 +93,39 @@ func TestExecRead(t *testing.T) {
 	}
 }
 
+// The read tool returns file bytes verbatim: CRLF and lone-CR line endings are
+// never normalized, and view_range splits on "\n" only, so a trailing "\r"
+// stays attached to its line.
+func TestExecReadPreservesCRLF(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(work, "crlf.txt"), []byte("line1\r\nline2\r\nline3\r\n"), 0o644))
+	tool := BetaReadTool(&AgentToolContext{Workdir: work})
+
+	out, isErr := runTool(t, tool, mustJSON(t, map[string]any{"file_path": "crlf.txt"}))
+	require.False(t, isErr, "output=%q", out)
+	require.Equal(t, "line1\r\nline2\r\nline3\r\n", out)
+
+	out, isErr = runTool(t, tool, mustJSON(t, map[string]any{"file_path": "crlf.txt", "view_range": []int{1, 2}}))
+	require.False(t, isErr, "output=%q", out)
+	require.Equal(t, "line1\r\nline2\r", out)
+}
+
+func TestExecReadPreservesLoneCR(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(work, "cr.txt"), []byte("a\rb\rc\r"), 0o644))
+	tool := BetaReadTool(&AgentToolContext{Workdir: work})
+
+	out, isErr := runTool(t, tool, mustJSON(t, map[string]any{"file_path": "cr.txt"}))
+	require.False(t, isErr, "output=%q", out)
+	require.Equal(t, "a\rb\rc\r", out)
+
+	// A lone "\r" is not a line break, so the file is a single line and line 2
+	// is past the end.
+	out, isErr = runTool(t, tool, mustJSON(t, map[string]any{"file_path": "cr.txt", "view_range": []int{2, 2}}))
+	require.False(t, isErr, "output=%q", out)
+	require.Equal(t, "", out)
+}
+
 func TestExecWrite(t *testing.T) {
 	work := t.TempDir()
 	env := &AgentToolContext{Workdir: work}
@@ -333,6 +366,18 @@ func TestExecEditAllowsNormalFile(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(work, "f.txt"))
 	require.NoError(t, err)
 	require.Equal(t, "alpha\nBETA\ngamma", string(data))
+}
+
+func TestExecEditPreservesCRLF(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(work, "crlf.txt"), []byte("line1\r\nline2\r\nline3\r\n"), 0o644))
+	out, isErr := runTool(t, BetaEditTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{
+		"file_path": "crlf.txt", "old_string": "line2", "new_string": "LINE2",
+	}))
+	require.False(t, isErr, "output=%q", out)
+	data, err := os.ReadFile(filepath.Join(work, "crlf.txt"))
+	require.NoError(t, err)
+	require.Equal(t, []byte("line1\r\nLINE2\r\nline3\r\n"), data)
 }
 
 func TestExecReadRejectsOversizedFile(t *testing.T) {

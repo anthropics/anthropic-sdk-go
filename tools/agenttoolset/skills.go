@@ -99,11 +99,7 @@ func (e *AgentToolContext) Cleanup() error {
 }
 
 func (e *AgentToolContext) downloadSkill(ctx context.Context, client anthropic.Client, skillsRoot, skillID, skillVersion string, log *slog.Logger, opts ...option.RequestOption) error {
-	versionID, err := resolveSkillVersion(ctx, client, skillID, skillVersion, opts...)
-	if err != nil {
-		return err
-	}
-	version, err := client.Beta.Skills.Versions.Get(ctx, versionID, anthropic.BetaSkillVersionGetParams{SkillID: skillID}, opts...)
+	version, err := client.Beta.Skills.Versions.Get(ctx, skillVersion, anthropic.BetaSkillVersionGetParams{SkillID: skillID}, opts...)
 	if err != nil {
 		return fmt.Errorf("retrieve skill version: %w", err)
 	}
@@ -117,7 +113,9 @@ func (e *AgentToolContext) downloadSkill(ctx context.Context, client anthropic.C
 	if dest != skillsRoot && !strings.HasPrefix(dest, skillsRoot+string(os.PathSeparator)) {
 		return fmt.Errorf("skill name %q escapes the skills dir", version.Name)
 	}
-	resp, err := client.Beta.Skills.Versions.Download(ctx, versionID, anthropic.BetaSkillVersionDownloadParams{SkillID: skillID}, opts...)
+	// skillVersion may be the alias "latest", which only the retrieve
+	// endpoint resolves; download by the concrete id it returned.
+	resp, err := client.Beta.Skills.Versions.Download(ctx, version.ID, anthropic.BetaSkillVersionDownloadParams{SkillID: skillID}, opts...)
 	if err != nil {
 		return fmt.Errorf("download skill: %w", err)
 	}
@@ -151,55 +149,7 @@ func (e *AgentToolContext) downloadSkill(ctx context.Context, client anthropic.C
 	}
 	log.Info("downloaded skill",
 		slog.String("skill_id", skillID),
-		slog.String("version", versionID),
+		slog.String("version", version.ID),
 		slog.String("dest", dest))
 	return nil
-}
-
-// resolveSkillVersion resolves version to the concrete numeric timestamp the
-// /v1/skills/{id}/versions/{version} endpoints require. session.agent.skills[].version
-// may be an alias such as "latest", which those endpoints reject — so list the
-// skill's versions and pick the newest. Numeric versions are returned unchanged.
-func resolveSkillVersion(ctx context.Context, client anthropic.Client, skillID, version string, opts ...option.RequestOption) (string, error) {
-	if isNumericString(version) {
-		return version, nil
-	}
-	var newest string
-	pager := client.Beta.Skills.Versions.ListAutoPaging(ctx, skillID, anthropic.BetaSkillVersionListParams{}, opts...)
-	for pager.Next() {
-		v := pager.Current().Version
-		if isNumericString(v) && (newest == "" || numericGreater(v, newest)) {
-			newest = v
-		}
-	}
-	if err := pager.Err(); err != nil {
-		return "", fmt.Errorf("list skill versions: %w", err)
-	}
-	if newest == "" {
-		return "", fmt.Errorf("skill %q has no concrete version to resolve %q against", skillID, version)
-	}
-	return newest, nil
-}
-
-func isNumericString(s string) bool {
-	if s == "" {
-		return false
-	}
-	for _, r := range s {
-		if r < '0' || r > '9' {
-			return false
-		}
-	}
-	return true
-}
-
-// numericGreater reports whether decimal string a is numerically greater than b.
-// Both must be non-empty digit strings without leading zeros (skill versions are
-// Unix-epoch timestamps), so length-then-lexical ordering matches numeric order
-// without risking integer overflow on very large values.
-func numericGreater(a, b string) bool {
-	if len(a) != len(b) {
-		return len(a) > len(b)
-	}
-	return a > b
 }

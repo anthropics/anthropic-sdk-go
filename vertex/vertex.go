@@ -145,11 +145,15 @@ func vertexMiddleware(region, projectID string) sdkoption.Middleware {
 			}
 			r.Body.Close()
 
-			if !gjson.GetBytes(body, "anthropic_version").Exists() {
+			// Raw (non-JSON) bodies must reach the wire byte-for-byte; only a
+			// JSON body carries fields to inject or strip.
+			isJSON := gjson.ValidBytes(body)
+
+			if isJSON && !gjson.GetBytes(body, "anthropic_version").Exists() {
 				body, _ = sjson.SetBytes(body, "anthropic_version", DefaultVersion)
 			}
 
-			if r.URL.Path == "/v1/messages" && r.Method == http.MethodPost {
+			if isJSON && r.URL.Path == "/v1/messages" && r.Method == http.MethodPost {
 				if projectID == "" {
 					return nil, fmt.Errorf("no projectId was given and it could not be resolved from credentials")
 				}
@@ -167,7 +171,7 @@ func vertexMiddleware(region, projectID string) sdkoption.Middleware {
 				r.URL.Path = fmt.Sprintf("/v1/projects/%s/locations/%s/publishers/anthropic/models/%s:%s", projectID, region, model, specifier)
 			}
 
-			if r.URL.Path == "/v1/messages/count_tokens" && r.Method == http.MethodPost {
+			if isJSON && r.URL.Path == "/v1/messages/count_tokens" && r.Method == http.MethodPost {
 				if projectID == "" {
 					return nil, fmt.Errorf("no projectId was given and it could not be resolved from credentials")
 				}

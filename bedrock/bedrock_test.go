@@ -621,3 +621,51 @@ func unsetEnv(t *testing.T, key string) {
 	t.Setenv(key, "")
 	os.Unsetenv(key)
 }
+
+// TestBedrockNonJSONBodyPassesThroughUntouched verifies that a raw,
+// non-JSON request body reaches the wire byte-for-byte and is still
+// SigV4-signed, rather than being replaced by injected JSON fields.
+func TestBedrockNonJSONBodyPassesThroughUntouched(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+
+	payload := []byte{0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n', 0x00, 0x01, 0x02, 0xff}
+
+	var wireBody []byte
+	var wireAuth, wireContentType string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		wireAuth = r.Header.Get("Authorization")
+		wireContentType = r.Header.Get("Content-Type")
+		var err error
+		if wireBody, err = io.ReadAll(r.Body); err != nil {
+			t.Errorf("Failed to read wire body: %v", err)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+	}))
+	t.Cleanup(server.Close)
+
+	client := anthropic.NewClient(
+		option.WithoutEnvironmentDefaults(),
+		WithConfig(makeStaticAWSConfig("us-east-1")),
+		option.WithBaseURL(server.URL),
+	)
+
+	var res map[string]any
+	err := client.Post(context.Background(), "/model/anthropic.claude-sonnet-4-5-20250929-v1:0/invoke", nil, &res,
+		option.WithRequestBody("application/octet-stream", bytes.NewReader(payload)),
+	)
+	if err != nil {
+		t.Fatalf("Request failed: %v", err)
+	}
+
+	if !bytes.Equal(wireBody, payload) {
+		t.Errorf("Expected wire body %x, got %x (%q)", payload, wireBody, wireBody)
+	}
+	if wireContentType != "application/octet-stream" {
+		t.Errorf("Expected Content-Type %q on the wire, got %q", "application/octet-stream", wireContentType)
+	}
+	if !strings.HasPrefix(wireAuth, "AWS4-HMAC-SHA256") {
+		t.Errorf("Expected SigV4 Authorization on the wire, got %q", wireAuth)
+	}
+}

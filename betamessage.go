@@ -3826,7 +3826,7 @@ type BetaContainer struct {
 	// The time at which the container will expire.
 	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
 	// Skills loaded in the container
-	Skills []BetaSkill `json:"skills" api:"required"`
+	Skills []BetaContainerSkill `json:"skills" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -3859,6 +3859,40 @@ func (r BetaContainerParams) MarshalJSON() (data []byte, err error) {
 func (r *BetaContainerParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// A skill that was loaded in a container (response model).
+type BetaContainerSkill struct {
+	// Skill ID
+	SkillID string `json:"skill_id" api:"required"`
+	// Type of skill - either 'anthropic' (built-in) or 'custom' (user-defined)
+	//
+	// Any of "anthropic", "custom".
+	Type BetaContainerSkillType `json:"type" api:"required"`
+	// The resolved version: a skill version ID for custom skills.
+	Version string `json:"version" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		SkillID     respjson.Field
+		Type        respjson.Field
+		Version     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaContainerSkill) RawJSON() string { return r.JSON.raw }
+func (r *BetaContainerSkill) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Type of skill - either 'anthropic' (built-in) or 'custom' (user-defined)
+type BetaContainerSkillType string
+
+const (
+	BetaContainerSkillTypeAnthropic BetaContainerSkillType = "anthropic"
+	BetaContainerSkillTypeCustom    BetaContainerSkillType = "custom"
+)
 
 // Response model for a file uploaded to the container.
 type BetaContainerUploadBlock struct {
@@ -9806,40 +9840,6 @@ func (r BetaSignatureDelta) RawJSON() string { return r.JSON.raw }
 func (r *BetaSignatureDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// A skill that was loaded in a container (response model).
-type BetaSkill struct {
-	// Skill ID
-	SkillID string `json:"skill_id" api:"required"`
-	// Type of skill - either 'anthropic' (built-in) or 'custom' (user-defined)
-	//
-	// Any of "anthropic", "custom".
-	Type BetaSkillType `json:"type" api:"required"`
-	// The resolved version: a skill version ID for custom skills.
-	Version string `json:"version" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		SkillID     respjson.Field
-		Type        respjson.Field
-		Version     respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaSkill) RawJSON() string { return r.JSON.raw }
-func (r *BetaSkill) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Type of skill - either 'anthropic' (built-in) or 'custom' (user-defined)
-type BetaSkillType string
-
-const (
-	BetaSkillTypeAnthropic BetaSkillType = "anthropic"
-	BetaSkillTypeCustom    BetaSkillType = "custom"
-)
 
 // Specification for a skill to be loaded in a container (request model).
 //

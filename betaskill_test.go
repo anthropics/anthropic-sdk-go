@@ -28,9 +28,9 @@ func TestBetaSkillNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.Skills.New(context.TODO(), anthropic.BetaSkillNewParams{
-		Files:        []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
-		DisplayTitle: anthropic.String("display_title"),
-		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Files:       []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
+		DisplayName: anthropic.String("display_name"),
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -82,7 +82,7 @@ func TestBetaSkillListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.Skills.List(context.TODO(), anthropic.BetaSkillListParams{
-		Limit:  anthropic.Int(0),
+		Limit:  anthropic.Int(1),
 		Page:   anthropic.String("page"),
 		Source: anthropic.String("source"),
 		Betas:  []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},

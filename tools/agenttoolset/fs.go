@@ -1,9 +1,12 @@
 package agenttoolset
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,6 +17,9 @@ import (
 // defaultMaxFileBytes is the read/edit size cap used when
 // AgentToolContext.MaxFileBytes is unset (zero).
 const defaultMaxFileBytes = 256 * 1024
+
+// readChunkBytes is how much readRangeStreaming reads from the file at a time.
+const readChunkBytes = 64 * 1024
 
 // resolveMaxBytes turns a configured cap into an effective size limit. Zero
 // selects def (the built-in default); a negative value disables the size check
@@ -94,6 +100,9 @@ func execRead(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 	if err != nil {
 		return errorf("read: %v", err)
 	}
+	if len(in.ViewRange) != 0 && len(in.ViewRange) != 2 {
+		return errorf("read: view_range must be [start_line, end_line]")
+	}
 	// Stat before any open: the size cap stops a multi-GB file from OOM'ing
 	// the runner, and the mode check rejects FIFOs/devices/dirs before
 	// open() can block on them.
@@ -105,8 +114,11 @@ func execRead(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 		return errorf("read: %s is not a regular file", in.FilePath)
 	}
 	if limit, capped := resolveMaxBytes(env.MaxFileBytes, defaultMaxFileBytes); capped && info.Size() > limit {
-		return errorf("read: %s is %d bytes, exceeds %d-byte limit. Use bash (head/tail/sed) to read a slice.",
-			in.FilePath, info.Size(), limit)
+		if len(in.ViewRange) == 0 {
+			return errorf("read: %s is %d bytes, exceeds %d-byte limit. Use the view_range parameter to read specific line ranges, e.g. view_range: [1, 500].",
+				in.FilePath, info.Size(), limit)
+		}
+		return readRangeStreaming(path, in.FilePath, in.ViewRange[0], in.ViewRange[1], limit)
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -114,9 +126,6 @@ func execRead(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 	}
 	if len(in.ViewRange) == 0 {
 		return string(data), false
-	}
-	if len(in.ViewRange) != 2 {
-		return errorf("read: view_range must be [start_line, end_line]")
 	}
 	lines := strings.Split(string(data), "\n")
 	start := max(0, int(in.ViewRange[0])-1)
@@ -132,6 +141,121 @@ func execRead(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 		return "", false
 	}
 	return strings.Join(lines[start:end], "\n"), false
+}
+
+// readRangeStreaming returns lines [startLine, endLine] of the file at path,
+// capping the selected bytes at limit.
+func readRangeStreaming(path, filePath string, startLine, endLine, limit int64) (string, bool) {
+	lines := newLineRangeCollector(filePath, startLine, endLine, limit)
+	if lines.rangeIsEmpty() {
+		return "", false
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return errorf("read %s: %s", filePath, fsErrorMessage(err))
+	}
+	defer f.Close()
+	// Raw byte chunks rather than bufio.Scanner or ReadString: a single huge
+	// line must never be buffered whole, so memory stays bounded by limit plus
+	// one chunk.
+	chunk := make([]byte, readChunkBytes)
+	for {
+		n, readErr := f.Read(chunk)
+		if err := lines.collectFrom(chunk[:n]); err != nil {
+			return err.Error(), true
+		}
+		if readErr == io.EOF {
+			break
+		}
+		if readErr != nil {
+			return errorf("read %s: %s", filePath, fsErrorMessage(readErr))
+		}
+		if lines.rangeIsCollected() {
+			break
+		}
+	}
+	return lines.text(), false
+}
+
+// lineRangeCollector collects the bytes of lines [startLine, endLine] from
+// consecutive file chunks, capped at limit.
+type lineRangeCollector struct {
+	filePath           string
+	startLine, endLine int64
+	start, end         int
+	limit              int64
+	line               int
+	collected          []byte
+}
+
+func newLineRangeCollector(filePath string, startLine, endLine, limit int64) *lineRangeCollector {
+	end := math.MaxInt
+	if endLine > 0 {
+		end = int(endLine)
+	}
+	return &lineRangeCollector{
+		filePath:  filePath,
+		startLine: startLine,
+		endLine:   endLine,
+		start:     max(0, int(startLine)-1),
+		end:       end,
+		limit:     limit,
+	}
+}
+
+func (c *lineRangeCollector) rangeIsEmpty() bool {
+	return c.end <= c.start
+}
+
+func (c *lineRangeCollector) rangeIsCollected() bool {
+	return c.line >= c.end
+}
+
+func (c *lineRangeCollector) collectFrom(chunk []byte) error {
+	lineStart := 0
+	for lineStart < len(chunk) && !c.rangeIsCollected() {
+		newline := bytes.IndexByte(chunk[lineStart:], '\n')
+		lineEnd := len(chunk)
+		if newline >= 0 {
+			newline += lineStart
+			lineEnd = newline
+		}
+		if c.line >= c.start {
+			if err := c.collect(chunk[lineStart:lineEnd], newline >= 0); err != nil {
+				return err
+			}
+		}
+		if newline < 0 {
+			break
+		}
+		c.line++
+		lineStart = newline + 1
+	}
+	return nil
+}
+
+func (c *lineRangeCollector) collect(lineBytes []byte, newlineTerminated bool) error {
+	c.collected = append(c.collected, lineBytes...)
+	if newlineTerminated && c.line+1 < c.end {
+		c.collected = append(c.collected, '\n')
+	}
+	if int64(len(c.collected)) > c.limit {
+		return c.overLimitError()
+	}
+	return nil
+}
+
+func (c *lineRangeCollector) overLimitError() error {
+	if c.end-c.start == 1 {
+		return &ToolError{Content: fmt.Sprintf("read: line %d of %s alone exceeds %d-byte limit. The read tool cannot return part of a line, so view_range cannot narrow this further.",
+			c.start+1, c.filePath, c.limit)}
+	}
+	return &ToolError{Content: fmt.Sprintf("read: view_range [%d, %d] of %s exceeds %d-byte limit. Narrow the view_range to read a smaller portion.",
+		c.startLine, c.endLine, c.filePath, c.limit)}
+}
+
+func (c *lineRangeCollector) text() string {
+	return string(c.collected)
 }
 
 func execWrite(_ context.Context, raw json.RawMessage, env *AgentToolContext) (string, bool) {
@@ -183,7 +307,7 @@ func execEdit(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 		return errorf("edit: %s is not a regular file", in.FilePath)
 	}
 	if limit, capped := resolveMaxBytes(env.MaxFileBytes, defaultMaxFileBytes); capped && info.Size() > limit {
-		return errorf("edit: %s is %d bytes, exceeds %d-byte limit. Use bash (sed/awk) to modify a large file.",
+		return errorf("edit: %s is %d bytes, exceeds %d-byte limit. The edit tool loads the whole file and cannot modify a file this large.",
 			in.FilePath, info.Size(), limit)
 	}
 	data, err := os.ReadFile(path)

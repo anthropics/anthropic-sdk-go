@@ -43,9 +43,8 @@ func NewBetaOrganizationRateLimitService(opts ...option.RequestOption) (r BetaOr
 // API-surface category such as the Files API or Message Batches) and contains the
 // set of limiter values that apply to it.
 //
-// This endpoint currently returns every matching entry in a single page regardless
-// of `limit`; follow `next_page` so that clients keep working when pagination is
-// enabled.
+// When `limit` is omitted, every matching entry is returned in a single page; when
+// `limit` truncates the result, follow `next_page` to fetch the remaining entries.
 func (r *BetaOrganizationRateLimitService) List(ctx context.Context, query BetaOrganizationRateLimitListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaOrganizationRateLimit], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
@@ -69,9 +68,8 @@ func (r *BetaOrganizationRateLimitService) List(ctx context.Context, query BetaO
 // API-surface category such as the Files API or Message Batches) and contains the
 // set of limiter values that apply to it.
 //
-// This endpoint currently returns every matching entry in a single page regardless
-// of `limit`; follow `next_page` so that clients keep working when pagination is
-// enabled.
+// When `limit` is omitted, every matching entry is returned in a single page; when
+// `limit` truncates the result, follow `next_page` to fetch the remaining entries.
 func (r *BetaOrganizationRateLimitService) ListAutoPaging(ctx context.Context, query BetaOrganizationRateLimitListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaOrganizationRateLimit] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, query, opts...))
 }
@@ -148,8 +146,8 @@ func (r *BetaOrganizationRateLimitValue) UnmarshalJSON(data []byte) error {
 type BetaOrganizationRateLimitListParams struct {
 	// Maximum number of items to return per page. Ranges from `1` to `1000`.
 	//
-	// Accepted for request-shape compatibility and currently ignored: every entry is
-	// returned in a single page.
+	// When omitted, every remaining entry is returned in a single page and `next_page`
+	// is `null`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Filter to the single entry containing this model. Accepts full model names and
 	// aliases. Returns 404 if the model is not found or has no rate limits for this

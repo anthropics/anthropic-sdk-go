@@ -46,9 +46,8 @@ func NewBetaOrganizationWorkspaceRateLimitService(opts ...option.RequestOption) 
 // Groups without overrides inherit the organization limits and are not listed; use
 // `GET /v1/organizations/rate_limits` to see those.
 //
-// This endpoint currently returns every matching entry in a single page regardless
-// of `limit`; follow `next_page` so that clients keep working when pagination is
-// enabled.
+// When `limit` is omitted, every matching entry is returned in a single page; when
+// `limit` truncates the result, follow `next_page` to fetch the remaining entries.
 func (r *BetaOrganizationWorkspaceRateLimitService) List(ctx context.Context, workspaceID string, query BetaOrganizationWorkspaceRateLimitListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaWorkspaceRateLimit], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
@@ -76,9 +75,8 @@ func (r *BetaOrganizationWorkspaceRateLimitService) List(ctx context.Context, wo
 // Groups without overrides inherit the organization limits and are not listed; use
 // `GET /v1/organizations/rate_limits` to see those.
 //
-// This endpoint currently returns every matching entry in a single page regardless
-// of `limit`; follow `next_page` so that clients keep working when pagination is
-// enabled.
+// When `limit` is omitted, every matching entry is returned in a single page; when
+// `limit` truncates the result, follow `next_page` to fetch the remaining entries.
 func (r *BetaOrganizationWorkspaceRateLimitService) ListAutoPaging(ctx context.Context, workspaceID string, query BetaOrganizationWorkspaceRateLimitListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaWorkspaceRateLimit] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
@@ -163,8 +161,8 @@ func (r *BetaWorkspaceRateLimitValue) UnmarshalJSON(data []byte) error {
 type BetaOrganizationWorkspaceRateLimitListParams struct {
 	// Maximum number of items to return per page. Ranges from `1` to `1000`.
 	//
-	// Accepted for request-shape compatibility and currently ignored: every entry is
-	// returned in a single page.
+	// When omitted, every remaining entry is returned in a single page and `next_page`
+	// is `null`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Opaque cursor from a previous response's `next_page`.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`

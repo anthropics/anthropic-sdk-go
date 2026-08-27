@@ -73,7 +73,9 @@ type AgentToolContext struct {
 	AllowedRoots []string
 
 	// MaxFileBytes caps the size of a file the read and edit tools will load
-	// into memory (both read the whole file). Zero (the default) uses the
+	// into memory: it applies to a whole-file read and to edit, which both read
+	// the whole file. A read with view_range on a larger file streams it and
+	// applies the cap to the selected lines instead. Zero (the default) uses the
 	// built-in 256 KiB cap; a positive value sets a custom cap; a negative
 	// value disables the size cap entirely. Disabling it reintroduces the OOM
 	// risk on a model-controlled path, so set it negative only when the sandbox

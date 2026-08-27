@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -344,6 +345,7 @@ func TestExecEditRejectsOversizedFile(t *testing.T) {
 	}))
 	require.True(t, isErr)
 	require.Contains(t, out, "exceeds")
+	require.NotContains(t, out, "bash", "the toolset may not include bash, so the error must not point at it")
 }
 
 func TestExecEditRejectsDirectory(t *testing.T) {
@@ -386,6 +388,8 @@ func TestExecReadRejectsOversizedFile(t *testing.T) {
 	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{"file_path": "big.txt"}))
 	require.True(t, isErr)
 	require.Contains(t, out, "exceeds")
+	require.Contains(t, out, "view_range", "the error should steer the model to a ranged read")
+	require.NotContains(t, out, "bash", "the toolset may not include bash, so the error must not point at it")
 }
 
 func TestExecReadRejectsDirectory(t *testing.T) {
@@ -413,6 +417,7 @@ func TestExecEditCustomMaxBytesRejectsBelowCap(t *testing.T) {
 	}))
 	require.True(t, isErr)
 	require.Contains(t, out, "exceeds")
+	require.NotContains(t, out, "bash")
 }
 
 func TestExecEditCustomMaxBytesAllowsAboveDefault(t *testing.T) {
@@ -452,6 +457,108 @@ func TestExecReadCustomMaxBytesRejectsBelowCap(t *testing.T) {
 	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work, MaxFileBytes: 1000}), mustJSON(t, map[string]any{"file_path": "f.txt"}))
 	require.True(t, isErr)
 	require.Contains(t, out, "exceeds")
+	require.Contains(t, out, "view_range")
+	require.NotContains(t, out, "bash")
+}
+
+func TestExecReadViewRangeStreamsFileOverCap(t *testing.T) {
+	work := t.TempDir()
+	// 18 bytes, over the 16-byte cap below.
+	require.NoError(t, os.WriteFile(filepath.Join(work, "a.txt"), []byte("line1\nline2\nline3\n"), 0o644))
+	// A single 100-byte line followed by a short one.
+	require.NoError(t, os.WriteFile(filepath.Join(work, "long.txt"), []byte(strings.Repeat("x", 100)+"\nok\n"), 0o644))
+	env := &AgentToolContext{Workdir: work, MaxFileBytes: 16}
+
+	tests := []struct {
+		description  string
+		input        map[string]any
+		want         string
+		wantErr      bool
+		errContains  string
+		errOmitsBash bool
+	}{
+		{
+			description: "a single line of a file over the cap is streamed and returned",
+			input:       map[string]any{"file_path": "a.txt", "view_range": []int{2, 2}},
+			want:        "line2",
+		},
+		{
+			description: "end_line of 0 streams through to the end of the file and keeps the trailing newline like the whole-file path",
+			input:       map[string]any{"file_path": "a.txt", "view_range": []int{2, 0}},
+			want:        "line2\nline3\n",
+		},
+		{
+			description:  "a view_range whose selected lines exceed the cap is rejected with advice to narrow it, not to use bash",
+			input:        map[string]any{"file_path": "a.txt", "view_range": []int{1, 3}},
+			wantErr:      true,
+			errContains:  "Narrow the view_range",
+			errOmitsBash: true,
+		},
+		{
+			description:  "a single line that alone exceeds the cap is rejected because read cannot return part of a line",
+			input:        map[string]any{"file_path": "long.txt", "view_range": []int{1, 1}},
+			wantErr:      true,
+			errContains:  "cannot return part of a line",
+			errOmitsBash: true,
+		},
+		{
+			description: "a short line after an over-cap line is still reachable",
+			input:       map[string]any{"file_path": "long.txt", "view_range": []int{2, 2}},
+			want:        "ok",
+		},
+		{
+			description: "an inverted view_range on a file over the cap selects nothing rather than erroring",
+			input:       map[string]any{"file_path": "a.txt", "view_range": []int{3, 1}},
+			want:        "",
+		},
+		{
+			description: "start_line past the end of a file over the cap returns empty content",
+			input:       map[string]any{"file_path": "a.txt", "view_range": []int{10, 12}},
+			want:        "",
+		},
+		{
+			description: "view_range with the wrong arity is rejected before the size check",
+			input:       map[string]any{"file_path": "a.txt", "view_range": []int{2}},
+			wantErr:     true,
+			errContains: "view_range must be [start_line, end_line]",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			got, isErr := execRead(context.Background(), mustJSON(t, tc.input), env)
+			require.Equal(t, tc.wantErr, isErr, "is_error mismatch; output=%q", got)
+			if !tc.wantErr {
+				require.Equal(t, tc.want, got)
+				return
+			}
+			require.Contains(t, got, tc.errContains)
+			if tc.errOmitsBash {
+				require.NotContains(t, got, "bash")
+			}
+		})
+	}
+}
+
+func TestExecReadViewRangeStreamsAcrossChunkBoundaries(t *testing.T) {
+	work := t.TempDir()
+	// ~500 KB, over the default cap and several read chunks long, so chunk
+	// boundaries land mid-line.
+	var sb strings.Builder
+	rows := make([]string, 0, 5000)
+	for i := 1; i <= 5000; i++ {
+		row := fmt.Sprintf("row%04d", i) + strings.Repeat(".", 90)
+		rows = append(rows, row)
+		sb.WriteString(row)
+		sb.WriteByte('\n')
+	}
+	require.Greater(t, sb.Len(), defaultMaxFileBytes)
+	require.Greater(t, sb.Len(), 2*readChunkBytes)
+	require.NoError(t, os.WriteFile(filepath.Join(work, "big.txt"), []byte(sb.String()), 0o644))
+
+	got, isErr := execRead(context.Background(), mustJSON(t, map[string]any{"file_path": "big.txt", "view_range": []int{1000, 1002}}), &AgentToolContext{Workdir: work})
+	require.False(t, isErr, "output=%q", got)
+	require.Equal(t, strings.Join(rows[999:1002], "\n"), got)
 }
 
 func TestExecReadUncappedAllowsOversized(t *testing.T) {

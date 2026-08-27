@@ -428,3 +428,49 @@ func unsetEnv(t *testing.T, key string) {
 	t.Setenv(key, "")
 	os.Unsetenv(key)
 }
+
+// TestVertexNonJSONBodyPassesThroughUntouched verifies that a raw, non-JSON
+// request body reaches the wire byte-for-byte rather than being replaced by
+// injected JSON fields.
+func TestVertexNonJSONBodyPassesThroughUntouched(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+
+	payload := []byte{0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n', 0x00, 0x01, 0x02, 0xff}
+
+	var wireBody []byte
+	var wireContentType string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		wireContentType = r.Header.Get("Content-Type")
+		var err error
+		if wireBody, err = io.ReadAll(r.Body); err != nil {
+			t.Errorf("Failed to read wire body: %v", err)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+	}))
+	t.Cleanup(server.Close)
+
+	creds := &google.Credentials{
+		TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: "fake"}),
+	}
+	client := anthropic.NewClient(
+		sdkoption.WithoutEnvironmentDefaults(),
+		WithCredentials(context.Background(), "us-central1", "test-project", creds),
+		sdkoption.WithBaseURL(server.URL),
+	)
+
+	var res map[string]any
+	err := client.Post(context.Background(), "/v1/projects/test-project/locations/us-central1/publishers/anthropic/models/claude-3-sonnet:rawPredict", nil, &res,
+		sdkoption.WithRequestBody("application/octet-stream", bytes.NewReader(payload)),
+	)
+	if err != nil {
+		t.Fatalf("Request failed: %v", err)
+	}
+
+	if !bytes.Equal(wireBody, payload) {
+		t.Errorf("Expected wire body %x, got %x (%q)", payload, wireBody, wireBody)
+	}
+	if wireContentType != "application/octet-stream" {
+		t.Errorf("Expected Content-Type %q on the wire, got %q", "application/octet-stream", wireContentType)
+	}
+}

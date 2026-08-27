@@ -260,12 +260,16 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 			}
 			r.Body.Close()
 
-			if !gjson.GetBytes(body, "anthropic_version").Exists() {
+			// Raw (non-JSON) bodies must reach the wire byte-for-byte; only a
+			// JSON body carries fields to inject or strip.
+			isJSON := gjson.ValidBytes(body)
+
+			if isJSON && !gjson.GetBytes(body, "anthropic_version").Exists() {
 				body, _ = sjson.SetBytes(body, "anthropic_version", DefaultVersion)
 			}
 
 			// pull the betas off of the header (if set) and put them in the body
-			if betaHeader := r.Header.Values("anthropic-beta"); len(betaHeader) > 0 {
+			if betaHeader := r.Header.Values("anthropic-beta"); isJSON && len(betaHeader) > 0 {
 				r.Header.Del("anthropic-beta")
 				body, err = sjson.SetBytes(body, "anthropic_beta", betaHeader)
 				if err != nil {
@@ -273,7 +277,7 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 				}
 			}
 
-			if r.Method == http.MethodPost && DefaultEndpoints[r.URL.Path] {
+			if isJSON && r.Method == http.MethodPost && DefaultEndpoints[r.URL.Path] {
 				model := gjson.GetBytes(body, "model").String()
 				stream := gjson.GetBytes(body, "stream").Bool()
 

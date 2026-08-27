@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.68.0 (2026-08-27)
+
+Full Changelog: [v1.67.0...v1.68.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.67.0...v1.68.0)
+
+### Features
+
+* **api:** beta files/skills namespaces use GA shapes; drop dated beta header pins ([90ee202](https://github.com/anthropics/anthropic-sdk-go/commit/90ee2021beb22c765c81fa958e6e48c4d65de756))
+
+
+### Bug Fixes
+
+* **bedrock:** leave non-JSON request bodies untouched ([#337](https://github.com/anthropics/anthropic-sdk-go/issues/337)) ([3a2e758](https://github.com/anthropics/anthropic-sdk-go/commit/3a2e7588b3a7b4097f40d749f09f0d866f626b96))
+* **client:** report Windows correctly in X-Stainless-OS header ([ceb299f](https://github.com/anthropics/anthropic-sdk-go/commit/ceb299f7374d266f2d4c5d782d7a6dc6c5e0065b))
+* **client:** retry attempts that hit the per-request timeout ([49b9527](https://github.com/anthropics/anthropic-sdk-go/commit/49b952780a9c20e9a70d598beef31e99269b4e46))
+* **sessions:** deliver completed tool calls when the runner terminates ([#322](https://github.com/anthropics/anthropic-sdk-go/issues/322)) ([642d6a0](https://github.com/anthropics/anthropic-sdk-go/commit/642d6a049eca71161125d23f8d6772f76f339f05))
+* **sessions:** read event fields via variant accessors in session helpers ([#336](https://github.com/anthropics/anthropic-sdk-go/issues/336)) ([fb7ec8a](https://github.com/anthropics/anthropic-sdk-go/commit/fb7ec8a1331ddd1712a260a1d68a7b9662e884f8))
+* **tools:** let read return a view_range of a file over the size cap ([#341](https://github.com/anthropics/anthropic-sdk-go/issues/341)) ([33d4f9d](https://github.com/anthropics/anthropic-sdk-go/commit/33d4f9da6ed4249b8b09e608ad5fef4bad69031b))
+* **webhooks:** require headers to be passed to `unwrap()` ([9a1023a](https://github.com/anthropics/anthropic-sdk-go/commit/9a1023a9d92b95ea642d1dd49758f797f3fa1af2))
+
+
+### Documentation
+
+* **api:** clarify pagination on the organization rate-limit list endpoints ([0b6ba47](https://github.com/anthropics/anthropic-sdk-go/commit/0b6ba47c8008566ba0ba8a900cf3ac033ef2fa2b))
+
 ## 1.67.0 (2026-08-26)
 
 Full Changelog: [v1.66.0...v1.67.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.66.0...v1.67.0)

@@ -39,7 +39,7 @@ func TestSetupSkills_AppliesRequestOptions(t *testing.T) {
 		case "/v1/skills/skill_1/versions/1":
 			record()
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(`{"name":"demo"}`))
+			_, _ = w.Write([]byte(`{"id":"1","name":"demo"}`))
 		case "/v1/skills/skill_1/versions/1/content":
 			record()
 			_, _ = w.Write(zipBytes(t, map[string]string{"SKILL.md": "hello"}))
@@ -88,7 +88,7 @@ func TestCleanup_RemovesOnlyDownloadedSkills(t *testing.T) {
 		switch r.URL.Path {
 		case "/v1/skills/skill_1/versions/1":
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(`{"name":"demo"}`))
+			_, _ = w.Write([]byte(`{"id":"1","name":"demo"}`))
 		case "/v1/skills/skill_1/versions/1/content":
 			_, _ = w.Write(zipBytes(t, map[string]string{"SKILL.md": "hello"}))
 		default:
@@ -160,32 +160,47 @@ func TestCleanup_NoDownloadsIsANoOp(t *testing.T) {
 	}
 }
 
-func TestNumericVersionHelpers(t *testing.T) {
-	for _, s := range []string{"0", "1", "1759178010641129"} {
-		if !isNumericString(s) {
-			t.Errorf("isNumericString(%q) = false, want true", s)
+// The configured skill version may be the alias "latest", which only the
+// version retrieve endpoint resolves: SetupSkills retrieves by the configured
+// version and downloads by the concrete id that came back.
+func TestSetupSkills_DownloadsByResolvedVersionID(t *testing.T) {
+	var mu sync.Mutex
+	var paths []string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		paths = append(paths, r.URL.Path)
+		mu.Unlock()
+		switch r.URL.Path {
+		case "/v1/skills/skill_1/versions/latest":
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"id":"skillver_123","name":"demo"}`))
+		case "/v1/skills/skill_1/versions/skillver_123/content":
+			_, _ = w.Write(zipBytes(t, map[string]string{"SKILL.md": "hello"}))
+		default:
+			t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
+			w.WriteHeader(http.StatusNotFound)
 		}
+	}))
+	defer srv.Close()
+	client := anthropic.NewClient(option.WithBaseURL(srv.URL), option.WithAPIKey("k"), option.WithMaxRetries(0))
+
+	var session anthropic.BetaManagedAgentsSession
+	if err := session.UnmarshalJSON([]byte(`{"agent":{"skills":[{"skill_id":"skill_1","version":"latest"}]}}`)); err != nil {
+		t.Fatal(err)
 	}
-	for _, s := range []string{"", "latest", "12a", "1.0", "v1"} {
-		if isNumericString(s) {
-			t.Errorf("isNumericString(%q) = true, want false", s)
-		}
+	workdir := t.TempDir()
+	env := &AgentToolContext{Workdir: workdir}
+	if err := env.SetupSkillsFromSession(context.Background(), client, &session); err != nil {
+		t.Fatalf("SetupSkillsFromSession returned error: %v", err)
 	}
-	cases := []struct {
-		a, b string
-		want bool
-	}{
-		{"2", "10", false},   // 2 < 10 (length wins)
-		{"10", "2", true},    // 10 > 2
-		{"100", "99", true},  // length wins
-		{"300", "200", true}, // same length, lexical
-		{"200", "300", false},
-		{"1759178010641130", "1759178010641129", true},
+	mu.Lock()
+	defer mu.Unlock()
+	want := []string{"/v1/skills/skill_1/versions/latest", "/v1/skills/skill_1/versions/skillver_123/content"}
+	if !slices.Equal(paths, want) {
+		t.Errorf("requests = %q, want %q", paths, want)
 	}
-	for _, c := range cases {
-		if got := numericGreater(c.a, c.b); got != c.want {
-			t.Errorf("numericGreater(%q, %q) = %v, want %v", c.a, c.b, got, c.want)
-		}
+	if _, err := os.Stat(filepath.Join(workdir, "skills", "demo", "SKILL.md")); err != nil {
+		t.Errorf("skill was not extracted: %v", err)
 	}
 }
 
@@ -206,7 +221,7 @@ func TestSetupSkills_FetchesTheSessionWithTheSameOptions(t *testing.T) {
 			_, _ = w.Write([]byte(`{"agent":{"skills":[{"skill_id":"skill_1","version":"1"}]}}`))
 		case "/v1/skills/skill_1/versions/1":
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(`{"name":"demo"}`))
+			_, _ = w.Write([]byte(`{"id":"1","name":"demo"}`))
 		case "/v1/skills/skill_1/versions/1/content":
 			_, _ = w.Write(zipBytes(t, map[string]string{"SKILL.md": "hello"}))
 		default:

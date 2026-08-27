@@ -91,7 +91,7 @@ func TestBetaSkillVersionListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"skill_id",
 		anthropic.BetaSkillVersionListParams{
-			Limit: anthropic.Int(0),
+			Limit: anthropic.Int(1),
 			Page:  anthropic.String("page"),
 			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},

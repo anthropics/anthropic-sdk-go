@@ -30,11 +30,11 @@ func TestBetaFileListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.Files.List(context.TODO(), anthropic.BetaFileListParams{
-		AfterID:  anthropic.String("after_id"),
-		BeforeID: anthropic.String("before_id"),
-		Limit:    anthropic.Int(1),
-		ScopeID:  anthropic.String("scope_id"),
-		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		IDs:     []string{"string"},
+		Limit:   anthropic.Int(1),
+		Page:    anthropic.String("page"),
+		ScopeID: anthropic.String("scope_id"),
+		Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -154,8 +154,9 @@ func TestBetaFileUploadWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.Files.Upload(context.TODO(), anthropic.BetaFileUploadParams{
-		File:  io.Reader(bytes.NewBuffer([]byte("Example data"))),
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		File:             io.Reader(bytes.NewBuffer([]byte("Example data"))),
+		ExpiresInSeconds: anthropic.Int(3600),
+		Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

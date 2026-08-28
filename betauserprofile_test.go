@@ -7,6 +7,7 @@ import (
 	"errors"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
@@ -26,12 +27,12 @@ func TestBetaUserProfileNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.UserProfiles.New(context.TODO(), anthropic.BetaUserProfileNewParams{
-		AccessType:   anthropic.BetaUserProfileNewParamsAccessTypeApplication,
-		ExternalID:   anthropic.String("user_12345"),
-		Metadata:     map[string]string{},
-		Name:         anthropic.String("x"),
-		Relationship: anthropic.BetaUserProfileNewParamsRelationshipExternal,
-		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		AccessType:              anthropic.BetaUserProfileNewParamsAccessTypeApplication,
+		ExternalID:              anthropic.String("user_12345"),
+		ExternalUserOnboardedAt: anthropic.Time(time.Now()),
+		Metadata:                map[string]string{},
+		Name:                    anthropic.String("x"),
+		Betas:                   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -86,14 +87,14 @@ func TestBetaUserProfileUpdateWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"uprof_011CZkZCu8hGbp5mYRQgUmz9",
 		anthropic.BetaUserProfileUpdateParams{
-			AccessType: anthropic.BetaUserProfileUpdateParamsAccessTypeApplication,
-			ExternalID: anthropic.String("user_12345"),
+			AccessType:              anthropic.BetaUserProfileUpdateParamsAccessTypeApplication,
+			ExternalID:              anthropic.String("user_12345"),
+			ExternalUserOnboardedAt: anthropic.Time(time.Now()),
 			Metadata: map[string]string{
 				"foo": "string",
 			},
-			Name:         anthropic.String("x"),
-			Relationship: anthropic.BetaUserProfileUpdateParamsRelationshipExternal,
-			Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Name:  anthropic.String("x"),
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},
 	)
 	if err != nil {

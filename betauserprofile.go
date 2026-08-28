@@ -152,30 +152,26 @@ type BetaUserProfile struct {
 	AccessType BetaUserProfileAccessType `json:"access_type"`
 	// Platform's own identifier for this user. Not enforced unique.
 	ExternalID string `json:"external_id" api:"nullable"`
+	// A timestamp in RFC 3339 format
+	ExternalUserOnboardedAt time.Time `json:"external_user_onboarded_at" api:"nullable" format:"date-time"`
 	// Real-world name of the entity this profile represents (company or individual).
-	// For a resold-to company (`access_type` `passthrough`, or `relationship` `resold`
-	// under the `user-profiles-2026-03-24` header) this is that company's name.
+	// For a company the platform resells Claude access to (`access_type`
+	// `passthrough`) this is that company's name.
 	Name string `json:"name" api:"nullable"`
-	// How the entity behind a user profile relates to the platform that owns the API
-	// key. `external`: an individual end-user of the platform. `resold`: a company the
-	// platform resells Claude access to. `internal`: the platform's own usage.
-	//
-	// Any of "external", "resold", "internal".
-	Relationship BetaUserProfileRelationship `json:"relationship"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID           respjson.Field
-		CreatedAt    respjson.Field
-		Metadata     respjson.Field
-		TrustGrants  respjson.Field
-		Type         respjson.Field
-		UpdatedAt    respjson.Field
-		AccessType   respjson.Field
-		ExternalID   respjson.Field
-		Name         respjson.Field
-		Relationship respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
+		ID                      respjson.Field
+		CreatedAt               respjson.Field
+		Metadata                respjson.Field
+		TrustGrants             respjson.Field
+		Type                    respjson.Field
+		UpdatedAt               respjson.Field
+		AccessType              respjson.Field
+		ExternalID              respjson.Field
+		ExternalUserOnboardedAt respjson.Field
+		Name                    respjson.Field
+		ExtraFields             map[string]respjson.Field
+		raw                     string
 	} `json:"-"`
 }
 
@@ -202,17 +198,6 @@ type BetaUserProfileAccessType string
 const (
 	BetaUserProfileAccessTypeApplication BetaUserProfileAccessType = "application"
 	BetaUserProfileAccessTypePassthrough BetaUserProfileAccessType = "passthrough"
-)
-
-// How the entity behind a user profile relates to the platform that owns the API
-// key. `external`: an individual end-user of the platform. `resold`: a company the
-// platform resells Claude access to. `internal`: the platform's own usage.
-type BetaUserProfileRelationship string
-
-const (
-	BetaUserProfileRelationshipExternal BetaUserProfileRelationship = "external"
-	BetaUserProfileRelationshipResold   BetaUserProfileRelationship = "resold"
-	BetaUserProfileRelationshipInternal BetaUserProfileRelationship = "internal"
 )
 
 type BetaUserProfileEnrollmentURL struct {
@@ -280,10 +265,12 @@ type BetaUserProfileNewParams struct {
 	// characters.
 	ExternalID param.Opt[string] `json:"external_id,omitzero"`
 	// Optional for all profiles. Real-world name of the entity this profile represents
-	// (company or individual); for a resold-to company (`relationship` `resold` /
-	// `access_type` `passthrough`), that company's name where known. Maximum 255
+	// (company or individual); for a company the platform resells Claude access to
+	// (`access_type` `passthrough`), that company's name where known. Maximum 255
 	// characters.
 	Name param.Opt[string] `json:"name,omitzero"`
+	// A timestamp in RFC 3339 format
+	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
 	// How the platform uses the API on behalf of the entity this profile represents.
 	// `application`: the platform sells a product that uses the API behind the scenes,
 	// and the profile represents an individual end-user of that product.
@@ -296,12 +283,6 @@ type BetaUserProfileNewParams struct {
 	// keys up to 64 characters and values up to 512 characters. Values must be
 	// non-empty strings.
 	Metadata map[string]string `json:"metadata,omitzero"`
-	// How the entity behind a user profile relates to the platform that owns the API
-	// key. `external`: an individual end-user of the platform. `resold`: a company the
-	// platform resells Claude access to. `internal`: the platform's own usage.
-	//
-	// Any of "external", "resold", "internal".
-	Relationship BetaUserProfileNewParamsRelationship `json:"relationship,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -327,17 +308,6 @@ const (
 	BetaUserProfileNewParamsAccessTypePassthrough BetaUserProfileNewParamsAccessType = "passthrough"
 )
 
-// How the entity behind a user profile relates to the platform that owns the API
-// key. `external`: an individual end-user of the platform. `resold`: a company the
-// platform resells Claude access to. `internal`: the platform's own usage.
-type BetaUserProfileNewParamsRelationship string
-
-const (
-	BetaUserProfileNewParamsRelationshipExternal BetaUserProfileNewParamsRelationship = "external"
-	BetaUserProfileNewParamsRelationshipResold   BetaUserProfileNewParamsRelationship = "resold"
-	BetaUserProfileNewParamsRelationshipInternal BetaUserProfileNewParamsRelationship = "internal"
-)
-
 type BetaUserProfileGetParams struct {
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -351,6 +321,8 @@ type BetaUserProfileUpdateParams struct {
 	// If present, replaces the stored name. Omit to leave unchanged. Maximum 255
 	// characters.
 	Name param.Opt[string] `json:"name,omitzero"`
+	// A timestamp in RFC 3339 format
+	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
 	// How the platform uses the API on behalf of the entity this profile represents.
 	// `application`: the platform sells a product that uses the API behind the scenes,
 	// and the profile represents an individual end-user of that product.
@@ -359,12 +331,6 @@ type BetaUserProfileUpdateParams struct {
 	//
 	// Any of "application", "passthrough".
 	AccessType BetaUserProfileUpdateParamsAccessType `json:"access_type,omitzero"`
-	// How the entity behind a user profile relates to the platform that owns the API
-	// key. `external`: an individual end-user of the platform. `resold`: a company the
-	// platform resells Claude access to. `internal`: the platform's own usage.
-	//
-	// Any of "external", "resold", "internal".
-	Relationship BetaUserProfileUpdateParamsRelationship `json:"relationship,omitzero"`
 	// Key-value pairs to merge into the stored metadata. Keys provided overwrite
 	// existing values. To remove a key, set its value to an empty string. Keys not
 	// provided are left unchanged. Maximum 16 keys, with keys up to 64 characters and
@@ -393,17 +359,6 @@ type BetaUserProfileUpdateParamsAccessType string
 const (
 	BetaUserProfileUpdateParamsAccessTypeApplication BetaUserProfileUpdateParamsAccessType = "application"
 	BetaUserProfileUpdateParamsAccessTypePassthrough BetaUserProfileUpdateParamsAccessType = "passthrough"
-)
-
-// How the entity behind a user profile relates to the platform that owns the API
-// key. `external`: an individual end-user of the platform. `resold`: a company the
-// platform resells Claude access to. `internal`: the platform's own usage.
-type BetaUserProfileUpdateParamsRelationship string
-
-const (
-	BetaUserProfileUpdateParamsRelationshipExternal BetaUserProfileUpdateParamsRelationship = "external"
-	BetaUserProfileUpdateParamsRelationshipResold   BetaUserProfileUpdateParamsRelationship = "resold"
-	BetaUserProfileUpdateParamsRelationshipInternal BetaUserProfileUpdateParamsRelationship = "internal"
 )
 
 type BetaUserProfileListParams struct {

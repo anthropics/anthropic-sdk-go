@@ -709,7 +709,7 @@ type BetaSessionResourceListParams struct {
 	// Maximum number of resources to return per page (max 1000). If omitted, returns
 	// all resources.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Opaque cursor from a previous response's next_page field.
+	// Opaque cursor from a previous response's `next_page` field.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

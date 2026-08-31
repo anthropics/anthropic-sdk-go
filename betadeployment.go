@@ -2211,8 +2211,8 @@ type BetaDeploymentListParams struct {
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Opaque pagination cursor.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
-	// Filter by status: active or paused. Omit for both. To include archived
-	// deployments, use include_archived instead; the two cannot be combined.
+	// Filter by status: `active` or `paused`. Omit for both. To include archived
+	// deployments, use `include_archived` instead; the two cannot be combined.
 	//
 	// Any of "active", "paused".
 	Status BetaManagedAgentsDeploymentStatus `query:"status,omitzero" json:"-"`

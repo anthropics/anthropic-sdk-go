@@ -1723,3 +1723,21 @@ Response Types:
 Methods:
 
 - <code title="get /v1/organizations/rate_limits?beta=true">client.Beta.Organization.RateLimits.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationRateLimitService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationRateLimitListParams">BetaOrganizationRateLimitListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationRateLimit">BetaOrganizationRateLimit</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+### ComplianceSettings
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaComplianceSettingsStateDisabledParam">BetaComplianceSettingsStateDisabledParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaComplianceSettingsStateEnabledParam">BetaComplianceSettingsStateEnabledParam</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaComplianceSettings">BetaComplianceSettings</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaComplianceSettingsStateDisabled">BetaComplianceSettingsStateDisabled</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaComplianceSettingsStateEnabled">BetaComplianceSettingsStateEnabled</a>
+
+Methods:
+
+- <code title="get /v1/organizations/compliance_settings?beta=true">client.Beta.Organization.ComplianceSettings.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationComplianceSettingService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaComplianceSettings">BetaComplianceSettings</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/organizations/compliance_settings?beta=true">client.Beta.Organization.ComplianceSettings.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationComplianceSettingService.Update">Update</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationComplianceSettingUpdateParams">BetaOrganizationComplianceSettingUpdateParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaComplianceSettings">BetaComplianceSettings</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>

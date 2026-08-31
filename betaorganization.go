@@ -21,15 +21,16 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewBetaOrganizationService] method instead.
 type BetaOrganizationService struct {
-	Options         []option.RequestOption
-	APIKeys         BetaOrganizationAPIKeyService
-	ExternalKeys    BetaOrganizationExternalKeyService
-	Federation      BetaOrganizationFederationService
-	Invites         BetaOrganizationInviteService
-	ServiceAccounts BetaOrganizationServiceAccountService
-	Users           BetaOrganizationUserService
-	Workspaces      BetaOrganizationWorkspaceService
-	RateLimits      BetaOrganizationRateLimitService
+	Options            []option.RequestOption
+	APIKeys            BetaOrganizationAPIKeyService
+	ExternalKeys       BetaOrganizationExternalKeyService
+	Federation         BetaOrganizationFederationService
+	Invites            BetaOrganizationInviteService
+	ServiceAccounts    BetaOrganizationServiceAccountService
+	Users              BetaOrganizationUserService
+	Workspaces         BetaOrganizationWorkspaceService
+	RateLimits         BetaOrganizationRateLimitService
+	ComplianceSettings BetaOrganizationComplianceSettingService
 }
 
 // NewBetaOrganizationService generates a new service that applies the given
@@ -46,6 +47,7 @@ func NewBetaOrganizationService(opts ...option.RequestOption) (r BetaOrganizatio
 	r.Users = NewBetaOrganizationUserService(opts...)
 	r.Workspaces = NewBetaOrganizationWorkspaceService(opts...)
 	r.RateLimits = NewBetaOrganizationRateLimitService(opts...)
+	r.ComplianceSettings = NewBetaOrganizationComplianceSettingService(opts...)
 	return
 }
 

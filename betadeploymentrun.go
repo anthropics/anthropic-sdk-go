@@ -123,8 +123,8 @@ type BetaManagedAgentsDeploymentRun struct {
 	// Why the run failed to create a session. The type identifies the failure; message
 	// is human-readable detail.
 	Error BetaManagedAgentsDeploymentRunErrorUnion `json:"error" api:"required"`
-	// Populated on success. Null on creation failure. Exactly one of session_id or
-	// error is non-null.
+	// Populated on success. Null on creation failure. Exactly one of `session_id` or
+	// `error` is non-null.
 	SessionID string `json:"session_id" api:"required"`
 	// Describes what triggered a deployment run, with trigger-specific metadata.
 	TriggerContext BetaManagedAgentsTriggerContextUnion `json:"trigger_context" api:"required"`
@@ -920,16 +920,16 @@ type BetaDeploymentRunListParams struct {
 	// Return runs created at or before this time (inclusive).
 	CreatedAtLte param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
 	// Filter to a specific deployment. Omit to list across all deployments in the
-	// workspace. Filtering by a non-existent deployment_id returns 200 with empty
+	// workspace. Filtering by a non-existent `deployment_id` returns 200 with empty
 	// data.
 	DeploymentID param.Opt[string] `query:"deployment_id,omitzero" json:"-"`
-	// Filter: true for runs with non-null error, false for runs with non-null
-	// session_id. Omit for all.
+	// Filter: true for runs with non-null `error`, false for runs with non-null
+	// `session_id`. Omit for all.
 	HasError param.Opt[bool] `query:"has_error,omitzero" json:"-"`
 	// Maximum results per page. Default 20, maximum 1000.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Opaque pagination cursor. Pass next_page from the previous response. Invalid or
-	// expired cursors return 400.
+	// Opaque pagination cursor. Pass `next_page` from the previous response. Invalid
+	// or expired cursors return 400.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
 	// Filter runs by what triggered them. Omit to return all runs.
 	//

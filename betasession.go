@@ -1150,15 +1150,15 @@ func (u BetaManagedAgentsMultiagentRosterEntryParamsUnion) GetType() *string {
 	return nil
 }
 
-// Evaluation state for a single outcome defined via a define_outcome event.
+// Evaluation state for a single outcome defined via a `define_outcome` event.
 type BetaManagedAgentsOutcomeEvaluationResource struct {
 	// A timestamp in RFC 3339 format
 	CompletedAt time.Time `json:"completed_at" api:"required" format:"date-time"`
 	// What the agent should produce.
 	Description string `json:"description" api:"required"`
-	// Grader's verdict text from the most recent evaluation. For satisfied, explains
-	// why criteria are met; for needs_revision (intermediate), what's missing; for
-	// failed, why unrecoverable.
+	// Grader's verdict text from the most recent evaluation. For `satisfied`, explains
+	// why criteria are met; for `needs_revision` (intermediate), what's missing; for
+	// `failed`, why unrecoverable.
 	Explanation string `json:"explanation" api:"required"`
 	// 0-indexed revision cycle the outcome is currently on.
 	Iteration int64 `json:"iteration" api:"required"`
@@ -1232,7 +1232,7 @@ type BetaManagedAgentsSession struct {
 	CreatedAt     time.Time         `json:"created_at" api:"required" format:"date-time"`
 	EnvironmentID string            `json:"environment_id" api:"required"`
 	Metadata      map[string]string `json:"metadata" api:"required"`
-	// Per-outcome evaluation state. One entry per define_outcome event sent to the
+	// Per-outcome evaluation state. One entry per `define_outcome` event sent to the
 	// session.
 	OutcomeEvaluations []BetaManagedAgentsOutcomeEvaluationResource `json:"outcome_evaluations" api:"required"`
 	Resources          []BetaManagedAgentsSessionResourceUnion      `json:"resources" api:"required"`
@@ -1938,7 +1938,7 @@ const (
 
 // Timing statistics for a session.
 type BetaManagedAgentsSessionStats struct {
-	// Cumulative time in seconds the session spent in running status. Excludes idle
+	// Cumulative time in seconds the session spent in `running` status. Excludes idle
 	// time.
 	ActiveSeconds float64 `json:"active_seconds"`
 	// Elapsed time since session creation in seconds. For terminated sessions, frozen
@@ -2811,7 +2811,7 @@ func (r *BetaSessionUpdateParams) UnmarshalJSON(data []byte) error {
 type BetaSessionListParams struct {
 	// Filter sessions created with this agent ID.
 	AgentID param.Opt[string] `query:"agent_id,omitzero" json:"-"`
-	// Filter by agent version. Only applies when agent_id is also set.
+	// Filter by agent version. Only applies when `agent_id` is also set.
 	AgentVersion param.Opt[int64] `query:"agent_version,omitzero" json:"-"`
 	// Return sessions created after this time (exclusive).
 	CreatedAtGt param.Opt[time.Time] `query:"created_at[gt],omitzero" format:"date-time" json:"-"`
@@ -2827,12 +2827,12 @@ type BetaSessionListParams struct {
 	IncludeArchived param.Opt[bool] `query:"include_archived,omitzero" json:"-"`
 	// Maximum number of results to return.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Filter sessions whose resources contain a memory_store with this memory store
+	// Filter sessions whose resources contain a `memory_store` with this memory store
 	// ID.
 	MemoryStoreID param.Opt[string] `query:"memory_store_id,omitzero" json:"-"`
 	// Opaque pagination cursor from a previous response.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
-	// Sort direction for results, ordered by created_at. Defaults to desc (newest
+	// Sort direction for results, ordered by `created_at`. Defaults to `desc` (newest
 	// first).
 	//
 	// Any of "asc", "desc".
@@ -2855,7 +2855,7 @@ func (r BetaSessionListParams) URLQuery() (v url.Values, err error) {
 	})
 }
 
-// Sort direction for results, ordered by created_at. Defaults to desc (newest
+// Sort direction for results, ordered by `created_at`. Defaults to `desc` (newest
 // first).
 type BetaSessionListParamsOrder string
 

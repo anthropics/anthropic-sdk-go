@@ -1065,7 +1065,7 @@ type BetaSessionThreadGetParams struct {
 type BetaSessionThreadListParams struct {
 	// Maximum results per page. Defaults to 1000.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Opaque pagination cursor from a previous response's next_page. Forward-only.
+	// Opaque pagination cursor from a previous response's `next_page`. Forward-only.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

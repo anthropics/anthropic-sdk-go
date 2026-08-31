@@ -370,6 +370,10 @@ type BetaUserProfileListParams struct {
 	//
 	// Any of "asc", "desc".
 	Order BetaUserProfileListParamsOrder `query:"order,omitzero" json:"-"`
+	// Query parameter for order_by
+	//
+	// Any of "created_at", "name".
+	OrderBy BetaUserProfileListParamsOrderBy `query:"order_by,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -390,6 +394,14 @@ type BetaUserProfileListParamsOrder string
 const (
 	BetaUserProfileListParamsOrderAsc  BetaUserProfileListParamsOrder = "asc"
 	BetaUserProfileListParamsOrderDesc BetaUserProfileListParamsOrder = "desc"
+)
+
+// Query parameter for order_by
+type BetaUserProfileListParamsOrderBy string
+
+const (
+	BetaUserProfileListParamsOrderByCreatedAt BetaUserProfileListParamsOrderBy = "created_at"
+	BetaUserProfileListParamsOrderByName      BetaUserProfileListParamsOrderBy = "name"
 )
 
 type BetaUserProfileNewEnrollmentURLParams struct {

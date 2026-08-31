@@ -1745,9 +1745,6 @@ func (r *BetaBrowserSwitchTabConfigParam) UnmarshalJSON(data []byte) error {
 //
 // The property Type is required.
 type BetaBrowserToolset20260801Param struct {
-	// Any of "direct", "code_execution_20250825", "code_execution_20260120",
-	// "code_execution_20260521".
-	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Per-member configuration for `browser_toolset_20260801`: one optional field per
@@ -3662,9 +3659,6 @@ func (r *BetaComputerScrollConfigParam) UnmarshalJSON(data []byte) error {
 //
 // The property Type is required.
 type BetaComputerToolset20260801Param struct {
-	// Any of "direct", "code_execution_20250825", "code_execution_20260120",
-	// "code_execution_20260521".
-	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Per-member configuration for `computer_toolset_20260801`: one optional field per
@@ -12947,8 +12941,6 @@ func (u BetaToolUnionParam) GetAllowedCallers() []string {
 		return vt.AllowedCallers
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
 		return vt.AllowedCallers
-	} else if vt := u.OfBrowserToolset20260801; vt != nil {
-		return vt.AllowedCallers
 	} else if vt := u.OfComputerUseTool20241022; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
@@ -12958,8 +12950,6 @@ func (u BetaToolUnionParam) GetAllowedCallers() []string {
 	} else if vt := u.OfTextEditor20241022; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfComputerUseTool20251124; vt != nil {
-		return vt.AllowedCallers
-	} else if vt := u.OfComputerToolset20260801; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return vt.AllowedCallers
@@ -16770,8 +16760,6 @@ func (u BetaMessageCountTokensParamsToolUnion) GetAllowedCallers() []string {
 		return vt.AllowedCallers
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
 		return vt.AllowedCallers
-	} else if vt := u.OfBrowserToolset20260801; vt != nil {
-		return vt.AllowedCallers
 	} else if vt := u.OfComputerUseTool20241022; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
@@ -16781,8 +16769,6 @@ func (u BetaMessageCountTokensParamsToolUnion) GetAllowedCallers() []string {
 	} else if vt := u.OfTextEditor20241022; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfComputerUseTool20251124; vt != nil {
-		return vt.AllowedCallers
-	} else if vt := u.OfComputerToolset20260801; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return vt.AllowedCallers

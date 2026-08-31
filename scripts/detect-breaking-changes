@@ -57,6 +57,7 @@ TEST_PATHS=(
 	betaorganizationworkspacemember_test.go
 	betaorganizationworkspaceserviceaccount_test.go
 	betaorganizationratelimit_test.go
+	betaorganizationcompliancesetting_test.go
 	usage_test.go
 	paginationauto_test.go
 	paginationmanual_test.go

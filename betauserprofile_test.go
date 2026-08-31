@@ -119,10 +119,11 @@ func TestBetaUserProfileListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.UserProfiles.List(context.TODO(), anthropic.BetaUserProfileListParams{
-		Limit: anthropic.Int(0),
-		Order: anthropic.BetaUserProfileListParamsOrderAsc,
-		Page:  anthropic.String("page"),
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Limit:   anthropic.Int(0),
+		Order:   anthropic.BetaUserProfileListParamsOrderAsc,
+		OrderBy: anthropic.BetaUserProfileListParamsOrderByCreatedAt,
+		Page:    anthropic.String("page"),
+		Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

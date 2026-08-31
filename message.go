@@ -1323,9 +1323,6 @@ func (r *BrowserSwitchTabConfigParam) UnmarshalJSON(data []byte) error {
 //
 // The property Type is required.
 type BrowserToolset20260801Param struct {
-	// Any of "direct", "code_execution_20250825", "code_execution_20260120",
-	// "code_execution_20260521".
-	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Per-member configuration for `browser_toolset_20260801`: one optional field per
@@ -2776,9 +2773,6 @@ func (r *ComputerScrollConfigParam) UnmarshalJSON(data []byte) error {
 //
 // The property Type is required.
 type ComputerToolset20260801Param struct {
-	// Any of "direct", "code_execution_20250825", "code_execution_20260120",
-	// "code_execution_20260521".
-	AllowedCallers []string `json:"allowed_callers,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Per-member configuration for `computer_toolset_20260801`: one optional field per
@@ -5642,11 +5636,7 @@ func (u MessageCountTokensToolUnionParam) GetAllowedCallers() []string {
 		return vt.AllowedCallers
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
 		return vt.AllowedCallers
-	} else if vt := u.OfBrowserToolset20260801; vt != nil {
-		return vt.AllowedCallers
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
-		return vt.AllowedCallers
-	} else if vt := u.OfComputerToolset20260801; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return vt.AllowedCallers
@@ -10815,11 +10805,7 @@ func (u ToolUnionParam) GetAllowedCallers() []string {
 		return vt.AllowedCallers
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
 		return vt.AllowedCallers
-	} else if vt := u.OfBrowserToolset20260801; vt != nil {
-		return vt.AllowedCallers
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
-		return vt.AllowedCallers
-	} else if vt := u.OfComputerToolset20260801; vt != nil {
 		return vt.AllowedCallers
 	} else if vt := u.OfTextEditor20250124; vt != nil {
 		return vt.AllowedCallers

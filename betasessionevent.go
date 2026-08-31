@@ -7573,10 +7573,10 @@ type BetaSessionEventListParams struct {
 	CreatedAtLte param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
 	// Query parameter for limit
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Opaque pagination cursor from a previous response's next_page.
+	// Opaque pagination cursor from a previous response's `next_page`.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
 	// Sort direction for results, ordered by the event's `processed_at`. Defaults to
-	// asc (chronological).
+	// `asc` (chronological).
 	//
 	// Any of "asc", "desc".
 	Order BetaSessionEventListParamsOrder `query:"order,omitzero" json:"-"`
@@ -7598,7 +7598,7 @@ func (r BetaSessionEventListParams) URLQuery() (v url.Values, err error) {
 }
 
 // Sort direction for results, ordered by the event's `processed_at`. Defaults to
-// asc (chronological).
+// `asc` (chronological).
 type BetaSessionEventListParamsOrder string
 
 const (

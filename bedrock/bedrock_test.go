@@ -24,6 +24,12 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
 func TestBedrockURLEncoding(t *testing.T) {
 	testCases := []struct {
 		name            string
@@ -261,6 +267,39 @@ func TestBedrockBearerToken(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("Middleware failed: %v", err)
+	}
+}
+
+func TestBedrockEnvironmentBearerTokenOverridesConfigProvider(t *testing.T) {
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "environment-token")
+
+	var authorization string
+	client := anthropic.NewClient(
+		option.WithHTTPClient(&http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			authorization = req.Header.Get("Authorization")
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     http.Header{"Content-Type": []string{"application/json"}},
+				Body:       io.NopCloser(strings.NewReader(`{}`)),
+				Request:    req,
+			}, nil
+		})}),
+		WithConfig(aws.Config{
+			Region:                  "us-east-1",
+			BearerAuthTokenProvider: NewStaticBearerTokenProvider("config-token"),
+		}),
+	)
+
+	_, _ = client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:     "claude-3-sonnet",
+		MaxTokens: 1,
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+		},
+	})
+
+	if authorization != "Bearer environment-token" {
+		t.Fatalf("Expected environment token to take precedence, got %q", authorization)
 	}
 }
 

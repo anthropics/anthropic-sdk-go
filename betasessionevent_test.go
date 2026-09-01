@@ -4,6 +4,7 @@ package anthropic_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"testing"
@@ -13,6 +14,25 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
+
+func TestBetaManagedAgentsEventParamsOfUserMessageSetsType(t *testing.T) {
+	event := anthropic.BetaManagedAgentsEventParamsOfUserMessage(nil)
+
+	raw, err := json.Marshal(event)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var payload struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		t.Fatal(err)
+	}
+	if payload.Type != "user.message" {
+		t.Fatalf("Expected user.message event type, got %q in %s", payload.Type, raw)
+	}
+}
 
 func TestBetaSessionEventListWithOptionalParams(t *testing.T) {
 	t.Skip("buildURL drops path-level query params (SDK-4349)")

@@ -46,7 +46,11 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 					}},
 				},
 			}},
-			Role: anthropic.BetaMessageParamRoleUser,
+			Role:    anthropic.BetaMessageParamRoleUser,
+			ClearAt: anthropic.BetaMessageParamClearAtNextUserMessage,
+			OutputConfig: anthropic.BetaSystemMessageOutputConfigParam{
+				Effort: anthropic.BetaSystemMessageOutputConfigEffortLow,
+			},
 		}},
 		Model: anthropic.ModelClaudeOpus5,
 		CacheControl: anthropic.BetaCacheControlEphemeralParam{
@@ -143,6 +147,9 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		Temperature: anthropic.Float(1),
 		Thinking: anthropic.BetaThinkingConfigParamUnion{
 			OfAdaptive: &anthropic.BetaThinkingConfigAdaptiveParam{
+				BlockBinding: anthropic.BetaThinkingBlockBindingParam{
+					PrefixMismatchBehavior: anthropic.BetaThinkingPrefixMismatchBehaviorError,
+				},
 				Display: anthropic.BetaThinkingConfigAdaptiveDisplaySummarized,
 			},
 		},
@@ -220,7 +227,11 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 					}},
 				},
 			}},
-			Role: anthropic.BetaMessageParamRoleUser,
+			Role:    anthropic.BetaMessageParamRoleUser,
+			ClearAt: anthropic.BetaMessageParamClearAtNextUserMessage,
+			OutputConfig: anthropic.BetaSystemMessageOutputConfigParam{
+				Effort: anthropic.BetaSystemMessageOutputConfigEffortLow,
+			},
 		}},
 		Model: anthropic.ModelClaudeOpus5,
 		CacheControl: anthropic.BetaCacheControlEphemeralParam{
@@ -293,6 +304,9 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 		},
 		Thinking: anthropic.BetaThinkingConfigParamUnion{
 			OfAdaptive: &anthropic.BetaThinkingConfigAdaptiveParam{
+				BlockBinding: anthropic.BetaThinkingBlockBindingParam{
+					PrefixMismatchBehavior: anthropic.BetaThinkingPrefixMismatchBehaviorError,
+				},
 				Display: anthropic.BetaThinkingConfigAdaptiveDisplaySummarized,
 			},
 		},

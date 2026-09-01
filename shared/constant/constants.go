@@ -227,6 +227,7 @@ type TextEditorCodeExecutionViewResult string       // Always "text_editor_code_
 type TextPlain string                               // Always "text/plain"
 type Thinking string                                // Always "thinking"
 type ThinkingDelta string                           // Always "thinking_delta"
+type ThinkingDropped string                         // Always "thinking_dropped"
 type ThinkingTurns string                           // Always "thinking_turns"
 type TimeoutError string                            // Always "timeout_error"
 type Tokens string                                  // Always "tokens"
@@ -543,6 +544,7 @@ func (c TextEditorCodeExecutionViewResult) Default() TextEditorCodeExecutionView
 func (c TextPlain) Default() TextPlain                       { return "text/plain" }
 func (c Thinking) Default() Thinking                         { return "thinking" }
 func (c ThinkingDelta) Default() ThinkingDelta               { return "thinking_delta" }
+func (c ThinkingDropped) Default() ThinkingDropped           { return "thinking_dropped" }
 func (c ThinkingTurns) Default() ThinkingTurns               { return "thinking_turns" }
 func (c TimeoutError) Default() TimeoutError                 { return "timeout_error" }
 func (c Tokens) Default() Tokens                             { return "tokens" }
@@ -829,6 +831,7 @@ func (c TextEditorCodeExecutionViewResult) MarshalJSON() ([]byte, error) { retur
 func (c TextPlain) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Thinking) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c ThinkingDelta) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c ThinkingDropped) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c ThinkingTurns) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c TimeoutError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Tokens) MarshalJSON() ([]byte, error)                            { return marshalString(c) }

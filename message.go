@@ -6829,12 +6829,14 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model = string
 
 const (
-	ModelClaudeSonnet5 Model = "claude-sonnet-5"
-	ModelClaudeFable5  Model = "claude-fable-5"
-	ModelClaudeMythos5 Model = "claude-mythos-5"
-	ModelClaudeOpus5   Model = "claude-opus-5"
-	ModelClaudeOpus4_8 Model = "claude-opus-4-8"
-	ModelClaudeOpus4_7 Model = "claude-opus-4-7"
+	ModelClaudeFable5_1  Model = "claude-fable-5-1"
+	ModelClaudeMythos5_1 Model = "claude-mythos-5-1"
+	ModelClaudeSonnet5   Model = "claude-sonnet-5"
+	ModelClaudeFable5    Model = "claude-fable-5"
+	ModelClaudeMythos5   Model = "claude-mythos-5"
+	ModelClaudeOpus5     Model = "claude-opus-5"
+	ModelClaudeOpus4_8   Model = "claude-opus-4-8"
+	ModelClaudeOpus4_7   Model = "claude-opus-4-7"
 	// Deprecated: Will reach end-of-life on June 30, 2026. Please migrate to
 	// claude-mythos-5. Visit
 	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more

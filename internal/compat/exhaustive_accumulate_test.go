@@ -91,7 +91,7 @@ func TestAccumulateDeltaFieldsExhaustive(t *testing.T) {
 		{"delta", anthropic.MessageDeltaEventDelta{}, delta},
 		{"beta delta", anthropic.BetaRawMessageDeltaEventDelta{}, delta},
 		{"delta event", anthropic.MessageDeltaEvent{}, event},
-		{"beta delta event", anthropic.BetaRawMessageDeltaEvent{}, append([]string{"ContextManagement"}, event...)},
+		{"beta delta event", anthropic.BetaRawMessageDeltaEvent{}, append([]string{"ContextManagement", "InputTransformations"}, event...)},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			generated := fields(tt.value)

@@ -65,6 +65,13 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 			acc.ContextManagement = event.ContextManagement
 			acc.JSON.raw, _ = sjson.SetRaw(acc.JSON.raw, "context_management", event.ContextManagement.RawJSON())
 		}
+		// Sent only when a mid-stream model fallback served the response; it then
+		// replaces the list from message_start, even when empty.
+		if event.JSON.InputTransformations.Valid() {
+			acc.InputTransformations = event.InputTransformations
+			acc.JSON.InputTransformations = event.JSON.InputTransformations
+			acc.JSON.raw, _ = sjson.SetRaw(acc.JSON.raw, "input_transformations", event.JSON.InputTransformations.Raw())
+		}
 		acc.JSON.raw = mergeRaw(acc.JSON.raw, "", event.Delta.JSON.raw)
 		acc.JSON.raw = mergeRaw(acc.JSON.raw, "usage", event.Usage.RawJSON())
 	case "content_block_start":

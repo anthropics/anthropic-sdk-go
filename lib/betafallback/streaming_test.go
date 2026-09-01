@@ -174,6 +174,9 @@ func TestStreamingRefusalSplicesIntoOneMessage(t *testing.T) {
 	assert.Equal(t, "primary-model", iterations[0].Model)
 	assert.Equal(t, "fallback_message", iterations[1].Type)
 	assert.Equal(t, "fallback-model", iterations[1].Model)
+	var terminal map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal([]byte(deltas[0]), &terminal))
+	assert.NotContains(t, terminal, "input_transformations", "a hop start without a list forwards no key")
 
 	// The hop request: model swapped, token redeemed, the advertised claim
 	// echoed verbatim as one trailing assistant turn.
@@ -397,6 +400,99 @@ func TestStreamingMidBlockRefusalClosesTheOpenBlock(t *testing.T) {
 	require.Len(t, transport.bodies, 2)
 	messages := transport.bodies[1]["messages"].([]any)
 	require.Len(t, messages, 2)
+}
+
+func TestStreamingSplicedTerminalForwardsTheHopInputTransformations(t *testing.T) {
+	// A mid-stream fallback suppresses the serving hop's message_start, so its
+	// input_transformations ride on the re-emitted terminal message_delta —
+	// unless the delta already carries them.
+	const transforms = `[{"type":"thinking_dropped","path":"messages.1.content.0","reason":"model_binding_mismatch"}]`
+	withStartTransforms := strings.Replace(servedStream("fallback-model"),
+		`"stop_details":null,"usage"`, `"stop_details":null,"input_transformations":`+transforms+`,"usage"`, 1)
+	deltaTransforms := func(t *testing.T, rawDelta string) (json.RawMessage, bool) {
+		var delta map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal([]byte(rawDelta), &delta))
+		raw, ok := delta["input_transformations"]
+		return raw, ok
+	}
+
+	t.Run("forwarded from the suppressed start", func(t *testing.T) {
+		transport := &sseTransport{responses: []string{refusalStream("primary-model", tokenWithClaim), withStartTransforms}}
+		client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-model"}})
+
+		_, _, deltas := collectStream(t, client, context.Background(), fallbackTestParams)
+		require.Len(t, deltas, 1)
+		raw, ok := deltaTransforms(t, deltas[0])
+		require.True(t, ok, "the terminal carries the serving hop's input_transformations")
+		assert.JSONEq(t, transforms, string(raw))
+	})
+
+	t.Run("delta's own list wins", func(t *testing.T) {
+		withDeltaTransforms := strings.Replace(withStartTransforms,
+			`"stop_details":null},"usage"`, `"stop_details":null},"input_transformations":[],"usage"`, 1)
+		transport := &sseTransport{responses: []string{refusalStream("primary-model", tokenWithClaim), withDeltaTransforms}}
+		client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-model"}})
+
+		_, _, deltas := collectStream(t, client, context.Background(), fallbackTestParams)
+		require.Len(t, deltas, 1)
+		raw, ok := deltaTransforms(t, deltas[0])
+		require.True(t, ok)
+		assert.JSONEq(t, `[]`, string(raw), "an already-present list is not overwritten")
+	})
+
+	t.Run("forwarded on the degraded chain's held refusal", func(t *testing.T) {
+		// The spliced hop refuses with a token and every later hop fails: its
+		// held refusal surfaces as the terminal, still carrying its list.
+		refusingWithStartTransforms := strings.Replace(refusalStream("fallback-1", tokenNoClaim),
+			`"stop_details":null,"usage"`, `"stop_details":null,"input_transformations":`+transforms+`,"usage"`, 1)
+		transport := &sseTransport{
+			responses: []string{refusalStream("primary-model", tokenWithClaim), refusingWithStartTransforms, `{}`},
+			statuses:  []int{200, 200, 503},
+		}
+		client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-1"}, {Model: "fallback-2"}})
+
+		msg, _, deltas := collectStream(t, client, context.Background(), fallbackTestParams)
+		assert.Equal(t, anthropic.BetaStopReasonRefusal, msg.StopReason)
+		require.Len(t, deltas, 1)
+		raw, ok := deltaTransforms(t, deltas[0])
+		require.True(t, ok, "the degraded terminal carries the spliced hop's input_transformations")
+		assert.JSONEq(t, transforms, string(raw))
+	})
+
+	t.Run("delta's own list wins on the degraded chain's held refusal", func(t *testing.T) {
+		refusingWithBoth := strings.Replace(refusalStream("fallback-1", tokenNoClaim),
+			`"stop_details":null,"usage"`, `"stop_details":null,"input_transformations":`+transforms+`,"usage"`, 1)
+		refusingWithBoth = strings.Replace(refusingWithBoth,
+			tokenNoClaim+`}},"usage"`, tokenNoClaim+`}},"input_transformations":[],"usage"`, 1)
+		transport := &sseTransport{
+			responses: []string{refusalStream("primary-model", tokenWithClaim), refusingWithBoth, `{}`},
+			statuses:  []int{200, 200, 503},
+		}
+		client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-1"}, {Model: "fallback-2"}})
+
+		msg, _, deltas := collectStream(t, client, context.Background(), fallbackTestParams)
+		assert.Equal(t, anthropic.BetaStopReasonRefusal, msg.StopReason)
+		require.Len(t, deltas, 1)
+		raw, ok := deltaTransforms(t, deltas[0])
+		require.True(t, ok)
+		assert.JSONEq(t, `[]`, string(raw), "the held refusal delta's own list is not overwritten")
+	})
+
+	t.Run("emitted start keeps the delta untouched", func(t *testing.T) {
+		// A pre-stream refusal: the serving hop's message_start opens the wire
+		// itself, so nothing needs forwarding.
+		preStream := event("message_start", `{"type":"message_start","message":{"type":"message","id":"msg_primary","role":"assistant","content":[],"model":"primary-model","stop_reason":null,"stop_sequence":null,"stop_details":null,"usage":{"input_tokens":10,"output_tokens":1,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}`) +
+			event("message_delta", `{"type":"message_delta","delta":{"stop_reason":"refusal","stop_sequence":null,"stop_details":{"type":"refusal","category":"x","explanation":null,"fallback_credit_token":null}},"usage":{"input_tokens":10,"output_tokens":1,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}`) +
+			event("message_stop", `{"type":"message_stop"}`)
+		transport := &sseTransport{responses: []string{preStream, withStartTransforms}}
+		client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-model"}})
+
+		msg, _, deltas := collectStream(t, client, context.Background(), fallbackTestParams)
+		require.Len(t, deltas, 1)
+		_, ok := deltaTransforms(t, deltas[0])
+		assert.False(t, ok)
+		require.Len(t, msg.InputTransformations, 1, "the emitted message_start carried them")
+	})
 }
 
 func TestStreamingPinnedConversationStartsAtTheFallback(t *testing.T) {

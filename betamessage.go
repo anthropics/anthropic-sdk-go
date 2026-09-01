@@ -6756,6 +6756,16 @@ func (u BetaFallbackParamThinkingUnion) GetDisplay() *string {
 	return nil
 }
 
+// Returns a pointer to the underlying variant's BlockBinding property, if present.
+func (u BetaFallbackParamThinkingUnion) GetBlockBinding() *BetaThinkingBlockBindingParam {
+	if vt := u.OfEnabled; vt != nil {
+		return &vt.BlockBinding
+	} else if vt := u.OfAdaptive; vt != nil {
+		return &vt.BlockBinding
+	}
+	return nil
+}
+
 func init() {
 	apijson.RegisterUnion[BetaFallbackParamThinkingUnion](
 		"type",
@@ -7772,22 +7782,39 @@ type BetaMessage struct {
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage BetaUsage `json:"usage" api:"required"`
+	// Changes the API made to the request's input before showing it to the model: one
+	// entry per change, in request order. Today the only entry type is
+	// `thinking_dropped` — a `thinking`, `redacted_thinking` or `connector_text` block
+	// from the request's `messages` that was removed from the prompt instead of being
+	// shown to the model because it failed a binding check. More entry types may be
+	// added over time; ignore types you do not recognize.
+	//
+	// Requires `anthropic-beta: thinking-binding-controls-2026-08-01`. Present on
+	// every such response from a model that supports extended thinking, as `[]` when
+	// nothing was changed; without the beta, blocks are removed all the same but
+	// nothing is reported. Removed blocks contribute nothing to `usage.input_tokens`.
+	// When streaming, the array is final in `message_start`; the final `message_delta`
+	// event carries it only when a server-side model fallback happened mid-stream, in
+	// which case it holds the serving model's entries and replaces the one in
+	// `message_start`.
+	InputTransformations []BetaThinkingDroppedInputTransformation `json:"input_transformations" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID                respjson.Field
-		Container         respjson.Field
-		Content           respjson.Field
-		ContextManagement respjson.Field
-		Diagnostics       respjson.Field
-		Model             respjson.Field
-		Role              respjson.Field
-		StopDetails       respjson.Field
-		StopReason        respjson.Field
-		StopSequence      respjson.Field
-		Type              respjson.Field
-		Usage             respjson.Field
-		ExtraFields       map[string]respjson.Field
-		raw               string
+		ID                   respjson.Field
+		Container            respjson.Field
+		Content              respjson.Field
+		ContextManagement    respjson.Field
+		Diagnostics          respjson.Field
+		Model                respjson.Field
+		Role                 respjson.Field
+		StopDetails          respjson.Field
+		StopReason           respjson.Field
+		StopSequence         respjson.Field
+		Type                 respjson.Field
+		Usage                respjson.Field
+		InputTransformations respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
 	} `json:"-"`
 }
 
@@ -7905,6 +7932,21 @@ type BetaMessageParam struct {
 	Content []BetaContentBlockParamUnion `json:"content,omitzero" api:"required"`
 	// Any of "user", "assistant", "system".
 	Role BetaMessageParamRole `json:"role,omitzero" api:"required"`
+	// How long this system message's text stays in front of the model. `"never"` (the
+	// default) renders it on every request that includes it. `"next_user_message"`
+	// renders it only for the user turn it follows: once a later `role: "user"`
+	// message exists in `messages` the message stays in the array (send it unchanged)
+	// but is no longer shown to the model. Only permitted on `role: "system"`
+	// messages.
+	//
+	// Any of "next_user_message", "never".
+	ClearAt BetaMessageParamClearAt `json:"clear_at,omitzero"`
+	// Per-message output configuration on a role:"system" input message.
+	//
+	// Fields here apply per-turn; `format` remains top-level only. An empty `{}` is
+	// accepted on a message that carries content; a message with neither content nor
+	// output_config fields is rejected.
+	OutputConfig BetaSystemMessageOutputConfigParam `json:"output_config,omitzero"`
 	paramObj
 }
 
@@ -7912,6 +7954,19 @@ func NewBetaUserMessage(blocks ...BetaContentBlockParamUnion) BetaMessageParam {
 	return BetaMessageParam{
 		Role:    BetaMessageParamRoleUser,
 		Content: blocks,
+	}
+}
+
+// NewBetaSystemMessage builds a role:"system" message carrying a per-message
+// output config. `content` is required on the wire, so nil becomes an empty slice.
+func NewBetaSystemMessage(outputConfig BetaSystemMessageOutputConfigParam, blocks ...BetaContentBlockParamUnion) BetaMessageParam {
+	if blocks == nil {
+		blocks = []BetaContentBlockParamUnion{}
+	}
+	return BetaMessageParam{
+		Role:         BetaMessageParamRoleSystem,
+		Content:      blocks,
+		OutputConfig: outputConfig,
 	}
 }
 
@@ -7929,6 +7984,19 @@ const (
 	BetaMessageParamRoleUser      BetaMessageParamRole = "user"
 	BetaMessageParamRoleAssistant BetaMessageParamRole = "assistant"
 	BetaMessageParamRoleSystem    BetaMessageParamRole = "system"
+)
+
+// How long this system message's text stays in front of the model. `"never"` (the
+// default) renders it on every request that includes it. `"next_user_message"`
+// renders it only for the user turn it follows: once a later `role: "user"`
+// message exists in `messages` the message stays in the array (send it unchanged)
+// but is no longer shown to the model. Only permitted on `role: "system"`
+// messages.
+type BetaMessageParamClearAt string
+
+const (
+	BetaMessageParamClearAtNextUserMessage BetaMessageParamClearAt = "next_user_message"
+	BetaMessageParamClearAtNever           BetaMessageParamClearAt = "never"
 )
 
 type BetaMessageTokensCount struct {
@@ -8713,14 +8781,31 @@ type BetaRawMessageDeltaEvent struct {
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage BetaMessageDeltaUsage `json:"usage" api:"required"`
+	// Changes the API made to the request's input before showing it to the model: one
+	// entry per change, in request order. Today the only entry type is
+	// `thinking_dropped` — a `thinking`, `redacted_thinking` or `connector_text` block
+	// from the request's `messages` that was removed from the prompt instead of being
+	// shown to the model because it failed a binding check. More entry types may be
+	// added over time; ignore types you do not recognize.
+	//
+	// Requires `anthropic-beta: thinking-binding-controls-2026-08-01`. Present on
+	// every such response from a model that supports extended thinking, as `[]` when
+	// nothing was changed; without the beta, blocks are removed all the same but
+	// nothing is reported. Removed blocks contribute nothing to `usage.input_tokens`.
+	// When streaming, the array is final in `message_start`; the final `message_delta`
+	// event carries it only when a server-side model fallback happened mid-stream, in
+	// which case it holds the serving model's entries and replaces the one in
+	// `message_start`.
+	InputTransformations []BetaThinkingDroppedInputTransformation `json:"input_transformations" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ContextManagement respjson.Field
-		Delta             respjson.Field
-		Type              respjson.Field
-		Usage             respjson.Field
-		ExtraFields       map[string]respjson.Field
-		raw               string
+		ContextManagement    respjson.Field
+		Delta                respjson.Field
+		Type                 respjson.Field
+		Usage                respjson.Field
+		InputTransformations respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
 	} `json:"-"`
 }
 
@@ -8812,18 +8897,21 @@ type BetaRawMessageStreamEventUnion struct {
 	Delta BetaRawMessageStreamEventUnionDelta `json:"delta"`
 	// This field is from variant [BetaRawMessageDeltaEvent].
 	Usage BetaMessageDeltaUsage `json:"usage"`
+	// This field is from variant [BetaRawMessageDeltaEvent].
+	InputTransformations []BetaThinkingDroppedInputTransformation `json:"input_transformations"`
 	// This field is from variant [BetaRawContentBlockStartEvent].
 	ContentBlock BetaRawContentBlockStartEventContentBlockUnion `json:"content_block"`
 	Index        int64                                          `json:"index"`
 	JSON         struct {
-		Message           respjson.Field
-		Type              respjson.Field
-		ContextManagement respjson.Field
-		Delta             respjson.Field
-		Usage             respjson.Field
-		ContentBlock      respjson.Field
-		Index             respjson.Field
-		raw               string
+		Message              respjson.Field
+		Type                 respjson.Field
+		ContextManagement    respjson.Field
+		Delta                respjson.Field
+		Usage                respjson.Field
+		InputTransformations respjson.Field
+		ContentBlock         respjson.Field
+		Index                respjson.Field
+		raw                  string
 	} `json:"-"`
 }
 
@@ -9901,6 +9989,38 @@ const (
 	BetaStopReasonModelContextWindowExceeded BetaStopReason = "model_context_window_exceeded"
 )
 
+// Per-message output configuration on a role:"system" input message.
+//
+// Fields here apply per-turn; `format` remains top-level only. An empty `{}` is
+// accepted on a message that carries content; a message with neither content nor
+// output_config fields is rejected.
+type BetaSystemMessageOutputConfigParam struct {
+	// All possible effort levels.
+	//
+	// Any of "low", "medium", "high", "xhigh", "max".
+	Effort BetaSystemMessageOutputConfigEffort `json:"effort,omitzero"`
+	paramObj
+}
+
+func (r BetaSystemMessageOutputConfigParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaSystemMessageOutputConfigParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaSystemMessageOutputConfigParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// All possible effort levels.
+type BetaSystemMessageOutputConfigEffort string
+
+const (
+	BetaSystemMessageOutputConfigEffortLow    BetaSystemMessageOutputConfigEffort = "low"
+	BetaSystemMessageOutputConfigEffortMedium BetaSystemMessageOutputConfigEffort = "medium"
+	BetaSystemMessageOutputConfigEffortHigh   BetaSystemMessageOutputConfigEffort = "high"
+	BetaSystemMessageOutputConfigEffortXhigh  BetaSystemMessageOutputConfigEffort = "xhigh"
+	BetaSystemMessageOutputConfigEffortMax    BetaSystemMessageOutputConfigEffort = "max"
+)
+
 type BetaTextBlock struct {
 	// Citations supporting the text block.
 	//
@@ -10800,6 +10920,29 @@ func (r *BetaThinkingBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Controls for block binding: what happens when a thinking block this request
+// sends back fails the conversation check. Every field is optional; an empty
+// object means every default.
+type BetaThinkingBlockBindingParam struct {
+	// What happens when a thinking block in `messages` fails the conversation check:
+	// it was created in a different conversation, or the messages before it have
+	// changed since. `"error"` (the default) fails the request with a 400 error.
+	// `"drop_block"` removes the failing blocks and the request proceeds; the model no
+	// longer sees the dropped reasoning.
+	//
+	// Any of "error", "drop_block".
+	PrefixMismatchBehavior BetaThinkingPrefixMismatchBehavior `json:"prefix_mismatch_behavior,omitzero"`
+	paramObj
+}
+
+func (r BetaThinkingBlockBindingParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaThinkingBlockBindingParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaThinkingBlockBindingParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The properties Signature, Thinking, Type are required.
 type BetaThinkingBlockParam struct {
 	// The `signature` value of this thinking block, exactly as returned by the API in
@@ -10832,6 +10975,10 @@ type BetaThinkingConfigAdaptiveParam struct {
 	//
 	// Any of "summarized", "omitted", "updates".
 	Display BetaThinkingConfigAdaptiveDisplay `json:"display,omitzero"`
+	// Controls for block binding: what happens when a thinking block this request
+	// sends back fails the conversation check. Every field is optional; an empty
+	// object means every default.
+	BlockBinding BetaThinkingBlockBindingParam `json:"block_binding,omitzero"`
 	// This field can be elided, and will marshal its zero value as "adaptive".
 	Type constant.Adaptive `json:"type" default:"adaptive"`
 	paramObj
@@ -10897,6 +11044,10 @@ type BetaThinkingConfigEnabledParam struct {
 	//
 	// Any of "summarized", "omitted", "updates".
 	Display BetaThinkingConfigEnabledDisplay `json:"display,omitzero"`
+	// Controls for block binding: what happens when a thinking block this request
+	// sends back fails the conversation check. Every field is optional; an empty
+	// object means every default.
+	BlockBinding BetaThinkingBlockBindingParam `json:"block_binding,omitzero"`
 	// This field can be elided, and will marshal its zero value as "enabled".
 	Type constant.Enabled `json:"type" default:"enabled"`
 	paramObj
@@ -10986,6 +11137,16 @@ func (u BetaThinkingConfigParamUnion) GetDisplay() *string {
 	return nil
 }
 
+// Returns a pointer to the underlying variant's BlockBinding property, if present.
+func (u BetaThinkingConfigParamUnion) GetBlockBinding() *BetaThinkingBlockBindingParam {
+	if vt := u.OfEnabled; vt != nil {
+		return &vt.BlockBinding
+	} else if vt := u.OfAdaptive; vt != nil {
+		return &vt.BlockBinding
+	}
+	return nil
+}
+
 func init() {
 	apijson.RegisterUnion[BetaThinkingConfigParamUnion](
 		"type",
@@ -11025,6 +11186,80 @@ func (r BetaThinkingDelta) RawJSON() string { return r.JSON.raw }
 func (r *BetaThinkingDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type BetaThinkingDroppedInputTransformation struct {
+	// Where the removed block was in your request, as `messages.{i}.content.{j}`: `i`
+	// indexes the `messages` array you sent and `j` that message's `content` array —
+	// the same form error messages use.
+	Path string `json:"path" api:"required"`
+	// Which binding check removed the block: `model_binding_mismatch` — it was created
+	// by a model whose reasoning the requested model may not read;
+	// `prefix_binding_mismatch` — the conversation before it differs from the
+	// conversation it was created in (the rest of that turn's consecutive thinking
+	// blocks are removed with it, each with this reason);
+	// `organization_binding_mismatch` — it was created under a different organization
+	// (an Anthropic organization, AWS account or Google Cloud project) and this
+	// organization is not one of its additional organizations;
+	// `end_user_binding_mismatch` — it was created for a different end user, or was
+	// removed by the consumer-organization binding. A block that would fail several
+	// checks reports one reason, in this order of precedence:
+	// `organization_binding_mismatch`, `end_user_binding_mismatch`,
+	// `model_binding_mismatch`, `prefix_binding_mismatch`.
+	//
+	// Any of "model_binding_mismatch", "prefix_binding_mismatch",
+	// "organization_binding_mismatch", "end_user_binding_mismatch".
+	Reason BetaThinkingDroppedInputTransformationReason `json:"reason" api:"required"`
+	// Always `thinking_dropped` for this entry type.
+	Type constant.ThinkingDropped `json:"type" default:"thinking_dropped"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Path        respjson.Field
+		Reason      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaThinkingDroppedInputTransformation) RawJSON() string { return r.JSON.raw }
+func (r *BetaThinkingDroppedInputTransformation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Which binding check removed the block: `model_binding_mismatch` — it was created
+// by a model whose reasoning the requested model may not read;
+// `prefix_binding_mismatch` — the conversation before it differs from the
+// conversation it was created in (the rest of that turn's consecutive thinking
+// blocks are removed with it, each with this reason);
+// `organization_binding_mismatch` — it was created under a different organization
+// (an Anthropic organization, AWS account or Google Cloud project) and this
+// organization is not one of its additional organizations;
+// `end_user_binding_mismatch` — it was created for a different end user, or was
+// removed by the consumer-organization binding. A block that would fail several
+// checks reports one reason, in this order of precedence:
+// `organization_binding_mismatch`, `end_user_binding_mismatch`,
+// `model_binding_mismatch`, `prefix_binding_mismatch`.
+type BetaThinkingDroppedInputTransformationReason string
+
+const (
+	BetaThinkingDroppedInputTransformationReasonModelBindingMismatch        BetaThinkingDroppedInputTransformationReason = "model_binding_mismatch"
+	BetaThinkingDroppedInputTransformationReasonPrefixBindingMismatch       BetaThinkingDroppedInputTransformationReason = "prefix_binding_mismatch"
+	BetaThinkingDroppedInputTransformationReasonOrganizationBindingMismatch BetaThinkingDroppedInputTransformationReason = "organization_binding_mismatch"
+	BetaThinkingDroppedInputTransformationReasonEndUserBindingMismatch      BetaThinkingDroppedInputTransformationReason = "end_user_binding_mismatch"
+)
+
+// What happens when a thinking block in `messages` fails the conversation check:
+// it was created in a different conversation, or the messages before it have
+// changed since. `"error"` (the default) fails the request with a 400 error.
+// `"drop_block"` removes the failing blocks and the request proceeds; the model no
+// longer sees the dropped reasoning.
+type BetaThinkingPrefixMismatchBehavior string
+
+const (
+	BetaThinkingPrefixMismatchBehaviorError     BetaThinkingPrefixMismatchBehavior = "error"
+	BetaThinkingPrefixMismatchBehaviorDropBlock BetaThinkingPrefixMismatchBehavior = "drop_block"
+)
 
 // The properties Type, Value are required.
 type BetaThinkingTurnsParam struct {

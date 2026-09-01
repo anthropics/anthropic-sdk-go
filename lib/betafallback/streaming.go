@@ -173,9 +173,10 @@ func (s seam) block() json.RawMessage {
 }
 
 type heldRefusal struct {
-	startRaw []byte // raw message_start data; nil if none arrived
-	deltaRaw []byte // raw terminal message_delta data
-	stopRaw  []byte // raw message_stop data
+	startRaw      []byte // raw message_start data; nil if none arrived
+	deltaRaw      []byte // raw terminal message_delta data
+	stopRaw       []byte // raw message_stop data
+	transformsRaw []byte // input_transformations to forward; non-nil only when a suppressed message_start carried one
 }
 
 // streamSplicer is an io.ReadCloser forwarding the current hop's SSE stream,
@@ -212,6 +213,10 @@ type streamSplicer struct {
 	blocks      map[int]*rawBlock
 	blockOrder  []int
 	sawSeam     bool
+	// startTransforms is message.input_transformations from a message_start
+	// the open wire suppressed; the hop's terminal message_delta carries it
+	// instead, as a server-side mid-stream fallback does.
+	startTransforms []byte
 
 	// Chain state.
 	token          string
@@ -283,6 +288,9 @@ func (s *streamSplicer) advance() {
 		// Dropped: a held message_start must stay the first event out.
 	case "message_start":
 		s.startRaw = append([]byte(nil), evt.Data...)
+		if transforms := gjson.GetBytes(evt.Data, "message.input_transformations"); s.wireOpen && transforms.Exists() {
+			s.startTransforms = []byte(transforms.Raw)
+		}
 		if !s.isRetryHop {
 			s.primaryID = gjson.GetBytes(evt.Data, "message.id").String()
 		}
@@ -452,7 +460,7 @@ func (s *streamSplicer) handleTerminal(evt ssestream.Event) {
 		if cat := parsed.Get("delta.stop_details.category"); cat.Type == gjson.String {
 			s.category = cat.String()
 		}
-		s.held = &heldRefusal{startRaw: s.startRaw, deltaRaw: append([]byte(nil), evt.Data...), stopRaw: s.readStop()}
+		s.held = &heldRefusal{startRaw: s.startRaw, deltaRaw: append([]byte(nil), evt.Data...), stopRaw: s.readStop(), transformsRaw: s.startTransforms}
 		s.res.Body.Close()
 		s.openNextHop()
 		return
@@ -493,7 +501,8 @@ func (s *streamSplicer) readStop() []byte {
 
 // rewriteTerminal rebuilds a terminal message_delta: usage.iterations becomes
 // the whole-chain ledger (plus this hop, last entry typed fallback_message),
-// and optionally recommended_model is stamped null when absent.
+// optionally recommended_model is stamped null when absent, and a suppressed
+// message_start's input_transformations is forwarded when the delta has none.
 func (s *streamSplicer) rewriteTerminal(data []byte, includeSelf bool, stampRecommended bool) []byte {
 	iterations := append([]json.RawMessage{}, s.ledger...)
 	if includeSelf {
@@ -505,6 +514,11 @@ func (s *streamSplicer) rewriteTerminal(data []byte, includeSelf bool, stampReco
 	}
 	if stampRecommended && !gjson.GetBytes(out, "delta.stop_details.recommended_model").Exists() {
 		if patched, err := sjson.SetRawBytes(out, "delta.stop_details.recommended_model", []byte("null")); err == nil {
+			out = patched
+		}
+	}
+	if s.startTransforms != nil && !gjson.GetBytes(out, "input_transformations").Exists() {
+		if patched, err := sjson.SetRawBytes(out, "input_transformations", s.startTransforms); err == nil {
 			out = patched
 		}
 	}
@@ -752,14 +766,16 @@ func (s *streamSplicer) engage(res *http.Response, entry anthropic.BetaFallbackP
 	s.blocks = map[int]*rawBlock{}
 	s.blockOrder = nil
 	s.startRaw = nil
+	s.startTransforms = nil
 
 	s.res = res
 	s.dec = ssestream.NewDecoder(res)
 }
 
 // degrade surfaces the held refusal after every remaining hop failed: its
-// terminal events replay with the chain's ledger and a recommended_model
-// verdict — the unreachable entry on a rate limit, null otherwise.
+// terminal events replay with the chain's ledger, a recommended_model
+// verdict — the unreachable entry on a rate limit, null otherwise — and a
+// suppressed message_start's input_transformations when the delta has none.
 func (s *streamSplicer) degrade(lastStatus int, lastEntry anthropic.BetaFallbackParam) {
 	held := s.held
 	if held == nil {
@@ -796,6 +812,11 @@ func (s *streamSplicer) degrade(lastStatus int, lastEntry anthropic.BetaFallback
 	}
 	if len(s.ledger) > 0 {
 		if patched, err := sjson.SetRawBytes(data, "usage.iterations", mustMarshal(s.ledger)); err == nil {
+			data = patched
+		}
+	}
+	if held.transformsRaw != nil && !gjson.GetBytes(data, "input_transformations").Exists() {
+		if patched, err := sjson.SetRawBytes(data, "input_transformations", held.transformsRaw); err == nil {
 			data = patched
 		}
 	}

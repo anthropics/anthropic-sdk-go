@@ -2,6 +2,7 @@ package anthropic_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/tidwall/gjson"
@@ -122,6 +123,55 @@ func TestBetaAccumulatePreservesWireJSON(t *testing.T) {
 	if len(block.Content.Content) != 1 || block.Content.Content[0].FileID != "file_011ABC" {
 		t.Errorf("Expected typed access to yield file_011ABC, got %+v", block.Content.Content)
 	}
+}
+
+func TestNewBetaSystemMessageMarshalsContent(t *testing.T) {
+	config := anthropic.BetaSystemMessageOutputConfigParam{Effort: anthropic.BetaSystemMessageOutputConfigEffortHigh}
+
+	t.Run("directive-only emits empty content array", func(t *testing.T) {
+		msg := anthropic.NewBetaSystemMessage(config)
+		if msg.Content == nil {
+			t.Fatal("Expected Content to be a non-nil empty slice so the required key is emitted")
+		}
+		got, err := json.Marshal(msg)
+		if err != nil {
+			t.Fatalf("marshal error: %v", err)
+		}
+		want := `{"content":[],"role":"system","output_config":{"effort":"high"}}`
+		if string(got) != want {
+			t.Errorf("Expected directive-only system message JSON\n got: %s\nwant: %s", got, want)
+		}
+	})
+
+	t.Run("with blocks", func(t *testing.T) {
+		msg := anthropic.NewBetaSystemMessage(config, anthropic.NewBetaTextBlock("Answer tersely."))
+		got, err := json.Marshal(msg)
+		if err != nil {
+			t.Fatalf("marshal error: %v", err)
+		}
+		want := `{"content":[{"text":"Answer tersely.","type":"text"}],"role":"system","output_config":{"effort":"high"}}`
+		if string(got) != want {
+			t.Errorf("Expected system message JSON with content\n got: %s\nwant: %s", got, want)
+		}
+	})
+
+	t.Run("inside request params", func(t *testing.T) {
+		params := anthropic.BetaMessageNewParams{
+			MaxTokens: 1,
+			Model:     "m",
+			Messages: []anthropic.BetaMessageParam{
+				anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("hi")),
+				anthropic.NewBetaSystemMessage(config),
+			},
+		}
+		got, err := json.Marshal(params)
+		if err != nil {
+			t.Fatalf("marshal error: %v", err)
+		}
+		if !strings.Contains(string(got), `{"content":[],"role":"system","output_config":{"effort":"high"}}`) {
+			t.Errorf("Expected request body to carry the directive-only system message with content:[], got %s", got)
+		}
+	})
 }
 
 // TestBetaTextCitationToParamExhaustive mirrors the non-beta drift guard for
@@ -255,5 +305,66 @@ func TestBetaAccumulateMessageDeltaStopDetails(t *testing.T) {
 	)
 	if message.StopDetails.Category != "" {
 		t.Errorf("Expected the last delta's null stop_details to win, got %+v", message.StopDetails)
+	}
+}
+
+// TestBetaAccumulateMessageDeltaInputTransformations checks the list from
+// message_start survives a delta that omits it or sends null, and that a delta
+// carrying one (a mid-stream model fallback) replaces it, even when empty.
+func TestBetaAccumulateMessageDeltaInputTransformations(t *testing.T) {
+	const start = `{"type":"message_start","message":{"id":"msg_1","type":"message","role":"assistant","content":[],"stop_reason":null,"stop_sequence":null,"stop_details":null,"input_transformations":[{"type":"thinking_dropped","path":"messages.1.content.0","reason":"model_binding_mismatch"}],"usage":{"input_tokens":10,"output_tokens":1}}}`
+
+	message := accumulateBetaMessage(t,
+		start,
+		`{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null,"stop_details":null},"usage":{"output_tokens":5}}`,
+		`{"type":"message_stop"}`,
+	)
+	if len(message.InputTransformations) != 1 || message.InputTransformations[0].Path != "messages.1.content.0" {
+		t.Errorf("Expected input_transformations to keep the message_start value, got %+v", message.InputTransformations)
+	}
+
+	message = accumulateBetaMessage(t,
+		start,
+		`{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null,"stop_details":null},"usage":{"output_tokens":5},"input_transformations":null}`,
+	)
+	if len(message.InputTransformations) != 1 || gjson.Get(message.RawJSON(), "input_transformations.0.path").String() != "messages.1.content.0" {
+		t.Errorf("Expected a null input_transformations to keep the message_start value, got %+v / %s", message.InputTransformations, message.RawJSON())
+	}
+
+	message = accumulateBetaMessage(t,
+		start,
+		`{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null,"stop_details":null},"usage":{"output_tokens":5},"input_transformations":[{"type":"thinking_dropped","path":"messages.1.content.0","reason":"prefix_binding_mismatch"},{"type":"thinking_dropped","path":"messages.1.content.1","reason":"prefix_binding_mismatch"}]}`,
+		`{"type":"message_stop"}`,
+	)
+	if len(message.InputTransformations) != 2 || message.InputTransformations[1].Reason != anthropic.BetaThinkingDroppedInputTransformationReasonPrefixBindingMismatch {
+		t.Errorf("Expected input_transformations from the delta, got %+v", message.InputTransformations)
+	}
+	if got := gjson.Get(message.RawJSON(), "input_transformations.1.path").String(); got != "messages.1.content.1" {
+		t.Errorf("Expected input_transformations in the accumulated JSON, got %q from %s", got, message.RawJSON())
+	}
+
+	message = accumulateBetaMessage(t,
+		start,
+		`{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null,"stop_details":null},"usage":{"output_tokens":5},"input_transformations":[]}`,
+	)
+	if len(message.InputTransformations) != 0 {
+		t.Errorf("Expected the delta's empty input_transformations to win, got %+v", message.InputTransformations)
+	}
+	if got := gjson.Get(message.RawJSON(), "input_transformations").Raw; got != "[]" {
+		t.Errorf("Expected input_transformations [] in the accumulated JSON, got %s", got)
+	}
+	if got := message.JSON.InputTransformations.Raw(); got != "[]" {
+		t.Errorf("Expected JSON.InputTransformations to track the delta, got %s", got)
+	}
+
+	// A non-thinking primary omits the field on message_start; the fallback's
+	// delta must still surface it through the JSON metadata.
+	message = accumulateBetaMessage(t,
+		`{"type":"message_start","message":{"id":"msg_1","type":"message","role":"assistant","content":[],"stop_reason":null,"stop_sequence":null,"stop_details":null,"usage":{"input_tokens":10,"output_tokens":1}}}`,
+		`{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null,"stop_details":null},"usage":{"output_tokens":5},"input_transformations":[{"type":"thinking_dropped","path":"messages.1.content.0","reason":"prefix_binding_mismatch"}]}`,
+		`{"type":"message_stop"}`,
+	)
+	if !message.JSON.InputTransformations.Valid() || len(message.InputTransformations) != 1 {
+		t.Errorf("Expected JSON.InputTransformations to be valid after a delta carrying the field, got valid=%v %+v", message.JSON.InputTransformations.Valid(), message.InputTransformations)
 	}
 }

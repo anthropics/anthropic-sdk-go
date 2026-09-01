@@ -3,6 +3,7 @@
 package apierror
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -27,13 +28,21 @@ type Error struct {
 
 // Returns the unmodified JSON received from the API
 func (r Error) RawJSON() string { return r.JSON.raw }
+
 func (r *Error) UnmarshalJSON(data []byte) error {
+	if !json.Valid(data) {
+		r.JSON.raw = string(data)
+		return nil
+	}
 	return apijson.UnmarshalRoot(data, r)
 }
 
 func (r *Error) Error() string {
-	// Attempt to re-populate the response body
-	return fmt.Sprintf("%s %q: %d %s %s", r.Request.Method, r.Request.URL, r.Response.StatusCode, http.StatusText(r.Response.StatusCode), r.JSON.raw)
+	msg := fmt.Sprintf("%s %q: %d %s", r.Request.Method, r.Request.URL, r.Response.StatusCode, http.StatusText(r.Response.StatusCode))
+	if body := r.JSON.raw; body != "" {
+		msg += " " + body
+	}
+	return msg
 }
 
 func (r *Error) DumpRequest(body bool) []byte {

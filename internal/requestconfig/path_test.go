@@ -13,83 +13,63 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEscapeRequestPath(t *testing.T) {
+func TestFormatPath(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name    string
-		in      string
-		want    string
-		wantErr string
+		name   string
+		format string
+		params []string
+		want   string
 	}{
 		{
-			name: "ordinary beta path unchanged",
-			in:   "v1/vaults/vault_A/credentials/cred_x?beta=true",
-			want: "v1/vaults/vault_A/credentials/cred_x?beta=true",
+			name:   "ordinary beta path unchanged",
+			format: "v1/vaults/%s/credentials/%s?beta=true",
+			params: []string{"vault_A", "cred_x"},
+			want:   "v1/vaults/vault_A/credentials/cred_x?beta=true",
 		},
 		{
-			name: "ordinary ga path unchanged",
-			in:   "v1/files/file_id/content",
-			want: "v1/files/file_id/content",
+			name:   "slash in id stays in one segment",
+			format: "v1/vaults/%s/credentials/%s?beta=true",
+			params: []string{"vault_A", "foo/bar"},
+			want:   "v1/vaults/vault_A/credentials/foo%2Fbar?beta=true",
 		},
 		{
-			name: "static beta query preserved",
-			in:   "v1/messages?beta=true",
-			want: "v1/messages?beta=true",
+			name:   "dot-dot stays in the id segment",
+			format: "v1/vaults/%s/credentials/%s?beta=true",
+			params: []string{"vault_A", "../../vault_B/credentials/cred_x"},
+			want:   "v1/vaults/vault_A/credentials/..%2F..%2Fvault_B%2Fcredentials%2Fcred_x?beta=true",
 		},
 		{
-			name:    "dot-dot segments rejected",
-			in:      "v1/vaults/vault_A/credentials/../../vault_B/credentials/cred_x?beta=true",
-			wantErr: "invalid path segment",
+			name:   "question mark does not become query",
+			format: "v1/vaults/%s/credentials/%s?beta=true",
+			params: []string{"vault_A", "cred?injected=1"},
+			want:   "v1/vaults/vault_A/credentials/cred%3Finjected=1?beta=true",
 		},
 		{
-			name:    "dot segment rejected",
-			in:      "v1/files/./content",
-			wantErr: "invalid path segment",
+			name:   "hash does not drop suffix",
+			format: "v1/files/%s/content",
+			params: []string{"foo#bar"},
+			want:   "v1/files/foo%23bar/content",
 		},
 		{
-			name:    "percent-encoded dot-dot rejected",
-			in:      "v1/files/%2e%2e/content",
-			wantErr: "invalid path segment",
+			name:   "bare dot is encoded",
+			format: "v1/files/%s",
+			params: []string{"."},
+			want:   "v1/files/%2E",
 		},
 		{
-			name: "question mark in id does not become query",
-			in:   "v1/vaults/vault_A/credentials/cred?injected=1?beta=true",
-			want: "v1/vaults/vault_A/credentials/cred%3Finjected=1?beta=true",
-		},
-		{
-			name: "question mark in ga id does not become query",
-			in:   "v1/files/cred?injected=1",
-			want: "v1/files/cred%3Finjected=1",
-		},
-		{
-			name: "hash in id does not drop suffix",
-			in:   "v1/files/foo#bar/content",
-			want: "v1/files/foo%23bar/content",
-		},
-		{
-			name: "hash in id keeps beta suffix",
-			in:   "v1/files/foo#bar/content?beta=true",
-			want: "v1/files/foo%23bar/content?beta=true",
-		},
-		{
-			name: "injected query cannot override beta flag",
-			in:   "v1/vaults/vault_A/credentials/cred?beta=false&tail=?beta=true",
-			want: "v1/vaults/vault_A/credentials/cred%3Fbeta=false&tail=?beta=true",
+			name:   "bare dot-dot is encoded",
+			format: "v1/files/%s",
+			params: []string{".."},
+			want:   "v1/files/%2E%2E",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got, err := escapeRequestPath(tt.in)
-			if tt.wantErr != "" {
-				require.Error(t, err)
-				assert.Contains(t, err.Error(), tt.wantErr)
-				return
-			}
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, FormatPath(tt.format, tt.params...))
 		})
 	}
 }
@@ -99,7 +79,7 @@ func TestExecuteNewRequestPathParameters(t *testing.T) {
 
 	type captured struct {
 		uri      string
-		path     string
+		escaped  string
 		rawQuery string
 		fragment string
 	}
@@ -112,7 +92,7 @@ func TestExecuteNewRequestPathParameters(t *testing.T) {
 			hits++
 			got = captured{
 				uri:      r.URL.RequestURI(),
-				path:     r.URL.Path,
+				escaped:  r.URL.EscapedPath(),
 				rawQuery: r.URL.RawQuery,
 				fragment: r.URL.Fragment,
 			}
@@ -122,43 +102,48 @@ func TestExecuteNewRequestPathParameters(t *testing.T) {
 		t.Cleanup(server.Close)
 
 		err := ExecuteNewRequest(context.Background(), http.MethodGet, path, nil, nil, WithDefaultBaseURL(server.URL+"/"))
-		if err != nil && hits == 0 {
-			return captured{}, err
-		}
 		require.Equal(t, 1, hits, "expected a single request, got %d (err=%v)", hits, err)
 		return got, err
 	}
 
+	t.Run("slash in id is percent-encoded", func(t *testing.T) {
+		t.Parallel()
+		path := FormatPath("v1/vaults/%s/credentials/%s?beta=true", "vault_A", "foo/bar")
+		got, err := run(t, path)
+		require.NoError(t, err)
+		assert.Contains(t, got.escaped, "foo%2Fbar")
+		assert.NotContains(t, strings.TrimPrefix(got.escaped, "/v1/vaults/vault_A/credentials/"), "/")
+	})
+
 	t.Run("dot-dot does not escape intended prefix", func(t *testing.T) {
 		t.Parallel()
-		got, err := run(t, "v1/vaults/vault_A/credentials/../../vault_B/credentials/cred_x?beta=true")
-		if err == nil {
-			assert.True(t, strings.HasPrefix(got.path, "/v1/vaults/vault_A/credentials/"), "path %q escaped the vault_A prefix", got.path)
-			assert.NotContains(t, got.path, "/vault_B/")
-			return
-		}
-		assert.Contains(t, err.Error(), "invalid path segment")
-		assert.Empty(t, got.path)
+		path := FormatPath("v1/vaults/%s/credentials/%s?beta=true", "vault_A", "../../vault_B/credentials/cred_x")
+		got, err := run(t, path)
+		require.NoError(t, err)
+		assert.True(t, strings.HasPrefix(got.escaped, "/v1/vaults/vault_A/credentials/"), "path %q escaped the vault_A prefix", got.escaped)
+		assert.Contains(t, got.escaped, "..%2F..%2Fvault_B")
+		assert.NotContains(t, got.escaped, "/vault_B/")
 	})
 
 	t.Run("question mark does not inject query", func(t *testing.T) {
 		t.Parallel()
-		got, err := run(t, "v1/vaults/vault_A/credentials/cred?injected=1?beta=true")
+		path := FormatPath("v1/vaults/%s/credentials/%s?beta=true", "vault_A", "cred?injected=1")
+		got, err := run(t, path)
 		require.NoError(t, err)
 		assert.NotContains(t, got.rawQuery, "injected")
 		q, err := url.ParseQuery(got.rawQuery)
 		require.NoError(t, err)
 		assert.Equal(t, "true", q.Get("beta"))
 		assert.Contains(t, got.uri, "cred%3Finjected=1")
-		assert.True(t, strings.HasPrefix(got.path, "/v1/vaults/vault_A/credentials/"))
 	})
 
 	t.Run("hash does not drop suffix", func(t *testing.T) {
 		t.Parallel()
-		got, err := run(t, "v1/files/foo#bar/content")
+		path := FormatPath("v1/files/%s/content", "foo#bar")
+		got, err := run(t, path)
 		require.NoError(t, err)
 		assert.Empty(t, got.fragment)
-		assert.True(t, strings.HasSuffix(got.path, "/content"), "path %q dropped /content suffix", got.path)
+		assert.True(t, strings.HasSuffix(got.escaped, "/content"), "path %q dropped /content suffix", got.escaped)
 		assert.Contains(t, got.uri, "foo%23bar")
 	})
 }

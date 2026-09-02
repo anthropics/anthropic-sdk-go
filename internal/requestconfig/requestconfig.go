@@ -88,12 +88,6 @@ func (s RequestOptionFunc) Apply(r *RequestConfig) error    { return s(r) }
 func (s PreRequestOptionFunc) Apply(r *RequestConfig) error { return s(r) }
 
 func NewRequestConfig(ctx context.Context, method string, u string, body any, dst any, opts ...RequestOption) (*RequestConfig, error) {
-	var err error
-	u, err = escapeRequestPath(u)
-	if err != nil {
-		return nil, err
-	}
-
 	var reader io.Reader
 
 	contentType := "application/json"

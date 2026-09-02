@@ -51,7 +51,7 @@ func (r *BetaAgentVersionService) List(ctx context.Context, agentID string, para
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/versions?beta=true", agentID)
+	path := requestconfig.FormatPath("v1/agents/%s/versions?beta=true", agentID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err

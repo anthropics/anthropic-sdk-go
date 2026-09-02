@@ -54,7 +54,7 @@ func (r *BetaDeploymentRunService) Get(ctx context.Context, deploymentRunID stri
 		err = errors.New("missing required deployment_run_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployment_runs/%s?beta=true", deploymentRunID)
+	path := requestconfig.FormatPath("v1/deployment_runs/%s?beta=true", deploymentRunID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }

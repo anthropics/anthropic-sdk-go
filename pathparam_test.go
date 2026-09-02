@@ -1,10 +1,13 @@
 package anthropic_test
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -14,10 +17,12 @@ import (
 
 func TestPathParamsRejectDotDotEscape(t *testing.T) {
 	var gotURI string
+	var gotEscaped string
 	var hits int
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hits++
 		gotURI = r.URL.RequestURI()
+		gotEscaped = r.URL.EscapedPath()
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = io.WriteString(w, `{}`)
@@ -29,22 +34,57 @@ func TestPathParamsRejectDotDotEscape(t *testing.T) {
 		option.WithBaseURL(server.URL),
 		option.WithMaxRetries(0),
 	)
-	_, err := client.Beta.Vaults.Credentials.Get(
+	_, _ = client.Beta.Vaults.Credentials.Get(
 		context.Background(),
 		"../../vault_B/credentials/cred_x",
 		anthropic.BetaVaultCredentialGetParams{VaultID: "vault_A"},
 	)
-	if err == nil {
-		if !strings.Contains(gotURI, "/v1/vaults/vault_A/credentials/") {
-			t.Fatalf("request escaped the intended prefix: %s", gotURI)
-		}
-		if strings.Contains(gotURI, "/vault_B/") && !strings.Contains(gotURI, "/vault_A/") {
-			t.Fatalf("request walked to vault_B: %s", gotURI)
-		}
-		return
+	if hits != 1 {
+		t.Fatalf("expected a request, got hits=%d uri=%s", hits, gotURI)
 	}
-	if hits != 0 {
-		t.Fatalf("dot-dot id issued a request to %s (hits=%d)", gotURI, hits)
+	if !strings.HasPrefix(gotEscaped, "/v1/vaults/vault_A/credentials/") {
+		t.Fatalf("request escaped the intended prefix: %s", gotURI)
+	}
+	if strings.Contains(gotEscaped, "/vault_B/") {
+		t.Fatalf("request walked to vault_B: %s", gotURI)
+	}
+	if !strings.Contains(gotEscaped, "..%2F..%2Fvault_B%2Fcredentials%2Fcred_x") {
+		t.Fatalf("expected encoded traversal to stay in the id segment, got %s", gotURI)
+	}
+}
+
+func TestPathParamsSlashStaysInSegment(t *testing.T) {
+	var got *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got = r.Clone(r.Context())
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, `{}`)
+	}))
+	defer server.Close()
+
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithBaseURL(server.URL),
+		option.WithMaxRetries(0),
+	)
+	_, _ = client.Beta.Vaults.Credentials.Get(
+		context.Background(),
+		"foo/bar",
+		anthropic.BetaVaultCredentialGetParams{VaultID: "vault_A"},
+	)
+	if got == nil {
+		t.Fatal("expected a request")
+	}
+	escaped := got.URL.EscapedPath()
+	if !strings.Contains(escaped, "foo%2Fbar") {
+		t.Fatalf("expected foo/bar to be a single escaped segment, got %s", got.URL.RequestURI())
+	}
+	if strings.Contains(escaped, "/foo/bar") {
+		t.Fatalf("slash in id became an extra path segment: %s", got.URL.RequestURI())
+	}
+	if got.URL.Query().Get("beta") != "true" {
+		t.Fatalf("expected beta=true query, got %s", got.URL.RawQuery)
 	}
 }
 
@@ -142,5 +182,29 @@ func TestPathParamsEmptyIDStillErrors(t *testing.T) {
 	}
 	if hits != 0 {
 		t.Fatalf("empty id issued a request (hits=%d)", hits)
+	}
+}
+
+func TestGeneratedResourcePathsUseFormatPath(t *testing.T) {
+	matches, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range matches {
+		if strings.HasSuffix(path, "_test.go") {
+			continue
+		}
+		src, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Contains(src, []byte("File generated from our OpenAPI spec by Stainless")) {
+			continue
+		}
+		for i, line := range strings.Split(string(src), "\n") {
+			if strings.Contains(line, "path := fmt.Sprintf(") {
+				t.Errorf("%s:%d: generated path still uses fmt.Sprintf; use requestconfig.FormatPath so IDs are escaped before interpolation", path, i+1)
+			}
+		}
 	}
 }

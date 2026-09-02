@@ -3,36 +3,27 @@ package requestconfig
 import (
 	"fmt"
 	"net/url"
-	"strings"
 )
 
-// Generated resource methods append this exact query suffix; preserve it so
-// PathEscape of ID segments cannot swallow the SDK's own beta flag.
-const generatedBetaQuery = "?beta=true"
-
-// escapeRequestPath PathEscapes each slash-separated segment of a relative
-// request path so caller-controlled IDs cannot inject "?", "#", or extra
-// query/fragment delimiters. Remaining "." / ".." segments (including
-// percent-encoded forms) are rejected so url.URL.Parse / ResolveReference
-// cannot walk out of the intended prefix.
-func escapeRequestPath(u string) (string, error) {
-	query := ""
-	path := u
-	if strings.HasSuffix(path, generatedBetaQuery) {
-		path = strings.TrimSuffix(path, generatedBetaQuery)
-		query = generatedBetaQuery
+func encodePathParam(value string) string {
+	switch value {
+	case ".":
+		return "%2E"
+	case "..":
+		return "%2E%2E"
 	}
+	return url.PathEscape(value)
+}
 
-	segments := strings.Split(path, "/")
-	for i, seg := range segments {
-		decoded := seg
-		if d, err := url.PathUnescape(seg); err == nil {
-			decoded = d
-		}
-		if decoded == "." || decoded == ".." {
-			return "", fmt.Errorf("requestconfig: invalid path segment %q", seg)
-		}
-		segments[i] = url.PathEscape(seg)
+// FormatPath escapes path parameters and inserts them into a request path.
+//
+// Each param is PathEscaped before interpolation so a literal "/" stays inside
+// its own segment (foo/bar → foo%2Fbar) rather than becoming an extra path
+// element. Bare "." / ".." are encoded so url.URL resolution cannot drop them.
+func FormatPath(format string, params ...string) string {
+	args := make([]any, len(params))
+	for i, param := range params {
+		args[i] = encodePathParam(param)
 	}
-	return strings.Join(segments, "/") + query, nil
+	return fmt.Sprintf(format, args...)
 }

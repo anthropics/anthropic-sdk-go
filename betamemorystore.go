@@ -72,7 +72,7 @@ func (r *BetaMemoryStoreService) Get(ctx context.Context, memoryStoreID string, 
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s?beta=true", memoryStoreID)
+	path := requestconfig.FormatPath("v1/memory_stores/%s?beta=true", memoryStoreID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -91,7 +91,7 @@ func (r *BetaMemoryStoreService) Update(ctx context.Context, memoryStoreID strin
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s?beta=true", memoryStoreID)
+	path := requestconfig.FormatPath("v1/memory_stores/%s?beta=true", memoryStoreID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -139,7 +139,7 @@ func (r *BetaMemoryStoreService) Delete(ctx context.Context, memoryStoreID strin
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s?beta=true", memoryStoreID)
+	path := requestconfig.FormatPath("v1/memory_stores/%s?beta=true", memoryStoreID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -158,7 +158,7 @@ func (r *BetaMemoryStoreService) Archive(ctx context.Context, memoryStoreID stri
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/archive?beta=true", memoryStoreID)
+	path := requestconfig.FormatPath("v1/memory_stores/%s/archive?beta=true", memoryStoreID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

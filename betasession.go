@@ -76,7 +76,7 @@ func (r *BetaSessionService) Get(ctx context.Context, sessionID string, query Be
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s?beta=true", sessionID)
+	path := requestconfig.FormatPath("v1/sessions/%s?beta=true", sessionID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -95,7 +95,7 @@ func (r *BetaSessionService) Update(ctx context.Context, sessionID string, param
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s?beta=true", sessionID)
+	path := requestconfig.FormatPath("v1/sessions/%s?beta=true", sessionID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -143,7 +143,7 @@ func (r *BetaSessionService) Delete(ctx context.Context, sessionID string, body 
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s?beta=true", sessionID)
+	path := requestconfig.FormatPath("v1/sessions/%s?beta=true", sessionID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -162,7 +162,7 @@ func (r *BetaSessionService) Archive(ctx context.Context, sessionID string, body
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/archive?beta=true", sessionID)
+	path := requestconfig.FormatPath("v1/sessions/%s/archive?beta=true", sessionID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

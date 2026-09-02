@@ -83,7 +83,7 @@ func (r *BetaTunnelService) Get(ctx context.Context, tunnelID string, query Beta
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s?beta=true", tunnelID)
+	path := requestconfig.FormatPath("v1/tunnels/%s?beta=true", tunnelID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -151,7 +151,7 @@ func (r *BetaTunnelService) Archive(ctx context.Context, tunnelID string, body B
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/archive?beta=true", tunnelID)
+	path := requestconfig.FormatPath("v1/tunnels/%s/archive?beta=true", tunnelID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -178,7 +178,7 @@ func (r *BetaTunnelService) RevealToken(ctx context.Context, tunnelID string, bo
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/reveal_token?beta=true", tunnelID)
+	path := requestconfig.FormatPath("v1/tunnels/%s/reveal_token?beta=true", tunnelID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -204,7 +204,7 @@ func (r *BetaTunnelService) RotateToken(ctx context.Context, tunnelID string, pa
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/rotate_token?beta=true", tunnelID)
+	path := requestconfig.FormatPath("v1/tunnels/%s/rotate_token?beta=true", tunnelID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

@@ -69,7 +69,7 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) List(ctx context.Contex
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces?beta=true", serviceAccountID)
+	path := requestconfig.FormatPath("v1/organizations/service_accounts/%s/workspaces?beta=true", serviceAccountID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -125,7 +125,7 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) Add(ctx context.Context
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces?beta=true", serviceAccountID)
+	path := requestconfig.FormatPath("v1/organizations/service_accounts/%s/workspaces?beta=true", serviceAccountID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -157,7 +157,7 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) Remove(ctx context.Cont
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces/%s?beta=true", params.ServiceAccountID, workspaceID)
+	path := requestconfig.FormatPath("v1/organizations/service_accounts/%s/workspaces/%s?beta=true", params.ServiceAccountID, workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

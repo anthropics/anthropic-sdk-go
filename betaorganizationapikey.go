@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"slices"
@@ -48,7 +47,7 @@ func (r *BetaOrganizationAPIKeyService) Get(ctx context.Context, apiKeyID string
 		err = errors.New("missing required api_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/api_keys/%s?beta=true", apiKeyID)
+	path := requestconfig.FormatPath("v1/organizations/api_keys/%s?beta=true", apiKeyID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -60,7 +59,7 @@ func (r *BetaOrganizationAPIKeyService) Update(ctx context.Context, apiKeyID str
 		err = errors.New("missing required api_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/api_keys/%s?beta=true", apiKeyID)
+	path := requestconfig.FormatPath("v1/organizations/api_keys/%s?beta=true", apiKeyID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }

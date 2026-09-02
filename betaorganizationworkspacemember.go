@@ -5,7 +5,6 @@ package anthropic
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"slices"
@@ -50,7 +49,7 @@ func (r *BetaOrganizationWorkspaceMemberService) Get(ctx context.Context, userID
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s?beta=true", query.WorkspaceID, userID)
+	path := requestconfig.FormatPath("v1/organizations/workspaces/%s/members/%s?beta=true", query.WorkspaceID, userID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -66,7 +65,7 @@ func (r *BetaOrganizationWorkspaceMemberService) Update(ctx context.Context, use
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s?beta=true", params.WorkspaceID, userID)
+	path := requestconfig.FormatPath("v1/organizations/workspaces/%s/members/%s?beta=true", params.WorkspaceID, userID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -80,7 +79,7 @@ func (r *BetaOrganizationWorkspaceMemberService) List(ctx context.Context, works
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members?beta=true", workspaceID)
+	path := requestconfig.FormatPath("v1/organizations/workspaces/%s/members?beta=true", workspaceID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -105,7 +104,7 @@ func (r *BetaOrganizationWorkspaceMemberService) Add(ctx context.Context, worksp
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members?beta=true", workspaceID)
+	path := requestconfig.FormatPath("v1/organizations/workspaces/%s/members?beta=true", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -121,7 +120,7 @@ func (r *BetaOrganizationWorkspaceMemberService) Remove(ctx context.Context, use
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s?beta=true", body.WorkspaceID, userID)
+	path := requestconfig.FormatPath("v1/organizations/workspaces/%s/members/%s?beta=true", body.WorkspaceID, userID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

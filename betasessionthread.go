@@ -60,7 +60,7 @@ func (r *BetaSessionThreadService) Get(ctx context.Context, threadID string, par
 		err = errors.New("missing required thread_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads/%s?beta=true", params.SessionID, threadID)
+	path := requestconfig.FormatPath("v1/sessions/%s/threads/%s?beta=true", params.SessionID, threadID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -80,7 +80,7 @@ func (r *BetaSessionThreadService) List(ctx context.Context, sessionID string, p
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads?beta=true", sessionID)
+	path := requestconfig.FormatPath("v1/sessions/%s/threads?beta=true", sessionID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string,
 		err = errors.New("missing required thread_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads/%s/archive?beta=true", params.SessionID, threadID)
+	path := requestconfig.FormatPath("v1/sessions/%s/threads/%s/archive?beta=true", params.SessionID, threadID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

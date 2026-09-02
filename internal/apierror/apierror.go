@@ -40,6 +40,10 @@ func (r *Error) Type() shared.ErrorType { return r.errorType }
 func (r Error) RawJSON() string { return r.JSON.raw }
 
 func (r *Error) UnmarshalJSON(data []byte) error {
+	if !json.Valid(data) {
+		r.JSON.raw = string(data)
+		return nil
+	}
 	if err := apijson.UnmarshalRoot(data, r); err != nil {
 		return err
 	}
@@ -60,17 +64,17 @@ func (r *Error) UnmarshalJSON(data []byte) error {
 func (r *Error) UnmarshalAPIJSON(data []byte) error { return r.UnmarshalJSON(data) }
 
 func (r *Error) Error() string {
-	// Attempt to re-populate the response body
-	statusInfo := fmt.Sprintf("%s %q: %d %s", r.Request.Method, r.Request.URL, r.Response.StatusCode, http.StatusText(r.Response.StatusCode))
-
+	msg := fmt.Sprintf("%s %q: %d %s", r.Request.Method, r.Request.URL, r.Response.StatusCode, http.StatusText(r.Response.StatusCode))
 	if r.RequestID != "" {
-		statusInfo += fmt.Sprintf(" (Request-ID: %s)", r.RequestID)
+		msg += fmt.Sprintf(" (Request-ID: %s)", r.RequestID)
 	}
 	if r.WorkspaceID != "" {
-		statusInfo += fmt.Sprintf(" (Workspace-ID: %s)", r.WorkspaceID)
+		msg += fmt.Sprintf(" (Workspace-ID: %s)", r.WorkspaceID)
 	}
-
-	return fmt.Sprintf("%s %s", statusInfo, r.JSON.raw)
+	if body := r.JSON.raw; body != "" {
+		msg += " " + body
+	}
+	return msg
 }
 
 func (r *Error) DumpRequest(body bool) []byte {

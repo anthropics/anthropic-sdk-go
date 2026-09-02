@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	anthropic "github.com/anthropics/anthropic-sdk-go"
@@ -29,6 +30,19 @@ const (
 	// Wait would park the tool-result goroutine forever (issue #390).
 	bashCloseWaitTimeout = 10 * time.Second
 )
+
+// maxBashWaitGoroutines caps in-flight cmd.Wait goroutines started by Close.
+// Wait is uncancellable, so a setsid hang plus repeated restart/timeout must
+// not leave one blocked goroutine per abandoned session. Further Closes still
+// kill the process group and return; they skip Wait once this many reapers
+// are outstanding. Tests raise this relative to the current count so they
+// stay isolated from other abandoned reapers in the same process.
+var maxBashWaitGoroutines int32 = 8
+
+// bashWaitGoroutines is the number of Close-started Wait goroutines that
+// have not yet returned. Timed-out (abandoned) waits hold a slot until
+// Wait finally returns, which may be never.
+var bashWaitGoroutines atomic.Int32
 
 // credentialEnvPrefixes are the environment-variable namespaces stripped from
 // the bash tool's spawned shell. The runner is typically started with
@@ -259,7 +273,9 @@ var errBashClosed = errors.New("session closed")
 // Close terminates the bash process group and the PTY. Safe to call multiple
 // times. The process reap is bounded: if Wait does not return within
 // bashCloseWaitTimeout, Close logs and returns so a setsid child that left
-// bash unreapable cannot park the session forever.
+// bash unreapable cannot park the session forever. Outstanding Wait
+// goroutines are capped at maxBashWaitGoroutines so repeated restart after
+// an unreapable Wait cannot accumulate unbounded blocked reapers.
 func (s *BashSession) Close() error {
 	s.mu.Lock()
 	if s.closed {
@@ -299,8 +315,15 @@ func (s *BashSession) reap() error {
 		timeout = bashCloseWaitTimeout
 	}
 
+	if !tryBeginBashWait() {
+		slog.Default().Warn("bash: skipping process wait; outstanding wait goroutines at cap",
+			slog.Int("cap", int(maxBashWaitGoroutines)))
+		return nil
+	}
+
 	done := make(chan error, 1)
 	go func() {
+		defer endBashWait()
 		done <- wait()
 	}()
 	timer := time.NewTimer(timeout)
@@ -318,6 +341,22 @@ func (s *BashSession) reap() error {
 			slog.Duration("timeout", timeout))
 		return nil
 	}
+}
+
+func tryBeginBashWait() bool {
+	for {
+		n := bashWaitGoroutines.Load()
+		if n >= maxBashWaitGoroutines {
+			return false
+		}
+		if bashWaitGoroutines.CompareAndSwap(n, n+1) {
+			return true
+		}
+	}
+}
+
+func endBashWait() {
+	bashWaitGoroutines.Add(-1)
 }
 
 func cleanOutput(b []byte, truncated bool) string {

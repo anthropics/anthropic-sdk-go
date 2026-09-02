@@ -57,6 +57,9 @@ func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts 
 	if !param.IsOmitted(params.UserProfileID) {
 		opts = append(opts, option.WithHeader("anthropic-user-profile-id", fmt.Sprintf("%v", params.UserProfileID.Value)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 
@@ -91,6 +94,9 @@ func (r *MessageService) NewStreaming(ctx context.Context, params MessageNewPara
 	if !param.IsOmitted(params.UserProfileID) {
 		opts = append(opts, option.WithHeader("anthropic-user-profile-id", fmt.Sprintf("%v", params.UserProfileID.Value)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 	opts = append(opts, option.WithJSONSet("stream", true))
@@ -109,6 +115,9 @@ func (r *MessageService) NewStreaming(ctx context.Context, params MessageNewPara
 func (r *MessageService) CountTokens(ctx context.Context, params MessageCountTokensParams, opts ...option.RequestOption) (res *MessageTokensCount, err error) {
 	if !param.IsOmitted(params.UserProfileID) {
 		opts = append(opts, option.WithHeader("anthropic-user-profile-id", fmt.Sprintf("%v", params.UserProfileID.Value)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens"
@@ -13422,6 +13431,7 @@ type MessageNewParams struct {
 	// The user profile ID to attribute this request to. Use when acting on behalf of a
 	// party other than your organization. Requires the `user-profiles` beta header.
 	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`
+	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Container identifier for reuse across requests.
 	Container MessageCreateParamsContainerUnion `json:"container,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
@@ -13657,6 +13667,7 @@ type MessageCountTokensParams struct {
 	// The user profile ID to attribute this request to. Use when acting on behalf of a
 	// party other than your organization. Requires the `user-profiles` beta header.
 	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`
+	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`

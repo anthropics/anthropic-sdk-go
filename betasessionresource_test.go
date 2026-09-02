@@ -30,8 +30,9 @@ func TestBetaSessionResourceGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"sesrsc_011CZkZBJq5dWxk9fVLNcPht",
 		anthropic.BetaSessionResourceGetParams{
-			SessionID: "sesn_011CZkZAtmR3yMPDzynEDxu7",
-			Betas:     []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			SessionID:   "sesn_011CZkZAtmR3yMPDzynEDxu7",
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -63,6 +64,7 @@ func TestBetaSessionResourceUpdateWithOptionalParams(t *testing.T) {
 			SessionID:          "sesn_011CZkZAtmR3yMPDzynEDxu7",
 			AuthorizationToken: "ghp_exampletoken",
 			Betas:              []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID:        anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -91,9 +93,10 @@ func TestBetaSessionResourceListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"sesn_011CZkZAtmR3yMPDzynEDxu7",
 		anthropic.BetaSessionResourceListParams{
-			Limit: anthropic.Int(0),
-			Page:  anthropic.String("page"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Limit:       anthropic.Int(0),
+			Page:        anthropic.String("page"),
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -122,8 +125,9 @@ func TestBetaSessionResourceDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"sesrsc_011CZkZBJq5dWxk9fVLNcPht",
 		anthropic.BetaSessionResourceDeleteParams{
-			SessionID: "sesn_011CZkZAtmR3yMPDzynEDxu7",
-			Betas:     []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			SessionID:   "sesn_011CZkZAtmR3yMPDzynEDxu7",
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -157,7 +161,8 @@ func TestBetaSessionResourceAddWithOptionalParams(t *testing.T) {
 				Type:      anthropic.BetaManagedAgentsFileResourceParamsTypeFile,
 				MountPath: anthropic.String("/uploads/receipt.pdf"),
 			},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

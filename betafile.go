@@ -50,6 +50,9 @@ func (r *BetaFileService) List(ctx context.Context, params BetaFileListParams, o
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/files?beta=true"
@@ -75,6 +78,9 @@ func (r *BetaFileService) Delete(ctx context.Context, fileID string, body BetaFi
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(body.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	if fileID == "" {
 		err = errors.New("missing required file_id parameter")
@@ -89,6 +95,9 @@ func (r *BetaFileService) Delete(ctx context.Context, fileID string, body BetaFi
 func (r *BetaFileService) Download(ctx context.Context, fileID string, query BetaFileDownloadParams, opts ...option.RequestOption) (res *http.Response, err error) {
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(query.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "application/binary")}, opts...)
@@ -106,6 +115,9 @@ func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query 
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(query.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	if fileID == "" {
 		err = errors.New("missing required file_id parameter")
@@ -120,6 +132,9 @@ func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query 
 func (r *BetaFileService) Upload(ctx context.Context, params BetaFileUploadParams, opts ...option.RequestOption) (res *BetaFileMetadata, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/files?beta=true"
@@ -238,7 +253,8 @@ type BetaFileListParams struct {
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Filter by scope ID. Only returns files associated with the specified scope
 	// (e.g., a session ID).
-	ScopeID param.Opt[string] `query:"scope_id,omitzero" json:"-"`
+	ScopeID     param.Opt[string] `query:"scope_id,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Restrict the result set to Files whose `id` is in this list. At most 100 entries
 	// (after de-duplication). Mutually exclusive with `page` and `limit`. When
 	// supplied, the response is always a single page (`next_page` is null). IDs that
@@ -259,18 +275,21 @@ func (r BetaFileListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaFileDeleteParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 
 type BetaFileDownloadParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 
 type BetaFileGetMetadataParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -281,7 +300,8 @@ type BetaFileUploadParams struct {
 	File io.Reader `json:"file,omitzero" api:"required" format:"binary"`
 	// Seconds from upload until the file expires and its bytes become permanently
 	// unavailable. Must be between 3600 (one hour) and 7776000 (ninety days).
-	ExpiresInSeconds param.Opt[int64] `json:"expires_in_seconds,omitzero"`
+	ExpiresInSeconds param.Opt[int64]  `json:"expires_in_seconds,omitzero"`
+	WorkspaceID      param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

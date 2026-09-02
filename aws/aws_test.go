@@ -265,6 +265,30 @@ func TestWorkspaceIDFromEnv(t *testing.T) {
 	}
 }
 
+func TestPerRequestWorkspaceIDOverridesClientConfig(t *testing.T) {
+	t.Setenv("ANTHROPIC_AWS_WORKSPACE_ID", "")
+	t.Setenv("ANTHROPIC_AWS_API_KEY", "")
+
+	client, captured := newTestClient(t, ClientConfig{
+		APIKey:      "my-api-key",
+		AWSRegion:   "us-east-1",
+		WorkspaceID: "ws-client",
+	})
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:       "claude-sonnet-4-6-20250514",
+		MaxTokens:   1,
+		Messages:    []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))},
+		WorkspaceID: anthropic.String("ws-request"),
+	})
+	if err != nil {
+		t.Fatalf("request failed: %v", err)
+	}
+
+	if got := captured.Headers.Values("Anthropic-Workspace-Id"); len(got) != 1 || got[0] != "ws-request" {
+		t.Errorf("expected single anthropic-workspace-id %q, got %q", "ws-request", got)
+	}
+}
+
 // --- Base URL tests ---
 
 func TestBaseURLDerivedFromRegion(t *testing.T) {

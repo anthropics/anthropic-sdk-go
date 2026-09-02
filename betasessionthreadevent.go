@@ -43,6 +43,9 @@ func (r *BetaSessionThreadEventService) List(ctx context.Context, threadID strin
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
 	if params.SessionID == "" {
@@ -80,6 +83,9 @@ func (r *BetaSessionThreadEventService) StreamEvents(ctx context.Context, thread
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	if params.SessionID == "" {
@@ -100,7 +106,8 @@ type BetaSessionThreadEventListParams struct {
 	// Query parameter for limit
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Query parameter for page
-	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -116,7 +123,8 @@ func (r BetaSessionThreadEventListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaSessionThreadEventStreamParams struct {
-	SessionID string `path:"session_id" api:"required" json:"-"`
+	SessionID   string            `path:"session_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// When set, this connection also receives streaming deltas (`event_start`,
 	// `event_delta`) while an event is being produced, before the event itself
 	// arrives. Deltas are best-effort; when the final event is produced it carries the

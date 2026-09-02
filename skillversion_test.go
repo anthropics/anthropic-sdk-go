@@ -15,7 +15,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
-func TestSkillVersionNew(t *testing.T) {
+func TestSkillVersionNewWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -31,7 +31,8 @@ func TestSkillVersionNew(t *testing.T) {
 		context.TODO(),
 		"skill_id",
 		anthropic.SkillVersionNewParams{
-			Files: []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
+			Files:       []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -43,7 +44,7 @@ func TestSkillVersionNew(t *testing.T) {
 	}
 }
 
-func TestSkillVersionGet(t *testing.T) {
+func TestSkillVersionGetWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -59,7 +60,8 @@ func TestSkillVersionGet(t *testing.T) {
 		context.TODO(),
 		"version",
 		anthropic.SkillVersionGetParams{
-			SkillID: "skill_id",
+			SkillID:     "skill_id",
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -87,8 +89,9 @@ func TestSkillVersionListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"skill_id",
 		anthropic.SkillVersionListParams{
-			Limit: anthropic.Int(1),
-			Page:  anthropic.String("page"),
+			Limit:       anthropic.Int(1),
+			Page:        anthropic.String("page"),
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -100,7 +103,7 @@ func TestSkillVersionListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestSkillVersionDelete(t *testing.T) {
+func TestSkillVersionDeleteWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -116,7 +119,8 @@ func TestSkillVersionDelete(t *testing.T) {
 		context.TODO(),
 		"version",
 		anthropic.SkillVersionDeleteParams{
-			SkillID: "skill_id",
+			SkillID:     "skill_id",
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

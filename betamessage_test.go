@@ -188,6 +188,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		TopP:          anthropic.Float(0.7),
 		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		UserProfileID: anthropic.String("anthropic-user-profile-id"),
+		WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -343,6 +344,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 		}},
 		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		UserProfileID: anthropic.String("anthropic-user-profile-id"),
+		WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

@@ -32,7 +32,8 @@ func TestBetaMemoryStoreNewWithOptionalParams(t *testing.T) {
 		Metadata: map[string]string{
 			"foo": "string",
 		},
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -59,7 +60,8 @@ func TestBetaMemoryStoreGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"memory_store_id",
 		anthropic.BetaMemoryStoreGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -91,8 +93,9 @@ func TestBetaMemoryStoreUpdateWithOptionalParams(t *testing.T) {
 			Metadata: map[string]string{
 				"foo": "string",
 			},
-			Name:  anthropic.String("x"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Name:        anthropic.String("x"),
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -124,6 +127,7 @@ func TestBetaMemoryStoreListWithOptionalParams(t *testing.T) {
 		Limit:           anthropic.Int(0),
 		Page:            anthropic.String("page"),
 		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID:     anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -150,7 +154,8 @@ func TestBetaMemoryStoreDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"memory_store_id",
 		anthropic.BetaMemoryStoreDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -178,7 +183,8 @@ func TestBetaMemoryStoreArchiveWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"memory_store_id",
 		anthropic.BetaMemoryStoreArchiveParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

@@ -47,15 +47,21 @@ func NewSkillService(opts ...option.RequestOption) (r SkillService) {
 }
 
 // Create Skill
-func (r *SkillService) New(ctx context.Context, body SkillNewParams, opts ...option.RequestOption) (res *Skill, err error) {
+func (r *SkillService) New(ctx context.Context, params SkillNewParams, opts ...option.RequestOption) (res *Skill, err error) {
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/skills"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Get Skill
-func (r *SkillService) Get(ctx context.Context, skillID string, opts ...option.RequestOption) (res *Skill, err error) {
+func (r *SkillService) Get(ctx context.Context, skillID string, query SkillGetParams, opts ...option.RequestOption) (res *Skill, err error) {
+	if !param.IsOmitted(query.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	if skillID == "" {
 		err = errors.New("missing required skill_id parameter")
@@ -67,12 +73,15 @@ func (r *SkillService) Get(ctx context.Context, skillID string, opts ...option.R
 }
 
 // List Skills
-func (r *SkillService) List(ctx context.Context, query SkillListParams, opts ...option.RequestOption) (res *pagination.PageCursor[Skill], err error) {
+func (r *SkillService) List(ctx context.Context, params SkillListParams, opts ...option.RequestOption) (res *pagination.PageCursor[Skill], err error) {
 	var raw *http.Response
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/skills"
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -85,12 +94,15 @@ func (r *SkillService) List(ctx context.Context, query SkillListParams, opts ...
 }
 
 // List Skills
-func (r *SkillService) ListAutoPaging(ctx context.Context, query SkillListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[Skill] {
-	return pagination.NewPageCursorAutoPager(r.List(ctx, query, opts...))
+func (r *SkillService) ListAutoPaging(ctx context.Context, params SkillListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[Skill] {
+	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete Skill
-func (r *SkillService) Delete(ctx context.Context, skillID string, opts ...option.RequestOption) (res *DeletedSkill, err error) {
+func (r *SkillService) Delete(ctx context.Context, skillID string, body SkillDeleteParams, opts ...option.RequestOption) (res *DeletedSkill, err error) {
+	if !param.IsOmitted(body.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	if skillID == "" {
 		err = errors.New("missing required skill_id parameter")
@@ -227,6 +239,7 @@ type SkillNewParams struct {
 	// set: derived from the SKILL.md frontmatter `name` when omitted at creation. Not
 	// unique.
 	DisplayName param.Opt[string] `json:"display_name,omitzero"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	paramObj
 }
 
@@ -248,6 +261,11 @@ func (r SkillNewParams) MarshalMultipart() (data []byte, contentType string, err
 	return buf.Bytes(), writer.FormDataContentType(), nil
 }
 
+type SkillGetParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	paramObj
+}
+
 type SkillListParams struct {
 	// Pagination token for fetching a specific page of results.
 	//
@@ -264,7 +282,8 @@ type SkillListParams struct {
 	// Number of results to return per page.
 	//
 	// Ranges from `1` to `1000`. Defaults to `20`.
-	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	Limit       param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	paramObj
 }
 
@@ -274,4 +293,9 @@ func (r SkillListParams) URLQuery() (v url.Values, err error) {
 		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type SkillDeleteParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	paramObj
 }

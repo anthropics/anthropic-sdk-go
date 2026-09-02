@@ -50,6 +50,9 @@ func (r *CompletionService) New(ctx context.Context, params CompletionNewParams,
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/complete"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -73,6 +76,9 @@ func (r *CompletionService) NewStreaming(ctx context.Context, params CompletionN
 	)
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append(opts, option.WithJSONSet("stream", true))
@@ -172,7 +178,8 @@ type CompletionNewParams struct {
 	// reaches a particular probability specified by `top_p`.
 	//
 	// Recommended for advanced use cases only.
-	TopP param.Opt[float64] `json:"top_p,omitzero"`
+	TopP        param.Opt[float64] `json:"top_p,omitzero"`
+	WorkspaceID param.Opt[string]  `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
 	// Sequences that will cause the model to stop generating.

@@ -46,6 +46,9 @@ func (r *BetaSessionResourceService) Get(ctx context.Context, resourceID string,
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	if params.SessionID == "" {
@@ -65,6 +68,9 @@ func (r *BetaSessionResourceService) Get(ctx context.Context, resourceID string,
 func (r *BetaSessionResourceService) Update(ctx context.Context, resourceID string, params BetaSessionResourceUpdateParams, opts ...option.RequestOption) (res *BetaSessionResourceUpdateResponseUnion, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
@@ -86,6 +92,9 @@ func (r *BetaSessionResourceService) List(ctx context.Context, sessionID string,
 	var raw *http.Response
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
@@ -116,6 +125,9 @@ func (r *BetaSessionResourceService) Delete(ctx context.Context, resourceID stri
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	if params.SessionID == "" {
@@ -135,6 +147,9 @@ func (r *BetaSessionResourceService) Delete(ctx context.Context, resourceID stri
 func (r *BetaSessionResourceService) Add(ctx context.Context, sessionID string, params BetaSessionResourceAddParams, opts ...option.RequestOption) (res *BetaManagedAgentsFileResource, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
@@ -681,7 +696,8 @@ func (r *BetaSessionResourceUpdateResponseUnion) UnmarshalJSON(data []byte) erro
 }
 
 type BetaSessionResourceGetParams struct {
-	SessionID string `path:"session_id" api:"required" json:"-"`
+	SessionID   string            `path:"session_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -691,7 +707,8 @@ type BetaSessionResourceUpdateParams struct {
 	SessionID string `path:"session_id" api:"required" json:"-"`
 	// New authorization token for the resource. Currently only `github_repository`
 	// resources support token rotation.
-	AuthorizationToken string `json:"authorization_token" api:"required"`
+	AuthorizationToken string            `json:"authorization_token" api:"required"`
+	WorkspaceID        param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -710,7 +727,8 @@ type BetaSessionResourceListParams struct {
 	// all resources.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Opaque cursor from a previous response's `next_page` field.
-	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -726,7 +744,8 @@ func (r BetaSessionResourceListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaSessionResourceDeleteParams struct {
-	SessionID string `path:"session_id" api:"required" json:"-"`
+	SessionID   string            `path:"session_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -735,6 +754,7 @@ type BetaSessionResourceDeleteParams struct {
 type BetaSessionResourceAddParams struct {
 	// Mount a file uploaded via the Files API into the session.
 	BetaManagedAgentsFileResourceParams BetaManagedAgentsFileResourceParams
+	WorkspaceID                         param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

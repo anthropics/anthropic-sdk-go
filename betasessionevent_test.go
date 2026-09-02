@@ -40,6 +40,7 @@ func TestBetaSessionEventListWithOptionalParams(t *testing.T) {
 			Page:         anthropic.String("page"),
 			Types:        []string{"string"},
 			Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID:  anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -78,7 +79,8 @@ func TestBetaSessionEventSendWithOptionalParams(t *testing.T) {
 					Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 				},
 			}},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

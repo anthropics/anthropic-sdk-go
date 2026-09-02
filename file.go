@@ -45,12 +45,15 @@ func NewFileService(opts ...option.RequestOption) (r FileService) {
 }
 
 // List Files
-func (r *FileService) List(ctx context.Context, query FileListParams, opts ...option.RequestOption) (res *pagination.PageCursor[FileMetadata], err error) {
+func (r *FileService) List(ctx context.Context, params FileListParams, opts ...option.RequestOption) (res *pagination.PageCursor[FileMetadata], err error) {
 	var raw *http.Response
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/files"
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,12 +66,15 @@ func (r *FileService) List(ctx context.Context, query FileListParams, opts ...op
 }
 
 // List Files
-func (r *FileService) ListAutoPaging(ctx context.Context, query FileListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[FileMetadata] {
-	return pagination.NewPageCursorAutoPager(r.List(ctx, query, opts...))
+func (r *FileService) ListAutoPaging(ctx context.Context, params FileListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[FileMetadata] {
+	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete File
-func (r *FileService) Delete(ctx context.Context, fileID string, opts ...option.RequestOption) (res *DeletedFile, err error) {
+func (r *FileService) Delete(ctx context.Context, fileID string, body FileDeleteParams, opts ...option.RequestOption) (res *DeletedFile, err error) {
+	if !param.IsOmitted(body.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	if fileID == "" {
 		err = errors.New("missing required file_id parameter")
@@ -80,7 +86,10 @@ func (r *FileService) Delete(ctx context.Context, fileID string, opts ...option.
 }
 
 // Download File
-func (r *FileService) Download(ctx context.Context, fileID string, opts ...option.RequestOption) (res *http.Response, err error) {
+func (r *FileService) Download(ctx context.Context, fileID string, query FileDownloadParams, opts ...option.RequestOption) (res *http.Response, err error) {
+	if !param.IsOmitted(query.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "application/binary")}, opts...)
 	if fileID == "" {
@@ -93,7 +102,10 @@ func (r *FileService) Download(ctx context.Context, fileID string, opts ...optio
 }
 
 // Get File Metadata
-func (r *FileService) GetMetadata(ctx context.Context, fileID string, opts ...option.RequestOption) (res *FileMetadata, err error) {
+func (r *FileService) GetMetadata(ctx context.Context, fileID string, query FileGetMetadataParams, opts ...option.RequestOption) (res *FileMetadata, err error) {
+	if !param.IsOmitted(query.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	if fileID == "" {
 		err = errors.New("missing required file_id parameter")
@@ -105,10 +117,13 @@ func (r *FileService) GetMetadata(ctx context.Context, fileID string, opts ...op
 }
 
 // Upload File
-func (r *FileService) Upload(ctx context.Context, body FileUploadParams, opts ...option.RequestOption) (res *FileMetadata, err error) {
+func (r *FileService) Upload(ctx context.Context, params FileUploadParams, opts ...option.RequestOption) (res *FileMetadata, err error) {
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/files"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
@@ -196,7 +211,8 @@ type FileListParams struct {
 	// Number of items to return per page.
 	//
 	// Defaults to `20`. Ranges from `1` to `1000`.
-	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	Limit       param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Restrict the result set to Files whose `id` is in this list. At most 100 entries
 	// (after de-duplication). Mutually exclusive with `page` and `limit`. When
 	// supplied, the response is always a single page (`next_page` is null). IDs that
@@ -214,12 +230,28 @@ func (r FileListParams) URLQuery() (v url.Values, err error) {
 	})
 }
 
+type FileDeleteParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	paramObj
+}
+
+type FileDownloadParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	paramObj
+}
+
+type FileGetMetadataParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	paramObj
+}
+
 type FileUploadParams struct {
 	// The file to upload
 	File io.Reader `json:"file,omitzero" api:"required" format:"binary"`
 	// Seconds from upload until the file expires and its bytes become permanently
 	// unavailable. Must be between 3600 (one hour) and 7776000 (ninety days).
-	ExpiresInSeconds param.Opt[int64] `json:"expires_in_seconds,omitzero"`
+	ExpiresInSeconds param.Opt[int64]  `json:"expires_in_seconds,omitzero"`
+	WorkspaceID      param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	paramObj
 }
 

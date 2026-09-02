@@ -50,6 +50,9 @@ func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, par
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	if params.EnvironmentID == "" {
@@ -74,6 +77,9 @@ func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, par
 func (r *BetaEnvironmentWorkService) Update(ctx context.Context, workID string, params BetaEnvironmentWorkUpdateParams, opts ...option.RequestOption) (res *BetaSelfHostedWork, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
@@ -210,6 +216,9 @@ func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID st
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(query.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	if environmentID == "" {
@@ -230,6 +239,9 @@ func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID st
 func (r *BetaEnvironmentWorkService) Stop(ctx context.Context, workID string, params BetaEnvironmentWorkStopParams, opts ...option.RequestOption) (res *BetaSelfHostedWork, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
@@ -508,7 +520,8 @@ func (r *BetaSessionWorkData) UnmarshalJSON(data []byte) error {
 }
 
 type BetaEnvironmentWorkGetParams struct {
-	EnvironmentID string `path:"environment_id" api:"required" json:"-"`
+	EnvironmentID string            `path:"environment_id" api:"required" json:"-"`
+	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -518,6 +531,7 @@ type BetaEnvironmentWorkUpdateParams struct {
 	EnvironmentID string `path:"environment_id" api:"required" json:"-"`
 	// Request to update work item metadata.
 	BetaSelfHostedWorkUpdateRequest BetaSelfHostedWorkUpdateRequestParam
+	WorkspaceID                     param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -605,6 +619,7 @@ func (r BetaEnvironmentWorkPollParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaEnvironmentWorkStatsParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -614,6 +629,7 @@ type BetaEnvironmentWorkStopParams struct {
 	EnvironmentID string `path:"environment_id" api:"required" json:"-"`
 	// Request to stop a work item.
 	BetaSelfHostedWorkStopRequest BetaSelfHostedWorkStopRequestParam
+	WorkspaceID                   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

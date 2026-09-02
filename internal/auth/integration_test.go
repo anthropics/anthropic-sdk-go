@@ -375,6 +375,44 @@ func TestIntegration_EnvWorkspaceIDFillsUserOAuthHeader(t *testing.T) {
 	}
 }
 
+func TestIntegration_PerRequestWorkspaceIDOverridesConfigHeader(t *testing.T) {
+	unsetEnv(t, "ANTHROPIC_API_KEY")
+	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
+	isolateAuthEnv(t)
+
+	var apiWorkspaceHeaders []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		apiWorkspaceHeaders = r.Header.Values("anthropic-workspace-id")
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(successResponse))
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	credPath := filepath.Join(dir, "credentials.json")
+	os.WriteFile(credPath, []byte(`{"type":"oauth_token","access_token":"my-access-tok"}`), 0600)
+
+	client := anthropic.NewClient(
+		option.WithConfig(&config.Config{
+			BaseURL:     server.URL,
+			WorkspaceID: "wrkspc_config",
+			AuthenticationInfo: &config.AuthenticationInfo{
+				Type:            config.AuthenticationTypeUserOAuth,
+				CredentialsPath: credPath,
+				UserOAuth:       &config.UserOAuth{},
+			},
+		}),
+	)
+	params := defaultParams
+	params.WorkspaceID = anthropic.String("wrkspc_request")
+	if _, err := client.Messages.New(context.Background(), params); err != nil {
+		t.Fatal(err)
+	}
+	if len(apiWorkspaceHeaders) != 1 || apiWorkspaceHeaders[0] != "wrkspc_request" {
+		t.Fatalf("got anthropic-workspace-id header %q, want single %q", apiWorkspaceHeaders, "wrkspc_request")
+	}
+}
+
 func TestIntegration_401RetryWithInvalidation(t *testing.T) {
 	unsetEnv(t, "ANTHROPIC_API_KEY")
 	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")

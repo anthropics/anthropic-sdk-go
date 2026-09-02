@@ -45,6 +45,9 @@ func (r *BetaDeploymentService) New(ctx context.Context, params BetaDeploymentNe
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	path := "v1/deployments?beta=true"
@@ -56,6 +59,9 @@ func (r *BetaDeploymentService) New(ctx context.Context, params BetaDeploymentNe
 func (r *BetaDeploymentService) Get(ctx context.Context, deploymentID string, query BetaDeploymentGetParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeployment, err error) {
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(query.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
@@ -73,6 +79,9 @@ func (r *BetaDeploymentService) Update(ctx context.Context, deploymentID string,
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	if deploymentID == "" {
@@ -89,6 +98,9 @@ func (r *BetaDeploymentService) List(ctx context.Context, params BetaDeploymentL
 	var raw *http.Response
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
@@ -115,6 +127,9 @@ func (r *BetaDeploymentService) Archive(ctx context.Context, deploymentID string
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(body.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	if deploymentID == "" {
@@ -130,6 +145,9 @@ func (r *BetaDeploymentService) Archive(ctx context.Context, deploymentID string
 func (r *BetaDeploymentService) Pause(ctx context.Context, deploymentID string, body BetaDeploymentPauseParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeployment, err error) {
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(body.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
@@ -147,6 +165,9 @@ func (r *BetaDeploymentService) Run(ctx context.Context, deploymentID string, bo
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(body.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	if deploymentID == "" {
@@ -162,6 +183,9 @@ func (r *BetaDeploymentService) Run(ctx context.Context, deploymentID string, bo
 func (r *BetaDeploymentService) Unpause(ctx context.Context, deploymentID string, body BetaDeploymentUnpauseParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeployment, err error) {
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(body.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
@@ -1841,6 +1865,7 @@ type BetaDeploymentNewParams struct {
 	Name string `json:"name" api:"required"`
 	// Description of what the deployment does.
 	Description param.Opt[string] `json:"description,omitzero"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// A hard spend ceiling. The session stops issuing new model requests once the
 	// tracked list cost reaches `max_list_cost`.
 	Budget BetaManagedAgentsBudgetLimitParam `json:"budget,omitzero"`
@@ -2010,6 +2035,7 @@ func init() {
 }
 
 type BetaDeploymentGetParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -2021,7 +2047,8 @@ type BetaDeploymentUpdateParams struct {
 	// ID of the `environment` where sessions run. Omit to preserve. Cannot be cleared.
 	EnvironmentID param.Opt[string] `json:"environment_id,omitzero"`
 	// Human-readable name. Must be non-empty. Omit to preserve. Cannot be cleared.
-	Name param.Opt[string] `json:"name,omitzero"`
+	Name        param.Opt[string] `json:"name,omitzero"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Metadata patch. Set a key to a string to upsert it, or to null to delete it.
 	// Omit the field to preserve. The stored bag is limited to 16 keys (up to 64 chars
 	// each) with values up to 512 chars.
@@ -2210,7 +2237,8 @@ type BetaDeploymentListParams struct {
 	// Maximum results per page. Default 20, maximum 100.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Opaque pagination cursor.
-	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Filter by status: `active` or `paused`. Omit for both. To include archived
 	// deployments, use `include_archived` instead; the two cannot be combined.
 	//
@@ -2231,24 +2259,28 @@ func (r BetaDeploymentListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaDeploymentArchiveParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 
 type BetaDeploymentPauseParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 
 type BetaDeploymentRunParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 
 type BetaDeploymentUnpauseParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

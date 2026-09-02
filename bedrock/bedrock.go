@@ -227,10 +227,8 @@ func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptio
 func WithConfig(cfg aws.Config) option.RequestOption {
 	var credentialErr error
 
-	if cfg.BearerAuthTokenProvider == nil {
-		if token := os.Getenv("AWS_BEARER_TOKEN_BEDROCK"); token != "" {
-			cfg.BearerAuthTokenProvider = NewStaticBearerTokenProvider(token)
-		}
+	if token := os.Getenv("AWS_BEARER_TOKEN_BEDROCK"); token != "" {
+		cfg.BearerAuthTokenProvider = NewStaticBearerTokenProvider(token)
 	}
 	if cfg.BearerAuthTokenProvider == nil && cfg.Credentials == nil {
 		credentialErr = fmt.Errorf("expected AWS credentials to be set")

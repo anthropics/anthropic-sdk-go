@@ -1336,6 +1336,62 @@ func TestDefaultClient_ExplicitAuthTokenOverridesBrokenProfile(t *testing.T) {
 	}
 }
 
+func TestDefaultClient_ExplicitAuthTokenSkipsEnvAPIKey(t *testing.T) {
+	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
+	isolateAuthEnv(t)
+	t.Setenv("ANTHROPIC_API_KEY", "sk-env-key")
+
+	var receivedHeaders http.Header
+	apiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedHeaders = r.Header.Clone()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(successResponse))
+	}))
+	defer apiServer.Close()
+
+	client := anthropic.NewClient(
+		option.WithBaseURL(apiServer.URL),
+		option.WithAuthToken("tok-explicit"),
+	)
+	_, err := client.Messages.New(context.Background(), defaultParams)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := receivedHeaders.Get("Authorization"); got != "Bearer tok-explicit" {
+		t.Fatalf("Authorization: got %q, want %q", got, "Bearer tok-explicit")
+	}
+	if got := receivedHeaders.Get("X-Api-Key"); got != "" {
+		t.Fatalf("X-Api-Key should not be sent when explicit auth token is passed, got %q", got)
+	}
+}
+
+func TestDefaultClient_ExplicitAPIKeySkipsEnvAuthToken(t *testing.T) {
+	unsetEnv(t, "ANTHROPIC_API_KEY")
+	isolateAuthEnv(t)
+	t.Setenv("ANTHROPIC_AUTH_TOKEN", "tok-env")
+
+	var receivedHeaders http.Header
+	apiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedHeaders = r.Header.Clone()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(successResponse))
+	}))
+	defer apiServer.Close()
+	t.Setenv("ANTHROPIC_BASE_URL", apiServer.URL)
+
+	client := anthropic.NewClient(option.WithAPIKey("sk-explicit"))
+	_, err := client.Messages.New(context.Background(), defaultParams)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := receivedHeaders.Get("X-Api-Key"); got != "sk-explicit" {
+		t.Fatalf("X-Api-Key: got %q, want %q", got, "sk-explicit")
+	}
+	if got := receivedHeaders.Get("Authorization"); got != "" {
+		t.Fatalf("Authorization should not be sent when explicit API key is passed, got %q", got)
+	}
+}
+
 // TestIntegration_APIKeyShadowWarning_InvertedOrder locks in that the
 // shadow warning fires regardless of the order the caller passes
 // option.WithConfig and option.WithAPIKey. The earlier implementation

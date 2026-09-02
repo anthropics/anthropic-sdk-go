@@ -269,3 +269,30 @@ func TestBashSessionTerminatedIsMatchable(t *testing.T) {
 	_, _, err = sess.Exec(context.Background(), "echo after", 5*time.Second)
 	require.ErrorIs(t, err, errBashClosed, "Exec on a closed session is reported as closed")
 }
+
+// TestBashSessionCloseReturnsWhenWaitHangs pins the #390 reap bound: a
+// setsid child can leave bash unreapable, so Close must not block forever
+// on cmd.Wait(). A fake Wait that never returns must still let Close
+// return after the deadline.
+func TestBashSessionCloseReturnsWhenWaitHangs(t *testing.T) {
+	s := &BashSession{
+		waitFn:           func() error { select {} },
+		closeWaitTimeout: 50 * time.Millisecond,
+	}
+
+	start := time.Now()
+	done := make(chan error, 1)
+	go func() { done <- s.Close() }()
+
+	select {
+	case err := <-done:
+		require.NoError(t, err)
+		require.Less(t, time.Since(start), time.Second, "Close must return after the wait deadline rather than blocking on Wait")
+	case <-time.After(2 * time.Second):
+		t.Fatal("Close blocked on Wait; the reap deadline did not fire")
+	}
+
+	// Idempotent after a timed-out reap: the still-running Wait goroutine
+	// must not cause a second Close to hang.
+	require.NoError(t, s.Close())
+}

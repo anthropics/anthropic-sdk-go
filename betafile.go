@@ -296,7 +296,9 @@ type BetaFileGetMetadataParams struct {
 }
 
 type BetaFileUploadParams struct {
-	// The file to upload
+	// The file to upload. Only the final path component of the part's `filename` is
+	// kept; an absent or empty `filename` is replaced with `unnamed` plus the
+	// extension for the file's stored `mime_type`, when known.
 	File io.Reader `json:"file,omitzero" api:"required" format:"binary"`
 	// Seconds from upload until the file expires and its bytes become permanently
 	// unavailable. Must be between 3600 (one hour) and 7776000 (ninety days).

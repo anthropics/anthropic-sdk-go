@@ -282,7 +282,7 @@ type BetaManagedAgentsMemoryVersion struct {
 	// the `memory_version` row. The API key that created a session is not recorded on
 	// agent writes; attribution answers who made the write, not who is ultimately
 	// responsible. Look up session provenance separately via the
-	// [Sessions API](/en/api/sessions-retrieve).
+	// [Sessions API](/en/api/beta/sessions/retrieve).
 	CreatedBy BetaManagedAgentsActorUnion `json:"created_by"`
 	// The memory's path at the time of this write. `null` if and only if `redacted_at`
 	// is set.
@@ -293,7 +293,7 @@ type BetaManagedAgentsMemoryVersion struct {
 	// the `memory_version` row. The API key that created a session is not recorded on
 	// agent writes; attribution answers who made the write, not who is ultimately
 	// responsible. Look up session provenance separately via the
-	// [Sessions API](/en/api/sessions-retrieve).
+	// [Sessions API](/en/api/beta/sessions/retrieve).
 	RedactedBy BetaManagedAgentsActorUnion `json:"redacted_by"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -362,7 +362,7 @@ func (r *BetaManagedAgentsServiceAccountActor) UnmarshalJSON(data []byte) error 
 // filesystem at `/mnt/memory/`.
 type BetaManagedAgentsSessionActor struct {
 	// ID of the session that performed the write (a `sesn_...` value). Look up the
-	// session via [Retrieve a session](/en/api/sessions-retrieve) for further
+	// session via [Retrieve a session](/en/api/beta/sessions/retrieve) for further
 	// provenance.
 	SessionID string `json:"session_id" api:"required"`
 	// Any of "session_actor".

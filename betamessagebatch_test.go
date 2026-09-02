@@ -192,6 +192,7 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 		}},
 		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		UserProfileID: anthropic.String("anthropic-user-profile-id"),
+		WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -218,7 +219,8 @@ func TestBetaMessageBatchGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"message_batch_id",
 		anthropic.BetaMessageBatchGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -243,10 +245,11 @@ func TestBetaMessageBatchListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.Messages.Batches.List(context.TODO(), anthropic.BetaMessageBatchListParams{
-		AfterID:  anthropic.String("after_id"),
-		BeforeID: anthropic.String("before_id"),
-		Limit:    anthropic.Int(1),
-		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		AfterID:     anthropic.String("after_id"),
+		BeforeID:    anthropic.String("before_id"),
+		Limit:       anthropic.Int(1),
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -273,7 +276,8 @@ func TestBetaMessageBatchDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"message_batch_id",
 		anthropic.BetaMessageBatchDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -301,7 +305,8 @@ func TestBetaMessageBatchCancelWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"message_batch_id",
 		anthropic.BetaMessageBatchCancelParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

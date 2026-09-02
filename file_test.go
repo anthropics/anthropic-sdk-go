@@ -30,9 +30,10 @@ func TestFileListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Files.List(context.TODO(), anthropic.FileListParams{
-		IDs:   []string{"string"},
-		Limit: anthropic.Int(1),
-		Page:  anthropic.String("page"),
+		IDs:         []string{"string"},
+		Limit:       anthropic.Int(1),
+		Page:        anthropic.String("page"),
+		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -43,7 +44,7 @@ func TestFileListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestFileDelete(t *testing.T) {
+func TestFileDeleteWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -55,7 +56,13 @@ func TestFileDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Files.Delete(context.TODO(), "file_id")
+	_, err := client.Files.Delete(
+		context.TODO(),
+		"file_id",
+		anthropic.FileDeleteParams{
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -65,7 +72,7 @@ func TestFileDelete(t *testing.T) {
 	}
 }
 
-func TestFileDownload(t *testing.T) {
+func TestFileDownloadWithOptionalParams(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		w.Write([]byte("abc"))
@@ -76,7 +83,13 @@ func TestFileDownload(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	resp, err := client.Files.Download(context.TODO(), "file_id")
+	resp, err := client.Files.Download(
+		context.TODO(),
+		"file_id",
+		anthropic.FileDownloadParams{
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -99,7 +112,7 @@ func TestFileDownload(t *testing.T) {
 	}
 }
 
-func TestFileGetMetadata(t *testing.T) {
+func TestFileGetMetadataWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -111,7 +124,13 @@ func TestFileGetMetadata(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Files.GetMetadata(context.TODO(), "file_id")
+	_, err := client.Files.GetMetadata(
+		context.TODO(),
+		"file_id",
+		anthropic.FileGetMetadataParams{
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -136,6 +155,7 @@ func TestFileUploadWithOptionalParams(t *testing.T) {
 	_, err := client.Files.Upload(context.TODO(), anthropic.FileUploadParams{
 		File:             io.Reader(bytes.NewBuffer([]byte("Example data"))),
 		ExpiresInSeconds: anthropic.Int(3600),
+		WorkspaceID:      anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

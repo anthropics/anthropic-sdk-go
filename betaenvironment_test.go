@@ -51,8 +51,9 @@ func TestBetaEnvironmentNewWithOptionalParams(t *testing.T) {
 		Metadata: map[string]string{
 			"foo": "string",
 		},
-		Scope: anthropic.BetaEnvironmentNewParamsScopeOrganization,
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Scope:       anthropic.BetaEnvironmentNewParamsScopeOrganization,
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -79,7 +80,8 @@ func TestBetaEnvironmentGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"env_011CZkZ9X2dpNyB7HsEFoRfW",
 		anthropic.BetaEnvironmentGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -131,9 +133,10 @@ func TestBetaEnvironmentUpdateWithOptionalParams(t *testing.T) {
 			Metadata: map[string]string{
 				"foo": "string",
 			},
-			Name:  anthropic.String("x"),
-			Scope: anthropic.BetaEnvironmentUpdateParamsScopeOrganization,
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Name:        anthropic.String("x"),
+			Scope:       anthropic.BetaEnvironmentUpdateParamsScopeOrganization,
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -162,6 +165,7 @@ func TestBetaEnvironmentListWithOptionalParams(t *testing.T) {
 		Limit:           anthropic.Int(1),
 		Page:            anthropic.String("page"),
 		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID:     anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -188,7 +192,8 @@ func TestBetaEnvironmentDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"env_011CZkZ9X2dpNyB7HsEFoRfW",
 		anthropic.BetaEnvironmentDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -216,7 +221,8 @@ func TestBetaEnvironmentArchiveWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"env_011CZkZ9X2dpNyB7HsEFoRfW",
 		anthropic.BetaEnvironmentArchiveParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

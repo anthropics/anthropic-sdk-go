@@ -30,9 +30,10 @@ func TestBetaAgentVersionListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"agent_011CZkYpogX7uDKUyvBTophP",
 		anthropic.BetaAgentVersionListParams{
-			Limit: anthropic.Int(0),
-			Page:  anthropic.String("page"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Limit:       anthropic.Int(0),
+			Page:        anthropic.String("page"),
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

@@ -29,10 +29,11 @@ func TestBetaMemoryStoreMemoryNewWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"memory_store_id",
 		anthropic.BetaMemoryStoreMemoryNewParams{
-			Content: anthropic.String("content"),
-			Path:    "xx",
-			View:    anthropic.BetaManagedAgentsMemoryViewBasic,
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Content:     anthropic.String("content"),
+			Path:        "xx",
+			View:        anthropic.BetaManagedAgentsMemoryViewBasic,
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -63,6 +64,7 @@ func TestBetaMemoryStoreMemoryGetWithOptionalParams(t *testing.T) {
 			MemoryStoreID: "memory_store_id",
 			View:          anthropic.BetaManagedAgentsMemoryViewBasic,
 			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -98,7 +100,8 @@ func TestBetaMemoryStoreMemoryUpdateWithOptionalParams(t *testing.T) {
 				Type:          anthropic.BetaManagedAgentsPreconditionTypeContentSha256,
 				ContentSha256: anthropic.String("content_sha256"),
 			},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -127,12 +130,13 @@ func TestBetaMemoryStoreMemoryListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"memory_store_id",
 		anthropic.BetaMemoryStoreMemoryListParams{
-			Depth:      anthropic.Int(0),
-			Limit:      anthropic.Int(0),
-			Page:       anthropic.String("page"),
-			PathPrefix: anthropic.String("path_prefix"),
-			View:       anthropic.BetaManagedAgentsMemoryViewBasic,
-			Betas:      []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Depth:       anthropic.Int(0),
+			Limit:       anthropic.Int(0),
+			Page:        anthropic.String("page"),
+			PathPrefix:  anthropic.String("path_prefix"),
+			View:        anthropic.BetaManagedAgentsMemoryViewBasic,
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -163,6 +167,7 @@ func TestBetaMemoryStoreMemoryDeleteWithOptionalParams(t *testing.T) {
 			MemoryStoreID:         "memory_store_id",
 			ExpectedContentSha256: anthropic.String("expected_content_sha256"),
 			Betas:                 []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID:           anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

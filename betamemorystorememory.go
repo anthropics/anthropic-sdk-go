@@ -45,6 +45,9 @@ func (r *BetaMemoryStoreMemoryService) New(ctx context.Context, memoryStoreID st
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22")}, opts...)
 	if memoryStoreID == "" {
@@ -60,6 +63,9 @@ func (r *BetaMemoryStoreMemoryService) New(ctx context.Context, memoryStoreID st
 func (r *BetaMemoryStoreMemoryService) Get(ctx context.Context, memoryID string, params BetaMemoryStoreMemoryGetParams, opts ...option.RequestOption) (res *BetaManagedAgentsMemory, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22")}, opts...)
@@ -81,6 +87,9 @@ func (r *BetaMemoryStoreMemoryService) Update(ctx context.Context, memoryID stri
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22")}, opts...)
 	if params.MemoryStoreID == "" {
@@ -101,6 +110,9 @@ func (r *BetaMemoryStoreMemoryService) List(ctx context.Context, memoryStoreID s
 	var raw *http.Response
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22"), option.WithResponseInto(&raw)}, opts...)
@@ -130,6 +142,9 @@ func (r *BetaMemoryStoreMemoryService) ListAutoPaging(ctx context.Context, memor
 func (r *BetaMemoryStoreMemoryService) Delete(ctx context.Context, memoryID string, params BetaMemoryStoreMemoryDeleteParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeletedMemory, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22")}, opts...)
@@ -421,7 +436,8 @@ type BetaMemoryStoreMemoryNewParams struct {
 	// Must not contain empty segments, `.` or `..` segments, control or format
 	// characters, or the Unicode line and paragraph separators (U+2028, U+2029), and
 	// must be NFC-normalized. Paths are case-sensitive.
-	Path string `json:"path" api:"required"`
+	Path        string            `json:"path" api:"required"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Query parameter for view
 	//
 	// Any of "basic", "full".
@@ -449,7 +465,8 @@ func (r BetaMemoryStoreMemoryNewParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaMemoryStoreMemoryGetParams struct {
-	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
+	MemoryStoreID string            `path:"memory_store_id" api:"required" json:"-"`
+	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Query parameter for view
 	//
 	// Any of "basic", "full".
@@ -479,7 +496,8 @@ type BetaMemoryStoreMemoryUpdateParams struct {
 	// paragraph separators (U+2028, U+2029), and must be NFC-normalized. Paths are
 	// case-sensitive. The memory's `id` is preserved across renames. Omit to leave the
 	// path unchanged.
-	Path param.Opt[string] `json:"path,omitzero"`
+	Path        param.Opt[string] `json:"path,omitzero"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Query parameter for view
 	//
 	// Any of "basic", "full".
@@ -528,7 +546,8 @@ type BetaMemoryStoreMemoryListParams struct {
 	// Optional path prefix filter. Must end with `/` (segment-aligned), e.g.,
 	// `/notes/`. This value appears in request URLs. Do not include secrets or
 	// personally identifiable information.
-	PathPrefix param.Opt[string] `query:"path_prefix,omitzero" json:"-"`
+	PathPrefix  param.Opt[string] `query:"path_prefix,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Which projection of each `memory` to return. Defaults to `basic` (content
 	// omitted). `full` populates `content` on each item and caps `limit` at 20; use
 	// this as the bulk-read path for export and sync.
@@ -553,6 +572,7 @@ type BetaMemoryStoreMemoryDeleteParams struct {
 	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
 	// Query parameter for expected_content_sha256
 	ExpectedContentSha256 param.Opt[string] `query:"expected_content_sha256,omitzero" json:"-"`
+	WorkspaceID           param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

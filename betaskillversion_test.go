@@ -33,8 +33,9 @@ func TestBetaSkillVersionNewWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"skill_id",
 		anthropic.BetaSkillVersionNewParams{
-			Files: []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Files:       []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -62,8 +63,9 @@ func TestBetaSkillVersionGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"version",
 		anthropic.BetaSkillVersionGetParams{
-			SkillID: "skill_id",
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			SkillID:     "skill_id",
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -91,9 +93,10 @@ func TestBetaSkillVersionListWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"skill_id",
 		anthropic.BetaSkillVersionListParams{
-			Limit: anthropic.Int(1),
-			Page:  anthropic.String("page"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Limit:       anthropic.Int(1),
+			Page:        anthropic.String("page"),
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -121,8 +124,9 @@ func TestBetaSkillVersionDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"version",
 		anthropic.BetaSkillVersionDeleteParams{
-			SkillID: "skill_id",
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			SkillID:     "skill_id",
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -149,8 +153,9 @@ func TestBetaSkillVersionDownloadWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"version",
 		anthropic.BetaSkillVersionDownloadParams{
-			SkillID: "skill_id",
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			SkillID:     "skill_id",
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

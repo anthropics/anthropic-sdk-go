@@ -52,6 +52,9 @@ func (r *BetaTunnelCertificateService) New(ctx context.Context, tunnelID string,
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "mcp-tunnels-2026-06-22")}, opts...)
 	if tunnelID == "" {
@@ -72,6 +75,9 @@ func (r *BetaTunnelCertificateService) New(ctx context.Context, tunnelID string,
 func (r *BetaTunnelCertificateService) Get(ctx context.Context, certificateID string, params BetaTunnelCertificateGetParams, opts ...option.RequestOption) (res *BetaTunnelCertificate, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "mcp-tunnels-2026-06-22")}, opts...)
@@ -99,6 +105,9 @@ func (r *BetaTunnelCertificateService) List(ctx context.Context, tunnelID string
 	var raw *http.Response
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "mcp-tunnels-2026-06-22"), option.WithResponseInto(&raw)}, opts...)
@@ -142,6 +151,9 @@ func (r *BetaTunnelCertificateService) ListAutoPaging(ctx context.Context, tunne
 func (r *BetaTunnelCertificateService) Archive(ctx context.Context, certificateID string, params BetaTunnelCertificateArchiveParams, opts ...option.RequestOption) (res *BetaTunnelCertificate, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "mcp-tunnels-2026-06-22")}, opts...)
@@ -196,7 +208,8 @@ func (r *BetaTunnelCertificate) UnmarshalJSON(data []byte) error {
 type BetaTunnelCertificateNewParams struct {
 	// PEM-encoded X.509 CA certificate. Must contain exactly one certificate and no
 	// private-key material. Maximum 8KB.
-	CACertificatePEM string `json:"ca_certificate_pem" api:"required"`
+	CACertificatePEM string            `json:"ca_certificate_pem" api:"required"`
+	WorkspaceID      param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -211,7 +224,8 @@ func (r *BetaTunnelCertificateNewParams) UnmarshalJSON(data []byte) error {
 }
 
 type BetaTunnelCertificateGetParams struct {
-	TunnelID string `path:"tunnel_id" api:"required" json:"-"`
+	TunnelID    string            `path:"tunnel_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -223,7 +237,8 @@ type BetaTunnelCertificateListParams struct {
 	// Maximum number of certificates to return per page. Defaults to 20, maximum 1000.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Opaque pagination cursor from a previous `list_tunnel_certificates` response.
-	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -239,7 +254,8 @@ func (r BetaTunnelCertificateListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaTunnelCertificateArchiveParams struct {
-	TunnelID string `path:"tunnel_id" api:"required" json:"-"`
+	TunnelID    string            `path:"tunnel_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

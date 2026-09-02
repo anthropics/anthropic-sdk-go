@@ -49,6 +49,9 @@ func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, param
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	if skillID == "" {
 		err = errors.New("missing required skill_id parameter")
@@ -63,6 +66,9 @@ func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, param
 func (r *BetaSkillVersionService) Get(ctx context.Context, version string, params BetaSkillVersionGetParams, opts ...option.RequestOption) (res *BetaSkillVersion, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if params.SkillID == "" {
@@ -83,6 +89,9 @@ func (r *BetaSkillVersionService) List(ctx context.Context, skillID string, para
 	var raw *http.Response
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -113,6 +122,9 @@ func (r *BetaSkillVersionService) Delete(ctx context.Context, version string, pa
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	if params.SkillID == "" {
 		err = errors.New("missing required skill_id parameter")
@@ -131,6 +143,9 @@ func (r *BetaSkillVersionService) Delete(ctx context.Context, version string, pa
 func (r *BetaSkillVersionService) Download(ctx context.Context, version string, params BetaSkillVersionDownloadParams, opts ...option.RequestOption) (res *http.Response, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "application/binary")}, opts...)
@@ -217,7 +232,8 @@ type BetaSkillVersionNewParams struct {
 	//
 	// All files must be in the same top-level directory and must include a SKILL.md
 	// file at the root of that directory.
-	Files []io.Reader `json:"files,omitzero" api:"required" format:"binary"`
+	Files       []io.Reader       `json:"files,omitzero" api:"required" format:"binary"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -245,7 +261,8 @@ type BetaSkillVersionGetParams struct {
 	// Unique identifier for the skill.
 	//
 	// The format and length of IDs may change over time.
-	SkillID string `path:"skill_id" api:"required" json:"-"`
+	SkillID     string            `path:"skill_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -257,7 +274,8 @@ type BetaSkillVersionListParams struct {
 	// Ranges from `1` to `1000`. Defaults to `20`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Optionally set to the `next_page` token from the previous response.
-	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -276,7 +294,8 @@ type BetaSkillVersionDeleteParams struct {
 	// Unique identifier for the skill.
 	//
 	// The format and length of IDs may change over time.
-	SkillID string `path:"skill_id" api:"required" json:"-"`
+	SkillID     string            `path:"skill_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -286,7 +305,8 @@ type BetaSkillVersionDownloadParams struct {
 	// Unique identifier for the skill.
 	//
 	// The format and length of IDs may change over time.
-	SkillID string `path:"skill_id" api:"required" json:"-"`
+	SkillID     string            `path:"skill_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

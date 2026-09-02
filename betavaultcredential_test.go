@@ -41,7 +41,8 @@ func TestBetaVaultCredentialNewWithOptionalParams(t *testing.T) {
 			Metadata: map[string]string{
 				"environment": "production",
 			},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -69,8 +70,9 @@ func TestBetaVaultCredentialGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
 		anthropic.BetaVaultCredentialGetParams{
-			VaultID: "vlt_011CZkZDLs7fYzm1hXNPeRjv",
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -120,7 +122,8 @@ func TestBetaVaultCredentialUpdateWithOptionalParams(t *testing.T) {
 			Metadata: map[string]string{
 				"environment": "production",
 			},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -153,6 +156,7 @@ func TestBetaVaultCredentialListWithOptionalParams(t *testing.T) {
 			Limit:           anthropic.Int(0),
 			Page:            anthropic.String("page"),
 			Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID:     anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -180,8 +184,9 @@ func TestBetaVaultCredentialDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
 		anthropic.BetaVaultCredentialDeleteParams{
-			VaultID: "vlt_011CZkZDLs7fYzm1hXNPeRjv",
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -209,8 +214,9 @@ func TestBetaVaultCredentialArchiveWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
 		anthropic.BetaVaultCredentialArchiveParams{
-			VaultID: "vlt_011CZkZDLs7fYzm1hXNPeRjv",
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -239,8 +245,9 @@ func TestBetaVaultCredentialMCPOAuthValidateWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
 		anthropic.BetaVaultCredentialMCPOAuthValidateParams{
-			VaultID: "vlt_011CZkZDLs7fYzm1hXNPeRjv",
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

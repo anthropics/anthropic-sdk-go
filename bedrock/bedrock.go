@@ -190,7 +190,9 @@ func (b *sseTranslatingBody) emit(eventType string, data []byte) {
 func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptions) error) option.RequestOption {
 	cfg, err := config.LoadDefaultConfig(ctx, optFns...)
 	if err != nil {
-		panic(err)
+		return option.Join(option.WithoutEnvironmentDefaults(), requestconfig.RequestOptionFunc(func(*requestconfig.RequestConfig) error {
+			return fmt.Errorf("failed to load AWS config: %w", err)
+		}))
 	}
 	return WithConfig(cfg)
 }

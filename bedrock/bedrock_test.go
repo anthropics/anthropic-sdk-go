@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream"
 	"github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream/eventstreamapi"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -285,6 +287,25 @@ func TestBedrockWithConfigRequiresCredentials(t *testing.T) {
 
 	if err == nil || !strings.Contains(err.Error(), "expected AWS credentials to be set") {
 		t.Fatalf("Expected credentials error, got: %v", err)
+	}
+}
+
+func TestBedrockWithLoadDefaultConfigReturnsLoadError(t *testing.T) {
+	wantErr := errors.New("invalid AWS profile")
+	client := anthropic.NewClient(WithLoadDefaultConfig(context.Background(), func(*config.LoadOptions) error {
+		return wantErr
+	}))
+
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:     "claude-3-sonnet",
+		MaxTokens: 1,
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+		},
+	})
+
+	if !errors.Is(err, wantErr) {
+		t.Fatalf("Expected AWS config load error, got: %v", err)
 	}
 }
 

@@ -30,6 +30,7 @@ func TestSkillNewWithOptionalParams(t *testing.T) {
 	_, err := client.Skills.New(context.TODO(), anthropic.SkillNewParams{
 		Files:       []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
 		DisplayName: anthropic.String("display_name"),
+		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -40,7 +41,7 @@ func TestSkillNewWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestSkillGet(t *testing.T) {
+func TestSkillGetWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -52,7 +53,13 @@ func TestSkillGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Skills.Get(context.TODO(), "skill_id")
+	_, err := client.Skills.Get(
+		context.TODO(),
+		"skill_id",
+		anthropic.SkillGetParams{
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -75,9 +82,10 @@ func TestSkillListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Skills.List(context.TODO(), anthropic.SkillListParams{
-		Limit:  anthropic.Int(1),
-		Page:   anthropic.String("page"),
-		Source: anthropic.String("source"),
+		Limit:       anthropic.Int(1),
+		Page:        anthropic.String("page"),
+		Source:      anthropic.String("source"),
+		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -88,7 +96,7 @@ func TestSkillListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestSkillDelete(t *testing.T) {
+func TestSkillDeleteWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -100,7 +108,13 @@ func TestSkillDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Skills.Delete(context.TODO(), "skill_id")
+	_, err := client.Skills.Delete(
+		context.TODO(),
+		"skill_id",
+		anthropic.SkillDeleteParams{
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {

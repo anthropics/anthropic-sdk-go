@@ -134,6 +134,7 @@ func TestMessageBatchNewWithOptionalParams(t *testing.T) {
 			},
 		}},
 		UserProfileID: anthropic.String("anthropic-user-profile-id"),
+		WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -144,7 +145,7 @@ func TestMessageBatchNewWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestMessageBatchGet(t *testing.T) {
+func TestMessageBatchGetWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -156,7 +157,13 @@ func TestMessageBatchGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Messages.Batches.Get(context.TODO(), "message_batch_id")
+	_, err := client.Messages.Batches.Get(
+		context.TODO(),
+		"message_batch_id",
+		anthropic.MessageBatchGetParams{
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -179,9 +186,10 @@ func TestMessageBatchListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Messages.Batches.List(context.TODO(), anthropic.MessageBatchListParams{
-		AfterID:  anthropic.String("after_id"),
-		BeforeID: anthropic.String("before_id"),
-		Limit:    anthropic.Int(1),
+		AfterID:     anthropic.String("after_id"),
+		BeforeID:    anthropic.String("before_id"),
+		Limit:       anthropic.Int(1),
+		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -192,7 +200,7 @@ func TestMessageBatchListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestMessageBatchDelete(t *testing.T) {
+func TestMessageBatchDeleteWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -204,7 +212,13 @@ func TestMessageBatchDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Messages.Batches.Delete(context.TODO(), "message_batch_id")
+	_, err := client.Messages.Batches.Delete(
+		context.TODO(),
+		"message_batch_id",
+		anthropic.MessageBatchDeleteParams{
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -214,7 +228,7 @@ func TestMessageBatchDelete(t *testing.T) {
 	}
 }
 
-func TestMessageBatchCancel(t *testing.T) {
+func TestMessageBatchCancelWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -226,7 +240,13 @@ func TestMessageBatchCancel(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	_, err := client.Messages.Batches.Cancel(context.TODO(), "message_batch_id")
+	_, err := client.Messages.Batches.Cancel(
+		context.TODO(),
+		"message_batch_id",
+		anthropic.MessageBatchCancelParams{
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {

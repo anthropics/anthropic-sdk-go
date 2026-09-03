@@ -28,6 +28,7 @@ func TestBetaTunnelNewWithOptionalParams(t *testing.T) {
 	_, err := client.Beta.Tunnels.New(context.TODO(), anthropic.BetaTunnelNewParams{
 		DisplayName: anthropic.String("x"),
 		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -55,7 +56,8 @@ func TestBetaTunnelGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"tunnel_id",
 		anthropic.BetaTunnelGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -85,6 +87,7 @@ func TestBetaTunnelListWithOptionalParams(t *testing.T) {
 		Limit:           anthropic.Int(0),
 		Page:            anthropic.String("page"),
 		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID:     anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -111,7 +114,8 @@ func TestBetaTunnelArchiveWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"tunnel_id",
 		anthropic.BetaTunnelArchiveParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -139,7 +143,8 @@ func TestBetaTunnelRevealTokenWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"tunnel_id",
 		anthropic.BetaTunnelRevealTokenParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -167,8 +172,9 @@ func TestBetaTunnelRotateTokenWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"tunnel_id",
 		anthropic.BetaTunnelRotateTokenParams{
-			Reason: anthropic.String("reason"),
-			Betas:  []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Reason:      anthropic.String("reason"),
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

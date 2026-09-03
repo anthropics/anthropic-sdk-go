@@ -132,6 +132,7 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 		TopK:          anthropic.Int(5),
 		TopP:          anthropic.Float(0.7),
 		UserProfileID: anthropic.String("anthropic-user-profile-id"),
+		WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -239,6 +240,7 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 			},
 		}},
 		UserProfileID: anthropic.String("anthropic-user-profile-id"),
+		WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

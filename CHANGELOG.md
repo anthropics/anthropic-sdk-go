@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.70.0 (2026-09-02)
+
+Full Changelog: [v1.69.0...v1.70.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.69.0...v1.70.0)
+
+### Features
+
+* **api:** add support for sending a workspace ID on more endpoints ([75477bf](https://github.com/anthropics/anthropic-sdk-go/commit/75477bf9202c59854d9f82fa6b55faeaaea78987))
+
+
+### Bug Fixes
+
+* **client:** surface non-JSON error response bodies in error messages ([7e89315](https://github.com/anthropics/anthropic-sdk-go/commit/7e8931517d165cf37f713e9184427b1b35135fe4))
+
+
+### Chores
+
+* **internal:** narrower codeowners scope ([24487eb](https://github.com/anthropics/anthropic-sdk-go/commit/24487eb8eef39a28cd4710af7e9e00e7049ddd14))
+* **internal:** revert codeowners change ([0717fba](https://github.com/anthropics/anthropic-sdk-go/commit/0717fbac8fff3802f52190b6472e44fc804598ef))
+
+
+### Documentation
+
+* **api:** update a few doc strings ([5c4b77b](https://github.com/anthropics/anthropic-sdk-go/commit/5c4b77b0563a03a1017d97a04ca103cbc023c799))
+
 ## 1.69.0 (2026-09-01)
 
 Full Changelog: [v1.68.0...v1.69.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.68.0...v1.69.0)

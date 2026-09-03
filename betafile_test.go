@@ -30,11 +30,12 @@ func TestBetaFileListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.Files.List(context.TODO(), anthropic.BetaFileListParams{
-		IDs:     []string{"string"},
-		Limit:   anthropic.Int(1),
-		Page:    anthropic.String("page"),
-		ScopeID: anthropic.String("scope_id"),
-		Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		IDs:         []string{"string"},
+		Limit:       anthropic.Int(1),
+		Page:        anthropic.String("page"),
+		ScopeID:     anthropic.String("scope_id"),
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -61,7 +62,8 @@ func TestBetaFileDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"file_id",
 		anthropic.BetaFileDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -88,7 +90,8 @@ func TestBetaFileDownloadWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"file_id",
 		anthropic.BetaFileDownloadParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -129,7 +132,8 @@ func TestBetaFileGetMetadataWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"file_id",
 		anthropic.BetaFileGetMetadataParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -157,6 +161,7 @@ func TestBetaFileUploadWithOptionalParams(t *testing.T) {
 		File:             io.Reader(bytes.NewBuffer([]byte("Example data"))),
 		ExpiresInSeconds: anthropic.Int(3600),
 		Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID:      anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

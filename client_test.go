@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -219,6 +220,49 @@ func TestRetryAfterMs(t *testing.T) {
 	}
 	if want := 3; attempts != want {
 		t.Errorf("Expected %d attempts, got %d", want, attempts)
+	}
+}
+
+func TestNonJSONErrorBody(t *testing.T) {
+	for _, body := range []string{"length limit exceeded", "too large", ""} {
+		client := anthropic.NewClient(
+			option.WithAPIKey("my-anthropic-api-key"),
+			option.WithHTTPClient(&http.Client{
+				Transport: &closureTransport{
+					fn: func(req *http.Request) (*http.Response, error) {
+						return &http.Response{
+							StatusCode: http.StatusRequestEntityTooLarge,
+							Header: http.Header{
+								http.CanonicalHeaderKey("Content-Type"): []string{"text/plain"},
+							},
+							Body: io.NopCloser(strings.NewReader(body)),
+						}, nil
+					},
+				},
+			}),
+		)
+		_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+			MaxTokens: 1024,
+			Messages: []anthropic.MessageParam{{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+				Role: anthropic.MessageParamRoleUser,
+			}},
+			Model: anthropic.ModelClaudeSonnet5,
+		})
+		var apiErr *anthropic.Error
+		if !errors.As(err, &apiErr) || apiErr.StatusCode != http.StatusRequestEntityTooLarge {
+			t.Fatalf("Expected a 413 API error, got %v", err)
+		}
+		if raw := apiErr.RawJSON(); raw != body {
+			t.Errorf("Expected raw body %q, got %q", body, raw)
+		}
+		if want := strings.TrimSpace("413 Request Entity Too Large " + body); !strings.HasSuffix(err.Error(), want) {
+			t.Errorf("Expected error %q to end with %q", err.Error(), want)
+		}
 	}
 }
 

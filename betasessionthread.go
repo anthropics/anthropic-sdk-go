@@ -47,6 +47,9 @@ func (r *BetaSessionThreadService) Get(ctx context.Context, threadID string, par
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	if params.SessionID == "" {
@@ -67,6 +70,9 @@ func (r *BetaSessionThreadService) List(ctx context.Context, sessionID string, p
 	var raw *http.Response
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
@@ -96,6 +102,9 @@ func (r *BetaSessionThreadService) ListAutoPaging(ctx context.Context, sessionID
 func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string, params BetaSessionThreadArchiveParams, opts ...option.RequestOption) (res *BetaManagedAgentsSessionThread, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
@@ -1056,7 +1065,8 @@ func (r *BetaManagedAgentsStreamSessionThreadEventsUnionUsage) UnmarshalJSON(dat
 }
 
 type BetaSessionThreadGetParams struct {
-	SessionID string `path:"session_id" api:"required" json:"-"`
+	SessionID   string            `path:"session_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -1066,7 +1076,8 @@ type BetaSessionThreadListParams struct {
 	// Maximum results per page. Defaults to 1000.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Opaque pagination cursor from a previous response's `next_page`. Forward-only.
-	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -1082,7 +1093,8 @@ func (r BetaSessionThreadListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaSessionThreadArchiveParams struct {
-	SessionID string `path:"session_id" api:"required" json:"-"`
+	SessionID   string            `path:"session_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

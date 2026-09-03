@@ -45,21 +45,27 @@ func NewSkillVersionService(opts ...option.RequestOption) (r SkillVersionService
 }
 
 // Create Skill Version
-func (r *SkillVersionService) New(ctx context.Context, skillID string, body SkillVersionNewParams, opts ...option.RequestOption) (res *SkillVersion, err error) {
+func (r *SkillVersionService) New(ctx context.Context, skillID string, params SkillVersionNewParams, opts ...option.RequestOption) (res *SkillVersion, err error) {
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	if skillID == "" {
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions", skillID)
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Get Skill Version
-func (r *SkillVersionService) Get(ctx context.Context, version string, query SkillVersionGetParams, opts ...option.RequestOption) (res *SkillVersion, err error) {
+func (r *SkillVersionService) Get(ctx context.Context, version string, params SkillVersionGetParams, opts ...option.RequestOption) (res *SkillVersion, err error) {
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
-	if query.SkillID == "" {
+	if params.SkillID == "" {
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
@@ -67,14 +73,17 @@ func (r *SkillVersionService) Get(ctx context.Context, version string, query Ski
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions/%s", query.SkillID, version)
+	path := fmt.Sprintf("v1/skills/%s/versions/%s", params.SkillID, version)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // List Skill Versions
-func (r *SkillVersionService) List(ctx context.Context, skillID string, query SkillVersionListParams, opts ...option.RequestOption) (res *pagination.PageCursor[SkillVersion], err error) {
+func (r *SkillVersionService) List(ctx context.Context, skillID string, params SkillVersionListParams, opts ...option.RequestOption) (res *pagination.PageCursor[SkillVersion], err error) {
 	var raw *http.Response
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	if skillID == "" {
@@ -82,7 +91,7 @@ func (r *SkillVersionService) List(ctx context.Context, skillID string, query Sk
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions", skillID)
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -95,14 +104,17 @@ func (r *SkillVersionService) List(ctx context.Context, skillID string, query Sk
 }
 
 // List Skill Versions
-func (r *SkillVersionService) ListAutoPaging(ctx context.Context, skillID string, query SkillVersionListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[SkillVersion] {
-	return pagination.NewPageCursorAutoPager(r.List(ctx, skillID, query, opts...))
+func (r *SkillVersionService) ListAutoPaging(ctx context.Context, skillID string, params SkillVersionListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[SkillVersion] {
+	return pagination.NewPageCursorAutoPager(r.List(ctx, skillID, params, opts...))
 }
 
 // Delete Skill Version
-func (r *SkillVersionService) Delete(ctx context.Context, version string, body SkillVersionDeleteParams, opts ...option.RequestOption) (res *DeletedSkillVersion, err error) {
+func (r *SkillVersionService) Delete(ctx context.Context, version string, params SkillVersionDeleteParams, opts ...option.RequestOption) (res *DeletedSkillVersion, err error) {
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
-	if body.SkillID == "" {
+	if params.SkillID == "" {
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
@@ -110,7 +122,7 @@ func (r *SkillVersionService) Delete(ctx context.Context, version string, body S
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions/%s", body.SkillID, version)
+	path := fmt.Sprintf("v1/skills/%s/versions/%s", params.SkillID, version)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -185,7 +197,8 @@ type SkillVersionNewParams struct {
 	//
 	// All files must be in the same top-level directory and must include a SKILL.md
 	// file at the root of that directory.
-	Files []io.Reader `json:"files,omitzero" api:"required" format:"binary"`
+	Files       []io.Reader       `json:"files,omitzero" api:"required" format:"binary"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	paramObj
 }
 
@@ -211,7 +224,8 @@ type SkillVersionGetParams struct {
 	// Unique identifier for the skill.
 	//
 	// The format and length of IDs may change over time.
-	SkillID string `path:"skill_id" api:"required" json:"-"`
+	SkillID     string            `path:"skill_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	paramObj
 }
 
@@ -221,7 +235,8 @@ type SkillVersionListParams struct {
 	// Ranges from `1` to `1000`. Defaults to `20`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Optionally set to the `next_page` token from the previous response.
-	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	paramObj
 }
 
@@ -237,6 +252,7 @@ type SkillVersionDeleteParams struct {
 	// Unique identifier for the skill.
 	//
 	// The format and length of IDs may change over time.
-	SkillID string `path:"skill_id" api:"required" json:"-"`
+	SkillID     string            `path:"skill_id" api:"required" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	paramObj
 }

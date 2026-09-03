@@ -87,7 +87,8 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 				},
 			},
 		}},
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -115,8 +116,9 @@ func TestBetaAgentGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"agent_011CZkYpogX7uDKUyvBTophP",
 		anthropic.BetaAgentGetParams{
-			Version: anthropic.Int(0),
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Version:     anthropic.Int(0),
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -204,8 +206,9 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 					},
 				},
 			}},
-			Version: anthropic.Int(1),
-			Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Version:     anthropic.Int(1),
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -237,6 +240,7 @@ func TestBetaAgentListWithOptionalParams(t *testing.T) {
 		Limit:           anthropic.Int(0),
 		Page:            anthropic.String("page"),
 		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID:     anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -263,7 +267,8 @@ func TestBetaAgentArchiveWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"agent_011CZkYpogX7uDKUyvBTophP",
 		anthropic.BetaAgentArchiveParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

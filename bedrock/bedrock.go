@@ -198,9 +198,14 @@ func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptio
 // WithConfig returns a request option that uses the provided config and registers middleware to
 // intercept requests to the Messages API, enabling this SDK to work with Amazon Bedrock.
 //
-// Authentication is determined as follows: if the AWS_BEARER_TOKEN_BEDROCK environment variable is
-// set, it is used for bearer token authentication. Otherwise, if cfg.BearerAuthTokenProvider is set,
-// it is used. If neither is available, cfg.Credentials is used for AWS SigV4 signing and must be set.
+// Authentication is resolved once, in this order:
+//  1. If the AWS_BEARER_TOKEN_BEDROCK environment variable is set, its value is sent as a bearer token.
+//  2. If cfg.AuthSchemePreference lists "httpBearerAuth" first, cfg.BearerAuthTokenProvider is used.
+//  3. If cfg.Credentials is set, requests are signed with AWS SigV4.
+//  4. Otherwise cfg.BearerAuthTokenProvider is used, and one of the two must be set.
+//
+// [config.LoadDefaultConfig] sets cfg.BearerAuthTokenProvider from the SSO token cache for SSO
+// profiles; step 3 keeps that token from being sent to Bedrock.
 //
 // The Bedrock adaptation (URL and body rewriting, request signing, and
 // normalization of streaming responses to SSE) should run closest to the wire.
@@ -227,11 +232,7 @@ func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptio
 func WithConfig(cfg aws.Config) option.RequestOption {
 	var credentialErr error
 
-	if cfg.BearerAuthTokenProvider == nil {
-		if token := os.Getenv("AWS_BEARER_TOKEN_BEDROCK"); token != "" {
-			cfg.BearerAuthTokenProvider = NewStaticBearerTokenProvider(token)
-		}
-	}
+	cfg = resolveAuth(cfg)
 	if cfg.BearerAuthTokenProvider == nil && cfg.Credentials == nil {
 		credentialErr = fmt.Errorf("expected AWS credentials to be set")
 	}
@@ -248,6 +249,23 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 			option.WithMiddleware(middleware),
 		)
 	}))
+}
+
+// resolveAuth returns cfg with BearerAuthTokenProvider set only when requests
+// should carry a bearer token; a nil provider means SigV4 with cfg.Credentials.
+func resolveAuth(cfg aws.Config) aws.Config {
+	prefersBearer := len(cfg.AuthSchemePreference) > 0 && cfg.AuthSchemePreference[0] == "httpBearerAuth"
+
+	token := os.Getenv("AWS_BEARER_TOKEN_BEDROCK")
+
+	switch {
+	case token != "":
+		cfg.BearerAuthTokenProvider = NewStaticBearerTokenProvider(token)
+	case prefersBearer && cfg.BearerAuthTokenProvider != nil:
+	case cfg.Credentials != nil:
+		cfg.BearerAuthTokenProvider = nil
+	}
+	return cfg
 }
 
 func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
@@ -304,7 +322,7 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 			r.ContentLength = int64(len(body))
 		}
 
-		// Use bearer token authentication if configured, otherwise fall back to SigV4
+		// WithConfig resolves the auth mode: a provider here means bearer.
 		if cfg.BearerAuthTokenProvider != nil {
 			token, err := cfg.BearerAuthTokenProvider.RetrieveBearerToken(r.Context())
 			if err != nil {

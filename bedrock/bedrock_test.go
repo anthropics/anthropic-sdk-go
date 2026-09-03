@@ -19,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream/eventstreamapi"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/smithy-go/auth/bearer"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
@@ -261,6 +262,108 @@ func TestBedrockBearerToken(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("Middleware failed: %v", err)
+	}
+}
+
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+func TestBedrockAuthModeResolution(t *testing.T) {
+	const providerToken = "provider-token"
+	const envToken = "env-token"
+
+	tests := []struct {
+		name         string
+		envToken     string
+		preference   []string
+		credentials  bool
+		provider     bool
+		wantBearer   string
+		wantProvider bool
+	}{
+		{
+			name:        "an SSO token provider beside static credentials signs with SigV4",
+			credentials: true,
+			provider:    true,
+		},
+		{
+			name:        "the environment token wins over credentials and a provider",
+			envToken:    envToken,
+			credentials: true,
+			provider:    true,
+			wantBearer:  envToken,
+		},
+		{
+			name:         "an auth scheme preference led by httpBearerAuth uses the provider",
+			preference:   []string{"httpBearerAuth", "sigv4"},
+			credentials:  true,
+			provider:     true,
+			wantBearer:   providerToken,
+			wantProvider: true,
+		},
+		{
+			name:         "a provider without credentials uses the provider",
+			provider:     true,
+			wantBearer:   providerToken,
+			wantProvider: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("ANTHROPIC_API_KEY", "")
+			t.Setenv("AWS_BEARER_TOKEN_BEDROCK", tt.envToken)
+
+			providerCalled := false
+			cfg := aws.Config{Region: "us-east-1", AuthSchemePreference: tt.preference}
+			if tt.credentials {
+				cfg.Credentials = makeStaticAWSConfig("us-east-1").Credentials
+			}
+			if tt.provider {
+				cfg.BearerAuthTokenProvider = bearer.TokenProviderFunc(func(context.Context) (bearer.Token, error) {
+					providerCalled = true
+					return bearer.Token{Value: providerToken}, nil
+				})
+			}
+
+			var gotAuth string
+			transport := roundTripperFunc(func(r *http.Request) (*http.Response, error) {
+				gotAuth = r.Header.Get("Authorization")
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Header:     http.Header{"Content-Type": []string{"application/json"}},
+					Body:       io.NopCloser(strings.NewReader(`{}`)),
+					Request:    r,
+				}, nil
+			})
+
+			client := anthropic.NewClient(
+				WithConfig(cfg),
+				option.WithHTTPClient(&http.Client{Transport: transport}),
+			)
+			_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+				Model:     "claude-3-sonnet",
+				MaxTokens: 1,
+				Messages: []anthropic.MessageParam{
+					anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+				},
+			})
+			if err != nil {
+				t.Fatalf("request failed: %v", err)
+			}
+
+			if tt.wantBearer != "" {
+				if gotAuth != "Bearer "+tt.wantBearer {
+					t.Errorf("expected a bearer Authorization header with the expected token, got scheme %q", strings.SplitN(gotAuth, " ", 2)[0])
+				}
+			} else if !strings.HasPrefix(gotAuth, "AWS4-HMAC-SHA256 ") {
+				t.Errorf("expected a SigV4 Authorization header, got scheme %q", strings.SplitN(gotAuth, " ", 2)[0])
+			}
+			if providerCalled != tt.wantProvider {
+				t.Errorf("bearer provider called = %v, want %v", providerCalled, tt.wantProvider)
+			}
+		})
 	}
 }
 

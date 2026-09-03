@@ -5,11 +5,11 @@ go 1.24
 toolchain go1.25.8
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.30.3
+	github.com/aws/aws-sdk-go-v2 v1.38.0
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.3
 	github.com/aws/aws-sdk-go-v2/config v1.27.27
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.27
-	github.com/aws/smithy-go v1.20.3
+	github.com/aws/smithy-go v1.22.5
 	github.com/creack/pty v1.1.24
 	github.com/dnaeon/go-vcr v1.2.0
 	github.com/invopop/jsonschema v0.14.0

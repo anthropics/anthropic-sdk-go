@@ -6,6 +6,7 @@ import (
 	"context"
 	"io"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -268,4 +269,64 @@ func TestBashSessionTerminatedIsMatchable(t *testing.T) {
 	_ = sess.Close()
 	_, _, err = sess.Exec(context.Background(), "echo after", 5*time.Second)
 	require.ErrorIs(t, err, errBashClosed, "Exec on a closed session is reported as closed")
+}
+
+// TestBashSessionCloseReturnsWhenWaitHangs pins the #390 reap bound: a
+// setsid child can leave bash unreapable, so Close must not block forever
+// on cmd.Wait(). A fake Wait that never returns must still let Close
+// return after the deadline.
+func TestBashSessionCloseReturnsWhenWaitHangs(t *testing.T) {
+	orig := maxBashWaitGoroutines
+	maxBashWaitGoroutines = bashWaitGoroutines.Load() + 1
+	t.Cleanup(func() { maxBashWaitGoroutines = orig })
+
+	s := &BashSession{
+		waitFn:           func() error { select {} },
+		closeWaitTimeout: 50 * time.Millisecond,
+	}
+
+	start := time.Now()
+	done := make(chan error, 1)
+	go func() { done <- s.Close() }()
+
+	select {
+	case err := <-done:
+		require.NoError(t, err)
+		require.Less(t, time.Since(start), time.Second, "Close must return after the wait deadline rather than blocking on Wait")
+	case <-time.After(2 * time.Second):
+		t.Fatal("Close blocked on Wait; the reap deadline did not fire")
+	}
+
+	// Idempotent after a timed-out reap: the still-running Wait goroutine
+	// must not cause a second Close to hang.
+	require.NoError(t, s.Close())
+}
+
+// TestBashSessionCloseCapsAbandonedWaitGoroutines pins that a setsid hang
+// plus repeated restart/Close cannot accumulate one blocked Wait goroutine
+// per abandoned session. Close still kills and returns; once the cap of
+// outstanding reapers is reached, further Closes skip Wait.
+func TestBashSessionCloseCapsAbandonedWaitGoroutines(t *testing.T) {
+	const room int32 = 2
+	orig := maxBashWaitGoroutines
+	maxBashWaitGoroutines = bashWaitGoroutines.Load() + room
+	t.Cleanup(func() { maxBashWaitGoroutines = orig })
+
+	var started atomic.Int32
+	hang := func() error {
+		started.Add(1)
+		select {}
+	}
+
+	const n = 20
+	for i := 0; i < n; i++ {
+		s := &BashSession{
+			waitFn:           hang,
+			closeWaitTimeout: 20 * time.Millisecond,
+		}
+		require.NoError(t, s.Close(), "Close must return even when Wait hangs")
+	}
+
+	require.Equal(t, room, started.Load(),
+		"abandoned Wait goroutines must be capped, not one per Close")
 }

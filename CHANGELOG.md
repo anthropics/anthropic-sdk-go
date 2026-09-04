@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.71.0 (2026-09-04)
+
+Full Changelog: [v1.70.1...v1.71.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.70.1...v1.71.0)
+
+### Features
+
+* **api:** add named types for organization compliance settings state ([5ce34ff](https://github.com/anthropics/anthropic-sdk-go/commit/5ce34ff6744be9469ff660bb51779b3765cdbaa7))
+
+
+### Chores
+
+* **examples:** refresh platform model IDs ([#327](https://github.com/anthropics/anthropic-sdk-go/issues/327)) ([4b064a1](https://github.com/anthropics/anthropic-sdk-go/commit/4b064a166c425daf0b213339aed86b3f0e105c75))
+* **tests:** reword the skip reason on the path-level query param tests ([c0b3d71](https://github.com/anthropics/anthropic-sdk-go/commit/c0b3d7111a3e0e4b1d22464a4ad442472f3f0a7b))
+
 ## 1.70.1 (2026-09-03)
 
 Full Changelog: [v1.70.0...v1.70.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.70.0...v1.70.1)

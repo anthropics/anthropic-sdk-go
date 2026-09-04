@@ -136,7 +136,7 @@ func TestPathParamsHashDoesNotDropSuffix(t *testing.T) {
 		option.WithBaseURL(server.URL),
 		option.WithMaxRetries(0),
 	)
-	resp, err := client.Files.Download(context.Background(), "foo#bar")
+	resp, err := client.Files.Download(context.Background(), "foo#bar", anthropic.FileDownloadParams{})
 	if err != nil {
 		t.Fatalf("Download: %v", err)
 	}

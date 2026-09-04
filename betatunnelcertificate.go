@@ -61,7 +61,7 @@ func (r *BetaTunnelCertificateService) New(ctx context.Context, tunnelID string,
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/certificates?beta=true", tunnelID)
+	path := requestconfig.FormatPath("v1/tunnels/%s/certificates?beta=true", tunnelID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -89,7 +89,7 @@ func (r *BetaTunnelCertificateService) Get(ctx context.Context, certificateID st
 		err = errors.New("missing required certificate_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/certificates/%s?beta=true", params.TunnelID, certificateID)
+	path := requestconfig.FormatPath("v1/tunnels/%s/certificates/%s?beta=true", params.TunnelID, certificateID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -115,7 +115,7 @@ func (r *BetaTunnelCertificateService) List(ctx context.Context, tunnelID string
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/certificates?beta=true", tunnelID)
+	path := requestconfig.FormatPath("v1/tunnels/%s/certificates?beta=true", tunnelID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -165,7 +165,7 @@ func (r *BetaTunnelCertificateService) Archive(ctx context.Context, certificateI
 		err = errors.New("missing required certificate_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/certificates/%s/archive?beta=true", params.TunnelID, certificateID)
+	path := requestconfig.FormatPath("v1/tunnels/%s/certificates/%s/archive?beta=true", params.TunnelID, certificateID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

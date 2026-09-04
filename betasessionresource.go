@@ -59,7 +59,7 @@ func (r *BetaSessionResourceService) Get(ctx context.Context, resourceID string,
 		err = errors.New("missing required resource_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources/%s?beta=true", params.SessionID, resourceID)
+	path := requestconfig.FormatPath("v1/sessions/%s/resources/%s?beta=true", params.SessionID, resourceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -82,7 +82,7 @@ func (r *BetaSessionResourceService) Update(ctx context.Context, resourceID stri
 		err = errors.New("missing required resource_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources/%s?beta=true", params.SessionID, resourceID)
+	path := requestconfig.FormatPath("v1/sessions/%s/resources/%s?beta=true", params.SessionID, resourceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -102,7 +102,7 @@ func (r *BetaSessionResourceService) List(ctx context.Context, sessionID string,
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources?beta=true", sessionID)
+	path := requestconfig.FormatPath("v1/sessions/%s/resources?beta=true", sessionID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func (r *BetaSessionResourceService) Delete(ctx context.Context, resourceID stri
 		err = errors.New("missing required resource_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources/%s?beta=true", params.SessionID, resourceID)
+	path := requestconfig.FormatPath("v1/sessions/%s/resources/%s?beta=true", params.SessionID, resourceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -157,7 +157,7 @@ func (r *BetaSessionResourceService) Add(ctx context.Context, sessionID string, 
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources?beta=true", sessionID)
+	path := requestconfig.FormatPath("v1/sessions/%s/resources?beta=true", sessionID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

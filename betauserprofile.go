@@ -62,7 +62,7 @@ func (r *BetaUserProfileService) Get(ctx context.Context, userProfileID string, 
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s?beta=true", userProfileID)
+	path := requestconfig.FormatPath("v1/user_profiles/%s?beta=true", userProfileID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -78,7 +78,7 @@ func (r *BetaUserProfileService) Update(ctx context.Context, userProfileID strin
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s?beta=true", userProfileID)
+	path := requestconfig.FormatPath("v1/user_profiles/%s?beta=true", userProfileID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -120,7 +120,7 @@ func (r *BetaUserProfileService) NewEnrollmentURL(ctx context.Context, userProfi
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s/enrollment_url?beta=true", userProfileID)
+	path := requestconfig.FormatPath("v1/user_profiles/%s/enrollment_url?beta=true", userProfileID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

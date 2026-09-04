@@ -65,7 +65,7 @@ func (r *BetaOrganizationWorkspaceService) Get(ctx context.Context, workspaceID 
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s?beta=true", workspaceID)
+	path := requestconfig.FormatPath("v1/organizations/workspaces/%s?beta=true", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -77,7 +77,7 @@ func (r *BetaOrganizationWorkspaceService) Update(ctx context.Context, workspace
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s?beta=true", workspaceID)
+	path := requestconfig.FormatPath("v1/organizations/workspaces/%s?beta=true", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -112,7 +112,7 @@ func (r *BetaOrganizationWorkspaceService) Archive(ctx context.Context, workspac
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive?beta=true", workspaceID)
+	path := requestconfig.FormatPath("v1/organizations/workspaces/%s/archive?beta=true", workspaceID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

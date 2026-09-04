@@ -56,7 +56,7 @@ func (r *BetaSessionEventService) List(ctx context.Context, sessionID string, pa
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", sessionID)
+	path := requestconfig.FormatPath("v1/sessions/%s/events?beta=true", sessionID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func (r *BetaSessionEventService) Send(ctx context.Context, sessionID string, pa
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", sessionID)
+	path := requestconfig.FormatPath("v1/sessions/%s/events?beta=true", sessionID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -111,7 +111,7 @@ func (r *BetaSessionEventService) StreamEvents(ctx context.Context, sessionID st
 		err = errors.New("missing required session_id parameter")
 		return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](nil, err)
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events/stream?beta=true", sessionID)
+	path := requestconfig.FormatPath("v1/sessions/%s/events/stream?beta=true", sessionID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &raw, opts...)
 	return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](ssestream.NewDecoder(raw), err)
 }

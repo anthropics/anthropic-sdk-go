@@ -57,7 +57,7 @@ func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, param
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions?beta=true", skillID)
+	path := requestconfig.FormatPath("v1/skills/%s/versions?beta=true", skillID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -79,7 +79,7 @@ func (r *BetaSkillVersionService) Get(ctx context.Context, version string, param
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions/%s?beta=true", params.SkillID, version)
+	path := requestconfig.FormatPath("v1/skills/%s/versions/%s?beta=true", params.SkillID, version)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -99,7 +99,7 @@ func (r *BetaSkillVersionService) List(ctx context.Context, skillID string, para
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions?beta=true", skillID)
+	path := requestconfig.FormatPath("v1/skills/%s/versions?beta=true", skillID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func (r *BetaSkillVersionService) Delete(ctx context.Context, version string, pa
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions/%s?beta=true", params.SkillID, version)
+	path := requestconfig.FormatPath("v1/skills/%s/versions/%s?beta=true", params.SkillID, version)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -157,7 +157,7 @@ func (r *BetaSkillVersionService) Download(ctx context.Context, version string, 
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions/%s/content?beta=true", params.SkillID, version)
+	path := requestconfig.FormatPath("v1/skills/%s/versions/%s/content?beta=true", params.SkillID, version)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }

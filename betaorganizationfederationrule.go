@@ -87,7 +87,7 @@ func (r *BetaOrganizationFederationRuleService) Get(ctx context.Context, federat
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", federationRuleID)
+	path := requestconfig.FormatPath("v1/organizations/federation_rules/%s?beta=true", federationRuleID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -122,7 +122,7 @@ func (r *BetaOrganizationFederationRuleService) Update(ctx context.Context, fede
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", federationRuleID)
+	path := requestconfig.FormatPath("v1/organizations/federation_rules/%s?beta=true", federationRuleID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -191,7 +191,7 @@ func (r *BetaOrganizationFederationRuleService) Archive(ctx context.Context, fed
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/archive?beta=true", federationRuleID)
+	path := requestconfig.FormatPath("v1/organizations/federation_rules/%s/archive?beta=true", federationRuleID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

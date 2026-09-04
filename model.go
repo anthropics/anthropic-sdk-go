@@ -56,7 +56,7 @@ func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetPa
 		err = errors.New("missing required model_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/models/%s", modelID)
+	path := requestconfig.FormatPath("v1/models/%s", modelID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }

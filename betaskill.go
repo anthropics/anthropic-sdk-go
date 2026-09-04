@@ -73,7 +73,7 @@ func (r *BetaSkillService) Get(ctx context.Context, skillID string, query BetaSk
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s?beta=true", skillID)
+	path := requestconfig.FormatPath("v1/skills/%s?beta=true", skillID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -120,7 +120,7 @@ func (r *BetaSkillService) Delete(ctx context.Context, skillID string, body Beta
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s?beta=true", skillID)
+	path := requestconfig.FormatPath("v1/skills/%s?beta=true", skillID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

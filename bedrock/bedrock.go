@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -20,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream/eventstreamapi"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials/ssocreds"
 	"github.com/aws/smithy-go/auth/bearer"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -176,6 +178,48 @@ func (b *sseTranslatingBody) emit(eventType string, data []byte) {
 	b.buf.WriteByte('\n')
 }
 
+// isSSODerivedBearer reports whether p is the SSO token provider that
+// [config.LoadDefaultConfig] installs for sso_session profiles.
+//
+// resolveBearerAuthSSOTokenProvider returns *ssocreds.SSOTokenProvider and
+// LoadDefaultConfig then wraps it in smithy-go's *bearer.TokenCache. The
+// cache's inner provider field is unexported, so the wrap is identified by
+// walking that field with reflect. Other TokenProvider implementations —
+// including *bearer.StaticTokenProvider and caller-supplied rotating
+// providers, even when themselves wrapped in a TokenCache — are left intact.
+func isSSODerivedBearer(p bearer.TokenProvider) bool {
+	if p == nil {
+		return false
+	}
+	return ssoBearerValue(reflect.ValueOf(p), 0)
+}
+
+func ssoBearerValue(v reflect.Value, depth int) bool {
+	const maxDepth = 4
+	if !v.IsValid() || depth > maxDepth {
+		return false
+	}
+	for v.Kind() == reflect.Interface {
+		if v.IsNil() {
+			return false
+		}
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Ptr || v.IsNil() {
+		return false
+	}
+	switch v.Type() {
+	case reflect.TypeOf((*ssocreds.SSOTokenProvider)(nil)):
+		return true
+	case reflect.TypeOf((*bearer.TokenCache)(nil)):
+		// TokenCache.provider is unexported; inspect its dynamic type
+		// without calling Interface(), which panics on unexported fields.
+		return ssoBearerValue(v.Elem().FieldByName("provider"), depth+1)
+	default:
+		return false
+	}
+}
+
 // WithLoadDefaultConfig returns a request option which loads the default config for Amazon and registers
 // middleware that intercepts request to the Messages API so that this SDK can be used with Amazon Bedrock.
 //
@@ -200,12 +244,12 @@ func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptio
 //
 // Authentication is resolved once, in this order:
 //  1. If the AWS_BEARER_TOKEN_BEDROCK environment variable is set, its value is sent as a bearer token.
-//  2. If cfg.AuthSchemePreference lists "httpBearerAuth" first, cfg.BearerAuthTokenProvider is used.
-//  3. If cfg.Credentials is set, requests are signed with AWS SigV4.
-//  4. Otherwise cfg.BearerAuthTokenProvider is used, and one of the two must be set.
-//
-// [config.LoadDefaultConfig] sets cfg.BearerAuthTokenProvider from the SSO token cache for SSO
-// profiles; step 3 keeps that token from being sent to Bedrock.
+//  2. If cfg.BearerAuthTokenProvider is set and is not the SSO token provider
+//     that [config.LoadDefaultConfig] installs for sso_session profiles
+//     (including the TokenCache that wraps it), it is used. That SSO OIDC
+//     token is not a Bedrock API key and is ignored.
+//  3. Otherwise cfg.Credentials is used for AWS SigV4 signing, and one of
+//     the two must be set.
 //
 // The Bedrock adaptation (URL and body rewriting, request signing, and
 // normalization of streaming responses to SSE) should run closest to the wire.
@@ -253,16 +297,17 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 
 // resolveAuth returns cfg with BearerAuthTokenProvider set only when requests
 // should carry a bearer token; a nil provider means SigV4 with cfg.Credentials.
+//
+// AWS_BEARER_TOKEN_BEDROCK always wins. The SSO cache provider that
+// [config.LoadDefaultConfig] writes for sso_session profiles is not a Bedrock
+// API key (https://github.com/anthropics/anthropic-sdk-go/issues/414) and is
+// cleared; a caller-supplied custom or rotating TokenProvider is kept.
 func resolveAuth(cfg aws.Config) aws.Config {
-	prefersBearer := len(cfg.AuthSchemePreference) > 0 && cfg.AuthSchemePreference[0] == "httpBearerAuth"
-
-	token := os.Getenv("AWS_BEARER_TOKEN_BEDROCK")
-
-	switch {
-	case token != "":
+	if token := os.Getenv("AWS_BEARER_TOKEN_BEDROCK"); token != "" {
 		cfg.BearerAuthTokenProvider = NewStaticBearerTokenProvider(token)
-	case prefersBearer && cfg.BearerAuthTokenProvider != nil:
-	case cfg.Credentials != nil:
+		return cfg
+	}
+	if isSSODerivedBearer(cfg.BearerAuthTokenProvider) {
 		cfg.BearerAuthTokenProvider = nil
 	}
 	return cfg

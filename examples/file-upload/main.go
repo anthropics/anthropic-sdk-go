@@ -12,7 +12,7 @@ func main() {
 	ctx := context.Background()
 	client := anthropic.NewClient()
 
-	myFile, err := os.Open("examples/file-upload/file.txt")
+	myFile, err := os.Open("./file-upload/file.txt")
 	if err != nil {
 		fmt.Printf("Error opening file: %v\n", err)
 		return

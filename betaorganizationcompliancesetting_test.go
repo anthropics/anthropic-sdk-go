@@ -48,7 +48,7 @@ func TestBetaOrganizationComplianceSettingUpdate(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.Organization.ComplianceSettings.Update(context.TODO(), anthropic.BetaOrganizationComplianceSettingUpdateParams{
-		State: anthropic.BetaOrganizationComplianceSettingUpdateParamsStateUnion{
+		State: anthropic.BetaComplianceSettingsStateParamUnion{
 			OfEnabled: &anthropic.BetaComplianceSettingsStateEnabledParam{},
 		},
 	})

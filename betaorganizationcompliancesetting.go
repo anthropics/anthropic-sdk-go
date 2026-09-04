@@ -223,38 +223,23 @@ func (r *BetaComplianceSettingsStateEnabledParam) UnmarshalJSON(data []byte) err
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaOrganizationComplianceSettingUpdateParams struct {
-	// Desired state. Accepts the string shorthand "enabled" or "disabled" in place of
-	// the object form; the response always returns the canonical object form.
-	State BetaOrganizationComplianceSettingUpdateParamsStateUnion `json:"state,omitzero" api:"required"`
-	paramObj
-}
-
-func (r BetaOrganizationComplianceSettingUpdateParams) MarshalJSON() (data []byte, err error) {
-	type shadow BetaOrganizationComplianceSettingUpdateParams
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *BetaOrganizationComplianceSettingUpdateParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
-type BetaOrganizationComplianceSettingUpdateParamsStateUnion struct {
+type BetaComplianceSettingsStateParamUnion struct {
 	OfEnabled  *BetaComplianceSettingsStateEnabledParam  `json:",omitzero,inline"`
 	OfDisabled *BetaComplianceSettingsStateDisabledParam `json:",omitzero,inline"`
 	paramUnion
 }
 
-func (u BetaOrganizationComplianceSettingUpdateParamsStateUnion) MarshalJSON() ([]byte, error) {
+func (u BetaComplianceSettingsStateParamUnion) MarshalJSON() ([]byte, error) {
 	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled)
 }
-func (u *BetaOrganizationComplianceSettingUpdateParamsStateUnion) UnmarshalJSON(data []byte) error {
+func (u *BetaComplianceSettingsStateParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
 
-func (u *BetaOrganizationComplianceSettingUpdateParamsStateUnion) asAny() any {
+func (u *BetaComplianceSettingsStateParamUnion) asAny() any {
 	if !param.IsOmitted(u.OfEnabled) {
 		return u.OfEnabled
 	} else if !param.IsOmitted(u.OfDisabled) {
@@ -264,7 +249,7 @@ func (u *BetaOrganizationComplianceSettingUpdateParamsStateUnion) asAny() any {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaOrganizationComplianceSettingUpdateParamsStateUnion) GetType() *string {
+func (u BetaComplianceSettingsStateParamUnion) GetType() *string {
 	if vt := u.OfEnabled; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
@@ -274,9 +259,24 @@ func (u BetaOrganizationComplianceSettingUpdateParamsStateUnion) GetType() *stri
 }
 
 func init() {
-	apijson.RegisterUnion[BetaOrganizationComplianceSettingUpdateParamsStateUnion](
+	apijson.RegisterUnion[BetaComplianceSettingsStateParamUnion](
 		"type",
 		apijson.Discriminator[BetaComplianceSettingsStateEnabledParam]("enabled"),
 		apijson.Discriminator[BetaComplianceSettingsStateDisabledParam]("disabled"),
 	)
+}
+
+type BetaOrganizationComplianceSettingUpdateParams struct {
+	// Desired state. Accepts the string shorthand "enabled" or "disabled" in place of
+	// the object form; the response always returns the canonical object form.
+	State BetaComplianceSettingsStateParamUnion `json:"state,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaOrganizationComplianceSettingUpdateParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaOrganizationComplianceSettingUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaOrganizationComplianceSettingUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }

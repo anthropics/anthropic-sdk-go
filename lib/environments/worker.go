@@ -234,7 +234,9 @@ func (w *EnvironmentWorker) Run(ctx context.Context) error {
 // WorkID, EnvironmentID and SessionID are required (after the env-var
 // fallback). EnvironmentKey resolves in order: this field, then the
 // [EnvironmentWorker]'s own EnvironmentKey option, then
-// ANTHROPIC_ENVIRONMENT_KEY — and is also required.
+// ANTHROPIC_ENVIRONMENT_KEY — and is required only when WorkSecret is absent;
+// a work secret whose payload carries a sessions token authorizes the item on
+// its own.
 type HandleItemOptions struct {
 	// WorkID identifies the already-claimed work item; falls back to
 	// ANTHROPIC_WORK_ID when empty.
@@ -247,15 +249,17 @@ type HandleItemOptions struct {
 	SessionID string
 	// EnvironmentKey authorizes the per-session calls; falls back to the
 	// [EnvironmentWorker]'s own EnvironmentKey, then ANTHROPIC_ENVIRONMENT_KEY.
+	// Optional when WorkSecret carries a sessions token — that token then
+	// authorizes the item on its own.
 	EnvironmentKey string
 	// WorkSecret is the work item's per-item secret payload from the poll
 	// response; falls back to ANTHROPIC_WORK_SECRET (the variable the
-	// `ant worker poll --on-work` command sets alongside the others). Unlike
-	// the fields above it is optional — when present, the sessions token
-	// extracted from it is preferred over EnvironmentKey as the Bearer
-	// credential for this item's heartbeat / force-stop / skill-download /
-	// session calls; when absent (or undecodable) those calls use
-	// EnvironmentKey.
+	// `ant worker poll --on-work` command sets alongside the others). When
+	// present, the sessions token extracted from it is preferred over
+	// EnvironmentKey as the Bearer credential for this item's heartbeat /
+	// force-stop / skill-download / session calls, and EnvironmentKey may be
+	// left empty. A secret that yields no token uses EnvironmentKey instead —
+	// or, when no key resolved either, fails the item up front.
 	WorkSecret string
 }
 
@@ -276,8 +280,11 @@ type HandleItemOptions struct {
 // just works. After the env-var fallback, WorkID/EnvironmentID/SessionID must
 // all be non-empty or HandleItem returns an error naming the missing one.
 // EnvironmentKey resolves in order — the opts field, the [EnvironmentWorker]'s
-// own EnvironmentKey option, then ANTHROPIC_ENVIRONMENT_KEY — and must also
-// resolve to a non-empty value. A worker built with the deprecated
+// own EnvironmentKey option, then ANTHROPIC_ENVIRONMENT_KEY — and is required
+// only when the item carries no work secret: a secret whose payload carries a
+// sessions token authorizes the item on its own, while a secret that yields
+// no token, with no key resolved, fails the item before any request is sent.
+// A worker built with the deprecated
 // UnrestrictedPaths option, or a MemorySyncInterval below
 // [MinMemorySyncInterval], returns an error before any of this.
 //
@@ -304,11 +311,13 @@ func (w *EnvironmentWorker) HandleItem(ctx context.Context, opts HandleItemOptio
 		{"work_id", workID, "ANTHROPIC_WORK_ID"},
 		{"environment_id", environmentID, "ANTHROPIC_ENVIRONMENT_ID"},
 		{"session_id", sessionID, "ANTHROPIC_SESSION_ID"},
-		{"environment_key", environmentKey, "ANTHROPIC_ENVIRONMENT_KEY"},
 	} {
 		if req.val == "" {
 			return fmt.Errorf("EnvironmentWorker.HandleItem: %s is required — pass it in HandleItemOptions or set %s", req.name, req.env)
 		}
+	}
+	if err := checkItemCredential(environmentKey, workSecret); err != nil {
+		return err
 	}
 
 	// The per-item code only reads work.ID / work.EnvironmentID / work.Secret /
@@ -323,6 +332,22 @@ func (w *EnvironmentWorker) HandleItem(ctx context.Context, opts HandleItemOptio
 		},
 	}
 	return w.handleItem(ctx, work, environmentKey)
+}
+
+// checkItemCredential verifies that the item will have a Bearer credential:
+// the environment key, or the sessions token inside the work secret. Without
+// either, the item must fail here rather than run unauthenticated.
+func checkItemCredential(environmentKey, workSecret string) error {
+	if environmentKey != "" {
+		return nil
+	}
+	if workSecret == "" {
+		return errors.New("EnvironmentWorker.HandleItem: environment_key is required when there is no work secret — pass it in HandleItemOptions or set ANTHROPIC_ENVIRONMENT_KEY")
+	}
+	if sessionsTokenFromSecret(workSecret) == "" {
+		return errors.New("EnvironmentWorker.HandleItem: the work secret carries no sessions token and no environment key is set — provide a work secret whose payload carries a sessions token, or provide the environment key")
+	}
+	return nil
 }
 
 // handleItem is the per-item flow shared by [EnvironmentWorker.Run]'s poll loop
@@ -365,9 +390,9 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	// bearer auth and helper header (appended last) still win.
 	helperOpts, err := helperReqOpts(itemCredential, stainlessheader.EnvironmentsWorker)
 	if err != nil {
-		// Run and HandleItem validate environmentKey at their entry points
-		// (itemCredential can only be empty if it was), so an empty
-		// credential here means a future code path bypassed that
+		// Run validates environmentKey and HandleItem validates that a
+		// credential resolves (the key, or a sessions token in the secret),
+		// so an empty credential here means a future code path bypassed that
 		// validation; surface it rather than fire requests with the parent
 		// client's credentials.
 		return err

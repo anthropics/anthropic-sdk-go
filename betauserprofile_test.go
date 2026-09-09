@@ -25,8 +25,17 @@ func TestBetaUserProfileNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.UserProfiles.New(context.TODO(), anthropic.BetaUserProfileNewParams{
-		AccessType:              anthropic.BetaUserProfileNewParamsAccessTypeApplication,
-		ExternalID:              anthropic.String("user_12345"),
+		AccessType: anthropic.BetaUserProfileNewParamsAccessTypeApplication,
+		ExternalID: anthropic.String("user_12345"),
+		ExternalUserDetails: anthropic.BetaUserProfileExternalUserDetailsParams{
+			AccountStatus: anthropic.BetaUserProfileExternalUserDetailsParamsAccountStatusActive,
+			Country:       anthropic.String("country"),
+			EmailHash:     anthropic.String("x"),
+			EntityType:    anthropic.BetaUserProfileExternalUserDetailsParamsEntityTypeIndividual,
+			NameHash:      anthropic.String("x"),
+			OnboardedAt:   anthropic.Time(time.Now()),
+			ReferenceID:   anthropic.String("x"),
+		},
 		ExternalUserOnboardedAt: anthropic.Time(time.Now()),
 		Metadata:                map[string]string{},
 		Name:                    anthropic.String("x"),
@@ -85,8 +94,17 @@ func TestBetaUserProfileUpdateWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"uprof_011CZkZCu8hGbp5mYRQgUmz9",
 		anthropic.BetaUserProfileUpdateParams{
-			AccessType:              anthropic.BetaUserProfileUpdateParamsAccessTypeApplication,
-			ExternalID:              anthropic.String("user_12345"),
+			AccessType: anthropic.BetaUserProfileUpdateParamsAccessTypeApplication,
+			ExternalID: anthropic.String("user_12345"),
+			ExternalUserDetails: anthropic.BetaUserProfileExternalUserDetailsParams{
+				AccountStatus: anthropic.BetaUserProfileExternalUserDetailsParamsAccountStatusActive,
+				Country:       anthropic.String("country"),
+				EmailHash:     anthropic.String("x"),
+				EntityType:    anthropic.BetaUserProfileExternalUserDetailsParamsEntityTypeIndividual,
+				NameHash:      anthropic.String("x"),
+				OnboardedAt:   anthropic.Time(time.Now()),
+				ReferenceID:   anthropic.String("x"),
+			},
 			ExternalUserOnboardedAt: anthropic.Time(time.Now()),
 			Metadata: map[string]string{
 				"foo": "string",

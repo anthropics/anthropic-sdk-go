@@ -1403,10 +1403,15 @@ Response Types:
 
 ## UserProfiles
 
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaUserProfileExternalUserDetailsParams">BetaUserProfileExternalUserDetailsParams</a>
+
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaUserProfile">BetaUserProfile</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaUserProfileEnrollmentURL">BetaUserProfileEnrollmentURL</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaUserProfileExternalUserDetails">BetaUserProfileExternalUserDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaUserProfileTrustGrant">BetaUserProfileTrustGrant</a>
 
 Methods:

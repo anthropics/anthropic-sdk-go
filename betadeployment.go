@@ -1946,17 +1946,17 @@ func (u *BetaDeploymentNewParamsResourceUnion) asAny() any {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaDeploymentNewParamsResourceUnion) GetAuthorizationToken() *string {
+func (u BetaDeploymentNewParamsResourceUnion) GetURL() *string {
 	if vt := u.OfGitHubRepository; vt != nil {
-		return &vt.AuthorizationToken
+		return &vt.URL
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaDeploymentNewParamsResourceUnion) GetURL() *string {
+func (u BetaDeploymentNewParamsResourceUnion) GetAuthorizationToken() *string {
 	if vt := u.OfGitHubRepository; vt != nil {
-		return &vt.URL
+		return &vt.AuthorizationToken
 	}
 	return nil
 }
@@ -2137,17 +2137,17 @@ func (u *BetaDeploymentUpdateParamsResourceUnion) asAny() any {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaDeploymentUpdateParamsResourceUnion) GetAuthorizationToken() *string {
+func (u BetaDeploymentUpdateParamsResourceUnion) GetURL() *string {
 	if vt := u.OfGitHubRepository; vt != nil {
-		return &vt.AuthorizationToken
+		return &vt.URL
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaDeploymentUpdateParamsResourceUnion) GetURL() *string {
+func (u BetaDeploymentUpdateParamsResourceUnion) GetAuthorizationToken() *string {
 	if vt := u.OfGitHubRepository; vt != nil {
-		return &vt.URL
+		return &vt.AuthorizationToken
 	}
 	return nil
 }

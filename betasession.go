@@ -821,10 +821,8 @@ const (
 
 // Mount a GitHub repository into the session's container.
 //
-// The properties AuthorizationToken, Type, URL are required.
+// The properties Type, URL are required.
 type BetaManagedAgentsGitHubRepositoryResourceParams struct {
-	// GitHub authorization token used to clone the repository.
-	AuthorizationToken string `json:"authorization_token" api:"required"`
 	// Any of "github_repository".
 	Type BetaManagedAgentsGitHubRepositoryResourceParamsType `json:"type,omitzero" api:"required"`
 	// Github URL of the repository
@@ -833,6 +831,9 @@ type BetaManagedAgentsGitHubRepositoryResourceParams struct {
 	MountPath param.Opt[string] `json:"mount_path,omitzero"`
 	// Branch or commit to check out. Defaults to the repository's default branch.
 	Checkout BetaManagedAgentsGitHubRepositoryResourceParamsCheckoutUnion `json:"checkout,omitzero"`
+	// GitHub authorization token used to clone the repository. Required for private
+	// repositories; optional for public ones.
+	AuthorizationToken string `json:"authorization_token,omitzero"`
 	paramObj
 }
 
@@ -2704,17 +2705,17 @@ func (u *BetaSessionNewParamsResourceUnion) asAny() any {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaSessionNewParamsResourceUnion) GetAuthorizationToken() *string {
+func (u BetaSessionNewParamsResourceUnion) GetURL() *string {
 	if vt := u.OfGitHubRepository; vt != nil {
-		return &vt.AuthorizationToken
+		return &vt.URL
 	}
 	return nil
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaSessionNewParamsResourceUnion) GetURL() *string {
+func (u BetaSessionNewParamsResourceUnion) GetAuthorizationToken() *string {
 	if vt := u.OfGitHubRepository; vt != nil {
-		return &vt.URL
+		return &vt.AuthorizationToken
 	}
 	return nil
 }

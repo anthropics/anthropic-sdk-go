@@ -1,5 +1,3 @@
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
-
 package anthropic
 
 import (
@@ -805,7 +803,7 @@ func (u BetaManagedAgentsAgentToolConfigParamsUnion) GetPermissionPolicy() (res 
 }
 
 // Can have the runtime types [*BetaManagedAgentsAlwaysAllowPolicyParam],
-// [*BetaManagedAgentsAlwaysAskPolicyParam]
+// [*BetaManagedAgentsAlwaysAskPolicyParam], [*BetaManagedAgentsAutoPolicyParam]
 type betaManagedAgentsAgentToolConfigParamsUnionPermissionPolicy struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -813,6 +811,7 @@ type betaManagedAgentsAgentToolConfigParamsUnionPermissionPolicy struct{ any }
 //	switch u.AsAny().(type) {
 //	case *anthropic.BetaManagedAgentsAlwaysAllowPolicyParam:
 //	case *anthropic.BetaManagedAgentsAlwaysAskPolicyParam:
+//	case *anthropic.BetaManagedAgentsAutoPolicyParam:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -899,14 +898,14 @@ func (r *BetaManagedAgentsAgentToolsetDefaultConfig) UnmarshalJSON(data []byte) 
 
 // BetaManagedAgentsAgentToolsetDefaultConfigPermissionPolicyUnion contains all
 // possible properties and values from [BetaManagedAgentsAlwaysAllowPolicy],
-// [BetaManagedAgentsAlwaysAskPolicy].
+// [BetaManagedAgentsAlwaysAskPolicy], [BetaManagedAgentsAutoPolicy].
 //
 // Use the [BetaManagedAgentsAgentToolsetDefaultConfigPermissionPolicyUnion.AsAny]
 // method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsAgentToolsetDefaultConfigPermissionPolicyUnion struct {
-	// Any of "always_allow", "always_ask".
+	// Any of "always_allow", "always_ask", "auto".
 	Type string `json:"type"`
 	JSON struct {
 		Type respjson.Field
@@ -927,12 +926,15 @@ func (BetaManagedAgentsAlwaysAllowPolicy) implBetaManagedAgentsAgentToolsetDefau
 }
 func (BetaManagedAgentsAlwaysAskPolicy) implBetaManagedAgentsAgentToolsetDefaultConfigPermissionPolicyUnion() {
 }
+func (BetaManagedAgentsAutoPolicy) implBetaManagedAgentsAgentToolsetDefaultConfigPermissionPolicyUnion() {
+}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsAgentToolsetDefaultConfigPermissionPolicyUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsAlwaysAllowPolicy:
 //	case anthropic.BetaManagedAgentsAlwaysAskPolicy:
+//	case anthropic.BetaManagedAgentsAutoPolicy:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -942,6 +944,8 @@ func (u BetaManagedAgentsAgentToolsetDefaultConfigPermissionPolicyUnion) AsAny()
 		return u.AsAlwaysAllow()
 	case "always_ask":
 		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
 	}
 	return nil
 }
@@ -952,6 +956,11 @@ func (u BetaManagedAgentsAgentToolsetDefaultConfigPermissionPolicyUnion) AsAlway
 }
 
 func (u BetaManagedAgentsAgentToolsetDefaultConfigPermissionPolicyUnion) AsAlwaysAsk() (v BetaManagedAgentsAlwaysAskPolicy) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsAgentToolsetDefaultConfigPermissionPolicyUnion) AsAuto() (v BetaManagedAgentsAutoPolicy) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -989,11 +998,12 @@ func (r *BetaManagedAgentsAgentToolsetDefaultConfigParams) UnmarshalJSON(data []
 type BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion struct {
 	OfAlwaysAllow *BetaManagedAgentsAlwaysAllowPolicyParam `json:",omitzero,inline"`
 	OfAlwaysAsk   *BetaManagedAgentsAlwaysAskPolicyParam   `json:",omitzero,inline"`
+	OfAuto        *BetaManagedAgentsAutoPolicyParam        `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk)
+	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk, u.OfAuto)
 }
 func (u *BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -1004,6 +1014,8 @@ func (u *BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion) 
 		return u.OfAlwaysAllow
 	} else if !param.IsOmitted(u.OfAlwaysAsk) {
 		return u.OfAlwaysAsk
+	} else if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
 	}
 	return nil
 }
@@ -1014,6 +1026,8 @@ func (u BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion) G
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAuto; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -1023,6 +1037,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsAlwaysAllowPolicyParam]("always_allow"),
 		apijson.Discriminator[BetaManagedAgentsAlwaysAskPolicyParam]("always_ask"),
+		apijson.Discriminator[BetaManagedAgentsAutoPolicyParam]("auto"),
 	)
 }
 
@@ -1388,6 +1403,62 @@ const (
 	BetaManagedAgentsAnthropicSkillParamsTypeAnthropic BetaManagedAgentsAnthropicSkillParamsType = "anthropic"
 )
 
+// The server decides each tool call individually: it judges, from the tool, its
+// input, and the session content so far, whether the call is safe to execute or
+// high-risk, and evaluates it to allow when judged safe and to deny when judged
+// high-risk. A call the server cannot reach a judgement on evaluates to ask.
+type BetaManagedAgentsAutoPolicy struct {
+	Type constant.Auto `json:"type" default:"auto"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsAutoPolicy) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsAutoPolicy) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsAutoPolicy to a
+// BetaManagedAgentsAutoPolicyParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsAutoPolicyParam.Overrides()
+func (r BetaManagedAgentsAutoPolicy) ToParam() BetaManagedAgentsAutoPolicyParam {
+	return param.Override[BetaManagedAgentsAutoPolicyParam](json.RawMessage(r.RawJSON()))
+}
+
+func NewBetaManagedAgentsAutoPolicyParam() BetaManagedAgentsAutoPolicyParam {
+	return BetaManagedAgentsAutoPolicyParam{
+		Type: "auto",
+	}
+}
+
+// The server decides each tool call individually: it judges, from the tool, its
+// input, and the session content so far, whether the call is safe to execute or
+// high-risk, and evaluates it to allow when judged safe and to deny when judged
+// high-risk. A call the server cannot reach a judgement on evaluates to ask.
+//
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsAutoPolicyParam].
+type BetaManagedAgentsAutoPolicyParam struct {
+	Type constant.Auto `json:"type" default:"auto"`
+	paramObj
+}
+
+func (r BetaManagedAgentsAutoPolicyParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsAutoPolicyParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsAutoPolicyParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Configuration for the bash tool.
 type BetaManagedAgentsBashToolConfig struct {
 	Enabled bool          `json:"enabled" api:"required"`
@@ -1414,14 +1485,14 @@ func (r *BetaManagedAgentsBashToolConfig) UnmarshalJSON(data []byte) error {
 
 // BetaManagedAgentsBashToolConfigPermissionPolicyUnion contains all possible
 // properties and values from [BetaManagedAgentsAlwaysAllowPolicy],
-// [BetaManagedAgentsAlwaysAskPolicy].
+// [BetaManagedAgentsAlwaysAskPolicy], [BetaManagedAgentsAutoPolicy].
 //
 // Use the [BetaManagedAgentsBashToolConfigPermissionPolicyUnion.AsAny] method to
 // switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsBashToolConfigPermissionPolicyUnion struct {
-	// Any of "always_allow", "always_ask".
+	// Any of "always_allow", "always_ask", "auto".
 	Type string `json:"type"`
 	JSON struct {
 		Type respjson.Field
@@ -1440,12 +1511,14 @@ type anyBetaManagedAgentsBashToolConfigPermissionPolicy interface {
 func (BetaManagedAgentsAlwaysAllowPolicy) implBetaManagedAgentsBashToolConfigPermissionPolicyUnion() {
 }
 func (BetaManagedAgentsAlwaysAskPolicy) implBetaManagedAgentsBashToolConfigPermissionPolicyUnion() {}
+func (BetaManagedAgentsAutoPolicy) implBetaManagedAgentsBashToolConfigPermissionPolicyUnion()      {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsBashToolConfigPermissionPolicyUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsAlwaysAllowPolicy:
 //	case anthropic.BetaManagedAgentsAlwaysAskPolicy:
+//	case anthropic.BetaManagedAgentsAutoPolicy:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1455,6 +1528,8 @@ func (u BetaManagedAgentsBashToolConfigPermissionPolicyUnion) AsAny() anyBetaMan
 		return u.AsAlwaysAllow()
 	case "always_ask":
 		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
 	}
 	return nil
 }
@@ -1465,6 +1540,11 @@ func (u BetaManagedAgentsBashToolConfigPermissionPolicyUnion) AsAlwaysAllow() (v
 }
 
 func (u BetaManagedAgentsBashToolConfigPermissionPolicyUnion) AsAlwaysAsk() (v BetaManagedAgentsAlwaysAskPolicy) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsBashToolConfigPermissionPolicyUnion) AsAuto() (v BetaManagedAgentsAutoPolicy) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1508,11 +1588,12 @@ func (r *BetaManagedAgentsBashToolConfigParams) UnmarshalJSON(data []byte) error
 type BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion struct {
 	OfAlwaysAllow *BetaManagedAgentsAlwaysAllowPolicyParam `json:",omitzero,inline"`
 	OfAlwaysAsk   *BetaManagedAgentsAlwaysAskPolicyParam   `json:",omitzero,inline"`
+	OfAuto        *BetaManagedAgentsAutoPolicyParam        `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk)
+	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk, u.OfAuto)
 }
 func (u *BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -1523,6 +1604,8 @@ func (u *BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion) asAny() any
 		return u.OfAlwaysAllow
 	} else if !param.IsOmitted(u.OfAlwaysAsk) {
 		return u.OfAlwaysAsk
+	} else if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
 	}
 	return nil
 }
@@ -1533,6 +1616,8 @@ func (u BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion) GetType() *s
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAuto; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -1542,6 +1627,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsAlwaysAllowPolicyParam]("always_allow"),
 		apijson.Discriminator[BetaManagedAgentsAlwaysAskPolicyParam]("always_ask"),
+		apijson.Discriminator[BetaManagedAgentsAutoPolicyParam]("auto"),
 	)
 }
 
@@ -1749,14 +1835,14 @@ func (r *BetaManagedAgentsEditToolConfig) UnmarshalJSON(data []byte) error {
 
 // BetaManagedAgentsEditToolConfigPermissionPolicyUnion contains all possible
 // properties and values from [BetaManagedAgentsAlwaysAllowPolicy],
-// [BetaManagedAgentsAlwaysAskPolicy].
+// [BetaManagedAgentsAlwaysAskPolicy], [BetaManagedAgentsAutoPolicy].
 //
 // Use the [BetaManagedAgentsEditToolConfigPermissionPolicyUnion.AsAny] method to
 // switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsEditToolConfigPermissionPolicyUnion struct {
-	// Any of "always_allow", "always_ask".
+	// Any of "always_allow", "always_ask", "auto".
 	Type string `json:"type"`
 	JSON struct {
 		Type respjson.Field
@@ -1775,12 +1861,14 @@ type anyBetaManagedAgentsEditToolConfigPermissionPolicy interface {
 func (BetaManagedAgentsAlwaysAllowPolicy) implBetaManagedAgentsEditToolConfigPermissionPolicyUnion() {
 }
 func (BetaManagedAgentsAlwaysAskPolicy) implBetaManagedAgentsEditToolConfigPermissionPolicyUnion() {}
+func (BetaManagedAgentsAutoPolicy) implBetaManagedAgentsEditToolConfigPermissionPolicyUnion()      {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsEditToolConfigPermissionPolicyUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsAlwaysAllowPolicy:
 //	case anthropic.BetaManagedAgentsAlwaysAskPolicy:
+//	case anthropic.BetaManagedAgentsAutoPolicy:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1790,6 +1878,8 @@ func (u BetaManagedAgentsEditToolConfigPermissionPolicyUnion) AsAny() anyBetaMan
 		return u.AsAlwaysAllow()
 	case "always_ask":
 		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
 	}
 	return nil
 }
@@ -1800,6 +1890,11 @@ func (u BetaManagedAgentsEditToolConfigPermissionPolicyUnion) AsAlwaysAllow() (v
 }
 
 func (u BetaManagedAgentsEditToolConfigPermissionPolicyUnion) AsAlwaysAsk() (v BetaManagedAgentsAlwaysAskPolicy) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsEditToolConfigPermissionPolicyUnion) AsAuto() (v BetaManagedAgentsAutoPolicy) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1843,11 +1938,12 @@ func (r *BetaManagedAgentsEditToolConfigParams) UnmarshalJSON(data []byte) error
 type BetaManagedAgentsEditToolConfigParamsPermissionPolicyUnion struct {
 	OfAlwaysAllow *BetaManagedAgentsAlwaysAllowPolicyParam `json:",omitzero,inline"`
 	OfAlwaysAsk   *BetaManagedAgentsAlwaysAskPolicyParam   `json:",omitzero,inline"`
+	OfAuto        *BetaManagedAgentsAutoPolicyParam        `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsEditToolConfigParamsPermissionPolicyUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk)
+	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk, u.OfAuto)
 }
 func (u *BetaManagedAgentsEditToolConfigParamsPermissionPolicyUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -1858,6 +1954,8 @@ func (u *BetaManagedAgentsEditToolConfigParamsPermissionPolicyUnion) asAny() any
 		return u.OfAlwaysAllow
 	} else if !param.IsOmitted(u.OfAlwaysAsk) {
 		return u.OfAlwaysAsk
+	} else if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
 	}
 	return nil
 }
@@ -1868,6 +1966,8 @@ func (u BetaManagedAgentsEditToolConfigParamsPermissionPolicyUnion) GetType() *s
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAuto; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -1877,6 +1977,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsAlwaysAllowPolicyParam]("always_allow"),
 		apijson.Discriminator[BetaManagedAgentsAlwaysAskPolicyParam]("always_ask"),
+		apijson.Discriminator[BetaManagedAgentsAutoPolicyParam]("auto"),
 	)
 }
 
@@ -2167,14 +2268,14 @@ func (r *BetaManagedAgentsGlobToolConfig) UnmarshalJSON(data []byte) error {
 
 // BetaManagedAgentsGlobToolConfigPermissionPolicyUnion contains all possible
 // properties and values from [BetaManagedAgentsAlwaysAllowPolicy],
-// [BetaManagedAgentsAlwaysAskPolicy].
+// [BetaManagedAgentsAlwaysAskPolicy], [BetaManagedAgentsAutoPolicy].
 //
 // Use the [BetaManagedAgentsGlobToolConfigPermissionPolicyUnion.AsAny] method to
 // switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsGlobToolConfigPermissionPolicyUnion struct {
-	// Any of "always_allow", "always_ask".
+	// Any of "always_allow", "always_ask", "auto".
 	Type string `json:"type"`
 	JSON struct {
 		Type respjson.Field
@@ -2193,12 +2294,14 @@ type anyBetaManagedAgentsGlobToolConfigPermissionPolicy interface {
 func (BetaManagedAgentsAlwaysAllowPolicy) implBetaManagedAgentsGlobToolConfigPermissionPolicyUnion() {
 }
 func (BetaManagedAgentsAlwaysAskPolicy) implBetaManagedAgentsGlobToolConfigPermissionPolicyUnion() {}
+func (BetaManagedAgentsAutoPolicy) implBetaManagedAgentsGlobToolConfigPermissionPolicyUnion()      {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsGlobToolConfigPermissionPolicyUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsAlwaysAllowPolicy:
 //	case anthropic.BetaManagedAgentsAlwaysAskPolicy:
+//	case anthropic.BetaManagedAgentsAutoPolicy:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -2208,6 +2311,8 @@ func (u BetaManagedAgentsGlobToolConfigPermissionPolicyUnion) AsAny() anyBetaMan
 		return u.AsAlwaysAllow()
 	case "always_ask":
 		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
 	}
 	return nil
 }
@@ -2218,6 +2323,11 @@ func (u BetaManagedAgentsGlobToolConfigPermissionPolicyUnion) AsAlwaysAllow() (v
 }
 
 func (u BetaManagedAgentsGlobToolConfigPermissionPolicyUnion) AsAlwaysAsk() (v BetaManagedAgentsAlwaysAskPolicy) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsGlobToolConfigPermissionPolicyUnion) AsAuto() (v BetaManagedAgentsAutoPolicy) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2261,11 +2371,12 @@ func (r *BetaManagedAgentsGlobToolConfigParams) UnmarshalJSON(data []byte) error
 type BetaManagedAgentsGlobToolConfigParamsPermissionPolicyUnion struct {
 	OfAlwaysAllow *BetaManagedAgentsAlwaysAllowPolicyParam `json:",omitzero,inline"`
 	OfAlwaysAsk   *BetaManagedAgentsAlwaysAskPolicyParam   `json:",omitzero,inline"`
+	OfAuto        *BetaManagedAgentsAutoPolicyParam        `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsGlobToolConfigParamsPermissionPolicyUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk)
+	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk, u.OfAuto)
 }
 func (u *BetaManagedAgentsGlobToolConfigParamsPermissionPolicyUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -2276,6 +2387,8 @@ func (u *BetaManagedAgentsGlobToolConfigParamsPermissionPolicyUnion) asAny() any
 		return u.OfAlwaysAllow
 	} else if !param.IsOmitted(u.OfAlwaysAsk) {
 		return u.OfAlwaysAsk
+	} else if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
 	}
 	return nil
 }
@@ -2286,6 +2399,8 @@ func (u BetaManagedAgentsGlobToolConfigParamsPermissionPolicyUnion) GetType() *s
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAuto; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -2295,6 +2410,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsAlwaysAllowPolicyParam]("always_allow"),
 		apijson.Discriminator[BetaManagedAgentsAlwaysAskPolicyParam]("always_ask"),
+		apijson.Discriminator[BetaManagedAgentsAutoPolicyParam]("auto"),
 	)
 }
 
@@ -2330,14 +2446,14 @@ func (r *BetaManagedAgentsGrepToolConfig) UnmarshalJSON(data []byte) error {
 
 // BetaManagedAgentsGrepToolConfigPermissionPolicyUnion contains all possible
 // properties and values from [BetaManagedAgentsAlwaysAllowPolicy],
-// [BetaManagedAgentsAlwaysAskPolicy].
+// [BetaManagedAgentsAlwaysAskPolicy], [BetaManagedAgentsAutoPolicy].
 //
 // Use the [BetaManagedAgentsGrepToolConfigPermissionPolicyUnion.AsAny] method to
 // switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsGrepToolConfigPermissionPolicyUnion struct {
-	// Any of "always_allow", "always_ask".
+	// Any of "always_allow", "always_ask", "auto".
 	Type string `json:"type"`
 	JSON struct {
 		Type respjson.Field
@@ -2356,12 +2472,14 @@ type anyBetaManagedAgentsGrepToolConfigPermissionPolicy interface {
 func (BetaManagedAgentsAlwaysAllowPolicy) implBetaManagedAgentsGrepToolConfigPermissionPolicyUnion() {
 }
 func (BetaManagedAgentsAlwaysAskPolicy) implBetaManagedAgentsGrepToolConfigPermissionPolicyUnion() {}
+func (BetaManagedAgentsAutoPolicy) implBetaManagedAgentsGrepToolConfigPermissionPolicyUnion()      {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsGrepToolConfigPermissionPolicyUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsAlwaysAllowPolicy:
 //	case anthropic.BetaManagedAgentsAlwaysAskPolicy:
+//	case anthropic.BetaManagedAgentsAutoPolicy:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -2371,6 +2489,8 @@ func (u BetaManagedAgentsGrepToolConfigPermissionPolicyUnion) AsAny() anyBetaMan
 		return u.AsAlwaysAllow()
 	case "always_ask":
 		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
 	}
 	return nil
 }
@@ -2381,6 +2501,11 @@ func (u BetaManagedAgentsGrepToolConfigPermissionPolicyUnion) AsAlwaysAllow() (v
 }
 
 func (u BetaManagedAgentsGrepToolConfigPermissionPolicyUnion) AsAlwaysAsk() (v BetaManagedAgentsAlwaysAskPolicy) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsGrepToolConfigPermissionPolicyUnion) AsAuto() (v BetaManagedAgentsAutoPolicy) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2424,11 +2549,12 @@ func (r *BetaManagedAgentsGrepToolConfigParams) UnmarshalJSON(data []byte) error
 type BetaManagedAgentsGrepToolConfigParamsPermissionPolicyUnion struct {
 	OfAlwaysAllow *BetaManagedAgentsAlwaysAllowPolicyParam `json:",omitzero,inline"`
 	OfAlwaysAsk   *BetaManagedAgentsAlwaysAskPolicyParam   `json:",omitzero,inline"`
+	OfAuto        *BetaManagedAgentsAutoPolicyParam        `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsGrepToolConfigParamsPermissionPolicyUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk)
+	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk, u.OfAuto)
 }
 func (u *BetaManagedAgentsGrepToolConfigParamsPermissionPolicyUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -2439,6 +2565,8 @@ func (u *BetaManagedAgentsGrepToolConfigParamsPermissionPolicyUnion) asAny() any
 		return u.OfAlwaysAllow
 	} else if !param.IsOmitted(u.OfAlwaysAsk) {
 		return u.OfAlwaysAsk
+	} else if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
 	}
 	return nil
 }
@@ -2449,6 +2577,8 @@ func (u BetaManagedAgentsGrepToolConfigParamsPermissionPolicyUnion) GetType() *s
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAuto; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -2458,6 +2588,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsAlwaysAllowPolicyParam]("always_allow"),
 		apijson.Discriminator[BetaManagedAgentsAlwaysAskPolicyParam]("always_ask"),
+		apijson.Discriminator[BetaManagedAgentsAutoPolicyParam]("auto"),
 	)
 }
 
@@ -2519,14 +2650,14 @@ func (r *BetaManagedAgentsMCPToolConfig) UnmarshalJSON(data []byte) error {
 
 // BetaManagedAgentsMCPToolConfigPermissionPolicyUnion contains all possible
 // properties and values from [BetaManagedAgentsAlwaysAllowPolicy],
-// [BetaManagedAgentsAlwaysAskPolicy].
+// [BetaManagedAgentsAlwaysAskPolicy], [BetaManagedAgentsAutoPolicy].
 //
 // Use the [BetaManagedAgentsMCPToolConfigPermissionPolicyUnion.AsAny] method to
 // switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsMCPToolConfigPermissionPolicyUnion struct {
-	// Any of "always_allow", "always_ask".
+	// Any of "always_allow", "always_ask", "auto".
 	Type string `json:"type"`
 	JSON struct {
 		Type respjson.Field
@@ -2543,12 +2674,14 @@ type anyBetaManagedAgentsMCPToolConfigPermissionPolicy interface {
 
 func (BetaManagedAgentsAlwaysAllowPolicy) implBetaManagedAgentsMCPToolConfigPermissionPolicyUnion() {}
 func (BetaManagedAgentsAlwaysAskPolicy) implBetaManagedAgentsMCPToolConfigPermissionPolicyUnion()   {}
+func (BetaManagedAgentsAutoPolicy) implBetaManagedAgentsMCPToolConfigPermissionPolicyUnion()        {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsMCPToolConfigPermissionPolicyUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsAlwaysAllowPolicy:
 //	case anthropic.BetaManagedAgentsAlwaysAskPolicy:
+//	case anthropic.BetaManagedAgentsAutoPolicy:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -2558,6 +2691,8 @@ func (u BetaManagedAgentsMCPToolConfigPermissionPolicyUnion) AsAny() anyBetaMana
 		return u.AsAlwaysAllow()
 	case "always_ask":
 		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
 	}
 	return nil
 }
@@ -2568,6 +2703,11 @@ func (u BetaManagedAgentsMCPToolConfigPermissionPolicyUnion) AsAlwaysAllow() (v 
 }
 
 func (u BetaManagedAgentsMCPToolConfigPermissionPolicyUnion) AsAlwaysAsk() (v BetaManagedAgentsAlwaysAskPolicy) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsMCPToolConfigPermissionPolicyUnion) AsAuto() (v BetaManagedAgentsAutoPolicy) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2606,11 +2746,12 @@ func (r *BetaManagedAgentsMCPToolConfigParams) UnmarshalJSON(data []byte) error 
 type BetaManagedAgentsMCPToolConfigParamsPermissionPolicyUnion struct {
 	OfAlwaysAllow *BetaManagedAgentsAlwaysAllowPolicyParam `json:",omitzero,inline"`
 	OfAlwaysAsk   *BetaManagedAgentsAlwaysAskPolicyParam   `json:",omitzero,inline"`
+	OfAuto        *BetaManagedAgentsAutoPolicyParam        `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsMCPToolConfigParamsPermissionPolicyUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk)
+	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk, u.OfAuto)
 }
 func (u *BetaManagedAgentsMCPToolConfigParamsPermissionPolicyUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -2621,6 +2762,8 @@ func (u *BetaManagedAgentsMCPToolConfigParamsPermissionPolicyUnion) asAny() any 
 		return u.OfAlwaysAllow
 	} else if !param.IsOmitted(u.OfAlwaysAsk) {
 		return u.OfAlwaysAsk
+	} else if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
 	}
 	return nil
 }
@@ -2631,6 +2774,8 @@ func (u BetaManagedAgentsMCPToolConfigParamsPermissionPolicyUnion) GetType() *st
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAuto; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -2640,6 +2785,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsAlwaysAllowPolicyParam]("always_allow"),
 		apijson.Discriminator[BetaManagedAgentsAlwaysAskPolicyParam]("always_ask"),
+		apijson.Discriminator[BetaManagedAgentsAutoPolicyParam]("auto"),
 	)
 }
 
@@ -2695,14 +2841,14 @@ func (r *BetaManagedAgentsMCPToolsetDefaultConfig) UnmarshalJSON(data []byte) er
 
 // BetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion contains all
 // possible properties and values from [BetaManagedAgentsAlwaysAllowPolicy],
-// [BetaManagedAgentsAlwaysAskPolicy].
+// [BetaManagedAgentsAlwaysAskPolicy], [BetaManagedAgentsAutoPolicy].
 //
 // Use the [BetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion.AsAny]
 // method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion struct {
-	// Any of "always_allow", "always_ask".
+	// Any of "always_allow", "always_ask", "auto".
 	Type string `json:"type"`
 	JSON struct {
 		Type respjson.Field
@@ -2722,12 +2868,15 @@ func (BetaManagedAgentsAlwaysAllowPolicy) implBetaManagedAgentsMCPToolsetDefault
 }
 func (BetaManagedAgentsAlwaysAskPolicy) implBetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion() {
 }
+func (BetaManagedAgentsAutoPolicy) implBetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion() {
+}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsAlwaysAllowPolicy:
 //	case anthropic.BetaManagedAgentsAlwaysAskPolicy:
+//	case anthropic.BetaManagedAgentsAutoPolicy:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -2737,6 +2886,8 @@ func (u BetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion) AsAny() a
 		return u.AsAlwaysAllow()
 	case "always_ask":
 		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
 	}
 	return nil
 }
@@ -2747,6 +2898,11 @@ func (u BetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion) AsAlwaysA
 }
 
 func (u BetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion) AsAlwaysAsk() (v BetaManagedAgentsAlwaysAskPolicy) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion) AsAuto() (v BetaManagedAgentsAutoPolicy) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2783,11 +2939,12 @@ func (r *BetaManagedAgentsMCPToolsetDefaultConfigParams) UnmarshalJSON(data []by
 type BetaManagedAgentsMCPToolsetDefaultConfigParamsPermissionPolicyUnion struct {
 	OfAlwaysAllow *BetaManagedAgentsAlwaysAllowPolicyParam `json:",omitzero,inline"`
 	OfAlwaysAsk   *BetaManagedAgentsAlwaysAskPolicyParam   `json:",omitzero,inline"`
+	OfAuto        *BetaManagedAgentsAutoPolicyParam        `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsMCPToolsetDefaultConfigParamsPermissionPolicyUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk)
+	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk, u.OfAuto)
 }
 func (u *BetaManagedAgentsMCPToolsetDefaultConfigParamsPermissionPolicyUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -2798,6 +2955,8 @@ func (u *BetaManagedAgentsMCPToolsetDefaultConfigParamsPermissionPolicyUnion) as
 		return u.OfAlwaysAllow
 	} else if !param.IsOmitted(u.OfAlwaysAsk) {
 		return u.OfAlwaysAsk
+	} else if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
 	}
 	return nil
 }
@@ -2808,6 +2967,8 @@ func (u BetaManagedAgentsMCPToolsetDefaultConfigParamsPermissionPolicyUnion) Get
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAuto; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -2817,6 +2978,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsAlwaysAllowPolicyParam]("always_allow"),
 		apijson.Discriminator[BetaManagedAgentsAlwaysAskPolicyParam]("always_ask"),
+		apijson.Discriminator[BetaManagedAgentsAutoPolicyParam]("auto"),
 	)
 }
 
@@ -3176,14 +3338,14 @@ func (r *BetaManagedAgentsReadToolConfig) UnmarshalJSON(data []byte) error {
 
 // BetaManagedAgentsReadToolConfigPermissionPolicyUnion contains all possible
 // properties and values from [BetaManagedAgentsAlwaysAllowPolicy],
-// [BetaManagedAgentsAlwaysAskPolicy].
+// [BetaManagedAgentsAlwaysAskPolicy], [BetaManagedAgentsAutoPolicy].
 //
 // Use the [BetaManagedAgentsReadToolConfigPermissionPolicyUnion.AsAny] method to
 // switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsReadToolConfigPermissionPolicyUnion struct {
-	// Any of "always_allow", "always_ask".
+	// Any of "always_allow", "always_ask", "auto".
 	Type string `json:"type"`
 	JSON struct {
 		Type respjson.Field
@@ -3202,12 +3364,14 @@ type anyBetaManagedAgentsReadToolConfigPermissionPolicy interface {
 func (BetaManagedAgentsAlwaysAllowPolicy) implBetaManagedAgentsReadToolConfigPermissionPolicyUnion() {
 }
 func (BetaManagedAgentsAlwaysAskPolicy) implBetaManagedAgentsReadToolConfigPermissionPolicyUnion() {}
+func (BetaManagedAgentsAutoPolicy) implBetaManagedAgentsReadToolConfigPermissionPolicyUnion()      {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsReadToolConfigPermissionPolicyUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsAlwaysAllowPolicy:
 //	case anthropic.BetaManagedAgentsAlwaysAskPolicy:
+//	case anthropic.BetaManagedAgentsAutoPolicy:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -3217,6 +3381,8 @@ func (u BetaManagedAgentsReadToolConfigPermissionPolicyUnion) AsAny() anyBetaMan
 		return u.AsAlwaysAllow()
 	case "always_ask":
 		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
 	}
 	return nil
 }
@@ -3227,6 +3393,11 @@ func (u BetaManagedAgentsReadToolConfigPermissionPolicyUnion) AsAlwaysAllow() (v
 }
 
 func (u BetaManagedAgentsReadToolConfigPermissionPolicyUnion) AsAlwaysAsk() (v BetaManagedAgentsAlwaysAskPolicy) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsReadToolConfigPermissionPolicyUnion) AsAuto() (v BetaManagedAgentsAutoPolicy) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -3270,11 +3441,12 @@ func (r *BetaManagedAgentsReadToolConfigParams) UnmarshalJSON(data []byte) error
 type BetaManagedAgentsReadToolConfigParamsPermissionPolicyUnion struct {
 	OfAlwaysAllow *BetaManagedAgentsAlwaysAllowPolicyParam `json:",omitzero,inline"`
 	OfAlwaysAsk   *BetaManagedAgentsAlwaysAskPolicyParam   `json:",omitzero,inline"`
+	OfAuto        *BetaManagedAgentsAutoPolicyParam        `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsReadToolConfigParamsPermissionPolicyUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk)
+	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk, u.OfAuto)
 }
 func (u *BetaManagedAgentsReadToolConfigParamsPermissionPolicyUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3285,6 +3457,8 @@ func (u *BetaManagedAgentsReadToolConfigParamsPermissionPolicyUnion) asAny() any
 		return u.OfAlwaysAllow
 	} else if !param.IsOmitted(u.OfAlwaysAsk) {
 		return u.OfAlwaysAsk
+	} else if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
 	}
 	return nil
 }
@@ -3295,6 +3469,8 @@ func (u BetaManagedAgentsReadToolConfigParamsPermissionPolicyUnion) GetType() *s
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAuto; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -3304,6 +3480,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsAlwaysAllowPolicyParam]("always_allow"),
 		apijson.Discriminator[BetaManagedAgentsAlwaysAskPolicyParam]("always_ask"),
+		apijson.Discriminator[BetaManagedAgentsAutoPolicyParam]("auto"),
 	)
 }
 
@@ -3789,14 +3966,14 @@ func (r *BetaManagedAgentsWebFetchToolConfig) UnmarshalJSON(data []byte) error {
 
 // BetaManagedAgentsWebFetchToolConfigPermissionPolicyUnion contains all possible
 // properties and values from [BetaManagedAgentsAlwaysAllowPolicy],
-// [BetaManagedAgentsAlwaysAskPolicy].
+// [BetaManagedAgentsAlwaysAskPolicy], [BetaManagedAgentsAutoPolicy].
 //
 // Use the [BetaManagedAgentsWebFetchToolConfigPermissionPolicyUnion.AsAny] method
 // to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsWebFetchToolConfigPermissionPolicyUnion struct {
-	// Any of "always_allow", "always_ask".
+	// Any of "always_allow", "always_ask", "auto".
 	Type string `json:"type"`
 	JSON struct {
 		Type respjson.Field
@@ -3816,12 +3993,14 @@ func (BetaManagedAgentsAlwaysAllowPolicy) implBetaManagedAgentsWebFetchToolConfi
 }
 func (BetaManagedAgentsAlwaysAskPolicy) implBetaManagedAgentsWebFetchToolConfigPermissionPolicyUnion() {
 }
+func (BetaManagedAgentsAutoPolicy) implBetaManagedAgentsWebFetchToolConfigPermissionPolicyUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsWebFetchToolConfigPermissionPolicyUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsAlwaysAllowPolicy:
 //	case anthropic.BetaManagedAgentsAlwaysAskPolicy:
+//	case anthropic.BetaManagedAgentsAutoPolicy:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -3831,6 +4010,8 @@ func (u BetaManagedAgentsWebFetchToolConfigPermissionPolicyUnion) AsAny() anyBet
 		return u.AsAlwaysAllow()
 	case "always_ask":
 		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
 	}
 	return nil
 }
@@ -3841,6 +4022,11 @@ func (u BetaManagedAgentsWebFetchToolConfigPermissionPolicyUnion) AsAlwaysAllow(
 }
 
 func (u BetaManagedAgentsWebFetchToolConfigPermissionPolicyUnion) AsAlwaysAsk() (v BetaManagedAgentsAlwaysAskPolicy) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsWebFetchToolConfigPermissionPolicyUnion) AsAuto() (v BetaManagedAgentsAutoPolicy) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -3897,11 +4083,12 @@ func (r *BetaManagedAgentsWebFetchToolConfigParams) UnmarshalJSON(data []byte) e
 type BetaManagedAgentsWebFetchToolConfigParamsPermissionPolicyUnion struct {
 	OfAlwaysAllow *BetaManagedAgentsAlwaysAllowPolicyParam `json:",omitzero,inline"`
 	OfAlwaysAsk   *BetaManagedAgentsAlwaysAskPolicyParam   `json:",omitzero,inline"`
+	OfAuto        *BetaManagedAgentsAutoPolicyParam        `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsWebFetchToolConfigParamsPermissionPolicyUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk)
+	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk, u.OfAuto)
 }
 func (u *BetaManagedAgentsWebFetchToolConfigParamsPermissionPolicyUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -3912,6 +4099,8 @@ func (u *BetaManagedAgentsWebFetchToolConfigParamsPermissionPolicyUnion) asAny()
 		return u.OfAlwaysAllow
 	} else if !param.IsOmitted(u.OfAlwaysAsk) {
 		return u.OfAlwaysAsk
+	} else if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
 	}
 	return nil
 }
@@ -3922,6 +4111,8 @@ func (u BetaManagedAgentsWebFetchToolConfigParamsPermissionPolicyUnion) GetType(
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAuto; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -3931,6 +4122,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsAlwaysAllowPolicyParam]("always_allow"),
 		apijson.Discriminator[BetaManagedAgentsAlwaysAskPolicyParam]("always_ask"),
+		apijson.Discriminator[BetaManagedAgentsAutoPolicyParam]("auto"),
 	)
 }
 
@@ -3973,14 +4165,14 @@ func (r *BetaManagedAgentsWebSearchToolConfig) UnmarshalJSON(data []byte) error 
 
 // BetaManagedAgentsWebSearchToolConfigPermissionPolicyUnion contains all possible
 // properties and values from [BetaManagedAgentsAlwaysAllowPolicy],
-// [BetaManagedAgentsAlwaysAskPolicy].
+// [BetaManagedAgentsAlwaysAskPolicy], [BetaManagedAgentsAutoPolicy].
 //
 // Use the [BetaManagedAgentsWebSearchToolConfigPermissionPolicyUnion.AsAny] method
 // to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsWebSearchToolConfigPermissionPolicyUnion struct {
-	// Any of "always_allow", "always_ask".
+	// Any of "always_allow", "always_ask", "auto".
 	Type string `json:"type"`
 	JSON struct {
 		Type respjson.Field
@@ -4000,12 +4192,14 @@ func (BetaManagedAgentsAlwaysAllowPolicy) implBetaManagedAgentsWebSearchToolConf
 }
 func (BetaManagedAgentsAlwaysAskPolicy) implBetaManagedAgentsWebSearchToolConfigPermissionPolicyUnion() {
 }
+func (BetaManagedAgentsAutoPolicy) implBetaManagedAgentsWebSearchToolConfigPermissionPolicyUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsWebSearchToolConfigPermissionPolicyUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsAlwaysAllowPolicy:
 //	case anthropic.BetaManagedAgentsAlwaysAskPolicy:
+//	case anthropic.BetaManagedAgentsAutoPolicy:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -4015,6 +4209,8 @@ func (u BetaManagedAgentsWebSearchToolConfigPermissionPolicyUnion) AsAny() anyBe
 		return u.AsAlwaysAllow()
 	case "always_ask":
 		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
 	}
 	return nil
 }
@@ -4025,6 +4221,11 @@ func (u BetaManagedAgentsWebSearchToolConfigPermissionPolicyUnion) AsAlwaysAllow
 }
 
 func (u BetaManagedAgentsWebSearchToolConfigPermissionPolicyUnion) AsAlwaysAsk() (v BetaManagedAgentsAlwaysAskPolicy) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsWebSearchToolConfigPermissionPolicyUnion) AsAuto() (v BetaManagedAgentsAutoPolicy) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -4082,11 +4283,12 @@ func (r *BetaManagedAgentsWebSearchToolConfigParams) UnmarshalJSON(data []byte) 
 type BetaManagedAgentsWebSearchToolConfigParamsPermissionPolicyUnion struct {
 	OfAlwaysAllow *BetaManagedAgentsAlwaysAllowPolicyParam `json:",omitzero,inline"`
 	OfAlwaysAsk   *BetaManagedAgentsAlwaysAskPolicyParam   `json:",omitzero,inline"`
+	OfAuto        *BetaManagedAgentsAutoPolicyParam        `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsWebSearchToolConfigParamsPermissionPolicyUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk)
+	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk, u.OfAuto)
 }
 func (u *BetaManagedAgentsWebSearchToolConfigParamsPermissionPolicyUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -4097,6 +4299,8 @@ func (u *BetaManagedAgentsWebSearchToolConfigParamsPermissionPolicyUnion) asAny(
 		return u.OfAlwaysAllow
 	} else if !param.IsOmitted(u.OfAlwaysAsk) {
 		return u.OfAlwaysAsk
+	} else if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
 	}
 	return nil
 }
@@ -4107,6 +4311,8 @@ func (u BetaManagedAgentsWebSearchToolConfigParamsPermissionPolicyUnion) GetType
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAuto; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -4116,6 +4322,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsAlwaysAllowPolicyParam]("always_allow"),
 		apijson.Discriminator[BetaManagedAgentsAlwaysAskPolicyParam]("always_ask"),
+		apijson.Discriminator[BetaManagedAgentsAutoPolicyParam]("auto"),
 	)
 }
 
@@ -4151,14 +4358,14 @@ func (r *BetaManagedAgentsWriteToolConfig) UnmarshalJSON(data []byte) error {
 
 // BetaManagedAgentsWriteToolConfigPermissionPolicyUnion contains all possible
 // properties and values from [BetaManagedAgentsAlwaysAllowPolicy],
-// [BetaManagedAgentsAlwaysAskPolicy].
+// [BetaManagedAgentsAlwaysAskPolicy], [BetaManagedAgentsAutoPolicy].
 //
 // Use the [BetaManagedAgentsWriteToolConfigPermissionPolicyUnion.AsAny] method to
 // switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsWriteToolConfigPermissionPolicyUnion struct {
-	// Any of "always_allow", "always_ask".
+	// Any of "always_allow", "always_ask", "auto".
 	Type string `json:"type"`
 	JSON struct {
 		Type respjson.Field
@@ -4177,12 +4384,14 @@ type anyBetaManagedAgentsWriteToolConfigPermissionPolicy interface {
 func (BetaManagedAgentsAlwaysAllowPolicy) implBetaManagedAgentsWriteToolConfigPermissionPolicyUnion() {
 }
 func (BetaManagedAgentsAlwaysAskPolicy) implBetaManagedAgentsWriteToolConfigPermissionPolicyUnion() {}
+func (BetaManagedAgentsAutoPolicy) implBetaManagedAgentsWriteToolConfigPermissionPolicyUnion()      {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsWriteToolConfigPermissionPolicyUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsAlwaysAllowPolicy:
 //	case anthropic.BetaManagedAgentsAlwaysAskPolicy:
+//	case anthropic.BetaManagedAgentsAutoPolicy:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -4192,6 +4401,8 @@ func (u BetaManagedAgentsWriteToolConfigPermissionPolicyUnion) AsAny() anyBetaMa
 		return u.AsAlwaysAllow()
 	case "always_ask":
 		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
 	}
 	return nil
 }
@@ -4202,6 +4413,11 @@ func (u BetaManagedAgentsWriteToolConfigPermissionPolicyUnion) AsAlwaysAllow() (
 }
 
 func (u BetaManagedAgentsWriteToolConfigPermissionPolicyUnion) AsAlwaysAsk() (v BetaManagedAgentsAlwaysAskPolicy) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsWriteToolConfigPermissionPolicyUnion) AsAuto() (v BetaManagedAgentsAutoPolicy) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -4245,11 +4461,12 @@ func (r *BetaManagedAgentsWriteToolConfigParams) UnmarshalJSON(data []byte) erro
 type BetaManagedAgentsWriteToolConfigParamsPermissionPolicyUnion struct {
 	OfAlwaysAllow *BetaManagedAgentsAlwaysAllowPolicyParam `json:",omitzero,inline"`
 	OfAlwaysAsk   *BetaManagedAgentsAlwaysAskPolicyParam   `json:",omitzero,inline"`
+	OfAuto        *BetaManagedAgentsAutoPolicyParam        `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u BetaManagedAgentsWriteToolConfigParamsPermissionPolicyUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk)
+	return param.MarshalUnion(u, u.OfAlwaysAllow, u.OfAlwaysAsk, u.OfAuto)
 }
 func (u *BetaManagedAgentsWriteToolConfigParamsPermissionPolicyUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -4260,6 +4477,8 @@ func (u *BetaManagedAgentsWriteToolConfigParamsPermissionPolicyUnion) asAny() an
 		return u.OfAlwaysAllow
 	} else if !param.IsOmitted(u.OfAlwaysAsk) {
 		return u.OfAlwaysAsk
+	} else if !param.IsOmitted(u.OfAuto) {
+		return u.OfAuto
 	}
 	return nil
 }
@@ -4270,6 +4489,8 @@ func (u BetaManagedAgentsWriteToolConfigParamsPermissionPolicyUnion) GetType() *
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
+	} else if vt := u.OfAuto; vt != nil {
+		return (*string)(&vt.Type)
 	}
 	return nil
 }
@@ -4279,6 +4500,7 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaManagedAgentsAlwaysAllowPolicyParam]("always_allow"),
 		apijson.Discriminator[BetaManagedAgentsAlwaysAskPolicyParam]("always_ask"),
+		apijson.Discriminator[BetaManagedAgentsAutoPolicyParam]("auto"),
 	)
 }
 
@@ -4479,7 +4701,7 @@ func (u betaAgentNewParamsToolUnionDefaultConfig) GetPermissionPolicy() (res bet
 }
 
 // Can have the runtime types [*BetaManagedAgentsAlwaysAllowPolicyParam],
-// [*BetaManagedAgentsAlwaysAskPolicyParam]
+// [*BetaManagedAgentsAlwaysAskPolicyParam], [*BetaManagedAgentsAutoPolicyParam]
 type betaAgentNewParamsToolUnionDefaultConfigPermissionPolicy struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -4487,6 +4709,7 @@ type betaAgentNewParamsToolUnionDefaultConfigPermissionPolicy struct{ any }
 //	switch u.AsAny().(type) {
 //	case *anthropic.BetaManagedAgentsAlwaysAllowPolicyParam:
 //	case *anthropic.BetaManagedAgentsAlwaysAskPolicyParam:
+//	case *anthropic.BetaManagedAgentsAutoPolicyParam:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -4729,7 +4952,7 @@ func (u betaAgentUpdateParamsToolUnionDefaultConfig) GetPermissionPolicy() (res 
 }
 
 // Can have the runtime types [*BetaManagedAgentsAlwaysAllowPolicyParam],
-// [*BetaManagedAgentsAlwaysAskPolicyParam]
+// [*BetaManagedAgentsAlwaysAskPolicyParam], [*BetaManagedAgentsAutoPolicyParam]
 type betaAgentUpdateParamsToolUnionDefaultConfigPermissionPolicy struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -4737,6 +4960,7 @@ type betaAgentUpdateParamsToolUnionDefaultConfigPermissionPolicy struct{ any }
 //	switch u.AsAny().(type) {
 //	case *anthropic.BetaManagedAgentsAlwaysAllowPolicyParam:
 //	case *anthropic.BetaManagedAgentsAlwaysAskPolicyParam:
+//	case *anthropic.BetaManagedAgentsAutoPolicyParam:
 //	default:
 //	    fmt.Errorf("not present")
 //	}

@@ -1,5 +1,3 @@
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
-
 package anthropic
 
 import (
@@ -758,8 +756,8 @@ type BetaEnvironmentNewParams struct {
 	Config BetaEnvironmentNewParamsConfigUnion `json:"config,omitzero"`
 	// The visibility scope for this environment. 'organization' makes the environment
 	// visible to all accounts. 'account' restricts visibility to the owning account
-	// only. Only applicable for self-hosted environments. If not specified, defaults
-	// based on organization type.
+	// only. API organizations support only 'organization'; 'account' is rejected. If
+	// not specified, defaults based on organization type.
 	//
 	// Any of "organization", "account".
 	Scope BetaEnvironmentNewParamsScope `json:"scope,omitzero"`
@@ -839,8 +837,8 @@ func init() {
 
 // The visibility scope for this environment. 'organization' makes the environment
 // visible to all accounts. 'account' restricts visibility to the owning account
-// only. Only applicable for self-hosted environments. If not specified, defaults
-// based on organization type.
+// only. API organizations support only 'organization'; 'account' is rejected. If
+// not specified, defaults based on organization type.
 type BetaEnvironmentNewParamsScope string
 
 const (

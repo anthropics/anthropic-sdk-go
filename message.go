@@ -1,5 +1,3 @@
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
-
 package anthropic
 
 import (
@@ -12767,7 +12765,7 @@ func init() {
 type WebFetchToolResultErrorBlock struct {
 	// Any of "invalid_tool_input", "url_too_long", "url_not_allowed",
 	// "url_not_in_prior_context", "url_not_accessible", "unsupported_content_type",
-	// "too_many_requests", "max_uses_exceeded", "unavailable".
+	// "too_many_requests", "max_uses_exceeded", "unavailable", "content_too_large".
 	ErrorCode WebFetchToolResultErrorCode      `json:"error_code" api:"required"`
 	Type      constant.WebFetchToolResultError `json:"type" default:"web_fetch_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -12789,7 +12787,7 @@ func (r *WebFetchToolResultErrorBlock) UnmarshalJSON(data []byte) error {
 type WebFetchToolResultErrorBlockParam struct {
 	// Any of "invalid_tool_input", "url_too_long", "url_not_allowed",
 	// "url_not_in_prior_context", "url_not_accessible", "unsupported_content_type",
-	// "too_many_requests", "max_uses_exceeded", "unavailable".
+	// "too_many_requests", "max_uses_exceeded", "unavailable", "content_too_large".
 	ErrorCode WebFetchToolResultErrorCode `json:"error_code,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_fetch_tool_result_error".
@@ -12817,6 +12815,7 @@ const (
 	WebFetchToolResultErrorCodeTooManyRequests        WebFetchToolResultErrorCode = "too_many_requests"
 	WebFetchToolResultErrorCodeMaxUsesExceeded        WebFetchToolResultErrorCode = "max_uses_exceeded"
 	WebFetchToolResultErrorCodeUnavailable            WebFetchToolResultErrorCode = "unavailable"
+	WebFetchToolResultErrorCodeContentTooLarge        WebFetchToolResultErrorCode = "content_too_large"
 )
 
 type WebSearchResultBlock struct {

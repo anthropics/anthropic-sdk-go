@@ -750,6 +750,7 @@ Params Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAlwaysAllowPolicyParam">BetaManagedAgentsAlwaysAllowPolicyParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAlwaysAskPolicyParam">BetaManagedAgentsAlwaysAskPolicyParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAnthropicSkillParams">BetaManagedAgentsAnthropicSkillParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAutoPolicyParam">BetaManagedAgentsAutoPolicyParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsBashToolConfigParams">BetaManagedAgentsBashToolConfigParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsCustomSkillParams">BetaManagedAgentsCustomSkillParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsCustomToolInputSchemaParam">BetaManagedAgentsCustomToolInputSchemaParam</a>
@@ -793,6 +794,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAlwaysAllowPolicy">BetaManagedAgentsAlwaysAllowPolicy</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAlwaysAskPolicy">BetaManagedAgentsAlwaysAskPolicy</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAnthropicSkill">BetaManagedAgentsAnthropicSkill</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAutoPolicy">BetaManagedAgentsAutoPolicy</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsBashToolConfig">BetaManagedAgentsBashToolConfig</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsCustomSkill">BetaManagedAgentsCustomSkill</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsCustomTool">BetaManagedAgentsCustomTool</a>
@@ -973,6 +975,10 @@ Params Types:
 
 Response Types:
 
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentAutoEvaluatedPermissionUnion">BetaManagedAgentsAgentAutoEvaluatedPermissionUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentAutoEvaluatedPermissionAllow">BetaManagedAgentsAgentAutoEvaluatedPermissionAllow</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentAutoEvaluatedPermissionAsk">BetaManagedAgentsAgentAutoEvaluatedPermissionAsk</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentAutoEvaluatedPermissionDeny">BetaManagedAgentsAgentAutoEvaluatedPermissionDeny</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentCustomToolUseEvent">BetaManagedAgentsAgentCustomToolUseEvent</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentMCPToolResultEvent">BetaManagedAgentsAgentMCPToolResultEvent</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentMCPToolUseEvent">BetaManagedAgentsAgentMCPToolUseEvent</a>
@@ -981,6 +987,10 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentThreadContextCompactedEvent">BetaManagedAgentsAgentThreadContextCompactedEvent</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentThreadMessageReceivedEvent">BetaManagedAgentsAgentThreadMessageReceivedEvent</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentThreadMessageSentEvent">BetaManagedAgentsAgentThreadMessageSentEvent</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolEvaluationUnion">BetaManagedAgentsAgentToolEvaluationUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolEvaluationAlwaysAllow">BetaManagedAgentsAgentToolEvaluationAlwaysAllow</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolEvaluationAlwaysAsk">BetaManagedAgentsAgentToolEvaluationAlwaysAsk</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolEvaluationAuto">BetaManagedAgentsAgentToolEvaluationAuto</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolResultEvent">BetaManagedAgentsAgentToolResultEvent</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsAgentToolUseEvent">BetaManagedAgentsAgentToolUseEvent</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaManagedAgentsBase64DocumentSource">BetaManagedAgentsBase64DocumentSource</a>
@@ -1403,10 +1413,15 @@ Response Types:
 
 ## UserProfiles
 
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaUserProfileExternalUserDetailsParams">BetaUserProfileExternalUserDetailsParams</a>
+
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaUserProfile">BetaUserProfile</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaUserProfileEnrollmentURL">BetaUserProfileEnrollmentURL</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaUserProfileExternalUserDetails">BetaUserProfileExternalUserDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaUserProfileTrustGrant">BetaUserProfileTrustGrant</a>
 
 Methods:

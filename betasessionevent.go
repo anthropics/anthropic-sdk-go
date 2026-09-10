@@ -1,5 +1,3 @@
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
-
 package anthropic
 
 import (
@@ -20,6 +18,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
+	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 // BetaSessionEventService contains methods and other services that help with
@@ -114,6 +113,145 @@ func (r *BetaSessionEventService) StreamEvents(ctx context.Context, sessionID st
 	path := fmt.Sprintf("v1/sessions/%s/events/stream?beta=true", sessionID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &raw, opts...)
 	return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](ssestream.NewDecoder(raw), err)
+}
+
+// BetaManagedAgentsAgentAutoEvaluatedPermissionUnion contains all possible
+// properties and values from [BetaManagedAgentsAgentAutoEvaluatedPermissionAllow],
+// [BetaManagedAgentsAgentAutoEvaluatedPermissionAsk],
+// [BetaManagedAgentsAgentAutoEvaluatedPermissionDeny].
+//
+// Use the [BetaManagedAgentsAgentAutoEvaluatedPermissionUnion.AsAny] method to
+// switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsAgentAutoEvaluatedPermissionUnion struct {
+	// Any of "allow", "ask", "deny".
+	Type       string `json:"type"`
+	ReasonCode string `json:"reason_code"`
+	JSON       struct {
+		Type       respjson.Field
+		ReasonCode respjson.Field
+		raw        string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsAgentAutoEvaluatedPermission is implemented by each variant
+// of [BetaManagedAgentsAgentAutoEvaluatedPermissionUnion] to add type safety for
+// the return type of [BetaManagedAgentsAgentAutoEvaluatedPermissionUnion.AsAny]
+type anyBetaManagedAgentsAgentAutoEvaluatedPermission interface {
+	implBetaManagedAgentsAgentAutoEvaluatedPermissionUnion()
+}
+
+func (BetaManagedAgentsAgentAutoEvaluatedPermissionAllow) implBetaManagedAgentsAgentAutoEvaluatedPermissionUnion() {
+}
+func (BetaManagedAgentsAgentAutoEvaluatedPermissionAsk) implBetaManagedAgentsAgentAutoEvaluatedPermissionUnion() {
+}
+func (BetaManagedAgentsAgentAutoEvaluatedPermissionDeny) implBetaManagedAgentsAgentAutoEvaluatedPermissionUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsAgentAutoEvaluatedPermissionUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsAgentAutoEvaluatedPermissionAllow:
+//	case anthropic.BetaManagedAgentsAgentAutoEvaluatedPermissionAsk:
+//	case anthropic.BetaManagedAgentsAgentAutoEvaluatedPermissionDeny:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsAgentAutoEvaluatedPermissionUnion) AsAny() anyBetaManagedAgentsAgentAutoEvaluatedPermission {
+	switch u.Type {
+	case "allow":
+		return u.AsAllow()
+	case "ask":
+		return u.AsAsk()
+	case "deny":
+		return u.AsDeny()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsAgentAutoEvaluatedPermissionUnion) AsAllow() (v BetaManagedAgentsAgentAutoEvaluatedPermissionAllow) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsAgentAutoEvaluatedPermissionUnion) AsAsk() (v BetaManagedAgentsAgentAutoEvaluatedPermissionAsk) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsAgentAutoEvaluatedPermissionUnion) AsDeny() (v BetaManagedAgentsAgentAutoEvaluatedPermissionDeny) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsAgentAutoEvaluatedPermissionUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsAgentAutoEvaluatedPermissionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The server judged the invocation safe to execute without client approval.
+type BetaManagedAgentsAgentAutoEvaluatedPermissionAllow struct {
+	Type constant.Allow `json:"type" default:"allow"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsAgentAutoEvaluatedPermissionAllow) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsAgentAutoEvaluatedPermissionAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The server reached no judgement; the invocation is held for client approval.
+type BetaManagedAgentsAgentAutoEvaluatedPermissionAsk struct {
+	// The judgement's grounds in registry-bound terms, for client branching and audit
+	// rather than end-user display. Open registry; currently "indeterminate" (no
+	// judgement was reached). Clients must tolerate values outside this set.
+	ReasonCode string       `json:"reason_code" api:"required"`
+	Type       constant.Ask `json:"type" default:"ask"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ReasonCode  respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsAgentAutoEvaluatedPermissionAsk) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsAgentAutoEvaluatedPermissionAsk) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The server judged the invocation high-risk; it does not execute and a synthetic
+// error tool result is appended.
+type BetaManagedAgentsAgentAutoEvaluatedPermissionDeny struct {
+	// The judgement's grounds in registry-bound terms. Open registry; currently
+	// "high_risk" (judged high-risk; the call does not run). Clients must tolerate
+	// values outside this set.
+	ReasonCode string        `json:"reason_code" api:"required"`
+	Type       constant.Deny `json:"type" default:"deny"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ReasonCode  respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsAgentAutoEvaluatedPermissionDeny) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsAgentAutoEvaluatedPermissionDeny) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Event emitted when the agent calls a custom tool. The session goes idle until
@@ -349,6 +487,10 @@ type BetaManagedAgentsAgentMCPToolUseEvent struct {
 	//
 	// Any of "allow", "ask", "deny".
 	EvaluatedPermission BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermission `json:"evaluated_permission"`
+	// Names the resolved permission_policy that produced evaluated_permission, and
+	// under auto carries the judgement. Open union: clients must tolerate unknown
+	// variants.
+	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// When set, this event was cross-posted from a subagent's thread to surface its
 	// permission request on the primary thread's stream. Empty on the thread's own
 	// events. Echo this on a `user.tool_confirmation` event to route the approval
@@ -363,6 +505,7 @@ type BetaManagedAgentsAgentMCPToolUseEvent struct {
 		ProcessedAt         respjson.Field
 		Type                respjson.Field
 		EvaluatedPermission respjson.Field
+		Evaluation          respjson.Field
 		SessionThreadID     respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
@@ -883,6 +1026,142 @@ const (
 	BetaManagedAgentsAgentThreadMessageSentEventTypeAgentThreadMessageSent BetaManagedAgentsAgentThreadMessageSentEventType = "agent.thread_message_sent"
 )
 
+// BetaManagedAgentsAgentToolEvaluationUnion contains all possible properties and
+// values from [BetaManagedAgentsAgentToolEvaluationAlwaysAllow],
+// [BetaManagedAgentsAgentToolEvaluationAlwaysAsk],
+// [BetaManagedAgentsAgentToolEvaluationAuto].
+//
+// Use the [BetaManagedAgentsAgentToolEvaluationUnion.AsAny] method to switch on
+// the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsAgentToolEvaluationUnion struct {
+	// Any of "always_allow", "always_ask", "auto".
+	Type string `json:"type"`
+	// This field is from variant [BetaManagedAgentsAgentToolEvaluationAuto].
+	EvaluatedPermission BetaManagedAgentsAgentAutoEvaluatedPermissionUnion `json:"evaluated_permission"`
+	JSON                struct {
+		Type                respjson.Field
+		EvaluatedPermission respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsAgentToolEvaluation is implemented by each variant of
+// [BetaManagedAgentsAgentToolEvaluationUnion] to add type safety for the return
+// type of [BetaManagedAgentsAgentToolEvaluationUnion.AsAny]
+type anyBetaManagedAgentsAgentToolEvaluation interface {
+	implBetaManagedAgentsAgentToolEvaluationUnion()
+}
+
+func (BetaManagedAgentsAgentToolEvaluationAlwaysAllow) implBetaManagedAgentsAgentToolEvaluationUnion() {
+}
+func (BetaManagedAgentsAgentToolEvaluationAlwaysAsk) implBetaManagedAgentsAgentToolEvaluationUnion() {
+}
+func (BetaManagedAgentsAgentToolEvaluationAuto) implBetaManagedAgentsAgentToolEvaluationUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsAgentToolEvaluationUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsAgentToolEvaluationAlwaysAllow:
+//	case anthropic.BetaManagedAgentsAgentToolEvaluationAlwaysAsk:
+//	case anthropic.BetaManagedAgentsAgentToolEvaluationAuto:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsAgentToolEvaluationUnion) AsAny() anyBetaManagedAgentsAgentToolEvaluation {
+	switch u.Type {
+	case "always_allow":
+		return u.AsAlwaysAllow()
+	case "always_ask":
+		return u.AsAlwaysAsk()
+	case "auto":
+		return u.AsAuto()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsAgentToolEvaluationUnion) AsAlwaysAllow() (v BetaManagedAgentsAgentToolEvaluationAlwaysAllow) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsAgentToolEvaluationUnion) AsAlwaysAsk() (v BetaManagedAgentsAgentToolEvaluationAlwaysAsk) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsAgentToolEvaluationUnion) AsAuto() (v BetaManagedAgentsAgentToolEvaluationAuto) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsAgentToolEvaluationUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsAgentToolEvaluationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The resolved permission_policy was always_allow; accompanies
+// evaluated_permission "allow".
+type BetaManagedAgentsAgentToolEvaluationAlwaysAllow struct {
+	Type constant.AlwaysAllow `json:"type" default:"always_allow"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsAgentToolEvaluationAlwaysAllow) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsAgentToolEvaluationAlwaysAllow) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The resolved permission_policy was always_ask; accompanies evaluated_permission
+// "ask".
+type BetaManagedAgentsAgentToolEvaluationAlwaysAsk struct {
+	Type constant.AlwaysAsk `json:"type" default:"always_ask"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsAgentToolEvaluationAlwaysAsk) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsAgentToolEvaluationAlwaysAsk) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The resolved permission_policy was auto: the server judged this invocation
+// individually.
+type BetaManagedAgentsAgentToolEvaluationAuto struct {
+	// The server's per-invocation judgement under the auto permission policy. Its type
+	// always equals the event's top-level evaluated_permission. Open union: clients
+	// must tolerate unknown variants.
+	EvaluatedPermission BetaManagedAgentsAgentAutoEvaluatedPermissionUnion `json:"evaluated_permission" api:"required"`
+	Type                constant.Auto                                      `json:"type" default:"auto"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		EvaluatedPermission respjson.Field
+		Type                respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsAgentToolEvaluationAuto) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsAgentToolEvaluationAuto) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Event representing the result of an agent tool execution.
 type BetaManagedAgentsAgentToolResultEvent struct {
 	// Unique identifier for this event.
@@ -1070,6 +1349,10 @@ type BetaManagedAgentsAgentToolUseEvent struct {
 	//
 	// Any of "allow", "ask", "deny".
 	EvaluatedPermission BetaManagedAgentsAgentToolUseEventEvaluatedPermission `json:"evaluated_permission"`
+	// Names the resolved permission_policy that produced evaluated_permission, and
+	// under auto carries the judgement. Open union: clients must tolerate unknown
+	// variants.
+	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// When set, this event was cross-posted from a subagent's thread to surface its
 	// permission request on the primary thread's stream. Empty on the thread's own
 	// events. Echo this on a `user.tool_confirmation` event to route the approval
@@ -1083,6 +1366,7 @@ type BetaManagedAgentsAgentToolUseEvent struct {
 		ProcessedAt         respjson.Field
 		Type                respjson.Field
 		EvaluatedPermission respjson.Field
+		Evaluation          respjson.Field
 		SessionThreadID     respjson.Field
 		ExtraFields         map[string]respjson.Field
 		raw                 string
@@ -3804,6 +4088,8 @@ type BetaManagedAgentsSessionEventUnion struct {
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
 	MCPServerName       string `json:"mcp_server_name"`
 	EvaluatedPermission string `json:"evaluated_permission"`
+	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
+	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolResultEvent].
 	MCPToolUseID string `json:"mcp_tool_use_id"`
 	// This field is from variant [BetaManagedAgentsAgentThreadMessageReceivedEvent].
@@ -3863,6 +4149,7 @@ type BetaManagedAgentsSessionEventUnion struct {
 		Name                     respjson.Field
 		MCPServerName            respjson.Field
 		EvaluatedPermission      respjson.Field
+		Evaluation               respjson.Field
 		MCPToolUseID             respjson.Field
 		FromSessionThreadID      respjson.Field
 		FromAgentName            respjson.Field
@@ -5277,6 +5564,8 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
 	MCPServerName       string `json:"mcp_server_name"`
 	EvaluatedPermission string `json:"evaluated_permission"`
+	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
+	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolResultEvent].
 	MCPToolUseID string `json:"mcp_tool_use_id"`
 	// This field is from variant [BetaManagedAgentsAgentThreadMessageReceivedEvent].
@@ -5342,6 +5631,7 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 		Name                     respjson.Field
 		MCPServerName            respjson.Field
 		EvaluatedPermission      respjson.Field
+		Evaluation               respjson.Field
 		MCPToolUseID             respjson.Field
 		FromSessionThreadID      respjson.Field
 		FromAgentName            respjson.Field

@@ -318,3 +318,79 @@ func TestHandleItem_FallsBackToWorkSecretEnvVar(t *testing.T) {
 	require.Equal(t, map[string]bool{"Bearer sessions-token-env": true}, item)
 	require.Equal(t, map[string]bool{"Bearer sessions-token-env": true}, stop)
 }
+
+// clearCredentialEnv blanks the ANTHROPIC_* credential variables so a keyless
+// test cannot pick up a real key or secret from the test process environment.
+func clearCredentialEnv(t *testing.T) {
+	t.Helper()
+	t.Setenv("ANTHROPIC_ENVIRONMENT_KEY", "")
+	t.Setenv("ANTHROPIC_WORK_SECRET", "")
+}
+
+func TestHandleItem_RunsKeylessOnWorkSecretToken(t *testing.T) {
+	// With no environment key anywhere, a work secret whose payload carries a
+	// sessions token is enough: the item runs with that token as its only
+	// Bearer credential.
+	clearCredentialEnv(t)
+	secret := encodeSecret(t, map[string]any{"sessions_token": "sessions-token-keyless"})
+	server := newFakeWorkServer(t)
+	scriptWorkServer(t, server, workJSON("work_1", "env_1", "session"))
+
+	worker := NewEnvironmentWorker(server.Client(), EnvironmentWorkerOptions{
+		Workdir: t.TempDir(),
+		Logger:  silentLogger,
+	})
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	require.NoError(t, worker.HandleItem(ctx, HandleItemOptions{
+		WorkID:        "work_1",
+		EnvironmentID: "env_1",
+		SessionID:     "sesn_test",
+		WorkSecret:    secret,
+	}))
+
+	_, item, stop := bearersByLeg(server.Calls())
+	require.Equal(t, map[string]bool{"Bearer sessions-token-keyless": true}, item)
+	require.Equal(t, map[string]bool{"Bearer sessions-token-keyless": true}, stop)
+}
+
+func TestHandleItem_KeylessWithoutSecretErrors(t *testing.T) {
+	// With neither an environment key nor a work secret there is no credential
+	// at all: HandleItem fails before any request, naming environment_key.
+	clearCredentialEnv(t)
+	server := newFakeWorkServer(t)
+
+	worker := NewEnvironmentWorker(server.Client(), EnvironmentWorkerOptions{
+		Workdir: t.TempDir(),
+		Logger:  silentLogger,
+	})
+	err := worker.HandleItem(context.Background(), HandleItemOptions{
+		WorkID:        "work_1",
+		EnvironmentID: "env_1",
+		SessionID:     "sesn_test",
+	})
+	require.ErrorContains(t, err, "environment_key")
+	require.Empty(t, server.Calls())
+}
+
+func TestHandleItem_KeylessTokenlessSecretErrors(t *testing.T) {
+	// A work secret that yields no sessions token cannot replace the missing
+	// environment key: HandleItem fails closed before any request, naming
+	// both fixes, instead of warn-and-falling-back like the with-key case.
+	clearCredentialEnv(t)
+	server := newFakeWorkServer(t)
+
+	worker := NewEnvironmentWorker(server.Client(), EnvironmentWorkerOptions{
+		Workdir: t.TempDir(),
+		Logger:  silentLogger,
+	})
+	err := worker.HandleItem(context.Background(), HandleItemOptions{
+		WorkID:        "work_1",
+		EnvironmentID: "env_1",
+		SessionID:     "sesn_test",
+		WorkSecret:    encodeSecret(t, map[string]any{"session_ingress_token": "ingress-only"}),
+	})
+	require.ErrorContains(t, err, "sessions token")
+	require.ErrorContains(t, err, "environment key")
+	require.Empty(t, server.Calls())
+}

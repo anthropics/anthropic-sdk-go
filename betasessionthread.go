@@ -455,6 +455,8 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
 	MCPServerName       string `json:"mcp_server_name"`
 	EvaluatedPermission string `json:"evaluated_permission"`
+	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
+	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolResultEvent].
 	MCPToolUseID string `json:"mcp_tool_use_id"`
 	// This field is from variant [BetaManagedAgentsAgentThreadMessageReceivedEvent].
@@ -520,6 +522,7 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 		Name                     respjson.Field
 		MCPServerName            respjson.Field
 		EvaluatedPermission      respjson.Field
+		Evaluation               respjson.Field
 		MCPToolUseID             respjson.Field
 		FromSessionThreadID      respjson.Field
 		FromAgentName            respjson.Field

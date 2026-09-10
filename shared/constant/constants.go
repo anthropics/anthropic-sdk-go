@@ -41,11 +41,15 @@ type AgentCreated string                            // Always "agent.created"
 type AgentDeleted string                            // Always "agent.deleted"
 type AgentUpdated string                            // Always "agent.updated"
 type All string                                     // Always "all"
+type Allow string                                   // Always "allow"
+type AlwaysAllow string                             // Always "always_allow"
+type AlwaysAsk string                               // Always "always_ask"
 type Any string                                     // Always "any"
 type APIError string                                // Always "api_error"
 type APIKey string                                  // Always "api_key"
 type ApplicationPDF string                          // Always "application/pdf"
 type Approximate string                             // Always "approximate"
+type Ask string                                     // Always "ask"
 type Assistant string                               // Always "assistant"
 type Attached string                                // Always "attached"
 type AuthenticationError string                     // Always "authentication_error"
@@ -98,6 +102,7 @@ type ContentBlockStop string                        // Always "content_block_sto
 type Create string                                  // Always "create"
 type Default string                                 // Always "default"
 type Delete string                                  // Always "delete"
+type Deny string                                    // Always "deny"
 type DeploymentRunFailed string                     // Always "deployment_run.failed"
 type DeploymentRunStarted string                    // Always "deployment_run.started"
 type DeploymentRunSucceeded string                  // Always "deployment_run.succeeded"
@@ -310,11 +315,15 @@ func (c AgentCreated) Default() AgentCreated                     { return "agent
 func (c AgentDeleted) Default() AgentDeleted                     { return "agent.deleted" }
 func (c AgentUpdated) Default() AgentUpdated                     { return "agent.updated" }
 func (c All) Default() All                                       { return "all" }
+func (c Allow) Default() Allow                                   { return "allow" }
+func (c AlwaysAllow) Default() AlwaysAllow                       { return "always_allow" }
+func (c AlwaysAsk) Default() AlwaysAsk                           { return "always_ask" }
 func (c Any) Default() Any                                       { return "any" }
 func (c APIError) Default() APIError                             { return "api_error" }
 func (c APIKey) Default() APIKey                                 { return "api_key" }
 func (c ApplicationPDF) Default() ApplicationPDF                 { return "application/pdf" }
 func (c Approximate) Default() Approximate                       { return "approximate" }
+func (c Ask) Default() Ask                                       { return "ask" }
 func (c Assistant) Default() Assistant                           { return "assistant" }
 func (c Attached) Default() Attached                             { return "attached" }
 func (c AuthenticationError) Default() AuthenticationError       { return "authentication_error" }
@@ -381,6 +390,7 @@ func (c ContentBlockStop) Default() ContentBlockStop             { return "conte
 func (c Create) Default() Create                                 { return "create" }
 func (c Default) Default() Default                               { return "default" }
 func (c Delete) Default() Delete                                 { return "delete" }
+func (c Deny) Default() Deny                                     { return "deny" }
 func (c DeploymentRunFailed) Default() DeploymentRunFailed       { return "deployment_run.failed" }
 func (c DeploymentRunStarted) Default() DeploymentRunStarted     { return "deployment_run.started" }
 func (c DeploymentRunSucceeded) Default() DeploymentRunSucceeded { return "deployment_run.succeeded" }
@@ -641,11 +651,15 @@ func (c AgentCreated) MarshalJSON() ([]byte, error)                         { re
 func (c AgentDeleted) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c AgentUpdated) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c All) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
+func (c Allow) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
+func (c AlwaysAllow) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c AlwaysAsk) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Any) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
 func (c APIError) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c APIKey) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c ApplicationPDF) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Approximate) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Ask) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
 func (c Assistant) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Attached) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c AuthenticationError) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
@@ -698,6 +712,7 @@ func (c ContentBlockStop) MarshalJSON() ([]byte, error)                     { re
 func (c Create) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Default) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Delete) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c Deny) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c DeploymentRunFailed) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c DeploymentRunStarted) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c DeploymentRunSucceeded) MarshalJSON() ([]byte, error)               { return marshalString(c) }

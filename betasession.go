@@ -469,7 +469,7 @@ func (u betaManagedAgentsAgentWithOverridesParamsToolUnionDefaultConfig) GetPerm
 }
 
 // Can have the runtime types [*BetaManagedAgentsAlwaysAllowPolicyParam],
-// [*BetaManagedAgentsAlwaysAskPolicyParam]
+// [*BetaManagedAgentsAlwaysAskPolicyParam], [*BetaManagedAgentsAutoPolicyParam]
 type betaManagedAgentsAgentWithOverridesParamsToolUnionDefaultConfigPermissionPolicy struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -477,6 +477,7 @@ type betaManagedAgentsAgentWithOverridesParamsToolUnionDefaultConfigPermissionPo
 //	switch u.AsAny().(type) {
 //	case *anthropic.BetaManagedAgentsAlwaysAllowPolicyParam:
 //	case *anthropic.BetaManagedAgentsAlwaysAskPolicyParam:
+//	case *anthropic.BetaManagedAgentsAutoPolicyParam:
 //	default:
 //	    fmt.Errorf("not present")
 //	}
@@ -1764,7 +1765,7 @@ func (u betaManagedAgentsSessionAgentUpdateToolUnionParamDefaultConfig) GetPermi
 }
 
 // Can have the runtime types [*BetaManagedAgentsAlwaysAllowPolicyParam],
-// [*BetaManagedAgentsAlwaysAskPolicyParam]
+// [*BetaManagedAgentsAlwaysAskPolicyParam], [*BetaManagedAgentsAutoPolicyParam]
 type betaManagedAgentsSessionAgentUpdateToolUnionParamDefaultConfigPermissionPolicy struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -1772,6 +1773,7 @@ type betaManagedAgentsSessionAgentUpdateToolUnionParamDefaultConfigPermissionPol
 //	switch u.AsAny().(type) {
 //	case *anthropic.BetaManagedAgentsAlwaysAllowPolicyParam:
 //	case *anthropic.BetaManagedAgentsAlwaysAskPolicyParam:
+//	case *anthropic.BetaManagedAgentsAutoPolicyParam:
 //	default:
 //	    fmt.Errorf("not present")
 //	}

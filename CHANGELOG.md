@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.72.0 (2026-09-10)
+
+Full Changelog: [v1.71.0...v1.72.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.71.0...v1.72.0)
+
+### Features
+
+* **api:** add auto mode tool permissions for Managed Agents ([f72f8e3](https://github.com/anthropics/anthropic-sdk-go/commit/f72f8e3045a46146c057f48a2fb9118f8e252c6d))
+* **api:** add content_too_large web_fetch tool error code ([21646a7](https://github.com/anthropics/anthropic-sdk-go/commit/21646a70b2e35e188857ac6062e58b93e09f165c))
+* **api:** add the user-profiles-2026-09-04 beta value and external_user_details to user profiles ([33a5b11](https://github.com/anthropics/anthropic-sdk-go/commit/33a5b11339caaa90f0d835f4b087cf2c783bda36))
+* **api:** support mounting public GitHub repositories without an authorization_token in Managed Agents sessions ([bc1c282](https://github.com/anthropics/anthropic-sdk-go/commit/bc1c282a682069e1dab497a0aa81f7aa6e871c3d))
+
+
+### Chores
+
+* **docs:** correct the environment scope field description ([e12b6ee](https://github.com/anthropics/anthropic-sdk-go/commit/e12b6ee2cc63da47bb4c283b71c376dead9b755b))
+* **internal:** restore package version ([960768e](https://github.com/anthropics/anthropic-sdk-go/commit/960768ed89c21cd4aa910bcc23fe71319c81f487))
+* **internal:** stop stamping the package version into generated files ([8455921](https://github.com/anthropics/anthropic-sdk-go/commit/8455921d87aae0ab2ec6cae613dc481f694c381d))
+* **tests:** restore empty test package marker files ([9f6d405](https://github.com/anthropics/anthropic-sdk-go/commit/9f6d405972d6a921c8e50152a589721c3ac4cd18))
+
 ## 1.71.0 (2026-09-04)
 
 Full Changelog: [v1.70.1...v1.71.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.70.1...v1.71.0)

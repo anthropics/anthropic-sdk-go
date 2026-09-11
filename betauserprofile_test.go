@@ -40,6 +40,7 @@ func TestBetaUserProfileNewWithOptionalParams(t *testing.T) {
 		Metadata:                map[string]string{},
 		Name:                    anthropic.String("x"),
 		Betas:                   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID:             anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -66,7 +67,8 @@ func TestBetaUserProfileGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"uprof_011CZkZCu8hGbp5mYRQgUmz9",
 		anthropic.BetaUserProfileGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -109,8 +111,9 @@ func TestBetaUserProfileUpdateWithOptionalParams(t *testing.T) {
 			Metadata: map[string]string{
 				"foo": "string",
 			},
-			Name:  anthropic.String("x"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Name:        anthropic.String("x"),
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {
@@ -135,11 +138,12 @@ func TestBetaUserProfileListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.UserProfiles.List(context.TODO(), anthropic.BetaUserProfileListParams{
-		Limit:   anthropic.Int(0),
-		Order:   anthropic.BetaUserProfileListParamsOrderAsc,
-		OrderBy: anthropic.BetaUserProfileListParamsOrderByCreatedAt,
-		Page:    anthropic.String("page"),
-		Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Limit:       anthropic.Int(0),
+		Order:       anthropic.BetaUserProfileListParamsOrderAsc,
+		OrderBy:     anthropic.BetaUserProfileListParamsOrderByCreatedAt,
+		Page:        anthropic.String("page"),
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -166,7 +170,8 @@ func TestBetaUserProfileNewEnrollmentURLWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"uprof_011CZkZCu8hGbp5mYRQgUmz9",
 		anthropic.BetaUserProfileNewEnrollmentURLParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
 	if err != nil {

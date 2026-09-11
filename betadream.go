@@ -159,10 +159,7 @@ type BetaDream struct {
 	Instructions string                `json:"instructions" api:"required"`
 	// Model identifier and configuration applied to every pipeline stage. Same wire
 	// shape as the Agents API ModelConfig.
-	Model BetaDreamModelConfig `json:"model" api:"required"`
-	// The default destination: the job creates a new output memory store as a clone of
-	// the memory_store input and writes the consolidated memories into it. The input
-	// store is never mutated.
+	Model          BetaDreamModelConfig    `json:"model" api:"required"`
 	OutputBehavior BetaOutputBehaviorUnion `json:"output_behavior" api:"required"`
 	Outputs        []BetaDreamOutput       `json:"outputs" api:"required"`
 	SessionID      string                  `json:"session_id" api:"required"`
@@ -864,14 +861,10 @@ func (r *BetaOutputBehaviorUpdateExistingParam) UnmarshalJSON(data []byte) error
 }
 
 type BetaDreamNewParams struct {
-	Inputs []BetaDreamInputUnionParam `json:"inputs,omitzero" api:"required"`
-	// Model identifier and configuration applied to every pipeline stage.
-	Model        BetaDreamNewParamsModelUnion `json:"model,omitzero" api:"required"`
-	Instructions param.Opt[string]            `json:"instructions,omitzero"`
-	WorkspaceID  param.Opt[string]            `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// The default destination: the job creates a new output memory store as a clone of
-	// the memory_store input and writes the consolidated memories into it. The input
-	// store is never mutated.
+	Inputs         []BetaDreamInputUnionParam   `json:"inputs,omitzero" api:"required"`
+	Model          BetaDreamNewParamsModelUnion `json:"model,omitzero" api:"required"`
+	Instructions   param.Opt[string]            `json:"instructions,omitzero"`
+	WorkspaceID    param.Opt[string]            `header:"anthropic-workspace-id,omitzero" json:"-"`
 	OutputBehavior BetaOutputBehaviorUnionParam `json:"output_behavior,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

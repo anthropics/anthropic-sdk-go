@@ -2272,7 +2272,6 @@ func (r *CodeExecutionTool20260521Param) UnmarshalJSON(data []byte) error {
 }
 
 type CodeExecutionToolResultBlock struct {
-	// Code execution result with encrypted stdout for PFC + web_search results.
 	Content   CodeExecutionToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                   `json:"tool_use_id" api:"required"`
 	Type      constant.CodeExecutionToolResult         `json:"type" default:"code_execution_tool_result"`
@@ -2344,7 +2343,6 @@ func (r *CodeExecutionToolResultBlockContentUnion) UnmarshalJSON(data []byte) er
 
 // The properties Content, ToolUseID, Type are required.
 type CodeExecutionToolResultBlockParam struct {
-	// Code execution result with encrypted stdout for PFC + web_search results.
 	Content   CodeExecutionToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                        `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
@@ -7150,7 +7148,6 @@ func (r *ContentBlockDeltaEvent) UnmarshalJSON(data []byte) error {
 }
 
 type ContentBlockStartEvent struct {
-	// Response model for a file uploaded to the container.
 	ContentBlock ContentBlockStartEventContentBlockUnion `json:"content_block" api:"required"`
 	Index        int64                                   `json:"index" api:"required"`
 	Type         constant.ContentBlockStart              `json:"type" default:"content_block_start"`
@@ -8003,8 +8000,7 @@ func (r *ServerToolUsage) UnmarshalJSON(data []byte) error {
 }
 
 type ServerToolUseBlock struct {
-	ID string `json:"id" api:"required"`
-	// Tool invocation directly from the model.
+	ID     string                        `json:"id" api:"required"`
 	Caller ServerToolUseBlockCallerUnion `json:"caller" api:"required"`
 	Input  any                           `json:"input" api:"required"`
 	// Any of "web_search", "web_fetch", "code_execution", "bash_code_execution",
@@ -8120,9 +8116,8 @@ type ServerToolUseBlockParam struct {
 	// "text_editor_code_execution", "tool_search_tool_regex", "tool_search_tool_bm25".
 	Name ServerToolUseBlockParamName `json:"name,omitzero" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller ServerToolUseBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl CacheControlEphemeralParam         `json:"cache_control,omitzero"`
+	Caller       ServerToolUseBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as "server_tool_use".
 	Type constant.ServerToolUse `json:"type" default:"server_tool_use"`
 	paramObj
@@ -11930,8 +11925,7 @@ func (u ToolUnionParam) GetCitations() *CitationsConfigParam {
 }
 
 type ToolUseBlock struct {
-	ID string `json:"id" api:"required"`
-	// Tool invocation directly from the model.
+	ID     string                  `json:"id" api:"required"`
 	Caller ToolUseBlockCallerUnion `json:"caller" api:"required"`
 	// necessary custom code modification
 	Input json.RawMessage  `json:"input,required"`
@@ -12037,9 +12031,8 @@ type ToolUseBlockParam struct {
 	// For a toolset member tool_use, the toolset family this member belongs to.
 	ToolsetName param.Opt[string] `json:"toolset_name,omitzero"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller ToolUseBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl CacheControlEphemeralParam   `json:"cache_control,omitzero"`
+	Caller       ToolUseBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_use".
 	Type constant.ToolUse `json:"type" default:"tool_use"`
 	paramObj
@@ -12479,7 +12472,6 @@ const (
 )
 
 type WebFetchToolResultBlock struct {
-	// Tool invocation directly from the model.
 	Caller    WebFetchToolResultBlockCallerUnion  `json:"caller" api:"required"`
 	Content   WebFetchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                              `json:"tool_use_id" api:"required"`
@@ -12619,9 +12611,8 @@ type WebFetchToolResultBlockParam struct {
 	Content   WebFetchToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                   `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller WebFetchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl CacheControlEphemeralParam              `json:"cache_control,omitzero"`
+	Caller       WebFetchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_fetch_tool_result".
 	Type constant.WebFetchToolResult `json:"type" default:"web_fetch_tool_result"`
@@ -13033,7 +13024,6 @@ func (r *WebSearchToolRequestErrorParam) UnmarshalJSON(data []byte) error {
 }
 
 type WebSearchToolResultBlock struct {
-	// Tool invocation directly from the model.
 	Caller    WebSearchToolResultBlockCallerUnion  `json:"caller" api:"required"`
 	Content   WebSearchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                               `json:"tool_use_id" api:"required"`
@@ -13172,9 +13162,8 @@ type WebSearchToolResultBlockParam struct {
 	Content   WebSearchToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                    `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller WebSearchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl CacheControlEphemeralParam               `json:"cache_control,omitzero"`
+	Caller       WebSearchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_tool_result".
 	Type constant.WebSearchToolResult `json:"type" default:"web_search_tool_result"`

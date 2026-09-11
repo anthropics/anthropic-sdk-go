@@ -3812,10 +3812,7 @@ const (
 // An error event indicating a problem occurred during session execution.
 type BetaManagedAgentsSessionErrorEvent struct {
 	// Unique identifier for this event.
-	ID string `json:"id" api:"required"`
-	// An unknown or unexpected error occurred during session execution. A fallback
-	// variant; clients that don't recognize a new error code can match on
-	// `retry_status` and `message` alone.
+	ID    string                                       `json:"id" api:"required"`
 	Error BetaManagedAgentsSessionErrorEventErrorUnion `json:"error" api:"required"`
 	// A timestamp in RFC 3339 format
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
@@ -4708,9 +4705,8 @@ type BetaManagedAgentsSessionStatusIdleEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// A timestamp in RFC 3339 format
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// The agent completed its turn naturally and is ready for the next user message.
-	StopReason BetaManagedAgentsSessionStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
+	ProcessedAt time.Time                                              `json:"processed_at" api:"required" format:"date-time"`
+	StopReason  BetaManagedAgentsSessionStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
 	// Any of "session.status_idle".
 	Type BetaManagedAgentsSessionStatusIdleEventType `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -4963,9 +4959,8 @@ type BetaManagedAgentsSessionThreadStatusIdleEvent struct {
 	// A timestamp in RFC 3339 format
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public sthr\_ ID of the thread that went idle.
-	SessionThreadID string `json:"session_thread_id" api:"required"`
-	// The agent completed its turn naturally and is ready for the next user message.
-	StopReason BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
+	SessionThreadID string                                                       `json:"session_thread_id" api:"required"`
+	StopReason      BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
 	// Any of "session.thread_status_idle".
 	Type BetaManagedAgentsSessionThreadStatusIdleEventType `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].

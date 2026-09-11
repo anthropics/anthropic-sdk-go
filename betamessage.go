@@ -3043,7 +3043,6 @@ func (r *BetaCodeExecutionTool20260521Param) UnmarshalJSON(data []byte) error {
 }
 
 type BetaCodeExecutionToolResultBlock struct {
-	// Code execution result with encrypted stdout for PFC + web_search results.
 	Content   BetaCodeExecutionToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                       `json:"tool_use_id" api:"required"`
 	Type      constant.CodeExecutionToolResult             `json:"type" default:"code_execution_tool_result"`
@@ -3115,7 +3114,6 @@ func (r *BetaCodeExecutionToolResultBlockContentUnion) UnmarshalJSON(data []byte
 
 // The properties Content, ToolUseID, Type are required.
 type BetaCodeExecutionToolResultBlockParam struct {
-	// Code execution result with encrypted stdout for PFC + web_search results.
 	Content   BetaCodeExecutionToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                            `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
@@ -8291,7 +8289,6 @@ func (r *BetaRawContentBlockDeltaEvent) UnmarshalJSON(data []byte) error {
 }
 
 type BetaRawContentBlockStartEvent struct {
-	// Response model for a file uploaded to the container.
 	ContentBlock BetaRawContentBlockStartEventContentBlockUnion `json:"content_block" api:"required"`
 	Index        int64                                          `json:"index" api:"required"`
 	Type         constant.ContentBlockStart                     `json:"type" default:"content_block_start"`
@@ -9405,9 +9402,6 @@ func (u *BetaRequestMCPToolResultBlockParamContentUnion) asAny() any {
 //
 // The properties Tool, Type are required.
 type BetaRequestToolAdditionBlockParam struct {
-	// Reference to a single tool the caller declared directly in `tools[]`. Does not
-	// accept the composed `{server}_{name}` form the server assigns to MCP-resolved
-	// tools — use `mcp_tool_reference` or `mcp_toolset_reference` for those.
 	Tool BetaRequestToolAdditionBlockToolUnionParam `json:"tool,omitzero" api:"required"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -9500,9 +9494,6 @@ func init() {
 //
 // The properties Tool, Type are required.
 type BetaRequestToolRemovalBlockParam struct {
-	// Reference to a single tool the caller declared directly in `tools[]`. Does not
-	// accept the composed `{server}_{name}` form the server assigns to MCP-resolved
-	// tools — use `mcp_tool_reference` or `mcp_toolset_reference` for those.
 	Tool BetaRequestToolRemovalBlockToolUnionParam `json:"tool,omitzero" api:"required"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -9727,9 +9718,8 @@ type BetaServerToolUseBlock struct {
 	// Any of "advisor", "web_search", "web_fetch", "code_execution",
 	// "bash_code_execution", "text_editor_code_execution", "tool_search_tool_regex",
 	// "tool_search_tool_bm25".
-	Name BetaServerToolUseBlockName `json:"name" api:"required"`
-	Type constant.ServerToolUse     `json:"type" default:"server_tool_use"`
-	// Tool invocation directly from the model.
+	Name   BetaServerToolUseBlockName        `json:"name" api:"required"`
+	Type   constant.ServerToolUse            `json:"type" default:"server_tool_use"`
 	Caller BetaServerToolUseBlockCallerUnion `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -9843,9 +9833,8 @@ type BetaServerToolUseBlockParam struct {
 	// "tool_search_tool_bm25".
 	Name BetaServerToolUseBlockParamName `json:"name,omitzero" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller BetaServerToolUseBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl BetaCacheControlEphemeralParam         `json:"cache_control,omitzero"`
+	Caller       BetaServerToolUseBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as "server_tool_use".
 	Type constant.ServerToolUse `json:"type" default:"server_tool_use"`
 	paramObj
@@ -14374,11 +14363,10 @@ func (u BetaToolUnionParam) GetCitations() *BetaCitationsConfigParam {
 }
 
 type BetaToolUseBlock struct {
-	ID    string           `json:"id" api:"required"`
-	Input any              `json:"input" api:"required"`
-	Name  string           `json:"name" api:"required"`
-	Type  constant.ToolUse `json:"type" default:"tool_use"`
-	// Tool invocation directly from the model.
+	ID     string                      `json:"id" api:"required"`
+	Input  any                         `json:"input" api:"required"`
+	Name   string                      `json:"name" api:"required"`
+	Type   constant.ToolUse            `json:"type" default:"tool_use"`
 	Caller BetaToolUseBlockCallerUnion `json:"caller"`
 	// For a toolset member tool_use, the toolset family.
 	ToolsetName string `json:"toolset_name" api:"nullable"`
@@ -14480,9 +14468,8 @@ type BetaToolUseBlockParam struct {
 	// For a toolset member tool_use, the toolset family this member belongs to.
 	ToolsetName param.Opt[string] `json:"toolset_name,omitzero"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller BetaToolUseBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl BetaCacheControlEphemeralParam   `json:"cache_control,omitzero"`
+	Caller       BetaToolUseBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_use".
 	Type constant.ToolUse `json:"type" default:"tool_use"`
 	paramObj
@@ -15001,8 +14988,7 @@ type BetaWebFetchToolResultBlock struct {
 	Content   BetaWebFetchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                  `json:"tool_use_id" api:"required"`
 	Type      constant.WebFetchToolResult             `json:"type" default:"web_fetch_tool_result"`
-	// Tool invocation directly from the model.
-	Caller BetaWebFetchToolResultBlockCallerUnion `json:"caller"`
+	Caller    BetaWebFetchToolResultBlockCallerUnion  `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -15139,9 +15125,8 @@ type BetaWebFetchToolResultBlockParam struct {
 	Content   BetaWebFetchToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                       `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller BetaWebFetchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl BetaCacheControlEphemeralParam              `json:"cache_control,omitzero"`
+	Caller       BetaWebFetchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_fetch_tool_result".
 	Type constant.WebFetchToolResult `json:"type" default:"web_fetch_tool_result"`
@@ -15556,8 +15541,7 @@ type BetaWebSearchToolResultBlock struct {
 	Content   BetaWebSearchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                   `json:"tool_use_id" api:"required"`
 	Type      constant.WebSearchToolResult             `json:"type" default:"web_search_tool_result"`
-	// Tool invocation directly from the model.
-	Caller BetaWebSearchToolResultBlockCallerUnion `json:"caller"`
+	Caller    BetaWebSearchToolResultBlockCallerUnion  `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -15693,9 +15677,8 @@ type BetaWebSearchToolResultBlockParam struct {
 	Content   BetaWebSearchToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                        `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller BetaWebSearchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl BetaCacheControlEphemeralParam               `json:"cache_control,omitzero"`
+	Caller       BetaWebSearchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_tool_result".
 	Type constant.WebSearchToolResult `json:"type" default:"web_search_tool_result"`

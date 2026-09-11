@@ -51,7 +51,7 @@ type Client struct {
 // suppresses both paths. Also honors ANTHROPIC_BASE_URL.
 func DefaultClientOptions() []option.RequestOption {
 	defaults := []option.RequestOption{
-		option.WithHTTPClient(defaultHTTPClient()),
+		option.WithHTTPClient(requestconfig.DefaultHTTPClient()),
 		option.WithEnvironmentProduction(),
 	}
 	if o, ok := os.LookupEnv("ANTHROPIC_BASE_URL"); ok {

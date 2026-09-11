@@ -1,4 +1,4 @@
-package anthropic
+package requestconfig
 
 import (
 	"net/http"
@@ -11,14 +11,11 @@ import (
 // the connection but never responds would hang the request indefinitely.
 const defaultResponseHeaderTimeout = 10 * time.Minute
 
-// defaultHTTPClient returns an [*http.Client] used when the caller does not
-// supply one via [option.WithHTTPClient]. When [http.DefaultTransport] is the
-// stdlib [*http.Transport], it is cloned and a [http.Transport.ResponseHeaderTimeout]
-// is set so stuck connections fail fast instead of compounding across retries.
-// If [http.DefaultTransport] has been wrapped (for example by otelhttp for
-// distributed tracing), the wrapping is preserved and the header timeout is
-// skipped.
-func defaultHTTPClient() *http.Client {
+// DefaultHTTPClient returns a new [http.Client] for clients that were not given
+// one with option.WithHTTPClient: a clone of [http.DefaultTransport] with a
+// response-header timeout, or [http.DefaultTransport] itself if it has been
+// replaced by a wrapper such as otelhttp.
+func DefaultHTTPClient() *http.Client {
 	if t, ok := http.DefaultTransport.(*http.Transport); ok {
 		t = t.Clone()
 		t.ResponseHeaderTimeout = defaultResponseHeaderTimeout

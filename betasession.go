@@ -2309,8 +2309,8 @@ type BetaManagedAgentsUserToolResultEvent struct {
 	IsError bool `json:"is_error" api:"nullable"`
 	// A timestamp in RFC 3339 format
 	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
-	// Routes this result to a subagent thread. Copy from the `agent.tool_use` event's
-	// `session_thread_id`.
+	// Set by the server to the subagent thread this result was routed to. Omitted when
+	// it was routed to the primary thread.
 	SessionThreadID string `json:"session_thread_id" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {

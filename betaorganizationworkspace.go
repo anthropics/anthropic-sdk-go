@@ -126,9 +126,13 @@ type BetaDataResidency struct {
 	// Permitted inference geo values. 'unrestricted' means all geos are allowed.
 	AllowedInferenceGeos BetaDataResidencyAllowedInferenceGeosUnion `json:"allowed_inference_geos" api:"required"`
 	// Default inference geo applied when requests omit the parameter.
-	DefaultInferenceGeo string `json:"default_inference_geo" api:"required"`
+	//
+	// Any of "global", "us".
+	DefaultInferenceGeo BetaDataResidencyDefaultInferenceGeo `json:"default_inference_geo" api:"required"`
 	// Geographic region for workspace data storage. Immutable after creation.
-	WorkspaceGeo string `json:"workspace_geo" api:"required"`
+	//
+	// Any of "us".
+	WorkspaceGeo BetaDataResidencyWorkspaceGeo `json:"workspace_geo" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		AllowedInferenceGeos respjson.Field
@@ -146,15 +150,16 @@ func (r *BetaDataResidency) UnmarshalJSON(data []byte) error {
 }
 
 // BetaDataResidencyAllowedInferenceGeosUnion contains all possible properties and
-// values from [[]string], [constant.Unrestricted].
+// values from [[]BetaAllowedInferenceGeo], [constant.Unrestricted].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 //
 // If the underlying value is not a json object, one of the following properties
 // will be valid: OfGeos OfUnrestricted]
 type BetaDataResidencyAllowedInferenceGeosUnion struct {
-	// This field will be present if the value is a [[]string] instead of an object.
-	OfGeos []string `json:",inline"`
+	// This field will be present if the value is a [[]BetaAllowedInferenceGeo] instead
+	// of an object.
+	OfGeos []BetaAllowedInferenceGeo `json:",inline"`
 	// This field will be present if the value is a [constant.Unrestricted] instead of
 	// an object.
 	OfUnrestricted constant.Unrestricted `json:",inline"`
@@ -165,7 +170,7 @@ type BetaDataResidencyAllowedInferenceGeosUnion struct {
 	} `json:"-"`
 }
 
-func (u BetaDataResidencyAllowedInferenceGeosUnion) AsGeos() (v []string) {
+func (u BetaDataResidencyAllowedInferenceGeosUnion) AsGeos() (v []BetaAllowedInferenceGeo) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -181,6 +186,21 @@ func (u BetaDataResidencyAllowedInferenceGeosUnion) RawJSON() string { return u.
 func (r *BetaDataResidencyAllowedInferenceGeosUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Default inference geo applied when requests omit the parameter.
+type BetaDataResidencyDefaultInferenceGeo string
+
+const (
+	BetaDataResidencyDefaultInferenceGeoGlobal BetaDataResidencyDefaultInferenceGeo = "global"
+	BetaDataResidencyDefaultInferenceGeoUs     BetaDataResidencyDefaultInferenceGeo = "us"
+)
+
+// Geographic region for workspace data storage. Immutable after creation.
+type BetaDataResidencyWorkspaceGeo string
+
+const (
+	BetaDataResidencyWorkspaceGeoUs BetaDataResidencyWorkspaceGeo = "us"
+)
 
 type BetaDataResidencyCreateConfigParam struct {
 	// Permitted inference geo values. Defaults to 'unrestricted' if omitted, which

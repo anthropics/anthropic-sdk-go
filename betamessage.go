@@ -7068,6 +7068,71 @@ func (r *BetaInputTokensTriggerParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// BetaInputTransformationUnion contains all possible properties and values from
+// [BetaThinkingDroppedInputTransformation],
+// [BetaThinkingMismatchAllowedInputTransformation].
+//
+// Use the [BetaInputTransformationUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaInputTransformationUnion struct {
+	Path   string `json:"path"`
+	Reason string `json:"reason"`
+	// Any of "thinking_dropped", "thinking_mismatch_allowed".
+	Type string `json:"type"`
+	JSON struct {
+		Path   respjson.Field
+		Reason respjson.Field
+		Type   respjson.Field
+		raw    string
+	} `json:"-"`
+}
+
+// anyBetaInputTransformation is implemented by each variant of
+// [BetaInputTransformationUnion] to add type safety for the return type of
+// [BetaInputTransformationUnion.AsAny]
+type anyBetaInputTransformation interface {
+	implBetaInputTransformationUnion()
+}
+
+func (BetaThinkingDroppedInputTransformation) implBetaInputTransformationUnion()         {}
+func (BetaThinkingMismatchAllowedInputTransformation) implBetaInputTransformationUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaInputTransformationUnion.AsAny().(type) {
+//	case anthropic.BetaThinkingDroppedInputTransformation:
+//	case anthropic.BetaThinkingMismatchAllowedInputTransformation:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaInputTransformationUnion) AsAny() anyBetaInputTransformation {
+	switch u.Type {
+	case "thinking_dropped":
+		return u.AsThinkingDropped()
+	case "thinking_mismatch_allowed":
+		return u.AsThinkingMismatchAllowed()
+	}
+	return nil
+}
+
+func (u BetaInputTransformationUnion) AsThinkingDropped() (v BetaThinkingDroppedInputTransformation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaInputTransformationUnion) AsThinkingMismatchAllowed() (v BetaThinkingMismatchAllowedInputTransformation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaInputTransformationUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaInputTransformationUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaIterationsUsage []BetaIterationsUsageItemUnion
 
 // BetaIterationsUsageItemUnion contains all possible properties and values from
@@ -7788,22 +7853,27 @@ type BetaMessage struct {
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage BetaUsage `json:"usage" api:"required"`
-	// Changes the API made to the request's input before showing it to the model: one
-	// entry per change, in request order. Today the only entry type is
-	// `thinking_dropped` — a `thinking`, `redacted_thinking` or `connector_text` block
-	// from the request's `messages` that was removed from the prompt instead of being
-	// shown to the model because it failed a binding check. More entry types may be
-	// added over time; ignore types you do not recognize.
+	// Changes the API made to the request's input before showing it to the model, and
+	// blocks that failed a binding check but were left unchanged: one entry per block,
+	// in request order. Two entry types today. `thinking_dropped` — a `thinking`,
+	// `redacted_thinking` or `connector_text` block from the request's `messages` that
+	// was removed from the prompt instead of being shown to the model because it
+	// failed a binding check. `thinking_mismatch_allowed` — a `thinking` or
+	// `redacted_thinking` block that failed the conversation check (the conversation
+	// before it differs from the one it was created in, or it carries no record of one
+	// on a model that requires it) and was shown to the model all the same, because
+	// that check is not enforced for this request. More entry types may be added over
+	// time; ignore types you do not recognize.
 	//
 	// Requires `anthropic-beta: thinking-binding-controls-2026-08-01`. Present on
 	// every such response from a model that supports extended thinking, as `[]` when
-	// nothing was changed; without the beta, blocks are removed all the same but
-	// nothing is reported. Removed blocks contribute nothing to `usage.input_tokens`.
-	// When streaming, the array is final in `message_start`; the final `message_delta`
-	// event carries it only when a server-side model fallback happened mid-stream, in
-	// which case it holds the serving model's entries and replaces the one in
-	// `message_start`.
-	InputTransformations []BetaThinkingDroppedInputTransformation `json:"input_transformations" api:"nullable"`
+	// there is no entry to report; without the beta, blocks are removed or left in
+	// place all the same but nothing is reported. Removed blocks contribute nothing to
+	// `usage.input_tokens`; blocks left in place count as sent. When streaming, the
+	// array is final in `message_start`; the final `message_delta` event carries it
+	// only when a server-side model fallback happened mid-stream, in which case it
+	// holds the serving model's entries and replaces the one in `message_start`.
+	InputTransformations []BetaInputTransformationUnion `json:"input_transformations" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                   respjson.Field
@@ -8786,22 +8856,27 @@ type BetaRawMessageDeltaEvent struct {
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage BetaMessageDeltaUsage `json:"usage" api:"required"`
-	// Changes the API made to the request's input before showing it to the model: one
-	// entry per change, in request order. Today the only entry type is
-	// `thinking_dropped` — a `thinking`, `redacted_thinking` or `connector_text` block
-	// from the request's `messages` that was removed from the prompt instead of being
-	// shown to the model because it failed a binding check. More entry types may be
-	// added over time; ignore types you do not recognize.
+	// Changes the API made to the request's input before showing it to the model, and
+	// blocks that failed a binding check but were left unchanged: one entry per block,
+	// in request order. Two entry types today. `thinking_dropped` — a `thinking`,
+	// `redacted_thinking` or `connector_text` block from the request's `messages` that
+	// was removed from the prompt instead of being shown to the model because it
+	// failed a binding check. `thinking_mismatch_allowed` — a `thinking` or
+	// `redacted_thinking` block that failed the conversation check (the conversation
+	// before it differs from the one it was created in, or it carries no record of one
+	// on a model that requires it) and was shown to the model all the same, because
+	// that check is not enforced for this request. More entry types may be added over
+	// time; ignore types you do not recognize.
 	//
 	// Requires `anthropic-beta: thinking-binding-controls-2026-08-01`. Present on
 	// every such response from a model that supports extended thinking, as `[]` when
-	// nothing was changed; without the beta, blocks are removed all the same but
-	// nothing is reported. Removed blocks contribute nothing to `usage.input_tokens`.
-	// When streaming, the array is final in `message_start`; the final `message_delta`
-	// event carries it only when a server-side model fallback happened mid-stream, in
-	// which case it holds the serving model's entries and replaces the one in
-	// `message_start`.
-	InputTransformations []BetaThinkingDroppedInputTransformation `json:"input_transformations" api:"nullable"`
+	// there is no entry to report; without the beta, blocks are removed or left in
+	// place all the same but nothing is reported. Removed blocks contribute nothing to
+	// `usage.input_tokens`; blocks left in place count as sent. When streaming, the
+	// array is final in `message_start`; the final `message_delta` event carries it
+	// only when a server-side model fallback happened mid-stream, in which case it
+	// holds the serving model's entries and replaces the one in `message_start`.
+	InputTransformations []BetaRawMessageDeltaEventInputTransformationUnion `json:"input_transformations" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ContextManagement    respjson.Field
@@ -8844,6 +8919,74 @@ type BetaRawMessageDeltaEventDelta struct {
 // Returns the unmodified JSON received from the API
 func (r BetaRawMessageDeltaEventDelta) RawJSON() string { return r.JSON.raw }
 func (r *BetaRawMessageDeltaEventDelta) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaRawMessageDeltaEventInputTransformationUnion contains all possible
+// properties and values from [BetaThinkingDroppedInputTransformation],
+// [BetaThinkingMismatchAllowedInputTransformation].
+//
+// Use the [BetaRawMessageDeltaEventInputTransformationUnion.AsAny] method to
+// switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaRawMessageDeltaEventInputTransformationUnion struct {
+	Path   string `json:"path"`
+	Reason string `json:"reason"`
+	// Any of "thinking_dropped", "thinking_mismatch_allowed".
+	Type string `json:"type"`
+	JSON struct {
+		Path   respjson.Field
+		Reason respjson.Field
+		Type   respjson.Field
+		raw    string
+	} `json:"-"`
+}
+
+// anyBetaRawMessageDeltaEventInputTransformation is implemented by each variant of
+// [BetaRawMessageDeltaEventInputTransformationUnion] to add type safety for the
+// return type of [BetaRawMessageDeltaEventInputTransformationUnion.AsAny]
+type anyBetaRawMessageDeltaEventInputTransformation interface {
+	implBetaRawMessageDeltaEventInputTransformationUnion()
+}
+
+func (BetaThinkingDroppedInputTransformation) implBetaRawMessageDeltaEventInputTransformationUnion() {
+}
+func (BetaThinkingMismatchAllowedInputTransformation) implBetaRawMessageDeltaEventInputTransformationUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaRawMessageDeltaEventInputTransformationUnion.AsAny().(type) {
+//	case anthropic.BetaThinkingDroppedInputTransformation:
+//	case anthropic.BetaThinkingMismatchAllowedInputTransformation:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaRawMessageDeltaEventInputTransformationUnion) AsAny() anyBetaRawMessageDeltaEventInputTransformation {
+	switch u.Type {
+	case "thinking_dropped":
+		return u.AsThinkingDropped()
+	case "thinking_mismatch_allowed":
+		return u.AsThinkingMismatchAllowed()
+	}
+	return nil
+}
+
+func (u BetaRawMessageDeltaEventInputTransformationUnion) AsThinkingDropped() (v BetaThinkingDroppedInputTransformation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaRawMessageDeltaEventInputTransformationUnion) AsThinkingMismatchAllowed() (v BetaThinkingMismatchAllowedInputTransformation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaRawMessageDeltaEventInputTransformationUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaRawMessageDeltaEventInputTransformationUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -8903,7 +9046,7 @@ type BetaRawMessageStreamEventUnion struct {
 	// This field is from variant [BetaRawMessageDeltaEvent].
 	Usage BetaMessageDeltaUsage `json:"usage"`
 	// This field is from variant [BetaRawMessageDeltaEvent].
-	InputTransformations []BetaThinkingDroppedInputTransformation `json:"input_transformations"`
+	InputTransformations []BetaRawMessageDeltaEventInputTransformationUnion `json:"input_transformations"`
 	// This field is from variant [BetaRawContentBlockStartEvent].
 	ContentBlock BetaRawContentBlockStartEventContentBlockUnion `json:"content_block"`
 	Index        int64                                          `json:"index"`
@@ -11244,6 +11387,60 @@ const (
 	BetaThinkingDroppedInputTransformationReasonPrefixBindingMismatch       BetaThinkingDroppedInputTransformationReason = "prefix_binding_mismatch"
 	BetaThinkingDroppedInputTransformationReasonOrganizationBindingMismatch BetaThinkingDroppedInputTransformationReason = "organization_binding_mismatch"
 	BetaThinkingDroppedInputTransformationReasonEndUserBindingMismatch      BetaThinkingDroppedInputTransformationReason = "end_user_binding_mismatch"
+)
+
+type BetaThinkingMismatchAllowedInputTransformation struct {
+	// Where the block is in your request, as `messages.{i}.content.{j}`: `i` indexes
+	// the `messages` array you sent and `j` that message's `content` array — the same
+	// form error messages use.
+	Path string `json:"path" api:"required"`
+	// Which binding check the block failed; the block was shown to the model all the
+	// same. Always `prefix_binding_mismatch` today — the conversation before the block
+	// differs from the conversation it was created in, or the block carries no record
+	// of one on a model that requires it. Were the check enforced for this request,
+	// the block would have been removed or the request rejected
+	// (`thinking.block_binding.prefix_mismatch_behavior`). A removal also takes the
+	// rest of that turn's consecutive thinking blocks, whereas here each block is
+	// checked on its own, so `thinking_mismatch_allowed` entries are a lower bound on
+	// what enforcement would remove.
+	//
+	// Any of "model_binding_mismatch", "prefix_binding_mismatch",
+	// "organization_binding_mismatch", "end_user_binding_mismatch".
+	Reason BetaThinkingMismatchAllowedInputTransformationReason `json:"reason" api:"required"`
+	// Always `thinking_mismatch_allowed` for this entry type.
+	Type constant.ThinkingMismatchAllowed `json:"type" default:"thinking_mismatch_allowed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Path        respjson.Field
+		Reason      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaThinkingMismatchAllowedInputTransformation) RawJSON() string { return r.JSON.raw }
+func (r *BetaThinkingMismatchAllowedInputTransformation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Which binding check the block failed; the block was shown to the model all the
+// same. Always `prefix_binding_mismatch` today — the conversation before the block
+// differs from the conversation it was created in, or the block carries no record
+// of one on a model that requires it. Were the check enforced for this request,
+// the block would have been removed or the request rejected
+// (`thinking.block_binding.prefix_mismatch_behavior`). A removal also takes the
+// rest of that turn's consecutive thinking blocks, whereas here each block is
+// checked on its own, so `thinking_mismatch_allowed` entries are a lower bound on
+// what enforcement would remove.
+type BetaThinkingMismatchAllowedInputTransformationReason string
+
+const (
+	BetaThinkingMismatchAllowedInputTransformationReasonModelBindingMismatch        BetaThinkingMismatchAllowedInputTransformationReason = "model_binding_mismatch"
+	BetaThinkingMismatchAllowedInputTransformationReasonPrefixBindingMismatch       BetaThinkingMismatchAllowedInputTransformationReason = "prefix_binding_mismatch"
+	BetaThinkingMismatchAllowedInputTransformationReasonOrganizationBindingMismatch BetaThinkingMismatchAllowedInputTransformationReason = "organization_binding_mismatch"
+	BetaThinkingMismatchAllowedInputTransformationReasonEndUserBindingMismatch      BetaThinkingMismatchAllowedInputTransformationReason = "end_user_binding_mismatch"
 )
 
 // What happens when a thinking block in `messages` fails the conversation check:

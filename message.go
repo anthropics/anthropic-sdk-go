@@ -6899,26 +6899,47 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model = string
 
 const (
-	ModelClaudeFable5_1  Model = "claude-fable-5-1"
+	// Frontier intelligence for ambitious tasks across coding, scientific discovery,
+	// and enterprise workflows
+	ModelClaudeFable5_1 Model = "claude-fable-5-1"
+	// Our most capable model for cybersecurity and biology research, available through
+	// trusted access programs
 	ModelClaudeMythos5_1 Model = "claude-mythos-5-1"
-	ModelClaudeSonnet5   Model = "claude-sonnet-5"
-	ModelClaudeFable5    Model = "claude-fable-5"
-	ModelClaudeMythos5   Model = "claude-mythos-5"
-	ModelClaudeOpus5     Model = "claude-opus-5"
-	ModelClaudeOpus4_8   Model = "claude-opus-4-8"
-	ModelClaudeOpus4_7   Model = "claude-opus-4-7"
+	// High-performance model for coding and agents
+	ModelClaudeSonnet5 Model = "claude-sonnet-5"
+	// Next generation of intelligence for the hardest knowledge work and coding
+	// problems
+	ModelClaudeFable5 Model = "claude-fable-5"
+	// Most capable model for cybersecurity and biology research
+	ModelClaudeMythos5 Model = "claude-mythos-5"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus5 Model = "claude-opus-5"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus4_8 Model = "claude-opus-4-8"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus4_7 Model = "claude-opus-4-7"
+	// New class of intelligence, strongest in coding and cybersecurity
+	//
 	// Deprecated: Will reach end-of-life on June 30, 2026. Please migrate to
 	// claude-mythos-5. Visit
 	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
 	// information.
-	ModelClaudeMythosPreview      Model = "claude-mythos-preview"
-	ModelClaudeOpus4_6            Model = "claude-opus-4-6"
-	ModelClaudeSonnet4_6          Model = "claude-sonnet-4-6"
-	ModelClaudeHaiku4_5           Model = "claude-haiku-4-5"
-	ModelClaudeHaiku4_5_20251001  Model = "claude-haiku-4-5-20251001"
-	ModelClaudeOpus4_5            Model = "claude-opus-4-5"
-	ModelClaudeOpus4_5_20251101   Model = "claude-opus-4-5-20251101"
-	ModelClaudeSonnet4_5          Model = "claude-sonnet-4-5"
+	ModelClaudeMythosPreview Model = "claude-mythos-preview"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus4_6 Model = "claude-opus-4-6"
+	// Best combination of speed and intelligence
+	ModelClaudeSonnet4_6 Model = "claude-sonnet-4-6"
+	// Fastest model with near-frontier intelligence
+	ModelClaudeHaiku4_5 Model = "claude-haiku-4-5"
+	// Fastest model with near-frontier intelligence
+	ModelClaudeHaiku4_5_20251001 Model = "claude-haiku-4-5-20251001"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus4_5 Model = "claude-opus-4-5"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus4_5_20251101 Model = "claude-opus-4-5-20251101"
+	// High-performance model for agents and coding
+	ModelClaudeSonnet4_5 Model = "claude-sonnet-4-5"
+	// High-performance model for agents and coding
 	ModelClaudeSonnet4_5_20250929 Model = "claude-sonnet-4-5-20250929"
 )
 
@@ -7859,11 +7880,24 @@ func (r *RefusalStopDetails) UnmarshalJSON(data []byte) error {
 type RefusalStopDetailsCategory string
 
 const (
-	RefusalStopDetailsCategoryCyber               RefusalStopDetailsCategory = "cyber"
-	RefusalStopDetailsCategoryBio                 RefusalStopDetailsCategory = "bio"
-	RefusalStopDetailsCategoryFrontierLLM         RefusalStopDetailsCategory = "frontier_llm"
+	// The request could enable cyber harm, such as malware or exploit development.
+	// Benign cybersecurity work can also trigger this category.
+	RefusalStopDetailsCategoryCyber RefusalStopDetailsCategory = "cyber"
+	// The request could enable biological harm, such as dangerous lab methods.
+	// Beneficial life sciences work can also trigger this category.
+	RefusalStopDetailsCategoryBio RefusalStopDetailsCategory = "bio"
+	// The request could assist the development of competing AI models, which is
+	// restricted under
+	// [Anthropic's commercial terms](https://www.anthropic.com/legal/commercial-terms).
+	// Benign machine learning work can also trigger this category.
+	RefusalStopDetailsCategoryFrontierLLM RefusalStopDetailsCategory = "frontier_llm"
+	// The request asks the model to reproduce its internal reasoning in the response
+	// text. To get reasoning in a structured form instead, use
+	// [adaptive thinking](https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking).
 	RefusalStopDetailsCategoryReasoningExtraction RefusalStopDetailsCategory = "reasoning_extraction"
-	RefusalStopDetailsCategoryGeneralHarms        RefusalStopDetailsCategory = "general_harms"
+	// The request could be related to an area that was determined as harmful. Benign
+	// work might sometimes trigger this category.
+	RefusalStopDetailsCategoryGeneralHarms RefusalStopDetailsCategory = "general_harms"
 )
 
 // The properties Content, Source, Title, Type are required.

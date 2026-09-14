@@ -6807,11 +6807,24 @@ func (r *BetaFallbackRefusalTrigger) UnmarshalJSON(data []byte) error {
 type BetaFallbackRefusalTriggerCategory string
 
 const (
-	BetaFallbackRefusalTriggerCategoryCyber               BetaFallbackRefusalTriggerCategory = "cyber"
-	BetaFallbackRefusalTriggerCategoryBio                 BetaFallbackRefusalTriggerCategory = "bio"
-	BetaFallbackRefusalTriggerCategoryFrontierLLM         BetaFallbackRefusalTriggerCategory = "frontier_llm"
+	// The request could enable cyber harm, such as malware or exploit development.
+	// Benign cybersecurity work can also trigger this category.
+	BetaFallbackRefusalTriggerCategoryCyber BetaFallbackRefusalTriggerCategory = "cyber"
+	// The request could enable biological harm, such as dangerous lab methods.
+	// Beneficial life sciences work can also trigger this category.
+	BetaFallbackRefusalTriggerCategoryBio BetaFallbackRefusalTriggerCategory = "bio"
+	// The request could assist the development of competing AI models, which is
+	// restricted under
+	// [Anthropic's commercial terms](https://www.anthropic.com/legal/commercial-terms).
+	// Benign machine learning work can also trigger this category.
+	BetaFallbackRefusalTriggerCategoryFrontierLLM BetaFallbackRefusalTriggerCategory = "frontier_llm"
+	// The request asks the model to reproduce its internal reasoning in the response
+	// text. To get reasoning in a structured form instead, use
+	// [adaptive thinking](https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking).
 	BetaFallbackRefusalTriggerCategoryReasoningExtraction BetaFallbackRefusalTriggerCategory = "reasoning_extraction"
-	BetaFallbackRefusalTriggerCategoryGeneralHarms        BetaFallbackRefusalTriggerCategory = "general_harms"
+	// The request could be related to an area that was determined as harmful. Benign
+	// work might sometimes trigger this category.
+	BetaFallbackRefusalTriggerCategoryGeneralHarms BetaFallbackRefusalTriggerCategory = "general_harms"
 )
 
 func BetaFallbacksParamOfDefault() BetaFallbacksParamUnion {
@@ -9324,11 +9337,24 @@ func (r *BetaRefusalStopDetails) UnmarshalJSON(data []byte) error {
 type BetaRefusalStopDetailsCategory string
 
 const (
-	BetaRefusalStopDetailsCategoryCyber               BetaRefusalStopDetailsCategory = "cyber"
-	BetaRefusalStopDetailsCategoryBio                 BetaRefusalStopDetailsCategory = "bio"
-	BetaRefusalStopDetailsCategoryFrontierLLM         BetaRefusalStopDetailsCategory = "frontier_llm"
+	// The request could enable cyber harm, such as malware or exploit development.
+	// Benign cybersecurity work can also trigger this category.
+	BetaRefusalStopDetailsCategoryCyber BetaRefusalStopDetailsCategory = "cyber"
+	// The request could enable biological harm, such as dangerous lab methods.
+	// Beneficial life sciences work can also trigger this category.
+	BetaRefusalStopDetailsCategoryBio BetaRefusalStopDetailsCategory = "bio"
+	// The request could assist the development of competing AI models, which is
+	// restricted under
+	// [Anthropic's commercial terms](https://www.anthropic.com/legal/commercial-terms).
+	// Benign machine learning work can also trigger this category.
+	BetaRefusalStopDetailsCategoryFrontierLLM BetaRefusalStopDetailsCategory = "frontier_llm"
+	// The request asks the model to reproduce its internal reasoning in the response
+	// text. To get reasoning in a structured form instead, use
+	// [adaptive thinking](https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking).
 	BetaRefusalStopDetailsCategoryReasoningExtraction BetaRefusalStopDetailsCategory = "reasoning_extraction"
-	BetaRefusalStopDetailsCategoryGeneralHarms        BetaRefusalStopDetailsCategory = "general_harms"
+	// The request could be related to an area that was determined as harmful. Benign
+	// work might sometimes trigger this category.
+	BetaRefusalStopDetailsCategoryGeneralHarms BetaRefusalStopDetailsCategory = "general_harms"
 )
 
 // The properties Source, Type are required.

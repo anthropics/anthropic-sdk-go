@@ -14586,6 +14586,20 @@ func (u BetaToolUnionParam) GetCitations() *BetaCitationsConfigParam {
 	return nil
 }
 
+// Returns a pointer to the underlying variant's URLSources property, if present.
+func (u BetaToolUnionParam) GetURLSources() *BetaWebFetchURLSourcesParam {
+	if vt := u.OfWebFetchTool20250910; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return &vt.URLSources
+	}
+	return nil
+}
+
 type BetaToolUseBlock struct {
 	ID     string                      `json:"id" api:"required"`
 	Input  any                         `json:"input" api:"required"`
@@ -15024,6 +15038,13 @@ type BetaWebFetchTool20250910Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations BetaCitationsConfigParam `json:"citations,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -15068,6 +15089,13 @@ type BetaWebFetchTool20260209Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations BetaCitationsConfigParam `json:"citations,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -15118,6 +15146,13 @@ type BetaWebFetchTool20260309Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations BetaCitationsConfigParam `json:"citations,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -15175,6 +15210,13 @@ type BetaWebFetchTool20260318Param struct {
 	//
 	// Any of "full", "excluded".
 	ResponseInclusion BetaWebFetchTool20260318ResponseInclusion `json:"response_inclusion,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -15546,6 +15588,310 @@ const (
 	BetaWebFetchToolResultErrorCodeUnavailable            BetaWebFetchToolResultErrorCode = "unavailable"
 	BetaWebFetchToolResultErrorCodeContentTooLarge        BetaWebFetchToolResultErrorCode = "content_too_large"
 )
+
+func NewBetaWebFetchURLSourceAllParam() BetaWebFetchURLSourceAllParam {
+	return BetaWebFetchURLSourceAllParam{
+		Type: "all",
+	}
+}
+
+// The `url_sources` variant under which a source contributes in full: every result
+// of the tool filter's source, or all user input.
+//
+// This struct has a constant value, construct it with
+// [NewBetaWebFetchURLSourceAllParam].
+type BetaWebFetchURLSourceAllParam struct {
+	Type constant.All `json:"type" default:"all"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourceAllParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourceAllParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourceAllParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The tool filter variant under which every result but the named tools'
+// contributes.
+//
+// The properties Tools, Type are required.
+type BetaWebFetchURLSourceExceptParam struct {
+	Tools []BetaWebFetchURLSourceToolReferenceParam `json:"tools,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "except".
+	Type constant.Except `json:"type" default:"except"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourceExceptParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourceExceptParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourceExceptParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewBetaWebFetchURLSourceNoneParam() BetaWebFetchURLSourceNoneParam {
+	return BetaWebFetchURLSourceNoneParam{
+		Type: "none",
+	}
+}
+
+// The `url_sources` variant under which a source contributes nothing: no result of
+// the tool filter's source, or no user input.
+//
+// This struct has a constant value, construct it with
+// [NewBetaWebFetchURLSourceNoneParam].
+type BetaWebFetchURLSourceNoneParam struct {
+	Type constant.None `json:"type" default:"none"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourceNoneParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourceNoneParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourceNoneParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The tool filter variant under which only the named tools' results contribute.
+//
+// The properties Tools, Type are required.
+type BetaWebFetchURLSourceOnlyParam struct {
+	Tools []BetaWebFetchURLSourceToolReferenceParam `json:"tools,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "only".
+	Type constant.Only `json:"type" default:"only"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourceOnlyParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourceOnlyParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourceOnlyParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One entry of a tool filter's `tools`: it must name a tool declared in this
+// request's `tools[]`.
+//
+// The properties Name, Type are required.
+type BetaWebFetchURLSourceToolReferenceParam struct {
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "tool_reference".
+	Type constant.ToolReference `json:"type" default:"tool_reference"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourceToolReferenceParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourceToolReferenceParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourceToolReferenceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Which sources contribute to the set of URLs web fetch may fetch.
+//
+// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+// (every result but the named tools'). A named tool must be declared in this
+// request's `tools[]`.
+type BetaWebFetchURLSourcesParam struct {
+	// Which client tools' results contribute fetchable URLs: "all", "none", or an only
+	// or except list of client tool names from tools[].
+	ClientToolResults BetaWebFetchURLSourcesClientToolResultsUnionParam `json:"client_tool_results,omitzero"`
+	// Which server tools' results contribute fetchable URLs: "all", "none", or an only
+	// or except list of server tool names from tools[]; only web_search and web_fetch
+	// results ever contribute.
+	ServerToolResults BetaWebFetchURLSourcesServerToolResultsUnionParam `json:"server_tool_results,omitzero"`
+	// Whether URLs in user messages are fetchable: "all" or "none".
+	UserInput BetaWebFetchURLSourcesUserInputUnionParam `json:"user_input,omitzero"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourcesParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourcesParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourcesParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaWebFetchURLSourcesClientToolResultsUnionParam struct {
+	OfAll    *BetaWebFetchURLSourceAllParam    `json:",omitzero,inline"`
+	OfNone   *BetaWebFetchURLSourceNoneParam   `json:",omitzero,inline"`
+	OfOnly   *BetaWebFetchURLSourceOnlyParam   `json:",omitzero,inline"`
+	OfExcept *BetaWebFetchURLSourceExceptParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaWebFetchURLSourcesClientToolResultsUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAll, u.OfNone, u.OfOnly, u.OfExcept)
+}
+func (u *BetaWebFetchURLSourcesClientToolResultsUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaWebFetchURLSourcesClientToolResultsUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAll) {
+		return u.OfAll
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
+	} else if !param.IsOmitted(u.OfOnly) {
+		return u.OfOnly
+	} else if !param.IsOmitted(u.OfExcept) {
+		return u.OfExcept
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaWebFetchURLSourcesClientToolResultsUnionParam) GetType() *string {
+	if vt := u.OfAll; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfNone; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfOnly; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfExcept; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's Tools property, if present.
+func (u BetaWebFetchURLSourcesClientToolResultsUnionParam) GetTools() []BetaWebFetchURLSourceToolReferenceParam {
+	if vt := u.OfOnly; vt != nil {
+		return vt.Tools
+	} else if vt := u.OfExcept; vt != nil {
+		return vt.Tools
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaWebFetchURLSourcesClientToolResultsUnionParam](
+		"type",
+		apijson.Discriminator[BetaWebFetchURLSourceAllParam]("all"),
+		apijson.Discriminator[BetaWebFetchURLSourceNoneParam]("none"),
+		apijson.Discriminator[BetaWebFetchURLSourceOnlyParam]("only"),
+		apijson.Discriminator[BetaWebFetchURLSourceExceptParam]("except"),
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaWebFetchURLSourcesServerToolResultsUnionParam struct {
+	OfAll    *BetaWebFetchURLSourceAllParam    `json:",omitzero,inline"`
+	OfNone   *BetaWebFetchURLSourceNoneParam   `json:",omitzero,inline"`
+	OfOnly   *BetaWebFetchURLSourceOnlyParam   `json:",omitzero,inline"`
+	OfExcept *BetaWebFetchURLSourceExceptParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaWebFetchURLSourcesServerToolResultsUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAll, u.OfNone, u.OfOnly, u.OfExcept)
+}
+func (u *BetaWebFetchURLSourcesServerToolResultsUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaWebFetchURLSourcesServerToolResultsUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAll) {
+		return u.OfAll
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
+	} else if !param.IsOmitted(u.OfOnly) {
+		return u.OfOnly
+	} else if !param.IsOmitted(u.OfExcept) {
+		return u.OfExcept
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaWebFetchURLSourcesServerToolResultsUnionParam) GetType() *string {
+	if vt := u.OfAll; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfNone; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfOnly; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfExcept; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's Tools property, if present.
+func (u BetaWebFetchURLSourcesServerToolResultsUnionParam) GetTools() []BetaWebFetchURLSourceToolReferenceParam {
+	if vt := u.OfOnly; vt != nil {
+		return vt.Tools
+	} else if vt := u.OfExcept; vt != nil {
+		return vt.Tools
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaWebFetchURLSourcesServerToolResultsUnionParam](
+		"type",
+		apijson.Discriminator[BetaWebFetchURLSourceAllParam]("all"),
+		apijson.Discriminator[BetaWebFetchURLSourceNoneParam]("none"),
+		apijson.Discriminator[BetaWebFetchURLSourceOnlyParam]("only"),
+		apijson.Discriminator[BetaWebFetchURLSourceExceptParam]("except"),
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaWebFetchURLSourcesUserInputUnionParam struct {
+	OfAll  *BetaWebFetchURLSourceAllParam  `json:",omitzero,inline"`
+	OfNone *BetaWebFetchURLSourceNoneParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaWebFetchURLSourcesUserInputUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAll, u.OfNone)
+}
+func (u *BetaWebFetchURLSourcesUserInputUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaWebFetchURLSourcesUserInputUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAll) {
+		return u.OfAll
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaWebFetchURLSourcesUserInputUnionParam) GetType() *string {
+	if vt := u.OfAll; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfNone; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaWebFetchURLSourcesUserInputUnionParam](
+		"type",
+		apijson.Discriminator[BetaWebFetchURLSourceAllParam]("all"),
+		apijson.Discriminator[BetaWebFetchURLSourceNoneParam]("none"),
+	)
+}
 
 type BetaWebSearchResultBlock struct {
 	EncryptedContent string                   `json:"encrypted_content" api:"required"`
@@ -18380,6 +18726,20 @@ func (u BetaMessageCountTokensParamsToolUnion) GetCitations() *BetaCitationsConf
 		return &vt.Citations
 	} else if vt := u.OfWebFetchTool20260318; vt != nil {
 		return &vt.Citations
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's URLSources property, if present.
+func (u BetaMessageCountTokensParamsToolUnion) GetURLSources() *BetaWebFetchURLSourcesParam {
+	if vt := u.OfWebFetchTool20250910; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return &vt.URLSources
 	}
 	return nil
 }

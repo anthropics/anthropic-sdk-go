@@ -8889,7 +8889,7 @@ type BetaRawMessageDeltaEvent struct {
 	// array is final in `message_start`; the final `message_delta` event carries it
 	// only when a server-side model fallback happened mid-stream, in which case it
 	// holds the serving model's entries and replaces the one in `message_start`.
-	InputTransformations []BetaRawMessageDeltaEventInputTransformationUnion `json:"input_transformations" api:"nullable"`
+	InputTransformations []BetaInputTransformationUnion `json:"input_transformations" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ContextManagement    respjson.Field
@@ -8932,74 +8932,6 @@ type BetaRawMessageDeltaEventDelta struct {
 // Returns the unmodified JSON received from the API
 func (r BetaRawMessageDeltaEventDelta) RawJSON() string { return r.JSON.raw }
 func (r *BetaRawMessageDeltaEventDelta) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// BetaRawMessageDeltaEventInputTransformationUnion contains all possible
-// properties and values from [BetaThinkingDroppedInputTransformation],
-// [BetaThinkingMismatchAllowedInputTransformation].
-//
-// Use the [BetaRawMessageDeltaEventInputTransformationUnion.AsAny] method to
-// switch on the variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaRawMessageDeltaEventInputTransformationUnion struct {
-	Path   string `json:"path"`
-	Reason string `json:"reason"`
-	// Any of "thinking_dropped", "thinking_mismatch_allowed".
-	Type string `json:"type"`
-	JSON struct {
-		Path   respjson.Field
-		Reason respjson.Field
-		Type   respjson.Field
-		raw    string
-	} `json:"-"`
-}
-
-// anyBetaRawMessageDeltaEventInputTransformation is implemented by each variant of
-// [BetaRawMessageDeltaEventInputTransformationUnion] to add type safety for the
-// return type of [BetaRawMessageDeltaEventInputTransformationUnion.AsAny]
-type anyBetaRawMessageDeltaEventInputTransformation interface {
-	implBetaRawMessageDeltaEventInputTransformationUnion()
-}
-
-func (BetaThinkingDroppedInputTransformation) implBetaRawMessageDeltaEventInputTransformationUnion() {
-}
-func (BetaThinkingMismatchAllowedInputTransformation) implBetaRawMessageDeltaEventInputTransformationUnion() {
-}
-
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := BetaRawMessageDeltaEventInputTransformationUnion.AsAny().(type) {
-//	case anthropic.BetaThinkingDroppedInputTransformation:
-//	case anthropic.BetaThinkingMismatchAllowedInputTransformation:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u BetaRawMessageDeltaEventInputTransformationUnion) AsAny() anyBetaRawMessageDeltaEventInputTransformation {
-	switch u.Type {
-	case "thinking_dropped":
-		return u.AsThinkingDropped()
-	case "thinking_mismatch_allowed":
-		return u.AsThinkingMismatchAllowed()
-	}
-	return nil
-}
-
-func (u BetaRawMessageDeltaEventInputTransformationUnion) AsThinkingDropped() (v BetaThinkingDroppedInputTransformation) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaRawMessageDeltaEventInputTransformationUnion) AsThinkingMismatchAllowed() (v BetaThinkingMismatchAllowedInputTransformation) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u BetaRawMessageDeltaEventInputTransformationUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *BetaRawMessageDeltaEventInputTransformationUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -9059,7 +8991,7 @@ type BetaRawMessageStreamEventUnion struct {
 	// This field is from variant [BetaRawMessageDeltaEvent].
 	Usage BetaMessageDeltaUsage `json:"usage"`
 	// This field is from variant [BetaRawMessageDeltaEvent].
-	InputTransformations []BetaRawMessageDeltaEventInputTransformationUnion `json:"input_transformations"`
+	InputTransformations []BetaInputTransformationUnion `json:"input_transformations"`
 	// This field is from variant [BetaRawContentBlockStartEvent].
 	ContentBlock BetaRawContentBlockStartEventContentBlockUnion `json:"content_block"`
 	Index        int64                                          `json:"index"`

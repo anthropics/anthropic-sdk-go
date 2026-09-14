@@ -19,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream/eventstreamapi"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/credentials/ssocreds"
 	"github.com/aws/smithy-go/auth/bearer"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -279,13 +280,14 @@ func TestBedrockAuthModeResolution(t *testing.T) {
 		preference   []string
 		credentials  bool
 		provider     bool
+		sso          bool
 		wantBearer   string
 		wantProvider bool
 	}{
 		{
 			name:        "an SSO token provider beside static credentials signs with SigV4",
 			credentials: true,
-			provider:    true,
+			sso:         true,
 		},
 		{
 			name:        "the environment token wins over credentials and a provider",
@@ -320,7 +322,10 @@ func TestBedrockAuthModeResolution(t *testing.T) {
 			if tt.credentials {
 				cfg.Credentials = makeStaticAWSConfig("us-east-1").Credentials
 			}
-			if tt.provider {
+			switch {
+			case tt.sso:
+				cfg.BearerAuthTokenProvider = ssoDerivedTokenProvider()
+			case tt.provider:
 				cfg.BearerAuthTokenProvider = bearer.TokenProviderFunc(func(context.Context) (bearer.Token, error) {
 					providerCalled = true
 					return bearer.Token{Value: providerToken}, nil
@@ -364,6 +369,162 @@ func TestBedrockAuthModeResolution(t *testing.T) {
 				t.Errorf("bearer provider called = %v, want %v", providerCalled, tt.wantProvider)
 			}
 		})
+	}
+}
+
+// ssoTokenProvider is the concrete type resolveBearerAuthSSOTokenProvider
+// returns. Tests never call RetrieveBearerToken; WithConfig only type-checks it.
+func ssoTokenProvider() *ssocreds.SSOTokenProvider {
+	return ssocreds.NewSSOTokenProvider(nil, "sso-cache-unused")
+}
+
+// ssoDerivedTokenProvider is the shape LoadDefaultConfig actually installs:
+// *ssocreds.SSOTokenProvider wrapped in smithy-go's TokenCache.
+func ssoDerivedTokenProvider() bearer.TokenProvider {
+	return bearer.NewTokenCache(ssoTokenProvider())
+}
+
+// rotatingBearerTokenProvider is a caller-supplied Bedrock token source that
+// is neither *bearer.StaticTokenProvider nor the SSO cache provider.
+type rotatingBearerTokenProvider struct {
+	token string
+}
+
+func (p rotatingBearerTokenProvider) RetrieveBearerToken(context.Context) (bearer.Token, error) {
+	return bearer.Token{Value: p.token}, nil
+}
+
+func captureWithConfigAuth(t *testing.T, cfg aws.Config) (auth, amzDate string) {
+	t.Helper()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		auth = r.Header.Get("Authorization")
+		amzDate = r.Header.Get("X-Amz-Date")
+		writeMessagesResponse(w)
+	}))
+	t.Cleanup(server.Close)
+
+	client := anthropic.NewClient(
+		option.WithoutEnvironmentDefaults(),
+		WithConfig(cfg),
+		option.WithBaseURL(server.URL),
+	)
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:     "claude-3-sonnet",
+		MaxTokens: 1,
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+		},
+	})
+	if err != nil {
+		t.Fatalf("Messages.New failed: %v", err)
+	}
+	return auth, amzDate
+}
+
+// TestWithConfigIgnoresSSODerivedBearer verifies issue #414: an SSO-derived
+// BearerAuthTokenProvider on a config that also has Credentials must not be
+// sent as Authorization: Bearer to bedrock-runtime. SigV4 is used instead.
+func TestWithConfigIgnoresSSODerivedBearer(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+	os.Unsetenv("AWS_BEARER_TOKEN_BEDROCK")
+
+	for _, tc := range []struct {
+		name     string
+		provider bearer.TokenProvider
+	}{
+		{name: "sso-token-provider", provider: ssoTokenProvider()},
+		{name: "token-cache-wrapping-sso", provider: ssoDerivedTokenProvider()},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := makeStaticAWSConfig("us-west-2")
+			cfg.BearerAuthTokenProvider = tc.provider
+
+			auth, amzDate := captureWithConfigAuth(t, cfg)
+			if strings.HasPrefix(auth, "Bearer ") {
+				t.Fatalf("SSO-derived bearer must not be used when Credentials are set and AWS_BEARER_TOKEN_BEDROCK is unset; Authorization=%q", auth)
+			}
+			if !strings.HasPrefix(auth, "AWS4-HMAC-SHA256") {
+				t.Fatalf("Expected SigV4 Authorization, got %q", auth)
+			}
+			if amzDate == "" {
+				t.Fatal("Expected X-Amz-Date SigV4 header")
+			}
+		})
+	}
+}
+
+func TestWithConfigUsesEnvBearerToken(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "bedrock-api-key-from-env")
+
+	cfg := makeStaticAWSConfig("us-west-2")
+	cfg.BearerAuthTokenProvider = ssoDerivedTokenProvider()
+
+	auth, amzDate := captureWithConfigAuth(t, cfg)
+	if auth != "Bearer bedrock-api-key-from-env" {
+		t.Fatalf("Expected AWS_BEARER_TOKEN_BEDROCK to be used as bearer, got %q", auth)
+	}
+	if amzDate != "" {
+		t.Fatalf("Expected no X-Amz-Date when using env bearer, got %q", amzDate)
+	}
+}
+
+func TestWithConfigUsesExplicitStaticBearer(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+	os.Unsetenv("AWS_BEARER_TOKEN_BEDROCK")
+
+	cfg := makeStaticAWSConfig("us-west-2")
+	cfg.BearerAuthTokenProvider = NewStaticBearerTokenProvider("explicit-bedrock-api-key")
+
+	auth, amzDate := captureWithConfigAuth(t, cfg)
+	if auth != "Bearer explicit-bedrock-api-key" {
+		t.Fatalf("Expected explicit StaticTokenProvider to be used as Bedrock bearer, got %q", auth)
+	}
+	if amzDate != "" {
+		t.Fatalf("Expected no X-Amz-Date when using explicit bearer, got %q", amzDate)
+	}
+}
+
+func TestWithConfigUsesCustomBearerTokenProvider(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+	os.Unsetenv("AWS_BEARER_TOKEN_BEDROCK")
+
+	for _, tc := range []struct {
+		name     string
+		provider bearer.TokenProvider
+	}{
+		{name: "rotating", provider: rotatingBearerTokenProvider{token: "rotating-bedrock-api-key"}},
+		{name: "token-cache-wrapping-rotating", provider: bearer.NewTokenCache(rotatingBearerTokenProvider{token: "rotating-bedrock-api-key"})},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := makeStaticAWSConfig("us-west-2")
+			cfg.BearerAuthTokenProvider = tc.provider
+
+			auth, amzDate := captureWithConfigAuth(t, cfg)
+			if auth != "Bearer rotating-bedrock-api-key" {
+				t.Fatalf("Expected custom TokenProvider to be used as Bedrock bearer, got %q", auth)
+			}
+			if amzDate != "" {
+				t.Fatalf("Expected no X-Amz-Date when using custom bearer, got %q", amzDate)
+			}
+		})
+	}
+}
+
+func TestWithConfigNilBearerUsesSigV4(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+	os.Unsetenv("AWS_BEARER_TOKEN_BEDROCK")
+
+	auth, amzDate := captureWithConfigAuth(t, makeStaticAWSConfig("us-west-2"))
+	if !strings.HasPrefix(auth, "AWS4-HMAC-SHA256") {
+		t.Fatalf("Expected SigV4 when env unset and BearerAuthTokenProvider is nil, got %q", auth)
+	}
+	if amzDate == "" {
+		t.Fatal("Expected X-Amz-Date SigV4 header")
 	}
 }
 

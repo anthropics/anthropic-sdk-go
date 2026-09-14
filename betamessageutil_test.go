@@ -336,7 +336,7 @@ func TestBetaAccumulateMessageDeltaInputTransformations(t *testing.T) {
 		`{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null,"stop_details":null},"usage":{"output_tokens":5},"input_transformations":[{"type":"thinking_dropped","path":"messages.1.content.0","reason":"prefix_binding_mismatch"},{"type":"thinking_dropped","path":"messages.1.content.1","reason":"prefix_binding_mismatch"}]}`,
 		`{"type":"message_stop"}`,
 	)
-	if len(message.InputTransformations) != 2 || message.InputTransformations[1].Reason != anthropic.BetaThinkingDroppedInputTransformationReasonPrefixBindingMismatch {
+	if len(message.InputTransformations) != 2 || message.InputTransformations[1].Reason != string(anthropic.BetaThinkingDroppedInputTransformationReasonPrefixBindingMismatch) {
 		t.Errorf("Expected input_transformations from the delta, got %+v", message.InputTransformations)
 	}
 	if got := gjson.Get(message.RawJSON(), "input_transformations.1.path").String(); got != "messages.1.content.1" {

@@ -689,7 +689,7 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// deterministic.
 	//
 	// Deprecated: Deprecated. Models released after Claude Opus 4.6 do not support
-	// setting temperature. A value of 1.0 of will be accepted for backwards
+	// setting temperature. A value of 1.0 will be accepted for backwards
 	// compatibility, all other values will be rejected with a 400 error.
 	Temperature param.Opt[float64] `json:"temperature,omitzero"`
 	// Only sample from the top K options for each subsequent token.
@@ -750,6 +750,14 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Compaction configuration.
+	//
+	// When set, this is a compaction request: the conversation in `messages` is
+	// summarized and the response holds only the resulting `compaction` block
+	// (`stop_reason` `"compaction"`), which later requests send first in `messages` in
+	// place of the messages it summarizes. Cannot be combined with
+	// `context_management`.
+	Compaction BetaCompactionConfigUnionParam `json:"compaction,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,

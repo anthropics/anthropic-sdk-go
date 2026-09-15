@@ -57,6 +57,11 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 				CacheControl: anthropic.BetaCacheControlEphemeralParam{
 					TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 				},
+				Compaction: anthropic.BetaCompactionConfigUnionParam{
+					OfSummarize: &anthropic.BetaSummarizeCompactionParam{
+						Instructions: anthropic.String("instructions"),
+					},
+				},
 				Container: anthropic.BetaMessageBatchNewParamsRequestParamsContainerUnion{
 					OfContainers: &anthropic.BetaContainerParams{
 						ID: anthropic.String("id"),

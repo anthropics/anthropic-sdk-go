@@ -3043,7 +3043,6 @@ func (r *BetaCodeExecutionTool20260521Param) UnmarshalJSON(data []byte) error {
 }
 
 type BetaCodeExecutionToolResultBlock struct {
-	// Code execution result with encrypted stdout for PFC + web_search results.
 	Content   BetaCodeExecutionToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                       `json:"tool_use_id" api:"required"`
 	Type      constant.CodeExecutionToolResult             `json:"type" default:"code_execution_tool_result"`
@@ -3115,7 +3114,6 @@ func (r *BetaCodeExecutionToolResultBlockContentUnion) UnmarshalJSON(data []byte
 
 // The properties Content, ToolUseID, Type are required.
 type BetaCodeExecutionToolResultBlockParam struct {
-	// Code execution result with encrypted stdout for PFC + web_search results.
 	Content   BetaCodeExecutionToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                            `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
@@ -3317,11 +3315,14 @@ type BetaCompactionBlock struct {
 	// Opaque metadata from prior compaction, to be round-tripped verbatim
 	EncryptedContent string              `json:"encrypted_content" api:"required"`
 	Type             constant.Compaction `json:"type" default:"compaction"`
+	// Signature over the summary, to be sent back with the block verbatim
+	Signature string `json:"signature" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content          respjson.Field
 		EncryptedContent respjson.Field
 		Type             respjson.Field
+		Signature        respjson.Field
 		ExtraFields      map[string]respjson.Field
 		raw              string
 	} `json:"-"`
@@ -3347,6 +3348,8 @@ type BetaCompactionBlockParam struct {
 	Content param.Opt[string] `json:"content,omitzero"`
 	// Opaque metadata from prior compaction, to be round-tripped verbatim
 	EncryptedContent param.Opt[string] `json:"encrypted_content,omitzero"`
+	// The block's signature as returned, to be sent back verbatim
+	Signature param.Opt[string] `json:"signature,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "compaction".
@@ -3360,6 +3363,51 @@ func (r BetaCompactionBlockParam) MarshalJSON() (data []byte, err error) {
 }
 func (r *BetaCompactionBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaCompactionConfigUnionParam struct {
+	OfSummarize *BetaSummarizeCompactionParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaCompactionConfigUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfSummarize)
+}
+func (u *BetaCompactionConfigUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaCompactionConfigUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfSummarize) {
+		return u.OfSummarize
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaCompactionConfigUnionParam) GetInstructions() *string {
+	if vt := u.OfSummarize; vt != nil && vt.Instructions.Valid() {
+		return &vt.Instructions.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaCompactionConfigUnionParam) GetType() *string {
+	if vt := u.OfSummarize; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaCompactionConfigUnionParam](
+		"type",
+		apijson.Discriminator[BetaSummarizeCompactionParam]("summarize"),
+	)
 }
 
 type BetaCompactionContentBlockDelta struct {
@@ -3976,8 +4024,7 @@ type BetaContentBlockUnion struct {
 	// "code_execution_tool_result", "bash_code_execution_tool_result",
 	// "text_editor_code_execution_tool_result", "tool_search_tool_result",
 	// "mcp_tool_use", "mcp_tool_result", "container_upload", "compaction", "fallback".
-	Type string `json:"type"`
-	// This field is from variant [BetaThinkingBlock].
+	Type      string `json:"type"`
 	Signature string `json:"signature"`
 	// This field is from variant [BetaThinkingBlock].
 	Thinking string `json:"thinking"`
@@ -4764,14 +4811,6 @@ func (u BetaContentBlockParamUnion) GetContext() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaContentBlockParamUnion) GetSignature() *string {
-	if vt := u.OfThinking; vt != nil {
-		return &vt.Signature
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetThinking() *string {
 	if vt := u.OfThinking; vt != nil {
 		return &vt.Thinking
@@ -4893,6 +4932,16 @@ func (u BetaContentBlockParamUnion) GetTitle() *string {
 		return &vt.Title.Value
 	} else if vt := u.OfSearchResult; vt != nil {
 		return (*string)(&vt.Title)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaContentBlockParamUnion) GetSignature() *string {
+	if vt := u.OfThinking; vt != nil {
+		return (*string)(&vt.Signature)
+	} else if vt := u.OfCompaction; vt != nil && vt.Signature.Valid() {
+		return &vt.Signature.Value
 	}
 	return nil
 }
@@ -6618,10 +6667,11 @@ func (r *BetaFallbackInfoParam) UnmarshalJSON(data []byte) error {
 
 // Token usage for the fallback-model attempt of a server-side fallback request.
 //
-// Produced in place of a `message` entry for whichever hop served the response. A
-// declined hop produces the existing `message` entry. Whether a fallback model
-// served the response is signalled by the presence of this entry in
-// `usage.iterations`.
+// The terminal entry of a fallback-served turn: when a fallback hop's output is
+// the returned message, the entry for the iteration that completed it carries this
+// type in place of `message`. A declined hop and the serving hop's earlier
+// tool-loop iterations produce `message` entries. Whether a fallback model served
+// the response is signalled by the presence of this entry in `usage.iterations`.
 type BetaFallbackMessageIterationUsage struct {
 	// Breakdown of cached tokens by TTL
 	CacheCreation BetaCacheCreation `json:"cache_creation" api:"required"`
@@ -6808,11 +6858,24 @@ func (r *BetaFallbackRefusalTrigger) UnmarshalJSON(data []byte) error {
 type BetaFallbackRefusalTriggerCategory string
 
 const (
-	BetaFallbackRefusalTriggerCategoryCyber               BetaFallbackRefusalTriggerCategory = "cyber"
-	BetaFallbackRefusalTriggerCategoryBio                 BetaFallbackRefusalTriggerCategory = "bio"
-	BetaFallbackRefusalTriggerCategoryFrontierLLM         BetaFallbackRefusalTriggerCategory = "frontier_llm"
+	// The request could enable cyber harm, such as malware or exploit development.
+	// Benign cybersecurity work can also trigger this category.
+	BetaFallbackRefusalTriggerCategoryCyber BetaFallbackRefusalTriggerCategory = "cyber"
+	// The request could enable biological harm, such as dangerous lab methods.
+	// Beneficial life sciences work can also trigger this category.
+	BetaFallbackRefusalTriggerCategoryBio BetaFallbackRefusalTriggerCategory = "bio"
+	// The request could assist the development of competing AI models, which is
+	// restricted under
+	// [Anthropic's commercial terms](https://www.anthropic.com/legal/commercial-terms).
+	// Benign machine learning work can also trigger this category.
+	BetaFallbackRefusalTriggerCategoryFrontierLLM BetaFallbackRefusalTriggerCategory = "frontier_llm"
+	// The request asks the model to reproduce its internal reasoning in the response
+	// text. To get reasoning in a structured form instead, use
+	// [adaptive thinking](https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking).
 	BetaFallbackRefusalTriggerCategoryReasoningExtraction BetaFallbackRefusalTriggerCategory = "reasoning_extraction"
-	BetaFallbackRefusalTriggerCategoryGeneralHarms        BetaFallbackRefusalTriggerCategory = "general_harms"
+	// The request could be related to an area that was determined as harmful. Benign
+	// work might sometimes trigger this category.
+	BetaFallbackRefusalTriggerCategoryGeneralHarms BetaFallbackRefusalTriggerCategory = "general_harms"
 )
 
 func BetaFallbacksParamOfDefault() BetaFallbacksParamUnion {
@@ -7066,6 +7129,71 @@ func (r BetaInputTokensTriggerParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *BetaInputTokensTriggerParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaInputTransformationUnion contains all possible properties and values from
+// [BetaThinkingDroppedInputTransformation],
+// [BetaThinkingMismatchAllowedInputTransformation].
+//
+// Use the [BetaInputTransformationUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaInputTransformationUnion struct {
+	Path   string `json:"path"`
+	Reason string `json:"reason"`
+	// Any of "thinking_dropped", "thinking_mismatch_allowed".
+	Type string `json:"type"`
+	JSON struct {
+		Path   respjson.Field
+		Reason respjson.Field
+		Type   respjson.Field
+		raw    string
+	} `json:"-"`
+}
+
+// anyBetaInputTransformation is implemented by each variant of
+// [BetaInputTransformationUnion] to add type safety for the return type of
+// [BetaInputTransformationUnion.AsAny]
+type anyBetaInputTransformation interface {
+	implBetaInputTransformationUnion()
+}
+
+func (BetaThinkingDroppedInputTransformation) implBetaInputTransformationUnion()         {}
+func (BetaThinkingMismatchAllowedInputTransformation) implBetaInputTransformationUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaInputTransformationUnion.AsAny().(type) {
+//	case anthropic.BetaThinkingDroppedInputTransformation:
+//	case anthropic.BetaThinkingMismatchAllowedInputTransformation:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaInputTransformationUnion) AsAny() anyBetaInputTransformation {
+	switch u.Type {
+	case "thinking_dropped":
+		return u.AsThinkingDropped()
+	case "thinking_mismatch_allowed":
+		return u.AsThinkingMismatchAllowed()
+	}
+	return nil
+}
+
+func (u BetaInputTransformationUnion) AsThinkingDropped() (v BetaThinkingDroppedInputTransformation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaInputTransformationUnion) AsThinkingMismatchAllowed() (v BetaThinkingMismatchAllowedInputTransformation) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaInputTransformationUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaInputTransformationUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -7789,22 +7917,27 @@ type BetaMessage struct {
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage BetaUsage `json:"usage" api:"required"`
-	// Changes the API made to the request's input before showing it to the model: one
-	// entry per change, in request order. Today the only entry type is
-	// `thinking_dropped` — a `thinking`, `redacted_thinking` or `connector_text` block
-	// from the request's `messages` that was removed from the prompt instead of being
-	// shown to the model because it failed a binding check. More entry types may be
-	// added over time; ignore types you do not recognize.
+	// Changes the API made to the request's input before showing it to the model, and
+	// blocks that failed a binding check but were left unchanged: one entry per block,
+	// in request order. Two entry types today. `thinking_dropped` — a `thinking`,
+	// `redacted_thinking` or `connector_text` block from the request's `messages` that
+	// was removed from the prompt instead of being shown to the model because it
+	// failed a binding check. `thinking_mismatch_allowed` — a `thinking` or
+	// `redacted_thinking` block that failed the conversation check (the conversation
+	// before it differs from the one it was created in, or it carries no record of one
+	// on a model that requires it) and was shown to the model all the same, because
+	// that check is not enforced for this request. More entry types may be added over
+	// time; ignore types you do not recognize.
 	//
 	// Requires `anthropic-beta: thinking-binding-controls-2026-08-01`. Present on
 	// every such response from a model that supports extended thinking, as `[]` when
-	// nothing was changed; without the beta, blocks are removed all the same but
-	// nothing is reported. Removed blocks contribute nothing to `usage.input_tokens`.
-	// When streaming, the array is final in `message_start`; the final `message_delta`
-	// event carries it only when a server-side model fallback happened mid-stream, in
-	// which case it holds the serving model's entries and replaces the one in
-	// `message_start`.
-	InputTransformations []BetaThinkingDroppedInputTransformation `json:"input_transformations" api:"nullable"`
+	// there is no entry to report; without the beta, blocks are removed or left in
+	// place all the same but nothing is reported. Removed blocks contribute nothing to
+	// `usage.input_tokens`; blocks left in place count as sent. When streaming, the
+	// array is final in `message_start`; the final `message_delta` event carries it
+	// only when a server-side model fallback happened mid-stream, in which case it
+	// holds the serving model's entries and replaces the one in `message_start`.
+	InputTransformations []BetaInputTransformationUnion `json:"input_transformations" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                   respjson.Field
@@ -8291,7 +8424,6 @@ func (r *BetaRawContentBlockDeltaEvent) UnmarshalJSON(data []byte) error {
 }
 
 type BetaRawContentBlockStartEvent struct {
-	// Response model for a file uploaded to the container.
 	ContentBlock BetaRawContentBlockStartEventContentBlockUnion `json:"content_block" api:"required"`
 	Index        int64                                          `json:"index" api:"required"`
 	Type         constant.ContentBlockStart                     `json:"type" default:"content_block_start"`
@@ -8335,8 +8467,7 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	// "code_execution_tool_result", "bash_code_execution_tool_result",
 	// "text_editor_code_execution_tool_result", "tool_search_tool_result",
 	// "mcp_tool_use", "mcp_tool_result", "container_upload", "compaction", "fallback".
-	Type string `json:"type"`
-	// This field is from variant [BetaThinkingBlock].
+	Type      string `json:"type"`
 	Signature string `json:"signature"`
 	// This field is from variant [BetaThinkingBlock].
 	Thinking string `json:"thinking"`
@@ -8788,22 +8919,27 @@ type BetaRawMessageDeltaEvent struct {
 	// Total input tokens in a request is the summation of `input_tokens`,
 	// `cache_creation_input_tokens`, and `cache_read_input_tokens`.
 	Usage BetaMessageDeltaUsage `json:"usage" api:"required"`
-	// Changes the API made to the request's input before showing it to the model: one
-	// entry per change, in request order. Today the only entry type is
-	// `thinking_dropped` — a `thinking`, `redacted_thinking` or `connector_text` block
-	// from the request's `messages` that was removed from the prompt instead of being
-	// shown to the model because it failed a binding check. More entry types may be
-	// added over time; ignore types you do not recognize.
+	// Changes the API made to the request's input before showing it to the model, and
+	// blocks that failed a binding check but were left unchanged: one entry per block,
+	// in request order. Two entry types today. `thinking_dropped` — a `thinking`,
+	// `redacted_thinking` or `connector_text` block from the request's `messages` that
+	// was removed from the prompt instead of being shown to the model because it
+	// failed a binding check. `thinking_mismatch_allowed` — a `thinking` or
+	// `redacted_thinking` block that failed the conversation check (the conversation
+	// before it differs from the one it was created in, or it carries no record of one
+	// on a model that requires it) and was shown to the model all the same, because
+	// that check is not enforced for this request. More entry types may be added over
+	// time; ignore types you do not recognize.
 	//
 	// Requires `anthropic-beta: thinking-binding-controls-2026-08-01`. Present on
 	// every such response from a model that supports extended thinking, as `[]` when
-	// nothing was changed; without the beta, blocks are removed all the same but
-	// nothing is reported. Removed blocks contribute nothing to `usage.input_tokens`.
-	// When streaming, the array is final in `message_start`; the final `message_delta`
-	// event carries it only when a server-side model fallback happened mid-stream, in
-	// which case it holds the serving model's entries and replaces the one in
-	// `message_start`.
-	InputTransformations []BetaThinkingDroppedInputTransformation `json:"input_transformations" api:"nullable"`
+	// there is no entry to report; without the beta, blocks are removed or left in
+	// place all the same but nothing is reported. Removed blocks contribute nothing to
+	// `usage.input_tokens`; blocks left in place count as sent. When streaming, the
+	// array is final in `message_start`; the final `message_delta` event carries it
+	// only when a server-side model fallback happened mid-stream, in which case it
+	// holds the serving model's entries and replaces the one in `message_start`.
+	InputTransformations []BetaInputTransformationUnion `json:"input_transformations" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ContextManagement    respjson.Field
@@ -8905,7 +9041,7 @@ type BetaRawMessageStreamEventUnion struct {
 	// This field is from variant [BetaRawMessageDeltaEvent].
 	Usage BetaMessageDeltaUsage `json:"usage"`
 	// This field is from variant [BetaRawMessageDeltaEvent].
-	InputTransformations []BetaThinkingDroppedInputTransformation `json:"input_transformations"`
+	InputTransformations []BetaInputTransformationUnion `json:"input_transformations"`
 	// This field is from variant [BetaRawContentBlockStartEvent].
 	ContentBlock BetaRawContentBlockStartEventContentBlockUnion `json:"content_block"`
 	Index        int64                                          `json:"index"`
@@ -9183,11 +9319,24 @@ func (r *BetaRefusalStopDetails) UnmarshalJSON(data []byte) error {
 type BetaRefusalStopDetailsCategory string
 
 const (
-	BetaRefusalStopDetailsCategoryCyber               BetaRefusalStopDetailsCategory = "cyber"
-	BetaRefusalStopDetailsCategoryBio                 BetaRefusalStopDetailsCategory = "bio"
-	BetaRefusalStopDetailsCategoryFrontierLLM         BetaRefusalStopDetailsCategory = "frontier_llm"
+	// The request could enable cyber harm, such as malware or exploit development.
+	// Benign cybersecurity work can also trigger this category.
+	BetaRefusalStopDetailsCategoryCyber BetaRefusalStopDetailsCategory = "cyber"
+	// The request could enable biological harm, such as dangerous lab methods.
+	// Beneficial life sciences work can also trigger this category.
+	BetaRefusalStopDetailsCategoryBio BetaRefusalStopDetailsCategory = "bio"
+	// The request could assist the development of competing AI models, which is
+	// restricted under
+	// [Anthropic's commercial terms](https://www.anthropic.com/legal/commercial-terms).
+	// Benign machine learning work can also trigger this category.
+	BetaRefusalStopDetailsCategoryFrontierLLM BetaRefusalStopDetailsCategory = "frontier_llm"
+	// The request asks the model to reproduce its internal reasoning in the response
+	// text. To get reasoning in a structured form instead, use
+	// [adaptive thinking](https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking).
 	BetaRefusalStopDetailsCategoryReasoningExtraction BetaRefusalStopDetailsCategory = "reasoning_extraction"
-	BetaRefusalStopDetailsCategoryGeneralHarms        BetaRefusalStopDetailsCategory = "general_harms"
+	// The request could be related to an area that was determined as harmful. Benign
+	// work might sometimes trigger this category.
+	BetaRefusalStopDetailsCategoryGeneralHarms BetaRefusalStopDetailsCategory = "general_harms"
 )
 
 // The properties Source, Type are required.
@@ -9405,9 +9554,6 @@ func (u *BetaRequestMCPToolResultBlockParamContentUnion) asAny() any {
 //
 // The properties Tool, Type are required.
 type BetaRequestToolAdditionBlockParam struct {
-	// Reference to a single tool the caller declared directly in `tools[]`. Does not
-	// accept the composed `{server}_{name}` form the server assigns to MCP-resolved
-	// tools — use `mcp_tool_reference` or `mcp_toolset_reference` for those.
 	Tool BetaRequestToolAdditionBlockToolUnionParam `json:"tool,omitzero" api:"required"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -9500,9 +9646,6 @@ func init() {
 //
 // The properties Tool, Type are required.
 type BetaRequestToolRemovalBlockParam struct {
-	// Reference to a single tool the caller declared directly in `tools[]`. Does not
-	// accept the composed `{server}_{name}` form the server assigns to MCP-resolved
-	// tools — use `mcp_tool_reference` or `mcp_toolset_reference` for those.
 	Tool BetaRequestToolRemovalBlockToolUnionParam `json:"tool,omitzero" api:"required"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -9727,9 +9870,8 @@ type BetaServerToolUseBlock struct {
 	// Any of "advisor", "web_search", "web_fetch", "code_execution",
 	// "bash_code_execution", "text_editor_code_execution", "tool_search_tool_regex",
 	// "tool_search_tool_bm25".
-	Name BetaServerToolUseBlockName `json:"name" api:"required"`
-	Type constant.ServerToolUse     `json:"type" default:"server_tool_use"`
-	// Tool invocation directly from the model.
+	Name   BetaServerToolUseBlockName        `json:"name" api:"required"`
+	Type   constant.ServerToolUse            `json:"type" default:"server_tool_use"`
 	Caller BetaServerToolUseBlockCallerUnion `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -9843,9 +9985,8 @@ type BetaServerToolUseBlockParam struct {
 	// "tool_search_tool_bm25".
 	Name BetaServerToolUseBlockParamName `json:"name,omitzero" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller BetaServerToolUseBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl BetaCacheControlEphemeralParam         `json:"cache_control,omitzero"`
+	Caller       BetaServerToolUseBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as "server_tool_use".
 	Type constant.ServerToolUse `json:"type" default:"server_tool_use"`
 	paramObj
@@ -9995,6 +10136,33 @@ const (
 	BetaStopReasonRefusal                    BetaStopReason = "refusal"
 	BetaStopReasonModelContextWindowExceeded BetaStopReason = "model_context_window_exceeded"
 )
+
+// Compact the whole conversation and return a signed `compaction` block, alone,
+// that a later request sends back first in `messages`, in place of the messages it
+// summarizes. There is no trigger and no pause flag: sending the parameter
+// compacts, and nothing is sampled after the block.
+//
+// The summarization prompt is the server's own unless `instructions` are given,
+// which then replace it for this request; a value that is empty or only whitespace
+// counts as absent.
+//
+// The property Type is required.
+type BetaSummarizeCompactionParam struct {
+	// Replaces the server's default summarization prompt for this request. An empty or
+	// whitespace-only value counts as absent.
+	Instructions param.Opt[string] `json:"instructions,omitzero"`
+	// This field can be elided, and will marshal its zero value as "summarize".
+	Type constant.Summarize `json:"type" default:"summarize"`
+	paramObj
+}
+
+func (r BetaSummarizeCompactionParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaSummarizeCompactionParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaSummarizeCompactionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Per-message output configuration on a role:"system" input message.
 //
@@ -11254,6 +11422,60 @@ const (
 	BetaThinkingDroppedInputTransformationReasonPrefixBindingMismatch       BetaThinkingDroppedInputTransformationReason = "prefix_binding_mismatch"
 	BetaThinkingDroppedInputTransformationReasonOrganizationBindingMismatch BetaThinkingDroppedInputTransformationReason = "organization_binding_mismatch"
 	BetaThinkingDroppedInputTransformationReasonEndUserBindingMismatch      BetaThinkingDroppedInputTransformationReason = "end_user_binding_mismatch"
+)
+
+type BetaThinkingMismatchAllowedInputTransformation struct {
+	// Where the block is in your request, as `messages.{i}.content.{j}`: `i` indexes
+	// the `messages` array you sent and `j` that message's `content` array — the same
+	// form error messages use.
+	Path string `json:"path" api:"required"`
+	// Which binding check the block failed; the block was shown to the model all the
+	// same. Always `prefix_binding_mismatch` today — the conversation before the block
+	// differs from the conversation it was created in, or the block carries no record
+	// of one on a model that requires it. Were the check enforced for this request,
+	// the block would have been removed or the request rejected
+	// (`thinking.block_binding.prefix_mismatch_behavior`). A removal also takes the
+	// rest of that turn's consecutive thinking blocks, whereas here each block is
+	// checked on its own, so `thinking_mismatch_allowed` entries are a lower bound on
+	// what enforcement would remove.
+	//
+	// Any of "model_binding_mismatch", "prefix_binding_mismatch",
+	// "organization_binding_mismatch", "end_user_binding_mismatch".
+	Reason BetaThinkingMismatchAllowedInputTransformationReason `json:"reason" api:"required"`
+	// Always `thinking_mismatch_allowed` for this entry type.
+	Type constant.ThinkingMismatchAllowed `json:"type" default:"thinking_mismatch_allowed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Path        respjson.Field
+		Reason      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaThinkingMismatchAllowedInputTransformation) RawJSON() string { return r.JSON.raw }
+func (r *BetaThinkingMismatchAllowedInputTransformation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Which binding check the block failed; the block was shown to the model all the
+// same. Always `prefix_binding_mismatch` today — the conversation before the block
+// differs from the conversation it was created in, or the block carries no record
+// of one on a model that requires it. Were the check enforced for this request,
+// the block would have been removed or the request rejected
+// (`thinking.block_binding.prefix_mismatch_behavior`). A removal also takes the
+// rest of that turn's consecutive thinking blocks, whereas here each block is
+// checked on its own, so `thinking_mismatch_allowed` entries are a lower bound on
+// what enforcement would remove.
+type BetaThinkingMismatchAllowedInputTransformationReason string
+
+const (
+	BetaThinkingMismatchAllowedInputTransformationReasonModelBindingMismatch        BetaThinkingMismatchAllowedInputTransformationReason = "model_binding_mismatch"
+	BetaThinkingMismatchAllowedInputTransformationReasonPrefixBindingMismatch       BetaThinkingMismatchAllowedInputTransformationReason = "prefix_binding_mismatch"
+	BetaThinkingMismatchAllowedInputTransformationReasonOrganizationBindingMismatch BetaThinkingMismatchAllowedInputTransformationReason = "organization_binding_mismatch"
+	BetaThinkingMismatchAllowedInputTransformationReasonEndUserBindingMismatch      BetaThinkingMismatchAllowedInputTransformationReason = "end_user_binding_mismatch"
 )
 
 // What happens when a thinking block in `messages` fails the conversation check:
@@ -14373,12 +14595,25 @@ func (u BetaToolUnionParam) GetCitations() *BetaCitationsConfigParam {
 	return nil
 }
 
+// Returns a pointer to the underlying variant's URLSources property, if present.
+func (u BetaToolUnionParam) GetURLSources() *BetaWebFetchURLSourcesParam {
+	if vt := u.OfWebFetchTool20250910; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return &vt.URLSources
+	}
+	return nil
+}
+
 type BetaToolUseBlock struct {
-	ID    string           `json:"id" api:"required"`
-	Input any              `json:"input" api:"required"`
-	Name  string           `json:"name" api:"required"`
-	Type  constant.ToolUse `json:"type" default:"tool_use"`
-	// Tool invocation directly from the model.
+	ID     string                      `json:"id" api:"required"`
+	Input  any                         `json:"input" api:"required"`
+	Name   string                      `json:"name" api:"required"`
+	Type   constant.ToolUse            `json:"type" default:"tool_use"`
 	Caller BetaToolUseBlockCallerUnion `json:"caller"`
 	// For a toolset member tool_use, the toolset family.
 	ToolsetName string `json:"toolset_name" api:"nullable"`
@@ -14480,9 +14715,8 @@ type BetaToolUseBlockParam struct {
 	// For a toolset member tool_use, the toolset family this member belongs to.
 	ToolsetName param.Opt[string] `json:"toolset_name,omitzero"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller BetaToolUseBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl BetaCacheControlEphemeralParam   `json:"cache_control,omitzero"`
+	Caller       BetaToolUseBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_use".
 	Type constant.ToolUse `json:"type" default:"tool_use"`
 	paramObj
@@ -14813,6 +15047,13 @@ type BetaWebFetchTool20250910Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations BetaCitationsConfigParam `json:"citations,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -14857,6 +15098,13 @@ type BetaWebFetchTool20260209Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations BetaCitationsConfigParam `json:"citations,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -14907,6 +15155,13 @@ type BetaWebFetchTool20260309Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations BetaCitationsConfigParam `json:"citations,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -14964,6 +15219,13 @@ type BetaWebFetchTool20260318Param struct {
 	//
 	// Any of "full", "excluded".
 	ResponseInclusion BetaWebFetchTool20260318ResponseInclusion `json:"response_inclusion,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -15001,8 +15263,7 @@ type BetaWebFetchToolResultBlock struct {
 	Content   BetaWebFetchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                  `json:"tool_use_id" api:"required"`
 	Type      constant.WebFetchToolResult             `json:"type" default:"web_fetch_tool_result"`
-	// Tool invocation directly from the model.
-	Caller BetaWebFetchToolResultBlockCallerUnion `json:"caller"`
+	Caller    BetaWebFetchToolResultBlockCallerUnion  `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -15139,9 +15400,8 @@ type BetaWebFetchToolResultBlockParam struct {
 	Content   BetaWebFetchToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                       `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller BetaWebFetchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl BetaCacheControlEphemeralParam              `json:"cache_control,omitzero"`
+	Caller       BetaWebFetchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_fetch_tool_result".
 	Type constant.WebFetchToolResult `json:"type" default:"web_fetch_tool_result"`
@@ -15337,6 +15597,310 @@ const (
 	BetaWebFetchToolResultErrorCodeUnavailable            BetaWebFetchToolResultErrorCode = "unavailable"
 	BetaWebFetchToolResultErrorCodeContentTooLarge        BetaWebFetchToolResultErrorCode = "content_too_large"
 )
+
+func NewBetaWebFetchURLSourceAllParam() BetaWebFetchURLSourceAllParam {
+	return BetaWebFetchURLSourceAllParam{
+		Type: "all",
+	}
+}
+
+// The `url_sources` variant under which a source contributes in full: every result
+// of the tool filter's source, or all user input.
+//
+// This struct has a constant value, construct it with
+// [NewBetaWebFetchURLSourceAllParam].
+type BetaWebFetchURLSourceAllParam struct {
+	Type constant.All `json:"type" default:"all"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourceAllParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourceAllParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourceAllParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The tool filter variant under which every result but the named tools'
+// contributes.
+//
+// The properties Tools, Type are required.
+type BetaWebFetchURLSourceExceptParam struct {
+	Tools []BetaWebFetchURLSourceToolReferenceParam `json:"tools,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "except".
+	Type constant.Except `json:"type" default:"except"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourceExceptParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourceExceptParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourceExceptParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewBetaWebFetchURLSourceNoneParam() BetaWebFetchURLSourceNoneParam {
+	return BetaWebFetchURLSourceNoneParam{
+		Type: "none",
+	}
+}
+
+// The `url_sources` variant under which a source contributes nothing: no result of
+// the tool filter's source, or no user input.
+//
+// This struct has a constant value, construct it with
+// [NewBetaWebFetchURLSourceNoneParam].
+type BetaWebFetchURLSourceNoneParam struct {
+	Type constant.None `json:"type" default:"none"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourceNoneParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourceNoneParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourceNoneParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The tool filter variant under which only the named tools' results contribute.
+//
+// The properties Tools, Type are required.
+type BetaWebFetchURLSourceOnlyParam struct {
+	Tools []BetaWebFetchURLSourceToolReferenceParam `json:"tools,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "only".
+	Type constant.Only `json:"type" default:"only"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourceOnlyParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourceOnlyParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourceOnlyParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One entry of a tool filter's `tools`: it must name a tool declared in this
+// request's `tools[]`.
+//
+// The properties Name, Type are required.
+type BetaWebFetchURLSourceToolReferenceParam struct {
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "tool_reference".
+	Type constant.ToolReference `json:"type" default:"tool_reference"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourceToolReferenceParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourceToolReferenceParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourceToolReferenceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Which sources contribute to the set of URLs web fetch may fetch.
+//
+// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+// (every result but the named tools'). A named tool must be declared in this
+// request's `tools[]`.
+type BetaWebFetchURLSourcesParam struct {
+	// Which client tools' results contribute fetchable URLs: "all", "none", or an only
+	// or except list of client tool names from tools[].
+	ClientToolResults BetaWebFetchURLSourcesClientToolResultsUnionParam `json:"client_tool_results,omitzero"`
+	// Which server tools' results contribute fetchable URLs: "all", "none", or an only
+	// or except list of server tool names from tools[]; only web_search and web_fetch
+	// results ever contribute.
+	ServerToolResults BetaWebFetchURLSourcesServerToolResultsUnionParam `json:"server_tool_results,omitzero"`
+	// Whether URLs in user messages are fetchable: "all" or "none".
+	UserInput BetaWebFetchURLSourcesUserInputUnionParam `json:"user_input,omitzero"`
+	paramObj
+}
+
+func (r BetaWebFetchURLSourcesParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebFetchURLSourcesParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWebFetchURLSourcesParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaWebFetchURLSourcesClientToolResultsUnionParam struct {
+	OfAll    *BetaWebFetchURLSourceAllParam    `json:",omitzero,inline"`
+	OfNone   *BetaWebFetchURLSourceNoneParam   `json:",omitzero,inline"`
+	OfOnly   *BetaWebFetchURLSourceOnlyParam   `json:",omitzero,inline"`
+	OfExcept *BetaWebFetchURLSourceExceptParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaWebFetchURLSourcesClientToolResultsUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAll, u.OfNone, u.OfOnly, u.OfExcept)
+}
+func (u *BetaWebFetchURLSourcesClientToolResultsUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaWebFetchURLSourcesClientToolResultsUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAll) {
+		return u.OfAll
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
+	} else if !param.IsOmitted(u.OfOnly) {
+		return u.OfOnly
+	} else if !param.IsOmitted(u.OfExcept) {
+		return u.OfExcept
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaWebFetchURLSourcesClientToolResultsUnionParam) GetType() *string {
+	if vt := u.OfAll; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfNone; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfOnly; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfExcept; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's Tools property, if present.
+func (u BetaWebFetchURLSourcesClientToolResultsUnionParam) GetTools() []BetaWebFetchURLSourceToolReferenceParam {
+	if vt := u.OfOnly; vt != nil {
+		return vt.Tools
+	} else if vt := u.OfExcept; vt != nil {
+		return vt.Tools
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaWebFetchURLSourcesClientToolResultsUnionParam](
+		"type",
+		apijson.Discriminator[BetaWebFetchURLSourceAllParam]("all"),
+		apijson.Discriminator[BetaWebFetchURLSourceNoneParam]("none"),
+		apijson.Discriminator[BetaWebFetchURLSourceOnlyParam]("only"),
+		apijson.Discriminator[BetaWebFetchURLSourceExceptParam]("except"),
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaWebFetchURLSourcesServerToolResultsUnionParam struct {
+	OfAll    *BetaWebFetchURLSourceAllParam    `json:",omitzero,inline"`
+	OfNone   *BetaWebFetchURLSourceNoneParam   `json:",omitzero,inline"`
+	OfOnly   *BetaWebFetchURLSourceOnlyParam   `json:",omitzero,inline"`
+	OfExcept *BetaWebFetchURLSourceExceptParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaWebFetchURLSourcesServerToolResultsUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAll, u.OfNone, u.OfOnly, u.OfExcept)
+}
+func (u *BetaWebFetchURLSourcesServerToolResultsUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaWebFetchURLSourcesServerToolResultsUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAll) {
+		return u.OfAll
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
+	} else if !param.IsOmitted(u.OfOnly) {
+		return u.OfOnly
+	} else if !param.IsOmitted(u.OfExcept) {
+		return u.OfExcept
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaWebFetchURLSourcesServerToolResultsUnionParam) GetType() *string {
+	if vt := u.OfAll; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfNone; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfOnly; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfExcept; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's Tools property, if present.
+func (u BetaWebFetchURLSourcesServerToolResultsUnionParam) GetTools() []BetaWebFetchURLSourceToolReferenceParam {
+	if vt := u.OfOnly; vt != nil {
+		return vt.Tools
+	} else if vt := u.OfExcept; vt != nil {
+		return vt.Tools
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaWebFetchURLSourcesServerToolResultsUnionParam](
+		"type",
+		apijson.Discriminator[BetaWebFetchURLSourceAllParam]("all"),
+		apijson.Discriminator[BetaWebFetchURLSourceNoneParam]("none"),
+		apijson.Discriminator[BetaWebFetchURLSourceOnlyParam]("only"),
+		apijson.Discriminator[BetaWebFetchURLSourceExceptParam]("except"),
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaWebFetchURLSourcesUserInputUnionParam struct {
+	OfAll  *BetaWebFetchURLSourceAllParam  `json:",omitzero,inline"`
+	OfNone *BetaWebFetchURLSourceNoneParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaWebFetchURLSourcesUserInputUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAll, u.OfNone)
+}
+func (u *BetaWebFetchURLSourcesUserInputUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaWebFetchURLSourcesUserInputUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAll) {
+		return u.OfAll
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaWebFetchURLSourcesUserInputUnionParam) GetType() *string {
+	if vt := u.OfAll; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfNone; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaWebFetchURLSourcesUserInputUnionParam](
+		"type",
+		apijson.Discriminator[BetaWebFetchURLSourceAllParam]("all"),
+		apijson.Discriminator[BetaWebFetchURLSourceNoneParam]("none"),
+	)
+}
 
 type BetaWebSearchResultBlock struct {
 	EncryptedContent string                   `json:"encrypted_content" api:"required"`
@@ -15556,8 +16120,7 @@ type BetaWebSearchToolResultBlock struct {
 	Content   BetaWebSearchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                   `json:"tool_use_id" api:"required"`
 	Type      constant.WebSearchToolResult             `json:"type" default:"web_search_tool_result"`
-	// Tool invocation directly from the model.
-	Caller BetaWebSearchToolResultBlockCallerUnion `json:"caller"`
+	Caller    BetaWebSearchToolResultBlockCallerUnion  `json:"caller"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -15693,9 +16256,8 @@ type BetaWebSearchToolResultBlockParam struct {
 	Content   BetaWebSearchToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                        `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller BetaWebSearchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl BetaCacheControlEphemeralParam               `json:"cache_control,omitzero"`
+	Caller       BetaWebSearchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_tool_result".
 	Type constant.WebSearchToolResult `json:"type" default:"web_search_tool_result"`
@@ -15988,6 +16550,16 @@ type BetaMessageNewParams struct {
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Compaction configuration.
+	//
+	// When set on `POST /v1/messages`, the request is a compaction request: the
+	// conversation in `messages` is summarized and the response holds only the
+	// resulting `compaction` block (`stop_reason` `"compaction"`), which later
+	// requests send first in `messages` in place of the messages it summarizes. `POST
+	// /v1/messages/count_tokens` accepts this parameter and ignores it: the count it
+	// returns is for the conversation in `messages` as sent. Cannot be combined with
+	// `context_management`.
+	Compaction BetaCompactionConfigUnionParam `json:"compaction,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,
@@ -16306,6 +16878,16 @@ type BetaMessageCountTokensParams struct {
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Compaction configuration.
+	//
+	// When set on `POST /v1/messages`, the request is a compaction request: the
+	// conversation in `messages` is summarized and the response holds only the
+	// resulting `compaction` block (`stop_reason` `"compaction"`), which later
+	// requests send first in `messages` in place of the messages it summarizes. `POST
+	// /v1/messages/count_tokens` accepts this parameter and ignores it: the count it
+	// returns is for the conversation in `messages` as sent. Cannot be combined with
+	// `context_management`.
+	Compaction BetaCompactionConfigUnionParam `json:"compaction,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,
@@ -18173,6 +18755,20 @@ func (u BetaMessageCountTokensParamsToolUnion) GetCitations() *BetaCitationsConf
 		return &vt.Citations
 	} else if vt := u.OfWebFetchTool20260318; vt != nil {
 		return &vt.Citations
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's URLSources property, if present.
+func (u BetaMessageCountTokensParamsToolUnion) GetURLSources() *BetaWebFetchURLSourcesParam {
+	if vt := u.OfWebFetchTool20250910; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return &vt.URLSources
 	}
 	return nil
 }

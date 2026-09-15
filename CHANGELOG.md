@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.73.0 (2026-09-15)
+
+Full Changelog: [v1.72.0...v1.73.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.72.0...v1.73.0)
+
+### Features
+
+* **api:** add compaction parameter and signed compaction blocks (beta) ([e8fde9a](https://github.com/anthropics/anthropic-sdk-go/commit/e8fde9afd82cee16e02087e841b71aa0ecb3e272))
+* **api:** add enum types for workspace data-residency geo fields ([2a6278f](https://github.com/anthropics/anthropic-sdk-go/commit/2a6278fa27de822c890a31d0892f5893241cc9c8))
+* **api:** add thinking_mismatch_allowed entries to input_transformations (beta) ([94f69a4](https://github.com/anthropics/anthropic-sdk-go/commit/94f69a4aa5ae9b2c903253f595479c66644b7b7c))
+* **api:** add url_sources to the web fetch tool ([739316b](https://github.com/anthropics/anthropic-sdk-go/commit/739316b7d5ab31d3cbceac94d0b3ba402acf339a))
+* **api:** add workspace_id parameter to user profiles methods ([2fe76c4](https://github.com/anthropics/anthropic-sdk-go/commit/2fe76c4530ff2983c9e238af50a943cd600f6f36))
+
+
+### Bug Fixes
+
+* **api:** use one input transformation type for message and delta event ([4ce03aa](https://github.com/anthropics/anthropic-sdk-go/commit/4ce03aa55e5dd3e641a2b8cb718b6f14d289c3bc))
+* **tests:** compare the input transformation reason as a string ([e1c9fb6](https://github.com/anthropics/anthropic-sdk-go/commit/e1c9fb63ed684b10f0d1359551a0072b83b60421))
+
+
+### Chores
+
+* **docs:** clarify that session_thread_id on tool use events is informational ([4c1ee73](https://github.com/anthropics/anthropic-sdk-go/commit/4c1ee731395e6b40102649cea4d2e268612dd5ce))
+* **docs:** correct the compaction beta's parameter descriptions ([5716f68](https://github.com/anthropics/anthropic-sdk-go/commit/5716f68cc18cb09ab5ae346b2eb73115a80bb77c))
+* **internal:** move the default HTTP client constructor into internal/requestconfig ([ffb85e5](https://github.com/anthropics/anthropic-sdk-go/commit/ffb85e57ba2c81192924c6caefe413afc9f9ddaf))
+* **tests:** stop the mock server without failing a passing test run ([b03bf9d](https://github.com/anthropics/anthropic-sdk-go/commit/b03bf9d6f60110397e9ea0c87e4552d1c5aa7ec0))
+
+
+### Documentation
+
+* **api:** add descriptions to enum constants ([2fc6555](https://github.com/anthropics/anthropic-sdk-go/commit/2fc655561317842364184d533b5fc47e565b3a38))
+* **api:** clarify usage.iterations entry typing under server-side fallback ([1661494](https://github.com/anthropics/anthropic-sdk-go/commit/166149402e1270b11b760701fbb0e24606a445c7))
+* **api:** fix typo in temperature deprecation message ([6295557](https://github.com/anthropics/anthropic-sdk-go/commit/62955577a03d3bcc9f4181a3e03b7b8236c07ae5))
+* stop documenting unions with their first variant's description ([e8d63c8](https://github.com/anthropics/anthropic-sdk-go/commit/e8d63c8535b6f552ae9a8b7412a0e0f3eeef24d3))
+
 ## 1.72.0 (2026-09-10)
 
 Full Changelog: [v1.71.0...v1.72.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.71.0...v1.72.0)

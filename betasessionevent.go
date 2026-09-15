@@ -269,7 +269,9 @@ type BetaManagedAgentsAgentCustomToolUseEvent struct {
 	Type BetaManagedAgentsAgentCustomToolUseEventType `json:"type" api:"required"`
 	// When set, this event was cross-posted from a subagent's thread to surface its
 	// custom tool use on the primary thread's stream. Empty on the thread's own
-	// events. Echo this on a `user.custom_tool_result` event to route the result back.
+	// events. Informational only: the server routes the matching
+	// `user.custom_tool_result` by `custom_tool_use_id`, so clients do not send it
+	// back.
 	SessionThreadID string `json:"session_thread_id" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -493,8 +495,8 @@ type BetaManagedAgentsAgentMCPToolUseEvent struct {
 	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// When set, this event was cross-posted from a subagent's thread to surface its
 	// permission request on the primary thread's stream. Empty on the thread's own
-	// events. Echo this on a `user.tool_confirmation` event to route the approval
-	// back.
+	// events. Informational only: the server routes the matching
+	// `user.tool_confirmation` by `tool_use_id`, so clients do not send it back.
 	SessionThreadID string `json:"session_thread_id" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1355,8 +1357,9 @@ type BetaManagedAgentsAgentToolUseEvent struct {
 	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// When set, this event was cross-posted from a subagent's thread to surface its
 	// permission request on the primary thread's stream. Empty on the thread's own
-	// events. Echo this on a `user.tool_confirmation` event to route the approval
-	// back.
+	// events. Informational only: the server routes the matching
+	// `user.tool_confirmation` or `user.tool_result` by `tool_use_id`, so clients do
+	// not send it back.
 	SessionThreadID string `json:"session_thread_id" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -3812,10 +3815,7 @@ const (
 // An error event indicating a problem occurred during session execution.
 type BetaManagedAgentsSessionErrorEvent struct {
 	// Unique identifier for this event.
-	ID string `json:"id" api:"required"`
-	// An unknown or unexpected error occurred during session execution. A fallback
-	// variant; clients that don't recognize a new error code can match on
-	// `retry_status` and `message` alone.
+	ID    string                                       `json:"id" api:"required"`
 	Error BetaManagedAgentsSessionErrorEventErrorUnion `json:"error" api:"required"`
 	// A timestamp in RFC 3339 format
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
@@ -4708,9 +4708,8 @@ type BetaManagedAgentsSessionStatusIdleEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// A timestamp in RFC 3339 format
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// The agent completed its turn naturally and is ready for the next user message.
-	StopReason BetaManagedAgentsSessionStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
+	ProcessedAt time.Time                                              `json:"processed_at" api:"required" format:"date-time"`
+	StopReason  BetaManagedAgentsSessionStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
 	// Any of "session.status_idle".
 	Type BetaManagedAgentsSessionStatusIdleEventType `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -4963,9 +4962,8 @@ type BetaManagedAgentsSessionThreadStatusIdleEvent struct {
 	// A timestamp in RFC 3339 format
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public sthr\_ ID of the thread that went idle.
-	SessionThreadID string `json:"session_thread_id" api:"required"`
-	// The agent completed its turn naturally and is ready for the next user message.
-	StopReason BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
+	SessionThreadID string                                                       `json:"session_thread_id" api:"required"`
+	StopReason      BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
 	// Any of "session.thread_status_idle".
 	Type BetaManagedAgentsSessionThreadStatusIdleEventType `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -6534,8 +6532,8 @@ type BetaManagedAgentsUserCustomToolResultEvent struct {
 	IsError bool `json:"is_error" api:"nullable"`
 	// A timestamp in RFC 3339 format
 	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
-	// Routes this result to a subagent thread. Copy from the `agent.custom_tool_use`
-	// event's `session_thread_id`.
+	// Set by the server to the subagent thread this result was routed to. Omitted when
+	// it was routed to the primary thread.
 	SessionThreadID string `json:"session_thread_id" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -7551,9 +7549,8 @@ type BetaManagedAgentsUserToolConfirmationEvent struct {
 	DenyMessage string `json:"deny_message" api:"nullable"`
 	// A timestamp in RFC 3339 format
 	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
-	// When set, the confirmation routes to this subagent's thread rather than the
-	// primary. Echo this from the `session_thread_id` on the `agent.tool_use` or
-	// `agent.mcp_tool_use` event that prompted the approval.
+	// Set by the server to the subagent thread this confirmation was routed to.
+	// Omitted when it was routed to the primary thread.
 	SessionThreadID string `json:"session_thread_id" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {

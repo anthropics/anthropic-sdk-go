@@ -56,6 +56,11 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 		CacheControl: anthropic.BetaCacheControlEphemeralParam{
 			TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 		},
+		Compaction: anthropic.BetaCompactionConfigUnionParam{
+			OfSummarize: &anthropic.BetaSummarizeCompactionParam{
+				Instructions: anthropic.String("instructions"),
+			},
+		},
 		Container: anthropic.BetaMessageNewParamsContainerUnion{
 			OfContainers: &anthropic.BetaContainerParams{
 				ID: anthropic.String("id"),
@@ -237,6 +242,11 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 		Model: anthropic.ModelClaudeOpus5,
 		CacheControl: anthropic.BetaCacheControlEphemeralParam{
 			TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
+		},
+		Compaction: anthropic.BetaCompactionConfigUnionParam{
+			OfSummarize: &anthropic.BetaSummarizeCompactionParam{
+				Instructions: anthropic.String("instructions"),
+			},
 		},
 		ContextManagement: anthropic.BetaContextManagementConfigParam{
 			Edits: []anthropic.BetaContextManagementConfigEditUnionParam{{

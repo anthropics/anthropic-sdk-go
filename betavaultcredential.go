@@ -842,8 +842,7 @@ type BetaManagedAgentsMCPOAuthRefreshParams struct {
 	// OAuth refresh token.
 	RefreshToken string `json:"refresh_token" api:"required"`
 	// Token endpoint URL used to refresh the access token.
-	TokenEndpoint string `json:"token_endpoint" api:"required"`
-	// Token endpoint requires no client authentication.
+	TokenEndpoint     string                                                       `json:"token_endpoint" api:"required"`
 	TokenEndpointAuth BetaManagedAgentsMCPOAuthRefreshParamsTokenEndpointAuthUnion `json:"token_endpoint_auth,omitzero" api:"required"`
 	// OAuth resource indicator.
 	Resource param.Opt[string] `json:"resource,omitzero"`
@@ -924,8 +923,7 @@ type BetaManagedAgentsMCPOAuthRefreshResponse struct {
 	// OAuth client ID.
 	ClientID string `json:"client_id" api:"required"`
 	// Token endpoint URL used to refresh the access token.
-	TokenEndpoint string `json:"token_endpoint" api:"required"`
-	// Token endpoint requires no client authentication.
+	TokenEndpoint     string                                                         `json:"token_endpoint" api:"required"`
 	TokenEndpointAuth BetaManagedAgentsMCPOAuthRefreshResponseTokenEndpointAuthUnion `json:"token_endpoint_auth" api:"required"`
 	// OAuth resource indicator.
 	Resource string `json:"resource" api:"nullable"`
@@ -1033,8 +1031,7 @@ type BetaManagedAgentsMCPOAuthRefreshUpdateParams struct {
 	// Updated OAuth refresh token.
 	RefreshToken param.Opt[string] `json:"refresh_token,omitzero"`
 	// Updated OAuth scope for the refresh request.
-	Scope param.Opt[string] `json:"scope,omitzero"`
-	// Updated HTTP Basic authentication parameters for the token endpoint.
+	Scope             param.Opt[string]                                                  `json:"scope,omitzero"`
 	TokenEndpointAuth BetaManagedAgentsMCPOAuthRefreshUpdateParamsTokenEndpointAuthUnion `json:"token_endpoint_auth,omitzero"`
 	paramObj
 }

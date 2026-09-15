@@ -42,6 +42,9 @@ func (r *BetaUserProfileService) New(ctx context.Context, params BetaUserProfile
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "user-profiles-2026-08-18")}, opts...)
 	path := "v1/user_profiles?beta=true"
@@ -53,6 +56,9 @@ func (r *BetaUserProfileService) New(ctx context.Context, params BetaUserProfile
 func (r *BetaUserProfileService) Get(ctx context.Context, userProfileID string, query BetaUserProfileGetParams, opts ...option.RequestOption) (res *BetaUserProfile, err error) {
 	for _, v := range query.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(query.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "user-profiles-2026-08-18")}, opts...)
@@ -70,6 +76,9 @@ func (r *BetaUserProfileService) Update(ctx context.Context, userProfileID strin
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
+	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "user-profiles-2026-08-18")}, opts...)
 	if userProfileID == "" {
@@ -86,6 +95,9 @@ func (r *BetaUserProfileService) List(ctx context.Context, params BetaUserProfil
 	var raw *http.Response
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(params.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "user-profiles-2026-08-18"), option.WithResponseInto(&raw)}, opts...)
@@ -111,6 +123,9 @@ func (r *BetaUserProfileService) ListAutoPaging(ctx context.Context, params Beta
 func (r *BetaUserProfileService) NewEnrollmentURL(ctx context.Context, userProfileID string, body BetaUserProfileNewEnrollmentURLParams, opts ...option.RequestOption) (res *BetaUserProfileEnrollmentURL, err error) {
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	if !param.IsOmitted(body.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "user-profiles-2026-08-18")}, opts...)
@@ -419,6 +434,7 @@ type BetaUserProfileNewParams struct {
 	Name param.Opt[string] `json:"name,omitzero"`
 	// A timestamp in RFC 3339 format
 	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
+	WorkspaceID             param.Opt[string]    `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// How the platform uses the API on behalf of the entity this profile represents.
 	// `application`: the platform sells a product that uses the API behind the scenes,
 	// and the profile represents an individual end-user of that product.
@@ -461,6 +477,7 @@ const (
 )
 
 type BetaUserProfileGetParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -477,6 +494,7 @@ type BetaUserProfileUpdateParams struct {
 	Name param.Opt[string] `json:"name,omitzero"`
 	// A timestamp in RFC 3339 format
 	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
+	WorkspaceID             param.Opt[string]    `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// How the platform uses the API on behalf of the entity this profile represents.
 	// `application`: the platform sells a product that uses the API behind the scenes,
 	// and the profile represents an individual end-user of that product.
@@ -524,7 +542,8 @@ type BetaUserProfileListParams struct {
 	// Query parameter for limit
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Query parameter for page
-	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Query parameter for order
 	//
 	// Any of "asc", "desc".
@@ -564,6 +583,7 @@ const (
 )
 
 type BetaUserProfileNewEnrollmentURLParams struct {
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

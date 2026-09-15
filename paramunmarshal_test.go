@@ -155,3 +155,82 @@ func TestParamUnmarshalStringPromotion(t *testing.T) {
 	}
 }
 
+
+// The compaction param is a union with one member today, so that adding a
+// second compaction type later does not change the field's type.
+func TestBetaCompactionConfigUnionParamMarshal(t *testing.T) {
+	summarize := func(v anthropic.BetaSummarizeCompactionParam) anthropic.BetaCompactionConfigUnionParam {
+		return anthropic.BetaCompactionConfigUnionParam{OfSummarize: &v}
+	}
+	for _, tt := range []struct {
+		name       string
+		compaction anthropic.BetaCompactionConfigUnionParam
+		// want is the "compaction" member of the request body, or "" when it must be omitted.
+		want string
+	}{
+		{"summarize with instructions", summarize(anthropic.BetaSummarizeCompactionParam{Instructions: anthropic.String("x")}), `{"instructions":"x","type":"summarize"}`},
+		{"bare summarize fills in its type", summarize(anthropic.BetaSummarizeCompactionParam{}), `{"type":"summarize"}`},
+		{"zero union is omitted", anthropic.BetaCompactionConfigUnionParam{}, ""},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			for endpoint, params := range map[string]any{
+				"messages":     anthropic.BetaMessageNewParams{Model: "m", MaxTokens: 1, Compaction: tt.compaction},
+				"count_tokens": anthropic.BetaMessageCountTokensParams{Model: "m", Compaction: tt.compaction},
+				"batch":        anthropic.BetaMessageBatchNewParamsRequestParams{Model: "m", MaxTokens: 1, Compaction: tt.compaction},
+			} {
+				body, err := json.Marshal(params)
+				if err != nil {
+					t.Fatalf("%s: unexpected error: %v", endpoint, err)
+				}
+				var members map[string]json.RawMessage
+				if err := json.Unmarshal(body, &members); err != nil {
+					t.Fatalf("%s: bad body %s: %v", endpoint, body, err)
+				}
+				if got := string(members["compaction"]); got != tt.want {
+					t.Errorf("%s: compaction = %q, want %q (body %s)", endpoint, got, tt.want, body)
+				}
+			}
+		})
+	}
+}
+
+func TestBetaCompactionConfigUnionParamUnmarshalSelectsSummarize(t *testing.T) {
+	var union anthropic.BetaCompactionConfigUnionParam
+	if err := json.Unmarshal([]byte(`{"type":"summarize","instructions":"x"}`), &union); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if union.OfSummarize == nil || union.OfSummarize.Instructions.Value != "x" {
+		t.Fatalf("summarize variant not selected, got %#v", union)
+	}
+
+	var params anthropic.BetaMessageNewParams
+	if err := json.Unmarshal([]byte(`{"model":"m","max_tokens":1,"compaction":{"type":"summarize"}}`), &params); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if params.Compaction.OfSummarize == nil {
+		t.Errorf("summarize variant not selected inside params, got %#v", params.Compaction)
+	}
+}
+
+func TestBetaCompactionConfigUnionParamGetters(t *testing.T) {
+	var zero anthropic.BetaCompactionConfigUnionParam
+	if zero.GetInstructions() != nil || zero.GetType() != nil {
+		t.Errorf("zero union: want nil getters, got %v and %v", zero.GetInstructions(), zero.GetType())
+	}
+
+	bare := anthropic.BetaCompactionConfigUnionParam{OfSummarize: &anthropic.BetaSummarizeCompactionParam{}}
+	if bare.GetInstructions() != nil {
+		t.Errorf("unset instructions: want nil, got %q", *bare.GetInstructions())
+	}
+
+	set := anthropic.BetaCompactionConfigUnionParam{OfSummarize: &anthropic.BetaSummarizeCompactionParam{
+		Instructions: anthropic.String("x"),
+		Type:         "summarize",
+	}}
+	if got := set.GetInstructions(); got == nil || *got != "x" {
+		t.Errorf("GetInstructions() = %v, want x", got)
+	}
+	if got := set.GetType(); got == nil || *got != "summarize" {
+		t.Errorf("GetType() = %v, want summarize", got)
+	}
+}

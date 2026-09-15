@@ -3019,19 +3019,35 @@ const (
 type BetaManagedAgentsModel = string
 
 const (
-	BetaManagedAgentsModelClaudeFable5_1           BetaManagedAgentsModel = "claude-fable-5-1"
-	BetaManagedAgentsModelClaudeSonnet5            BetaManagedAgentsModel = "claude-sonnet-5"
-	BetaManagedAgentsModelClaudeFable5             BetaManagedAgentsModel = "claude-fable-5"
-	BetaManagedAgentsModelClaudeOpus5              BetaManagedAgentsModel = "claude-opus-5"
-	BetaManagedAgentsModelClaudeOpus4_8            BetaManagedAgentsModel = "claude-opus-4-8"
-	BetaManagedAgentsModelClaudeOpus4_7            BetaManagedAgentsModel = "claude-opus-4-7"
-	BetaManagedAgentsModelClaudeOpus4_6            BetaManagedAgentsModel = "claude-opus-4-6"
-	BetaManagedAgentsModelClaudeSonnet4_6          BetaManagedAgentsModel = "claude-sonnet-4-6"
-	BetaManagedAgentsModelClaudeHaiku4_5           BetaManagedAgentsModel = "claude-haiku-4-5"
-	BetaManagedAgentsModelClaudeHaiku4_5_20251001  BetaManagedAgentsModel = "claude-haiku-4-5-20251001"
-	BetaManagedAgentsModelClaudeOpus4_5            BetaManagedAgentsModel = "claude-opus-4-5"
-	BetaManagedAgentsModelClaudeOpus4_5_20251101   BetaManagedAgentsModel = "claude-opus-4-5-20251101"
-	BetaManagedAgentsModelClaudeSonnet4_5          BetaManagedAgentsModel = "claude-sonnet-4-5"
+	// Frontier intelligence for ambitious tasks across coding, scientific discovery,
+	// and enterprise workflows
+	BetaManagedAgentsModelClaudeFable5_1 BetaManagedAgentsModel = "claude-fable-5-1"
+	// High-performance model for coding and agents
+	BetaManagedAgentsModelClaudeSonnet5 BetaManagedAgentsModel = "claude-sonnet-5"
+	// Next generation of intelligence for the hardest knowledge work and coding
+	// problems
+	BetaManagedAgentsModelClaudeFable5 BetaManagedAgentsModel = "claude-fable-5"
+	// Powerful intelligence for long-running agents and coding
+	BetaManagedAgentsModelClaudeOpus5 BetaManagedAgentsModel = "claude-opus-5"
+	// Powerful intelligence for long-running agents and coding
+	BetaManagedAgentsModelClaudeOpus4_8 BetaManagedAgentsModel = "claude-opus-4-8"
+	// Powerful intelligence for long-running agents and coding
+	BetaManagedAgentsModelClaudeOpus4_7 BetaManagedAgentsModel = "claude-opus-4-7"
+	// Powerful intelligence for long-running agents and coding
+	BetaManagedAgentsModelClaudeOpus4_6 BetaManagedAgentsModel = "claude-opus-4-6"
+	// Best combination of speed and intelligence
+	BetaManagedAgentsModelClaudeSonnet4_6 BetaManagedAgentsModel = "claude-sonnet-4-6"
+	// Fastest model with near-frontier intelligence
+	BetaManagedAgentsModelClaudeHaiku4_5 BetaManagedAgentsModel = "claude-haiku-4-5"
+	// Fastest model with near-frontier intelligence
+	BetaManagedAgentsModelClaudeHaiku4_5_20251001 BetaManagedAgentsModel = "claude-haiku-4-5-20251001"
+	// Powerful intelligence for long-running agents and coding
+	BetaManagedAgentsModelClaudeOpus4_5 BetaManagedAgentsModel = "claude-opus-4-5"
+	// Powerful intelligence for long-running agents and coding
+	BetaManagedAgentsModelClaudeOpus4_5_20251101 BetaManagedAgentsModel = "claude-opus-4-5-20251101"
+	// High-performance model for agents and coding
+	BetaManagedAgentsModelClaudeSonnet4_5 BetaManagedAgentsModel = "claude-sonnet-4-5"
+	// High-performance model for agents and coding
 	BetaManagedAgentsModelClaudeSonnet4_5_20250929 BetaManagedAgentsModel = "claude-sonnet-4-5-20250929"
 )
 

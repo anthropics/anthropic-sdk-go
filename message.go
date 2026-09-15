@@ -2272,7 +2272,6 @@ func (r *CodeExecutionTool20260521Param) UnmarshalJSON(data []byte) error {
 }
 
 type CodeExecutionToolResultBlock struct {
-	// Code execution result with encrypted stdout for PFC + web_search results.
 	Content   CodeExecutionToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                                   `json:"tool_use_id" api:"required"`
 	Type      constant.CodeExecutionToolResult         `json:"type" default:"code_execution_tool_result"`
@@ -2344,7 +2343,6 @@ func (r *CodeExecutionToolResultBlockContentUnion) UnmarshalJSON(data []byte) er
 
 // The properties Content, ToolUseID, Type are required.
 type CodeExecutionToolResultBlockParam struct {
-	// Code execution result with encrypted stdout for PFC + web_search results.
 	Content   CodeExecutionToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                        `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
@@ -6758,6 +6756,20 @@ func (u MessageCountTokensToolUnionParam) GetCitations() *CitationsConfigParam {
 	return nil
 }
 
+// Returns a pointer to the underlying variant's URLSources property, if present.
+func (u MessageCountTokensToolUnionParam) GetURLSources() *WebFetchURLSourcesParam {
+	if vt := u.OfWebFetchTool20250910; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return &vt.URLSources
+	}
+	return nil
+}
+
 // Only one field can be non-zero.
 //
 // Use [param.IsOmitted] to confirm if a field is set.
@@ -6901,26 +6913,47 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model = string
 
 const (
-	ModelClaudeFable5_1  Model = "claude-fable-5-1"
+	// Frontier intelligence for ambitious tasks across coding, scientific discovery,
+	// and enterprise workflows
+	ModelClaudeFable5_1 Model = "claude-fable-5-1"
+	// Our most capable model for cybersecurity and biology research, available through
+	// trusted access programs
 	ModelClaudeMythos5_1 Model = "claude-mythos-5-1"
-	ModelClaudeSonnet5   Model = "claude-sonnet-5"
-	ModelClaudeFable5    Model = "claude-fable-5"
-	ModelClaudeMythos5   Model = "claude-mythos-5"
-	ModelClaudeOpus5     Model = "claude-opus-5"
-	ModelClaudeOpus4_8   Model = "claude-opus-4-8"
-	ModelClaudeOpus4_7   Model = "claude-opus-4-7"
+	// High-performance model for coding and agents
+	ModelClaudeSonnet5 Model = "claude-sonnet-5"
+	// Next generation of intelligence for the hardest knowledge work and coding
+	// problems
+	ModelClaudeFable5 Model = "claude-fable-5"
+	// Most capable model for cybersecurity and biology research
+	ModelClaudeMythos5 Model = "claude-mythos-5"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus5 Model = "claude-opus-5"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus4_8 Model = "claude-opus-4-8"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus4_7 Model = "claude-opus-4-7"
+	// New class of intelligence, strongest in coding and cybersecurity
+	//
 	// Deprecated: Will reach end-of-life on June 30, 2026. Please migrate to
 	// claude-mythos-5. Visit
 	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
 	// information.
-	ModelClaudeMythosPreview      Model = "claude-mythos-preview"
-	ModelClaudeOpus4_6            Model = "claude-opus-4-6"
-	ModelClaudeSonnet4_6          Model = "claude-sonnet-4-6"
-	ModelClaudeHaiku4_5           Model = "claude-haiku-4-5"
-	ModelClaudeHaiku4_5_20251001  Model = "claude-haiku-4-5-20251001"
-	ModelClaudeOpus4_5            Model = "claude-opus-4-5"
-	ModelClaudeOpus4_5_20251101   Model = "claude-opus-4-5-20251101"
-	ModelClaudeSonnet4_5          Model = "claude-sonnet-4-5"
+	ModelClaudeMythosPreview Model = "claude-mythos-preview"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus4_6 Model = "claude-opus-4-6"
+	// Best combination of speed and intelligence
+	ModelClaudeSonnet4_6 Model = "claude-sonnet-4-6"
+	// Fastest model with near-frontier intelligence
+	ModelClaudeHaiku4_5 Model = "claude-haiku-4-5"
+	// Fastest model with near-frontier intelligence
+	ModelClaudeHaiku4_5_20251001 Model = "claude-haiku-4-5-20251001"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus4_5 Model = "claude-opus-4-5"
+	// Powerful intelligence for long-running agents and coding
+	ModelClaudeOpus4_5_20251101 Model = "claude-opus-4-5-20251101"
+	// High-performance model for agents and coding
+	ModelClaudeSonnet4_5 Model = "claude-sonnet-4-5"
+	// High-performance model for agents and coding
 	ModelClaudeSonnet4_5_20250929 Model = "claude-sonnet-4-5-20250929"
 )
 
@@ -7150,7 +7183,6 @@ func (r *ContentBlockDeltaEvent) UnmarshalJSON(data []byte) error {
 }
 
 type ContentBlockStartEvent struct {
-	// Response model for a file uploaded to the container.
 	ContentBlock ContentBlockStartEventContentBlockUnion `json:"content_block" api:"required"`
 	Index        int64                                   `json:"index" api:"required"`
 	Type         constant.ContentBlockStart              `json:"type" default:"content_block_start"`
@@ -7862,11 +7894,24 @@ func (r *RefusalStopDetails) UnmarshalJSON(data []byte) error {
 type RefusalStopDetailsCategory string
 
 const (
-	RefusalStopDetailsCategoryCyber               RefusalStopDetailsCategory = "cyber"
-	RefusalStopDetailsCategoryBio                 RefusalStopDetailsCategory = "bio"
-	RefusalStopDetailsCategoryFrontierLLM         RefusalStopDetailsCategory = "frontier_llm"
+	// The request could enable cyber harm, such as malware or exploit development.
+	// Benign cybersecurity work can also trigger this category.
+	RefusalStopDetailsCategoryCyber RefusalStopDetailsCategory = "cyber"
+	// The request could enable biological harm, such as dangerous lab methods.
+	// Beneficial life sciences work can also trigger this category.
+	RefusalStopDetailsCategoryBio RefusalStopDetailsCategory = "bio"
+	// The request could assist the development of competing AI models, which is
+	// restricted under
+	// [Anthropic's commercial terms](https://www.anthropic.com/legal/commercial-terms).
+	// Benign machine learning work can also trigger this category.
+	RefusalStopDetailsCategoryFrontierLLM RefusalStopDetailsCategory = "frontier_llm"
+	// The request asks the model to reproduce its internal reasoning in the response
+	// text. To get reasoning in a structured form instead, use
+	// [adaptive thinking](https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking).
 	RefusalStopDetailsCategoryReasoningExtraction RefusalStopDetailsCategory = "reasoning_extraction"
-	RefusalStopDetailsCategoryGeneralHarms        RefusalStopDetailsCategory = "general_harms"
+	// The request could be related to an area that was determined as harmful. Benign
+	// work might sometimes trigger this category.
+	RefusalStopDetailsCategoryGeneralHarms RefusalStopDetailsCategory = "general_harms"
 )
 
 // The properties Content, Source, Title, Type are required.
@@ -8003,8 +8048,7 @@ func (r *ServerToolUsage) UnmarshalJSON(data []byte) error {
 }
 
 type ServerToolUseBlock struct {
-	ID string `json:"id" api:"required"`
-	// Tool invocation directly from the model.
+	ID     string                        `json:"id" api:"required"`
 	Caller ServerToolUseBlockCallerUnion `json:"caller" api:"required"`
 	Input  any                           `json:"input" api:"required"`
 	// Any of "web_search", "web_fetch", "code_execution", "bash_code_execution",
@@ -8120,9 +8164,8 @@ type ServerToolUseBlockParam struct {
 	// "text_editor_code_execution", "tool_search_tool_regex", "tool_search_tool_bm25".
 	Name ServerToolUseBlockParamName `json:"name,omitzero" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller ServerToolUseBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl CacheControlEphemeralParam         `json:"cache_control,omitzero"`
+	Caller       ServerToolUseBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as "server_tool_use".
 	Type constant.ServerToolUse `json:"type" default:"server_tool_use"`
 	paramObj
@@ -11929,9 +11972,22 @@ func (u ToolUnionParam) GetCitations() *CitationsConfigParam {
 	return nil
 }
 
+// Returns a pointer to the underlying variant's URLSources property, if present.
+func (u ToolUnionParam) GetURLSources() *WebFetchURLSourcesParam {
+	if vt := u.OfWebFetchTool20250910; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260209; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260309; vt != nil {
+		return &vt.URLSources
+	} else if vt := u.OfWebFetchTool20260318; vt != nil {
+		return &vt.URLSources
+	}
+	return nil
+}
+
 type ToolUseBlock struct {
-	ID string `json:"id" api:"required"`
-	// Tool invocation directly from the model.
+	ID     string                  `json:"id" api:"required"`
 	Caller ToolUseBlockCallerUnion `json:"caller" api:"required"`
 	// necessary custom code modification
 	Input json.RawMessage  `json:"input,required"`
@@ -12037,9 +12093,8 @@ type ToolUseBlockParam struct {
 	// For a toolset member tool_use, the toolset family this member belongs to.
 	ToolsetName param.Opt[string] `json:"toolset_name,omitzero"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller ToolUseBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl CacheControlEphemeralParam   `json:"cache_control,omitzero"`
+	Caller       ToolUseBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as "tool_use".
 	Type constant.ToolUse `json:"type" default:"tool_use"`
 	paramObj
@@ -12294,6 +12349,13 @@ type WebFetchTool20250910Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations CitationsConfigParam `json:"citations,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources WebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -12338,6 +12400,13 @@ type WebFetchTool20260209Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations CitationsConfigParam `json:"citations,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources WebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -12388,6 +12457,13 @@ type WebFetchTool20260309Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations CitationsConfigParam `json:"citations,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources WebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -12445,6 +12521,13 @@ type WebFetchTool20260318Param struct {
 	//
 	// Any of "full", "excluded".
 	ResponseInclusion WebFetchTool20260318ResponseInclusion `json:"response_inclusion,omitzero"`
+	// Which sources contribute to the set of URLs web fetch may fetch.
+	//
+	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+	// (every result but the named tools'). A named tool must be declared in this
+	// request's `tools[]`.
+	URLSources WebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
 	// This is how the tool will be called by the model and in `tool_use` blocks.
@@ -12479,7 +12562,6 @@ const (
 )
 
 type WebFetchToolResultBlock struct {
-	// Tool invocation directly from the model.
 	Caller    WebFetchToolResultBlockCallerUnion  `json:"caller" api:"required"`
 	Content   WebFetchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                              `json:"tool_use_id" api:"required"`
@@ -12619,9 +12701,8 @@ type WebFetchToolResultBlockParam struct {
 	Content   WebFetchToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                   `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller WebFetchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl CacheControlEphemeralParam              `json:"cache_control,omitzero"`
+	Caller       WebFetchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_fetch_tool_result".
 	Type constant.WebFetchToolResult `json:"type" default:"web_fetch_tool_result"`
@@ -12817,6 +12898,310 @@ const (
 	WebFetchToolResultErrorCodeUnavailable            WebFetchToolResultErrorCode = "unavailable"
 	WebFetchToolResultErrorCodeContentTooLarge        WebFetchToolResultErrorCode = "content_too_large"
 )
+
+func NewWebFetchURLSourceAllParam() WebFetchURLSourceAllParam {
+	return WebFetchURLSourceAllParam{
+		Type: "all",
+	}
+}
+
+// The `url_sources` variant under which a source contributes in full: every result
+// of the tool filter's source, or all user input.
+//
+// This struct has a constant value, construct it with
+// [NewWebFetchURLSourceAllParam].
+type WebFetchURLSourceAllParam struct {
+	Type constant.All `json:"type" default:"all"`
+	paramObj
+}
+
+func (r WebFetchURLSourceAllParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebFetchURLSourceAllParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebFetchURLSourceAllParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The tool filter variant under which every result but the named tools'
+// contributes.
+//
+// The properties Tools, Type are required.
+type WebFetchURLSourceExceptParam struct {
+	Tools []WebFetchURLSourceToolReferenceParam `json:"tools,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "except".
+	Type constant.Except `json:"type" default:"except"`
+	paramObj
+}
+
+func (r WebFetchURLSourceExceptParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebFetchURLSourceExceptParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebFetchURLSourceExceptParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewWebFetchURLSourceNoneParam() WebFetchURLSourceNoneParam {
+	return WebFetchURLSourceNoneParam{
+		Type: "none",
+	}
+}
+
+// The `url_sources` variant under which a source contributes nothing: no result of
+// the tool filter's source, or no user input.
+//
+// This struct has a constant value, construct it with
+// [NewWebFetchURLSourceNoneParam].
+type WebFetchURLSourceNoneParam struct {
+	Type constant.None `json:"type" default:"none"`
+	paramObj
+}
+
+func (r WebFetchURLSourceNoneParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebFetchURLSourceNoneParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebFetchURLSourceNoneParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The tool filter variant under which only the named tools' results contribute.
+//
+// The properties Tools, Type are required.
+type WebFetchURLSourceOnlyParam struct {
+	Tools []WebFetchURLSourceToolReferenceParam `json:"tools,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "only".
+	Type constant.Only `json:"type" default:"only"`
+	paramObj
+}
+
+func (r WebFetchURLSourceOnlyParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebFetchURLSourceOnlyParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebFetchURLSourceOnlyParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One entry of a tool filter's `tools`: it must name a tool declared in this
+// request's `tools[]`.
+//
+// The properties Name, Type are required.
+type WebFetchURLSourceToolReferenceParam struct {
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "tool_reference".
+	Type constant.ToolReference `json:"type" default:"tool_reference"`
+	paramObj
+}
+
+func (r WebFetchURLSourceToolReferenceParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebFetchURLSourceToolReferenceParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebFetchURLSourceToolReferenceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Which sources contribute to the set of URLs web fetch may fetch.
+//
+// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
+// filters are `all`, `none`, `only` (only the named tools' results) or `except`
+// (every result but the named tools'). A named tool must be declared in this
+// request's `tools[]`.
+type WebFetchURLSourcesParam struct {
+	// Which client tools' results contribute fetchable URLs: "all", "none", or an only
+	// or except list of client tool names from tools[].
+	ClientToolResults WebFetchURLSourcesClientToolResultsUnionParam `json:"client_tool_results,omitzero"`
+	// Which server tools' results contribute fetchable URLs: "all", "none", or an only
+	// or except list of server tool names from tools[]; only web_search and web_fetch
+	// results ever contribute.
+	ServerToolResults WebFetchURLSourcesServerToolResultsUnionParam `json:"server_tool_results,omitzero"`
+	// Whether URLs in user messages are fetchable: "all" or "none".
+	UserInput WebFetchURLSourcesUserInputUnionParam `json:"user_input,omitzero"`
+	paramObj
+}
+
+func (r WebFetchURLSourcesParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebFetchURLSourcesParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WebFetchURLSourcesParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type WebFetchURLSourcesClientToolResultsUnionParam struct {
+	OfAll    *WebFetchURLSourceAllParam    `json:",omitzero,inline"`
+	OfNone   *WebFetchURLSourceNoneParam   `json:",omitzero,inline"`
+	OfOnly   *WebFetchURLSourceOnlyParam   `json:",omitzero,inline"`
+	OfExcept *WebFetchURLSourceExceptParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u WebFetchURLSourcesClientToolResultsUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAll, u.OfNone, u.OfOnly, u.OfExcept)
+}
+func (u *WebFetchURLSourcesClientToolResultsUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *WebFetchURLSourcesClientToolResultsUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAll) {
+		return u.OfAll
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
+	} else if !param.IsOmitted(u.OfOnly) {
+		return u.OfOnly
+	} else if !param.IsOmitted(u.OfExcept) {
+		return u.OfExcept
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u WebFetchURLSourcesClientToolResultsUnionParam) GetType() *string {
+	if vt := u.OfAll; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfNone; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfOnly; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfExcept; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's Tools property, if present.
+func (u WebFetchURLSourcesClientToolResultsUnionParam) GetTools() []WebFetchURLSourceToolReferenceParam {
+	if vt := u.OfOnly; vt != nil {
+		return vt.Tools
+	} else if vt := u.OfExcept; vt != nil {
+		return vt.Tools
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[WebFetchURLSourcesClientToolResultsUnionParam](
+		"type",
+		apijson.Discriminator[WebFetchURLSourceAllParam]("all"),
+		apijson.Discriminator[WebFetchURLSourceNoneParam]("none"),
+		apijson.Discriminator[WebFetchURLSourceOnlyParam]("only"),
+		apijson.Discriminator[WebFetchURLSourceExceptParam]("except"),
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type WebFetchURLSourcesServerToolResultsUnionParam struct {
+	OfAll    *WebFetchURLSourceAllParam    `json:",omitzero,inline"`
+	OfNone   *WebFetchURLSourceNoneParam   `json:",omitzero,inline"`
+	OfOnly   *WebFetchURLSourceOnlyParam   `json:",omitzero,inline"`
+	OfExcept *WebFetchURLSourceExceptParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u WebFetchURLSourcesServerToolResultsUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAll, u.OfNone, u.OfOnly, u.OfExcept)
+}
+func (u *WebFetchURLSourcesServerToolResultsUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *WebFetchURLSourcesServerToolResultsUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAll) {
+		return u.OfAll
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
+	} else if !param.IsOmitted(u.OfOnly) {
+		return u.OfOnly
+	} else if !param.IsOmitted(u.OfExcept) {
+		return u.OfExcept
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u WebFetchURLSourcesServerToolResultsUnionParam) GetType() *string {
+	if vt := u.OfAll; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfNone; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfOnly; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfExcept; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's Tools property, if present.
+func (u WebFetchURLSourcesServerToolResultsUnionParam) GetTools() []WebFetchURLSourceToolReferenceParam {
+	if vt := u.OfOnly; vt != nil {
+		return vt.Tools
+	} else if vt := u.OfExcept; vt != nil {
+		return vt.Tools
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[WebFetchURLSourcesServerToolResultsUnionParam](
+		"type",
+		apijson.Discriminator[WebFetchURLSourceAllParam]("all"),
+		apijson.Discriminator[WebFetchURLSourceNoneParam]("none"),
+		apijson.Discriminator[WebFetchURLSourceOnlyParam]("only"),
+		apijson.Discriminator[WebFetchURLSourceExceptParam]("except"),
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type WebFetchURLSourcesUserInputUnionParam struct {
+	OfAll  *WebFetchURLSourceAllParam  `json:",omitzero,inline"`
+	OfNone *WebFetchURLSourceNoneParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u WebFetchURLSourcesUserInputUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAll, u.OfNone)
+}
+func (u *WebFetchURLSourcesUserInputUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *WebFetchURLSourcesUserInputUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAll) {
+		return u.OfAll
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u WebFetchURLSourcesUserInputUnionParam) GetType() *string {
+	if vt := u.OfAll; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfNone; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[WebFetchURLSourcesUserInputUnionParam](
+		"type",
+		apijson.Discriminator[WebFetchURLSourceAllParam]("all"),
+		apijson.Discriminator[WebFetchURLSourceNoneParam]("none"),
+	)
+}
 
 type WebSearchResultBlock struct {
 	EncryptedContent string                   `json:"encrypted_content" api:"required"`
@@ -13033,7 +13418,6 @@ func (r *WebSearchToolRequestErrorParam) UnmarshalJSON(data []byte) error {
 }
 
 type WebSearchToolResultBlock struct {
-	// Tool invocation directly from the model.
 	Caller    WebSearchToolResultBlockCallerUnion  `json:"caller" api:"required"`
 	Content   WebSearchToolResultBlockContentUnion `json:"content" api:"required"`
 	ToolUseID string                               `json:"tool_use_id" api:"required"`
@@ -13172,9 +13556,8 @@ type WebSearchToolResultBlockParam struct {
 	Content   WebSearchToolResultBlockParamContentUnion `json:"content,omitzero" api:"required"`
 	ToolUseID string                                    `json:"tool_use_id" api:"required"`
 	// Create a cache control breakpoint at this content block.
-	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Tool invocation directly from the model.
-	Caller WebSearchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
+	CacheControl CacheControlEphemeralParam               `json:"cache_control,omitzero"`
+	Caller       WebSearchToolResultBlockParamCallerUnion `json:"caller,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "web_search_tool_result".
 	Type constant.WebSearchToolResult `json:"type" default:"web_search_tool_result"`

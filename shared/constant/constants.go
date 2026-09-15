@@ -131,6 +131,7 @@ type Ephemeral string                               // Always "ephemeral"
 type Error string                                   // Always "error"
 type Errored string                                 // Always "errored"
 type Event string                                   // Always "event"
+type Except string                                  // Always "except"
 type Expired string                                 // Always "expired"
 type ExplicitURL string                             // Always "explicit_url"
 type ExternalKey string                             // Always "external_key"
@@ -179,6 +180,7 @@ type None string                                    // Always "none"
 type NotApplied string                              // Always "not_applied"
 type NotFoundError string                           // Always "not_found_error"
 type Object string                                  // Always "object"
+type Only string                                    // Always "only"
 type Organization string                            // Always "organization"
 type OverloadedError string                         // Always "overloaded_error"
 type PageLocation string                            // Always "page_location"
@@ -226,6 +228,7 @@ type StrReplace string                              // Always "str_replace"
 type StrReplaceBasedEditTool string                 // Always "str_replace_based_edit_tool"
 type StrReplaceEditor string                        // Always "str_replace_editor"
 type Succeeded string                               // Always "succeeded"
+type Summarize string                               // Always "summarize"
 type SystemChanged string                           // Always "system_changed"
 type TabOpened string                               // Always "tab_opened"
 type Text string                                    // Always "text"
@@ -243,6 +246,7 @@ type TextPlain string                               // Always "text/plain"
 type Thinking string                                // Always "thinking"
 type ThinkingDelta string                           // Always "thinking_delta"
 type ThinkingDropped string                         // Always "thinking_dropped"
+type ThinkingMismatchAllowed string                 // Always "thinking_mismatch_allowed"
 type ThinkingTurns string                           // Always "thinking_turns"
 type TimeoutError string                            // Always "timeout_error"
 type Tokens string                                  // Always "tokens"
@@ -421,6 +425,7 @@ func (c Ephemeral) Default() Ephemeral                         { return "ephemer
 func (c Error) Default() Error                                 { return "error" }
 func (c Errored) Default() Errored                             { return "errored" }
 func (c Event) Default() Event                                 { return "event" }
+func (c Except) Default() Except                               { return "except" }
 func (c Expired) Default() Expired                             { return "expired" }
 func (c ExplicitURL) Default() ExplicitURL                     { return "explicit_url" }
 func (c ExternalKey) Default() ExternalKey                     { return "external_key" }
@@ -473,6 +478,7 @@ func (c None) Default() None                               { return "none" }
 func (c NotApplied) Default() NotApplied                   { return "not_applied" }
 func (c NotFoundError) Default() NotFoundError             { return "not_found_error" }
 func (c Object) Default() Object                           { return "object" }
+func (c Only) Default() Only                               { return "only" }
 func (c Organization) Default() Organization               { return "organization" }
 func (c OverloadedError) Default() OverloadedError         { return "overloaded_error" }
 func (c PageLocation) Default() PageLocation               { return "page_location" }
@@ -538,6 +544,7 @@ func (c StrReplaceBasedEditTool) Default() StrReplaceBasedEditTool {
 }
 func (c StrReplaceEditor) Default() StrReplaceEditor     { return "str_replace_editor" }
 func (c Succeeded) Default() Succeeded                   { return "succeeded" }
+func (c Summarize) Default() Summarize                   { return "summarize" }
 func (c SystemChanged) Default() SystemChanged           { return "system_changed" }
 func (c TabOpened) Default() TabOpened                   { return "tab_opened" }
 func (c Text) Default() Text                             { return "text" }
@@ -561,10 +568,13 @@ func (c TextEditorCodeExecutionToolResultError) Default() TextEditorCodeExecutio
 func (c TextEditorCodeExecutionViewResult) Default() TextEditorCodeExecutionViewResult {
 	return "text_editor_code_execution_view_result"
 }
-func (c TextPlain) Default() TextPlain                       { return "text/plain" }
-func (c Thinking) Default() Thinking                         { return "thinking" }
-func (c ThinkingDelta) Default() ThinkingDelta               { return "thinking_delta" }
-func (c ThinkingDropped) Default() ThinkingDropped           { return "thinking_dropped" }
+func (c TextPlain) Default() TextPlain             { return "text/plain" }
+func (c Thinking) Default() Thinking               { return "thinking" }
+func (c ThinkingDelta) Default() ThinkingDelta     { return "thinking_delta" }
+func (c ThinkingDropped) Default() ThinkingDropped { return "thinking_dropped" }
+func (c ThinkingMismatchAllowed) Default() ThinkingMismatchAllowed {
+	return "thinking_mismatch_allowed"
+}
 func (c ThinkingTurns) Default() ThinkingTurns               { return "thinking_turns" }
 func (c TimeoutError) Default() TimeoutError                 { return "timeout_error" }
 func (c Tokens) Default() Tokens                             { return "tokens" }
@@ -741,6 +751,7 @@ func (c Ephemeral) MarshalJSON() ([]byte, error)                            { re
 func (c Error) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Errored) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Event) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
+func (c Except) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Expired) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c ExplicitURL) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c ExternalKey) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
@@ -789,6 +800,7 @@ func (c None) MarshalJSON() ([]byte, error)                                 { re
 func (c NotApplied) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c NotFoundError) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Object) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c Only) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Organization) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c OverloadedError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c PageLocation) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
@@ -836,6 +848,7 @@ func (c StrReplace) MarshalJSON() ([]byte, error)                           { re
 func (c StrReplaceBasedEditTool) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c StrReplaceEditor) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Succeeded) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c Summarize) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c SystemChanged) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c TabOpened) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Text) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
@@ -857,6 +870,7 @@ func (c TextPlain) MarshalJSON() ([]byte, error)                         { retur
 func (c Thinking) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c ThinkingDelta) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c ThinkingDropped) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c ThinkingMismatchAllowed) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c ThinkingTurns) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c TimeoutError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Tokens) MarshalJSON() ([]byte, error)                            { return marshalString(c) }

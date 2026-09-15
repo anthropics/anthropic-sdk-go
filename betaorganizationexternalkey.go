@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"slices"
@@ -54,7 +53,7 @@ func (r *BetaOrganizationExternalKeyService) Get(ctx context.Context, externalKe
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s?beta=true", externalKeyID)
+	path := requestconfig.FormatPath("v1/organizations/external_keys/%s?beta=true", externalKeyID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -70,7 +69,7 @@ func (r *BetaOrganizationExternalKeyService) Update(ctx context.Context, externa
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s?beta=true", externalKeyID)
+	path := requestconfig.FormatPath("v1/organizations/external_keys/%s?beta=true", externalKeyID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -113,7 +112,7 @@ func (r *BetaOrganizationExternalKeyService) Delete(ctx context.Context, externa
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s?beta=true", externalKeyID)
+	path := requestconfig.FormatPath("v1/organizations/external_keys/%s?beta=true", externalKeyID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -130,7 +129,7 @@ func (r *BetaOrganizationExternalKeyService) Validate(ctx context.Context, exter
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s/validate?beta=true", externalKeyID)
+	path := requestconfig.FormatPath("v1/organizations/external_keys/%s/validate?beta=true", externalKeyID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

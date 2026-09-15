@@ -67,7 +67,7 @@ func (r *BetaDreamService) Get(ctx context.Context, dreamID string, query BetaDr
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s?beta=true", dreamID)
+	path := requestconfig.FormatPath("v1/dreams/%s?beta=true", dreamID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -115,7 +115,7 @@ func (r *BetaDreamService) Archive(ctx context.Context, dreamID string, body Bet
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s/archive?beta=true", dreamID)
+	path := requestconfig.FormatPath("v1/dreams/%s/archive?beta=true", dreamID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -134,7 +134,7 @@ func (r *BetaDreamService) Cancel(ctx context.Context, dreamID string, body Beta
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s/cancel?beta=true", dreamID)
+	path := requestconfig.FormatPath("v1/dreams/%s/cancel?beta=true", dreamID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

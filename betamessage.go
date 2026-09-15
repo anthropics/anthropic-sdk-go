@@ -10148,9 +10148,8 @@ const (
 //
 // The property Type is required.
 type BetaSummarizeCompactionParam struct {
-	// Replaces the server's summarization prompt for this request. When set, earlier
-	// thinking blocks are left out of the content being summarized on models that
-	// require it.
+	// Replaces the server's default summarization prompt for this request. An empty or
+	// whitespace-only value counts as absent.
 	Instructions param.Opt[string] `json:"instructions,omitzero"`
 	// This field can be elided, and will marshal its zero value as "summarize".
 	Type constant.Summarize `json:"type" default:"summarize"`
@@ -16553,10 +16552,12 @@ type BetaMessageNewParams struct {
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Compaction configuration.
 	//
-	// When set, this is a compaction request: the conversation in `messages` is
-	// summarized and the response holds only the resulting `compaction` block
-	// (`stop_reason` `"compaction"`), which later requests send first in `messages` in
-	// place of the messages it summarizes. Cannot be combined with
+	// When set on `POST /v1/messages`, the request is a compaction request: the
+	// conversation in `messages` is summarized and the response holds only the
+	// resulting `compaction` block (`stop_reason` `"compaction"`), which later
+	// requests send first in `messages` in place of the messages it summarizes. `POST
+	// /v1/messages/count_tokens` accepts this parameter and ignores it: the count it
+	// returns is for the conversation in `messages` as sent. Cannot be combined with
 	// `context_management`.
 	Compaction BetaCompactionConfigUnionParam `json:"compaction,omitzero"`
 	// Context management configuration.
@@ -16879,10 +16880,12 @@ type BetaMessageCountTokensParams struct {
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Compaction configuration.
 	//
-	// When set, this is a compaction request: the conversation in `messages` is
-	// summarized and the response holds only the resulting `compaction` block
-	// (`stop_reason` `"compaction"`), which later requests send first in `messages` in
-	// place of the messages it summarizes. Cannot be combined with
+	// When set on `POST /v1/messages`, the request is a compaction request: the
+	// conversation in `messages` is summarized and the response holds only the
+	// resulting `compaction` block (`stop_reason` `"compaction"`), which later
+	// requests send first in `messages` in place of the messages it summarizes. `POST
+	// /v1/messages/count_tokens` accepts this parameter and ignores it: the count it
+	// returns is for the conversation in `messages` as sent. Cannot be combined with
 	// `context_management`.
 	Compaction BetaCompactionConfigUnionParam `json:"compaction,omitzero"`
 	// Context management configuration.

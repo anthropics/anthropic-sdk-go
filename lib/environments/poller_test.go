@@ -128,6 +128,7 @@ type recordedCall struct {
 	// alongside their bearer credential; tests assert this is empty on
 	// every helper-issued call.
 	apiKey string
+	query  string
 	body   string
 	header http.Header
 }
@@ -183,6 +184,7 @@ func (f *fakeWorkServer) serveHTTP(w http.ResponseWriter, r *http.Request) {
 		path:   r.URL.Path,
 		auth:   r.Header.Get("Authorization"),
 		apiKey: r.Header.Get("X-Api-Key"),
+		query:  r.URL.RawQuery,
 		body:   string(body),
 		header: r.Header.Clone(),
 	})

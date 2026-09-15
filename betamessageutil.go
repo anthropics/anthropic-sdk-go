@@ -655,10 +655,11 @@ func (r BetaToolReferenceBlock) ToParam() BetaToolReferenceBlockParam {
 func (r BetaCompactionBlock) ToParam() BetaCompactionBlockParam {
 	var p BetaCompactionBlockParam
 	p.Type = r.Type
-	// A failed compaction has null content, which must stay null rather than
-	// become "".
+	// A failed compaction has null content and signature, which must stay null
+	// rather than become "" or be dropped.
 	p.Content = paramutil.ToOpt(r.Content, r.JSON.Content)
 	p.EncryptedContent = paramutil.ToOpt(r.EncryptedContent, r.JSON.EncryptedContent)
+	p.Signature = paramutil.ToOpt(r.Signature, r.JSON.Signature)
 	return p
 }
 

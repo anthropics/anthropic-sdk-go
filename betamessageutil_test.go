@@ -82,6 +82,29 @@ func TestBetaToolUseToParamKeepsToolsetName(t *testing.T) {
 	})
 }
 
+// The wire blocks below list their keys in the order the param type marshals
+// them, so the replayed block can be compared byte for byte.
+func TestBetaCompactionToParamKeepsSignature(t *testing.T) {
+	for _, tt := range []struct {
+		name  string
+		block string
+	}{
+		{"a signature is sent back as received", `{"content":"Summary.","encrypted_content":"opaque","signature":"c2lnbmVkK3N1bW1hcnk=","type":"compaction"}`},
+		{"a null signature stays null", `{"content":null,"encrypted_content":null,"signature":null,"type":"compaction"}`},
+		{"an absent signature stays absent", `{"content":"Summary.","encrypted_content":"opaque","type":"compaction"}`},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			sent, err := json.Marshal(unmarshalBetaContentBlockParam(t, tt.block))
+			if err != nil {
+				t.Fatalf("Failed to marshal param: %v", err)
+			}
+			if string(sent) != tt.block {
+				t.Errorf("ToParam changed the block\n want: %s\n  got: %s", tt.block, sent)
+			}
+		})
+	}
+}
+
 func TestBetaAccumulatePreservesWireJSON(t *testing.T) {
 	toolResult := `{"type":"bash_code_execution_tool_result","tool_use_id":"srvtoolu_01","content":{"type":"bash_code_execution_result","stdout":"","stderr":"","return_code":0,"content":[{"type":"bash_code_execution_output","file_id":"file_011ABC"}]}}`
 	events := []string{

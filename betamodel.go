@@ -112,6 +112,29 @@ func (r *BetaCapabilitySupport) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Compaction capability details: whether the model accepts the top-level
+// `compaction` request parameter, with one entry per supported `compaction.type`
+// value.
+type BetaCompactionCapability struct {
+	// Whether the summarize compaction type is supported.
+	Summarize BetaCapabilitySupport `json:"summarize" api:"required"`
+	// Whether this capability is supported by the model.
+	Supported bool `json:"supported" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Summarize   respjson.Field
+		Supported   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCompactionCapability) RawJSON() string { return r.JSON.raw }
+func (r *BetaCompactionCapability) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Context management capability details.
 type BetaContextManagementCapability struct {
 	// Indicates whether a capability is supported.
@@ -180,6 +203,10 @@ type BetaModelCapabilities struct {
 	Citations BetaCapabilitySupport `json:"citations" api:"required"`
 	// Whether the model supports code execution tools.
 	CodeExecution BetaCapabilitySupport `json:"code_execution" api:"required"`
+	// Compaction capability details: whether the model accepts the top-level
+	// `compaction` request parameter, with one entry per supported `compaction.type`
+	// value.
+	Compaction BetaCompactionCapability `json:"compaction" api:"required"`
 	// Context management support and available strategies.
 	ContextManagement BetaContextManagementCapability `json:"context_management" api:"required"`
 	// Effort (reasoning_effort) support and available levels.
@@ -197,6 +224,7 @@ type BetaModelCapabilities struct {
 		Batch             respjson.Field
 		Citations         respjson.Field
 		CodeExecution     respjson.Field
+		Compaction        respjson.Field
 		ContextManagement respjson.Field
 		Effort            respjson.Field
 		ImageInput        respjson.Field

@@ -750,6 +750,14 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Compaction configuration.
+	//
+	// When set, this is a compaction request: the conversation in `messages` is
+	// summarized and the response holds only the resulting `compaction` block
+	// (`stop_reason` `"compaction"`), which later requests send first in `messages` in
+	// place of the messages it summarizes. Cannot be combined with
+	// `context_management`.
+	Compaction BetaCompactionConfigUnionParam `json:"compaction,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,

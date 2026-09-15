@@ -228,6 +228,7 @@ type StrReplace string                              // Always "str_replace"
 type StrReplaceBasedEditTool string                 // Always "str_replace_based_edit_tool"
 type StrReplaceEditor string                        // Always "str_replace_editor"
 type Succeeded string                               // Always "succeeded"
+type Summarize string                               // Always "summarize"
 type SystemChanged string                           // Always "system_changed"
 type TabOpened string                               // Always "tab_opened"
 type Text string                                    // Always "text"
@@ -543,6 +544,7 @@ func (c StrReplaceBasedEditTool) Default() StrReplaceBasedEditTool {
 }
 func (c StrReplaceEditor) Default() StrReplaceEditor     { return "str_replace_editor" }
 func (c Succeeded) Default() Succeeded                   { return "succeeded" }
+func (c Summarize) Default() Summarize                   { return "summarize" }
 func (c SystemChanged) Default() SystemChanged           { return "system_changed" }
 func (c TabOpened) Default() TabOpened                   { return "tab_opened" }
 func (c Text) Default() Text                             { return "text" }
@@ -846,6 +848,7 @@ func (c StrReplace) MarshalJSON() ([]byte, error)                           { re
 func (c StrReplaceBasedEditTool) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c StrReplaceEditor) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Succeeded) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c Summarize) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c SystemChanged) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c TabOpened) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Text) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }

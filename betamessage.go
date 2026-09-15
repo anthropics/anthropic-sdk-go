@@ -3315,11 +3315,14 @@ type BetaCompactionBlock struct {
 	// Opaque metadata from prior compaction, to be round-tripped verbatim
 	EncryptedContent string              `json:"encrypted_content" api:"required"`
 	Type             constant.Compaction `json:"type" default:"compaction"`
+	// Signature over the summary, to be sent back with the block verbatim
+	Signature string `json:"signature" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content          respjson.Field
 		EncryptedContent respjson.Field
 		Type             respjson.Field
+		Signature        respjson.Field
 		ExtraFields      map[string]respjson.Field
 		raw              string
 	} `json:"-"`
@@ -3345,6 +3348,8 @@ type BetaCompactionBlockParam struct {
 	Content param.Opt[string] `json:"content,omitzero"`
 	// Opaque metadata from prior compaction, to be round-tripped verbatim
 	EncryptedContent param.Opt[string] `json:"encrypted_content,omitzero"`
+	// The block's signature as returned, to be sent back verbatim
+	Signature param.Opt[string] `json:"signature,omitzero"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// This field can be elided, and will marshal its zero value as "compaction".
@@ -3358,6 +3363,51 @@ func (r BetaCompactionBlockParam) MarshalJSON() (data []byte, err error) {
 }
 func (r *BetaCompactionBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaCompactionConfigUnionParam struct {
+	OfSummarize *BetaSummarizeCompactionParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaCompactionConfigUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfSummarize)
+}
+func (u *BetaCompactionConfigUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaCompactionConfigUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfSummarize) {
+		return u.OfSummarize
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaCompactionConfigUnionParam) GetInstructions() *string {
+	if vt := u.OfSummarize; vt != nil && vt.Instructions.Valid() {
+		return &vt.Instructions.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaCompactionConfigUnionParam) GetType() *string {
+	if vt := u.OfSummarize; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaCompactionConfigUnionParam](
+		"type",
+		apijson.Discriminator[BetaSummarizeCompactionParam]("summarize"),
+	)
 }
 
 type BetaCompactionContentBlockDelta struct {
@@ -3974,8 +4024,7 @@ type BetaContentBlockUnion struct {
 	// "code_execution_tool_result", "bash_code_execution_tool_result",
 	// "text_editor_code_execution_tool_result", "tool_search_tool_result",
 	// "mcp_tool_use", "mcp_tool_result", "container_upload", "compaction", "fallback".
-	Type string `json:"type"`
-	// This field is from variant [BetaThinkingBlock].
+	Type      string `json:"type"`
 	Signature string `json:"signature"`
 	// This field is from variant [BetaThinkingBlock].
 	Thinking string `json:"thinking"`
@@ -4762,14 +4811,6 @@ func (u BetaContentBlockParamUnion) GetContext() *string {
 }
 
 // Returns a pointer to the underlying variant's property, if present.
-func (u BetaContentBlockParamUnion) GetSignature() *string {
-	if vt := u.OfThinking; vt != nil {
-		return &vt.Signature
-	}
-	return nil
-}
-
-// Returns a pointer to the underlying variant's property, if present.
 func (u BetaContentBlockParamUnion) GetThinking() *string {
 	if vt := u.OfThinking; vt != nil {
 		return &vt.Thinking
@@ -4891,6 +4932,16 @@ func (u BetaContentBlockParamUnion) GetTitle() *string {
 		return &vt.Title.Value
 	} else if vt := u.OfSearchResult; vt != nil {
 		return (*string)(&vt.Title)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaContentBlockParamUnion) GetSignature() *string {
+	if vt := u.OfThinking; vt != nil {
+		return (*string)(&vt.Signature)
+	} else if vt := u.OfCompaction; vt != nil && vt.Signature.Valid() {
+		return &vt.Signature.Value
 	}
 	return nil
 }
@@ -8416,8 +8467,7 @@ type BetaRawContentBlockStartEventContentBlockUnion struct {
 	// "code_execution_tool_result", "bash_code_execution_tool_result",
 	// "text_editor_code_execution_tool_result", "tool_search_tool_result",
 	// "mcp_tool_use", "mcp_tool_result", "container_upload", "compaction", "fallback".
-	Type string `json:"type"`
-	// This field is from variant [BetaThinkingBlock].
+	Type      string `json:"type"`
 	Signature string `json:"signature"`
 	// This field is from variant [BetaThinkingBlock].
 	Thinking string `json:"thinking"`
@@ -10086,6 +10136,34 @@ const (
 	BetaStopReasonRefusal                    BetaStopReason = "refusal"
 	BetaStopReasonModelContextWindowExceeded BetaStopReason = "model_context_window_exceeded"
 )
+
+// Compact the whole conversation and return a signed `compaction` block, alone,
+// that a later request sends back first in `messages`, in place of the messages it
+// summarizes. There is no trigger and no pause flag: sending the parameter
+// compacts, and nothing is sampled after the block.
+//
+// The summarization prompt is the server's own unless `instructions` are given,
+// which then replace it for this request; a value that is empty or only whitespace
+// counts as absent.
+//
+// The property Type is required.
+type BetaSummarizeCompactionParam struct {
+	// Replaces the server's summarization prompt for this request. When set, earlier
+	// thinking blocks are left out of the content being summarized on models that
+	// require it.
+	Instructions param.Opt[string] `json:"instructions,omitzero"`
+	// This field can be elided, and will marshal its zero value as "summarize".
+	Type constant.Summarize `json:"type" default:"summarize"`
+	paramObj
+}
+
+func (r BetaSummarizeCompactionParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaSummarizeCompactionParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaSummarizeCompactionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Per-message output configuration on a role:"system" input message.
 //
@@ -16473,6 +16551,14 @@ type BetaMessageNewParams struct {
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Compaction configuration.
+	//
+	// When set, this is a compaction request: the conversation in `messages` is
+	// summarized and the response holds only the resulting `compaction` block
+	// (`stop_reason` `"compaction"`), which later requests send first in `messages` in
+	// place of the messages it summarizes. Cannot be combined with
+	// `context_management`.
+	Compaction BetaCompactionConfigUnionParam `json:"compaction,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,
@@ -16791,6 +16877,14 @@ type BetaMessageCountTokensParams struct {
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Compaction configuration.
+	//
+	// When set, this is a compaction request: the conversation in `messages` is
+	// summarized and the response holds only the resulting `compaction` block
+	// (`stop_reason` `"compaction"`), which later requests send first in `messages` in
+	// place of the messages it summarizes. Cannot be combined with
+	// `context_management`.
+	Compaction BetaCompactionConfigUnionParam `json:"compaction,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,

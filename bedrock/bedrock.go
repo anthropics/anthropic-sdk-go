@@ -63,7 +63,7 @@ type sseTranslatingBody struct {
 
 func (b *sseTranslatingBody) Read(p []byte) (int, error) {
 	// Buffered SSE bytes must drain before a translation error surfaces, so
-	// events decoded ahead of a mid-stream exception still reach the consumer.
+	// events decoded ahead of a malformed frame still reach the consumer.
 	for b.buf.Len() == 0 {
 		if b.err != nil {
 			return 0, b.err
@@ -146,7 +146,7 @@ func (b *sseTranslatingBody) translate(msg eventstream.Message) {
 		if len(errInfo.Message) > 0 {
 			errorMessage = errInfo.Message
 		}
-		b.err = fmt.Errorf("received exception %s: %s", errorCode, errorMessage)
+		b.emitError(errorCode, errorMessage)
 
 	case eventstreamapi.ErrorMessageType:
 		errorCode := "UnknownError"
@@ -157,8 +157,16 @@ func (b *sseTranslatingBody) translate(msg eventstream.Message) {
 		if header := msg.Headers.Get(eventstreamapi.ErrorMessageHeader); header != nil {
 			errorMessage = header.String()
 		}
-		b.err = fmt.Errorf("received error %s: %s", errorCode, errorMessage)
+		b.emitError(errorCode, errorMessage)
 	}
+}
+
+// emitError emits an SSE error event shaped like the first-party API's, so
+// stream consumers surface Bedrock stream errors as API errors.
+func (b *sseTranslatingBody) emitError(errorType, message string) {
+	data, _ := sjson.SetBytes([]byte(`{"type":"error","error":{}}`), "error.type", errorType)
+	data, _ = sjson.SetBytes(data, "error.message", message)
+	b.emit("error", data)
 }
 
 func (b *sseTranslatingBody) emit(eventType string, data []byte) {

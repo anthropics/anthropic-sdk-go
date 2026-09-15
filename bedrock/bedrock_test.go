@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -20,6 +21,7 @@ import (
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/smithy-go/auth/bearer"
+	"github.com/tidwall/gjson"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
@@ -425,6 +427,19 @@ func encodeExceptionFrame(t *testing.T, w io.Writer, exceptionType, message stri
 	}
 }
 
+// encodeErrorFrame writes an EventStream error frame, which carries its code
+// and message in headers rather than the payload.
+func encodeErrorFrame(t *testing.T, w io.Writer, code, message string) {
+	t.Helper()
+	msg := eventstream.Message{}
+	msg.Headers.Set(eventstreamapi.MessageTypeHeader, eventstream.StringValue(eventstreamapi.ErrorMessageType))
+	msg.Headers.Set(eventstreamapi.ErrorCodeHeader, eventstream.StringValue(code))
+	msg.Headers.Set(eventstreamapi.ErrorMessageHeader, eventstream.StringValue(message))
+	if err := eventstream.NewEncoder().Encode(w, msg); err != nil {
+		t.Fatalf("Failed to encode error frame: %v", err)
+	}
+}
+
 // applyStreamingMiddleware runs bedrockMiddleware over a fake streaming
 // request, with the wire responding with the given EventStream body, and
 // returns the response the middleware produced.
@@ -474,23 +489,60 @@ func TestBedrockStreamingResponseNormalizedToSSE(t *testing.T) {
 	}
 }
 
-func TestBedrockStreamingExceptionSurfacesAsBodyError(t *testing.T) {
+func TestBedrockStreamingErrorFramesNormalizedToSSEError(t *testing.T) {
+	messageStartJSON := `{"type":"message_start","message":{"id":"msg_test"}}`
+	tests := map[string]struct {
+		encode    func(t *testing.T, w io.Writer)
+		errorJSON string
+	}{
+		"exception frame": {
+			encode: func(t *testing.T, w io.Writer) {
+				encodeExceptionFrame(t, w, "throttlingException", "Too many requests")
+			},
+			errorJSON: `{"type":"error","error":{"type":"throttlingException","message":"Too many requests"}}`,
+		},
+		"error frame": {
+			encode: func(t *testing.T, w io.Writer) {
+				encodeErrorFrame(t, w, "InternalFailure", "Something went wrong")
+			},
+			errorJSON: `{"type":"error","error":{"type":"InternalFailure","message":"Something went wrong"}}`,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			frames := &bytes.Buffer{}
+			encodeChunkFrame(t, frames, messageStartJSON)
+			tt.encode(t, frames)
+
+			res := applyStreamingMiddleware(t, frames)
+
+			sse, err := io.ReadAll(res.Body)
+			if err != nil {
+				t.Fatalf("Failed to read normalized body: %v", err)
+			}
+			expected := "event: message_start\ndata: " + messageStartJSON + "\n\n" +
+				"event: error\ndata: " + tt.errorJSON + "\n\n"
+			if string(sse) != expected {
+				t.Errorf("Expected SSE body %q, got %q", expected, string(sse))
+			}
+		})
+	}
+}
+
+func TestBedrockStreamingMalformedFrameSurfacesAsBodyError(t *testing.T) {
 	messageStartJSON := `{"type":"message_start","message":{"id":"msg_test"}}`
 	frames := &bytes.Buffer{}
 	encodeChunkFrame(t, frames, messageStartJSON)
-	encodeExceptionFrame(t, frames, "ThrottlingException", "Too many requests")
+	if err := eventstream.NewEncoder().Encode(frames, eventstream.Message{}); err != nil {
+		t.Fatalf("Failed to encode frame: %v", err)
+	}
 
 	res := applyStreamingMiddleware(t, frames)
 
 	sse, err := io.ReadAll(res.Body)
 	if err == nil {
-		t.Fatal("Expected an error reading a stream containing an exception frame")
+		t.Fatal("Expected an error reading a stream containing a malformed frame")
 	}
-	expectedErr := "received exception ThrottlingException: Too many requests"
-	if err.Error() != expectedErr {
-		t.Errorf("Expected error %q, got %q", expectedErr, err.Error())
-	}
-	// Events decoded before the exception must still be delivered.
 	expectedSSE := "event: message_start\ndata: " + messageStartJSON + "\n\n"
 	if string(sse) != expectedSSE {
 		t.Errorf("Expected SSE body %q before the error, got %q", expectedSSE, string(sse))
@@ -636,6 +688,57 @@ func TestBedrockStreamingEndToEnd(t *testing.T) {
 		if gotTypes[i] != expected {
 			t.Errorf("Expected event %d to be %q, got %q", i, expected, gotTypes[i])
 		}
+	}
+}
+
+// TestBedrockStreamingExceptionEndToEnd verifies that a mid-stream Bedrock
+// exception surfaces the same API error a first-party SSE error event would,
+// after the events that preceded it.
+func TestBedrockStreamingExceptionEndToEnd(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+
+	frames := &bytes.Buffer{}
+	encodeChunkFrame(t, frames, `{"type":"message_start","message":{"id":"msg_test","type":"message","role":"assistant","content":[],"model":"claude-3-sonnet","usage":{"input_tokens":1,"output_tokens":1}}}`)
+	encodeExceptionFrame(t, frames, "throttlingException", "Too many requests")
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/vnd.amazon.eventstream")
+		w.Write(frames.Bytes())
+	}))
+	t.Cleanup(server.Close)
+
+	client := anthropic.NewClient(
+		option.WithoutEnvironmentDefaults(),
+		WithConfig(makeStaticAWSConfig("us-east-1")),
+		option.WithBaseURL(server.URL),
+		option.WithMaxRetries(0),
+	)
+
+	stream := client.Messages.NewStreaming(context.Background(), anthropic.MessageNewParams{
+		Model:     "claude-3-sonnet",
+		MaxTokens: 1,
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+		},
+	})
+
+	var gotTypes []string
+	for stream.Next() {
+		gotTypes = append(gotTypes, string(stream.Current().Type))
+	}
+	if len(gotTypes) != 1 || gotTypes[0] != "message_start" {
+		t.Errorf("Expected events [message_start] before the error, got %v", gotTypes)
+	}
+
+	var apiErr *anthropic.Error
+	if !errors.As(stream.Err(), &apiErr) {
+		t.Fatalf("Expected *anthropic.Error, got %T: %v", stream.Err(), stream.Err())
+	}
+	if apiErr.Type() != "throttlingException" {
+		t.Errorf("Expected error type %q, got %q", "throttlingException", apiErr.Type())
+	}
+	if message := gjson.Get(apiErr.RawJSON(), "error.message").String(); message != "Too many requests" {
+		t.Errorf("Expected error message %q, got %q", "Too many requests", message)
 	}
 }
 

@@ -265,6 +265,49 @@ func TestBedrockBearerToken(t *testing.T) {
 	}
 }
 
+func TestBedrockEnvironmentBearerTokenOverridesConfigProvider(t *testing.T) {
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "environment-token")
+
+	var authorization string
+	providerCalled := false
+	client := anthropic.NewClient(
+		option.WithHTTPClient(&http.Client{Transport: roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			authorization = req.Header.Get("Authorization")
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     http.Header{"Content-Type": []string{"application/json"}},
+				Body:       io.NopCloser(strings.NewReader(`{}`)),
+				Request:    req,
+			}, nil
+		})}),
+		WithConfig(aws.Config{
+			Region: "us-east-1",
+			BearerAuthTokenProvider: bearer.TokenProviderFunc(func(context.Context) (bearer.Token, error) {
+				providerCalled = true
+				return bearer.Token{Value: "config-token"}, nil
+			}),
+		}),
+	)
+
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:     "claude-3-sonnet",
+		MaxTokens: 1,
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+		},
+	})
+
+	if err != nil {
+		t.Fatalf("request failed: %v", err)
+	}
+	if providerCalled {
+		t.Fatal("caller-supplied provider must not be called when the environment token is set")
+	}
+	if authorization != "Bearer environment-token" {
+		t.Fatalf("Expected environment token to take precedence, got %q", authorization)
+	}
+}
+
 type roundTripperFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }

@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -297,9 +298,19 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 			// pull the betas off of the header (if set) and put them in the body
 			if betaHeader := r.Header.Values("anthropic-beta"); isJSON && len(betaHeader) > 0 {
 				r.Header.Del("anthropic-beta")
-				body, err = sjson.SetBytes(body, "anthropic_beta", betaHeader)
-				if err != nil {
-					return nil, err
+				var betas []string
+				for _, value := range betaHeader {
+					for _, beta := range strings.Split(value, ",") {
+						if beta = strings.TrimSpace(beta); beta != "" {
+							betas = append(betas, beta)
+						}
+					}
+				}
+				if len(betas) > 0 {
+					body, err = sjson.SetBytes(body, "anthropic_beta", betas)
+					if err != nil {
+						return nil, err
+					}
 				}
 			}
 

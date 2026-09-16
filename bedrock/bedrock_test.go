@@ -217,6 +217,64 @@ func TestBedrockBetaHeadersReRoutedThroughBody(t *testing.T) {
 	}
 }
 
+func TestBedrockBetaHeaderValuesSplitIntoBody(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+
+	testCases := []struct {
+		name         string
+		headerValues []string
+	}{
+		{name: "separate header lines", headerValues: []string{"a", "b"}},
+		{name: "one comma-joined value", headerValues: []string{"a,b"}},
+		{name: "one comma-joined value with a space", headerValues: []string{"a, b"}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var wireBetaHeader []string
+			var wireBody []byte
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				wireBetaHeader = r.Header.Values("anthropic-beta")
+				var err error
+				if wireBody, err = io.ReadAll(r.Body); err != nil {
+					t.Errorf("Failed to read wire body: %v", err)
+				}
+				writeMessagesResponse(w)
+			}))
+			t.Cleanup(server.Close)
+
+			client := anthropic.NewClient(
+				option.WithoutEnvironmentDefaults(),
+				WithConfig(makeStaticAWSConfig("us-east-1")),
+				option.WithBaseURL(server.URL),
+			)
+
+			var opts []option.RequestOption
+			for _, value := range tc.headerValues {
+				opts = append(opts, option.WithHeaderAdd("anthropic-beta", value))
+			}
+			_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+				Model:     "claude-3-sonnet",
+				MaxTokens: 1,
+				Messages: []anthropic.MessageParam{
+					anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+				},
+			}, opts...)
+			if err != nil {
+				t.Fatalf("Request failed: %v", err)
+			}
+
+			if got := gjson.GetBytes(wireBody, "anthropic_beta").Raw; got != `["a","b"]` {
+				t.Errorf("Expected anthropic_beta %s in the wire body, got %s", `["a","b"]`, got)
+			}
+			if len(wireBetaHeader) != 0 {
+				t.Errorf("Expected no anthropic-beta header on the wire, got %q", wireBetaHeader)
+			}
+		})
+	}
+}
+
 func TestBedrockBearerToken(t *testing.T) {
 	token := "test-bearer-token"
 	region := "us-west-2"

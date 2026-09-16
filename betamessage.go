@@ -11671,7 +11671,7 @@ func (r *BetaToolBash20250124Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Reference to a single MCP tool by its server and remote name — the same
+// Reference to a single MCP tool by its server and remote name; the same
 // `server_name`/`name` pair `mcp_tool_use` carries.
 //
 // The properties Name, ServerName, Type are required.

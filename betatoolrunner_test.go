@@ -7,7 +7,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -596,7 +598,8 @@ const (
 
 // scriptedMessagesServer answers POST /v1/messages with the scripted message
 // bodies in order (as SSE when the request sets "stream") and records every
-// request body. A request past the end of the script fails the test.
+// request body. A scripted error body is answered with status 529. A request
+// past the end of the script fails the test.
 func scriptedMessagesServer(t *testing.T, script ...string) (*httptest.Server, func() [][]byte) {
 	t.Helper()
 	var (
@@ -617,6 +620,12 @@ func scriptedMessagesServer(t *testing.T, script ...string) (*httptest.Server, f
 		if n > len(script) {
 			t.Errorf("unexpected request %d: only %d responses scripted", n, len(script))
 			http.Error(w, "unscripted", http.StatusInternalServerError)
+			return
+		}
+		if gjson.Get(script[n-1], "type").String() == "error" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(529)
+			_, _ = w.Write([]byte(script[n-1]))
 			return
 		}
 		if gjson.GetBytes(body, "stream").Bool() {
@@ -792,5 +801,561 @@ func TestBetaToolRunner_PauseTurnStopsAtMaxIterations(t *testing.T) {
 	}
 	if got := len(requests()); got != 3 {
 		t.Fatalf("expected 3 requests, got %d", got)
+	}
+}
+
+const (
+	toolUseTurnJSON = `{"id":"msg_tool","type":"message","role":"assistant","model":"m","content":[{"type":"tool_use","id":"toolu_1","name":"weather","input":{"city":"SF"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`
+	// compactionResponseJSON is what a request carrying `compaction` returns:
+	// the signed summary block and nothing sampled after it.
+	compactionResponseJSON = `{"id":"msg_compaction","type":"message","role":"assistant","model":"m","content":[{"type":"compaction","content":"Summary so far.","signature":"c2ln"}],"stop_reason":"compaction","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`
+	// compactionWithListingJSON carries a block type this SDK does not model
+	// after the compaction block.
+	compactionWithListingJSON = `{"id":"msg_compaction","type":"message","role":"assistant","model":"m","content":[{"type":"compaction","content":"Summary so far.","signature":"c2ln"},{"type":"some_future_listing","server":"docs","tools":[{"name":"search"}]}],"stop_reason":"compaction","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`
+	// A compaction request that produced no summary answers with a block whose
+	// content is null, or with no content and the summarization call's own stop
+	// reason.
+	nullSummaryResponseJSON = `{"id":"msg_compaction","type":"message","role":"assistant","model":"m","content":[{"type":"compaction","content":null,"signature":null}],"stop_reason":"compaction","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`
+	noContentResponseJSON   = `{"id":"msg_compaction","type":"message","role":"assistant","model":"m","content":[],"stop_reason":"max_tokens","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`
+	// fallbackEndTurnJSON is a finished turn whose first attempt made a tool call
+	// and then refused; the serving model wrote what follows the fallback block.
+	fallbackEndTurnJSON = `{"id":"msg_fallback","type":"message","role":"assistant","model":"m","content":[{"type":"tool_use","id":"toolu_1","name":"weather","input":{}},{"type":"fallback","from":{"model":"m"},"to":{"model":"n"},"trigger":{"type":"refusal","category":"general_harms"}},{"type":"text","text":"done"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`
+	overloadedErrorJSON = `{"type":"error","error":{"type":"overloaded_error","message":"Overloaded"}}`
+	refusedToolUseJSON  = `{"id":"msg_refused","type":"message","role":"assistant","model":"m","content":[{"type":"tool_use","id":"toolu_1","name":"weather","input":{}}],"stop_reason":"refusal","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`
+)
+
+// turnRunner drives either runner one request at a time, so each compaction
+// case runs against both.
+type turnRunner struct {
+	*betaToolRunnerBase
+	next func(ctx context.Context) (*BetaMessage, error)
+}
+
+func newTurnRunner(client Client, stream bool, tools []BetaTool, params BetaToolRunnerParams) *turnRunner {
+	if !stream {
+		runner := client.Beta.Messages.NewToolRunner(tools, params)
+		return &turnRunner{&runner.betaToolRunnerBase, runner.NextMessage}
+	}
+	runner := client.Beta.Messages.NewToolRunnerStreaming(tools, params)
+	return &turnRunner{&runner.betaToolRunnerBase, func(ctx context.Context) (*BetaMessage, error) {
+		var message BetaMessage
+		events := 0
+		for event, err := range runner.NextStreaming(ctx) {
+			if err != nil {
+				return nil, err
+			}
+			if err := message.Accumulate(event); err != nil {
+				return nil, err
+			}
+			events++
+		}
+		if events == 0 {
+			return nil, nil
+		}
+		return &message, nil
+	}}
+}
+
+// run calls onMessage with each message until the run is over and returns the
+// messages' ids.
+func (r *turnRunner) run(t *testing.T, onMessage func(*BetaMessage)) []string {
+	t.Helper()
+	var ids []string
+	for {
+		message, err := r.next(context.Background())
+		if err != nil {
+			t.Fatalf("next turn: %v", err)
+		}
+		if message == nil {
+			return ids
+		}
+		ids = append(ids, message.ID)
+		if onMessage != nil {
+			onMessage(message)
+		}
+	}
+}
+
+func compactOnToolUse(runner *turnRunner) func(*BetaMessage) {
+	return func(message *BetaMessage) {
+		if message.StopReason == BetaStopReasonToolUse {
+			runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+		}
+	}
+}
+
+func forEachRunner(t *testing.T, test func(t *testing.T, stream bool)) {
+	t.Helper()
+	for _, stream := range []bool{false, true} {
+		t.Run(fmt.Sprintf("stream=%v", stream), func(t *testing.T) { test(t, stream) })
+	}
+}
+
+// captureStderr redirects os.Stderr, where the SDK prints its warnings, and
+// returns a function that restores it and reports what was written.
+func captureStderr(t *testing.T) func() string {
+	t.Helper()
+	stderr := os.Stderr
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("os.Pipe: %v", err)
+	}
+	os.Stderr = w
+	t.Cleanup(func() {
+		os.Stderr = stderr
+		_ = w.Close()
+		_ = r.Close()
+	})
+	return func() string {
+		os.Stderr = stderr
+		_ = w.Close()
+		written, _ := io.ReadAll(r)
+		return string(written)
+	}
+}
+
+func messagesJSON(t *testing.T, messages []BetaMessageParam) string {
+	t.Helper()
+	data, err := json.Marshal(messages)
+	if err != nil {
+		t.Fatalf("marshal messages: %v", err)
+	}
+	return string(data)
+}
+
+func requireRequestCount(t *testing.T, bodies [][]byte, want int) {
+	t.Helper()
+	if len(bodies) != want {
+		t.Fatalf("expected %d requests, got %d", want, len(bodies))
+	}
+}
+
+// requireCompactionAlone checks a request's messages are the compaction
+// response as it came and nothing else.
+func requireCompactionAlone(t *testing.T, body []byte, response string) {
+	t.Helper()
+	requireJSONEqual(t, gjson.GetBytes(body, "messages").Raw, `[{"role":"assistant","content":`+gjson.Get(response, "content").Raw+`}]`)
+}
+
+// A compaction asked for on a tool-use turn goes out as its own request once
+// that turn's tool results are in, without context_management and without
+// counting towards MaxIterations; the next request carries the response alone,
+// as it came, including a block this SDK does not model.
+func TestBetaToolRunner_CompactBeforeNextTurn_SentAfterToolResults(t *testing.T) {
+	forEachRunner(t, func(t *testing.T, stream bool) {
+		server, requests := scriptedMessagesServer(t, toolUseTurnJSON, compactionWithListingJSON, endTurnJSON)
+		var betas []string
+		client := NewClient(
+			option.WithBaseURL(server.URL),
+			option.WithAPIKey("test-key"),
+			option.WithMaxRetries(0),
+			option.WithMiddleware(func(req *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+				betas = append(betas, req.Header.Get("anthropic-beta"))
+				return next(req)
+			}),
+		)
+		params := pauseTurnParams(2)
+		params.Betas = []AnthropicBeta{AnthropicBetaCompact2026_09_04}
+		params.ContextManagement = BetaContextManagementConfigParam{Edits: []BetaContextManagementConfigEditUnionParam{
+			{OfClearToolUses20250919: &BetaClearToolUses20250919EditParam{}},
+		}}
+		runner := newTurnRunner(client, stream, []BetaTool{&stubBetaTool{name: "weather"}}, params)
+
+		var stopReasons []BetaStopReason
+		ids := runner.run(t, func(message *BetaMessage) {
+			stopReasons = append(stopReasons, message.StopReason)
+			compactOnToolUse(runner)(message)
+		})
+		requireYieldedOnce(t, ids, "msg_tool", "msg_compaction", "msg_end")
+		if fmt.Sprint(stopReasons) != "[tool_use compaction end_turn]" {
+			t.Fatalf("stop reasons = %v", stopReasons)
+		}
+		if got := runner.IterationCount(); got != 2 {
+			t.Fatalf("IterationCount = %d, want 2: the compaction request is not an iteration", got)
+		}
+
+		bodies := requests()
+		requireRequestCount(t, bodies, 3)
+		first, compaction, after := bodies[0], bodies[1], bodies[2]
+		requireJSONEqual(t, gjson.GetBytes(compaction, "compaction").Raw, `{"type":"summarize"}`)
+		if gjson.GetBytes(compaction, "context_management").Exists() {
+			t.Fatalf("compaction request must not carry context_management: %s", compaction)
+		}
+		requireJSONEqual(t, gjson.GetBytes(compaction, "messages").Raw, `[
+			{"role":"user","content":[{"type":"text","text":"What's the weather in SF?"}]},
+			{"role":"assistant","content":[{"type":"tool_use","id":"toolu_1","name":"weather","input":{"city":"SF"}}]},
+			{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_1","content":[{"type":"text","text":"ok from weather"}]}]}
+		]`)
+
+		requireCompactionAlone(t, after, compactionWithListingJSON)
+		if got := gjson.GetBytes(after, "messages.0.content.1.type").String(); got != "some_future_listing" {
+			t.Fatalf("second block type = %q, want the unmodeled block kept in place", got)
+		}
+		if gjson.GetBytes(after, "compaction").Exists() {
+			t.Fatalf("request after the compaction must not carry compaction: %s", after)
+		}
+		requireJSONEqual(t, gjson.GetBytes(after, "context_management").Raw, gjson.GetBytes(first, "context_management").Raw)
+		if fmt.Sprint(betas) != "[compact-2026-09-04 compact-2026-09-04 compact-2026-09-04]" {
+			t.Fatalf("anthropic-beta headers = %v, want the caller's beta and nothing added", betas)
+		}
+	})
+}
+
+func TestBetaToolRunner_CompactBeforeNextTurn_BeforeFirstIterationIsFirstRequest(t *testing.T) {
+	server, requests := scriptedMessagesServer(t, compactionResponseJSON, endTurnJSON)
+	runner := newTurnRunner(newTestToolRunnerClient(server), false, nil, pauseTurnParams(1))
+	runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+
+	requireYieldedOnce(t, runner.run(t, nil), "msg_compaction", "msg_end")
+	bodies := requests()
+	requireRequestCount(t, bodies, 2)
+	requireJSONEqual(t, gjson.GetBytes(bodies[0], "compaction").Raw, `{"type":"summarize"}`)
+	if got := gjson.GetBytes(bodies[0], "messages.#").Int(); got != 1 {
+		t.Fatalf("compaction request carried %d messages, want the saved history", got)
+	}
+	requireCompactionAlone(t, bodies[1], compactionResponseJSON)
+}
+
+// Calling again before the compaction is sent replaces the earlier call: one
+// compaction request goes out, with the last config, as given.
+func TestBetaToolRunner_CompactBeforeNextTurn_LastConfigWinsAndIsSentAsGiven(t *testing.T) {
+	server, requests := scriptedMessagesServer(t, toolUseTurnJSON, compactionResponseJSON, endTurnJSON)
+	runner := newTurnRunner(newTestToolRunnerClient(server), false, []BetaTool{&stubBetaTool{name: "weather"}}, pauseTurnParams(0))
+
+	runner.run(t, func(message *BetaMessage) {
+		if message.StopReason != BetaStopReasonToolUse {
+			return
+		}
+		runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+		runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{
+			OfSummarize: &BetaSummarizeCompactionParam{Instructions: String("  ")},
+		})
+	})
+
+	bodies := requests()
+	requireRequestCount(t, bodies, 3)
+	requireJSONEqual(t, gjson.GetBytes(bodies[1], "compaction").Raw, `{"type":"summarize","instructions":"  "}`)
+	if gjson.GetBytes(bodies[2], "compaction").Exists() {
+		t.Fatalf("only one compaction request should go out: %s", bodies[2])
+	}
+}
+
+// A paused turn is resumed and finished before the compaction goes out.
+func TestBetaToolRunner_CompactBeforeNextTurn_WaitsOutPausedTurn(t *testing.T) {
+	server, requests := scriptedMessagesServer(t, pausedTurnJSON, toolUseTurnJSON, compactionResponseJSON, endTurnJSON)
+	runner := newTurnRunner(newTestToolRunnerClient(server), false, []BetaTool{&stubBetaTool{name: "weather"}}, pauseTurnParams(0))
+
+	ids := runner.run(t, func(message *BetaMessage) {
+		if message.StopReason == BetaStopReasonPauseTurn {
+			runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+		}
+	})
+	requireYieldedOnce(t, ids, "msg_paused", "msg_tool", "msg_compaction", "msg_end")
+	bodies := requests()
+	requireRequestCount(t, bodies, 4)
+	if gjson.GetBytes(bodies[1], "compaction").Exists() {
+		t.Fatalf("the paused turn must be resumed before compacting: %s", bodies[1])
+	}
+	requireJSONEqual(t, gjson.GetBytes(bodies[2], "compaction").Raw, `{"type":"summarize"}`)
+	if got := gjson.GetBytes(bodies[2], "messages.#").Int(); got != 4 {
+		t.Fatalf("compaction request carried %d messages, want user, paused turn, resumed turn, tool results", got)
+	}
+}
+
+// A compaction asked for on the final turn still goes out, even when that
+// turn was also the last iteration allowed; the run then stops.
+func TestBetaToolRunner_CompactBeforeNextTurn_FinalTurnCompactsThenStops(t *testing.T) {
+	for _, finalTurn := range []struct{ name, json string }{
+		{"end_turn", endTurnJSON},
+		{"a tool call only before the fallback block", fallbackEndTurnJSON},
+	} {
+		t.Run(finalTurn.name, func(t *testing.T) {
+			forEachRunner(t, func(t *testing.T, stream bool) {
+				server, requests := scriptedMessagesServer(t, finalTurn.json, compactionResponseJSON)
+				runner := newTurnRunner(newTestToolRunnerClient(server), stream, nil, pauseTurnParams(1))
+
+				ids := runner.run(t, func(message *BetaMessage) {
+					runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+				})
+				requireYieldedOnce(t, ids, gjson.Get(finalTurn.json, "id").String(), "msg_compaction")
+				if !runner.IsCompleted() {
+					t.Fatal("expected the run to be completed")
+				}
+				bodies := requests()
+				requireRequestCount(t, bodies, 2)
+				requireJSONEqual(t, gjson.GetBytes(bodies[1], "compaction").Raw, `{"type":"summarize"}`)
+				if got := gjson.GetBytes(bodies[1], "messages.#").Int(); got != 2 {
+					t.Fatalf("compaction request carried %d messages, want the user turn and the final answer", got)
+				}
+				requireJSONEqual(t, messagesJSON(t, runner.Messages()), `[{"role":"assistant","content":`+gjson.Get(compactionResponseJSON, "content").Raw+`}]`)
+			})
+		})
+	}
+}
+
+// A final turn that was cut off with a tool call nobody answered cannot be
+// compacted: the pending compaction is dropped with a warning.
+func TestBetaToolRunner_CompactBeforeNextTurn_SkippedAfterUnansweredToolCall(t *testing.T) {
+	for _, finalTurn := range []struct{ name, json string }{
+		{"max_tokens", cutOffToolUseJSON},
+		{"refusal", refusedToolUseJSON},
+	} {
+		t.Run(finalTurn.name, func(t *testing.T) {
+			forEachRunner(t, func(t *testing.T, stream bool) {
+				warned := captureStderr(t)
+				server, requests := scriptedMessagesServer(t, finalTurn.json)
+				runner := newTurnRunner(newTestToolRunnerClient(server), stream, []BetaTool{&recordingTool{name: "rec"}}, pauseTurnParams(0))
+
+				ids := runner.run(t, func(message *BetaMessage) {
+					runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+				})
+				requireYieldedOnce(t, ids, gjson.Get(finalTurn.json, "id").String())
+				requireRequestCount(t, requests(), 1)
+				if got := warned(); !strings.Contains(got, "skipped the pending compaction") || !strings.Contains(got, finalTurn.name) {
+					t.Fatalf("expected a warning naming the stop reason, got %q", got)
+				}
+			})
+		})
+	}
+}
+
+// A run cut short by MaxIterations after a tool turn drops the pending
+// compaction without a word, as it drops the tool calls.
+func TestBetaToolRunner_CompactBeforeNextTurn_DroppedAtMaxIterations(t *testing.T) {
+	warned := captureStderr(t)
+	server, requests := scriptedMessagesServer(t, toolUseTurnJSON)
+	runner := newTurnRunner(newTestToolRunnerClient(server), false, []BetaTool{&stubBetaTool{name: "weather"}}, pauseTurnParams(1))
+
+	requireYieldedOnce(t, runner.run(t, compactOnToolUse(runner)), "msg_tool")
+	requireRequestCount(t, requests(), 1)
+	if got := warned(); got != "" {
+		t.Fatalf("expected no warning, got %q", got)
+	}
+}
+
+// With no summary the history is kept, a warning is printed and the run goes
+// on; the response that came back does not become the last message.
+func TestBetaToolRunner_CompactBeforeNextTurn_NoSummaryKeepsHistory(t *testing.T) {
+	for _, tt := range []struct{ name, response string }{
+		{"a compaction block with null content", nullSummaryResponseJSON},
+		{"no content at all", noContentResponseJSON},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			forEachRunner(t, func(t *testing.T, stream bool) {
+				warned := captureStderr(t)
+				server, requests := scriptedMessagesServer(t, toolUseTurnJSON, tt.response, endTurnJSON)
+				runner := newTurnRunner(newTestToolRunnerClient(server), stream, []BetaTool{&stubBetaTool{name: "weather"}}, pauseTurnParams(0))
+
+				ids := runner.run(t, func(message *BetaMessage) {
+					compactOnToolUse(runner)(message)
+					if message.ID == "msg_compaction" && runner.LastMessage().ID != "msg_tool" {
+						t.Errorf("LastMessage = %s, want the turn before the failed compaction", runner.LastMessage().ID)
+					}
+				})
+				requireYieldedOnce(t, ids, "msg_tool", "msg_compaction", "msg_end")
+				bodies := requests()
+				requireRequestCount(t, bodies, 3)
+				requireJSONEqual(t, gjson.GetBytes(bodies[2], "messages").Raw, gjson.GetBytes(bodies[1], "messages").Raw)
+				if got := warned(); !strings.Contains(got, "no summary") {
+					t.Fatalf("expected a warning about the missing summary, got %q", got)
+				}
+			})
+		})
+	}
+}
+
+// After a final-turn compaction that produced no summary, the run's final
+// message is still the model's answer.
+func TestBetaToolRunner_CompactBeforeNextTurn_NoSummaryOnFinalTurnKeepsFinalMessage(t *testing.T) {
+	captureStderr(t)
+	server, requests := scriptedMessagesServer(t, endTurnJSON, noContentResponseJSON)
+	client := newTestToolRunnerClient(server)
+	runner := client.Beta.Messages.NewToolRunner(nil, pauseTurnParams(0))
+	ctx := context.Background()
+
+	if _, err := runner.NextMessage(ctx); err != nil {
+		t.Fatalf("final turn: %v", err)
+	}
+	runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+	final, err := runner.RunToCompletion(ctx)
+	if err != nil {
+		t.Fatalf("RunToCompletion: %v", err)
+	}
+	if final == nil || final.ID != "msg_end" {
+		t.Fatalf("final message = %v, want msg_end", final)
+	}
+	requireRequestCount(t, requests(), 2)
+}
+
+// A call made while the compaction response is being handled is ignored, so a
+// token threshold that also matches that response does not compact twice.
+func TestBetaToolRunner_CompactBeforeNextTurn_IgnoredOnCompactionResponse(t *testing.T) {
+	forEachRunner(t, func(t *testing.T, stream bool) {
+		server, requests := scriptedMessagesServer(t, toolUseTurnJSON, compactionResponseJSON, endTurnJSON)
+		runner := newTurnRunner(newTestToolRunnerClient(server), stream, []BetaTool{&stubBetaTool{name: "weather"}}, pauseTurnParams(0))
+
+		ids := runner.run(t, func(message *BetaMessage) {
+			if message.StopReason != BetaStopReasonEndTurn {
+				runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+			}
+		})
+		requireYieldedOnce(t, ids, "msg_tool", "msg_compaction", "msg_end")
+		bodies := requests()
+		requireRequestCount(t, bodies, 3)
+		if gjson.GetBytes(bodies[2], "compaction").Exists() {
+			t.Fatalf("the call made on the compaction response must be ignored: %s", bodies[2])
+		}
+	})
+}
+
+// A compaction request that fails is not retried: the error is returned, the
+// next turn is an ordinary request, and a call made after the failure is sent
+// as usual.
+func TestBetaToolRunner_CompactBeforeNextTurn_FailedRequestIsNotRetried(t *testing.T) {
+	for _, tt := range []struct {
+		name      string
+		askAgain  bool
+		afterward []string
+	}{
+		{"the run goes on without it", false, []string{endTurnJSON}},
+		{"a call made after the failure is sent", true, []string{compactionResponseJSON, endTurnJSON}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			forEachRunner(t, func(t *testing.T, stream bool) {
+				script := append([]string{toolUseTurnJSON, overloadedErrorJSON}, tt.afterward...)
+				server, requests := scriptedMessagesServer(t, script...)
+				runner := newTurnRunner(newTestToolRunnerClient(server), stream, []BetaTool{&stubBetaTool{name: "weather"}}, pauseTurnParams(0))
+				ctx := context.Background()
+
+				if _, err := runner.next(ctx); err != nil {
+					t.Fatalf("first turn: %v", err)
+				}
+				runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+				if _, err := runner.next(ctx); err == nil || runner.Err() == nil {
+					t.Fatalf("expected the failed compaction request to be reported, got %v (Err() = %v)", err, runner.Err())
+				}
+				if tt.askAgain {
+					runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{
+						OfSummarize: &BetaSummarizeCompactionParam{Instructions: String("Second try.")},
+					})
+				}
+
+				ids := runner.run(t, nil)
+				bodies := requests()
+				requireRequestCount(t, bodies, len(script))
+				if !tt.askAgain {
+					requireYieldedOnce(t, ids, "msg_end")
+					if gjson.GetBytes(bodies[2], "compaction").Exists() {
+						t.Fatalf("the failed compaction must not be retried: %s", bodies[2])
+					}
+					return
+				}
+				requireYieldedOnce(t, ids, "msg_compaction", "msg_end")
+				requireJSONEqual(t, gjson.GetBytes(bodies[2], "compaction").Raw, `{"type":"summarize","instructions":"Second try."}`)
+				requireCompactionAlone(t, bodies[3], compactionResponseJSON)
+			})
+		})
+	}
+}
+
+// Params is an exported field, so replacing the messages while the compaction
+// response streams cannot be stopped where it happens; it is reported once the
+// response has been read, and the compaction response does not replace them.
+func TestBetaToolRunnerStreaming_CompactBeforeNextTurn_MessagesReplacedWhileCompacting(t *testing.T) {
+	extra := NewBetaUserMessage(NewBetaTextBlock("One more thing."))
+	for _, tt := range []struct {
+		name    string
+		change  func(runner *BetaToolRunnerStreaming)
+		refused bool
+	}{
+		{"AppendMessages", func(runner *BetaToolRunnerStreaming) { runner.AppendMessages(extra) }, true},
+		{"a new slice of the same length", func(runner *BetaToolRunnerStreaming) {
+			runner.Params.Messages = append([]BetaMessageParam{}, runner.Params.Messages...)
+		}, true},
+		{"another param", func(runner *BetaToolRunnerStreaming) { runner.Params.MaxTokens = 1024 }, false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			server, _ := scriptedMessagesServer(t, compactionResponseJSON)
+			client := newTestToolRunnerClient(server)
+			runner := client.Beta.Messages.NewToolRunnerStreaming(nil, pauseTurnParams(0))
+			runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+
+			var got error
+			changed := false
+			for _, err := range runner.NextStreaming(context.Background()) {
+				if err != nil {
+					got = err
+					break
+				}
+				if !changed {
+					tt.change(runner)
+					changed = true
+				}
+			}
+			if !tt.refused {
+				if got != nil {
+					t.Fatalf("changing another param while compacting must be allowed: %v", got)
+				}
+				requireJSONEqual(t, messagesJSON(t, runner.Messages()), `[{"role":"assistant","content":`+gjson.Get(compactionResponseJSON, "content").Raw+`}]`)
+				return
+			}
+			if got == nil || !strings.Contains(got.Error(), "while the conversation was being compacted") {
+				t.Fatalf("expected the change to be refused, got %v", got)
+			}
+			if runner.Err() != got {
+				t.Fatalf("Err() = %v, want %v", runner.Err(), got)
+			}
+			if role := runner.Messages()[0].Role; role != BetaMessageParamRoleUser {
+				t.Fatalf("the caller's messages should be kept, first role = %q", role)
+			}
+		})
+	}
+}
+
+// Set in the runner's own params, compaction would compact on every request:
+// it is refused once and cleared, so the run can go on without it.
+func TestBetaToolRunner_CompactionParamRefused(t *testing.T) {
+	server, requests := scriptedMessagesServer(t, endTurnJSON)
+	params := pauseTurnParams(0)
+	params.Compaction = BetaCompactionConfigUnionParam{OfSummarize: &BetaSummarizeCompactionParam{}}
+	runner := newTurnRunner(newTestToolRunnerClient(server), false, nil, params)
+
+	_, err := runner.next(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "CompactBeforeNextTurn") {
+		t.Fatalf("expected an error pointing at CompactBeforeNextTurn, got %v", err)
+	}
+	if runner.Err() != err {
+		t.Fatalf("Err() = %v, want %v", runner.Err(), err)
+	}
+	requireRequestCount(t, requests(), 0)
+
+	requireYieldedOnce(t, runner.run(t, nil), "msg_end")
+	if gjson.GetBytes(requests()[0], "compaction").Exists() {
+		t.Fatal("the refused param must not be sent")
+	}
+}
+
+// The compaction request goes out without context_management, so a compaction
+// edit there has to be refused by the runner: the API would only notice on the
+// request after the paid compaction. The refused call is dropped.
+func TestBetaToolRunner_CompactBeforeNextTurn_RefusedBesideCompactionEdit(t *testing.T) {
+	server, requests := scriptedMessagesServer(t, endTurnJSON)
+	params := pauseTurnParams(0)
+	params.ContextManagement = BetaContextManagementConfigParam{Edits: []BetaContextManagementConfigEditUnionParam{
+		{OfClearToolUses20250919: &BetaClearToolUses20250919EditParam{}},
+		{OfCompact20260112: &BetaCompact20260112EditParam{}},
+	}}
+	runner := newTurnRunner(newTestToolRunnerClient(server), false, nil, params)
+	runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+
+	_, err := runner.next(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "compaction edit") {
+		t.Fatalf("expected the call to be refused, got %v", err)
+	}
+	requireRequestCount(t, requests(), 0)
+
+	requireYieldedOnce(t, runner.run(t, nil), "msg_end")
+	if gjson.GetBytes(requests()[0], "compaction").Exists() {
+		t.Fatal("the refused compaction must not be sent later")
 	}
 }

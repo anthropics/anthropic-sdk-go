@@ -243,6 +243,57 @@ runner.AppendMessages(anthropic.NewBetaUserMessage(
 ))
 ```
 
+### Compacting the Conversation
+
+With the `compact-2026-09-04` beta you decide when a conversation is compacted: a request with the `Compaction` param returns a single `compaction` block, which then replaces the messages it summarizes. In a tool runner, call `CompactBeforeNextTurn()` and the runner does this for you:
+
+```go
+runner := client.Beta.Messages.NewToolRunner(tools, anthropic.BetaToolRunnerParams{
+	BetaMessageNewParams: anthropic.BetaMessageNewParams{
+		Model:     anthropic.ModelClaudeSonnet4_5_20250929,
+		MaxTokens: 1024,
+		Betas:     []anthropic.AnthropicBeta{anthropic.AnthropicBetaCompact2026_09_04},
+		Messages: []anthropic.BetaMessageParam{
+			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("Find every page that mentions rate limits.")),
+		},
+	},
+})
+
+for message, err := range runner.All(ctx) {
+	if err != nil {
+		log.Fatal(err)
+	}
+	if message.Usage.InputTokens > 100_000 {
+		runner.CompactBeforeNextTurn(anthropic.BetaCompactionConfigUnionParam{})
+	}
+}
+```
+
+The call only schedules the compaction. Once the current turn has finished, including any tool calls, the runner requests a summary, replaces its message history with the compaction response the API returns, and carries on. A turn that was paused (`pause_turn`) is resumed and finished first. If the current turn is the last one, the runner compacts and then stops, so the last message of the run is the compaction response. If you call it before the first turn, the compaction is the first request.
+
+The compaction response is returned like any other message and doesn't count towards `MaxIterations`. Its `StopReason` is `compaction`, the summary is in its first content block, and its `Usage.InputTokens` is the size of the history that was just summarized. Calling `CompactBeforeNextTurn()` while handling that message does nothing, so a threshold like the one above doesn't compact twice. With the streaming runner, read the message from `runner.LastMessage()` once the turn's events have been consumed.
+
+`CompactBeforeNextTurn()` takes the same config as the `Compaction` field of `BetaMessageNewParams`, and the zero value means `{"type": "summarize"}`. For example, to give your own summarization instructions:
+
+```go
+runner.CompactBeforeNextTurn(anthropic.BetaCompactionConfigUnionParam{
+	OfSummarize: &anthropic.BetaSummarizeCompactionParam{
+		Instructions: anthropic.String("Keep the page URLs found so far."),
+	},
+})
+```
+
+A few things to know:
+
+- Calling it again before the compaction runs replaces the pending one.
+- The runner doesn't add the beta for you, so pass it in `Betas`.
+- `ContextManagement` is left out of the compaction request, because the API doesn't accept the two together, and is sent again afterwards. While `ContextManagement` has a compaction edit (`compact_20260112`) the compaction is not sent: the next `NextMessage()` or `NextStreaming()` call returns an error and the pending compaction is dropped.
+- With the streaming runner, don't replace or append to `Params.Messages` while the compaction response is streaming, because that response is about to replace them. If you do, the stream ends with an error and your messages are kept. Other params can still be changed.
+- If the API returns no summary, the runner prints a warning to stderr and keeps the history as it is.
+- If the run ends on a turn that was cut short with tool calls that never ran (`max_tokens`, for example), the pending compaction is skipped with a warning printed to stderr. It is also skipped if the run stops at `MaxIterations` or you stop iterating.
+- The `Compaction` param itself can't be set in the runner's `Params`, because every request in the loop would compact again: the next `NextMessage()` or `NextStreaming()` call clears it and returns an error.
+- If the compaction request itself fails, the error is returned and the compaction is not retried. Call `CompactBeforeNextTurn()` again if you carry on.
+
 ### Inspecting State
 
 ```go

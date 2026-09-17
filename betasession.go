@@ -1307,10 +1307,15 @@ func (r *BetaManagedAgentsSession) UnmarshalJSON(data []byte) error {
 type BetaManagedAgentsSessionStatus string
 
 const (
+	// Transient error occurred, retrying automatically.
 	BetaManagedAgentsSessionStatusRescheduling BetaManagedAgentsSessionStatus = "rescheduling"
-	BetaManagedAgentsSessionStatusRunning      BetaManagedAgentsSessionStatus = "running"
-	BetaManagedAgentsSessionStatusIdle         BetaManagedAgentsSessionStatus = "idle"
-	BetaManagedAgentsSessionStatusTerminated   BetaManagedAgentsSessionStatus = "terminated"
+	// Agent is actively executing.
+	BetaManagedAgentsSessionStatusRunning BetaManagedAgentsSessionStatus = "running"
+	// Agent is waiting for input, including user messages or tool confirmations.
+	// Sessions start in idle.
+	BetaManagedAgentsSessionStatusIdle BetaManagedAgentsSessionStatus = "idle"
+	// Session has ended, either due to an error or completion.
+	BetaManagedAgentsSessionStatusTerminated BetaManagedAgentsSessionStatus = "terminated"
 )
 
 type BetaManagedAgentsSessionType string

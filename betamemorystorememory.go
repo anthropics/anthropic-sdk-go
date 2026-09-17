@@ -388,8 +388,13 @@ const (
 type BetaManagedAgentsMemoryView string
 
 const (
+	// Return the object with `content` set to `null`. The `content_size_bytes` and
+	// `content_sha256` fields remain populated, so sync clients can diff without
+	// fetching content.
 	BetaManagedAgentsMemoryViewBasic BetaManagedAgentsMemoryView = "basic"
-	BetaManagedAgentsMemoryViewFull  BetaManagedAgentsMemoryView = "full"
+	// Return the object with `content` populated. On list endpoints, `view=full` caps
+	// `limit` at 20.
+	BetaManagedAgentsMemoryViewFull BetaManagedAgentsMemoryView = "full"
 )
 
 // Optimistic-concurrency precondition: the update applies only if the memory's

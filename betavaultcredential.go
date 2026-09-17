@@ -457,8 +457,13 @@ const (
 type BetaManagedAgentsCredentialValidationStatus string
 
 const (
-	BetaManagedAgentsCredentialValidationStatusValid   BetaManagedAgentsCredentialValidationStatus = "valid"
+	// The credential successfully authenticated against its MCP server.
+	BetaManagedAgentsCredentialValidationStatusValid BetaManagedAgentsCredentialValidationStatus = "valid"
+	// The probe reached the MCP server and was rejected, and a refresh (if attempted)
+	// did not recover it.
 	BetaManagedAgentsCredentialValidationStatusInvalid BetaManagedAgentsCredentialValidationStatus = "invalid"
+	// The probe could not determine validity — for example, a transport error or a
+	// successful refresh that was not re-probed.
 	BetaManagedAgentsCredentialValidationStatusUnknown BetaManagedAgentsCredentialValidationStatus = "unknown"
 )
 
@@ -1202,9 +1207,13 @@ func (r *BetaManagedAgentsRefreshObject) UnmarshalJSON(data []byte) error {
 type BetaManagedAgentsRefreshObjectStatus string
 
 const (
-	BetaManagedAgentsRefreshObjectStatusSucceeded      BetaManagedAgentsRefreshObjectStatus = "succeeded"
-	BetaManagedAgentsRefreshObjectStatusFailed         BetaManagedAgentsRefreshObjectStatus = "failed"
-	BetaManagedAgentsRefreshObjectStatusConnectError   BetaManagedAgentsRefreshObjectStatus = "connect_error"
+	// The token endpoint returned a new access token.
+	BetaManagedAgentsRefreshObjectStatusSucceeded BetaManagedAgentsRefreshObjectStatus = "succeeded"
+	// The token endpoint returned an error response. See `http_response` for detail.
+	BetaManagedAgentsRefreshObjectStatusFailed BetaManagedAgentsRefreshObjectStatus = "failed"
+	// The token endpoint could not be reached (DNS, TLS, or connection error).
+	BetaManagedAgentsRefreshObjectStatusConnectError BetaManagedAgentsRefreshObjectStatus = "connect_error"
+	// No refresh token is stored for the credential, so no exchange was attempted.
 	BetaManagedAgentsRefreshObjectStatusNoRefreshToken BetaManagedAgentsRefreshObjectStatus = "no_refresh_token"
 )
 

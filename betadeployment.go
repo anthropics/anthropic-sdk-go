@@ -820,7 +820,11 @@ func (r *BetaManagedAgentsDeploymentPausedReasonErrorUnion) UnmarshalJSON(data [
 type BetaManagedAgentsDeploymentStatus string
 
 const (
+	// The deployment is active and can run sessions. Archived deployments also report
+	// this status; check `archived_at` to distinguish them.
 	BetaManagedAgentsDeploymentStatusActive BetaManagedAgentsDeploymentStatus = "active"
+	// The deployment is paused. Autonomous triggers are suppressed; manual runs are
+	// still permitted.
 	BetaManagedAgentsDeploymentStatusPaused BetaManagedAgentsDeploymentStatus = "paused"
 )
 

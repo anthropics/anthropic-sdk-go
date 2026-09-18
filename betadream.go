@@ -185,12 +185,17 @@ func (r *BetaDreamService) Cancel(ctx context.Context, dreamID string, body Beta
 	return res, err
 }
 
-// An asynchronous memory-consolidation job that reads a memory store plus a set of
-// session transcripts and writes consolidated memories into an output memory store
-// — a new store by default, or an existing store chosen via output_behavior. The
-// Dreams API is in research preview: the request and response shapes are volatile
-// and may change without the deprecation period that applies to
-// generally-available endpoints.
+// An asynchronous job that reads a memory store and past sessions, then writes a
+// reorganized version of that memory store.
+//
+// By default the dream writes its result to a new memory store and doesn't change
+// the input memory store. With `output_behavior` set to `update_existing`, it
+// writes its result into the input memory store instead. The Dreams API is in
+// research preview, so this resource can still change.
+//
+// See the
+// [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#how-it-works)
+// for what a dream reads and produces.
 type BetaDream struct {
 	// The unique ID of the dream (`drm_...`).
 	ID string `json:"id" api:"required"`
@@ -206,8 +211,10 @@ type BetaDream struct {
 	Inputs []BetaDreamInputUnion `json:"inputs" api:"required"`
 	// The guidance given when the dream was created, or `null` if none was given.
 	Instructions string `json:"instructions" api:"required"`
-	// Model identifier and configuration applied to every pipeline stage. Same wire
-	// shape as the Agents API ModelConfig.
+	// The model that runs a dream, from the request that created it.
+	//
+	// The dream uses this model for all of its work. The response always gives the
+	// model as an object, even if the request gave only a model ID.
 	Model BetaDreamModelConfig `json:"model" api:"required"`
 	// Which memory store a dream writes its result to. Defaults to `create_new` when
 	// left out of a create request.
@@ -233,13 +240,29 @@ type BetaDream struct {
 	// [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#watch-the-pipeline-run)
 	// for how to watch a running dream.
 	SessionID string `json:"session_id" api:"required"`
-	// Lifecycle status of a Dream.
+	// Where a dream is in its lifecycle.
+	//
+	// `completed`, `failed`, and `canceled` are final: once a dream has one of these
+	// statuses, its status doesn't change again.
+	//
+	// See the
+	// [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#lifecycle)
+	// for what each status means.
 	//
 	// Any of "pending", "running", "completed", "failed", "canceled".
 	Status BetaDreamStatus `json:"status" api:"required"`
 	// Any of "dream".
 	Type BetaDreamType `json:"type" api:"required"`
-	// Cumulative token usage for the dream across every pipeline stage.
+	// The tokens that a dream has used so far.
+	//
+	// The counts are zero while the dream is `pending` and update while it is
+	// `running`. They can keep changing after a cancel.
+	//
+	// See the
+	// [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#billing)
+	// for how dreams are billed. See the
+	// [prompt caching guide](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#tracking-cache-performance)
+	// for how the input token counts add up.
 	Usage BetaDreamUsage `json:"usage" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -444,9 +467,10 @@ func init() {
 	)
 }
 
-// An input memory store the dream reads from. The dream never mutates this store
-// unless it is also the destination: with output_behavior {type:
-// "update_existing"} the job consolidates this store in place.
+// The memory store that a dream reads, given as an entry in `inputs`.
+//
+// With `output_behavior` set to `update_existing`, the dream writes its result
+// into this memory store. Otherwise the dream doesn't change it.
 type BetaDreamMemoryStoreInput struct {
 	// The ID of the memory store for the dream to read (`memstore_...`).
 	//
@@ -486,9 +510,10 @@ const (
 	BetaDreamMemoryStoreInputTypeMemoryStore BetaDreamMemoryStoreInputType = "memory_store"
 )
 
-// An input memory store the dream reads from. The dream never mutates this store
-// unless it is also the destination: with output_behavior {type:
-// "update_existing"} the job consolidates this store in place.
+// The memory store that a dream reads, given as an entry in `inputs`.
+//
+// With `output_behavior` set to `update_existing`, the dream writes its result
+// into this memory store. Otherwise the dream doesn't change it.
 //
 // The properties MemoryStoreID, Type are required.
 type BetaDreamMemoryStoreInputParam struct {
@@ -510,10 +535,13 @@ func (r *BetaDreamMemoryStoreInputParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Model identifier and configuration applied to every pipeline stage. Same wire
-// shape as the Agents API ModelConfig.
+// The model that runs a dream, from the request that created it.
+//
+// The dream uses this model for all of its work. The response always gives the
+// model as an object, even if the request gave only a model ID.
 type BetaDreamModelConfig struct {
-	// Model identifier, e.g. "claude-opus-5". 1-256 characters.
+	// The ID of the model that runs the dream, as given in the request that created
+	// it.
 	ID string `json:"id" api:"required"`
 	// Inference speed mode. `fast` provides significantly faster output token
 	// generation at premium pricing. Not all models support `fast`; invalid
@@ -546,11 +574,17 @@ const (
 	BetaDreamModelConfigSpeedFast     BetaDreamModelConfigSpeed = "fast"
 )
 
-// Model identifier and configuration applied to every pipeline stage.
+// The object form of `model` in a request to create a dream.
 //
 // The property ID is required.
 type BetaDreamModelConfigParam struct {
-	// Model identifier, e.g. "claude-opus-5". 1-256 characters.
+	// The ID of the model to run the dream with.
+	//
+	// The ID can be 1 to 256 characters long.
+	//
+	// The
+	// [limits table in the Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#limits)
+	// lists the supported models.
 	ID string `json:"id" api:"required"`
 	// Inference speed mode. `fast` provides significantly faster output token
 	// generation at premium pricing. Not all models support `fast`; invalid
@@ -579,7 +613,7 @@ const (
 	BetaDreamModelConfigParamSpeedFast     BetaDreamModelConfigParamSpeed = "fast"
 )
 
-// An output memory store the dream writes consolidated memories into.
+// The memory store that holds a dream's result, as an entry in `outputs`.
 type BetaDreamOutput struct {
 	// The ID of the memory store that the dream writes its result to (`memstore_...`).
 	//
@@ -609,7 +643,7 @@ const (
 	BetaDreamOutputTypeMemoryStore BetaDreamOutputType = "memory_store"
 )
 
-// Input session transcripts the dream reads.
+// The sessions that a dream reads, given as an entry in `inputs`.
 type BetaDreamSessionsInput struct {
 	// The IDs of the sessions whose transcripts the dream reads (`sesn_...`).
 	//
@@ -652,7 +686,7 @@ const (
 	BetaDreamSessionsInputTypeSessions BetaDreamSessionsInputType = "sessions"
 )
 
-// Input session transcripts the dream reads.
+// The sessions that a dream reads, given as an entry in `inputs`.
 //
 // The properties SessionIDs, Type are required.
 type BetaDreamSessionsInputParam struct {
@@ -678,7 +712,14 @@ func (r *BetaDreamSessionsInputParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Lifecycle status of a Dream.
+// Where a dream is in its lifecycle.
+//
+// `completed`, `failed`, and `canceled` are final: once a dream has one of these
+// statuses, its status doesn't change again.
+//
+// See the
+// [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#lifecycle)
+// for what each status means.
 type BetaDreamStatus string
 
 const (
@@ -697,19 +738,32 @@ const (
 	// If `outputs` references a memory store, that memory store keeps what the dream
 	// wrote before it stopped.
 	BetaDreamStatusFailed BetaDreamStatus = "failed"
-	// The caller canceled the dream before it completed.
+	// A cancel request stopped the dream before it reached `completed` or `failed`.
+	//
+	// If `outputs` references a memory store, that memory store keeps what the dream
+	// wrote. `usage` can keep changing after the cancel.
 	BetaDreamStatusCanceled BetaDreamStatus = "canceled"
 )
 
-// Cumulative token usage for the dream across every pipeline stage.
+// The tokens that a dream has used so far.
+//
+// The counts are zero while the dream is `pending` and update while it is
+// `running`. They can keep changing after a cancel.
+//
+// See the
+// [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#billing)
+// for how dreams are billed. See the
+// [prompt caching guide](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#tracking-cache-performance)
+// for how the input token counts add up.
 type BetaDreamUsage struct {
-	// Total tokens used to create prompt-cache entries (sum of all TTL tiers).
+	// The dream's input tokens that were written to the prompt cache, for both the
+	// 5-minute and 1-hour cache durations.
 	CacheCreationInputTokens int64 `json:"cache_creation_input_tokens" api:"required"`
-	// Total tokens read from prompt cache.
+	// The dream's input tokens that were read from the prompt cache.
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens" api:"required"`
-	// Total uncached input tokens consumed across every pipeline stage.
+	// The dream's input tokens that weren't read from or written to the prompt cache.
 	InputTokens int64 `json:"input_tokens" api:"required"`
-	// Total output tokens generated across every pipeline stage.
+	// The tokens that the model generated for the dream.
 	OutputTokens int64 `json:"output_tokens" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -863,9 +917,11 @@ func init() {
 	)
 }
 
-// The default destination: the job creates a new output memory store as a clone of
-// the memory_store input and writes the consolidated memories into it. The input
-// store is never mutated.
+// Write the result to a new memory store that starts as a copy of the input memory
+// store. This is the default.
+//
+// The new memory store is in the same workspace as the dream. The dream doesn't
+// change the input memory store.
 type BetaOutputBehaviorCreateNew struct {
 	// Any of "create_new".
 	Type BetaOutputBehaviorCreateNewType `json:"type" api:"required"`
@@ -899,9 +955,11 @@ const (
 	BetaOutputBehaviorCreateNewTypeCreateNew BetaOutputBehaviorCreateNewType = "create_new"
 )
 
-// The default destination: the job creates a new output memory store as a clone of
-// the memory_store input and writes the consolidated memories into it. The input
-// store is never mutated.
+// Write the result to a new memory store that starts as a copy of the input memory
+// store. This is the default.
+//
+// The new memory store is in the same workspace as the dream. The dream doesn't
+// change the input memory store.
 //
 // The property Type is required.
 type BetaOutputBehaviorCreateNewParam struct {
@@ -918,9 +976,11 @@ func (r *BetaOutputBehaviorCreateNewParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The job writes the consolidated memories into this existing memory store instead
-// of creating one. In EAP the store must be the job's own memory_store input, so
-// the job consolidates the store in place.
+// Write the result into the input memory store instead of a new memory store.
+//
+// The credential must be allowed to write memory stores, or the request returns a
+// 403 error. While another `update_existing` dream on the same memory store hasn't
+// fully stopped, the request returns a 409 error.
 type BetaOutputBehaviorUpdateExisting struct {
 	// The ID of the memory store for the dream to write its result to
 	// (`memstore_...`). It must be the memory store in the `memory_store` entry of
@@ -959,9 +1019,11 @@ const (
 	BetaOutputBehaviorUpdateExistingTypeUpdateExisting BetaOutputBehaviorUpdateExistingType = "update_existing"
 )
 
-// The job writes the consolidated memories into this existing memory store instead
-// of creating one. In EAP the store must be the job's own memory_store input, so
-// the job consolidates the store in place.
+// Write the result into the input memory store instead of a new memory store.
+//
+// The credential must be allowed to write memory stores, or the request returns a
+// 403 error. While another `update_existing` dream on the same memory store hasn't
+// fully stopped, the request returns a 409 error.
 //
 // The properties MemoryStoreID, Type are required.
 type BetaOutputBehaviorUpdateExistingParam struct {
@@ -1064,11 +1126,9 @@ type BetaDreamGetParams struct {
 }
 
 type BetaDreamListParams struct {
-	// Return dreams with `created_at` strictly after this timestamp (exclusive lower
-	// bound, RFC 3339). Unset applies no lower bound.
+	// Return only dreams created after this time (exclusive), in RFC 3339.
 	CreatedAtGt param.Opt[time.Time] `query:"created_at[gt],omitzero" format:"date-time" json:"-"`
-	// Return dreams with `created_at` strictly before this timestamp (exclusive upper
-	// bound, RFC 3339). Unset applies no upper bound.
+	// Return only dreams created before this time (exclusive), in RFC 3339.
 	CreatedAtLt param.Opt[time.Time] `query:"created_at[lt],omitzero" format:"date-time" json:"-"`
 	// Whether to include archived dreams. Defaults to `false`.
 	IncludeArchived param.Opt[bool] `query:"include_archived,omitzero" json:"-"`
@@ -1086,8 +1146,10 @@ type BetaDreamListParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Filter by lifecycle status. Repeat the parameter to match any of multiple
-	// statuses. Empty applies no status filter.
+	// Return only dreams that have one of these statuses.
+	//
+	// Repeat the parameter to give more than one status. Leave it out to return dreams
+	// of every status.
 	Statuses []BetaDreamStatus `query:"statuses,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

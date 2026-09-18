@@ -441,7 +441,11 @@ type BetaMemoryStoreMemoryNewParams struct {
 	// must be NFC-normalized. Paths are case-sensitive.
 	Path        string            `json:"path" api:"required"`
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for view
+	// Selects which projection of a `memory` or `memory_version` the server returns.
+	// `basic` returns the object with `content` set to `null`; `full` populates
+	// `content`. When omitted, the default is endpoint-specific: retrieve operations
+	// default to `full`; list, create, and update operations default to `basic`.
+	// Listing with `view=full` caps `limit` at 20.
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
@@ -470,7 +474,11 @@ func (r BetaMemoryStoreMemoryNewParams) URLQuery() (v url.Values, err error) {
 type BetaMemoryStoreMemoryGetParams struct {
 	MemoryStoreID string            `path:"memory_store_id" api:"required" json:"-"`
 	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for view
+	// Selects which projection of a `memory` or `memory_version` the server returns.
+	// `basic` returns the object with `content` set to `null`; `full` populates
+	// `content`. When omitted, the default is endpoint-specific: retrieve operations
+	// default to `full`; list, create, and update operations default to `basic`.
+	// Listing with `view=full` caps `limit` at 20.
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
@@ -501,7 +509,11 @@ type BetaMemoryStoreMemoryUpdateParams struct {
 	// path unchanged.
 	Path        param.Opt[string] `json:"path,omitzero"`
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for view
+	// Selects which projection of a `memory` or `memory_version` the server returns.
+	// `basic` returns the object with `content` set to `null`; `full` populates
+	// `content`. When omitted, the default is endpoint-specific: retrieve operations
+	// default to `full`; list, create, and update operations default to `basic`.
+	// Listing with `view=full` caps `limit` at 20.
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
@@ -572,8 +584,7 @@ func (r BetaMemoryStoreMemoryListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaMemoryStoreMemoryDeleteParams struct {
-	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
-	// Query parameter for expected_content_sha256
+	MemoryStoreID         string            `path:"memory_store_id" api:"required" json:"-"`
 	ExpectedContentSha256 param.Opt[string] `query:"expected_content_sha256,omitzero" json:"-"`
 	WorkspaceID           param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.

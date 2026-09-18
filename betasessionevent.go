@@ -7867,8 +7867,7 @@ type BetaSessionEventListParams struct {
 	// Return events created at or before this time (inclusive). Compared against the
 	// event's `processed_at` value.
 	CreatedAtLte param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
-	// Query parameter for limit
-	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	Limit        param.Opt[int64]     `query:"limit,omitzero" json:"-"`
 	// Opaque pagination cursor from a previous response's `next_page`.
 	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`

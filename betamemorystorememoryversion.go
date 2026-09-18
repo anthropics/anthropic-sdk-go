@@ -422,7 +422,11 @@ const (
 type BetaMemoryStoreMemoryVersionGetParams struct {
 	MemoryStoreID string            `path:"memory_store_id" api:"required" json:"-"`
 	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for view
+	// Selects which projection of a `memory` or `memory_version` the server returns.
+	// `basic` returns the object with `content` set to `null`; `full` populates
+	// `content`. When omitted, the default is endpoint-specific: retrieve operations
+	// default to `full`; list, create, and update operations default to `basic`.
+	// Listing with `view=full` caps `limit` at 20.
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
@@ -441,28 +445,27 @@ func (r BetaMemoryStoreMemoryVersionGetParams) URLQuery() (v url.Values, err err
 }
 
 type BetaMemoryStoreMemoryVersionListParams struct {
-	// Query parameter for api_key_id
 	APIKeyID param.Opt[string] `query:"api_key_id,omitzero" json:"-"`
 	// Return versions created at or after this time (inclusive).
 	CreatedAtGte param.Opt[time.Time] `query:"created_at[gte],omitzero" format:"date-time" json:"-"`
 	// Return versions created at or before this time (inclusive).
-	CreatedAtLte param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
-	// Query parameter for limit
-	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Query parameter for memory_id
-	MemoryID param.Opt[string] `query:"memory_id,omitzero" json:"-"`
-	// Query parameter for page
-	Page param.Opt[string] `query:"page,omitzero" json:"-"`
-	// Query parameter for service_account_id
-	ServiceAccountID param.Opt[string] `query:"service_account_id,omitzero" json:"-"`
-	// Query parameter for session_id
-	SessionID   param.Opt[string] `query:"session_id,omitzero" json:"-"`
-	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for operation
+	CreatedAtLte     param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
+	Limit            param.Opt[int64]     `query:"limit,omitzero" json:"-"`
+	MemoryID         param.Opt[string]    `query:"memory_id,omitzero" json:"-"`
+	Page             param.Opt[string]    `query:"page,omitzero" json:"-"`
+	ServiceAccountID param.Opt[string]    `query:"service_account_id,omitzero" json:"-"`
+	SessionID        param.Opt[string]    `query:"session_id,omitzero" json:"-"`
+	WorkspaceID      param.Opt[string]    `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// The kind of mutation a `memory_version` records. Every non-no-op mutation to a
+	// memory appends exactly one version row with one of these values.
 	//
 	// Any of "created", "modified", "deleted".
 	Operation BetaManagedAgentsMemoryVersionOperation `query:"operation,omitzero" json:"-"`
-	// Query parameter for view
+	// Selects which projection of a `memory` or `memory_version` the server returns.
+	// `basic` returns the object with `content` set to `null`; `full` populates
+	// `content`. When omitted, the default is endpoint-specific: retrieve operations
+	// default to `full`; list, create, and update operations default to `basic`.
+	// Listing with `view=full` caps `limit` at 20.
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`

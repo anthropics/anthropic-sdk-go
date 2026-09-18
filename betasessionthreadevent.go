@@ -100,10 +100,8 @@ func (r *BetaSessionThreadEventService) StreamEvents(ctx context.Context, thread
 }
 
 type BetaSessionThreadEventListParams struct {
-	SessionID string `path:"session_id" api:"required" json:"-"`
-	// Query parameter for limit
-	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Query parameter for page
+	SessionID   string            `path:"session_id" api:"required" json:"-"`
+	Limit       param.Opt[int64]  `query:"limit,omitzero" json:"-"`
 	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.

@@ -929,14 +929,11 @@ type BetaDreamListParams struct {
 	CreatedAtGt param.Opt[time.Time] `query:"created_at[gt],omitzero" format:"date-time" json:"-"`
 	// Return dreams with `created_at` strictly before this timestamp (exclusive upper
 	// bound, RFC 3339). Unset applies no upper bound.
-	CreatedAtLt param.Opt[time.Time] `query:"created_at[lt],omitzero" format:"date-time" json:"-"`
-	// Query parameter for include_archived
-	IncludeArchived param.Opt[bool] `query:"include_archived,omitzero" json:"-"`
-	// Query parameter for limit
-	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Query parameter for page
-	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
-	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	CreatedAtLt     param.Opt[time.Time] `query:"created_at[lt],omitzero" format:"date-time" json:"-"`
+	IncludeArchived param.Opt[bool]      `query:"include_archived,omitzero" json:"-"`
+	Limit           param.Opt[int64]     `query:"limit,omitzero" json:"-"`
+	Page            param.Opt[string]    `query:"page,omitzero" json:"-"`
+	WorkspaceID     param.Opt[string]    `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Filter by lifecycle status. Repeat the parameter to match any of multiple
 	// statuses. Empty applies no status filter.
 	Statuses []BetaDreamStatus `query:"statuses,omitzero" json:"-"`

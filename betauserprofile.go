@@ -539,16 +539,15 @@ const (
 )
 
 type BetaUserProfileListParams struct {
-	// Query parameter for limit
-	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Query parameter for page
+	Limit       param.Opt[int64]  `query:"limit,omitzero" json:"-"`
 	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for order
+	// ListOrder enum
 	//
 	// Any of "asc", "desc".
 	Order BetaUserProfileListParamsOrder `query:"order,omitzero" json:"-"`
-	// Query parameter for order_by
+	// Sort field for listing user profiles: `created_at` (default) or `name`
+	// (case-insensitive; profiles without a name sort last).
 	//
 	// Any of "created_at", "name".
 	OrderBy BetaUserProfileListParamsOrderBy `query:"order_by,omitzero" json:"-"`
@@ -566,7 +565,7 @@ func (r BetaUserProfileListParams) URLQuery() (v url.Values, err error) {
 	})
 }
 
-// Query parameter for order
+// ListOrder enum
 type BetaUserProfileListParamsOrder string
 
 const (
@@ -574,7 +573,8 @@ const (
 	BetaUserProfileListParamsOrderDesc BetaUserProfileListParamsOrder = "desc"
 )
 
-// Query parameter for order_by
+// Sort field for listing user profiles: `created_at` (default) or `name`
+// (case-insensitive; profiles without a name sort last).
 type BetaUserProfileListParamsOrderBy string
 
 const (

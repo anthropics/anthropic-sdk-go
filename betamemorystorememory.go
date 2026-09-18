@@ -478,6 +478,7 @@ func (r BetaMemoryStoreMemoryNewParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaMemoryStoreMemoryGetParams struct {
+	// The ID of the memory store that holds the memory (`memstore_...`).
 	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
@@ -509,6 +510,7 @@ func (r BetaMemoryStoreMemoryGetParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaMemoryStoreMemoryUpdateParams struct {
+	// The ID of the memory store that holds the memory (`memstore_...`).
 	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
 	// New UTF-8 text content for the memory. Maximum 100 kB (102,400 bytes). Omit to
 	// leave the content unchanged (e.g., for a rename-only update).
@@ -608,7 +610,13 @@ func (r BetaMemoryStoreMemoryListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaMemoryStoreMemoryDeleteParams struct {
-	MemoryStoreID         string            `path:"memory_store_id" api:"required" json:"-"`
+	// The ID of the memory store that holds the memory (`memstore_...`).
+	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
+	// Delete the memory only if its current `content_sha256` equals this value, given
+	// as 64 lowercase hexadecimal characters. Omit it to delete unconditionally.
+	//
+	// If the hashes differ, the request fails with HTTP status 409 and nothing is
+	// deleted.
 	ExpectedContentSha256 param.Opt[string] `query:"expected_content_sha256,omitzero" json:"-"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).

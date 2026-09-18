@@ -420,6 +420,7 @@ const (
 )
 
 type BetaMemoryStoreMemoryVersionGetParams struct {
+	// The ID of the memory store that holds the version (`memstore_...`).
 	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
@@ -451,16 +452,26 @@ func (r BetaMemoryStoreMemoryVersionGetParams) URLQuery() (v url.Values, err err
 }
 
 type BetaMemoryStoreMemoryVersionListParams struct {
+	// Return only versions written with the API key that has this ID.
 	APIKeyID param.Opt[string] `query:"api_key_id,omitzero" json:"-"`
 	// Return versions created at or after this time (inclusive).
 	CreatedAtGte param.Opt[time.Time] `query:"created_at[gte],omitzero" format:"date-time" json:"-"`
 	// Return versions created at or before this time (inclusive).
-	CreatedAtLte     param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
-	Limit            param.Opt[int64]     `query:"limit,omitzero" json:"-"`
-	MemoryID         param.Opt[string]    `query:"memory_id,omitzero" json:"-"`
-	Page             param.Opt[string]    `query:"page,omitzero" json:"-"`
-	ServiceAccountID param.Opt[string]    `query:"service_account_id,omitzero" json:"-"`
-	SessionID        param.Opt[string]    `query:"session_id,omitzero" json:"-"`
+	CreatedAtLte param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
+	// The maximum number of versions to return per page. Defaults to 20.
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Return only versions of the memory with this ID (`mem_...`).
+	//
+	// The filter still works after the memory is deleted. The results then include the
+	// version whose `operation` is `deleted`.
+	MemoryID param.Opt[string] `query:"memory_id,omitzero" json:"-"`
+	// The `next_page` value from a previous response, to get the next page. Omit it to
+	// get the first page.
+	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Return only versions written by the service account with this ID (`svac_...`).
+	ServiceAccountID param.Opt[string] `query:"service_account_id,omitzero" json:"-"`
+	// Return only versions written by the session with this ID.
+	SessionID param.Opt[string] `query:"session_id,omitzero" json:"-"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
 	//
@@ -468,8 +479,7 @@ type BetaMemoryStoreMemoryVersionListParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// The kind of mutation a `memory_version` records. Every non-no-op mutation to a
-	// memory appends exactly one version row with one of these values.
+	// Return only versions that record this kind of change.
 	//
 	// Any of "created", "modified", "deleted".
 	Operation BetaManagedAgentsMemoryVersionOperation `query:"operation,omitzero" json:"-"`
@@ -496,6 +506,7 @@ func (r BetaMemoryStoreMemoryVersionListParams) URLQuery() (v url.Values, err er
 }
 
 type BetaMemoryStoreMemoryVersionRedactParams struct {
+	// The ID of the memory store that holds the version (`memstore_...`).
 	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).

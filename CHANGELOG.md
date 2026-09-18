@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.74.0 (2026-09-18)
+
+Full Changelog: [v1.73.0...v1.74.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.73.0...v1.74.0)
+
+### Features
+
+* **api:** add group with display_name to rate limits, deprecate group_type ([9594cc6](https://github.com/anthropics/anthropic-sdk-go/commit/9594cc6a4665f4c985aac3257fede2207df1fb60))
+* **environments:** HandleItem can continue a lease another process already started ([#366](https://github.com/anthropics/anthropic-sdk-go/issues/366)) ([fb8ce32](https://github.com/anthropics/anthropic-sdk-go/commit/fb8ce32754272ab38293b6781c21f30b7bc5c8ae))
+* **foundry:** add client for Claude on Microsoft Foundry ([#388](https://github.com/anthropics/anthropic-sdk-go/issues/388)) ([146568e](https://github.com/anthropics/anthropic-sdk-go/commit/146568ea4e15c169a642543b590d8f562785b571))
+* **tools:** add CompactBeforeNextTurn() to the tool runner ([#392](https://github.com/anthropics/anthropic-sdk-go/issues/392)) ([d53fb92](https://github.com/anthropics/anthropic-sdk-go/commit/d53fb92f8fb279ce93eec77e8d2ab802919b3c20))
+
+
+### Bug Fixes
+
+* **bedrock:** split comma-joined anthropic-beta values into separate betas ([#386](https://github.com/anthropics/anthropic-sdk-go/issues/386)) ([d8fc56f](https://github.com/anthropics/anthropic-sdk-go/commit/d8fc56f2550d7a65e74cb1010a4934b0ef809ee1))
+* **bedrock:** surface mid-stream exception and error frames as API errors ([#384](https://github.com/anthropics/anthropic-sdk-go/issues/384)) ([511aae2](https://github.com/anthropics/anthropic-sdk-go/commit/511aae21dbd62fed331a150320f83339deb4d12b))
+
+
+### Chores
+
+* **docs:** add descriptions for enum values and path parameters ([96a07b7](https://github.com/anthropics/anthropic-sdk-go/commit/96a07b7cd3f1f06cf146ee7402dfc3ced6dae335))
+* **docs:** clarify the compaction tool_changes and tool change descriptions ([3610ca4](https://github.com/anthropics/anthropic-sdk-go/commit/3610ca4349d54c9ae4290e390326b36db1c1933a))
+
 ## 1.73.0 (2026-09-15)
 
 Full Changelog: [v1.72.0...v1.73.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.72.0...v1.73.0)

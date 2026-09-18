@@ -452,8 +452,9 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 	Input           any    `json:"input"`
 	Name            string `json:"name"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
-	MCPServerName       string `json:"mcp_server_name"`
-	EvaluatedPermission string `json:"evaluated_permission"`
+	MCPServerName string `json:"mcp_server_name"`
+	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
+	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
 	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolResultEvent].

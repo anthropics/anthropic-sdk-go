@@ -298,6 +298,15 @@ const (
 	BetaManagedAgentsAgentCustomToolUseEventTypeAgentCustomToolUse BetaManagedAgentsAgentCustomToolUseEventType = "agent.custom_tool_use"
 )
 
+// AgentEvaluatedPermission enum
+type BetaManagedAgentsAgentEvaluatedPermission string
+
+const (
+	BetaManagedAgentsAgentEvaluatedPermissionAllow BetaManagedAgentsAgentEvaluatedPermission = "allow"
+	BetaManagedAgentsAgentEvaluatedPermissionAsk   BetaManagedAgentsAgentEvaluatedPermission = "ask"
+	BetaManagedAgentsAgentEvaluatedPermissionDeny  BetaManagedAgentsAgentEvaluatedPermission = "deny"
+)
+
 // Event representing the result of an MCP tool execution.
 type BetaManagedAgentsAgentMCPToolResultEvent struct {
 	// Unique identifier for this event.
@@ -488,7 +497,7 @@ type BetaManagedAgentsAgentMCPToolUseEvent struct {
 	// AgentEvaluatedPermission enum
 	//
 	// Any of "allow", "ask", "deny".
-	EvaluatedPermission BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermission `json:"evaluated_permission"`
+	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
 	// Names the resolved permission_policy that produced evaluated_permission, and
 	// under auto carries the judgement. Open union: clients must tolerate unknown
 	// variants.
@@ -524,15 +533,6 @@ type BetaManagedAgentsAgentMCPToolUseEventType string
 
 const (
 	BetaManagedAgentsAgentMCPToolUseEventTypeAgentMCPToolUse BetaManagedAgentsAgentMCPToolUseEventType = "agent.mcp_tool_use"
-)
-
-// AgentEvaluatedPermission enum
-type BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermission string
-
-const (
-	BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermissionAllow BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermission = "allow"
-	BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermissionAsk   BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermission = "ask"
-	BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermissionDeny  BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermission = "deny"
 )
 
 // An agent response event in the session conversation.
@@ -1350,7 +1350,7 @@ type BetaManagedAgentsAgentToolUseEvent struct {
 	// AgentEvaluatedPermission enum
 	//
 	// Any of "allow", "ask", "deny".
-	EvaluatedPermission BetaManagedAgentsAgentToolUseEventEvaluatedPermission `json:"evaluated_permission"`
+	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
 	// Names the resolved permission_policy that produced evaluated_permission, and
 	// under auto carries the judgement. Open union: clients must tolerate unknown
 	// variants.
@@ -1386,15 +1386,6 @@ type BetaManagedAgentsAgentToolUseEventType string
 
 const (
 	BetaManagedAgentsAgentToolUseEventTypeAgentToolUse BetaManagedAgentsAgentToolUseEventType = "agent.tool_use"
-)
-
-// AgentEvaluatedPermission enum
-type BetaManagedAgentsAgentToolUseEventEvaluatedPermission string
-
-const (
-	BetaManagedAgentsAgentToolUseEventEvaluatedPermissionAllow BetaManagedAgentsAgentToolUseEventEvaluatedPermission = "allow"
-	BetaManagedAgentsAgentToolUseEventEvaluatedPermissionAsk   BetaManagedAgentsAgentToolUseEventEvaluatedPermission = "ask"
-	BetaManagedAgentsAgentToolUseEventEvaluatedPermissionDeny  BetaManagedAgentsAgentToolUseEventEvaluatedPermission = "deny"
 )
 
 // Base64-encoded document data.
@@ -4086,8 +4077,9 @@ type BetaManagedAgentsSessionEventUnion struct {
 	Input           any    `json:"input"`
 	Name            string `json:"name"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
-	MCPServerName       string `json:"mcp_server_name"`
-	EvaluatedPermission string `json:"evaluated_permission"`
+	MCPServerName string `json:"mcp_server_name"`
+	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
+	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
 	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolResultEvent].
@@ -5560,8 +5552,9 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 	Input           any    `json:"input"`
 	Name            string `json:"name"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
-	MCPServerName       string `json:"mcp_server_name"`
-	EvaluatedPermission string `json:"evaluated_permission"`
+	MCPServerName string `json:"mcp_server_name"`
+	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
+	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
 	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolResultEvent].

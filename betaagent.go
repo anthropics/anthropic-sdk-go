@@ -3287,11 +3287,16 @@ func (u BetaManagedAgentsModelConfigParamsEffortUnion) GetType() *string {
 type BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel string
 
 const (
-	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelLow    BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "low"
+	// Low effort. Favors latency over reasoning depth.
+	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelLow BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "low"
+	// Medium effort. Balances latency and reasoning depth.
 	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelMedium BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "medium"
-	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelHigh   BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "high"
-	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelXhigh  BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "xhigh"
-	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelMax    BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "max"
+	// High effort. Favors reasoning depth.
+	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelHigh BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "high"
+	// Extra-high effort. Not all models accept this level.
+	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelXhigh BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "xhigh"
+	// Maximum effort. Favors reasoning depth over latency.
+	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelMax BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "max"
 )
 
 // Inference speed mode. `fast` provides significantly faster output token

@@ -185,7 +185,12 @@ func (r *BetaMessage) ParseOutput(dest any) error {
 // Param converters
 
 func (r BetaContentBlockUnion) ToParam() BetaContentBlockParamUnion {
-	return r.AsAny().toParamUnion()
+	variant := r.AsAny()
+	if variant == nil {
+		// A block type this SDK version does not model goes back as it came.
+		return param.Override[BetaContentBlockParamUnion](json.RawMessage(r.RawJSON()))
+	}
+	return variant.toParamUnion()
 }
 
 func (variant BetaTextBlock) toParamUnion() BetaContentBlockParamUnion {

@@ -712,6 +712,29 @@ func runItemEndedByHeartbeat(t *testing.T, answerHeartbeat func(w http.ResponseW
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(work))
 	}
+	holdHeartbeatsUntilServing(t, server, answerHeartbeat)
+
+	var logs lockedBuffer
+	worker := NewEnvironmentWorker(server.Client(), EnvironmentWorkerOptions{
+		EnvironmentID:  "env_1",
+		EnvironmentKey: "env_key",
+		WorkerID:       "test-worker",
+		Workdir:        t.TempDir(),
+		Logger:         slog.New(slog.NewTextHandler(&logs, nil)),
+	})
+	require.NoError(t, worker.Run(ctx))
+
+	require.NotEmpty(t, callsEndingIn(server.Calls(), "/sessions/sesn_test/events/stream"), "the runner must have served the session")
+	require.EqualValues(t, 2, polls.Load(), "Run must go back to polling after the item ends")
+	return server, logs.String()
+}
+
+// holdHeartbeatsUntilServing scripts a skill-less session that never completes
+// on its own and holds every heartbeat until the event stream is open, then
+// answers it with answerHeartbeat (beat counts from 1), so the heartbeat alone
+// decides how the item ends.
+func holdHeartbeatsUntilServing(t *testing.T, server *fakeWorkServer, answerHeartbeat func(w http.ResponseWriter, beat int)) {
+	t.Helper()
 	scriptOpenSession(t, server)
 	serving := make(chan struct{})
 	var servingOnce sync.Once
@@ -737,20 +760,6 @@ func runItemEndedByHeartbeat(t *testing.T, answerHeartbeat func(w http.ResponseW
 		}
 		answerHeartbeat(w, int(n))
 	}
-
-	var logs lockedBuffer
-	worker := NewEnvironmentWorker(server.Client(), EnvironmentWorkerOptions{
-		EnvironmentID:  "env_1",
-		EnvironmentKey: "env_key",
-		WorkerID:       "test-worker",
-		Workdir:        t.TempDir(),
-		Logger:         slog.New(slog.NewTextHandler(&logs, nil)),
-	})
-	require.NoError(t, worker.Run(ctx))
-
-	require.NotEmpty(t, callsEndingIn(server.Calls(), "/sessions/sesn_test/events/stream"), "the runner must have served the session")
-	require.EqualValues(t, 2, polls.Load(), "Run must go back to polling after the item ends")
-	return server, logs.String()
 }
 
 // A 412 on the heartbeat means the server cleared this worker's lease

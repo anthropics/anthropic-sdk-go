@@ -213,7 +213,7 @@ func (w *EnvironmentWorker) Run(ctx context.Context) error {
 			continue
 		}
 		// handleItem logs its own per-item failures; the poll loop keeps going.
-		_ = w.handleItem(ctx, work, w.opts.EnvironmentKey)
+		_ = w.handleItem(ctx, work, w.opts.EnvironmentKey, noHeartbeatSentinel)
 	}
 	if err := poller.Err(); err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
 		return err
@@ -236,7 +236,8 @@ func (w *EnvironmentWorker) Run(ctx context.Context) error {
 // [EnvironmentWorker]'s own EnvironmentKey option, then
 // ANTHROPIC_ENVIRONMENT_KEY — and is required only when WorkSecret is absent;
 // a work secret whose payload carries a sessions token authorizes the item on
-// its own.
+// its own. ExpectedLastHeartbeat is optional: set it to continue a lease
+// another process already started.
 type HandleItemOptions struct {
 	// WorkID identifies the already-claimed work item; falls back to
 	// ANTHROPIC_WORK_ID when empty.
@@ -261,6 +262,13 @@ type HandleItemOptions struct {
 	// left empty. A secret that yields no token uses EnvironmentKey instead —
 	// or, when no key resolved either, fails the item up front.
 	WorkSecret string
+	// ExpectedLastHeartbeat continues a lease another process already
+	// started: the last_heartbeat value that process's most recent heartbeat
+	// response returned, sent as this item's first expected_last_heartbeat.
+	// Falls back to ANTHROPIC_WORK_LAST_HEARTBEAT; when both are empty the
+	// worker starts the lease itself. A first heartbeat the server rejects
+	// with 412 releases the item without stopping it, like any later one.
+	ExpectedLastHeartbeat string
 }
 
 // HandleItem services a single already-claimed session work item — the per-item
@@ -284,6 +292,9 @@ type HandleItemOptions struct {
 // only when the item carries no work secret: a secret whose payload carries a
 // sessions token authorizes the item on its own, while a secret that yields
 // no token, with no key resolved, fails the item before any request is sent.
+// ExpectedLastHeartbeat, when set, is the last_heartbeat token another
+// process's heartbeat returned; HandleItem sends it as its first heartbeat's
+// expected_last_heartbeat and continues that lease instead of starting one.
 // A worker built with the deprecated
 // UnrestrictedPaths option, or a MemorySyncInterval below
 // [MinMemorySyncInterval], returns an error before any of this.
@@ -306,6 +317,7 @@ func (w *EnvironmentWorker) HandleItem(ctx context.Context, opts HandleItemOptio
 	// The per-item secret is optional: the field, then ANTHROPIC_WORK_SECRET,
 	// then empty (use the environment key).
 	workSecret := cmp.Or(opts.WorkSecret, os.Getenv("ANTHROPIC_WORK_SECRET"))
+	expectedLastHeartbeat := cmp.Or(opts.ExpectedLastHeartbeat, os.Getenv("ANTHROPIC_WORK_LAST_HEARTBEAT"), noHeartbeatSentinel)
 
 	for _, req := range []struct{ name, val, env string }{
 		{"work_id", workID, "ANTHROPIC_WORK_ID"},
@@ -331,7 +343,7 @@ func (w *EnvironmentWorker) HandleItem(ctx context.Context, opts HandleItemOptio
 			Type: "session",
 		},
 	}
-	return w.handleItem(ctx, work, environmentKey)
+	return w.handleItem(ctx, work, environmentKey, expectedLastHeartbeat)
 }
 
 // checkItemCredential verifies that the item will have a Bearer credential:
@@ -361,7 +373,10 @@ func checkItemCredential(environmentKey, workSecret string) error {
 // extracted from work.Secret (the item's per-item secret payload) when one is
 // present, and by environmentKey otherwise; a payload that yields no token
 // logs a warning and falls back to environmentKey unchanged.
-func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.BetaSelfHostedWork, environmentKey string) error {
+// expectedLastHeartbeat is the first heartbeat's expected_last_heartbeat:
+// noHeartbeatSentinel to start the lease, or the token a previous heartbeat
+// returned to continue one.
+func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.BetaSelfHostedWork, environmentKey, expectedLastHeartbeat string) error {
 	log := w.opts.Logger
 	if log == nil {
 		log = slog.Default()
@@ -426,7 +441,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	var leaseEnd leaseEndReason
 	go func() {
 		defer close(hbDone)
-		leaseEnd = runHeartbeat(sessCtx, w.client, work, hbStopOpts, log, &leaseTTL)
+		leaseEnd = runHeartbeat(sessCtx, w.client, work, hbStopOpts, expectedLastHeartbeat, log, &leaseTTL)
 		sessCancel()
 	}()
 
@@ -667,7 +682,12 @@ func (r leaseEndReason) lost() bool {
 // server-side and the session is cancelled rather than executing tools
 // against a session another worker may also have claimed. leaseTTL is updated
 // with the server-reported TTL after every successful beat.
-func runHeartbeat(ctx context.Context, client anthropic.Client, work *anthropic.BetaSelfHostedWork, reqOpts []option.RequestOption, log *slog.Logger, leaseTTL *sendwindow.Window) leaseEndReason {
+//
+// The first beat sends expectedLastHeartbeat — noHeartbeatSentinel when this
+// worker starts the lease, or the last_heartbeat a previous heartbeat returned
+// when it continues one another process started; every later beat echoes the
+// previous response's last_heartbeat.
+func runHeartbeat(ctx context.Context, client anthropic.Client, work *anthropic.BetaSelfHostedWork, reqOpts []option.RequestOption, expectedLastHeartbeat string, log *slog.Logger, leaseTTL *sendwindow.Window) leaseEndReason {
 	interval := heartbeatDefault
 	// ttl tracks the last server-reported TTL. It bounds the staleness
 	// ceiling: a run of transient errors lasting longer than this means the
@@ -676,7 +696,7 @@ func runHeartbeat(ctx context.Context, client anthropic.Client, work *anthropic.
 	// against a reclaimed lease. Initialized to heartbeatDefault so a
 	// permanently-failing first beat is bounded too.
 	ttl := heartbeatDefault
-	last := noHeartbeatSentinel
+	last := expectedLastHeartbeat
 	// lastSuccess seeds the staleness clock from goroutine start so the
 	// first-beat-never-succeeds case is bounded by ttl rather than retrying
 	// forever.

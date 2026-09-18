@@ -578,11 +578,23 @@ func (r *BetaDreamSessionsInputParam) UnmarshalJSON(data []byte) error {
 type BetaDreamStatus string
 
 const (
-	BetaDreamStatusPending   BetaDreamStatus = "pending"
-	BetaDreamStatusRunning   BetaDreamStatus = "running"
+	// The dream is waiting to start and hasn't read its inputs yet.
+	//
+	// `outputs` is empty and every `usage` count is zero.
+	BetaDreamStatusPending BetaDreamStatus = "pending"
+	// The dream is reading its inputs and writing its result.
+	//
+	// `usage` updates while the dream has this status.
+	BetaDreamStatusRunning BetaDreamStatus = "running"
+	// The dream finished and its output memory store holds the complete result.
 	BetaDreamStatusCompleted BetaDreamStatus = "completed"
-	BetaDreamStatusFailed    BetaDreamStatus = "failed"
-	BetaDreamStatusCanceled  BetaDreamStatus = "canceled"
+	// The dream stopped with an error, which `error` describes.
+	//
+	// If `outputs` references a memory store, that memory store keeps what the dream
+	// wrote before it stopped.
+	BetaDreamStatusFailed BetaDreamStatus = "failed"
+	// The caller canceled the dream before it completed.
+	BetaDreamStatusCanceled BetaDreamStatus = "canceled"
 )
 
 // Cumulative token usage for the dream across every pipeline stage.

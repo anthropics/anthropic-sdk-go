@@ -1755,7 +1755,13 @@ Methods:
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationRateLimit">BetaOrganizationRateLimit</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationRateLimitBatchGroup">BetaOrganizationRateLimitBatchGroup</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationRateLimitFilesGroup">BetaOrganizationRateLimitFilesGroup</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationRateLimitModelGroup">BetaOrganizationRateLimitModelGroup</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationRateLimitSkillsGroup">BetaOrganizationRateLimitSkillsGroup</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationRateLimitTokenCountGroup">BetaOrganizationRateLimitTokenCountGroup</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationRateLimitValue">BetaOrganizationRateLimitValue</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationRateLimitWebSearchGroup">BetaOrganizationRateLimitWebSearchGroup</a>
 
 Methods:
 

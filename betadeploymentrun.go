@@ -795,8 +795,11 @@ func (r *BetaManagedAgentsTriggerContextUnion) UnmarshalJSON(data []byte) error 
 type BetaManagedAgentsTriggerType string
 
 const (
+	// The run was fired by the deployment's cron schedule.
 	BetaManagedAgentsTriggerTypeSchedule BetaManagedAgentsTriggerType = "schedule"
-	BetaManagedAgentsTriggerTypeManual   BetaManagedAgentsTriggerType = "manual"
+	// The run was started manually by creating a session directly against the
+	// deployment.
+	BetaManagedAgentsTriggerTypeManual BetaManagedAgentsTriggerType = "manual"
 )
 
 // An unknown or unexpected error caused the run to fail. A fallback variant;

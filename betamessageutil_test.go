@@ -105,6 +105,19 @@ func TestBetaCompactionToParamKeepsSignature(t *testing.T) {
 	}
 }
 
+// A block type this SDK version does not model has no param variant to
+// populate, so it goes back exactly as it was received.
+func TestBetaContentBlockToParamKeepsUnmodeledBlock(t *testing.T) {
+	block := `{"type":"some_future_block","zebra":1,"alpha":{"nested":[true,null]}}`
+	sent, err := json.Marshal(unmarshalBetaContentBlockParam(t, block))
+	if err != nil {
+		t.Fatalf("Failed to marshal param: %v", err)
+	}
+	if string(sent) != block {
+		t.Errorf("ToParam changed the block\n want: %s\n  got: %s", block, sent)
+	}
+}
+
 func TestBetaAccumulatePreservesWireJSON(t *testing.T) {
 	toolResult := `{"type":"bash_code_execution_tool_result","tool_use_id":"srvtoolu_01","content":{"type":"bash_code_execution_result","stdout":"","stderr":"","return_code":0,"content":[{"type":"bash_code_execution_output","file_id":"file_011ABC"}]}}`
 	events := []string{

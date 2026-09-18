@@ -3,11 +3,14 @@ package anthropic
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"iter"
+	"os"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
 	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -28,6 +31,7 @@ type BetaToolRunnerParams struct {
 	BetaMessageNewParams
 	// MaxIterations limits the number of API calls. When set to 0 (the default),
 	// there is no limit and the runner continues until the model stops using tools.
+	// Compaction requests sent for CompactBeforeNextTurn are not counted.
 	MaxIterations int
 }
 
@@ -43,6 +47,12 @@ type betaToolRunnerBase struct {
 	completed      bool
 	opts           []option.RequestOption
 	err            error
+
+	pendingCompaction *BetaCompactionConfigUnionParam
+	// compacting is set from sending a compaction request until the next request
+	// is built, or until that request fails. CompactBeforeNextTurn does nothing
+	// meanwhile: there is nothing new to summarize.
+	compacting bool
 }
 
 func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool, params BetaToolRunnerParams, opts []option.RequestOption) betaToolRunnerBase {
@@ -95,7 +105,24 @@ func (b *betaToolRunnerBase) Messages() []BetaMessageParam {
 	return result
 }
 
-// IterationCount returns the number of API calls made so far.
+// CompactBeforeNextTurn compacts the conversation before the model's next turn.
+// Once the current turn has finished, including any tool calls, the runner
+// requests a summary, replaces the message history with the compaction response
+// and returns that response like any other message. Calling this again before
+// the compaction runs replaces the earlier call. compaction is the same config
+// as [BetaMessageNewParams.Compaction]; its zero value means {"type": "summarize"}.
+func (b *betaToolRunnerBase) CompactBeforeNextTurn(compaction BetaCompactionConfigUnionParam) {
+	if b.compacting {
+		return
+	}
+	if param.IsOmitted(compaction) {
+		compaction.OfSummarize = &BetaSummarizeCompactionParam{}
+	}
+	b.pendingCompaction = &compaction
+}
+
+// IterationCount returns the number of API calls made so far, not counting
+// compaction requests sent for CompactBeforeNextTurn.
 // This is incremented each time a turn makes an API call.
 func (b *betaToolRunnerBase) IterationCount() int {
 	return b.iterationCount
@@ -187,29 +214,7 @@ func determineNextStepFromStopReason(reason BetaStopReason) toolRunnerStep {
 //   - (nil, nil) if the turn did not stop for tool use or has no client tool calls
 //   - (nil, ctx.Err()) if context was cancelled
 func (b *betaToolRunnerBase) executeTools(ctx context.Context, message *BetaMessage) (*BetaMessageParam, error) {
-	if determineNextStepFromStopReason(message.StopReason) != stepRunTools {
-		return nil, nil
-	}
-
-	// Tool calls before the last fallback block belong to the attempt that
-	// refused; the fallback middleware strips them from replayed history, so
-	// answering them would orphan the tool_result.
-	seam := -1
-	for i, block := range message.Content {
-		if block.Type == "fallback" {
-			seam = i
-		}
-	}
-
-	var toolUseBlocks []BetaToolUseBlock
-
-	// Find all tool use blocks in the message
-	for i, block := range message.Content {
-		if i > seam && block.Type == "tool_use" {
-			toolUseBlocks = append(toolUseBlocks, block.AsToolUse())
-		}
-	}
-
+	toolUseBlocks := clientToolCalls(message)
 	if len(toolUseBlocks) == 0 {
 		return nil, nil
 	}
@@ -240,6 +245,39 @@ func (b *betaToolRunnerBase) executeTools(ctx context.Context, message *BetaMess
 	// Create user message with tool results
 	userMessage := NewBetaUserMessage(results...)
 	return &userMessage, nil
+}
+
+// clientToolCalls returns the tool calls the runner answers for the given
+// message: none unless the turn stopped for tool use.
+func clientToolCalls(message *BetaMessage) []BetaToolUseBlock {
+	if determineNextStepFromStopReason(message.StopReason) != stepRunTools {
+		return nil
+	}
+	return unansweredToolCalls(message)
+}
+
+// unansweredToolCalls returns the message's client tool calls that a
+// tool_result can still answer.
+func unansweredToolCalls(message *BetaMessage) []BetaToolUseBlock {
+	// Tool calls before the last fallback block belong to the attempt that
+	// refused; the fallback middleware strips them from replayed history, so
+	// answering them would orphan the tool_result.
+	seam := -1
+	for i, block := range message.Content {
+		if block.Type == "fallback" {
+			seam = i
+		}
+	}
+
+	var toolUseBlocks []BetaToolUseBlock
+
+	// Find all tool use blocks in the message
+	for i, block := range message.Content {
+		if i > seam && block.Type == "tool_use" {
+			toolUseBlocks = append(toolUseBlocks, block.AsToolUse())
+		}
+	}
+	return toolUseBlocks
 }
 
 func newBetaToolResultErrorBlockParam(toolUseID string, errorText string) BetaToolResultBlockParam {
@@ -342,6 +380,144 @@ func (b *betaToolRunnerBase) executeToolUse(ctx context.Context, toolUse BetaToo
 	}
 }
 
+// toolRunnerRequest is the next request the runner sends.
+type toolRunnerRequest struct {
+	params BetaMessageNewParams
+}
+
+// nextRequest answers the last turn's tool calls and works out what to send
+// next. It returns nil once the run is over.
+func (b *betaToolRunnerBase) nextRequest(ctx context.Context) (*toolRunnerRequest, error) {
+	if b.completed {
+		return nil, nil
+	}
+	if !param.IsOmitted(b.Params.Compaction) {
+		// Unset it so the refusal is reported once; left set, it would block
+		// every later turn.
+		b.Params.Compaction = BetaCompactionConfigUnionParam{}
+		return nil, errors.New("anthropic: Params.Compaction cannot be set on a tool runner because every request in the loop would compact again, so it was cleared; call CompactBeforeNextTurn when the conversation should be compacted instead")
+	}
+	if b.pendingCompaction != nil {
+		if err := b.checkCanCompact(); err != nil {
+			b.pendingCompaction = nil
+			return nil, err
+		}
+	}
+
+	// The response to a compaction request has nothing to answer or resume,
+	// whatever it stopped for.
+	turn := b.lastMessage
+	if b.compacting {
+		turn = nil
+	}
+	b.compacting = false
+
+	paused := false
+	if turn != nil {
+		paused = determineNextStepFromStopReason(turn.StopReason) == stepResume
+		if !paused && len(clientToolCalls(turn)) == 0 {
+			return b.finalTurnRequest(turn), nil
+		}
+	}
+	if b.Params.MaxIterations > 0 && b.iterationCount >= b.Params.MaxIterations {
+		b.completed = true
+		return nil, nil
+	}
+	if turn != nil && !paused {
+		toolMessage, err := b.executeTools(ctx, turn)
+		if err != nil {
+			return nil, err
+		}
+		if toolMessage != nil {
+			b.Params.Messages = append(b.Params.Messages, *toolMessage)
+		}
+	}
+
+	// The API cannot compact a conversation that stops mid-turn, so a paused
+	// turn is resumed first.
+	if b.pendingCompaction != nil && !paused {
+		return b.takeCompactionRequest(), nil
+	}
+	b.iterationCount++
+	return &toolRunnerRequest{params: b.Params.BetaMessageNewParams}, nil
+}
+
+// finalTurnRequest ends the run. It returns one last request when a compaction
+// is pending and the API can accept it after turn.
+func (b *betaToolRunnerBase) finalTurnRequest(turn *BetaMessage) *toolRunnerRequest {
+	b.completed = true
+	if b.pendingCompaction == nil {
+		return nil
+	}
+	// A turn that was cut short can end with tool calls that are never run, and
+	// the API cannot compact a conversation whose last turn has an unanswered
+	// tool call.
+	if len(unansweredToolCalls(turn)) > 0 {
+		fmt.Fprintf(os.Stderr, "Warning: The tool runner skipped the pending compaction because the last turn (stop_reason %q) ended with tool calls that were not run. Call CompactBeforeNextTurn again if you continue the conversation.\n", turn.StopReason)
+		b.pendingCompaction = nil
+		return nil
+	}
+	return b.takeCompactionRequest()
+}
+
+func (b *betaToolRunnerBase) checkCanCompact() error {
+	// The compaction request goes out without context_management, so the API
+	// cannot reject this pairing there: it would run and bill the compaction,
+	// then reject the next request.
+	for _, edit := range b.Params.ContextManagement.Edits {
+		if edit.OfCompact20260112 != nil {
+			return errors.New("anthropic: CompactBeforeNextTurn cannot be used while Params.ContextManagement has a compaction edit because the API does not accept a compaction block together with one; remove the edit and call it again")
+		}
+	}
+	return nil
+}
+
+func (b *betaToolRunnerBase) takeCompactionRequest() *toolRunnerRequest {
+	params := b.Params.BetaMessageNewParams
+	params.Compaction = *b.pendingCompaction
+	// The API refuses compaction alongside context_management; later requests
+	// keep it.
+	params.ContextManagement = BetaContextManagementConfigParam{}
+	b.pendingCompaction = nil
+	b.compacting = true
+	return &toolRunnerRequest{params: params}
+}
+
+// handleResponse records the response to request and carries it into the
+// conversation history.
+func (b *betaToolRunnerBase) handleResponse(request *toolRunnerRequest, message *BetaMessage) error {
+	if b.compacting {
+		return b.finishCompaction(request, message)
+	}
+	b.lastMessage = message
+	b.Params.Messages = append(b.Params.Messages, message.ToParam())
+	b.adoptContainer(message)
+	return nil
+}
+
+func (b *betaToolRunnerBase) finishCompaction(request *toolRunnerRequest, message *BetaMessage) error {
+	// Params is an exported field, so a change made while the response was
+	// streaming can only be noticed here: appending changes the length and
+	// assigning a new slice changes the first element's address.
+	sent, current := request.params.Messages, b.Params.Messages
+	if len(current) != len(sent) || (len(sent) > 0 && &current[0] != &sent[0]) {
+		return errors.New("anthropic: the tool runner's messages were changed while the conversation was being compacted, so the compaction response did not replace them; change Params.Messages once the compaction response has been read")
+	}
+	// A failed compaction comes back as a block with null content, or as no
+	// block at all.
+	for _, block := range message.Content {
+		if block.Type == "compaction" && block.Content.OfString != "" {
+			// The response has to be sent back as it came, first, replacing the
+			// messages it summarizes.
+			b.lastMessage = message
+			b.Params.Messages = []BetaMessageParam{message.ToParam()}
+			return nil
+		}
+	}
+	fmt.Fprint(os.Stderr, "Warning: Compaction produced no summary, so the tool runner kept the conversation as it is.\n")
+	return nil
+}
+
 // BetaToolRunner manages the automatic conversation loop between the assistant and tools
 // using non-streaming API calls. It implements an iterator pattern for processing
 // conversation turns.
@@ -372,45 +548,28 @@ func (r *BetaMessageService) NewToolRunner(tools []BetaTool, params BetaToolRunn
 //   - (nil, nil) when the conversation is complete (no more tool calls or max iterations reached)
 //   - (nil, error) if an error occurred during tool execution or API call
 func (r *BetaToolRunner) NextMessage(ctx context.Context) (*BetaMessage, error) {
-	if r.completed {
-		return nil, nil
-	}
-
-	// Check iteration limit
-	if r.Params.MaxIterations > 0 && r.iterationCount >= r.Params.MaxIterations {
-		r.completed = true
-		return nil, nil
-	}
-
 	// Execute any pending tool calls from the last message
-	if r.lastMessage != nil {
-		toolMessage, err := r.executeTools(ctx, r.lastMessage)
-		if err != nil {
-			r.err = err
-			return nil, err
-		}
-		if toolMessage != nil {
-			r.Params.Messages = append(r.Params.Messages, *toolMessage)
-		} else if determineNextStepFromStopReason(r.lastMessage.StopReason) != stepResume {
-			r.completed = true
-			return nil, nil
-		}
+	request, err := r.nextRequest(ctx)
+	if err != nil {
+		r.err = err
+		return nil, err
+	}
+	if request == nil {
+		return nil, nil
 	}
 
 	// Make API call
-	r.iterationCount++
-	messageParams := r.Params.BetaMessageNewParams
-	messageParams.Messages = r.Params.Messages
-
-	message, err := r.messageService.New(ctx, messageParams, r.opts...)
+	message, err := r.messageService.New(ctx, request.params, r.opts...)
 	if err != nil {
+		r.compacting = false
 		r.err = err
 		return nil, fmt.Errorf("failed to get next message: %w", err)
 	}
 
-	r.lastMessage = message
-	r.Params.Messages = append(r.Params.Messages, message.ToParam())
-	r.adoptContainer(message)
+	if err := r.handleResponse(request, message); err != nil {
+		r.err = err
+		return nil, err
+	}
 
 	return message, nil
 }
@@ -493,39 +652,26 @@ func (r *BetaMessageService) NewToolRunnerStreaming(tools []BetaTool, params Bet
 // has finished.
 func (r *BetaToolRunnerStreaming) NextStreaming(ctx context.Context) iter.Seq2[BetaRawMessageStreamEventUnion, error] {
 	return func(yield func(BetaRawMessageStreamEventUnion, error) bool) {
-		if r.completed {
-			return
-		}
-
-		// Check iteration limit
-		if r.Params.MaxIterations > 0 && r.iterationCount >= r.Params.MaxIterations {
-			r.completed = true
-			return
-		}
-
 		// Execute any pending tool calls from the last message
-		if r.lastMessage != nil {
-			toolMessage, err := r.executeTools(ctx, r.lastMessage)
-			if err != nil {
-				r.err = err
-				yield(BetaRawMessageStreamEventUnion{}, err)
-				return
-			}
-			if toolMessage != nil {
-				r.Params.Messages = append(r.Params.Messages, *toolMessage)
-			} else if determineNextStepFromStopReason(r.lastMessage.StopReason) != stepResume {
-				r.completed = true
-				return
-			}
+		request, err := r.nextRequest(ctx)
+		if err != nil {
+			r.err = err
+			yield(BetaRawMessageStreamEventUnion{}, err)
+			return
+		}
+		if request == nil {
+			return
 		}
 
 		// Make streaming API call
-		r.iterationCount++
-		streamParams := r.Params.BetaMessageNewParams
-		streamParams.Messages = r.Params.Messages
-
-		stream := r.messageService.NewStreaming(ctx, streamParams, r.opts...)
+		stream := r.messageService.NewStreaming(ctx, request.params, r.opts...)
 		defer stream.Close()
+		responded := false
+		defer func() {
+			if !responded {
+				r.compacting = false
+			}
+		}()
 
 		// We need to collect the final message from the stream for the next iteration
 		finalMessage := &BetaMessage{}
@@ -550,9 +696,11 @@ func (r *BetaToolRunnerStreaming) NextStreaming(ctx context.Context) iter.Seq2[B
 			return
 		}
 
-		r.lastMessage = finalMessage
-		r.Params.Messages = append(r.Params.Messages, finalMessage.ToParam())
-		r.adoptContainer(finalMessage)
+		responded = true
+		if err := r.handleResponse(request, finalMessage); err != nil {
+			r.err = err
+			yield(BetaRawMessageStreamEventUnion{}, err)
+		}
 	}
 }
 

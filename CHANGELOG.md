@@ -7,6 +7,7 @@ Full Changelog: [v1.73.0...v1.74.0](https://github.com/anthropics/anthropic-sdk-
 ### Features
 
 * **api:** add group with display_name to rate limits, deprecate group_type ([9594cc6](https://github.com/anthropics/anthropic-sdk-go/commit/9594cc6a4665f4c985aac3257fede2207df1fb60))
+* **environments:** HandleItem can continue a lease another process already started ([#366](https://github.com/anthropics/anthropic-sdk-go/issues/366)) ([fb8ce32](https://github.com/anthropics/anthropic-sdk-go/commit/fb8ce32754272ab38293b6781c21f30b7bc5c8ae))
 * **foundry:** add client for Claude on Microsoft Foundry ([#388](https://github.com/anthropics/anthropic-sdk-go/issues/388)) ([146568e](https://github.com/anthropics/anthropic-sdk-go/commit/146568ea4e15c169a642543b590d8f562785b571))
 * **tools:** add CompactBeforeNextTurn() to the tool runner ([#392](https://github.com/anthropics/anthropic-sdk-go/issues/392)) ([d53fb92](https://github.com/anthropics/anthropic-sdk-go/commit/d53fb92f8fb279ce93eec77e8d2ab802919b3c20))
 

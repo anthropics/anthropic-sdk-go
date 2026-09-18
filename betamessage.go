@@ -6009,8 +6009,8 @@ func (r *BetaCountTokensContextManagementResponse) UnmarshalJSON(data []byte) er
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Response envelope for request-level diagnostics. Present (possibly null)
-// whenever the caller supplied `diagnostics` on the request.
+// Request-level diagnostics: why the prompt cache could not fully reuse the prefix
+// of the request named by `diagnostics.previous_message_id`.
 type BetaDiagnostics struct {
 	// Explains why the prompt cache could not fully reuse the prefix from the request
 	// identified by `diagnostics.previous_message_id`. `null` means diagnosis is still
@@ -7858,8 +7858,8 @@ type BetaMessage struct {
 	//
 	// Information about context management strategies applied during the request.
 	ContextManagement BetaContextManagementResponse `json:"context_management" api:"required"`
-	// Response envelope for request-level diagnostics. Present (possibly null)
-	// whenever the caller supplied `diagnostics` on the request.
+	// Request-level diagnostics: why the prompt cache could not fully reuse the prefix
+	// of the request named by `diagnostics.previous_message_id`.
 	Diagnostics BetaDiagnostics `json:"diagnostics" api:"required"`
 	// The model that will complete your prompt.
 	//

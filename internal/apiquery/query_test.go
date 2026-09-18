@@ -11,7 +11,7 @@ func P[T any](v T) *T { return &v }
 
 type Primitives struct {
 	A bool    `query:"a"`
-	B int     `query:"b"`
+	B int64   `query:"b"`
 	C uint    `query:"c"`
 	D float64 `query:"d"`
 	E float32 `query:"e"`
@@ -20,7 +20,7 @@ type Primitives struct {
 
 type PrimitivePointers struct {
 	A *bool    `query:"a"`
-	B *int     `query:"b"`
+	B *int64   `query:"b"`
 	C *uint    `query:"c"`
 	D *float64 `query:"d"`
 	E *float32 `query:"e"`
@@ -175,7 +175,7 @@ var tests = map[string]struct {
 		"a=false&b=237628372683&c=654&d=9999.43&e=43.7599983215332&f=1,2,3,4,5",
 		PrimitivePointers{
 			A: P(false),
-			B: P(237628372683),
+			B: P(int64(237628372683)),
 			C: P(uint(654)),
 			D: P(9999.43),
 			E: P(float32(43.76)),

@@ -873,9 +873,15 @@ func (r *BetaOutputBehaviorUpdateExistingParam) UnmarshalJSON(data []byte) error
 }
 
 type BetaDreamNewParams struct {
-	Inputs         []BetaDreamInputUnionParam   `json:"inputs,omitzero" api:"required"`
-	Model          BetaDreamNewParamsModelUnion `json:"model,omitzero" api:"required"`
-	Instructions   param.Opt[string]            `json:"instructions,omitzero"`
+	Inputs       []BetaDreamInputUnionParam   `json:"inputs,omitzero" api:"required"`
+	Model        BetaDreamNewParamsModelUnion `json:"model,omitzero" api:"required"`
+	Instructions param.Opt[string]            `json:"instructions,omitzero"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID    param.Opt[string]            `header:"anthropic-workspace-id,omitzero" json:"-"`
 	OutputBehavior BetaOutputBehaviorUnionParam `json:"output_behavior,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
@@ -917,6 +923,12 @@ func (u *BetaDreamNewParamsModelUnion) asAny() any {
 }
 
 type BetaDreamGetParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -933,7 +945,13 @@ type BetaDreamListParams struct {
 	IncludeArchived param.Opt[bool]      `query:"include_archived,omitzero" json:"-"`
 	Limit           param.Opt[int64]     `query:"limit,omitzero" json:"-"`
 	Page            param.Opt[string]    `query:"page,omitzero" json:"-"`
-	WorkspaceID     param.Opt[string]    `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Filter by lifecycle status. Repeat the parameter to match any of multiple
 	// statuses. Empty applies no status filter.
 	Statuses []BetaDreamStatus `query:"statuses,omitzero" json:"-"`
@@ -951,6 +969,12 @@ func (r BetaDreamListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaDreamArchiveParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -958,6 +982,12 @@ type BetaDreamArchiveParams struct {
 }
 
 type BetaDreamCancelParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

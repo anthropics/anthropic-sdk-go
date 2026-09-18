@@ -434,7 +434,13 @@ type BetaUserProfileNewParams struct {
 	Name param.Opt[string] `json:"name,omitzero"`
 	// A timestamp in RFC 3339 format
 	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
-	WorkspaceID             param.Opt[string]    `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// How the platform uses the API on behalf of the entity this profile represents.
 	// `application`: the platform sells a product that uses the API behind the scenes,
 	// and the profile represents an individual end-user of that product.
@@ -477,6 +483,12 @@ const (
 )
 
 type BetaUserProfileGetParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -494,7 +506,13 @@ type BetaUserProfileUpdateParams struct {
 	Name param.Opt[string] `json:"name,omitzero"`
 	// A timestamp in RFC 3339 format
 	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
-	WorkspaceID             param.Opt[string]    `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// How the platform uses the API on behalf of the entity this profile represents.
 	// `application`: the platform sells a product that uses the API behind the scenes,
 	// and the profile represents an individual end-user of that product.
@@ -539,8 +557,14 @@ const (
 )
 
 type BetaUserProfileListParams struct {
-	Limit       param.Opt[int64]  `query:"limit,omitzero" json:"-"`
-	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	Limit param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	Page  param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// ListOrder enum
 	//
@@ -583,6 +607,12 @@ const (
 )
 
 type BetaUserProfileNewEnrollmentURLParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

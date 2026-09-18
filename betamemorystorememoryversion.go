@@ -420,8 +420,14 @@ const (
 )
 
 type BetaMemoryStoreMemoryVersionGetParams struct {
-	MemoryStoreID string            `path:"memory_store_id" api:"required" json:"-"`
-	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Selects which projection of a `memory` or `memory_version` the server returns.
 	// `basic` returns the object with `content` set to `null`; `full` populates
 	// `content`. When omitted, the default is endpoint-specific: retrieve operations
@@ -455,7 +461,13 @@ type BetaMemoryStoreMemoryVersionListParams struct {
 	Page             param.Opt[string]    `query:"page,omitzero" json:"-"`
 	ServiceAccountID param.Opt[string]    `query:"service_account_id,omitzero" json:"-"`
 	SessionID        param.Opt[string]    `query:"session_id,omitzero" json:"-"`
-	WorkspaceID      param.Opt[string]    `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// The kind of mutation a `memory_version` records. Every non-no-op mutation to a
 	// memory appends exactly one version row with one of these values.
 	//
@@ -484,8 +496,14 @@ func (r BetaMemoryStoreMemoryVersionListParams) URLQuery() (v url.Values, err er
 }
 
 type BetaMemoryStoreMemoryVersionRedactParams struct {
-	MemoryStoreID string            `path:"memory_store_id" api:"required" json:"-"`
-	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

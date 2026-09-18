@@ -176,8 +176,14 @@ type CompletionNewParams struct {
 	// reaches a particular probability specified by `top_p`.
 	//
 	// Recommended for advanced use cases only.
-	TopP        param.Opt[float64] `json:"top_p,omitzero"`
-	WorkspaceID param.Opt[string]  `header:"anthropic-workspace-id,omitzero" json:"-"`
+	TopP param.Opt[float64] `json:"top_p,omitzero"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
 	// Sequences that will cause the model to stop generating.

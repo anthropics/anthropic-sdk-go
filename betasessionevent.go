@@ -7869,7 +7869,13 @@ type BetaSessionEventListParams struct {
 	CreatedAtLte param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
 	Limit        param.Opt[int64]     `query:"limit,omitzero" json:"-"`
 	// Opaque pagination cursor from a previous response's `next_page`.
-	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Sort direction for results, ordered by the event's `processed_at`. Defaults to
 	// `asc` (chronological).
@@ -7904,8 +7910,14 @@ const (
 
 type BetaSessionEventSendParams struct {
 	// Events to send to the `session`.
-	Events      []BetaManagedAgentsEventParamsUnion `json:"events,omitzero" api:"required"`
-	WorkspaceID param.Opt[string]                   `header:"anthropic-workspace-id,omitzero" json:"-"`
+	Events []BetaManagedAgentsEventParamsUnion `json:"events,omitzero" api:"required"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -7920,6 +7932,12 @@ func (r *BetaSessionEventSendParams) UnmarshalJSON(data []byte) error {
 }
 
 type BetaSessionEventStreamParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// When set, this connection also receives streaming deltas (`event_start`,
 	// `event_delta`) while an event is being produced, before the event itself

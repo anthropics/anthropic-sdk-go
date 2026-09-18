@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	shimjson "github.com/anthropics/anthropic-sdk-go/internal/encoding/json"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 )
@@ -45,13 +46,17 @@ func (r FieldStruct) MarshalJSON() (data []byte, err error) {
 type StructWithAdditionalProperties struct {
 	First       string         `json:"first"`
 	Second      int            `json:"second"`
-	ExtraFields map[string]any `json:"-"`
+	ExtraFields map[string]any `json:"-" api:"extrafields"`
 	param.APIObject
 }
 
 func (s StructWithAdditionalProperties) MarshalJSON() ([]byte, error) {
 	type shadow StructWithAdditionalProperties
 	return param.MarshalWithExtras(s, (*shadow)(&s), s.ExtraFields)
+}
+
+func (s *StructWithAdditionalProperties) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, s)
 }
 
 func TestIsNullish(t *testing.T) {
@@ -176,6 +181,17 @@ func TestAdditionalProperties(t *testing.T) {
 
 	if string(bytes) != exp {
 		t.Fatalf("expected %s, got %s", exp, string(bytes))
+	}
+
+	var decoded StructWithAdditionalProperties
+	if err := json.Unmarshal([]byte(exp), &decoded); err != nil {
+		t.Fatalf("failed to unmarshal: %v", err)
+	}
+	if len(decoded.ExtraFields) != 1 || decoded.ExtraFields["hi"] != "there" {
+		t.Fatalf("expected ExtraFields to be populated on unmarshal, got %#v", decoded.ExtraFields)
+	}
+	if bytes, err = json.Marshal(decoded); err != nil || string(bytes) != exp {
+		t.Fatalf("expected round-trip %s, got %s (err %v)", exp, string(bytes), err)
 	}
 }
 

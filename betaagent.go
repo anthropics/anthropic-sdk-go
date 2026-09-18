@@ -1763,7 +1763,7 @@ type BetaManagedAgentsCustomToolInputSchemaParam struct {
 	Required   []string       `json:"required,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
 	Type        constant.Object `json:"type" default:"object"`
-	ExtraFields map[string]any  `json:"-"`
+	ExtraFields map[string]any  `json:"-" api:"extrafields"`
 	paramObj
 }
 

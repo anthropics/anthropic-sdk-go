@@ -2,6 +2,7 @@ package anthropic
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -80,11 +81,18 @@ func (r *BetaOrganizationWorkspaceRateLimitService) ListAutoPaging(ctx context.C
 }
 
 type BetaWorkspaceRateLimit struct {
-	// The kind of rate-limit group this entry represents. `model_group` entries apply
-	// to a family of models (listed in `models`); other values apply to an API-surface
-	// category and have `models` set to `null`.
+	// The rate-limit group this entry's limits apply to. Its `type` equals
+	// `group_type`.
+	Group BetaWorkspaceRateLimitGroupUnion `json:"group" api:"required"`
+	// Deprecated: use `group.type` instead. The kind of rate-limit group this entry
+	// represents. `model_group` entries apply to a family of models (listed in
+	// `models`); other values apply to an API-surface category and have `models` set
+	// to `null`. Always equal to `group.type`.
 	//
 	// Any of "batch", "files", "model_group", "skills", "token_count", "web_search".
+	//
+	// Deprecated: Use `group.type` instead. `group_type` is still returned and always
+	// equals `group.type`.
 	GroupType BetaWorkspaceRateLimitGroupType `json:"group_type" api:"required"`
 	// The limiter values overridden for this group in this workspace. Limiter types
 	// without a workspace override are omitted and inherit the organization value.
@@ -92,7 +100,7 @@ type BetaWorkspaceRateLimit struct {
 	// Model names this entry's limits apply to, including aliases. `null` when
 	// `group_type` is not `"model_group"`.
 	Models []string `json:"models" api:"required"`
-	// The `id` of the RateLimit group this override applies to.
+	// The `id` of the organization's RateLimit entry this override applies to.
 	RateLimitID string `json:"rate_limit_id" api:"required"`
 	// Object type. Always `workspace_rate_limit` for workspace rate-limit entries.
 	Type constant.WorkspaceRateLimit `json:"type" default:"workspace_rate_limit"`
@@ -100,6 +108,7 @@ type BetaWorkspaceRateLimit struct {
 	WorkspaceID string `json:"workspace_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
+		Group       respjson.Field
 		GroupType   respjson.Field
 		Limits      respjson.Field
 		Models      respjson.Field
@@ -117,9 +126,116 @@ func (r *BetaWorkspaceRateLimit) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The kind of rate-limit group this entry represents. `model_group` entries apply
-// to a family of models (listed in `models`); other values apply to an API-surface
-// category and have `models` set to `null`.
+// BetaWorkspaceRateLimitGroupUnion contains all possible properties and values
+// from [BetaOrganizationRateLimitModelGroup],
+// [BetaOrganizationRateLimitBatchGroup],
+// [BetaOrganizationRateLimitTokenCountGroup],
+// [BetaOrganizationRateLimitFilesGroup], [BetaOrganizationRateLimitSkillsGroup],
+// [BetaOrganizationRateLimitWebSearchGroup].
+//
+// Use the [BetaWorkspaceRateLimitGroupUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaWorkspaceRateLimitGroupUnion struct {
+	ID string `json:"id"`
+	// This field is from variant [BetaOrganizationRateLimitModelGroup].
+	DisplayName string `json:"display_name"`
+	// Any of "model_group", "batch", "token_count", "files", "skills", "web_search".
+	Type string `json:"type"`
+	JSON struct {
+		ID          respjson.Field
+		DisplayName respjson.Field
+		Type        respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// anyBetaWorkspaceRateLimitGroup is implemented by each variant of
+// [BetaWorkspaceRateLimitGroupUnion] to add type safety for the return type of
+// [BetaWorkspaceRateLimitGroupUnion.AsAny]
+type anyBetaWorkspaceRateLimitGroup interface {
+	implBetaWorkspaceRateLimitGroupUnion()
+}
+
+func (BetaOrganizationRateLimitModelGroup) implBetaWorkspaceRateLimitGroupUnion()      {}
+func (BetaOrganizationRateLimitBatchGroup) implBetaWorkspaceRateLimitGroupUnion()      {}
+func (BetaOrganizationRateLimitTokenCountGroup) implBetaWorkspaceRateLimitGroupUnion() {}
+func (BetaOrganizationRateLimitFilesGroup) implBetaWorkspaceRateLimitGroupUnion()      {}
+func (BetaOrganizationRateLimitSkillsGroup) implBetaWorkspaceRateLimitGroupUnion()     {}
+func (BetaOrganizationRateLimitWebSearchGroup) implBetaWorkspaceRateLimitGroupUnion()  {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaWorkspaceRateLimitGroupUnion.AsAny().(type) {
+//	case anthropic.BetaOrganizationRateLimitModelGroup:
+//	case anthropic.BetaOrganizationRateLimitBatchGroup:
+//	case anthropic.BetaOrganizationRateLimitTokenCountGroup:
+//	case anthropic.BetaOrganizationRateLimitFilesGroup:
+//	case anthropic.BetaOrganizationRateLimitSkillsGroup:
+//	case anthropic.BetaOrganizationRateLimitWebSearchGroup:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaWorkspaceRateLimitGroupUnion) AsAny() anyBetaWorkspaceRateLimitGroup {
+	switch u.Type {
+	case "model_group":
+		return u.AsModelGroup()
+	case "batch":
+		return u.AsBatch()
+	case "token_count":
+		return u.AsTokenCount()
+	case "files":
+		return u.AsFiles()
+	case "skills":
+		return u.AsSkills()
+	case "web_search":
+		return u.AsWebSearch()
+	}
+	return nil
+}
+
+func (u BetaWorkspaceRateLimitGroupUnion) AsModelGroup() (v BetaOrganizationRateLimitModelGroup) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWorkspaceRateLimitGroupUnion) AsBatch() (v BetaOrganizationRateLimitBatchGroup) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWorkspaceRateLimitGroupUnion) AsTokenCount() (v BetaOrganizationRateLimitTokenCountGroup) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWorkspaceRateLimitGroupUnion) AsFiles() (v BetaOrganizationRateLimitFilesGroup) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWorkspaceRateLimitGroupUnion) AsSkills() (v BetaOrganizationRateLimitSkillsGroup) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWorkspaceRateLimitGroupUnion) AsWebSearch() (v BetaOrganizationRateLimitWebSearchGroup) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaWorkspaceRateLimitGroupUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaWorkspaceRateLimitGroupUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Deprecated: use `group.type` instead. The kind of rate-limit group this entry
+// represents. `model_group` entries apply to a family of models (listed in
+// `models`); other values apply to an API-surface category and have `models` set
+// to `null`. Always equal to `group.type`.
 type BetaWorkspaceRateLimitGroupType string
 
 const (

@@ -64,6 +64,7 @@ type BashCodeExecutionOutput string                 // Always "bash_code_executi
 type BashCodeExecutionResult string                 // Always "bash_code_execution_result"
 type BashCodeExecutionToolResult string             // Always "bash_code_execution_tool_result"
 type BashCodeExecutionToolResultError string        // Always "bash_code_execution_tool_result_error"
+type Batch string                                   // Always "batch"
 type BillingError string                            // Always "billing_error"
 type BrowserState string                            // Always "browser_state"
 type BrowserToolset20260801 string                  // Always "browser_toolset_20260801"
@@ -144,6 +145,7 @@ type FederationRule string                          // Always "federation_rule"
 type FederationRuleWorkspace string                 // Always "federation_rule_workspace"
 type FederationRuleWorkspaceDeleted string          // Always "federation_rule_workspace_deleted"
 type File string                                    // Always "file"
+type Files string                                   // Always "files"
 type GCP string                                     // Always "gcp"
 type Glob string                                    // Always "glob"
 type Grep string                                    // Always "grep"
@@ -176,6 +178,7 @@ type MessageStop string                             // Always "message_stop"
 type MessagesChanged string                         // Always "messages_changed"
 type Model string                                   // Always "model"
 type ModelChanged string                            // Always "model_changed"
+type ModelGroup string                              // Always "model_group"
 type None string                                    // Always "none"
 type NotApplied string                              // Always "not_applied"
 type NotFoundError string                           // Always "not_found_error"
@@ -224,6 +227,7 @@ type Skill string                                   // Always "skill"
 type SkillDeleted string                            // Always "skill_deleted"
 type SkillVersion string                            // Always "skill_version"
 type SkillVersionDeleted string                     // Always "skill_version_deleted"
+type Skills string                                  // Always "skills"
 type StrReplace string                              // Always "str_replace"
 type StrReplaceBasedEditTool string                 // Always "str_replace_based_edit_tool"
 type StrReplaceEditor string                        // Always "str_replace_editor"
@@ -249,6 +253,7 @@ type ThinkingDropped string                         // Always "thinking_dropped"
 type ThinkingMismatchAllowed string                 // Always "thinking_mismatch_allowed"
 type ThinkingTurns string                           // Always "thinking_turns"
 type TimeoutError string                            // Always "timeout_error"
+type TokenCount string                              // Always "token_count"
 type Tokens string                                  // Always "tokens"
 type Tool string                                    // Always "tool"
 type ToolAddition string                            // Always "tool_addition"
@@ -350,6 +355,7 @@ func (c BashCodeExecutionToolResult) Default() BashCodeExecutionToolResult {
 func (c BashCodeExecutionToolResultError) Default() BashCodeExecutionToolResultError {
 	return "bash_code_execution_tool_result_error"
 }
+func (c Batch) Default() Batch                                   { return "batch" }
 func (c BillingError) Default() BillingError                     { return "billing_error" }
 func (c BrowserState) Default() BrowserState                     { return "browser_state" }
 func (c BrowserToolset20260801) Default() BrowserToolset20260801 { return "browser_toolset_20260801" }
@@ -442,6 +448,7 @@ func (c FederationRuleWorkspaceDeleted) Default() FederationRuleWorkspaceDeleted
 	return "federation_rule_workspace_deleted"
 }
 func (c File) Default() File                               { return "file" }
+func (c Files) Default() Files                             { return "files" }
 func (c GCP) Default() GCP                                 { return "gcp" }
 func (c Glob) Default() Glob                               { return "glob" }
 func (c Grep) Default() Grep                               { return "grep" }
@@ -474,6 +481,7 @@ func (c MessageStop) Default() MessageStop                 { return "message_sto
 func (c MessagesChanged) Default() MessagesChanged         { return "messages_changed" }
 func (c Model) Default() Model                             { return "model" }
 func (c ModelChanged) Default() ModelChanged               { return "model_changed" }
+func (c ModelGroup) Default() ModelGroup                   { return "model_group" }
 func (c None) Default() None                               { return "none" }
 func (c NotApplied) Default() NotApplied                   { return "not_applied" }
 func (c NotFoundError) Default() NotFoundError             { return "not_found_error" }
@@ -538,6 +546,7 @@ func (c Skill) Default() Skill                             { return "skill" }
 func (c SkillDeleted) Default() SkillDeleted               { return "skill_deleted" }
 func (c SkillVersion) Default() SkillVersion               { return "skill_version" }
 func (c SkillVersionDeleted) Default() SkillVersionDeleted { return "skill_version_deleted" }
+func (c Skills) Default() Skills                           { return "skills" }
 func (c StrReplace) Default() StrReplace                   { return "str_replace" }
 func (c StrReplaceBasedEditTool) Default() StrReplaceBasedEditTool {
 	return "str_replace_based_edit_tool"
@@ -577,6 +586,7 @@ func (c ThinkingMismatchAllowed) Default() ThinkingMismatchAllowed {
 }
 func (c ThinkingTurns) Default() ThinkingTurns               { return "thinking_turns" }
 func (c TimeoutError) Default() TimeoutError                 { return "timeout_error" }
+func (c TokenCount) Default() TokenCount                     { return "token_count" }
 func (c Tokens) Default() Tokens                             { return "tokens" }
 func (c Tool) Default() Tool                                 { return "tool" }
 func (c ToolAddition) Default() ToolAddition                 { return "tool_addition" }
@@ -684,6 +694,7 @@ func (c BashCodeExecutionOutput) MarshalJSON() ([]byte, error)              { re
 func (c BashCodeExecutionResult) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c BashCodeExecutionToolResult) MarshalJSON() ([]byte, error)          { return marshalString(c) }
 func (c BashCodeExecutionToolResultError) MarshalJSON() ([]byte, error)     { return marshalString(c) }
+func (c Batch) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c BillingError) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c BrowserState) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c BrowserToolset20260801) MarshalJSON() ([]byte, error)               { return marshalString(c) }
@@ -764,6 +775,7 @@ func (c FederationRule) MarshalJSON() ([]byte, error)                       { re
 func (c FederationRuleWorkspace) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c FederationRuleWorkspaceDeleted) MarshalJSON() ([]byte, error)       { return marshalString(c) }
 func (c File) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
+func (c Files) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c GCP) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
 func (c Glob) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Grep) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
@@ -796,6 +808,7 @@ func (c MessageStop) MarshalJSON() ([]byte, error)                          { re
 func (c MessagesChanged) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Model) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c ModelChanged) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c ModelGroup) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c None) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c NotApplied) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c NotFoundError) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
@@ -844,6 +857,7 @@ func (c Skill) MarshalJSON() ([]byte, error)                                { re
 func (c SkillDeleted) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c SkillVersion) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c SkillVersionDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c Skills) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c StrReplace) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c StrReplaceBasedEditTool) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c StrReplaceEditor) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
@@ -873,6 +887,7 @@ func (c ThinkingDropped) MarshalJSON() ([]byte, error)                   { retur
 func (c ThinkingMismatchAllowed) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c ThinkingTurns) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c TimeoutError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c TokenCount) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Tokens) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Tool) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c ToolAddition) MarshalJSON() ([]byte, error)                      { return marshalString(c) }

@@ -37,9 +37,15 @@ func transformSchema(s *jsonschema.Schema) {
 		return
 	}
 
-	// $ref is not supported alongside other properties
+	// $ref is not supported alongside other properties, but $defs still has to be
+	// carried through: they are what the reference resolves against, and dropping
+	// them leaves a dangling $ref in the schema that gets submitted.
 	if s.Ref != "" {
-		*s = jsonschema.Schema{Ref: s.Ref}
+		definitions := s.Definitions
+		for _, def := range definitions {
+			transformSchema(def)
+		}
+		*s = jsonschema.Schema{Ref: s.Ref, Definitions: definitions}
 		return
 	}
 

@@ -13,7 +13,7 @@ func P[T any](v T) *T { return &v }
 
 type Primitives struct {
 	A bool    `json:"a"`
-	B int     `json:"b"`
+	B int64   `json:"b"`
 	C uint    `json:"c"`
 	D float64 `json:"d"`
 	E float32 `json:"e"`
@@ -22,7 +22,7 @@ type Primitives struct {
 
 type PrimitivePointers struct {
 	A *bool    `json:"a"`
-	B *int     `json:"b"`
+	B *int64   `json:"b"`
 	C *uint    `json:"c"`
 	D *float64 `json:"d"`
 	E *float32 `json:"e"`
@@ -380,7 +380,7 @@ var tests = map[string]struct {
 		`{"a":false,"b":237628372683,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4,5]}`,
 		PrimitivePointers{
 			A: P(false),
-			B: P(237628372683),
+			B: P(int64(237628372683)),
 			C: P(uint(654)),
 			D: P(9999.43),
 			E: P(float32(43.76)),

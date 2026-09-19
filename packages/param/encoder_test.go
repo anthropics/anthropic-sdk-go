@@ -179,6 +179,31 @@ func TestAdditionalProperties(t *testing.T) {
 	}
 }
 
+func TestAdditionalPropertiesWithStandardJSONNumber(t *testing.T) {
+	s := StructWithAdditionalProperties{
+		ExtraFields: map[string]any{
+			"minimum": json.Number("1"),
+			"maximum": json.Number("9007199254740993"),
+		},
+	}
+
+	encoded, err := json.Marshal(s)
+	if err != nil {
+		t.Fatalf("failed to marshal: %v", err)
+	}
+
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(encoded, &fields); err != nil {
+		t.Fatalf("failed to unmarshal result: %v", err)
+	}
+	if got := string(fields["minimum"]); got != "1" {
+		t.Fatalf("expected minimum to be an unquoted JSON number, got %s", got)
+	}
+	if got := string(fields["maximum"]); got != "9007199254740993" {
+		t.Fatalf("expected maximum to preserve its exact JSON number, got %s", got)
+	}
+}
+
 func TestExtraFields(t *testing.T) {
 	v := Struct{
 		A: "hello",

@@ -2,6 +2,7 @@ package anthropic
 
 import (
 	"encoding/json"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -32,9 +33,10 @@ func normalizeJSON(s string) string {
 
 func TestTransformSchema(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    *jsonschema.Schema
-		expected string // expected JSON after transform
+		name        string
+		input       *jsonschema.Schema
+		expected    string // expected JSON after transform
+		wantErrPath string // non-empty if error is expected
 	}{
 		{
 			name:     "nil schema is a no-op",
@@ -146,6 +148,16 @@ func TestTransformSchema(t *testing.T) {
 			expected: `{"anyOf":[{"type":"string"},{"type":"object","properties":{"x":{"type":"integer"}},"additionalProperties":false}]}`,
 		},
 		{
+			name: "anyOf genuine empty schema is preserved",
+			input: &jsonschema.Schema{
+				AnyOf: []*jsonschema.Schema{
+					{},
+					{Type: "integer"},
+				},
+			},
+			expected: `{"anyOf":[true,{"type":"integer"}]}`,
+		},
+		{
 			name: "$defs are recursively transformed",
 			input: &jsonschema.Schema{
 				Type: "object",
@@ -164,13 +176,18 @@ func TestTransformSchema(t *testing.T) {
 			expected: `{"type":"object","$defs":{"Person":{"type":"object","properties":{"name":{"type":"string"}},"additionalProperties":false}},"properties":{"user":{"$ref":"#/$defs/Person"}},"additionalProperties":false}`,
 		},
 		{
-			name: "no type and no anyOf clears the schema",
+			name: "description only schema without type returns error",
 			input: &jsonschema.Schema{
 				Description: "orphan",
 			},
-			// Annotation-only schemas are zeroed; a zero jsonschema.Schema
-			// marshals as `true` (the "match everything" schema).
-			expected: `true`,
+			wantErrPath: "$",
+		},
+		{
+			name: "minLength only schema without type returns error",
+			input: &jsonschema.Schema{
+				MinLength: ptr(uint64(3)),
+			},
+			wantErrPath: "$",
 		},
 		{
 			name: "$schema version is stripped",
@@ -184,24 +201,120 @@ func TestTransformSchema(t *testing.T) {
 			expected: `{"type":"object","properties":{"name":{"type":"string"}},"additionalProperties":false,"description":"{$schema: https://json-schema.org/draft/2020-12/schema}"}`,
 		},
 		{
-			name: "invalid anyOf variants are dropped, not serialized as true",
+			name: "anyOf containing nil variant reports error",
+			input: &jsonschema.Schema{
+				AnyOf: []*jsonschema.Schema{
+					nil,
+					{Type: "string"},
+				},
+			},
+			wantErrPath: "$.anyOf[0]",
+		},
+		{
+			name: "invalid anyOf variant reports error",
 			input: &jsonschema.Schema{
 				AnyOf: []*jsonschema.Schema{
 					{Type: "string"},
 					{Description: "orphan: no type, no anyOf"},
 				},
 			},
-			expected: `{"anyOf":[{"type":"string"}]}`,
+			wantErrPath: "$.anyOf[1]",
 		},
 		{
-			name: "invalid oneOf variants are dropped during conversion to anyOf",
+			name: "invalid oneOf variant reports error during conversion to anyOf",
 			input: &jsonschema.Schema{
 				OneOf: []*jsonschema.Schema{
 					{Type: "number"},
 					{Description: "orphan"},
 				},
 			},
-			expected: `{"anyOf":[{"type":"number"}]}`,
+			wantErrPath: "$.anyOf[1]",
+		},
+		{
+			name: "invalid allOf variant reports error",
+			input: &jsonschema.Schema{
+				AllOf: []*jsonschema.Schema{
+					{Type: "string"},
+					{MinLength: ptr(uint64(3))},
+				},
+			},
+			wantErrPath: "$.allOf[1]",
+		},
+		{
+			name: "invalid object property reports error",
+			input: &jsonschema.Schema{
+				Type: "object",
+				Properties: props(
+					"payload", &jsonschema.Schema{MinLength: ptr(uint64(3))},
+				),
+			},
+			wantErrPath: "$.properties.payload",
+		},
+		{
+			name: "invalid array items reports error",
+			input: &jsonschema.Schema{
+				Type:  "array",
+				Items: &jsonschema.Schema{MinLength: ptr(uint64(3))},
+			},
+			wantErrPath: "$.items",
+		},
+		{
+			name: "invalid $defs definition reports error",
+			input: &jsonschema.Schema{
+				Type: "object",
+				Definitions: jsonschema.Definitions{
+					"T": &jsonschema.Schema{MinLength: ptr(uint64(3))},
+				},
+				Properties: props(
+					"ref", &jsonschema.Schema{Ref: "#/$defs/T"},
+				),
+			},
+			wantErrPath: "$.$defs.T",
+		},
+		{
+			name: "invalid dictionary additionalProperties reports error",
+			input: &jsonschema.Schema{
+				Type:                 "object",
+				AdditionalProperties: &jsonschema.Schema{Not: &jsonschema.Schema{}},
+			},
+			wantErrPath: "$.additionalProperties",
+		},
+		{
+			name: "deeply nested invalid schema reports path",
+			input: &jsonschema.Schema{
+				Type: "object",
+				AdditionalProperties: &jsonschema.Schema{
+					Type: "object",
+					Properties: props(
+						"x", &jsonschema.Schema{Not: &jsonschema.Schema{}},
+					),
+				},
+			},
+			wantErrPath: "$.additionalProperties.properties.x",
+		},
+		{
+			name: "dictionary additionalProperties empty schema is preserved",
+			input: &jsonschema.Schema{
+				Type:                 "object",
+				AdditionalProperties: &jsonschema.Schema{},
+			},
+			expected: `{"type":"object","additionalProperties":true}`,
+		},
+		{
+			name: "dictionary additionalProperties typed schema is preserved",
+			input: &jsonschema.Schema{
+				Type:                 "object",
+				AdditionalProperties: &jsonschema.Schema{Type: "string"},
+			},
+			expected: `{"type":"object","additionalProperties":{"type":"string"}}`,
+		},
+		{
+			name: "dictionary additionalProperties false schema is preserved",
+			input: &jsonschema.Schema{
+				Type:                 "object",
+				AdditionalProperties: jsonschema.FalseSchema,
+			},
+			expected: `{"type":"object","additionalProperties":false}`,
 		},
 		{
 			name: "unsupported not field renders as JSON in description",
@@ -265,10 +378,24 @@ func TestTransformSchema(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.input == nil {
 				// Just verify no panic
-				transformSchema(nil)
+				if err := transformSchema(nil); err != nil {
+					t.Fatalf("unexpected error for nil schema: %v", err)
+				}
 				return
 			}
-			transformSchema(tt.input)
+			err := transformSchema(tt.input)
+			if tt.wantErrPath != "" {
+				if err == nil {
+					t.Fatalf("expected error containing %q, got nil", tt.wantErrPath)
+				}
+				if !strings.Contains(err.Error(), tt.wantErrPath) {
+					t.Fatalf("expected error to contain %q, got %v", tt.wantErrPath, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
 			gotBytes, _ := json.Marshal(tt.input)
 			got := normalizeJSON(string(gotBytes))
 			want := normalizeJSON(tt.expected)
@@ -620,11 +747,63 @@ func TestTransformSchemaMap(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name: "schema without type returns nil",
+			name: "schema without type preserved via fallback",
 			input: map[string]any{
 				"description": "A schema without type",
 			},
-			expected: nil,
+			expected: map[string]any{
+				"description": "A schema without type",
+			},
+		},
+		{
+			name: "root minLength without type preserved via fallback",
+			input: map[string]any{
+				"minLength": 3,
+			},
+			expected: map[string]any{
+				"minLength": 3,
+			},
+		},
+		{
+			name: "invalid additionalProperties preserved via fallback",
+			input: map[string]any{
+				"type": "object",
+				"additionalProperties": map[string]any{
+					"not": map[string]any{},
+				},
+			},
+			expected: map[string]any{
+				"type": "object",
+				"additionalProperties": map[string]any{
+					"not": map[string]any{},
+				},
+			},
+		},
+		{
+			name: "dictionary additionalProperties empty schema preserved",
+			input: map[string]any{
+				"type":                 "object",
+				"additionalProperties": map[string]any{},
+			},
+			expected: map[string]any{
+				"type":                 "object",
+				"additionalProperties": true,
+			},
+		},
+		{
+			name: "dictionary additionalProperties typed schema preserved",
+			input: map[string]any{
+				"type": "object",
+				"additionalProperties": map[string]any{
+					"type": "string",
+				},
+			},
+			expected: map[string]any{
+				"type": "object",
+				"additionalProperties": map[string]any{
+					"type": "string",
+				},
+			},
 		},
 		{
 			name: "array items false remains false",
@@ -671,6 +850,82 @@ func TestTransformSchemaMap(t *testing.T) {
 	}
 }
 
+func TestTransformSchemaMapFallbackImmutability(t *testing.T) {
+	orig := map[string]any{
+		"type": "object",
+		"additionalProperties": map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"x": map[string]any{
+					"not": map[string]any{},
+				},
+			},
+		},
+	}
+	expectedOrig := map[string]any{
+		"type": "object",
+		"additionalProperties": map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"x": map[string]any{
+					"not": map[string]any{},
+				},
+			},
+		},
+	}
+
+	fallback := transformSchemaMap(orig)
+	if fallback == nil {
+		t.Fatal("expected non-nil fallback map")
+	}
+
+	// Mutate the returned fallback
+	fallback["type"] = "mutated_type"
+	ap := fallback["additionalProperties"].(map[string]any)
+	ap["type"] = "mutated_ap_type"
+	props := ap["properties"].(map[string]any)
+	props["x"] = "mutated_x"
+
+	// Verify caller input is untouched
+	if !reflect.DeepEqual(orig, expectedOrig) {
+		t.Errorf("original map was mutated:\ngot:  %+v\nwant: %+v", orig, expectedOrig)
+	}
+}
+
+func TestDefsDeterministicTraversal(t *testing.T) {
+	// Create schema with multiple invalid $defs
+	s := &jsonschema.Schema{
+		Type: "object",
+		Definitions: jsonschema.Definitions{
+			"Z": &jsonschema.Schema{MinLength: ptr(uint64(1))},
+			"A": &jsonschema.Schema{MinLength: ptr(uint64(1))},
+			"M": &jsonschema.Schema{MinLength: ptr(uint64(1))},
+			"B": &jsonschema.Schema{MinLength: ptr(uint64(1))},
+		},
+		Properties: props("ref", &jsonschema.Schema{Ref: "#/$defs/A"}),
+	}
+
+	// Over multiple runs, the error must always deterministically point to A
+	for i := 0; i < 50; i++ {
+		// Make a shallow copy of s and its Definitions map to test traversal order
+		copyDefs := make(jsonschema.Definitions, len(s.Definitions))
+		for k, v := range s.Definitions {
+			copyDef := *v
+			copyDefs[k] = &copyDef
+		}
+		testSchema := *s
+		testSchema.Definitions = copyDefs
+
+		err := transformSchema(&testSchema)
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+		if !strings.Contains(err.Error(), "$.$defs.A") {
+			t.Fatalf("iteration %d: expected error path $.$defs.A, got: %v", i, err)
+		}
+	}
+}
+
 func TestStructuredSchemaHelpersPreserveFalseSubschemas(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -694,6 +949,39 @@ func TestStructuredSchemaHelpersPreserveFalseSubschemas(t *testing.T) {
 			got, _ := json.Marshal(tt.got)
 			if normalizeJSON(string(got)) != normalizeJSON(tt.expected) {
 				t.Errorf("schema helper mismatch:\ngot:\n%s\nwant:\n%s", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestStructuredSchemaHelpersWithInvalidSchema(t *testing.T) {
+	invalidSchema := map[string]any{
+		"type": "object",
+		"additionalProperties": map[string]any{
+			"not": map[string]any{},
+		},
+	}
+
+	tests := []struct {
+		name string
+		got  any
+	}{
+		{
+			name: "BetaJSONSchemaOutputFormat preserves invalid schema",
+			got:  BetaJSONSchemaOutputFormat(invalidSchema).Schema,
+		},
+		{
+			name: "BetaToolInputSchema preserves invalid schema",
+			got:  BetaToolInputSchema(invalidSchema).ExtraFields,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotBytes, _ := json.Marshal(tt.got)
+			wantBytes, _ := json.Marshal(invalidSchema)
+			if string(gotBytes) != string(wantBytes) {
+				t.Errorf("schema helper modified invalid schema:\ngot:  %s\nwant: %s", gotBytes, wantBytes)
 			}
 		})
 	}

@@ -52,7 +52,14 @@ type betaToolRunnerBase struct {
 	// compacting is set from sending a compaction request until the next request
 	// is built, or until that request fails. CompactBeforeNextTurn does nothing
 	// meanwhile: there is nothing new to summarize.
-	compacting bool
+	compacting         bool
+	pendingToolChanges []pendingToolChange
+}
+
+// pendingToolChange is a queued block and the callable its tool_addition registers, if any.
+type pendingToolChange struct {
+	block BetaContentBlockParamUnion
+	tool  BetaTool
 }
 
 func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool, params BetaToolRunnerParams, opts []option.RequestOption) betaToolRunnerBase {
@@ -61,13 +68,7 @@ func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool,
 
 	for i, tool := range tools {
 		toolMap[tool.Name()] = tool
-		apiTools[i] = BetaToolUnionParam{
-			OfTool: &BetaToolParam{
-				Name:        tool.Name(),
-				Description: String(tool.Description()),
-				InputSchema: tool.InputSchema(),
-			},
-		}
+		apiTools[i] = betaToolDefinition(tool)
 	}
 
 	// Add tools to the API params
@@ -82,6 +83,94 @@ func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool,
 		toolMap:        toolMap,
 		opts:           opts,
 	}
+}
+
+func betaToolDefinition(tool BetaTool) BetaToolUnionParam {
+	return BetaToolUnionParam{
+		OfTool: &BetaToolParam{
+			Name:        tool.Name(),
+			Description: String(tool.Description()),
+			InputSchema: tool.InputSchema(),
+		},
+	}
+}
+
+// AddTools gives the model more tools without changing Params.Tools, which
+// keeps the prompt cache. Each definition goes out with the next request and
+// the runner runs the tool from that request on, in place of any earlier tool
+// of the same name. Requests must include the [AnthropicBetaInlineTools2026_09_15] beta.
+func (b *betaToolRunnerBase) AddTools(tools ...BetaTool) {
+	for _, tool := range tools {
+		b.queueToolAddition(betaToolDefinition(tool), tool)
+	}
+}
+
+// AddToolParams is like AddTools for definitions the runner has nothing to
+// execute, such as server tools. Each is sent as given, and a registered tool
+// of the same name stops running from that request on; a call to a client tool
+// added this way gets the unknown-tool error result.
+func (b *betaToolRunnerBase) AddToolParams(tools ...BetaToolUnionParam) {
+	for _, definition := range tools {
+		b.queueToolAddition(definition, nil)
+	}
+}
+
+func (b *betaToolRunnerBase) queueToolAddition(definition BetaToolUnionParam, tool BetaTool) {
+	b.pendingToolChanges = append(b.pendingToolChanges, pendingToolChange{
+		block: NewBetaToolAdditionBlock(BetaToolChangeToolDefinitionParam{Definition: definition}),
+		tool:  tool,
+	})
+}
+
+// RemoveTools takes tools away from the model without changing Params.Tools.
+// The runner stops running them at once, even for a call in the message it
+// last returned, and the model is told with the next request. A removed tool
+// stays removed until it is passed to AddTools again.
+func (b *betaToolRunnerBase) RemoveTools(tools ...BetaTool) {
+	names := make([]string, len(tools))
+	for i, tool := range tools {
+		names[i] = tool.Name()
+	}
+	b.RemoveToolsByNames(names...)
+}
+
+// RemoveToolsByNames is like RemoveTools for a caller that has names rather
+// than tools, as with a definition added through AddToolParams.
+func (b *betaToolRunnerBase) RemoveToolsByNames(names ...string) {
+	for _, name := range names {
+		delete(b.toolMap, name)
+		b.pendingToolChanges = append(b.pendingToolChanges, pendingToolChange{
+			block: NewBetaToolRemovalBlock(BetaToolChangeToolReferenceParam{Name: name}),
+		})
+	}
+}
+
+// flushToolChanges sends the queued tool changes as one system message. The API
+// refuses one directly after a paused turn, so they wait a request.
+func (b *betaToolRunnerBase) flushToolChanges() {
+	if len(b.pendingToolChanges) == 0 || (b.lastMessage != nil && b.lastMessage.StopReason == BetaStopReasonPauseTurn) {
+		return
+	}
+	blocks := make([]BetaContentBlockParamUnion, len(b.pendingToolChanges))
+	for i, change := range b.pendingToolChanges {
+		blocks[i] = change.block
+		switch {
+		case change.tool != nil:
+			b.toolMap[change.tool.Name()] = change.tool
+		case change.block.OfToolAddition != nil:
+			// A raw definition takes over its name from whatever ran under it.
+			if name, ok := additionRefName(change.block.OfToolAddition.Tool); ok {
+				delete(b.toolMap, name)
+			}
+		case change.block.OfToolRemoval != nil:
+			// Again, in case an addition earlier in the batch registered the name.
+			if name, ok := removalRefName(change.block.OfToolRemoval.Tool); ok {
+				delete(b.toolMap, name)
+			}
+		}
+	}
+	b.Params.Messages = append(b.Params.Messages, BetaMessageParam{Role: BetaMessageParamRoleSystem, Content: blocks})
+	b.pendingToolChanges = nil
 }
 
 // LastMessage returns the most recent assistant message, or nil if no messages have been received yet.
@@ -324,13 +413,17 @@ func applyToolChange(block BetaContentBlockParamUnion, available map[string]stru
 }
 
 // additionRefName and removalRefName resolve the referenced tool's name across
-// the generated addition/removal tool unions. Only a tool_reference names a
-// locally runnable tool; MCP references run server-side and unknown variants
+// the generated addition/removal tool unions. A tool_reference names a locally
+// runnable tool, as does a tool_definition whose definition has a name (an
+// mcp_toolset has none); MCP references run server-side and unknown variants
 // are ignored.
 func additionRefName(u BetaRequestToolAdditionBlockToolUnionParam) (string, bool) {
 	switch {
 	case u.OfToolReference != nil:
 		return u.OfToolReference.Name, u.OfToolReference.Name != ""
+	case u.OfToolDefinition != nil:
+		name := definitionName(u.OfToolDefinition.Definition)
+		return name, name != ""
 	default:
 		return "", false
 	}
@@ -343,6 +436,23 @@ func removalRefName(u BetaRequestToolRemovalBlockToolUnionParam) (string, bool) 
 	default:
 		return "", false
 	}
+}
+
+// definitionName returns the name a tool definition carries on the wire, which
+// for a server tool with its constant Name elided exists only once marshaled.
+func definitionName(definition BetaToolUnionParam) string {
+	if name := definition.GetName(); name != nil && *name != "" {
+		return *name
+	}
+	data, err := json.Marshal(definition)
+	if err != nil {
+		return ""
+	}
+	var wire struct {
+		Name string `json:"name"`
+	}
+	_ = json.Unmarshal(data, &wire)
+	return wire.Name
 }
 
 // executeToolUse executes a single tool use block and returns the result.
@@ -433,6 +543,9 @@ func (b *betaToolRunnerBase) nextRequest(ctx context.Context) (*toolRunnerReques
 		}
 	}
 
+	// Ahead of the params copy: a message appended after it would miss the request.
+	b.flushToolChanges()
+
 	// The API cannot compact a conversation that stops mid-turn, so a paused
 	// turn is resumed first.
 	if b.pendingCompaction != nil && !paused {
@@ -507,6 +620,14 @@ func (b *betaToolRunnerBase) finishCompaction(request *toolRunnerRequest, messag
 	// block at all.
 	for _, block := range message.Content {
 		if block.Type == "compaction" && block.Content.OfString != "" {
+			// The replaced messages' tool changes go with them, so what they made
+			// unavailable leaves toolMap now.
+			available := b.availableToolNames()
+			for name := range b.toolMap {
+				if _, ok := available[name]; !ok {
+					delete(b.toolMap, name)
+				}
+			}
 			// The response has to be sent back as it came, first, replacing the
 			// messages it summarizes.
 			b.lastMessage = message

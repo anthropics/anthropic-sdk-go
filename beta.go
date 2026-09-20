@@ -110,6 +110,8 @@ const (
 	AnthropicBetaThinkingBindingControls2026_08_01      AnthropicBeta = "thinking-binding-controls-2026-08-01"
 	AnthropicBetaMidConversationSystemClearAt2026_08_21 AnthropicBeta = "mid-conversation-system-clear-at-2026-08-21"
 	AnthropicBetaCompact2026_09_04                      AnthropicBeta = "compact-2026-09-04"
+	AnthropicBetaInlineTools2026_09_15                  AnthropicBeta = "inline-tools-2026-09-15"
+	AnthropicBetaMCPClient2026_09_15                    AnthropicBeta = "mcp-client-2026-09-15"
 )
 
 type BetaAPIError struct {

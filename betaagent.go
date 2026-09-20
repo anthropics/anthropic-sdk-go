@@ -3019,6 +3019,8 @@ const (
 type BetaManagedAgentsModel = string
 
 const (
+	// Powerful intelligence for coding, knowledge work, and long-running agents
+	BetaManagedAgentsModelClaudeOpus5_5 BetaManagedAgentsModel = "claude-opus-5-5"
 	// Frontier intelligence for ambitious tasks across coding, scientific discovery,
 	// and enterprise workflows
 	BetaManagedAgentsModelClaudeFable5_1 BetaManagedAgentsModel = "claude-fable-5-1"

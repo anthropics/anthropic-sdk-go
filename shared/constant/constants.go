@@ -159,6 +159,7 @@ type Invite string                                  // Always "invite"
 type InviteDeleted string                           // Always "invite_deleted"
 type JSONSchema string                              // Always "json_schema"
 type Limited string                                 // Always "limited"
+type MCPToolListing string                          // Always "mcp_tool_listing"
 type MCPToolReference string                        // Always "mcp_tool_reference"
 type MCPToolResult string                           // Always "mcp_tool_result"
 type MCPToolUse string                              // Always "mcp_tool_use"
@@ -257,6 +258,7 @@ type TokenCount string                              // Always "token_count"
 type Tokens string                                  // Always "tokens"
 type Tool string                                    // Always "tool"
 type ToolAddition string                            // Always "tool_addition"
+type ToolDefinition string                          // Always "tool_definition"
 type ToolReference string                           // Always "tool_reference"
 type ToolRemoval string                             // Always "tool_removal"
 type ToolResult string                              // Always "tool_result"
@@ -462,6 +464,7 @@ func (c Invite) Default() Invite                           { return "invite" }
 func (c InviteDeleted) Default() InviteDeleted             { return "invite_deleted" }
 func (c JSONSchema) Default() JSONSchema                   { return "json_schema" }
 func (c Limited) Default() Limited                         { return "limited" }
+func (c MCPToolListing) Default() MCPToolListing           { return "mcp_tool_listing" }
 func (c MCPToolReference) Default() MCPToolReference       { return "mcp_tool_reference" }
 func (c MCPToolResult) Default() MCPToolResult             { return "mcp_tool_result" }
 func (c MCPToolUse) Default() MCPToolUse                   { return "mcp_tool_use" }
@@ -590,6 +593,7 @@ func (c TokenCount) Default() TokenCount                     { return "token_cou
 func (c Tokens) Default() Tokens                             { return "tokens" }
 func (c Tool) Default() Tool                                 { return "tool" }
 func (c ToolAddition) Default() ToolAddition                 { return "tool_addition" }
+func (c ToolDefinition) Default() ToolDefinition             { return "tool_definition" }
 func (c ToolReference) Default() ToolReference               { return "tool_reference" }
 func (c ToolRemoval) Default() ToolRemoval                   { return "tool_removal" }
 func (c ToolResult) Default() ToolResult                     { return "tool_result" }
@@ -789,6 +793,7 @@ func (c Invite) MarshalJSON() ([]byte, error)                               { re
 func (c InviteDeleted) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c JSONSchema) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c Limited) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c MCPToolListing) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c MCPToolReference) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c MCPToolResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c MCPToolUse) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
@@ -891,6 +896,7 @@ func (c TokenCount) MarshalJSON() ([]byte, error)                        { retur
 func (c Tokens) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Tool) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c ToolAddition) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c ToolDefinition) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c ToolReference) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c ToolRemoval) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c ToolResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }

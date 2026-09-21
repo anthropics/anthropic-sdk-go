@@ -271,7 +271,7 @@ for message, err := range runner.All(ctx) {
 
 The call only schedules the compaction. Once the current turn has finished, including any tool calls, the runner requests a summary, replaces its message history with the compaction response the API returns, and carries on. A turn that was paused (`pause_turn`) is resumed and finished first. If the current turn is the last one, the runner compacts and then stops, so the last message of the run is the compaction response. If you call it before the first turn, the compaction is the first request.
 
-The compaction response is returned like any other message and doesn't count towards `MaxIterations`. Its `StopReason` is `compaction`, the summary is in its first content block, and its `Usage.InputTokens` is the size of the history that was just summarized. Calling `CompactBeforeNextTurn()` while handling that message does nothing, so a threshold like the one above doesn't compact twice. With the streaming runner, read the message from `runner.LastMessage()` once the turn's events have been consumed.
+The compaction response is returned like any other message and doesn't count towards `MaxIterations`. Its `StopReason` is `compaction`, the summary is in its first content block, and its top-level `Usage.InputTokens` and `Usage.OutputTokens` are 0: what the compaction cost is in `Usage.Iterations`. Calling `CompactBeforeNextTurn()` while handling that message does nothing, so a threshold like the one above doesn't compact twice. With the streaming runner, read the message from `runner.LastMessage()` once the turn's events have been consumed.
 
 `CompactBeforeNextTurn()` takes the same config as the `Compaction` field of `BetaMessageNewParams`, and the zero value means `{"type": "summarize"}`. For example, to give your own summarization instructions:
 
@@ -287,7 +287,7 @@ A few things to know:
 
 - Calling it again before the compaction runs replaces the pending one.
 - The runner doesn't add the beta for you, so pass it in `Betas`.
-- `ContextManagement` is left out of the compaction request, because the API doesn't accept the two together, and is sent again afterwards. While `ContextManagement` has a compaction edit (`compact_20260112`) the compaction is not sent: the next `NextMessage()` or `NextStreaming()` call returns an error and the pending compaction is dropped.
+- `ContextManagement`, `StopSequences`, a `ToolChoice` that forces tool use (`any` or `tool`) and the output format (`OutputConfig.Format` or `OutputFormat`, and the `OutputConfig.Format` of each entry in `Fallbacks`) are left out of the compaction request, because the API doesn't accept them together with `Compaction`, and are sent again afterwards. While `ContextManagement` has a compaction edit (`compact_20260112`) the compaction is not sent: the next `NextMessage()` or `NextStreaming()` call returns an error and the pending compaction is dropped.
 - With the streaming runner, don't replace or append to `Params.Messages` while the compaction response is streaming, because that response is about to replace them. If you do, the stream ends with an error and your messages are kept. Other params can still be changed.
 - If the API returns no summary, the runner prints a warning to stderr and keeps the history as it is.
 - If the run ends on a turn that was cut short with tool calls that never ran (`max_tokens`, for example), the pending compaction is skipped with a warning printed to stderr. It is also skipped if the run stops at `MaxIterations` or you stop iterating.

@@ -1551,6 +1551,101 @@ func TestBetaToolRunner_CompactBeforeNextTurn_SentAfterToolResults(t *testing.T)
 	})
 }
 
+// A compaction request returns only the compaction block, never a reply, so it
+// goes out without the params that only shape one and keeps the rest; the
+// request after it carries them again.
+func TestBetaToolRunner_CompactBeforeNextTurn_LeavesOffReplyOnlyParams(t *testing.T) {
+	format := BetaJSONOutputFormatParam{Schema: json.RawMessage(`{"type":"object","properties":{"answer":{"type":"string"}}}`)}
+	for _, tc := range []struct {
+		name    string
+		set     func(*BetaMessageNewParams)
+		leftOff []string
+		kept    map[string]string
+	}{
+		{
+			name: "stop sequences, a forced tool and output_config.format",
+			set: func(params *BetaMessageNewParams) {
+				params.StopSequences = []string{"END"}
+				params.ToolChoice = BetaToolChoiceUnionParam{OfTool: &BetaToolChoiceToolParam{Name: "weather"}}
+				params.OutputConfig = BetaOutputConfigParam{Effort: BetaOutputConfigEffortHigh, Format: format}
+			},
+			leftOff: []string{"stop_sequences", "tool_choice", "output_config.format"},
+			kept:    map[string]string{"output_config": `{"effort":"high"}`},
+		},
+		{
+			name: "tool_choice any and the legacy output_format",
+			set: func(params *BetaMessageNewParams) {
+				params.ToolChoice = BetaToolChoiceUnionParam{OfAny: &BetaToolChoiceAnyParam{}}
+				params.OutputFormat = format
+			},
+			leftOff: []string{"tool_choice", "output_format"},
+		},
+		{
+			name: "a fallback's output_config.format",
+			set: func(params *BetaMessageNewParams) {
+				params.Fallbacks = BetaFallbacksParamUnion{OfBetaFallbackArray: []BetaFallbackParam{{
+					Model:        ModelClaudeOpus4_5,
+					OutputConfig: BetaOutputConfigParam{Effort: BetaOutputConfigEffortHigh, Format: format},
+				}}}
+			},
+			leftOff: []string{"fallbacks.0.output_config.format"},
+			kept:    map[string]string{"fallbacks": `[{"model":"claude-opus-4-5","output_config":{"effort":"high"}}]`},
+		},
+		{
+			name: "tool_choice auto stays",
+			set: func(params *BetaMessageNewParams) {
+				params.ToolChoice = BetaToolChoiceUnionParam{OfAuto: &BetaToolChoiceAutoParam{}}
+			},
+			kept: map[string]string{"tool_choice": `{"type":"auto"}`},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			forEachRunner(t, func(t *testing.T, stream bool) {
+				server, requests := scriptedMessagesServer(t, toolUseTurnJSON, compactionResponseJSON, endTurnJSON)
+				var betas []string
+				client := NewClient(
+					option.WithBaseURL(server.URL),
+					option.WithAPIKey("test-key"),
+					option.WithMaxRetries(0),
+					option.WithMiddleware(func(req *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+						betas = append(betas, req.Header.Get("anthropic-beta"))
+						return next(req)
+					}),
+				)
+				params := pauseTurnParams(0)
+				params.Betas = []AnthropicBeta{AnthropicBetaCompact2026_09_04}
+				params.System = []BetaTextBlockParam{{Text: "Be brief."}}
+				tc.set(&params.BetaMessageNewParams)
+				runner := newTurnRunner(client, stream, []BetaTool{&stubBetaTool{name: "weather"}}, params)
+
+				requireYieldedOnce(t, runner.run(t, compactOnToolUse(runner)), "msg_tool", "msg_compaction", "msg_end")
+				bodies := requests()
+				requireRequestCount(t, bodies, 3)
+				first, compaction, after := bodies[0], bodies[1], bodies[2]
+
+				for _, path := range tc.leftOff {
+					if !gjson.GetBytes(first, path).Exists() {
+						t.Fatalf("first request should carry %s: %s", path, first)
+					}
+					if gjson.GetBytes(compaction, path).Exists() {
+						t.Fatalf("compaction request must not carry %s: %s", path, compaction)
+					}
+					requireJSONEqual(t, gjson.GetBytes(after, path).Raw, gjson.GetBytes(first, path).Raw)
+				}
+				for path, want := range tc.kept {
+					requireJSONEqual(t, gjson.GetBytes(compaction, path).Raw, want)
+				}
+				for _, path := range []string{"tools", "system", "max_tokens"} {
+					requireJSONEqual(t, gjson.GetBytes(compaction, path).Raw, gjson.GetBytes(first, path).Raw)
+				}
+				if fmt.Sprint(betas) != "[compact-2026-09-04 compact-2026-09-04 compact-2026-09-04]" {
+					t.Fatalf("anthropic-beta headers = %v, want the caller's beta on every request", betas)
+				}
+			})
+		})
+	}
+}
+
 func TestBetaToolRunner_CompactBeforeNextTurn_BeforeFirstIterationIsFirstRequest(t *testing.T) {
 	server, requests := scriptedMessagesServer(t, compactionResponseJSON, endTurnJSON)
 	runner := newTurnRunner(newTestToolRunnerClient(server), false, nil, pauseTurnParams(1))

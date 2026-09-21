@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"iter"
 	"os"
+	"slices"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
 	"github.com/anthropics/anthropic-sdk-go/option"
@@ -549,7 +550,7 @@ func (b *betaToolRunnerBase) nextRequest(ctx context.Context) (*toolRunnerReques
 	// The API cannot compact a conversation that stops mid-turn, so a paused
 	// turn is resumed first.
 	if b.pendingCompaction != nil && !paused {
-		return b.takeCompactionRequest(), nil
+		return b.compactionRequest(), nil
 	}
 	b.iterationCount++
 	return &toolRunnerRequest{params: b.Params.BetaMessageNewParams}, nil
@@ -570,7 +571,7 @@ func (b *betaToolRunnerBase) finalTurnRequest(turn *BetaMessage) *toolRunnerRequ
 		b.pendingCompaction = nil
 		return nil
 	}
-	return b.takeCompactionRequest()
+	return b.compactionRequest()
 }
 
 func (b *betaToolRunnerBase) checkCanCompact() error {
@@ -585,15 +586,32 @@ func (b *betaToolRunnerBase) checkCanCompact() error {
 	return nil
 }
 
-func (b *betaToolRunnerBase) takeCompactionRequest() *toolRunnerRequest {
-	params := b.Params.BetaMessageNewParams
-	params.Compaction = *b.pendingCompaction
-	// The API refuses compaction alongside context_management; later requests
-	// keep it.
-	params.ContextManagement = BetaContextManagementConfigParam{}
+func (b *betaToolRunnerBase) compactionRequest() *toolRunnerRequest {
+	compaction := *b.pendingCompaction
 	b.pendingCompaction = nil
 	b.compacting = true
+	params := withoutCompactionIncompatibleParams(b.Params.BetaMessageNewParams)
+	params.Compaction = compaction
 	return &toolRunnerRequest{params: params}
+}
+
+// withoutCompactionIncompatibleParams returns params without the ones that only
+// shape a reply. A compaction request returns only the compaction block, never
+// a reply, so the API rejects them. The runner's later requests keep them.
+func withoutCompactionIncompatibleParams(params BetaMessageNewParams) BetaMessageNewParams {
+	params.ContextManagement = BetaContextManagementConfigParam{}
+	params.StopSequences = nil
+	params.OutputFormat = BetaJSONOutputFormatParam{}
+	if params.ToolChoice.OfAny != nil || params.ToolChoice.OfTool != nil {
+		params.ToolChoice = BetaToolChoiceUnionParam{}
+	}
+	params.OutputConfig.Format = BetaJSONOutputFormatParam{}
+	// Cloned because the value copy shares the slice's backing array with the caller's params.
+	params.Fallbacks.OfBetaFallbackArray = slices.Clone(params.Fallbacks.OfBetaFallbackArray)
+	for i := range params.Fallbacks.OfBetaFallbackArray {
+		params.Fallbacks.OfBetaFallbackArray[i].OutputConfig.Format = BetaJSONOutputFormatParam{}
+	}
+	return params
 }
 
 // handleResponse records the response to request and carries it into the

@@ -54,13 +54,7 @@ type betaToolRunnerBase struct {
 	// is built, or until that request fails. CompactBeforeNextTurn does nothing
 	// meanwhile: there is nothing new to summarize.
 	compacting         bool
-	pendingToolChanges []pendingToolChange
-}
-
-// pendingToolChange is a queued block and the callable its tool_addition registers, if any.
-type pendingToolChange struct {
-	block BetaContentBlockParamUnion
-	tool  BetaTool
+	pendingToolChanges []BetaContentBlockParamUnion
 }
 
 func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool, params BetaToolRunnerParams, opts []option.RequestOption) betaToolRunnerBase {
@@ -97,30 +91,33 @@ func betaToolDefinition(tool BetaTool) BetaToolUnionParam {
 }
 
 // AddTools gives the model more tools without changing Params.Tools, which
-// keeps the prompt cache. Each definition goes out with the next request and
-// the runner runs the tool from that request on, in place of any earlier tool
-// of the same name. Requests must include the [AnthropicBetaInlineTools2026_09_15] beta.
+// keeps the prompt cache. Each definition goes out with the next request. The
+// runner runs the tool at once, in place of any earlier tool of the same name,
+// even for a call in the message it last returned. Requests must include the
+// [AnthropicBetaInlineTools2026_09_15] beta.
 func (b *betaToolRunnerBase) AddTools(tools ...BetaTool) {
 	for _, tool := range tools {
-		b.queueToolAddition(betaToolDefinition(tool), tool)
+		b.toolMap[tool.Name()] = tool
+		b.queueToolAddition(betaToolDefinition(tool))
 	}
 }
 
 // AddToolParams is like AddTools for definitions the runner has nothing to
 // execute, such as server tools. Each is sent as given, and a registered tool
-// of the same name stops running from that request on; a call to a client tool
-// added this way gets the unknown-tool error result.
+// of the same name stops running at once; a call to a client tool added this
+// way gets the unknown-tool error result.
 func (b *betaToolRunnerBase) AddToolParams(tools ...BetaToolUnionParam) {
 	for _, definition := range tools {
-		b.queueToolAddition(definition, nil)
+		// An mcp_toolset has no name and takes nothing over.
+		if name := definitionName(definition); name != "" {
+			delete(b.toolMap, name)
+		}
+		b.queueToolAddition(definition)
 	}
 }
 
-func (b *betaToolRunnerBase) queueToolAddition(definition BetaToolUnionParam, tool BetaTool) {
-	b.pendingToolChanges = append(b.pendingToolChanges, pendingToolChange{
-		block: NewBetaToolAdditionBlock(BetaToolChangeToolDefinitionParam{Definition: definition}),
-		tool:  tool,
-	})
+func (b *betaToolRunnerBase) queueToolAddition(definition BetaToolUnionParam) {
+	b.pendingToolChanges = append(b.pendingToolChanges, NewBetaToolAdditionBlock(BetaToolChangeToolDefinitionParam{Definition: definition}))
 }
 
 // RemoveTools takes tools away from the model without changing Params.Tools.
@@ -140,9 +137,7 @@ func (b *betaToolRunnerBase) RemoveTools(tools ...BetaTool) {
 func (b *betaToolRunnerBase) RemoveToolsByNames(names ...string) {
 	for _, name := range names {
 		delete(b.toolMap, name)
-		b.pendingToolChanges = append(b.pendingToolChanges, pendingToolChange{
-			block: NewBetaToolRemovalBlock(BetaToolChangeToolReferenceParam{Name: name}),
-		})
+		b.pendingToolChanges = append(b.pendingToolChanges, NewBetaToolRemovalBlock(BetaToolChangeToolReferenceParam{Name: name}))
 	}
 }
 
@@ -152,25 +147,7 @@ func (b *betaToolRunnerBase) flushToolChanges() {
 	if len(b.pendingToolChanges) == 0 || (b.lastMessage != nil && b.lastMessage.StopReason == BetaStopReasonPauseTurn) {
 		return
 	}
-	blocks := make([]BetaContentBlockParamUnion, len(b.pendingToolChanges))
-	for i, change := range b.pendingToolChanges {
-		blocks[i] = change.block
-		switch {
-		case change.tool != nil:
-			b.toolMap[change.tool.Name()] = change.tool
-		case change.block.OfToolAddition != nil:
-			// A raw definition takes over its name from whatever ran under it.
-			if name, ok := additionRefName(change.block.OfToolAddition.Tool); ok {
-				delete(b.toolMap, name)
-			}
-		case change.block.OfToolRemoval != nil:
-			// Again, in case an addition earlier in the batch registered the name.
-			if name, ok := removalRefName(change.block.OfToolRemoval.Tool); ok {
-				delete(b.toolMap, name)
-			}
-		}
-	}
-	b.Params.Messages = append(b.Params.Messages, BetaMessageParam{Role: BetaMessageParamRoleSystem, Content: blocks})
+	b.Params.Messages = append(b.Params.Messages, BetaMessageParam{Role: BetaMessageParamRoleSystem, Content: b.pendingToolChanges})
 	b.pendingToolChanges = nil
 }
 
@@ -377,9 +354,9 @@ func newBetaToolResultErrorBlockParam(toolUseID string, errorText string) BetaTo
 // availableToolNames returns the tool names currently offered to the model:
 // every registered tool, minus names dropped by tool_removal blocks in
 // role "system" messages, plus names re-enabled by later tool_addition
-// blocks. Removal is only a hint — the model can still call a removed tool —
-// so a removed tool must resolve to the same not-found result as one that
-// was never registered.
+// blocks, with the queued changes read as the last such message. Removal is
+// only a hint — the model can still call a removed tool — so a removed tool
+// must resolve to the same not-found result as one that was never registered.
 func (b *betaToolRunnerBase) availableToolNames() map[string]struct{} {
 	available := make(map[string]struct{}, len(b.toolMap))
 	for name := range b.toolMap {
@@ -392,6 +369,9 @@ func (b *betaToolRunnerBase) availableToolNames() map[string]struct{} {
 		for _, block := range message.Content {
 			applyToolChange(block, available)
 		}
+	}
+	for _, block := range b.pendingToolChanges {
+		applyToolChange(block, available)
 	}
 	return available
 }

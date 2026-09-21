@@ -484,7 +484,7 @@ func TestBetaToolRunner_ToolChanges(t *testing.T) {
 				case message == nil:
 				case message.ID == "msg_three":
 					r.RemoveTools(stubs.tool("weather"))
-				case message.ID == "msg_toolu_4":
+				case message.ID == "msg_toolu_5":
 					r.AddTools(stubs.tool("weather"))
 				}
 			},
@@ -494,8 +494,8 @@ func TestBetaToolRunner_ToolChanges(t *testing.T) {
 					toolResultMessageJSON(toolResultBlockJSON("toolu_1", "ok from time"), toolResultBlockJSON("toolu_2", "ok from date"), toolNotFoundBlockJSON("toolu_3", "weather")),
 					toolChangeMessageJSON(toolRemovalJSON("weather")),
 				},
-				{toolResultMessageJSON(toolNotFoundBlockJSON("toolu_4", "weather")), toolChangeMessageJSON(stubAdditionJSON("weather"))},
-				{toolResultMessageJSON(toolResultBlockJSON("toolu_5", "ok from weather"))},
+				{toolResultMessageJSON(toolNotFoundBlockJSON("toolu_4", "weather"))},
+				{toolResultMessageJSON(toolResultBlockJSON("toolu_5", "ok from weather")), toolChangeMessageJSON(stubAdditionJSON("weather"))},
 			},
 			runs:       map[string]int32{"time": 1, "date": 1, "weather": 1},
 			registered: []string{"date", "time", "weather"},
@@ -546,7 +546,7 @@ func TestBetaToolRunner_ToolChanges(t *testing.T) {
 			registered: []string{"swap", "time"},
 		},
 		{
-			name:   "a tool added under a name in use replaces it after the turn being handled",
+			name:   "a tool added under a name in use replaces it at once, even for a call in the turn being handled",
 			script: []string{toolCallTurnJSON("toolu_1", "weather"), toolCallTurnJSON("toolu_2", "weather"), endTurnJSON},
 			start:  []string{"weather"},
 			onTurn: func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage) {
@@ -559,7 +559,7 @@ func TestBetaToolRunner_ToolChanges(t *testing.T) {
 				{toolResultMessageJSON(toolResultBlockJSON("toolu_1", "ok from weather")), toolChangeMessageJSON(stubAdditionJSON("weather"))},
 				{toolResultMessageJSON(toolResultBlockJSON("toolu_2", "ok from weather"))},
 			},
-			runs:       map[string]int32{"weather": 1, "weather#new": 1},
+			runs:       map[string]int32{"weather#new": 2},
 			registered: []string{"weather"},
 		},
 		{
@@ -630,7 +630,8 @@ func TestBetaToolRunner_ToolChanges(t *testing.T) {
 					r.AddTools(stubs.tool("weather"))
 				}
 			},
-			want: [][]string{{}},
+			want:       [][]string{{}},
+			registered: []string{"weather"},
 		},
 	} {
 		for _, stream := range []bool{false, true} {
@@ -704,6 +705,36 @@ func TestBetaToolRunner_RemoveTools_HoldsOnceTheRemovalIsTrimmed(t *testing.T) {
 	requireJSONEqual(t, results[1], toolNotFoundBlockJSON("toolu_2", "weather"))
 	if got := stubs["weather"].runs.Load(); got != 0 {
 		t.Fatalf("removed tool must not execute, ran %d times", got)
+	}
+}
+
+// A tool added under a name in use answers a call to that name in the turn
+// being handled, here by rejecting the input meant for the tool it replaced.
+func TestBetaToolRunner_ToolChanges_AddedToolAnswersACallInTheTurnBeingHandled(t *testing.T) {
+	server, requests := scriptedMessagesServer(t, toolCallTurnJSON("toolu_1", "weather"), endTurnJSON)
+	stubs := toolChangeStubs{}
+	byZip := &stubBetaTool{name: "weather", run: func(_ context.Context, input json.RawMessage) (string, bool) {
+		if !gjson.GetBytes(input, "zip").Exists() {
+			return "zip is required", true
+		}
+		return "raining", false
+	}}
+	runToolChangeTurns(t, false, newTestToolRunnerClient(server), stubs.tools("weather"), newCappedRunnerParams(10), func(r *betaToolRunnerBase, message *BetaMessage) {
+		if calledTool(message) == "weather" {
+			r.AddTools(byZip)
+		}
+	})
+
+	bodies := requests()
+	requireRequestCount(t, bodies, 2)
+	appended := requireAppendOnlyRequests(t, bodies)[1]
+	if len(appended) != 2 {
+		t.Fatalf("expected the tool result and the tool change, got %v", appended)
+	}
+	requireJSONEqual(t, appended[0].Raw, toolResultMessageJSON(`{"type":"tool_result","tool_use_id":"toolu_1","content":[{"type":"text","text":"Error: zip is required"}],"is_error":true}`))
+	requireJSONEqual(t, appended[1].Raw, toolChangeMessageJSON(stubAdditionJSON("weather")))
+	if got := stubs["weather"].runs.Load(); got != 0 {
+		t.Fatalf("the replaced tool must not run, ran %d times", got)
 	}
 }
 
@@ -783,6 +814,39 @@ func TestBetaToolRunner_ToolChanges_MadeWhileHandlingTheCompactionResponse(t *te
 			t.Fatalf("weather ran %d times, want 1", got)
 		}
 	})
+}
+
+// A tool removed before a compaction and added back while the compaction
+// response is still streaming runs again once the response has replaced the
+// history. A change made after the stream ends already finds the new history.
+func TestBetaToolRunnerStreaming_ToolChanges_ReAddedWhileTheCompactionResponseStreams(t *testing.T) {
+	server, requests := scriptedMessagesServer(t, toolCallTurnJSON("toolu_1", "time"), compactionResponseJSON, toolCallTurnJSON("toolu_2", "weather"), endTurnJSON)
+	stubs := toolChangeStubs{}
+	client := newTestToolRunnerClient(server)
+	runner := client.Beta.Messages.NewToolRunnerStreaming(stubs.tools("time", "weather"), pauseTurnParams(10))
+	for !runner.IsCompleted() {
+		for event, err := range runner.NextStreaming(context.Background()) {
+			if err != nil {
+				t.Fatalf("NextStreaming: %v", err)
+			}
+			if start, ok := event.AsAny().(BetaRawMessageStartEvent); ok && start.Message.ID == "msg_compaction" {
+				runner.AddTools(stubs.tool("weather"))
+			}
+		}
+		if calledTool(runner.LastMessage()) == "time" {
+			runner.RemoveTools(stubs.tool("weather"))
+			runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+		}
+	}
+
+	bodies := requests()
+	requireRequestCount(t, bodies, 4)
+	requireJSONEqual(t, gjson.GetBytes(bodies[1], "messages.3").Raw, toolChangeMessageJSON(toolRemovalJSON("weather")))
+	requireJSONEqual(t, gjson.GetBytes(bodies[2], "messages.1").Raw, toolChangeMessageJSON(stubAdditionJSON("weather")))
+	requireJSONEqual(t, gjson.GetBytes(bodies[3], "messages.3").Raw, toolResultMessageJSON(toolResultBlockJSON("toolu_2", "ok from weather")))
+	if got := stubs["weather"].runs.Load(); got != 1 {
+		t.Fatalf("weather ran %d times, want 1", got)
+	}
 }
 
 // The compaction that follows a final turn is the last request, so a change

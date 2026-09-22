@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.75.0 (2026-09-22)
+
+Full Changelog: [v1.74.0...v1.75.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.74.0...v1.75.0)
+
+### Features
+
+* **api:** add support for claude-opus-5-5, inline tool definitions and MCP tool-list pinning (beta) ([0a2186a](https://github.com/anthropics/anthropic-sdk-go/commit/0a2186ac98f0eeaab793393683f523595ce9562a))
+
+
+### Bug Fixes
+
+* **api:** share one evaluated_permission enum across Managed Agents events ([30e2056](https://github.com/anthropics/anthropic-sdk-go/commit/30e2056334291cb93863907e1429e248babba9bd))
+* **client:** preserve extra fields when unmarshalling open-object params ([c29d53b](https://github.com/anthropics/anthropic-sdk-go/commit/c29d53b5c0b137465c2ccf2f207c3a1f52c5f903))
+* **tools:** AddTools takes effect straight away ([#406](https://github.com/anthropics/anthropic-sdk-go/issues/406)) ([21e68b2](https://github.com/anthropics/anthropic-sdk-go/commit/21e68b2a30f88149a3d3d5437ead43b9b99c29c5))
+* **tools:** leave reply-only params off the tool runner's compaction request ([#404](https://github.com/anthropics/anthropic-sdk-go/issues/404)) ([79ed488](https://github.com/anthropics/anthropic-sdk-go/commit/79ed488496471db4b8cf43eec0f653403b73c96a))
+
+
+### Chores
+
+* **docs:** add descriptions to the Dreams API reference ([f7b86c8](https://github.com/anthropics/anthropic-sdk-go/commit/f7b86c8c80e5842a4e2712a4c9b6fa7637bee5fb))
+* **docs:** add descriptions to the User Profiles API reference ([f7b86c8](https://github.com/anthropics/anthropic-sdk-go/commit/f7b86c8c80e5842a4e2712a4c9b6fa7637bee5fb))
+* **docs:** add memory store descriptions to the Managed Agents API reference ([f7b86c8](https://github.com/anthropics/anthropic-sdk-go/commit/f7b86c8c80e5842a4e2712a4c9b6fa7637bee5fb))
+* **docs:** improve descriptions in the Dreams API reference ([39392dc](https://github.com/anthropics/anthropic-sdk-go/commit/39392dcb6ab812fdb2f448ce39e526cfae55b9ce))
+* **docs:** update diagnostics field descriptions on beta messages ([eb18011](https://github.com/anthropics/anthropic-sdk-go/commit/eb18011f228afa0d3ae9c03a2de7759de59e1b92))
+
+
+### Documentation
+
+* add path and header parameter descriptions ([09da68f](https://github.com/anthropics/anthropic-sdk-go/commit/09da68fe69827621b6727bbb2a4dd8058785aa6f))
+
 ## 1.74.0 (2026-09-18)
 
 Full Changelog: [v1.73.0...v1.74.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.73.0...v1.74.0)

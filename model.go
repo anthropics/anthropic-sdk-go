@@ -114,11 +114,11 @@ func (r *CapabilitySupport) UnmarshalJSON(data []byte) error {
 
 // Context management capability details.
 type ContextManagementCapability struct {
-	// Indicates whether a capability is supported.
+	// Whether the clear_thinking_20251015 strategy is supported.
 	ClearThinking20251015 CapabilitySupport `json:"clear_thinking_20251015" api:"required"`
-	// Indicates whether a capability is supported.
+	// Whether the clear_tool_uses_20250919 strategy is supported.
 	ClearToolUses20250919 CapabilitySupport `json:"clear_tool_uses_20250919" api:"required"`
-	// Indicates whether a capability is supported.
+	// Whether the compact_20260112 strategy is supported.
 	Compact20260112 CapabilitySupport `json:"compact_20260112" api:"required"`
 	// Whether this capability is supported by the model.
 	Supported bool `json:"supported" api:"required"`
@@ -151,7 +151,7 @@ type EffortCapability struct {
 	Medium CapabilitySupport `json:"medium" api:"required"`
 	// Whether this capability is supported by the model.
 	Supported bool `json:"supported" api:"required"`
-	// Indicates whether a capability is supported.
+	// Whether the model supports xhigh effort level.
 	Xhigh CapabilitySupport `json:"xhigh" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -217,7 +217,8 @@ func (r *ModelCapabilities) UnmarshalJSON(data []byte) error {
 type ModelInfo struct {
 	// Unique model identifier.
 	ID string `json:"id" api:"required"`
-	// Model capability information.
+	// Object mapping capability names to their support details. Keys are always
+	// present for all known capabilities.
 	Capabilities ModelCapabilities `json:"capabilities" api:"required"`
 	// RFC 3339 datetime string representing the time at which the model was released.
 	// May be set to an epoch value if the release date is unknown.

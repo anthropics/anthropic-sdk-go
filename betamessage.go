@@ -2752,11 +2752,8 @@ type BetaBrowserToolset20260801 struct {
 	Type constant.BrowserToolset20260801 `json:"type" default:"browser_toolset_20260801"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeral `json:"cache_control" api:"nullable"`
-	// Per-member configuration for `browser_toolset_20260801`: one optional field per
-	// member tool, keyed by the member name — the same name the member's `tool_use`
-	// blocks carry. Every member is an accepted key, and a member's defaults apply
-	// wherever its key is absent. Unknown keys are rejected: the field set is this
-	// toolset version's complete member set.
+	// Sparse per-member overrides, keyed by member name. Absent, null, and {} are
+	// equivalent; a member's defaults apply wherever its key is absent.
 	Configs BetaBrowserToolsetConfigs `json:"configs" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2792,11 +2789,8 @@ func (r BetaBrowserToolset20260801) ToParam() BetaBrowserToolset20260801Param {
 type BetaBrowserToolset20260801Param struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Per-member configuration for `browser_toolset_20260801`: one optional field per
-	// member tool, keyed by the member name — the same name the member's `tool_use`
-	// blocks carry. Every member is an accepted key, and a member's defaults apply
-	// wherever its key is absent. Unknown keys are rejected: the field set is this
-	// toolset version's complete member set.
+	// Sparse per-member overrides, keyed by member name. Absent, null, and {} are
+	// equivalent; a member's defaults apply wherever its key is absent.
 	Configs BetaBrowserToolsetConfigsParam `json:"configs,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "browser_toolset_20260801".
@@ -5923,11 +5917,8 @@ type BetaComputerToolset20260801 struct {
 	Type constant.ComputerToolset20260801 `json:"type" default:"computer_toolset_20260801"`
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeral `json:"cache_control" api:"nullable"`
-	// Per-member configuration for `computer_toolset_20260801`: one optional field per
-	// member tool, keyed by the member name — the same name the member's `tool_use`
-	// blocks carry. Every member is an accepted key, and a member's defaults apply
-	// wherever its key is absent. Unknown keys are rejected: the field set is this
-	// toolset version's complete member set.
+	// Sparse per-member overrides, keyed by member name. Absent, null, and {} are
+	// equivalent; a member's defaults apply wherever its key is absent.
 	Configs BetaComputerToolsetConfigs `json:"configs" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -5966,11 +5957,8 @@ func (r BetaComputerToolset20260801) ToParam() BetaComputerToolset20260801Param 
 type BetaComputerToolset20260801Param struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Per-member configuration for `computer_toolset_20260801`: one optional field per
-	// member tool, keyed by the member name — the same name the member's `tool_use`
-	// blocks carry. Every member is an accepted key, and a member's defaults apply
-	// wherever its key is absent. Unknown keys are rejected: the field set is this
-	// toolset version's complete member set.
+	// Sparse per-member overrides, keyed by member name. Absent, null, and {} are
+	// equivalent; a member's defaults apply wherever its key is absent.
 	Configs BetaComputerToolsetConfigsParam `json:"configs,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "computer_toolset_20260801".
@@ -9347,7 +9335,9 @@ func init() {
 
 // The `from` model declined for policy reasons.
 type BetaFallbackRefusalTrigger struct {
-	// The policy category that triggered a refusal.
+	// The policy category that triggered the `from` model's refusal at this hop.
+	// `null` when the refusal doesn't map to a named category. Same vocabulary as
+	// `stop_details.category`.
 	//
 	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction", "general_harms".
 	Category BetaFallbackRefusalTriggerCategory `json:"category" api:"required"`
@@ -9367,7 +9357,9 @@ func (r *BetaFallbackRefusalTrigger) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The policy category that triggered a refusal.
+// The policy category that triggered the `from` model's refusal at this hop.
+// `null` when the refusal doesn't map to a named category. Same vocabulary as
+// `stop_details.category`.
 type BetaFallbackRefusalTriggerCategory string
 
 const (
@@ -10609,8 +10601,9 @@ type BetaMessage struct {
 	//
 	// The format and length of IDs may change over time.
 	ID string `json:"id" api:"required"`
-	// Information about the container used in the request (for the code execution
-	// tool)
+	// Information about the container used in this request.
+	//
+	// This will be non-null if a container tool (e.g. code execution) was used.
 	Container BetaContainer `json:"container" api:"required"`
 	// Content generated by the model.
 	//
@@ -10651,8 +10644,8 @@ type BetaMessage struct {
 	//
 	// Information about context management strategies applied during the request.
 	ContextManagement BetaContextManagementResponse `json:"context_management" api:"required"`
-	// Request-level diagnostics: why the prompt cache could not fully reuse the prefix
-	// of the request named by `diagnostics.previous_message_id`.
+	// Request-level diagnostics. `null` when the request did not supply `diagnostics`,
+	// or when it did and no prompt-cache divergence was detected.
 	Diagnostics BetaDiagnostics `json:"diagnostics" api:"required"`
 	// The model that will complete your prompt.
 	//
@@ -10663,7 +10656,9 @@ type BetaMessage struct {
 	//
 	// This will always be `"assistant"`.
 	Role constant.Assistant `json:"role" default:"assistant"`
-	// Structured information about a refusal.
+	// Structured information about why model output stopped.
+	//
+	// This is `null` when the `stop_reason` has no additional detail to report.
 	StopDetails BetaRefusalStopDetails `json:"stop_details" api:"required"`
 	// The reason that we stopped.
 	//
@@ -10763,6 +10758,10 @@ type BetaMessageDeltaUsage struct {
 	// The cumulative number of input tokens read from the cache.
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens" api:"required"`
 	// Outcome of the `fallback_credit_token` presented on this request.
+	//
+	// Present on every response to a non-batch request that carried a
+	// `fallback_credit_token`, in either redemption mode; absent otherwise (batch
+	// items accept and ignore the token and carry no outcome object).
 	FallbackCredit BetaFallbackCreditUsage `json:"fallback_credit" api:"required"`
 	// The cumulative number of input tokens which were used.
 	InputTokens int64 `json:"input_tokens" api:"required"`
@@ -10972,14 +10971,17 @@ func (r *BetaMetadataParam) UnmarshalJSON(data []byte) error {
 }
 
 type BetaOutputConfigParam struct {
-	// All possible effort levels.
+	// How much effort the model should put into its response. Higher effort levels may
+	// result in more thorough analysis but take longer.
+	//
+	// Valid values are `low`, `medium`, `high`, `xhigh`, or `max`.
 	//
 	// Any of "low", "medium", "high", "xhigh", "max".
 	Effort BetaOutputConfigEffort `json:"effort,omitzero"`
 	// A schema to specify Claude's output format in responses. See
 	// [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
 	Format BetaJSONOutputFormatParam `json:"format,omitzero"`
-	// User-configurable total token budget across contexts.
+	// Configuration for token budget tracking across contexts.
 	TaskBudget BetaTokenTaskBudgetParam `json:"task_budget,omitzero"`
 	paramObj
 }
@@ -10992,7 +10994,10 @@ func (r *BetaOutputConfigParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// All possible effort levels.
+// How much effort the model should put into its response. Higher effort levels may
+// result in more thorough analysis but take longer.
+//
+// Valid values are `low`, `medium`, `high`, `xhigh`, or `max`.
 type BetaOutputConfigEffort string
 
 const (
@@ -11771,10 +11776,13 @@ func (r *BetaRawMessageDeltaEvent) UnmarshalJSON(data []byte) error {
 }
 
 type BetaRawMessageDeltaEventDelta struct {
-	// Information about the container used in the request (for the code execution
-	// tool)
+	// Information about the container used in this request.
+	//
+	// This will be non-null if a container tool (e.g. code execution) was used.
 	Container BetaContainer `json:"container" api:"required"`
-	// Structured information about a refusal.
+	// Structured information about why model output stopped.
+	//
+	// This is `null` when the `stop_reason` has no additional detail to report.
 	StopDetails BetaRefusalStopDetails `json:"stop_details" api:"required"`
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
 	// "compaction", "refusal", "model_context_window_exceeded".
@@ -12054,7 +12062,9 @@ func (r *BetaRedactedThinkingBlockParam) UnmarshalJSON(data []byte) error {
 
 // Structured information about a refusal.
 type BetaRefusalStopDetails struct {
-	// The policy category that triggered a refusal.
+	// The policy category that triggered the refusal.
+	//
+	// `null` when the refusal doesn't map to a named category.
 	//
 	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction", "general_harms".
 	Category BetaRefusalStopDetailsCategory `json:"category" api:"required"`
@@ -12127,7 +12137,9 @@ func (r *BetaRefusalStopDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The policy category that triggered a refusal.
+// The policy category that triggered the refusal.
+//
+// `null` when the refusal doesn't map to a named category.
 type BetaRefusalStopDetailsCategory string
 
 const (
@@ -14062,7 +14074,10 @@ func (r *BetaSummarizeCompactionParam) UnmarshalJSON(data []byte) error {
 // accepted on a message that carries content; a message with neither content nor
 // output_config fields is rejected.
 type BetaSystemMessageOutputConfigParam struct {
-	// All possible effort levels.
+	// How much effort the model should put into its response. Higher effort levels may
+	// result in more thorough analysis but take longer.
+	//
+	// Valid values are `low`, `medium`, `high`, `xhigh`, or `max`.
 	//
 	// Any of "low", "medium", "high", "xhigh", "max".
 	Effort BetaSystemMessageOutputConfigEffort `json:"effort,omitzero"`
@@ -14077,7 +14092,10 @@ func (r *BetaSystemMessageOutputConfigParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// All possible effort levels.
+// How much effort the model should put into its response. Higher effort levels may
+// result in more thorough analysis but take longer.
+//
+// Valid values are `low`, `medium`, `high`, `xhigh`, or `max`.
 type BetaSystemMessageOutputConfigEffort string
 
 const (
@@ -14991,11 +15009,11 @@ func (r *BetaThinkingBlock) UnmarshalJSON(data []byte) error {
 // sends back fails the conversation check. Every field is optional; an empty
 // object means every default.
 type BetaThinkingBlockBindingParam struct {
-	// What happens when a thinking block in `messages` fails the conversation check:
-	// it was created in a different conversation, or the messages before it have
-	// changed since. `"error"` (the default) fails the request with a 400 error.
-	// `"drop_block"` removes the failing blocks and the request proceeds; the model no
-	// longer sees the dropped reasoning.
+	// "error" (default) | "drop_block". What happens when a thinking block in
+	// `messages` fails the conversation check (it was created in a different
+	// conversation, or the messages before it have changed since). "error" fails the
+	// request with a 400 error. "drop_block" removes the failing blocks and the
+	// request proceeds; each removal is reported in `input_transformations`.
 	//
 	// Any of "error", "drop_block".
 	PrefixMismatchBehavior BetaThinkingPrefixMismatchBehavior `json:"prefix_mismatch_behavior,omitzero"`
@@ -15043,8 +15061,8 @@ type BetaThinkingConfigAdaptiveParam struct {
 	// Any of "summarized", "omitted", "updates".
 	Display BetaThinkingConfigAdaptiveDisplay `json:"display,omitzero"`
 	// Controls for block binding: what happens when a thinking block this request
-	// sends back fails the conversation check. Every field is optional; an empty
-	// object means every default.
+	// sends back fails the conversation check. `null`, absent or an empty object means
+	// every default.
 	BlockBinding BetaThinkingBlockBindingParam `json:"block_binding,omitzero"`
 	// This field can be elided, and will marshal its zero value as "adaptive".
 	Type constant.Adaptive `json:"type" default:"adaptive"`
@@ -15112,8 +15130,8 @@ type BetaThinkingConfigEnabledParam struct {
 	// Any of "summarized", "omitted", "updates".
 	Display BetaThinkingConfigEnabledDisplay `json:"display,omitzero"`
 	// Controls for block binding: what happens when a thinking block this request
-	// sends back fails the conversation check. Every field is optional; an empty
-	// object means every default.
+	// sends back fails the conversation check. `null`, absent or an empty object means
+	// every default.
 	BlockBinding BetaThinkingBlockBindingParam `json:"block_binding,omitzero"`
 	// This field can be elided, and will marshal its zero value as "enabled".
 	Type constant.Enabled `json:"type" default:"enabled"`
@@ -19350,6 +19368,10 @@ type BetaUsage struct {
 	// The number of input tokens read from the cache.
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens" api:"required"`
 	// Outcome of the `fallback_credit_token` presented on this request.
+	//
+	// Present on every response to a non-batch request that carried a
+	// `fallback_credit_token`, in either redemption mode; absent otherwise (batch
+	// items accept and ignore the token and carry no outcome object).
 	FallbackCredit BetaFallbackCreditUsage `json:"fallback_credit" api:"required"`
 	// The geographic region where inference was performed for this request.
 	InferenceGeo string `json:"inference_geo" api:"required"`
@@ -19393,9 +19415,7 @@ type BetaUsage struct {
 	//
 	// Any of "standard", "priority", "batch".
 	ServiceTier BetaUsageServiceTier `json:"service_tier" api:"required"`
-	// Inference speed mode. `fast` provides significantly faster output token
-	// generation at premium pricing. Not all models support `fast`; invalid
-	// combinations are rejected at create time.
+	// The inference speed mode used for this request.
 	//
 	// Any of "standard", "fast".
 	Speed BetaUsageSpeed `json:"speed" api:"required"`
@@ -19433,9 +19453,7 @@ const (
 	BetaUsageServiceTierBatch    BetaUsageServiceTier = "batch"
 )
 
-// Inference speed mode. `fast` provides significantly faster output token
-// generation at premium pricing. Not all models support `fast`; invalid
-// combinations are rejected at create time.
+// The inference speed mode used for this request.
 type BetaUsageSpeed string
 
 const (
@@ -19579,12 +19597,8 @@ type BetaWebFetchTool20250910 struct {
 	MaxUses int64 `json:"max_uses" api:"nullable"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict bool `json:"strict"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources BetaWebFetchURLSources `json:"url_sources" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -19645,12 +19659,8 @@ type BetaWebFetchTool20250910Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations BetaCitationsConfigParam `json:"citations,omitzero"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
@@ -19700,12 +19710,8 @@ type BetaWebFetchTool20260209 struct {
 	MaxUses int64 `json:"max_uses" api:"nullable"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict bool `json:"strict"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources BetaWebFetchURLSources `json:"url_sources" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -19766,12 +19772,8 @@ type BetaWebFetchTool20260209Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations BetaCitationsConfigParam `json:"citations,omitzero"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
@@ -19822,12 +19824,8 @@ type BetaWebFetchTool20260309 struct {
 	MaxUses int64 `json:"max_uses" api:"nullable"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict bool `json:"strict"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources BetaWebFetchURLSources `json:"url_sources" api:"nullable"`
 	// Whether to use cached content. Set to false to bypass the cache and fetch fresh
 	// content. Only set to false when the user explicitly requests fresh content or
@@ -19899,12 +19897,8 @@ type BetaWebFetchTool20260309Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations BetaCitationsConfigParam `json:"citations,omitzero"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
@@ -19963,12 +19957,8 @@ type BetaWebFetchTool20260318 struct {
 	ResponseInclusion BetaWebFetchTool20260318ResponseInclusion `json:"response_inclusion"`
 	// When true, guarantees schema validation on tool names and inputs
 	Strict bool `json:"strict"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources BetaWebFetchURLSources `json:"url_sources" api:"nullable"`
 	// Whether to use cached content. Set to false to bypass the cache and fetch fresh
 	// content. Only set to false when the user explicitly requests fresh content or
@@ -20061,12 +20051,8 @@ type BetaWebFetchTool20260318Param struct {
 	//
 	// Any of "full", "excluded".
 	ResponseInclusion BetaWebFetchTool20260318ResponseInclusion `json:"response_inclusion,omitzero"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources BetaWebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
@@ -21977,9 +21963,8 @@ type BetaMessageNewParams struct {
 	// declines, the second is tried, and so on. The string "default" requests the
 	// requested model's server-defined default fallback configuration.
 	Fallbacks BetaFallbacksParamUnion `json:"fallbacks,omitzero"`
-	// Inference speed mode. `fast` provides significantly faster output token
-	// generation at premium pricing. Not all models support `fast`; invalid
-	// combinations are rejected at create time.
+	// The inference speed mode for this request. `"fast"` enables high
+	// output-tokens-per-second inference.
 	//
 	// Any of "standard", "fast".
 	Speed BetaMessageNewParamsSpeed `json:"speed,omitzero"`
@@ -21991,18 +21976,19 @@ type BetaMessageNewParams struct {
 	// When set on `POST /v1/messages`, the request is a compaction request: the
 	// conversation in `messages` is summarized and the response holds only the
 	// resulting `compaction` block (`stop_reason` `"compaction"`), which later
-	// requests send first in `messages` in place of the messages it summarizes. `POST
-	// /v1/messages/count_tokens` accepts this parameter and ignores it: the count it
-	// returns is for the conversation in `messages` as sent. Cannot be combined with
-	// `context_management`.
+	// requests send first in `messages` in place of the messages it summarizes.
+	// `POST /v1/messages/count_tokens` accepts this parameter and ignores it: the
+	// count it returns is for the conversation in `messages` as sent. Cannot be
+	// combined with `context_management`.
 	Compaction BetaCompactionConfigUnionParam `json:"compaction,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,
 	// such as whether to clear function results or not.
 	ContextManagement BetaContextManagementConfigParam `json:"context_management,omitzero"`
-	// Request-level diagnostics. Currently carries the previous response id for
-	// prompt-cache divergence reporting.
+	// Request-level diagnostics. Supply `previous_message_id` to have the response
+	// include `diagnostics.cache_miss_reason` explaining any prompt-cache divergence
+	// from that prior request.
 	Diagnostics BetaDiagnosticsParam `json:"diagnostics,omitzero"`
 	// MCP servers to be utilized in this request
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`
@@ -22214,9 +22200,8 @@ const (
 	BetaMessageNewParamsServiceTierStandardOnly BetaMessageNewParamsServiceTier = "standard_only"
 )
 
-// Inference speed mode. `fast` provides significantly faster output token
-// generation at premium pricing. Not all models support `fast`; invalid
-// combinations are rejected at create time.
+// The inference speed mode for this request. `"fast"` enables high
+// output-tokens-per-second inference.
 type BetaMessageNewParamsSpeed string
 
 const (
@@ -22311,9 +22296,8 @@ type BetaMessageCountTokensParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Inference speed mode. `fast` provides significantly faster output token
-	// generation at premium pricing. Not all models support `fast`; invalid
-	// combinations are rejected at create time.
+	// The inference speed mode for this request. `"fast"` enables high
+	// output-tokens-per-second inference.
 	//
 	// Any of "standard", "fast".
 	Speed BetaMessageCountTokensParamsSpeed `json:"speed,omitzero"`
@@ -22325,10 +22309,10 @@ type BetaMessageCountTokensParams struct {
 	// When set on `POST /v1/messages`, the request is a compaction request: the
 	// conversation in `messages` is summarized and the response holds only the
 	// resulting `compaction` block (`stop_reason` `"compaction"`), which later
-	// requests send first in `messages` in place of the messages it summarizes. `POST
-	// /v1/messages/count_tokens` accepts this parameter and ignores it: the count it
-	// returns is for the conversation in `messages` as sent. Cannot be combined with
-	// `context_management`.
+	// requests send first in `messages` in place of the messages it summarizes.
+	// `POST /v1/messages/count_tokens` accepts this parameter and ignores it: the
+	// count it returns is for the conversation in `messages` as sent. Cannot be
+	// combined with `context_management`.
 	Compaction BetaCompactionConfigUnionParam `json:"compaction,omitzero"`
 	// Context management configuration.
 	//
@@ -22461,9 +22445,8 @@ func (r *BetaMessageCountTokensParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Inference speed mode. `fast` provides significantly faster output token
-// generation at premium pricing. Not all models support `fast`; invalid
-// combinations are rejected at create time.
+// The inference speed mode for this request. `"fast"` enables high
+// output-tokens-per-second inference.
 type BetaMessageCountTokensParamsSpeed string
 
 const (

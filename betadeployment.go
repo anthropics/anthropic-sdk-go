@@ -228,11 +228,11 @@ const (
 type BetaManagedAgentsDeployment struct {
 	// Unique identifier for this deployment.
 	ID string `json:"id" api:"required"`
-	// A resolved agent reference with a concrete version.
+	// Reference to the agent this deployment runs, resolved to a concrete version.
 	Agent BetaManagedAgentsAgentReference `json:"agent" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Time the deployment was archived. Null if not archived.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
-	// A timestamp in RFC 3339 format
+	// Time the deployment was created.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Description of what the deployment does.
 	Description string `json:"description" api:"required"`
@@ -244,26 +244,30 @@ type BetaManagedAgentsDeployment struct {
 	Metadata map[string]string `json:"metadata" api:"required"`
 	// Human-readable name.
 	Name string `json:"name" api:"required"`
-	// Why a deployment is paused. Non-null exactly when `status` is `paused`.
+	// Why the deployment is `paused`. Non-null exactly when `status` is `paused`; null
+	// otherwise.
 	PausedReason BetaManagedAgentsDeploymentPausedReasonUnion `json:"paused_reason" api:"required"`
 	// Resources attached to sessions created from this deployment. Echoes the input
 	// minus write-only credentials.
 	Resources []BetaManagedAgentsSessionResourceConfigUnion `json:"resources" api:"required"`
-	// 5-field POSIX cron schedule with computed runtime timestamps.
+	// Recurring cron schedule. Presence enables scheduled execution; null means
+	// manual-only. Includes computed timestamps (next fire times, last run) on the
+	// cron variant.
 	Schedule BetaManagedAgentsSchedule `json:"schedule" api:"required"`
-	// Lifecycle status of a deployment.
+	// Computed status of the deployment: `active` or `paused`. Archived deployments
+	// report `active` with `archived_at` set.
 	//
 	// Any of "active", "paused".
 	Status BetaManagedAgentsDeploymentStatus `json:"status" api:"required"`
 	// Any of "deployment".
 	Type BetaManagedAgentsDeploymentType `json:"type" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Time the deployment was last updated.
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// Vault IDs supplying stored credentials for sessions created from this
 	// deployment.
 	VaultIDs []string `json:"vault_ids" api:"required"`
-	// A hard spend ceiling. The session stops issuing new model requests once the
-	// tracked list cost reaches `max_list_cost`.
+	// Spend ceiling stamped onto each session created from this deployment. Absent
+	// when no budget is set.
 	Budget BetaManagedAgentsBudgetLimit `json:"budget" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -861,7 +865,7 @@ const (
 type BetaManagedAgentsDeploymentUserDefineOutcomeEvent struct {
 	// What the agent should produce. This is the task specification.
 	Description string `json:"description" api:"required"`
-	// Rubric for grading the quality of an outcome.
+	// How to grade the outcome. Text or file reference.
 	Rubric BetaManagedAgentsDeploymentUserDefineOutcomeEventRubricUnion `json:"rubric" api:"required"`
 	// Any of "user.define_outcome".
 	Type BetaManagedAgentsDeploymentUserDefineOutcomeEventType `json:"type" api:"required"`
@@ -1166,7 +1170,7 @@ const (
 
 // A scheduled fire recorded a failed run whose error auto-pauses the deployment.
 type BetaManagedAgentsErrorDeploymentPausedReason struct {
-	// The error that triggered an auto-pause. Matches the failed run's `error.type`.
+	// The failed run's error.
 	Error BetaManagedAgentsDeploymentPausedReasonErrorUnion `json:"error" api:"required"`
 	// Any of "error".
 	Type BetaManagedAgentsErrorDeploymentPausedReasonType `json:"type" api:"required"`
@@ -1436,7 +1440,8 @@ type BetaManagedAgentsMemoryStoreResourceConfig struct {
 	MemoryStoreID string `json:"memory_store_id" api:"required"`
 	// Any of "memory_store".
 	Type BetaManagedAgentsMemoryStoreResourceConfigType `json:"type" api:"required"`
-	// Access mode for an attached memory store.
+	// Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts
+	// the store as a read-only filesystem.
 	//
 	// Any of "read_write", "read_only".
 	Access BetaManagedAgentsMemoryStoreResourceConfigAccess `json:"access" api:"nullable"`
@@ -1466,7 +1471,8 @@ const (
 	BetaManagedAgentsMemoryStoreResourceConfigTypeMemoryStore BetaManagedAgentsMemoryStoreResourceConfigType = "memory_store"
 )
 
-// Access mode for an attached memory store.
+// Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts
+// the store as a read-only filesystem.
 type BetaManagedAgentsMemoryStoreResourceConfigAccess string
 
 const (
@@ -1500,7 +1506,8 @@ const (
 	BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorTypeOrganizationDisabledError BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorType = "organization_disabled_error"
 )
 
-// 5-field POSIX cron schedule with computed runtime timestamps.
+// A recurring schedule with computed runtime timestamps. Discriminated union —
+// only cron is supported currently.
 type BetaManagedAgentsSchedule struct {
 	// 5-field POSIX cron expression: minute hour day-of-month month day-of-week (e.g.,
 	// "0 9 \* \* 1-5" for weekdays at 9am). Day-of-week is 0-7 where 0 and 7 both mean
@@ -1512,7 +1519,8 @@ type BetaManagedAgentsSchedule struct {
 	Timezone string `json:"timezone" api:"required"`
 	// Any of "cron".
 	Type BetaManagedAgentsScheduleType `json:"type" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Time the most recent scheduled run actually started. Null until one completes;
+	// preserved after the deployment is archived. Manual runs do not update this.
 	LastRunAt time.Time `json:"last_run_at" api:"nullable" format:"date-time"`
 	// Up to 5 timestamps of upcoming cron occurrences. Non-empty for active and paused
 	// deployments (reflects what the schedule would do if unpaused); empty once the
@@ -1544,8 +1552,7 @@ const (
 	BetaManagedAgentsScheduleTypeCron BetaManagedAgentsScheduleType = "cron"
 )
 
-// 5-field POSIX cron schedule. Literal wall-clock matching in the configured
-// timezone.
+// A recurring schedule. Discriminated union — only cron is supported currently.
 //
 // The properties Expression, Timezone, Type are required.
 type BetaManagedAgentsScheduleParams struct {
@@ -1874,8 +1881,11 @@ type BetaDeploymentNewParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// A hard spend ceiling. The session stops issuing new model requests once the
-	// tracked list cost reaches `max_list_cost`.
+	// Enforced spend ceiling stamped onto each session created from this deployment,
+	// copied at session-creation time. Omit to leave sessions uncapped. The deployment
+	// agent's model must have a public list price, or the request is rejected; a
+	// multiagent roster is re-validated in full when each fire copies the cap, which
+	// fails closed the same way.
 	Budget BetaManagedAgentsBudgetLimitParam `json:"budget,omitzero"`
 	// Arbitrary key-value metadata. Maximum 16 pairs, keys up to 64 chars, values up
 	// to 512 chars.
@@ -1883,8 +1893,8 @@ type BetaDeploymentNewParams struct {
 	// Resources (e.g. repositories, files) to mount into each session's container.
 	// Maximum 500.
 	Resources []BetaDeploymentNewParamsResourceUnion `json:"resources,omitzero"`
-	// 5-field POSIX cron schedule. Literal wall-clock matching in the configured
-	// timezone.
+	// Optional recurring cron schedule. When present, the deployment fires
+	// automatically. Both expression and timezone are required when schedule is set.
 	Schedule BetaManagedAgentsScheduleParams `json:"schedule,omitzero"`
 	// Vault IDs for stored credentials the agent can use during sessions created from
 	// this deployment. Maximum 50.
@@ -2083,14 +2093,17 @@ type BetaDeploymentUpdateParams struct {
 	// version, or an `agent` object with both id and version specified. Omit to
 	// preserve. Cannot be cleared.
 	Agent BetaDeploymentUpdateParamsAgentUnion `json:"agent,omitzero"`
-	// A hard spend ceiling. The session stops issuing new model requests once the
-	// tracked list cost reaches `max_list_cost`.
+	// Spend ceiling for future sessions. Full replacement. Omit to preserve; send null
+	// to clear (sessions created afterwards are uncapped). The deployment agent's
+	// model must have a public list price, or the request is rejected; a multiagent
+	// roster is re-validated in full when each fire copies the cap, which fails closed
+	// the same way.
 	Budget BetaManagedAgentsBudgetLimitParam `json:"budget,omitzero"`
 	// Initial events. Full replacement. Omit to preserve. Cannot be cleared. At least
 	// 1, maximum 50.
 	InitialEvents []BetaManagedAgentsDeploymentInitialEventParamsUnion `json:"initial_events,omitzero"`
-	// 5-field POSIX cron schedule. Literal wall-clock matching in the configured
-	// timezone.
+	// Cron schedule. Full replacement. Omit to preserve; send null to clear (revert to
+	// manual-only).
 	Schedule BetaManagedAgentsScheduleParams `json:"schedule,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

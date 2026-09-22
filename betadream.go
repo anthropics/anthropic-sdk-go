@@ -199,13 +199,16 @@ func (r *BetaDreamService) Cancel(ctx context.Context, dreamID string, body Beta
 type BetaDream struct {
 	// The unique ID of the dream (`drm_...`).
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When the dream was archived, in RFC 3339, or `null` if it hasn't been archived.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
-	// A timestamp in RFC 3339 format
+	// When the dream was created, in RFC 3339.
+	//
+	// Lists of dreams are sorted by this time, newest first.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// A timestamp in RFC 3339 format
+	// When the dream reached `completed`, `failed`, or `canceled`, in RFC 3339, or
+	// `null` if it is still `pending` or `running`.
 	EndedAt time.Time `json:"ended_at" api:"required" format:"date-time"`
-	// Failure detail for a Dream whose `status` is `failed`.
+	// Why the dream failed, or `null` if `status` isn't `failed`.
 	Error BetaDreamError `json:"error" api:"required"`
 	// The sources that the dream reads, from the request that created it.
 	Inputs []BetaDreamInputUnion `json:"inputs" api:"required"`
@@ -216,8 +219,9 @@ type BetaDream struct {
 	// The dream uses this model for all of its work. The response always gives the
 	// model as an object, even if the request gave only a model ID.
 	Model BetaDreamModelConfig `json:"model" api:"required"`
-	// Which memory store a dream writes its result to. Defaults to `create_new` when
-	// left out of a create request.
+	// Where the dream writes its result, as set in the request that created the dream.
+	// If that request left out `output_behavior`, the dream used the `create_new`
+	// behavior.
 	OutputBehavior BetaOutputBehaviorUnion `json:"output_behavior" api:"required"`
 	// The memory store that holds the dream's result, as a one-item array, or an empty
 	// array until the dream records that memory store.
@@ -253,16 +257,8 @@ type BetaDream struct {
 	Status BetaDreamStatus `json:"status" api:"required"`
 	// Any of "dream".
 	Type BetaDreamType `json:"type" api:"required"`
-	// The tokens that a dream has used so far.
-	//
-	// The counts are zero while the dream is `pending` and update while it is
-	// `running`. They can keep changing after a cancel.
-	//
-	// See the
-	// [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#billing)
-	// for how dreams are billed. See the
-	// [prompt caching guide](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#tracking-cache-performance)
-	// for how the input token counts add up.
+	// The dream's token counts, which stop changing once its `status` is `completed`
+	// or `failed`. After a cancel, they can keep changing.
 	Usage BetaDreamUsage `json:"usage" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -543,9 +539,7 @@ type BetaDreamModelConfig struct {
 	// The ID of the model that runs the dream, as given in the request that created
 	// it.
 	ID string `json:"id" api:"required"`
-	// Inference speed mode. `fast` provides significantly faster output token
-	// generation at premium pricing. Not all models support `fast`; invalid
-	// combinations are rejected at create time.
+	// How fast the model generates output for the dream. Always `standard`.
 	//
 	// Any of "standard", "fast".
 	Speed BetaDreamModelConfigSpeed `json:"speed"`
@@ -564,9 +558,7 @@ func (r *BetaDreamModelConfig) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Inference speed mode. `fast` provides significantly faster output token
-// generation at premium pricing. Not all models support `fast`; invalid
-// combinations are rejected at create time.
+// How fast the model generates output for the dream. Always `standard`.
 type BetaDreamModelConfigSpeed string
 
 const (
@@ -586,9 +578,9 @@ type BetaDreamModelConfigParam struct {
 	// [limits table in the Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#limits)
 	// lists the supported models.
 	ID string `json:"id" api:"required"`
-	// Inference speed mode. `fast` provides significantly faster output token
-	// generation at premium pricing. Not all models support `fast`; invalid
-	// combinations are rejected at create time.
+	// How fast the model generates output for the dream. Defaults to `standard`.
+	//
+	// Dreams accept only `standard`.
 	//
 	// Any of "standard", "fast".
 	Speed BetaDreamModelConfigParamSpeed `json:"speed,omitzero"`
@@ -603,9 +595,9 @@ func (r *BetaDreamModelConfigParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Inference speed mode. `fast` provides significantly faster output token
-// generation at premium pricing. Not all models support `fast`; invalid
-// combinations are rejected at create time.
+// How fast the model generates output for the dream. Defaults to `standard`.
+//
+// Dreams accept only `standard`.
 type BetaDreamModelConfigParamSpeed string
 
 const (
@@ -613,7 +605,8 @@ const (
 	BetaDreamModelConfigParamSpeedFast     BetaDreamModelConfigParamSpeed = "fast"
 )
 
-// The memory store that holds a dream's result, as an entry in `outputs`.
+// An entry in a dream's `outputs` that references the memory store holding its
+// result.
 type BetaDreamOutput struct {
 	// The ID of the memory store that the dream writes its result to (`memstore_...`).
 	//

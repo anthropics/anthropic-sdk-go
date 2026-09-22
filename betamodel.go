@@ -137,11 +137,11 @@ func (r *BetaCompactionCapability) UnmarshalJSON(data []byte) error {
 
 // Context management capability details.
 type BetaContextManagementCapability struct {
-	// Indicates whether a capability is supported.
+	// Whether the clear_thinking_20251015 strategy is supported.
 	ClearThinking20251015 BetaCapabilitySupport `json:"clear_thinking_20251015" api:"required"`
-	// Indicates whether a capability is supported.
+	// Whether the clear_tool_uses_20250919 strategy is supported.
 	ClearToolUses20250919 BetaCapabilitySupport `json:"clear_tool_uses_20250919" api:"required"`
-	// Indicates whether a capability is supported.
+	// Whether the compact_20260112 strategy is supported.
 	Compact20260112 BetaCapabilitySupport `json:"compact_20260112" api:"required"`
 	// Whether this capability is supported by the model.
 	Supported bool `json:"supported" api:"required"`
@@ -174,7 +174,7 @@ type BetaEffortCapability struct {
 	Medium BetaCapabilitySupport `json:"medium" api:"required"`
 	// Whether this capability is supported by the model.
 	Supported bool `json:"supported" api:"required"`
-	// Indicates whether a capability is supported.
+	// Whether the model supports xhigh effort level.
 	Xhigh BetaCapabilitySupport `json:"xhigh" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -203,9 +203,8 @@ type BetaModelCapabilities struct {
 	Citations BetaCapabilitySupport `json:"citations" api:"required"`
 	// Whether the model supports code execution tools.
 	CodeExecution BetaCapabilitySupport `json:"code_execution" api:"required"`
-	// Compaction capability details: whether the model accepts the top-level
-	// `compaction` request parameter, with one entry per supported `compaction.type`
-	// value.
+	// Server-side compaction support (the top-level `compaction` parameter) and the
+	// accepted `compaction.type` values.
 	Compaction BetaCompactionCapability `json:"compaction" api:"required"`
 	// Context management support and available strategies.
 	ContextManagement BetaContextManagementCapability `json:"context_management" api:"required"`
@@ -249,7 +248,8 @@ type BetaModelInfo struct {
 	// empty list means the `fallbacks` parameter is not supported for this model as
 	// primary.
 	AllowedFallbackModels []string `json:"allowed_fallback_models" api:"required"`
-	// Model capability information.
+	// Object mapping capability names to their support details. Keys are always
+	// present for all known capabilities.
 	Capabilities BetaModelCapabilities `json:"capabilities" api:"required"`
 	// RFC 3339 datetime string representing the time at which the model was released.
 	// May be set to an epoch value if the release date is unknown.

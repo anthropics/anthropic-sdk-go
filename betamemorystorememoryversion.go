@@ -249,7 +249,7 @@ const (
 type BetaManagedAgentsMemoryVersion struct {
 	// Unique identifier for this version (a `memver_...` value).
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When this version was written, in RFC 3339 format.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// ID of the memory this version snapshots (a `mem_...` value). Remains valid after
 	// the memory is deleted; pass it as `memory_id` to
@@ -259,8 +259,7 @@ type BetaManagedAgentsMemoryVersion struct {
 	MemoryID string `json:"memory_id" api:"required"`
 	// ID of the memory store this version belongs to (a `memstore_...` value).
 	MemoryStoreID string `json:"memory_store_id" api:"required"`
-	// The kind of mutation a `memory_version` records. Every non-no-op mutation to a
-	// memory appends exactly one version row with one of these values.
+	// The kind of mutation this version records: `created`, `modified`, or `deleted`.
 	//
 	// Any of "created", "modified", "deleted".
 	Operation BetaManagedAgentsMemoryVersionOperation `json:"operation" api:"required"`
@@ -276,22 +275,21 @@ type BetaManagedAgentsMemoryVersion struct {
 	// Size of `content` in bytes as of this version. `null` when `redacted_at` is set
 	// or `operation` is `deleted`. Populated regardless of `view` otherwise.
 	ContentSizeBytes int64 `json:"content_size_bytes" api:"nullable"`
-	// Identifies who performed a write or redact operation. Captured at write time on
-	// the `memory_version` row. The API key that created a session is not recorded on
-	// agent writes; attribution answers who made the write, not who is ultimately
-	// responsible. Look up session provenance separately via the
-	// [Sessions API](/en/api/beta/sessions/retrieve).
+	// Who performed this write: one of `session_actor`, `api_actor`, `user_actor`, or
+	// `service_account_actor`; `null` when no writer is recorded. Captured at write
+	// time and preserved through redaction.
 	CreatedBy BetaManagedAgentsActorUnion `json:"created_by"`
 	// The memory's path at the time of this write. `null` if and only if `redacted_at`
 	// is set.
 	Path string `json:"path" api:"nullable"`
-	// A timestamp in RFC 3339 format
+	// When this version was redacted, in RFC 3339 format, or `null` if it has not been
+	// redacted. When set, `content`, `path`, `content_size_bytes`, and
+	// `content_sha256` are all `null`. See
+	// [Redact a memory version](/en/api/beta/memory_stores/memory_versions/redact).
 	RedactedAt time.Time `json:"redacted_at" api:"nullable" format:"date-time"`
-	// Identifies who performed a write or redact operation. Captured at write time on
-	// the `memory_version` row. The API key that created a session is not recorded on
-	// agent writes; attribution answers who made the write, not who is ultimately
-	// responsible. Look up session provenance separately via the
-	// [Sessions API](/en/api/beta/sessions/retrieve).
+	// Who redacted this version, or `null` if it has not been redacted. In practice
+	// always an `api_actor`, `user_actor`, or `service_account_actor` (agents do not
+	// have a redact capability).
 	RedactedBy BetaManagedAgentsActorUnion `json:"redacted_by"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {

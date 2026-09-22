@@ -530,13 +530,9 @@ type BetaOrganizationFederationRuleUpdateParams struct {
 	// Send null to clear them. Not yet supported; any non-empty value is rejected
 	// with 400.
 	Attributes map[string]string `json:"attributes,omitzero"`
-	// Does the incoming JWT qualify?
-	//
-	// All populated fields must pass; omitted fields are skipped. At least one of
-	// `subject_prefix` (other than a wildcard-only value like `*`), `claims`, or
-	// `condition` is required; `audience` alone is not sufficient.
+	// Replaces the entire match object. All populated matcher fields must pass.
 	Match BetaFederationRuleMatchParam `json:"match,omitzero"`
-	// Bind to a fixed service account by ID.
+	// Replaces the entire target object. Currently always a `service_account` target.
 	Target BetaServiceAccountTargetParam `json:"target,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

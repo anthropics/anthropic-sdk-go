@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -255,6 +257,618 @@ func TestBetaToolRunner_ToolAddition_AppendMessagesInDispatchWindow(t *testing.T
 	if len(results) != 1 || results[0].IsError.Value {
 		t.Fatalf("expected one successful tool_result, got %+v", results)
 	}
+}
+
+// A tool_removal in the history stays in force when a compaction that carries
+// no tool_changes replaces the history.
+func TestBetaToolRunner_ToolRemoval_HoldsAcrossACompaction(t *testing.T) {
+	forEachRunner(t, func(t *testing.T, stream bool) {
+		server, requests := scriptedMessagesServer(t, compactionResponseJSON, toolUseTurnJSON, endTurnJSON)
+		weather := &stubBetaTool{name: "weather"}
+		params := pauseTurnParams(10)
+		params.Messages = append([]BetaMessageParam{systemToolChange(NewBetaToolRemovalBlock(weatherRef()))}, params.Messages...)
+		runner := newTurnRunner(newTestToolRunnerClient(server), stream, []BetaTool{weather}, params)
+		runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+		runner.run(t, nil)
+
+		bodies := requests()
+		requireRequestCount(t, bodies, 3)
+		requireJSONEqual(t, gjson.GetBytes(bodies[2], "messages.2").Raw,
+			`{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_1","content":[{"type":"text","text":"Error: Tool 'weather' not found"}],"is_error":true}]}`)
+		if got := weather.runs.Load(); got != 0 {
+			t.Fatalf("removed tool must not execute, ran %d times", got)
+		}
+	})
+}
+
+func toolCallTurnJSON(id, name string) string {
+	return fmt.Sprintf(`{"id":"msg_%s","type":"message","role":"assistant","model":"m","content":[{"type":"tool_use","id":%q,"name":%q,"input":{"city":"SF"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`, id, id, name)
+}
+
+// threeCallTurnJSON calls time, date and weather in one turn.
+const threeCallTurnJSON = `{"id":"msg_three","type":"message","role":"assistant","model":"m","content":[{"type":"tool_use","id":"toolu_1","name":"time","input":{}},{"type":"tool_use","id":"toolu_2","name":"date","input":{}},{"type":"tool_use","id":"toolu_3","name":"weather","input":{}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`
+
+// toolChangeStubs hands out one stubBetaTool per label and reuses it, so a
+// case's onTurn and its run counts refer to the same tools. A tool's name is
+// its label up to any '#', which lets a case hold two tools with one name.
+type toolChangeStubs map[string]*stubBetaTool
+
+func (s toolChangeStubs) tool(label string) BetaTool {
+	if s[label] == nil {
+		name, _, _ := strings.Cut(label, "#")
+		s[label] = &stubBetaTool{name: name}
+	}
+	return s[label]
+}
+
+func (s toolChangeStubs) tools(labels ...string) []BetaTool {
+	tools := make([]BetaTool, len(labels))
+	for i, label := range labels {
+		tools[i] = s.tool(label)
+	}
+	return tools
+}
+
+// runToolChangeTurns drives a runner of either kind to completion, calling
+// onTurn with nil before the first request and then with each assistant turn
+// before the runner handles it.
+func runToolChangeTurns(t *testing.T, stream bool, client Client, tools []BetaTool, params BetaToolRunnerParams, onTurn func(*betaToolRunnerBase, *BetaMessage)) *betaToolRunnerBase {
+	t.Helper()
+	ctx := context.Background()
+	if stream {
+		runner := client.Beta.Messages.NewToolRunnerStreaming(tools, params)
+		onTurn(&runner.betaToolRunnerBase, nil)
+		for !runner.IsCompleted() {
+			last := runner.LastMessage()
+			for _, err := range runner.NextStreaming(ctx) {
+				if err != nil {
+					t.Fatalf("NextStreaming: %v", err)
+				}
+			}
+			if message := runner.LastMessage(); message != last {
+				onTurn(&runner.betaToolRunnerBase, message)
+			}
+		}
+		return &runner.betaToolRunnerBase
+	}
+	runner := client.Beta.Messages.NewToolRunner(tools, params)
+	onTurn(&runner.betaToolRunnerBase, nil)
+	for message, err := range runner.All(ctx) {
+		if err != nil {
+			t.Fatalf("All: %v", err)
+		}
+		onTurn(&runner.betaToolRunnerBase, message)
+	}
+	return &runner.betaToolRunnerBase
+}
+
+func calledTool(message *BetaMessage) string {
+	if message == nil {
+		return ""
+	}
+	for _, block := range message.Content {
+		if block.Type == "tool_use" {
+			return block.Name
+		}
+	}
+	return ""
+}
+
+// requireAppendOnlyRequests checks that every request sent the same tools and
+// repeated the previous request's messages byte for byte, which is what keeps
+// the prompt cache, and returns what the runner appended ahead of each
+// request: the messages after the first user turn, then after each assistant
+// turn.
+func requireAppendOnlyRequests(t *testing.T, bodies [][]byte) [][]gjson.Result {
+	t.Helper()
+	appended := make([][]gjson.Result, len(bodies))
+	var previous []gjson.Result
+	for i, body := range bodies {
+		if tools, first := gjson.GetBytes(body, "tools").Raw, gjson.GetBytes(bodies[0], "tools").Raw; tools != first {
+			t.Fatalf("request %d changed tools\n got: %s\nwant: %s", i, tools, first)
+		}
+		messages := gjson.GetBytes(body, "messages").Array()
+		if len(messages) < len(previous)+1 {
+			t.Fatalf("request %d sent %d messages, fewer than request %d's %d plus its reply", i, len(messages), i-1, len(previous))
+		}
+		for k, message := range previous {
+			if messages[k].Raw != message.Raw {
+				t.Fatalf("request %d rewrote message %d\n got: %s\nwant: %s", i, k, messages[k].Raw, message.Raw)
+			}
+		}
+		appended[i] = messages[len(previous)+1:]
+		previous = messages
+	}
+	return appended
+}
+
+func toolResultMessageJSON(results ...string) string {
+	return `{"role":"user","content":[` + strings.Join(results, ",") + `]}`
+}
+
+func toolResultBlockJSON(toolUseID, text string) string {
+	return fmt.Sprintf(`{"type":"tool_result","tool_use_id":%q,"content":[{"type":"text","text":%q}]}`, toolUseID, text)
+}
+
+func toolNotFoundBlockJSON(toolUseID, name string) string {
+	return fmt.Sprintf(`{"type":"tool_result","tool_use_id":%q,"content":[{"type":"text","text":"Error: Tool '%s' not found"}],"is_error":true}`, toolUseID, name)
+}
+
+func toolChangeMessageJSON(blocks ...string) string {
+	return `{"role":"system","content":[` + strings.Join(blocks, ",") + `]}`
+}
+
+func toolAdditionJSON(definition string) string {
+	return `{"type":"tool_addition","tool":{"type":"tool_definition","definition":` + definition + `}}`
+}
+
+// stubAdditionJSON is the tool_addition block AddTools sends for a stubBetaTool.
+func stubAdditionJSON(name string) string {
+	return toolAdditionJSON(fmt.Sprintf(`{"name":%q,"description":%q,"input_schema":{"type":"object","properties":{}}}`, name, name))
+}
+
+func toolRemovalJSON(name string) string {
+	return fmt.Sprintf(`{"type":"tool_removal","tool":{"type":"tool_reference","name":%q}}`, name)
+}
+
+func TestBetaToolRunner_ToolChanges(t *testing.T) {
+	const webSearchJSON = `{"type":"web_search_20250305","name":"web_search","max_uses":3}`
+	webSearch := BetaToolUnionParam{OfWebSearchTool20250305: &BetaWebSearchTool20250305Param{MaxUses: Int(3)}}
+	rawClient := func(name string) BetaToolUnionParam {
+		return BetaToolUnionParam{OfTool: &BetaToolParam{Name: name, InputSchema: BetaToolInputSchemaParam{Properties: map[string]any{}}}}
+	}
+	rawClientJSON := func(name string) string {
+		return fmt.Sprintf(`{"name":%q,"input_schema":{"type":"object","properties":{}}}`, name)
+	}
+
+	for _, tt := range []struct {
+		name string
+		// script is the assistant turns the server answers with, in order.
+		script []string
+		// start labels the tools the runner is constructed with.
+		start  []string
+		onTurn func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage)
+		// want is, per request, the messages the runner appended ahead of it.
+		want [][]string
+		// runs is how many times each labelled tool ran; unlisted tools ran 0 times.
+		runs map[string]int32
+		// registered is the names the runner can still run when it finishes.
+		registered []string
+		// stream also runs the case on the streaming runner.
+		stream bool
+	}{
+		{
+			name:   "an added tool is sent by value and runs from the request that carries it",
+			script: []string{toolCallTurnJSON("toolu_1", "time"), toolCallTurnJSON("toolu_2", "weather"), endTurnJSON},
+			start:  []string{"time"},
+			onTurn: func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage) {
+				if calledTool(message) == "time" {
+					r.AddTools(stubs.tool("weather"))
+				}
+			},
+			want: [][]string{
+				{},
+				{toolResultMessageJSON(toolResultBlockJSON("toolu_1", "ok from time")), toolChangeMessageJSON(stubAdditionJSON("weather"))},
+				{toolResultMessageJSON(toolResultBlockJSON("toolu_2", "ok from weather"))},
+			},
+			runs:       map[string]int32{"time": 1, "weather": 1},
+			registered: []string{"time", "weather"},
+			stream:     true,
+		},
+		{
+			name:   "a tool added before the first request follows the first user message",
+			script: []string{toolCallTurnJSON("toolu_1", "weather"), endTurnJSON},
+			onTurn: func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage) {
+				if message == nil {
+					r.AddTools(stubs.tool("weather"))
+				}
+			},
+			want: [][]string{
+				{toolChangeMessageJSON(stubAdditionJSON("weather"))},
+				{toolResultMessageJSON(toolResultBlockJSON("toolu_1", "ok from weather"))},
+			},
+			runs:       map[string]int32{"weather": 1},
+			registered: []string{"weather"},
+		},
+		{
+			name: "a removed tool is refused at once, stays refused and runs again once added back",
+			script: []string{
+				threeCallTurnJSON,
+				toolCallTurnJSON("toolu_4", "weather"),
+				toolCallTurnJSON("toolu_5", "weather"),
+				endTurnJSON,
+			},
+			start: []string{"time", "date", "weather"},
+			onTurn: func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage) {
+				switch {
+				case message == nil:
+				case message.ID == "msg_three":
+					r.RemoveTools(stubs.tool("weather"))
+				case message.ID == "msg_toolu_5":
+					r.AddTools(stubs.tool("weather"))
+				}
+			},
+			want: [][]string{
+				{},
+				{
+					toolResultMessageJSON(toolResultBlockJSON("toolu_1", "ok from time"), toolResultBlockJSON("toolu_2", "ok from date"), toolNotFoundBlockJSON("toolu_3", "weather")),
+					toolChangeMessageJSON(toolRemovalJSON("weather")),
+				},
+				{toolResultMessageJSON(toolNotFoundBlockJSON("toolu_4", "weather"))},
+				{toolResultMessageJSON(toolResultBlockJSON("toolu_5", "ok from weather")), toolChangeMessageJSON(stubAdditionJSON("weather"))},
+			},
+			runs:       map[string]int32{"time": 1, "date": 1, "weather": 1},
+			registered: []string{"date", "time", "weather"},
+			stream:     true,
+		},
+		{
+			name:   "changes made in one turn share a system message in call order",
+			script: []string{toolCallTurnJSON("toolu_1", "time"), endTurnJSON},
+			start:  []string{"time", "date"},
+			onTurn: func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage) {
+				if calledTool(message) == "time" {
+					r.AddTools(stubs.tools("weather", "tides")...)
+					r.RemoveToolsByNames("date", "time")
+					r.AddToolParams(webSearch)
+				}
+			},
+			want: [][]string{
+				{},
+				{
+					toolResultMessageJSON(toolNotFoundBlockJSON("toolu_1", "time")),
+					toolChangeMessageJSON(stubAdditionJSON("weather"), stubAdditionJSON("tides"), toolRemovalJSON("date"), toolRemovalJSON("time"), toolAdditionJSON(webSearchJSON)),
+				},
+			},
+			registered: []string{"tides", "weather"},
+		},
+		{
+			name:   "a name added then removed stays removed and one removed then added is the new tool",
+			script: []string{toolCallTurnJSON("toolu_1", "time"), toolCallTurnJSON("toolu_2", "gone"), toolCallTurnJSON("toolu_3", "swap"), endTurnJSON},
+			start:  []string{"time", "swap"},
+			onTurn: func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage) {
+				if calledTool(message) == "time" {
+					r.AddTools(stubs.tool("gone"))
+					r.RemoveTools(stubs.tool("gone"))
+					r.RemoveToolsByNames("swap")
+					r.AddTools(stubs.tool("swap#new"))
+				}
+			},
+			want: [][]string{
+				{},
+				{
+					toolResultMessageJSON(toolResultBlockJSON("toolu_1", "ok from time")),
+					toolChangeMessageJSON(stubAdditionJSON("gone"), toolRemovalJSON("gone"), toolRemovalJSON("swap"), stubAdditionJSON("swap")),
+				},
+				{toolResultMessageJSON(toolNotFoundBlockJSON("toolu_2", "gone"))},
+				{toolResultMessageJSON(toolResultBlockJSON("toolu_3", "ok from swap"))},
+			},
+			runs:       map[string]int32{"time": 1, "swap#new": 1},
+			registered: []string{"swap", "time"},
+		},
+		{
+			name:   "a tool added under a name in use replaces it at once, even for a call in the turn being handled",
+			script: []string{toolCallTurnJSON("toolu_1", "weather"), toolCallTurnJSON("toolu_2", "weather"), endTurnJSON},
+			start:  []string{"weather"},
+			onTurn: func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage) {
+				if message != nil && message.ID == "msg_toolu_1" {
+					r.AddTools(stubs.tool("weather#new"))
+				}
+			},
+			want: [][]string{
+				{},
+				{toolResultMessageJSON(toolResultBlockJSON("toolu_1", "ok from weather")), toolChangeMessageJSON(stubAdditionJSON("weather"))},
+				{toolResultMessageJSON(toolResultBlockJSON("toolu_2", "ok from weather"))},
+			},
+			runs:       map[string]int32{"weather#new": 2},
+			registered: []string{"weather"},
+		},
+		{
+			name: "a raw definition is sent as given and never run, even under the name of a registered tool",
+			script: []string{
+				toolCallTurnJSON("toolu_1", "time"),
+				toolCallTurnJSON("toolu_2", "tides"),
+				toolCallTurnJSON("toolu_3", "weather"),
+				toolCallTurnJSON("toolu_4", "web_search"),
+				endTurnJSON,
+			},
+			start: []string{"time", "weather", "web_search"},
+			onTurn: func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage) {
+				if calledTool(message) == "time" {
+					r.AddToolParams(rawClient("tides"), rawClient("weather"), webSearch)
+				}
+			},
+			want: [][]string{
+				{},
+				{
+					toolResultMessageJSON(toolResultBlockJSON("toolu_1", "ok from time")),
+					toolChangeMessageJSON(toolAdditionJSON(rawClientJSON("tides")), toolAdditionJSON(rawClientJSON("weather")), toolAdditionJSON(webSearchJSON)),
+				},
+				{toolResultMessageJSON(toolNotFoundBlockJSON("toolu_2", "tides"))},
+				{toolResultMessageJSON(toolNotFoundBlockJSON("toolu_3", "weather"))},
+				{toolResultMessageJSON(toolNotFoundBlockJSON("toolu_4", "web_search"))},
+			},
+			runs:       map[string]int32{"time": 1},
+			registered: []string{"time"},
+		},
+		{
+			name:   "changes made after a paused turn are sent one request later",
+			script: []string{pausedTurnJSON, toolCallTurnJSON("toolu_1", "weather"), endTurnJSON},
+			start:  []string{"weather"},
+			onTurn: func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage) {
+				if message != nil && message.StopReason == BetaStopReasonPauseTurn {
+					r.RemoveTools(stubs.tool("weather"))
+				}
+			},
+			want: [][]string{
+				{},
+				{},
+				{toolResultMessageJSON(toolNotFoundBlockJSON("toolu_1", "weather")), toolChangeMessageJSON(toolRemovalJSON("weather"))},
+			},
+			stream: true,
+		},
+		{
+			name:   "changes made after a compaction-stopped turn follow the compaction message",
+			script: []string{compactedTurnJSON, toolCallTurnJSON("toolu_1", "weather"), endTurnJSON},
+			onTurn: func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage) {
+				if message != nil && message.StopReason == BetaStopReasonCompaction {
+					r.AddTools(stubs.tool("weather"))
+				}
+			},
+			want: [][]string{
+				{},
+				{toolChangeMessageJSON(stubAdditionJSON("weather"))},
+				{toolResultMessageJSON(toolResultBlockJSON("toolu_1", "ok from weather"))},
+			},
+			runs:       map[string]int32{"weather": 1},
+			registered: []string{"weather"},
+		},
+		{
+			name:   "changes made after the final turn are never sent",
+			script: []string{endTurnJSON},
+			onTurn: func(r *betaToolRunnerBase, stubs toolChangeStubs, message *BetaMessage) {
+				if message != nil {
+					r.AddTools(stubs.tool("weather"))
+				}
+			},
+			want:       [][]string{{}},
+			registered: []string{"weather"},
+		},
+	} {
+		for _, stream := range []bool{false, true} {
+			if stream && !tt.stream {
+				continue
+			}
+			t.Run(fmt.Sprintf("%s/stream=%v", tt.name, stream), func(t *testing.T) {
+				server, requests := scriptedMessagesServer(t, tt.script...)
+				stubs := toolChangeStubs{}
+				runner := runToolChangeTurns(t, stream, newTestToolRunnerClient(server), stubs.tools(tt.start...), newCappedRunnerParams(10), func(r *betaToolRunnerBase, message *BetaMessage) {
+					tt.onTurn(r, stubs, message)
+				})
+
+				bodies := requests()
+				if len(bodies) != len(tt.want) {
+					t.Fatalf("expected %d requests, got %d", len(tt.want), len(bodies))
+				}
+				for i, appended := range requireAppendOnlyRequests(t, bodies) {
+					if len(appended) != len(tt.want[i]) {
+						t.Fatalf("request %d: expected %d appended messages, got %v", i, len(tt.want[i]), appended)
+					}
+					for k, message := range appended {
+						requireJSONEqual(t, message.Raw, tt.want[i][k])
+					}
+				}
+				for label, stub := range stubs {
+					if got := stub.runs.Load(); got != tt.runs[label] {
+						t.Errorf("%s ran %d times, want %d", label, got, tt.runs[label])
+					}
+				}
+				if got := slices.Sorted(maps.Keys(runner.toolMap)); !slices.Equal(got, tt.registered) {
+					t.Errorf("registered tools = %v, want %v", got, tt.registered)
+				}
+			})
+		}
+	}
+}
+
+// RemoveTools drops the tool from the runner as well as telling the model, so
+// the tool stays refused after the caller trims the tool_removal block out of
+// the history.
+func TestBetaToolRunner_RemoveTools_HoldsOnceTheRemovalIsTrimmed(t *testing.T) {
+	server, _ := scriptedMessagesServer(t, toolCallTurnJSON("toolu_1", "time"), toolCallTurnJSON("toolu_2", "weather"), endTurnJSON)
+	stubs := toolChangeStubs{}
+	runner := runToolChangeTurns(t, false, newTestToolRunnerClient(server), stubs.tools("time", "weather"), newCappedRunnerParams(10), func(r *betaToolRunnerBase, message *BetaMessage) {
+		switch {
+		case message == nil:
+			r.RemoveTools(stubs.tool("weather"))
+		case calledTool(message) == "time":
+			r.Params.Messages = slices.DeleteFunc(r.Params.Messages, func(m BetaMessageParam) bool {
+				return m.Role == BetaMessageParamRoleSystem
+			})
+		}
+	})
+
+	var results []string
+	for _, message := range runner.Messages() {
+		if message.Role == BetaMessageParamRoleSystem {
+			t.Fatalf("the tool_removal should be gone from the history, got %+v", message)
+		}
+		for _, block := range message.Content {
+			if block.OfToolResult != nil {
+				results = append(results, toolResultJSON(t, block.OfToolResult))
+			}
+		}
+	}
+	if len(results) != 2 {
+		t.Fatalf("expected two tool results, got %v", results)
+	}
+	requireJSONEqual(t, results[0], toolResultBlockJSON("toolu_1", "ok from time"))
+	requireJSONEqual(t, results[1], toolNotFoundBlockJSON("toolu_2", "weather"))
+	if got := stubs["weather"].runs.Load(); got != 0 {
+		t.Fatalf("removed tool must not execute, ran %d times", got)
+	}
+}
+
+// A tool added under a name in use answers a call to that name in the turn
+// being handled, here by rejecting the input meant for the tool it replaced.
+func TestBetaToolRunner_ToolChanges_AddedToolAnswersACallInTheTurnBeingHandled(t *testing.T) {
+	server, requests := scriptedMessagesServer(t, toolCallTurnJSON("toolu_1", "weather"), endTurnJSON)
+	stubs := toolChangeStubs{}
+	byZip := &stubBetaTool{name: "weather", run: func(_ context.Context, input json.RawMessage) (string, bool) {
+		if !gjson.GetBytes(input, "zip").Exists() {
+			return "zip is required", true
+		}
+		return "raining", false
+	}}
+	runToolChangeTurns(t, false, newTestToolRunnerClient(server), stubs.tools("weather"), newCappedRunnerParams(10), func(r *betaToolRunnerBase, message *BetaMessage) {
+		if calledTool(message) == "weather" {
+			r.AddTools(byZip)
+		}
+	})
+
+	bodies := requests()
+	requireRequestCount(t, bodies, 2)
+	appended := requireAppendOnlyRequests(t, bodies)[1]
+	if len(appended) != 2 {
+		t.Fatalf("expected the tool result and the tool change, got %v", appended)
+	}
+	requireJSONEqual(t, appended[0].Raw, toolResultMessageJSON(`{"type":"tool_result","tool_use_id":"toolu_1","content":[{"type":"text","text":"Error: zip is required"}],"is_error":true}`))
+	requireJSONEqual(t, appended[1].Raw, toolChangeMessageJSON(stubAdditionJSON("weather")))
+	if got := stubs["weather"].runs.Load(); got != 0 {
+		t.Fatalf("the replaced tool must not run, ran %d times", got)
+	}
+}
+
+func TestDefinitionName(t *testing.T) {
+	for _, tt := range []struct {
+		name       string
+		definition BetaToolUnionParam
+		want       string
+	}{
+		{"an explicit name", BetaToolUnionParam{OfTool: &BetaToolParam{Name: "tides"}}, "tides"},
+		{"a server tool with its constant name elided", BetaToolUnionParam{OfWebSearchTool20250305: &BetaWebSearchTool20250305Param{}}, "web_search"},
+		{"an mcp_toolset, which has no name", BetaToolUnionParam{OfMCPToolset: &BetaMCPToolsetParam{MCPServerName: "weather"}}, ""},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := definitionName(tt.definition); got != tt.want {
+				t.Fatalf("definitionName = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+// A change made on the turn a compaction is requested goes out in the
+// compaction request, and its tool still runs once the response has replaced
+// the history.
+func TestBetaToolRunner_ToolChanges_GoOutWithTheCompactionRequest(t *testing.T) {
+	forEachRunner(t, func(t *testing.T, stream bool) {
+		server, requests := scriptedMessagesServer(t, toolCallTurnJSON("toolu_1", "time"), compactionResponseJSON, toolCallTurnJSON("toolu_2", "weather"), endTurnJSON)
+		stubs := toolChangeStubs{}
+		runner := newTurnRunner(newTestToolRunnerClient(server), stream, stubs.tools("time"), pauseTurnParams(10))
+		runner.run(t, func(message *BetaMessage) {
+			if calledTool(message) == "time" {
+				runner.AddTools(stubs.tool("weather"))
+				runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+			}
+		})
+
+		bodies := requests()
+		requireRequestCount(t, bodies, 4)
+		requireJSONEqual(t, gjson.GetBytes(bodies[1], "compaction").Raw, `{"type":"summarize"}`)
+		sent := gjson.GetBytes(bodies[1], "messages").Array()
+		if len(sent) != 4 {
+			t.Fatalf("compaction request carried %d messages, want the history, the tool results and the tool change", len(sent))
+		}
+		requireJSONEqual(t, sent[2].Raw, toolResultMessageJSON(toolResultBlockJSON("toolu_1", "ok from time")))
+		requireJSONEqual(t, sent[3].Raw, toolChangeMessageJSON(stubAdditionJSON("weather")))
+		requireCompactionAlone(t, bodies[2], compactionResponseJSON)
+		if got := gjson.GetBytes(bodies[3], "messages.#").Int(); got != 3 {
+			t.Fatalf("request after the compaction carried %d messages, want the compaction, the call and its result", got)
+		}
+		requireJSONEqual(t, gjson.GetBytes(bodies[3], "messages.2").Raw, toolResultMessageJSON(toolResultBlockJSON("toolu_2", "ok from weather")))
+		if got := stubs["weather"].runs.Load(); got != 1 {
+			t.Fatalf("weather ran %d times, want 1", got)
+		}
+	})
+}
+
+// A change made while handling the compaction response follows it directly and
+// goes out with the next request.
+func TestBetaToolRunner_ToolChanges_MadeWhileHandlingTheCompactionResponse(t *testing.T) {
+	forEachRunner(t, func(t *testing.T, stream bool) {
+		server, requests := scriptedMessagesServer(t, compactionResponseJSON, toolCallTurnJSON("toolu_1", "weather"), endTurnJSON)
+		stubs := toolChangeStubs{}
+		runner := newTurnRunner(newTestToolRunnerClient(server), stream, nil, pauseTurnParams(10))
+		runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+		runner.run(t, func(message *BetaMessage) {
+			if message.StopReason == BetaStopReasonCompaction {
+				runner.AddTools(stubs.tool("weather"))
+			}
+		})
+
+		bodies := requests()
+		requireRequestCount(t, bodies, 3)
+		requireJSONEqual(t, gjson.GetBytes(bodies[1], "messages").Raw,
+			`[{"role":"assistant","content":`+gjson.Get(compactionResponseJSON, "content").Raw+`},`+toolChangeMessageJSON(stubAdditionJSON("weather"))+`]`)
+		requireJSONEqual(t, gjson.GetBytes(bodies[2], "messages.3").Raw, toolResultMessageJSON(toolResultBlockJSON("toolu_1", "ok from weather")))
+		if got := stubs["weather"].runs.Load(); got != 1 {
+			t.Fatalf("weather ran %d times, want 1", got)
+		}
+	})
+}
+
+// A tool removed before a compaction and added back while the compaction
+// response is still streaming runs again once the response has replaced the
+// history. A change made after the stream ends already finds the new history.
+func TestBetaToolRunnerStreaming_ToolChanges_ReAddedWhileTheCompactionResponseStreams(t *testing.T) {
+	server, requests := scriptedMessagesServer(t, toolCallTurnJSON("toolu_1", "time"), compactionResponseJSON, toolCallTurnJSON("toolu_2", "weather"), endTurnJSON)
+	stubs := toolChangeStubs{}
+	client := newTestToolRunnerClient(server)
+	runner := client.Beta.Messages.NewToolRunnerStreaming(stubs.tools("time", "weather"), pauseTurnParams(10))
+	for !runner.IsCompleted() {
+		for event, err := range runner.NextStreaming(context.Background()) {
+			if err != nil {
+				t.Fatalf("NextStreaming: %v", err)
+			}
+			if start, ok := event.AsAny().(BetaRawMessageStartEvent); ok && start.Message.ID == "msg_compaction" {
+				runner.AddTools(stubs.tool("weather"))
+			}
+		}
+		if calledTool(runner.LastMessage()) == "time" {
+			runner.RemoveTools(stubs.tool("weather"))
+			runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+		}
+	}
+
+	bodies := requests()
+	requireRequestCount(t, bodies, 4)
+	requireJSONEqual(t, gjson.GetBytes(bodies[1], "messages.3").Raw, toolChangeMessageJSON(toolRemovalJSON("weather")))
+	requireJSONEqual(t, gjson.GetBytes(bodies[2], "messages.1").Raw, toolChangeMessageJSON(stubAdditionJSON("weather")))
+	requireJSONEqual(t, gjson.GetBytes(bodies[3], "messages.3").Raw, toolResultMessageJSON(toolResultBlockJSON("toolu_2", "ok from weather")))
+	if got := stubs["weather"].runs.Load(); got != 1 {
+		t.Fatalf("weather ran %d times, want 1", got)
+	}
+}
+
+// The compaction that follows a final turn is the last request, so a change
+// made on that turn is not sent with it.
+func TestBetaToolRunner_ToolChanges_NotSentWithAFinalTurnCompaction(t *testing.T) {
+	forEachRunner(t, func(t *testing.T, stream bool) {
+		server, requests := scriptedMessagesServer(t, endTurnJSON, compactionResponseJSON)
+		stubs := toolChangeStubs{}
+		runner := newTurnRunner(newTestToolRunnerClient(server), stream, nil, pauseTurnParams(10))
+		runner.run(t, func(message *BetaMessage) {
+			if message.StopReason == BetaStopReasonEndTurn {
+				runner.AddTools(stubs.tool("weather"))
+				runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
+			}
+		})
+
+		bodies := requests()
+		requireRequestCount(t, bodies, 2)
+		if got := gjson.GetBytes(bodies[1], "messages.#").Int(); got != 2 {
+			t.Fatalf("compaction request carried %d messages, want the history alone: %s", got, bodies[1])
+		}
+	})
 }
 
 type recordingTool struct {
@@ -999,6 +1613,101 @@ func TestBetaToolRunner_CompactBeforeNextTurn_SentAfterToolResults(t *testing.T)
 			t.Fatalf("anthropic-beta headers = %v, want the caller's beta and nothing added", betas)
 		}
 	})
+}
+
+// A compaction request returns only the compaction block, never a reply, so it
+// goes out without the params that only shape one and keeps the rest; the
+// request after it carries them again.
+func TestBetaToolRunner_CompactBeforeNextTurn_LeavesOffReplyOnlyParams(t *testing.T) {
+	format := BetaJSONOutputFormatParam{Schema: json.RawMessage(`{"type":"object","properties":{"answer":{"type":"string"}}}`)}
+	for _, tc := range []struct {
+		name    string
+		set     func(*BetaMessageNewParams)
+		leftOff []string
+		kept    map[string]string
+	}{
+		{
+			name: "stop sequences, a forced tool and output_config.format",
+			set: func(params *BetaMessageNewParams) {
+				params.StopSequences = []string{"END"}
+				params.ToolChoice = BetaToolChoiceUnionParam{OfTool: &BetaToolChoiceToolParam{Name: "weather"}}
+				params.OutputConfig = BetaOutputConfigParam{Effort: BetaOutputConfigEffortHigh, Format: format}
+			},
+			leftOff: []string{"stop_sequences", "tool_choice", "output_config.format"},
+			kept:    map[string]string{"output_config": `{"effort":"high"}`},
+		},
+		{
+			name: "tool_choice any and the legacy output_format",
+			set: func(params *BetaMessageNewParams) {
+				params.ToolChoice = BetaToolChoiceUnionParam{OfAny: &BetaToolChoiceAnyParam{}}
+				params.OutputFormat = format
+			},
+			leftOff: []string{"tool_choice", "output_format"},
+		},
+		{
+			name: "a fallback's output_config.format",
+			set: func(params *BetaMessageNewParams) {
+				params.Fallbacks = BetaFallbacksParamUnion{OfBetaFallbackArray: []BetaFallbackParam{{
+					Model:        ModelClaudeOpus4_5,
+					OutputConfig: BetaOutputConfigParam{Effort: BetaOutputConfigEffortHigh, Format: format},
+				}}}
+			},
+			leftOff: []string{"fallbacks.0.output_config.format"},
+			kept:    map[string]string{"fallbacks": `[{"model":"claude-opus-4-5","output_config":{"effort":"high"}}]`},
+		},
+		{
+			name: "tool_choice auto stays",
+			set: func(params *BetaMessageNewParams) {
+				params.ToolChoice = BetaToolChoiceUnionParam{OfAuto: &BetaToolChoiceAutoParam{}}
+			},
+			kept: map[string]string{"tool_choice": `{"type":"auto"}`},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			forEachRunner(t, func(t *testing.T, stream bool) {
+				server, requests := scriptedMessagesServer(t, toolUseTurnJSON, compactionResponseJSON, endTurnJSON)
+				var betas []string
+				client := NewClient(
+					option.WithBaseURL(server.URL),
+					option.WithAPIKey("test-key"),
+					option.WithMaxRetries(0),
+					option.WithMiddleware(func(req *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+						betas = append(betas, req.Header.Get("anthropic-beta"))
+						return next(req)
+					}),
+				)
+				params := pauseTurnParams(0)
+				params.Betas = []AnthropicBeta{AnthropicBetaCompact2026_09_04}
+				params.System = []BetaTextBlockParam{{Text: "Be brief."}}
+				tc.set(&params.BetaMessageNewParams)
+				runner := newTurnRunner(client, stream, []BetaTool{&stubBetaTool{name: "weather"}}, params)
+
+				requireYieldedOnce(t, runner.run(t, compactOnToolUse(runner)), "msg_tool", "msg_compaction", "msg_end")
+				bodies := requests()
+				requireRequestCount(t, bodies, 3)
+				first, compaction, after := bodies[0], bodies[1], bodies[2]
+
+				for _, path := range tc.leftOff {
+					if !gjson.GetBytes(first, path).Exists() {
+						t.Fatalf("first request should carry %s: %s", path, first)
+					}
+					if gjson.GetBytes(compaction, path).Exists() {
+						t.Fatalf("compaction request must not carry %s: %s", path, compaction)
+					}
+					requireJSONEqual(t, gjson.GetBytes(after, path).Raw, gjson.GetBytes(first, path).Raw)
+				}
+				for path, want := range tc.kept {
+					requireJSONEqual(t, gjson.GetBytes(compaction, path).Raw, want)
+				}
+				for _, path := range []string{"tools", "system", "max_tokens"} {
+					requireJSONEqual(t, gjson.GetBytes(compaction, path).Raw, gjson.GetBytes(first, path).Raw)
+				}
+				if fmt.Sprint(betas) != "[compact-2026-09-04 compact-2026-09-04 compact-2026-09-04]" {
+					t.Fatalf("anthropic-beta headers = %v, want the caller's beta on every request", betas)
+				}
+			})
+		})
+	}
 }
 
 func TestBetaToolRunner_CompactBeforeNextTurn_BeforeFirstIterationIsFirstRequest(t *testing.T) {

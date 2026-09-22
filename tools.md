@@ -271,7 +271,7 @@ for message, err := range runner.All(ctx) {
 
 The call only schedules the compaction. Once the current turn has finished, including any tool calls, the runner requests a summary, replaces its message history with the compaction response the API returns, and carries on. A turn that was paused (`pause_turn`) is resumed and finished first. If the current turn is the last one, the runner compacts and then stops, so the last message of the run is the compaction response. If you call it before the first turn, the compaction is the first request.
 
-The compaction response is returned like any other message and doesn't count towards `MaxIterations`. Its `StopReason` is `compaction`, the summary is in its first content block, and its `Usage.InputTokens` is the size of the history that was just summarized. Calling `CompactBeforeNextTurn()` while handling that message does nothing, so a threshold like the one above doesn't compact twice. With the streaming runner, read the message from `runner.LastMessage()` once the turn's events have been consumed.
+The compaction response is returned like any other message and doesn't count towards `MaxIterations`. Its `StopReason` is `compaction`, the summary is in its first content block, and its top-level `Usage.InputTokens` and `Usage.OutputTokens` are 0: what the compaction cost is in `Usage.Iterations`. Calling `CompactBeforeNextTurn()` while handling that message does nothing, so a threshold like the one above doesn't compact twice. With the streaming runner, read the message from `runner.LastMessage()` once the turn's events have been consumed.
 
 `CompactBeforeNextTurn()` takes the same config as the `Compaction` field of `BetaMessageNewParams`, and the zero value means `{"type": "summarize"}`. For example, to give your own summarization instructions:
 
@@ -287,12 +287,48 @@ A few things to know:
 
 - Calling it again before the compaction runs replaces the pending one.
 - The runner doesn't add the beta for you, so pass it in `Betas`.
-- `ContextManagement` is left out of the compaction request, because the API doesn't accept the two together, and is sent again afterwards. While `ContextManagement` has a compaction edit (`compact_20260112`) the compaction is not sent: the next `NextMessage()` or `NextStreaming()` call returns an error and the pending compaction is dropped.
+- `ContextManagement`, `StopSequences`, a `ToolChoice` that forces tool use (`any` or `tool`) and the output format (`OutputConfig.Format` or `OutputFormat`, and the `OutputConfig.Format` of each entry in `Fallbacks`) are left out of the compaction request, because the API doesn't accept them together with `Compaction`, and are sent again afterwards. While `ContextManagement` has a compaction edit (`compact_20260112`) the compaction is not sent: the next `NextMessage()` or `NextStreaming()` call returns an error and the pending compaction is dropped.
 - With the streaming runner, don't replace or append to `Params.Messages` while the compaction response is streaming, because that response is about to replace them. If you do, the stream ends with an error and your messages are kept. Other params can still be changed.
 - If the API returns no summary, the runner prints a warning to stderr and keeps the history as it is.
 - If the run ends on a turn that was cut short with tool calls that never ran (`max_tokens`, for example), the pending compaction is skipped with a warning printed to stderr. It is also skipped if the run stops at `MaxIterations` or you stop iterating.
 - The `Compaction` param itself can't be set in the runner's `Params`, because every request in the loop would compact again: the next `NextMessage()` or `NextStreaming()` call clears it and returns an error.
 - If the compaction request itself fails, the error is returned and the compaction is not retried. Call `CompactBeforeNextTurn()` again if you carry on.
+
+### Changing Tools Mid-Conversation
+
+Editing `runner.Params.Tools` between turns invalidates the prompt cache for the whole conversation. `AddTools`, `AddToolParams`, `RemoveTools` and `RemoveToolsByNames` change the model's tools and keep the cache: they leave `Params.Tools` as it is and tell the model about the change in a `role: "system"` message. Requests must include the `inline-tools-2026-09-15` beta, which the runner does not add for you.
+
+```go
+runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{readFileTool}, anthropic.BetaToolRunnerParams{
+	BetaMessageNewParams: anthropic.BetaMessageNewParams{
+		// ...
+		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaInlineTools2026_09_15},
+	},
+})
+
+for message, err := range runner.All(ctx) {
+	// ...
+	if db.JustConnected() {
+		runner.AddTools(dbQueryTool)
+	}
+	if db.JustDisconnected() {
+		runner.RemoveTools(dbQueryTool)
+		// or, by name: runner.RemoveToolsByNames("db_query")
+	}
+	if wantsWebSearch(message) {
+		runner.AddToolParams(anthropic.BetaToolUnionParam{
+			OfWebSearchTool20250305: &anthropic.BetaWebSearchTool20250305Param{MaxUses: anthropic.Int(3)},
+		})
+	}
+}
+```
+
+- `AddTools` sends each tool's full definition to the model with the next request. The runner runs the tool straight away, in place of any earlier tool of the same name: a call the model has already made in the message you're handling runs the new one.
+- `AddToolParams` sends a definition exactly as given, for server tools such as web search. The runner never runs a client tool added this way: a call to it gets the same "not found" error result as a call to an unknown tool, and a tool the runner ran under that name stops running straight away.
+- `RemoveTools` and `RemoveToolsByNames` take effect in the runner immediately. A call to a removed tool, including one in the message you were just handed, gets the "not found" error result; a call that has already started is not interrupted. The tool stays removed until you pass it to `AddTools` again. Removing a server tool only tells the model.
+- The changes you make while handling one message are sent together, in the order you made them, as a single system message right after that turn's tool results (or after your first message, if you make them before the first request). After a `pause_turn` message, which the runner sends back unchanged so the API resumes the turn, they are sent one request later, because the API does not take a tool change directly after a paused turn. A compaction requested with `CompactBeforeNextTurn` carries them, except one that follows the final message. Changes you make after the final message are never sent.
+- If the conversation starts from a `compaction` block made elsewhere whose `tool_changes` removes a tool you also pass to the runner, the API applies the removal for the model but the runner does not refuse the tool locally; call `RemoveTools` for it.
+- In the rare case where a compaction response comes back without `tool_changes` even though the summarized messages added or removed tools, the model goes back to the tools in `Params.Tools` and the runner does not detect it. Call `AddTools` or `RemoveTools` again after that compaction if you need the change restored.
 
 ### Inspecting State
 

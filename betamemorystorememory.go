@@ -439,9 +439,19 @@ type BetaMemoryStoreMemoryNewParams struct {
 	// Must not contain empty segments, `.` or `..` segments, control or format
 	// characters, or the Unicode line and paragraph separators (U+2028, U+2029), and
 	// must be NFC-normalized. Paths are case-sensitive.
-	Path        string            `json:"path" api:"required"`
+	Path string `json:"path" api:"required"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for view
+	// Selects which projection of a `memory` or `memory_version` the server returns.
+	// `basic` returns the object with `content` set to `null`; `full` populates
+	// `content`. When omitted, the default is endpoint-specific: retrieve operations
+	// default to `full`; list, create, and update operations default to `basic`.
+	// Listing with `view=full` caps `limit` at 20.
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
@@ -468,9 +478,20 @@ func (r BetaMemoryStoreMemoryNewParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaMemoryStoreMemoryGetParams struct {
-	MemoryStoreID string            `path:"memory_store_id" api:"required" json:"-"`
-	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for view
+	// The ID of the memory store that holds the memory (`memstore_...`).
+	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Selects which projection of a `memory` or `memory_version` the server returns.
+	// `basic` returns the object with `content` set to `null`; `full` populates
+	// `content`. When omitted, the default is endpoint-specific: retrieve operations
+	// default to `full`; list, create, and update operations default to `basic`.
+	// Listing with `view=full` caps `limit` at 20.
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
@@ -489,6 +510,7 @@ func (r BetaMemoryStoreMemoryGetParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaMemoryStoreMemoryUpdateParams struct {
+	// The ID of the memory store that holds the memory (`memstore_...`).
 	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
 	// New UTF-8 text content for the memory. Maximum 100 kB (102,400 bytes). Omit to
 	// leave the content unchanged (e.g., for a rename-only update).
@@ -499,9 +521,19 @@ type BetaMemoryStoreMemoryUpdateParams struct {
 	// paragraph separators (U+2028, U+2029), and must be NFC-normalized. Paths are
 	// case-sensitive. The memory's `id` is preserved across renames. Omit to leave the
 	// path unchanged.
-	Path        param.Opt[string] `json:"path,omitzero"`
+	Path param.Opt[string] `json:"path,omitzero"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for view
+	// Selects which projection of a `memory` or `memory_version` the server returns.
+	// `basic` returns the object with `content` set to `null`; `full` populates
+	// `content`. When omitted, the default is endpoint-specific: retrieve operations
+	// default to `full`; list, create, and update operations default to `basic`.
+	// Listing with `view=full` caps `limit` at 20.
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
@@ -549,7 +581,13 @@ type BetaMemoryStoreMemoryListParams struct {
 	// Optional path prefix filter. Must end with `/` (segment-aligned), e.g.,
 	// `/notes/`. This value appears in request URLs. Do not include secrets or
 	// personally identifiable information.
-	PathPrefix  param.Opt[string] `query:"path_prefix,omitzero" json:"-"`
+	PathPrefix param.Opt[string] `query:"path_prefix,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Which projection of each `memory` to return. Defaults to `basic` (content
 	// omitted). `full` populates `content` on each item and caps `limit` at 20; use
@@ -572,10 +610,21 @@ func (r BetaMemoryStoreMemoryListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaMemoryStoreMemoryDeleteParams struct {
+	// The ID of the memory store that holds the memory (`memstore_...`).
 	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
-	// Query parameter for expected_content_sha256
+	// Delete the memory only if its current `content_sha256` equals this value, given
+	// as 64 lowercase hexadecimal characters. Omit it to delete unconditionally.
+	//
+	// If the hashes differ, the request fails with HTTP status 409 and nothing is
+	// deleted.
 	ExpectedContentSha256 param.Opt[string] `query:"expected_content_sha256,omitzero" json:"-"`
-	WorkspaceID           param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

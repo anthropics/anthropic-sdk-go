@@ -195,7 +195,13 @@ type SkillVersionNewParams struct {
 	//
 	// All files must be in the same top-level directory and must include a SKILL.md
 	// file at the root of that directory.
-	Files       []io.Reader       `json:"files,omitzero" api:"required" format:"binary"`
+	Files []io.Reader `json:"files,omitzero" api:"required" format:"binary"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	paramObj
 }
@@ -222,7 +228,13 @@ type SkillVersionGetParams struct {
 	// Unique identifier for the skill.
 	//
 	// The format and length of IDs may change over time.
-	SkillID     string            `path:"skill_id" api:"required" json:"-"`
+	SkillID string `path:"skill_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	paramObj
 }
@@ -233,7 +245,13 @@ type SkillVersionListParams struct {
 	// Ranges from `1` to `1000`. Defaults to `20`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Optionally set to the `next_page` token from the previous response.
-	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	paramObj
 }
@@ -250,7 +268,13 @@ type SkillVersionDeleteParams struct {
 	// Unique identifier for the skill.
 	//
 	// The format and length of IDs may change over time.
-	SkillID     string            `path:"skill_id" api:"required" json:"-"`
+	SkillID string `path:"skill_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	paramObj
 }

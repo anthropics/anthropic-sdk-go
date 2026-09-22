@@ -100,11 +100,15 @@ func (r *BetaSessionThreadEventService) StreamEvents(ctx context.Context, thread
 }
 
 type BetaSessionThreadEventListParams struct {
-	SessionID string `path:"session_id" api:"required" json:"-"`
-	// Query parameter for limit
-	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Query parameter for page
-	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	SessionID string            `path:"session_id" api:"required" json:"-"`
+	Limit     param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	Page      param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -121,7 +125,13 @@ func (r BetaSessionThreadEventListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaSessionThreadEventStreamParams struct {
-	SessionID   string            `path:"session_id" api:"required" json:"-"`
+	SessionID string `path:"session_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// When set, this connection also receives streaming deltas (`event_start`,
 	// `event_delta`) while an event is being produced, before the event itself

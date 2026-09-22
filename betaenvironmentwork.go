@@ -518,8 +518,14 @@ func (r *BetaSessionWorkData) UnmarshalJSON(data []byte) error {
 }
 
 type BetaEnvironmentWorkGetParams struct {
-	EnvironmentID string            `path:"environment_id" api:"required" json:"-"`
-	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	EnvironmentID string `path:"environment_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -529,7 +535,13 @@ type BetaEnvironmentWorkUpdateParams struct {
 	EnvironmentID string `path:"environment_id" api:"required" json:"-"`
 	// Request to update work item metadata.
 	BetaSelfHostedWorkUpdateRequest BetaSelfHostedWorkUpdateRequestParam
-	WorkspaceID                     param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -617,6 +629,12 @@ func (r BetaEnvironmentWorkPollParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaEnvironmentWorkStatsParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -627,7 +645,13 @@ type BetaEnvironmentWorkStopParams struct {
 	EnvironmentID string `path:"environment_id" api:"required" json:"-"`
 	// Request to stop a work item.
 	BetaSelfHostedWorkStopRequest BetaSelfHostedWorkStopRequestParam
-	WorkspaceID                   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

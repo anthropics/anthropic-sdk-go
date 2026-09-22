@@ -298,6 +298,15 @@ const (
 	BetaManagedAgentsAgentCustomToolUseEventTypeAgentCustomToolUse BetaManagedAgentsAgentCustomToolUseEventType = "agent.custom_tool_use"
 )
 
+// AgentEvaluatedPermission enum
+type BetaManagedAgentsAgentEvaluatedPermission string
+
+const (
+	BetaManagedAgentsAgentEvaluatedPermissionAllow BetaManagedAgentsAgentEvaluatedPermission = "allow"
+	BetaManagedAgentsAgentEvaluatedPermissionAsk   BetaManagedAgentsAgentEvaluatedPermission = "ask"
+	BetaManagedAgentsAgentEvaluatedPermissionDeny  BetaManagedAgentsAgentEvaluatedPermission = "deny"
+)
+
 // Event representing the result of an MCP tool execution.
 type BetaManagedAgentsAgentMCPToolResultEvent struct {
 	// Unique identifier for this event.
@@ -488,7 +497,7 @@ type BetaManagedAgentsAgentMCPToolUseEvent struct {
 	// AgentEvaluatedPermission enum
 	//
 	// Any of "allow", "ask", "deny".
-	EvaluatedPermission BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermission `json:"evaluated_permission"`
+	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
 	// Names the resolved permission_policy that produced evaluated_permission, and
 	// under auto carries the judgement. Open union: clients must tolerate unknown
 	// variants.
@@ -524,15 +533,6 @@ type BetaManagedAgentsAgentMCPToolUseEventType string
 
 const (
 	BetaManagedAgentsAgentMCPToolUseEventTypeAgentMCPToolUse BetaManagedAgentsAgentMCPToolUseEventType = "agent.mcp_tool_use"
-)
-
-// AgentEvaluatedPermission enum
-type BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermission string
-
-const (
-	BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermissionAllow BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermission = "allow"
-	BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermissionAsk   BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermission = "ask"
-	BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermissionDeny  BetaManagedAgentsAgentMCPToolUseEventEvaluatedPermission = "deny"
 )
 
 // An agent response event in the session conversation.
@@ -1350,7 +1350,7 @@ type BetaManagedAgentsAgentToolUseEvent struct {
 	// AgentEvaluatedPermission enum
 	//
 	// Any of "allow", "ask", "deny".
-	EvaluatedPermission BetaManagedAgentsAgentToolUseEventEvaluatedPermission `json:"evaluated_permission"`
+	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
 	// Names the resolved permission_policy that produced evaluated_permission, and
 	// under auto carries the judgement. Open union: clients must tolerate unknown
 	// variants.
@@ -1386,15 +1386,6 @@ type BetaManagedAgentsAgentToolUseEventType string
 
 const (
 	BetaManagedAgentsAgentToolUseEventTypeAgentToolUse BetaManagedAgentsAgentToolUseEventType = "agent.tool_use"
-)
-
-// AgentEvaluatedPermission enum
-type BetaManagedAgentsAgentToolUseEventEvaluatedPermission string
-
-const (
-	BetaManagedAgentsAgentToolUseEventEvaluatedPermissionAllow BetaManagedAgentsAgentToolUseEventEvaluatedPermission = "allow"
-	BetaManagedAgentsAgentToolUseEventEvaluatedPermissionAsk   BetaManagedAgentsAgentToolUseEventEvaluatedPermission = "ask"
-	BetaManagedAgentsAgentToolUseEventEvaluatedPermissionDeny  BetaManagedAgentsAgentToolUseEventEvaluatedPermission = "deny"
 )
 
 // Base64-encoded document data.
@@ -4086,8 +4077,9 @@ type BetaManagedAgentsSessionEventUnion struct {
 	Input           any    `json:"input"`
 	Name            string `json:"name"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
-	MCPServerName       string `json:"mcp_server_name"`
-	EvaluatedPermission string `json:"evaluated_permission"`
+	MCPServerName string `json:"mcp_server_name"`
+	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
+	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
 	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolResultEvent].
@@ -5560,8 +5552,9 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 	Input           any    `json:"input"`
 	Name            string `json:"name"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
-	MCPServerName       string `json:"mcp_server_name"`
-	EvaluatedPermission string `json:"evaluated_permission"`
+	MCPServerName string `json:"mcp_server_name"`
+	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
+	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
 	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolResultEvent].
@@ -7867,10 +7860,15 @@ type BetaSessionEventListParams struct {
 	// Return events created at or before this time (inclusive). Compared against the
 	// event's `processed_at` value.
 	CreatedAtLte param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
-	// Query parameter for limit
-	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	Limit        param.Opt[int64]     `query:"limit,omitzero" json:"-"`
 	// Opaque pagination cursor from a previous response's `next_page`.
-	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Sort direction for results, ordered by the event's `processed_at`. Defaults to
 	// `asc` (chronological).
@@ -7905,8 +7903,14 @@ const (
 
 type BetaSessionEventSendParams struct {
 	// Events to send to the `session`.
-	Events      []BetaManagedAgentsEventParamsUnion `json:"events,omitzero" api:"required"`
-	WorkspaceID param.Opt[string]                   `header:"anthropic-workspace-id,omitzero" json:"-"`
+	Events []BetaManagedAgentsEventParamsUnion `json:"events,omitzero" api:"required"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -7921,6 +7925,12 @@ func (r *BetaSessionEventSendParams) UnmarshalJSON(data []byte) error {
 }
 
 type BetaSessionEventStreamParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// When set, this connection also receives streaming deltas (`event_start`,
 	// `event_delta`) while an event is being produced, before the event itself

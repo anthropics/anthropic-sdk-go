@@ -420,9 +420,20 @@ const (
 )
 
 type BetaMemoryStoreMemoryVersionGetParams struct {
-	MemoryStoreID string            `path:"memory_store_id" api:"required" json:"-"`
-	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for view
+	// The ID of the memory store that holds the version (`memstore_...`).
+	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Selects which projection of a `memory` or `memory_version` the server returns.
+	// `basic` returns the object with `content` set to `null`; `full` populates
+	// `content`. When omitted, the default is endpoint-specific: retrieve operations
+	// default to `full`; list, create, and update operations default to `basic`.
+	// Listing with `view=full` caps `limit` at 20.
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
@@ -441,28 +452,42 @@ func (r BetaMemoryStoreMemoryVersionGetParams) URLQuery() (v url.Values, err err
 }
 
 type BetaMemoryStoreMemoryVersionListParams struct {
-	// Query parameter for api_key_id
+	// Return only versions written with the API key that has this ID.
 	APIKeyID param.Opt[string] `query:"api_key_id,omitzero" json:"-"`
 	// Return versions created at or after this time (inclusive).
 	CreatedAtGte param.Opt[time.Time] `query:"created_at[gte],omitzero" format:"date-time" json:"-"`
 	// Return versions created at or before this time (inclusive).
 	CreatedAtLte param.Opt[time.Time] `query:"created_at[lte],omitzero" format:"date-time" json:"-"`
-	// Query parameter for limit
+	// The maximum number of versions to return per page. Defaults to 20.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Query parameter for memory_id
+	// Return only versions of the memory with this ID (`mem_...`).
+	//
+	// The filter still works after the memory is deleted. The results then include the
+	// version whose `operation` is `deleted`.
 	MemoryID param.Opt[string] `query:"memory_id,omitzero" json:"-"`
-	// Query parameter for page
+	// The `next_page` value from a previous response, to get the next page. Omit it to
+	// get the first page.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
-	// Query parameter for service_account_id
+	// Return only versions written by the service account with this ID (`svac_...`).
 	ServiceAccountID param.Opt[string] `query:"service_account_id,omitzero" json:"-"`
-	// Query parameter for session_id
-	SessionID   param.Opt[string] `query:"session_id,omitzero" json:"-"`
+	// Return only versions written by the session with this ID.
+	SessionID param.Opt[string] `query:"session_id,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for operation
+	// Return only versions that record this kind of change.
 	//
 	// Any of "created", "modified", "deleted".
 	Operation BetaManagedAgentsMemoryVersionOperation `query:"operation,omitzero" json:"-"`
-	// Query parameter for view
+	// Selects which projection of a `memory` or `memory_version` the server returns.
+	// `basic` returns the object with `content` set to `null`; `full` populates
+	// `content`. When omitted, the default is endpoint-specific: retrieve operations
+	// default to `full`; list, create, and update operations default to `basic`.
+	// Listing with `view=full` caps `limit` at 20.
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
@@ -481,8 +506,15 @@ func (r BetaMemoryStoreMemoryVersionListParams) URLQuery() (v url.Values, err er
 }
 
 type BetaMemoryStoreMemoryVersionRedactParams struct {
-	MemoryStoreID string            `path:"memory_store_id" api:"required" json:"-"`
-	WorkspaceID   param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// The ID of the memory store that holds the version (`memstore_...`).
+	MemoryStoreID string `path:"memory_store_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

@@ -138,6 +138,13 @@ func (r *BetaUserProfileService) NewEnrollmentURL(ctx context.Context, userProfi
 	return res, err
 }
 
+// A record of an entity that the platform serves through the API, such as an
+// end-user of the platform's product or a company that the platform resells Claude
+// access to.
+//
+// A Messages, Message Batches or token counting request can send a profile's `id`
+// in the `anthropic-user-profile-id` header to attribute the request to that
+// entity.
 type BetaUserProfile struct {
 	// Unique identifier for this user profile, prefixed `uprof_`.
 	ID string `json:"id" api:"required"`
@@ -216,10 +223,16 @@ const (
 type BetaUserProfileAccessType string
 
 const (
+	// The user profile represents an individual end-user of a product that the
+	// platform builds on the API. New profiles get this value by default.
 	BetaUserProfileAccessTypeApplication BetaUserProfileAccessType = "application"
+	// The user profile represents a company that the platform resells Claude access
+	// to.
 	BetaUserProfileAccessTypePassthrough BetaUserProfileAccessType = "passthrough"
 )
 
+// A URL to give to the entity that a user profile represents, so that the entity
+// can enroll for a trust grant.
 type BetaUserProfileEnrollmentURL struct {
 	// A timestamp in RFC 3339 format
 	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
@@ -311,9 +324,15 @@ func (r *BetaUserProfileExternalUserDetails) UnmarshalJSON(data []byte) error {
 type BetaUserProfileExternalUserDetailsAccountStatus string
 
 const (
-	BetaUserProfileExternalUserDetailsAccountStatusActive    BetaUserProfileExternalUserDetailsAccountStatus = "active"
+	// The platform has neither restricted nor barred the account of the entity that
+	// the user profile represents.
+	BetaUserProfileExternalUserDetailsAccountStatusActive BetaUserProfileExternalUserDetailsAccountStatus = "active"
+	// The platform has restricted the account of the entity that the user profile
+	// represents and may restore it.
 	BetaUserProfileExternalUserDetailsAccountStatusSuspended BetaUserProfileExternalUserDetailsAccountStatus = "suspended"
-	BetaUserProfileExternalUserDetailsAccountStatusBlocked   BetaUserProfileExternalUserDetailsAccountStatus = "blocked"
+	// The platform has barred the account of the entity that the user profile
+	// represents.
+	BetaUserProfileExternalUserDetailsAccountStatusBlocked BetaUserProfileExternalUserDetailsAccountStatus = "blocked"
 )
 
 // What kind of entity the profile represents, as the platform states it:
@@ -377,9 +396,15 @@ func (r *BetaUserProfileExternalUserDetailsParams) UnmarshalJSON(data []byte) er
 type BetaUserProfileExternalUserDetailsParamsAccountStatus string
 
 const (
-	BetaUserProfileExternalUserDetailsParamsAccountStatusActive    BetaUserProfileExternalUserDetailsParamsAccountStatus = "active"
+	// The platform has neither restricted nor barred the account of the entity that
+	// the user profile represents.
+	BetaUserProfileExternalUserDetailsParamsAccountStatusActive BetaUserProfileExternalUserDetailsParamsAccountStatus = "active"
+	// The platform has restricted the account of the entity that the user profile
+	// represents and may restore it.
 	BetaUserProfileExternalUserDetailsParamsAccountStatusSuspended BetaUserProfileExternalUserDetailsParamsAccountStatus = "suspended"
-	BetaUserProfileExternalUserDetailsParamsAccountStatusBlocked   BetaUserProfileExternalUserDetailsParamsAccountStatus = "blocked"
+	// The platform has barred the account of the entity that the user profile
+	// represents.
+	BetaUserProfileExternalUserDetailsParamsAccountStatusBlocked BetaUserProfileExternalUserDetailsParamsAccountStatus = "blocked"
 )
 
 // What kind of entity the profile represents, as the platform states it:
@@ -393,6 +418,8 @@ const (
 	BetaUserProfileExternalUserDetailsParamsEntityTypeGovernment BetaUserProfileExternalUserDetailsParamsEntityType = "government"
 )
 
+// The status of one trust grant on a user profile, listed in the profile's
+// `trust_grants` map under the grant's name.
 type BetaUserProfileTrustGrant struct {
 	// Status of the trust grant.
 	//
@@ -434,7 +461,13 @@ type BetaUserProfileNewParams struct {
 	Name param.Opt[string] `json:"name,omitzero"`
 	// A timestamp in RFC 3339 format
 	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
-	WorkspaceID             param.Opt[string]    `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// How the platform uses the API on behalf of the entity this profile represents.
 	// `application`: the platform sells a product that uses the API behind the scenes,
 	// and the profile represents an individual end-user of that product.
@@ -472,11 +505,21 @@ func (r *BetaUserProfileNewParams) UnmarshalJSON(data []byte) error {
 type BetaUserProfileNewParamsAccessType string
 
 const (
+	// The user profile represents an individual end-user of a product that the
+	// platform builds on the API. New profiles get this value by default.
 	BetaUserProfileNewParamsAccessTypeApplication BetaUserProfileNewParamsAccessType = "application"
+	// The user profile represents a company that the platform resells Claude access
+	// to.
 	BetaUserProfileNewParamsAccessTypePassthrough BetaUserProfileNewParamsAccessType = "passthrough"
 )
 
 type BetaUserProfileGetParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -494,7 +537,13 @@ type BetaUserProfileUpdateParams struct {
 	Name param.Opt[string] `json:"name,omitzero"`
 	// A timestamp in RFC 3339 format
 	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
-	WorkspaceID             param.Opt[string]    `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// How the platform uses the API on behalf of the entity this profile represents.
 	// `application`: the platform sells a product that uses the API behind the scenes,
 	// and the profile represents an individual end-user of that product.
@@ -534,21 +583,36 @@ func (r *BetaUserProfileUpdateParams) UnmarshalJSON(data []byte) error {
 type BetaUserProfileUpdateParamsAccessType string
 
 const (
+	// The user profile represents an individual end-user of a product that the
+	// platform builds on the API. New profiles get this value by default.
 	BetaUserProfileUpdateParamsAccessTypeApplication BetaUserProfileUpdateParamsAccessType = "application"
+	// The user profile represents a company that the platform resells Claude access
+	// to.
 	BetaUserProfileUpdateParamsAccessTypePassthrough BetaUserProfileUpdateParamsAccessType = "passthrough"
 )
 
 type BetaUserProfileListParams struct {
-	// Query parameter for limit
+	// The maximum number of user profiles to return, from 1 to 100. Defaults to 20.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Query parameter for page
-	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	// The cursor for the page to return, taken from `next_page` in a previous
+	// response.
+	//
+	// Leave it out to get the first page.
+	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Query parameter for order
+	// The sort direction, applied to the field that `order_by` selects. Defaults to
+	// `desc`.
 	//
 	// Any of "asc", "desc".
 	Order BetaUserProfileListParamsOrder `query:"order,omitzero" json:"-"`
-	// Query parameter for order_by
+	// The field to sort user profiles by, in the direction that `order` sets. Defaults
+	// to `created_at`.
 	//
 	// Any of "created_at", "name".
 	OrderBy BetaUserProfileListParamsOrderBy `query:"order_by,omitzero" json:"-"`
@@ -566,23 +630,38 @@ func (r BetaUserProfileListParams) URLQuery() (v url.Values, err error) {
 	})
 }
 
-// Query parameter for order
+// The sort direction, applied to the field that `order_by` selects. Defaults to
+// `desc`.
 type BetaUserProfileListParamsOrder string
 
 const (
-	BetaUserProfileListParamsOrderAsc  BetaUserProfileListParamsOrder = "asc"
+	// Oldest first when `order_by` is `created_at`, or names in ascending order when
+	// `order_by` is `name`.
+	BetaUserProfileListParamsOrderAsc BetaUserProfileListParamsOrder = "asc"
+	// Newest first when `order_by` is `created_at`, or names in descending order when
+	// `order_by` is `name`. This is the default.
 	BetaUserProfileListParamsOrderDesc BetaUserProfileListParamsOrder = "desc"
 )
 
-// Query parameter for order_by
+// The field to sort user profiles by, in the direction that `order` sets. Defaults
+// to `created_at`.
 type BetaUserProfileListParamsOrderBy string
 
 const (
+	// Sort by when each user profile was created. This is the default.
 	BetaUserProfileListParamsOrderByCreatedAt BetaUserProfileListParamsOrderBy = "created_at"
-	BetaUserProfileListParamsOrderByName      BetaUserProfileListParamsOrderBy = "name"
+	// Sort by `name`, ignoring the case of ASCII letters. Profiles without a name come
+	// last in either direction.
+	BetaUserProfileListParamsOrderByName BetaUserProfileListParamsOrderBy = "name"
 )
 
 type BetaUserProfileNewEnrollmentURLParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

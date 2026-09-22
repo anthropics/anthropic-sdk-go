@@ -105,6 +105,54 @@ func TestBetaCompactionToParamKeepsSignature(t *testing.T) {
 	}
 }
 
+// Keys are deliberately not alphabetical: a rebuilt definition would re-sort them.
+const unsortedToolDefinitionJSON = `{"type":"tool_definition","definition":{"name":"get_weather","input_schema":{"type":"object","required":["city"],"properties":{"city":{"type":"string"}}},"description":"Weather lookup."}}`
+
+func TestBetaCompactionToParamKeepsToolChanges(t *testing.T) {
+	const removal = `{"type":"tool_removal","tool":{"type":"tool_reference","name":"get_time"}}`
+	const addition = `{"type":"tool_addition","tool":` + unsortedToolDefinitionJSON + `}`
+
+	for _, tt := range []struct {
+		name        string
+		toolChanges string
+		want        []string
+	}{
+		{"an addition and a removal are sent back as received", `,"tool_changes":[` + addition + `,` + removal + `]`, []string{addition, removal}},
+		{"an empty list stays an empty list", `,"tool_changes":[]`, []string{}},
+		{"an absent list stays absent", ``, nil},
+		{"a null list is omitted", `,"tool_changes":null`, nil},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			result := unmarshalBetaContentBlockParam(t, `{"type":"compaction","content":"Summary.","encrypted_content":"opaque"`+tt.toolChanges+`}`)
+			sent, err := json.Marshal(result)
+			if err != nil {
+				t.Fatalf("Failed to marshal param: %v", err)
+			}
+			changes := gjson.GetBytes(sent, "tool_changes")
+			if tt.want == nil {
+				if changes.Exists() {
+					t.Fatalf("Expected tool_changes to be omitted, got %s", changes.Raw)
+				}
+				return
+			}
+			if !changes.IsArray() || len(changes.Array()) != len(tt.want) {
+				t.Fatalf("Expected %d tool changes, got %s in %s", len(tt.want), changes.Raw, sent)
+			}
+			for i, change := range changes.Array() {
+				if change.Raw != tt.want[i] {
+					t.Errorf("tool_changes[%d] changed\n want: %s\n  got: %s", i, tt.want[i], change.Raw)
+				}
+			}
+			if len(tt.want) == 2 {
+				compaction := result.OfCompaction
+				if compaction.ToolChanges[0].OfToolAddition == nil || compaction.ToolChanges[1].OfToolRemoval == nil {
+					t.Errorf("Expected the addition and removal variants to be set, got %+v", compaction.ToolChanges)
+				}
+			}
+		})
+	}
+}
+
 // A block type this SDK version does not model has no param variant to
 // populate, so it goes back exactly as it was received.
 func TestBetaContentBlockToParamKeepsUnmodeledBlock(t *testing.T) {
@@ -402,5 +450,22 @@ func TestBetaAccumulateMessageDeltaInputTransformations(t *testing.T) {
 	)
 	if !message.JSON.InputTransformations.Valid() || len(message.InputTransformations) != 1 {
 		t.Errorf("Expected JSON.InputTransformations to be valid after a delta carrying the field, got valid=%v %+v", message.JSON.InputTransformations.Valid(), message.InputTransformations)
+	}
+}
+
+func TestBetaMCPToolListingToParamEchoesBlock(t *testing.T) {
+	// Keys are deliberately not alphabetical: a rebuilt block would re-sort them.
+	const block = `{"type":"mcp_tool_listing","mcp_server_name":"weather","tools":[{"name":"forecast","input_schema":{"type":"object","required":["days"],"properties":{"days":{"type":"integer"}}},"description":"Forecast."},{"name":"alerts","input_schema":{"type":"object"},"description":null}]}`
+
+	result := unmarshalBetaContentBlockParam(t, block)
+	if result.OfMCPToolListing == nil {
+		t.Fatal("Expected OfMCPToolListing to be non-nil")
+	}
+	sent, err := json.Marshal(result)
+	if err != nil {
+		t.Fatalf("Failed to marshal param: %v", err)
+	}
+	if string(sent) != block {
+		t.Errorf("ToParam changed the block\n want: %s\n  got: %s", block, sent)
 	}
 }

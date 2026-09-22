@@ -109,7 +109,7 @@ func withoutNulls(v any) any {
 
 // maxDepth exceeds any real nesting, so reaching it means the walk found a
 // cycle.
-const maxDepth = 8
+const maxDepth = 16
 
 // A synthesizer generates response shapes for one API surface, consulting its
 // param structs for what a request can carry.

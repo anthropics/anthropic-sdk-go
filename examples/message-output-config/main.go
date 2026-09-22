@@ -22,7 +22,7 @@ func main() {
 
 	first, err := client.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
 		MaxTokens: 1024,
-		Model:     anthropic.ModelClaudeOpus4_8,
+		Model:     anthropic.ModelClaudeOpus5_5,
 		Messages:  messages,
 		Betas:     []anthropic.AnthropicBeta{anthropic.AnthropicBetaMidConversationOutputConfig2026_07_01},
 	})
@@ -44,7 +44,7 @@ func main() {
 
 	second, err := client.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
 		MaxTokens: 2048,
-		Model:     anthropic.ModelClaudeOpus4_8,
+		Model:     anthropic.ModelClaudeOpus5_5,
 		Messages:  messages,
 		Betas:     []anthropic.AnthropicBeta{anthropic.AnthropicBetaMidConversationOutputConfig2026_07_01},
 	})

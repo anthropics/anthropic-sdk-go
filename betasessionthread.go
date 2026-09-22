@@ -124,8 +124,7 @@ func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string,
 type BetaManagedAgentsSessionThread struct {
 	// Unique identifier for this thread.
 	ID string `json:"id" api:"required"`
-	// The resolved agent a session thread runs: a saved-agent snapshot, the platform
-	// advisor entry, or an inline-defined (ephemeral) agent snapshot.
+	// The resolved agent a `session_thread` runs.
 	Agent BetaManagedAgentsSessionThreadAgentUnion `json:"agent" api:"required"`
 	// A timestamp in RFC 3339 format
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
@@ -453,8 +452,9 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 	Input           any    `json:"input"`
 	Name            string `json:"name"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
-	MCPServerName       string `json:"mcp_server_name"`
-	EvaluatedPermission string `json:"evaluated_permission"`
+	MCPServerName string `json:"mcp_server_name"`
+	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
+	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolUseEvent].
 	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// This field is from variant [BetaManagedAgentsAgentMCPToolResultEvent].
@@ -1066,7 +1066,13 @@ func (r *BetaManagedAgentsStreamSessionThreadEventsUnionUsage) UnmarshalJSON(dat
 }
 
 type BetaSessionThreadGetParams struct {
-	SessionID   string            `path:"session_id" api:"required" json:"-"`
+	SessionID string `path:"session_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -1077,7 +1083,13 @@ type BetaSessionThreadListParams struct {
 	// Maximum results per page. Defaults to 1000.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Opaque pagination cursor from a previous response's `next_page`. Forward-only.
-	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -1094,7 +1106,13 @@ func (r BetaSessionThreadListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaSessionThreadArchiveParams struct {
-	SessionID   string            `path:"session_id" api:"required" json:"-"`
+	SessionID string `path:"session_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

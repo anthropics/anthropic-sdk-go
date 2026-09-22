@@ -301,6 +301,13 @@ func (variant BetaFallbackBlock) toParamUnion() BetaContentBlockParamUnion {
 	return BetaContentBlockParamUnion{OfFallback: &p}
 }
 
+// Echoed as received: rebuilding it from the decoded maps would reorder the
+// keys of each listed tool's input_schema.
+func (variant BetaMCPToolListingBlock) toParamUnion() BetaContentBlockParamUnion {
+	p := param.Override[BetaMCPToolListingBlockParam](json.RawMessage(variant.RawJSON()))
+	return BetaContentBlockParamUnion{OfMCPToolListing: &p}
+}
+
 func (r BetaMessage) ToParam() BetaMessageParam {
 	var p BetaMessageParam
 	p.Role = BetaMessageParamRole(r.Role)
@@ -665,7 +672,29 @@ func (r BetaCompactionBlock) ToParam() BetaCompactionBlockParam {
 	p.Content = paramutil.ToOpt(r.Content, r.JSON.Content)
 	p.EncryptedContent = paramutil.ToOpt(r.EncryptedContent, r.JSON.EncryptedContent)
 	p.Signature = paramutil.ToOpt(r.Signature, r.JSON.Signature)
+	// [] is kept distinct from absent.
+	if r.JSON.ToolChanges.Valid() {
+		p.ToolChanges = make([]BetaCompactionBlockParamToolChangeUnion, len(r.ToolChanges))
+		for i, change := range r.ToolChanges {
+			p.ToolChanges[i] = change.ToParam()
+		}
+	}
 	return p
+}
+
+// ToParam echoes the change as received: rebuilding a by-value tool definition
+// from its fields would reorder its input schema's keys.
+func (r BetaCompactionBlockToolChangeUnion) ToParam() BetaCompactionBlockParamToolChangeUnion {
+	raw := json.RawMessage(r.RawJSON())
+	switch r.AsAny().(type) {
+	case BetaResponseToolAdditionBlock:
+		addition := param.Override[BetaRequestToolAdditionBlockParam](raw)
+		return BetaCompactionBlockParamToolChangeUnion{OfToolAddition: &addition}
+	case BetaResponseToolRemovalBlock:
+		removal := param.Override[BetaRequestToolRemovalBlockParam](raw)
+		return BetaCompactionBlockParamToolChangeUnion{OfToolRemoval: &removal}
+	}
+	return param.Override[BetaCompactionBlockParamToolChangeUnion](raw)
 }
 
 func (r BetaFallbackBlock) ToParam() BetaFallbackBlockParam {

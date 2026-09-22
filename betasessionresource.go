@@ -694,7 +694,13 @@ func (r *BetaSessionResourceUpdateResponseUnion) UnmarshalJSON(data []byte) erro
 }
 
 type BetaSessionResourceGetParams struct {
-	SessionID   string            `path:"session_id" api:"required" json:"-"`
+	SessionID string `path:"session_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -705,8 +711,14 @@ type BetaSessionResourceUpdateParams struct {
 	SessionID string `path:"session_id" api:"required" json:"-"`
 	// New authorization token for the resource. Currently only `github_repository`
 	// resources support token rotation.
-	AuthorizationToken string            `json:"authorization_token" api:"required"`
-	WorkspaceID        param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	AuthorizationToken string `json:"authorization_token" api:"required"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
@@ -725,7 +737,13 @@ type BetaSessionResourceListParams struct {
 	// all resources.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Opaque cursor from a previous response's `next_page` field.
-	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -742,7 +760,13 @@ func (r BetaSessionResourceListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaSessionResourceDeleteParams struct {
-	SessionID   string            `path:"session_id" api:"required" json:"-"`
+	SessionID string `path:"session_id" api:"required" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -752,7 +776,13 @@ type BetaSessionResourceDeleteParams struct {
 type BetaSessionResourceAddParams struct {
 	// Mount a file uploaded via the Files API into the session.
 	BetaManagedAgentsFileResourceParams BetaManagedAgentsFileResourceParams
-	WorkspaceID                         param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

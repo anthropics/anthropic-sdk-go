@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"iter"
 	"os"
+	"slices"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
 	"github.com/anthropics/anthropic-sdk-go/option"
@@ -52,7 +53,8 @@ type betaToolRunnerBase struct {
 	// compacting is set from sending a compaction request until the next request
 	// is built, or until that request fails. CompactBeforeNextTurn does nothing
 	// meanwhile: there is nothing new to summarize.
-	compacting bool
+	compacting         bool
+	pendingToolChanges []BetaContentBlockParamUnion
 }
 
 func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool, params BetaToolRunnerParams, opts []option.RequestOption) betaToolRunnerBase {
@@ -61,13 +63,7 @@ func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool,
 
 	for i, tool := range tools {
 		toolMap[tool.Name()] = tool
-		apiTools[i] = BetaToolUnionParam{
-			OfTool: &BetaToolParam{
-				Name:        tool.Name(),
-				Description: String(tool.Description()),
-				InputSchema: tool.InputSchema(),
-			},
-		}
+		apiTools[i] = betaToolDefinition(tool)
 	}
 
 	// Add tools to the API params
@@ -82,6 +78,77 @@ func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool,
 		toolMap:        toolMap,
 		opts:           opts,
 	}
+}
+
+func betaToolDefinition(tool BetaTool) BetaToolUnionParam {
+	return BetaToolUnionParam{
+		OfTool: &BetaToolParam{
+			Name:        tool.Name(),
+			Description: String(tool.Description()),
+			InputSchema: tool.InputSchema(),
+		},
+	}
+}
+
+// AddTools gives the model more tools without changing Params.Tools, which
+// keeps the prompt cache. Each definition goes out with the next request. The
+// runner runs the tool at once, in place of any earlier tool of the same name,
+// even for a call in the message it last returned. Requests must include the
+// [AnthropicBetaInlineTools2026_09_15] beta.
+func (b *betaToolRunnerBase) AddTools(tools ...BetaTool) {
+	for _, tool := range tools {
+		b.toolMap[tool.Name()] = tool
+		b.queueToolAddition(betaToolDefinition(tool))
+	}
+}
+
+// AddToolParams is like AddTools for definitions the runner has nothing to
+// execute, such as server tools. Each is sent as given, and a registered tool
+// of the same name stops running at once; a call to a client tool added this
+// way gets the unknown-tool error result.
+func (b *betaToolRunnerBase) AddToolParams(tools ...BetaToolUnionParam) {
+	for _, definition := range tools {
+		// An mcp_toolset has no name and takes nothing over.
+		if name := definitionName(definition); name != "" {
+			delete(b.toolMap, name)
+		}
+		b.queueToolAddition(definition)
+	}
+}
+
+func (b *betaToolRunnerBase) queueToolAddition(definition BetaToolUnionParam) {
+	b.pendingToolChanges = append(b.pendingToolChanges, NewBetaToolAdditionBlock(BetaToolChangeToolDefinitionParam{Definition: definition}))
+}
+
+// RemoveTools takes tools away from the model without changing Params.Tools.
+// The runner stops running them at once, even for a call in the message it
+// last returned, and the model is told with the next request. A removed tool
+// stays removed until it is passed to AddTools again.
+func (b *betaToolRunnerBase) RemoveTools(tools ...BetaTool) {
+	names := make([]string, len(tools))
+	for i, tool := range tools {
+		names[i] = tool.Name()
+	}
+	b.RemoveToolsByNames(names...)
+}
+
+// RemoveToolsByNames is like RemoveTools for a caller that has names rather
+// than tools, as with a definition added through AddToolParams.
+func (b *betaToolRunnerBase) RemoveToolsByNames(names ...string) {
+	for _, name := range names {
+		delete(b.toolMap, name)
+		b.pendingToolChanges = append(b.pendingToolChanges, NewBetaToolRemovalBlock(BetaToolChangeToolReferenceParam{Name: name}))
+	}
+}
+
+// flushToolChanges sends the queued tool changes as one system message. The API
+// refuses one directly after a paused turn, so they wait a request.
+func (b *betaToolRunnerBase) flushToolChanges() {
+	if len(b.pendingToolChanges) == 0 || (b.lastMessage != nil && b.lastMessage.StopReason == BetaStopReasonPauseTurn) {
+		return
+	}
+	b.Params.Messages = append(b.Params.Messages, BetaMessageParam{Role: BetaMessageParamRoleSystem, Content: b.pendingToolChanges})
+	b.pendingToolChanges = nil
 }
 
 // LastMessage returns the most recent assistant message, or nil if no messages have been received yet.
@@ -287,9 +354,9 @@ func newBetaToolResultErrorBlockParam(toolUseID string, errorText string) BetaTo
 // availableToolNames returns the tool names currently offered to the model:
 // every registered tool, minus names dropped by tool_removal blocks in
 // role "system" messages, plus names re-enabled by later tool_addition
-// blocks. Removal is only a hint — the model can still call a removed tool —
-// so a removed tool must resolve to the same not-found result as one that
-// was never registered.
+// blocks, with the queued changes read as the last such message. Removal is
+// only a hint — the model can still call a removed tool — so a removed tool
+// must resolve to the same not-found result as one that was never registered.
 func (b *betaToolRunnerBase) availableToolNames() map[string]struct{} {
 	available := make(map[string]struct{}, len(b.toolMap))
 	for name := range b.toolMap {
@@ -302,6 +369,9 @@ func (b *betaToolRunnerBase) availableToolNames() map[string]struct{} {
 		for _, block := range message.Content {
 			applyToolChange(block, available)
 		}
+	}
+	for _, block := range b.pendingToolChanges {
+		applyToolChange(block, available)
 	}
 	return available
 }
@@ -324,13 +394,17 @@ func applyToolChange(block BetaContentBlockParamUnion, available map[string]stru
 }
 
 // additionRefName and removalRefName resolve the referenced tool's name across
-// the generated addition/removal tool unions. Only a tool_reference names a
-// locally runnable tool; MCP references run server-side and unknown variants
+// the generated addition/removal tool unions. A tool_reference names a locally
+// runnable tool, as does a tool_definition whose definition has a name (an
+// mcp_toolset has none); MCP references run server-side and unknown variants
 // are ignored.
 func additionRefName(u BetaRequestToolAdditionBlockToolUnionParam) (string, bool) {
 	switch {
 	case u.OfToolReference != nil:
 		return u.OfToolReference.Name, u.OfToolReference.Name != ""
+	case u.OfToolDefinition != nil:
+		name := definitionName(u.OfToolDefinition.Definition)
+		return name, name != ""
 	default:
 		return "", false
 	}
@@ -343,6 +417,23 @@ func removalRefName(u BetaRequestToolRemovalBlockToolUnionParam) (string, bool) 
 	default:
 		return "", false
 	}
+}
+
+// definitionName returns the name a tool definition carries on the wire, which
+// for a server tool with its constant Name elided exists only once marshaled.
+func definitionName(definition BetaToolUnionParam) string {
+	if name := definition.GetName(); name != nil && *name != "" {
+		return *name
+	}
+	data, err := json.Marshal(definition)
+	if err != nil {
+		return ""
+	}
+	var wire struct {
+		Name string `json:"name"`
+	}
+	_ = json.Unmarshal(data, &wire)
+	return wire.Name
 }
 
 // executeToolUse executes a single tool use block and returns the result.
@@ -433,10 +524,13 @@ func (b *betaToolRunnerBase) nextRequest(ctx context.Context) (*toolRunnerReques
 		}
 	}
 
+	// Ahead of the params copy: a message appended after it would miss the request.
+	b.flushToolChanges()
+
 	// The API cannot compact a conversation that stops mid-turn, so a paused
 	// turn is resumed first.
 	if b.pendingCompaction != nil && !paused {
-		return b.takeCompactionRequest(), nil
+		return b.compactionRequest(), nil
 	}
 	b.iterationCount++
 	return &toolRunnerRequest{params: b.Params.BetaMessageNewParams}, nil
@@ -457,7 +551,7 @@ func (b *betaToolRunnerBase) finalTurnRequest(turn *BetaMessage) *toolRunnerRequ
 		b.pendingCompaction = nil
 		return nil
 	}
-	return b.takeCompactionRequest()
+	return b.compactionRequest()
 }
 
 func (b *betaToolRunnerBase) checkCanCompact() error {
@@ -472,15 +566,32 @@ func (b *betaToolRunnerBase) checkCanCompact() error {
 	return nil
 }
 
-func (b *betaToolRunnerBase) takeCompactionRequest() *toolRunnerRequest {
-	params := b.Params.BetaMessageNewParams
-	params.Compaction = *b.pendingCompaction
-	// The API refuses compaction alongside context_management; later requests
-	// keep it.
-	params.ContextManagement = BetaContextManagementConfigParam{}
+func (b *betaToolRunnerBase) compactionRequest() *toolRunnerRequest {
+	compaction := *b.pendingCompaction
 	b.pendingCompaction = nil
 	b.compacting = true
+	params := withoutCompactionIncompatibleParams(b.Params.BetaMessageNewParams)
+	params.Compaction = compaction
 	return &toolRunnerRequest{params: params}
+}
+
+// withoutCompactionIncompatibleParams returns params without the ones that only
+// shape a reply. A compaction request returns only the compaction block, never
+// a reply, so the API rejects them. The runner's later requests keep them.
+func withoutCompactionIncompatibleParams(params BetaMessageNewParams) BetaMessageNewParams {
+	params.ContextManagement = BetaContextManagementConfigParam{}
+	params.StopSequences = nil
+	params.OutputFormat = BetaJSONOutputFormatParam{}
+	if params.ToolChoice.OfAny != nil || params.ToolChoice.OfTool != nil {
+		params.ToolChoice = BetaToolChoiceUnionParam{}
+	}
+	params.OutputConfig.Format = BetaJSONOutputFormatParam{}
+	// Cloned because the value copy shares the slice's backing array with the caller's params.
+	params.Fallbacks.OfBetaFallbackArray = slices.Clone(params.Fallbacks.OfBetaFallbackArray)
+	for i := range params.Fallbacks.OfBetaFallbackArray {
+		params.Fallbacks.OfBetaFallbackArray[i].OutputConfig.Format = BetaJSONOutputFormatParam{}
+	}
+	return params
 }
 
 // handleResponse records the response to request and carries it into the
@@ -507,6 +618,14 @@ func (b *betaToolRunnerBase) finishCompaction(request *toolRunnerRequest, messag
 	// block at all.
 	for _, block := range message.Content {
 		if block.Type == "compaction" && block.Content.OfString != "" {
+			// The replaced messages' tool changes go with them, so what they made
+			// unavailable leaves toolMap now.
+			available := b.availableToolNames()
+			for name := range b.toolMap {
+				if _, ok := available[name]; !ok {
+					delete(b.toolMap, name)
+				}
+			}
 			// The response has to be sent back as it came, first, replacing the
 			// messages it summarizes.
 			b.lastMessage = message

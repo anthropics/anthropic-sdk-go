@@ -1763,7 +1763,7 @@ type BetaManagedAgentsCustomToolInputSchemaParam struct {
 	Required   []string       `json:"required,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
 	Type        constant.Object `json:"type" default:"object"`
-	ExtraFields map[string]any  `json:"-"`
+	ExtraFields map[string]any  `json:"-" api:"extrafields"`
 	paramObj
 }
 
@@ -3019,6 +3019,8 @@ const (
 type BetaManagedAgentsModel = string
 
 const (
+	// Powerful intelligence for coding, knowledge work, and long-running agents
+	BetaManagedAgentsModelClaudeOpus5_5 BetaManagedAgentsModel = "claude-opus-5-5"
 	// Frontier intelligence for ambitious tasks across coding, scientific discovery,
 	// and enterprise workflows
 	BetaManagedAgentsModelClaudeFable5_1 BetaManagedAgentsModel = "claude-fable-5-1"
@@ -4542,7 +4544,13 @@ type BetaAgentNewParams struct {
 	// Description of what the agent does.
 	Description param.Opt[string] `json:"description,omitzero"`
 	// System prompt for the agent.
-	System      param.Opt[string] `json:"system,omitzero"`
+	System param.Opt[string] `json:"system,omitzero"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// MCP servers this agent connects to. Maximum 20. Names must be unique within the
 	// array. Every server must be referenced by an `mcp_toolset` in `tools`;
@@ -4759,7 +4767,13 @@ func init() {
 type BetaAgentGetParams struct {
 	// Agent version. Omit for the most recent version. Must be at least 1 if
 	// specified.
-	Version     param.Opt[int64]  `query:"version,omitzero" json:"-"`
+	Version param.Opt[int64] `query:"version,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -4785,7 +4799,13 @@ type BetaAgentUpdateParams struct {
 	// value from a create or retrieve response. Must be at least 1 if specified. When
 	// supplied, the request fails if it does not match the server's current version;
 	// omit to apply the update unconditionally.
-	Version     param.Opt[int64]  `json:"version,omitzero"`
+	Version param.Opt[int64] `json:"version,omitzero"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// MCP servers. Full replacement. Omit to preserve; send empty array or `null` to
 	// clear. Names must be unique. Maximum 20. Every server must be referenced by an
@@ -5017,7 +5037,13 @@ type BetaAgentListParams struct {
 	// Maximum results per page. Default 20, maximum 100.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Opaque pagination cursor from a previous response.
-	Page        param.Opt[string] `query:"page,omitzero" json:"-"`
+	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
@@ -5033,6 +5059,12 @@ func (r BetaAgentListParams) URLQuery() (v url.Values, err error) {
 }
 
 type BetaAgentArchiveParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

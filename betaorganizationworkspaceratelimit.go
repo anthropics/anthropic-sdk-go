@@ -39,11 +39,13 @@ func NewBetaOrganizationWorkspaceRateLimitService(opts ...option.RequestOption) 
 	return
 }
 
-// List rate-limit overrides configured for a workspace.
+// List a workspace's rate limits.
 //
-// Returns only the groups and limiter types that have a workspace-level override.
-// Groups without overrides inherit the organization limits and are not listed; use
-// `GET /v1/organizations/rate_limits` to see those.
+// By default, returns only the groups and limiter types that have a
+// workspace-level override. With `include_inherited=true`, returns every group
+// with organization-level limits the workspace can see, listing for each the
+// values it inherits from the organization as well as its own overrides. Each
+// value's `source` says which it is.
 //
 // When `limit` is omitted, every matching entry is returned in a single page; when
 // `limit` truncates the result, follow `next_page` to fetch the remaining entries.
@@ -68,11 +70,13 @@ func (r *BetaOrganizationWorkspaceRateLimitService) List(ctx context.Context, wo
 	return res, nil
 }
 
-// List rate-limit overrides configured for a workspace.
+// List a workspace's rate limits.
 //
-// Returns only the groups and limiter types that have a workspace-level override.
-// Groups without overrides inherit the organization limits and are not listed; use
-// `GET /v1/organizations/rate_limits` to see those.
+// By default, returns only the groups and limiter types that have a
+// workspace-level override. With `include_inherited=true`, returns every group
+// with organization-level limits the workspace can see, listing for each the
+// values it inherits from the organization as well as its own overrides. Each
+// value's `source` says which it is.
 //
 // When `limit` is omitted, every matching entry is returned in a single page; when
 // `limit` truncates the result, follow `next_page` to fetch the remaining entries.
@@ -94,17 +98,19 @@ type BetaWorkspaceRateLimit struct {
 	// Deprecated: Use `group.type` instead. `group_type` is still returned and always
 	// equals `group.type`.
 	GroupType BetaWorkspaceRateLimitGroupType `json:"group_type" api:"required"`
-	// The limiter values overridden for this group in this workspace. Limiter types
-	// without a workspace override are omitted and inherit the organization value.
+	// The workspace's limiter values for this group. By default only the limiter types
+	// with a workspace-level override are listed. With `include_inherited` set to
+	// `true`, the limiter types the workspace inherits from the organization are
+	// listed too, each marked by `source`.
 	Limits []BetaWorkspaceRateLimitValue `json:"limits" api:"required"`
 	// Model names this entry's limits apply to, including aliases. `null` when
 	// `group_type` is not `"model_group"`.
 	Models []string `json:"models" api:"required"`
-	// The `id` of the organization's RateLimit entry this override applies to.
+	// The `id` of the organization's RateLimit entry this entry applies to.
 	RateLimitID string `json:"rate_limit_id" api:"required"`
 	// Object type. Always `workspace_rate_limit` for workspace rate-limit entries.
 	Type constant.WorkspaceRateLimit `json:"type" default:"workspace_rate_limit"`
-	// ID of the Workspace this override applies to.
+	// ID of the Workspace this entry applies to.
 	WorkspaceID string `json:"workspace_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -247,18 +253,41 @@ const (
 	BetaWorkspaceRateLimitGroupTypeWebSearch  BetaWorkspaceRateLimitGroupType = "web_search"
 )
 
+type BetaWorkspaceRateLimitOrganizationSource struct {
+	// Always `organization`: no workspace-level override is stored, so the
+	// organization's value applies.
+	Type constant.Organization `json:"type" default:"organization"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWorkspaceRateLimitOrganizationSource) RawJSON() string { return r.JSON.raw }
+func (r *BetaWorkspaceRateLimitOrganizationSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaWorkspaceRateLimitValue struct {
 	// The organization-level value for the same limiter type, for reference. `null`
 	// when the organization has no limit configured for this limiter type.
 	OrgLimit int64 `json:"org_limit" api:"required"`
+	// Where `value` comes from. `organization` values are listed only when
+	// `include_inherited` is `true`, and then `value` equals `org_limit`.
+	Source BetaWorkspaceRateLimitValueSourceUnion `json:"source" api:"required"`
 	// The limiter type (for example, `requests_per_minute` or
 	// `input_tokens_per_minute`).
 	Type string `json:"type" api:"required"`
-	// The workspace-level override value for this limiter type.
+	// The workspace's value for this limiter type: the workspace-level override when
+	// `source.type` is `workspace`, otherwise the organization's value.
 	Value int64 `json:"value" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		OrgLimit    respjson.Field
+		Source      respjson.Field
 		Type        respjson.Field
 		Value       respjson.Field
 		ExtraFields map[string]respjson.Field
@@ -272,6 +301,85 @@ func (r *BetaWorkspaceRateLimitValue) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// BetaWorkspaceRateLimitValueSourceUnion contains all possible properties and
+// values from [BetaWorkspaceRateLimitWorkspaceSource],
+// [BetaWorkspaceRateLimitOrganizationSource].
+//
+// Use the [BetaWorkspaceRateLimitValueSourceUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaWorkspaceRateLimitValueSourceUnion struct {
+	// Any of "workspace", "organization".
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+// anyBetaWorkspaceRateLimitValueSource is implemented by each variant of
+// [BetaWorkspaceRateLimitValueSourceUnion] to add type safety for the return type
+// of [BetaWorkspaceRateLimitValueSourceUnion.AsAny]
+type anyBetaWorkspaceRateLimitValueSource interface {
+	implBetaWorkspaceRateLimitValueSourceUnion()
+}
+
+func (BetaWorkspaceRateLimitWorkspaceSource) implBetaWorkspaceRateLimitValueSourceUnion()    {}
+func (BetaWorkspaceRateLimitOrganizationSource) implBetaWorkspaceRateLimitValueSourceUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaWorkspaceRateLimitValueSourceUnion.AsAny().(type) {
+//	case anthropic.BetaWorkspaceRateLimitWorkspaceSource:
+//	case anthropic.BetaWorkspaceRateLimitOrganizationSource:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaWorkspaceRateLimitValueSourceUnion) AsAny() anyBetaWorkspaceRateLimitValueSource {
+	switch u.Type {
+	case "workspace":
+		return u.AsWorkspace()
+	case "organization":
+		return u.AsOrganization()
+	}
+	return nil
+}
+
+func (u BetaWorkspaceRateLimitValueSourceUnion) AsWorkspace() (v BetaWorkspaceRateLimitWorkspaceSource) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWorkspaceRateLimitValueSourceUnion) AsOrganization() (v BetaWorkspaceRateLimitOrganizationSource) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaWorkspaceRateLimitValueSourceUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaWorkspaceRateLimitValueSourceUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaWorkspaceRateLimitWorkspaceSource struct {
+	// Always `workspace`: a workspace-level override is stored.
+	Type constant.Workspace `json:"type" default:"workspace"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWorkspaceRateLimitWorkspaceSource) RawJSON() string { return r.JSON.raw }
+func (r *BetaWorkspaceRateLimitWorkspaceSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaOrganizationWorkspaceRateLimitListParams struct {
 	// Maximum number of items to return per page. Ranges from `1` to `1000`.
 	//
@@ -280,6 +388,9 @@ type BetaOrganizationWorkspaceRateLimitListParams struct {
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Opaque cursor from a previous response's `next_page`.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Also list the limiter values the workspace inherits from the organization,
+	// including groups with no workspace-level override.
+	IncludeInherited param.Opt[bool] `query:"include_inherited,omitzero" json:"-"`
 	// Filter by group type.
 	//
 	// Any of "batch", "files", "model_group", "skills", "token_count", "web_search".

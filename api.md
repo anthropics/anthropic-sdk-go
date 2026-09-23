@@ -1820,7 +1820,9 @@ Methods:
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWorkspaceRateLimit">BetaWorkspaceRateLimit</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWorkspaceRateLimitOrganizationSource">BetaWorkspaceRateLimitOrganizationSource</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWorkspaceRateLimitValue">BetaWorkspaceRateLimitValue</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWorkspaceRateLimitWorkspaceSource">BetaWorkspaceRateLimitWorkspaceSource</a>
 
 Methods:
 

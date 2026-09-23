@@ -84,7 +84,7 @@ func (r *BetaFileService) Delete(ctx context.Context, fileID string, body BetaFi
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s?beta=true", fileID)
+	path := requestconfig.FormatPath("v1/files/%s?beta=true", fileID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -103,7 +103,7 @@ func (r *BetaFileService) Download(ctx context.Context, fileID string, query Bet
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s/content?beta=true", fileID)
+	path := requestconfig.FormatPath("v1/files/%s/content?beta=true", fileID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -121,7 +121,7 @@ func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query 
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s?beta=true", fileID)
+	path := requestconfig.FormatPath("v1/files/%s?beta=true", fileID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }

@@ -3,7 +3,6 @@ package anthropic
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"slices"
@@ -45,7 +44,7 @@ func (r *BetaOrganizationUserService) Get(ctx context.Context, userID string, op
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s?beta=true", userID)
+	path := requestconfig.FormatPath("v1/organizations/users/%s?beta=true", userID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -57,7 +56,7 @@ func (r *BetaOrganizationUserService) Update(ctx context.Context, userID string,
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s?beta=true", userID)
+	path := requestconfig.FormatPath("v1/organizations/users/%s?beta=true", userID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -92,7 +91,7 @@ func (r *BetaOrganizationUserService) Remove(ctx context.Context, userID string,
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s?beta=true", userID)
+	path := requestconfig.FormatPath("v1/organizations/users/%s?beta=true", userID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

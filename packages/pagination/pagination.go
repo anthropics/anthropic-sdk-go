@@ -44,10 +44,6 @@ func (r *Page[T]) UnmarshalJSON(data []byte) error {
 // there is no next page, this function will return a 'nil' for the page value, but
 // will not return an error
 func (r *Page[T]) GetNextPage() (res *Page[T], err error) {
-	if len(r.Data) == 0 {
-		return nil, nil
-	}
-
 	if r.JSON.HasMore.Valid() && r.HasMore == false {
 		return nil, nil
 	}
@@ -107,15 +103,18 @@ func NewPageAutoPager[T any](page *Page[T], err error) *PageAutoPager[T] {
 }
 
 func (r *PageAutoPager[T]) Next() bool {
-	if r.page == nil || len(r.page.Data) == 0 {
+	if r.err != nil {
 		return false
 	}
-	if r.idx >= len(r.page.Data) {
+	for r.page != nil && r.idx >= len(r.page.Data) {
 		r.idx = 0
 		r.page, r.err = r.page.GetNextPage()
-		if r.err != nil || r.page == nil || len(r.page.Data) == 0 {
+		if r.err != nil {
 			return false
 		}
+	}
+	if r.page == nil {
+		return false
 	}
 	r.cur = r.page.Data[r.idx]
 	r.run += 1
@@ -161,10 +160,6 @@ func (r *TokenPage[T]) UnmarshalJSON(data []byte) error {
 // there is no next page, this function will return a 'nil' for the page value, but
 // will not return an error
 func (r *TokenPage[T]) GetNextPage() (res *TokenPage[T], err error) {
-	if len(r.Data) == 0 {
-		return nil, nil
-	}
-
 	if r.JSON.HasMore.Valid() && r.HasMore == false {
 		return nil, nil
 	}
@@ -213,15 +208,18 @@ func NewTokenPageAutoPager[T any](page *TokenPage[T], err error) *TokenPageAutoP
 }
 
 func (r *TokenPageAutoPager[T]) Next() bool {
-	if r.page == nil || len(r.page.Data) == 0 {
+	if r.err != nil {
 		return false
 	}
-	if r.idx >= len(r.page.Data) {
+	for r.page != nil && r.idx >= len(r.page.Data) {
 		r.idx = 0
 		r.page, r.err = r.page.GetNextPage()
-		if r.err != nil || r.page == nil || len(r.page.Data) == 0 {
+		if r.err != nil {
 			return false
 		}
+	}
+	if r.page == nil {
+		return false
 	}
 	r.cur = r.page.Data[r.idx]
 	r.run += 1
@@ -265,9 +263,6 @@ func (r *PageCursor[T]) UnmarshalJSON(data []byte) error {
 // there is no next page, this function will return a 'nil' for the page value, but
 // will not return an error
 func (r *PageCursor[T]) GetNextPage() (res *PageCursor[T], err error) {
-	if len(r.Data) == 0 {
-		return nil, nil
-	}
 	next := r.NextPage
 	if len(next) == 0 {
 		return nil, nil
@@ -313,15 +308,18 @@ func NewPageCursorAutoPager[T any](page *PageCursor[T], err error) *PageCursorAu
 }
 
 func (r *PageCursorAutoPager[T]) Next() bool {
-	if r.page == nil || len(r.page.Data) == 0 {
+	if r.err != nil {
 		return false
 	}
-	if r.idx >= len(r.page.Data) {
+	for r.page != nil && r.idx >= len(r.page.Data) {
 		r.idx = 0
 		r.page, r.err = r.page.GetNextPage()
-		if r.err != nil || r.page == nil || len(r.page.Data) == 0 {
+		if r.err != nil {
 			return false
 		}
+	}
+	if r.page == nil {
+		return false
 	}
 	r.cur = r.page.Data[r.idx]
 	r.run += 1
@@ -367,9 +365,6 @@ func (r *BidirectionalPageCursor[T]) UnmarshalJSON(data []byte) error {
 // there is no next page, this function will return a 'nil' for the page value, but
 // will not return an error
 func (r *BidirectionalPageCursor[T]) GetNextPage() (res *BidirectionalPageCursor[T], err error) {
-	if len(r.Data) == 0 {
-		return nil, nil
-	}
 	next := r.NextPage
 	if len(next) == 0 {
 		return nil, nil
@@ -415,15 +410,18 @@ func NewBidirectionalPageCursorAutoPager[T any](page *BidirectionalPageCursor[T]
 }
 
 func (r *BidirectionalPageCursorAutoPager[T]) Next() bool {
-	if r.page == nil || len(r.page.Data) == 0 {
+	if r.err != nil {
 		return false
 	}
-	if r.idx >= len(r.page.Data) {
+	for r.page != nil && r.idx >= len(r.page.Data) {
 		r.idx = 0
 		r.page, r.err = r.page.GetNextPage()
-		if r.err != nil || r.page == nil || len(r.page.Data) == 0 {
+		if r.err != nil {
 			return false
 		}
+	}
+	if r.page == nil {
+		return false
 	}
 	r.cur = r.page.Data[r.idx]
 	r.run += 1

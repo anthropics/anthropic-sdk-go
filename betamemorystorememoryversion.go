@@ -209,10 +209,10 @@ func (r *BetaManagedAgentsActorUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Attribution for a write made directly via the public API (outside of any
-// session).
+// A direct caller of the public API, identified by the API key that authenticated
+// the request.
 type BetaManagedAgentsAPIActor struct {
-	// ID of the API key that performed the write. This identifies the key, not the
+	// ID of the API key (an `apikey_...` value). This identifies the key, not the
 	// secret.
 	APIKeyID string `json:"api_key_id" api:"required"`
 	// Any of "api_actor".
@@ -277,7 +277,11 @@ type BetaManagedAgentsMemoryVersion struct {
 	ContentSizeBytes int64 `json:"content_size_bytes" api:"nullable"`
 	// Who performed this write: one of `session_actor`, `api_actor`, `user_actor`, or
 	// `service_account_actor`; `null` when no writer is recorded. Captured at write
-	// time and preserved through redaction.
+	// time and preserved through redaction. A `session_actor` is an agent writing
+	// through the store's mounted filesystem at `/mnt/memory/`. The API key that
+	// created that session is not recorded on agent writes, so attribution names who
+	// made the write, not who is ultimately responsible; look up session provenance
+	// via the [Sessions API](/en/api/beta/sessions/retrieve).
 	CreatedBy BetaManagedAgentsActorUnion `json:"created_by"`
 	// The memory's path at the time of this write. `null` if and only if `redacted_at`
 	// is set.
@@ -339,10 +343,10 @@ const (
 	BetaManagedAgentsMemoryVersionOperationDeleted BetaManagedAgentsMemoryVersionOperation = "deleted"
 )
 
-// Attribution for a write made by a workload authenticated as a service account,
-// for example via Workload Identity Federation.
+// A workload authenticated as a service account, for example via Workload Identity
+// Federation.
 type BetaManagedAgentsServiceAccountActor struct {
-	// ID of the service account that performed the write (a `svac_...` value).
+	// ID of the service account (a `svac_...` value).
 	ServiceAccountID string                       `json:"service_account_id" api:"required"`
 	Type             constant.ServiceAccountActor `json:"type" default:"service_account_actor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -360,12 +364,12 @@ func (r *BetaManagedAgentsServiceAccountActor) UnmarshalJSON(data []byte) error 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Attribution for a write made by an agent during a session, through the mounted
-// filesystem at `/mnt/memory/`.
+// An agent acting during a session, for example through the session's mounted
+// filesystem. It names the session itself, not the user or API key that started
+// the session.
 type BetaManagedAgentsSessionActor struct {
-	// ID of the session that performed the write (a `sesn_...` value). Look up the
-	// session via [Retrieve a session](/en/api/beta/sessions/retrieve) for further
-	// provenance.
+	// ID of the session (a `sesn_...` value). Look up the session via
+	// [Retrieve a session](/en/api/beta/sessions/retrieve) for further provenance.
 	SessionID string `json:"session_id" api:"required"`
 	// Any of "session_actor".
 	Type BetaManagedAgentsSessionActorType `json:"type" api:"required"`
@@ -390,11 +394,11 @@ const (
 	BetaManagedAgentsSessionActorTypeSessionActor BetaManagedAgentsSessionActorType = "session_actor"
 )
 
-// Attribution for a write made by a human user through the Anthropic Console.
+// A human user, for example acting through the Anthropic Console.
 type BetaManagedAgentsUserActor struct {
 	// Any of "user_actor".
 	Type BetaManagedAgentsUserActorType `json:"type" api:"required"`
-	// ID of the user who performed the write (a `user_...` value).
+	// ID of the user (a `user_...` value).
 	UserID string `json:"user_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {

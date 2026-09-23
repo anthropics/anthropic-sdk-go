@@ -1579,6 +1579,218 @@ func (r *CacheCreation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type CacheMissMessagesChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                    `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.MessagesChanged `json:"type" default:"messages_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissMessagesChanged) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissMessagesChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CacheMissModelChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                 `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.ModelChanged `json:"type" default:"model_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissModelChanged) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissModelChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CacheMissPreviousMessageNotFound struct {
+	Type constant.PreviousMessageNotFound `json:"type" default:"previous_message_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissPreviousMessageNotFound) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissPreviousMessageNotFound) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CacheMissReasonUnion contains all possible properties and values from
+// [CacheMissModelChanged], [CacheMissSystemChanged], [CacheMissToolsChanged],
+// [CacheMissMessagesChanged], [CacheMissPreviousMessageNotFound],
+// [CacheMissUnavailable].
+//
+// Use the [CacheMissReasonUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type CacheMissReasonUnion struct {
+	CacheMissedInputTokens int64 `json:"cache_missed_input_tokens"`
+	// Any of "model_changed", "system_changed", "tools_changed", "messages_changed",
+	// "previous_message_not_found", "unavailable".
+	Type string `json:"type"`
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// anyCacheMissReason is implemented by each variant of [CacheMissReasonUnion] to
+// add type safety for the return type of [CacheMissReasonUnion.AsAny]
+type anyCacheMissReason interface {
+	implCacheMissReasonUnion()
+}
+
+func (CacheMissModelChanged) implCacheMissReasonUnion()            {}
+func (CacheMissSystemChanged) implCacheMissReasonUnion()           {}
+func (CacheMissToolsChanged) implCacheMissReasonUnion()            {}
+func (CacheMissMessagesChanged) implCacheMissReasonUnion()         {}
+func (CacheMissPreviousMessageNotFound) implCacheMissReasonUnion() {}
+func (CacheMissUnavailable) implCacheMissReasonUnion()             {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := CacheMissReasonUnion.AsAny().(type) {
+//	case anthropic.CacheMissModelChanged:
+//	case anthropic.CacheMissSystemChanged:
+//	case anthropic.CacheMissToolsChanged:
+//	case anthropic.CacheMissMessagesChanged:
+//	case anthropic.CacheMissPreviousMessageNotFound:
+//	case anthropic.CacheMissUnavailable:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u CacheMissReasonUnion) AsAny() anyCacheMissReason {
+	switch u.Type {
+	case "model_changed":
+		return u.AsModelChanged()
+	case "system_changed":
+		return u.AsSystemChanged()
+	case "tools_changed":
+		return u.AsToolsChanged()
+	case "messages_changed":
+		return u.AsMessagesChanged()
+	case "previous_message_not_found":
+		return u.AsPreviousMessageNotFound()
+	case "unavailable":
+		return u.AsUnavailable()
+	}
+	return nil
+}
+
+func (u CacheMissReasonUnion) AsModelChanged() (v CacheMissModelChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CacheMissReasonUnion) AsSystemChanged() (v CacheMissSystemChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CacheMissReasonUnion) AsToolsChanged() (v CacheMissToolsChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CacheMissReasonUnion) AsMessagesChanged() (v CacheMissMessagesChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CacheMissReasonUnion) AsPreviousMessageNotFound() (v CacheMissPreviousMessageNotFound) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CacheMissReasonUnion) AsUnavailable() (v CacheMissUnavailable) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CacheMissReasonUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CacheMissReasonUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CacheMissSystemChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                  `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.SystemChanged `json:"type" default:"system_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissSystemChanged) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissSystemChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CacheMissToolsChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                 `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.ToolsChanged `json:"type" default:"tools_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissToolsChanged) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissToolsChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CacheMissUnavailable struct {
+	Type constant.Unavailable `json:"type" default:"unavailable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissUnavailable) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissUnavailable) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type CitationCharLocation struct {
 	CitedText      string                `json:"cited_text" api:"required"`
 	DocumentIndex  int64                 `json:"document_index" api:"required"`
@@ -4557,6 +4769,48 @@ func init() {
 	)
 }
 
+// Request-level diagnostics: why the prompt cache could not fully reuse the prefix
+// of the request named by `diagnostics.previous_message_id`.
+type Diagnostics struct {
+	// Explains why the prompt cache could not fully reuse the prefix from the request
+	// identified by `diagnostics.previous_message_id`. `null` means diagnosis is still
+	// pending — the response was serialized before the background comparison
+	// completed.
+	CacheMissReason CacheMissReasonUnion `json:"cache_miss_reason" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissReason respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r Diagnostics) RawJSON() string { return r.JSON.raw }
+func (r *Diagnostics) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level diagnostics. Currently carries the previous response id for
+// prompt-cache divergence reporting.
+type DiagnosticsParam struct {
+	// The `id` (`msg_...`) from this client's previous /v1/messages response. The
+	// server compares that request's prompt fingerprint against this one and returns
+	// `diagnostics.cache_miss_reason` when the prompt-cache prefix could not be
+	// reused. Pass `null` on the first turn to opt in without a prior message to
+	// compare.
+	PreviousMessageID param.Opt[string] `json:"previous_message_id,omitzero"`
+	paramObj
+}
+
+func (r DiagnosticsParam) MarshalJSON() (data []byte, err error) {
+	type shadow DiagnosticsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *DiagnosticsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Tool invocation directly from the model.
 type DirectCaller struct {
 	Type constant.Direct `json:"type" default:"direct"`
@@ -5155,6 +5409,9 @@ type Message struct {
 	// [{ "type": "text", "text": "B)" }]
 	// ```
 	Content []ContentBlockUnion `json:"content" api:"required"`
+	// Request-level diagnostics. `null` when the request did not supply `diagnostics`,
+	// or when it did and no prompt-cache divergence was detected.
+	Diagnostics Diagnostics `json:"diagnostics" api:"required"`
 	// The model that will complete your prompt.
 	//
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
@@ -5218,6 +5475,7 @@ type Message struct {
 		ID           respjson.Field
 		Container    respjson.Field
 		Content      respjson.Field
+		Diagnostics  respjson.Field
 		Model        respjson.Field
 		Role         respjson.Field
 		StopDetails  respjson.Field
@@ -13821,6 +14079,10 @@ type MessageNewParams struct {
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Request-level diagnostics. Supply `previous_message_id` to have the response
+	// include `diagnostics.cache_miss_reason` explaining any prompt-cache divergence
+	// from that prior request.
+	Diagnostics DiagnosticsParam `json:"diagnostics,omitzero"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
 	// Configuration options for the model's output, such as the output format.

@@ -63,6 +63,9 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 				}},
 			},
 		},
+		Diagnostics: anthropic.DiagnosticsParam{
+			PreviousMessageID: anthropic.String("previous_message_id"),
+		},
 		InferenceGeo: anthropic.String("inference_geo"),
 		Metadata: anthropic.MetadataParam{
 			UserID: anthropic.String("13803d75-b4b5-4c3e-b2a2-6f21399b021b"),

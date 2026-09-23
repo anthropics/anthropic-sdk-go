@@ -3387,6 +3387,107 @@ func (r *BetaCacheMissPreviousMessageNotFound) UnmarshalJSON(data []byte) error 
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// BetaCacheMissReasonUnion contains all possible properties and values from
+// [BetaCacheMissModelChanged], [BetaCacheMissSystemChanged],
+// [BetaCacheMissToolsChanged], [BetaCacheMissMessagesChanged],
+// [BetaCacheMissPreviousMessageNotFound], [BetaCacheMissUnavailable].
+//
+// Use the [BetaCacheMissReasonUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaCacheMissReasonUnion struct {
+	CacheMissedInputTokens int64 `json:"cache_missed_input_tokens"`
+	// Any of "model_changed", "system_changed", "tools_changed", "messages_changed",
+	// "previous_message_not_found", "unavailable".
+	Type string `json:"type"`
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// anyBetaCacheMissReason is implemented by each variant of
+// [BetaCacheMissReasonUnion] to add type safety for the return type of
+// [BetaCacheMissReasonUnion.AsAny]
+type anyBetaCacheMissReason interface {
+	implBetaCacheMissReasonUnion()
+}
+
+func (BetaCacheMissModelChanged) implBetaCacheMissReasonUnion()            {}
+func (BetaCacheMissSystemChanged) implBetaCacheMissReasonUnion()           {}
+func (BetaCacheMissToolsChanged) implBetaCacheMissReasonUnion()            {}
+func (BetaCacheMissMessagesChanged) implBetaCacheMissReasonUnion()         {}
+func (BetaCacheMissPreviousMessageNotFound) implBetaCacheMissReasonUnion() {}
+func (BetaCacheMissUnavailable) implBetaCacheMissReasonUnion()             {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaCacheMissReasonUnion.AsAny().(type) {
+//	case anthropic.BetaCacheMissModelChanged:
+//	case anthropic.BetaCacheMissSystemChanged:
+//	case anthropic.BetaCacheMissToolsChanged:
+//	case anthropic.BetaCacheMissMessagesChanged:
+//	case anthropic.BetaCacheMissPreviousMessageNotFound:
+//	case anthropic.BetaCacheMissUnavailable:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaCacheMissReasonUnion) AsAny() anyBetaCacheMissReason {
+	switch u.Type {
+	case "model_changed":
+		return u.AsModelChanged()
+	case "system_changed":
+		return u.AsSystemChanged()
+	case "tools_changed":
+		return u.AsToolsChanged()
+	case "messages_changed":
+		return u.AsMessagesChanged()
+	case "previous_message_not_found":
+		return u.AsPreviousMessageNotFound()
+	case "unavailable":
+		return u.AsUnavailable()
+	}
+	return nil
+}
+
+func (u BetaCacheMissReasonUnion) AsModelChanged() (v BetaCacheMissModelChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaCacheMissReasonUnion) AsSystemChanged() (v BetaCacheMissSystemChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaCacheMissReasonUnion) AsToolsChanged() (v BetaCacheMissToolsChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaCacheMissReasonUnion) AsMessagesChanged() (v BetaCacheMissMessagesChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaCacheMissReasonUnion) AsPreviousMessageNotFound() (v BetaCacheMissPreviousMessageNotFound) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaCacheMissReasonUnion) AsUnavailable() (v BetaCacheMissUnavailable) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaCacheMissReasonUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaCacheMissReasonUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaCacheMissSystemChanged struct {
 	// Approximate number of input tokens that would have been read from cache had the
 	// prefix matched the previous request.
@@ -8517,7 +8618,7 @@ type BetaDiagnostics struct {
 	// identified by `diagnostics.previous_message_id`. `null` means diagnosis is still
 	// pending — the response was serialized before the background comparison
 	// completed.
-	CacheMissReason BetaDiagnosticsCacheMissReasonUnion `json:"cache_miss_reason" api:"required"`
+	CacheMissReason BetaCacheMissReasonUnion `json:"cache_miss_reason" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CacheMissReason respjson.Field
@@ -8529,108 +8630,6 @@ type BetaDiagnostics struct {
 // Returns the unmodified JSON received from the API
 func (r BetaDiagnostics) RawJSON() string { return r.JSON.raw }
 func (r *BetaDiagnostics) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// BetaDiagnosticsCacheMissReasonUnion contains all possible properties and values
-// from [BetaCacheMissModelChanged], [BetaCacheMissSystemChanged],
-// [BetaCacheMissToolsChanged], [BetaCacheMissMessagesChanged],
-// [BetaCacheMissPreviousMessageNotFound], [BetaCacheMissUnavailable].
-//
-// Use the [BetaDiagnosticsCacheMissReasonUnion.AsAny] method to switch on the
-// variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaDiagnosticsCacheMissReasonUnion struct {
-	CacheMissedInputTokens int64 `json:"cache_missed_input_tokens"`
-	// Any of "model_changed", "system_changed", "tools_changed", "messages_changed",
-	// "previous_message_not_found", "unavailable".
-	Type string `json:"type"`
-	JSON struct {
-		CacheMissedInputTokens respjson.Field
-		Type                   respjson.Field
-		raw                    string
-	} `json:"-"`
-}
-
-// anyBetaDiagnosticsCacheMissReason is implemented by each variant of
-// [BetaDiagnosticsCacheMissReasonUnion] to add type safety for the return type of
-// [BetaDiagnosticsCacheMissReasonUnion.AsAny]
-type anyBetaDiagnosticsCacheMissReason interface {
-	implBetaDiagnosticsCacheMissReasonUnion()
-}
-
-func (BetaCacheMissModelChanged) implBetaDiagnosticsCacheMissReasonUnion()            {}
-func (BetaCacheMissSystemChanged) implBetaDiagnosticsCacheMissReasonUnion()           {}
-func (BetaCacheMissToolsChanged) implBetaDiagnosticsCacheMissReasonUnion()            {}
-func (BetaCacheMissMessagesChanged) implBetaDiagnosticsCacheMissReasonUnion()         {}
-func (BetaCacheMissPreviousMessageNotFound) implBetaDiagnosticsCacheMissReasonUnion() {}
-func (BetaCacheMissUnavailable) implBetaDiagnosticsCacheMissReasonUnion()             {}
-
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := BetaDiagnosticsCacheMissReasonUnion.AsAny().(type) {
-//	case anthropic.BetaCacheMissModelChanged:
-//	case anthropic.BetaCacheMissSystemChanged:
-//	case anthropic.BetaCacheMissToolsChanged:
-//	case anthropic.BetaCacheMissMessagesChanged:
-//	case anthropic.BetaCacheMissPreviousMessageNotFound:
-//	case anthropic.BetaCacheMissUnavailable:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u BetaDiagnosticsCacheMissReasonUnion) AsAny() anyBetaDiagnosticsCacheMissReason {
-	switch u.Type {
-	case "model_changed":
-		return u.AsModelChanged()
-	case "system_changed":
-		return u.AsSystemChanged()
-	case "tools_changed":
-		return u.AsToolsChanged()
-	case "messages_changed":
-		return u.AsMessagesChanged()
-	case "previous_message_not_found":
-		return u.AsPreviousMessageNotFound()
-	case "unavailable":
-		return u.AsUnavailable()
-	}
-	return nil
-}
-
-func (u BetaDiagnosticsCacheMissReasonUnion) AsModelChanged() (v BetaCacheMissModelChanged) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaDiagnosticsCacheMissReasonUnion) AsSystemChanged() (v BetaCacheMissSystemChanged) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaDiagnosticsCacheMissReasonUnion) AsToolsChanged() (v BetaCacheMissToolsChanged) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaDiagnosticsCacheMissReasonUnion) AsMessagesChanged() (v BetaCacheMissMessagesChanged) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaDiagnosticsCacheMissReasonUnion) AsPreviousMessageNotFound() (v BetaCacheMissPreviousMessageNotFound) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaDiagnosticsCacheMissReasonUnion) AsUnavailable() (v BetaCacheMissUnavailable) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u BetaDiagnosticsCacheMissReasonUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *BetaDiagnosticsCacheMissReasonUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

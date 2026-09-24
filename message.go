@@ -9602,14 +9602,15 @@ func ThinkingConfigParamOfEnabled(budgetTokens int64) ThinkingConfigParamUnion {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ThinkingConfigParamUnion struct {
-	OfEnabled  *ThinkingConfigEnabledParam  `json:",omitzero,inline"`
-	OfDisabled *ThinkingConfigDisabledParam `json:",omitzero,inline"`
-	OfAdaptive *ThinkingConfigAdaptiveParam `json:",omitzero,inline"`
+	OfEnabled      *ThinkingConfigEnabledParam      `json:",omitzero,inline"`
+	OfDisabled     *ThinkingConfigDisabledParam     `json:",omitzero,inline"`
+	OfBetweenTools *ThinkingConfigParamBetweenTools `json:",omitzero,inline"`
+	OfAdaptive     *ThinkingConfigAdaptiveParam     `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled, u.OfAdaptive)
+	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled, u.OfBetweenTools, u.OfAdaptive)
 }
 func (u *ThinkingConfigParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -9620,6 +9621,8 @@ func (u *ThinkingConfigParamUnion) asAny() any {
 		return u.OfEnabled
 	} else if !param.IsOmitted(u.OfDisabled) {
 		return u.OfDisabled
+	} else if !param.IsOmitted(u.OfBetweenTools) {
+		return u.OfBetweenTools
 	} else if !param.IsOmitted(u.OfAdaptive) {
 		return u.OfAdaptive
 	}
@@ -9639,6 +9642,8 @@ func (u ThinkingConfigParamUnion) GetType() *string {
 	if vt := u.OfEnabled; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfBetweenTools; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAdaptive; vt != nil {
 		return (*string)(&vt.Type)
@@ -9661,8 +9666,30 @@ func init() {
 		"type",
 		apijson.Discriminator[ThinkingConfigEnabledParam]("enabled"),
 		apijson.Discriminator[ThinkingConfigDisabledParam]("disabled"),
+		apijson.Discriminator[ThinkingConfigParamBetweenTools]("between_tools"),
 		apijson.Discriminator[ThinkingConfigAdaptiveParam]("adaptive"),
 	)
+}
+
+func NewThinkingConfigParamBetweenTools() ThinkingConfigParamBetweenTools {
+	return ThinkingConfigParamBetweenTools{
+		Type: "between_tools",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewThinkingConfigParamBetweenTools].
+type ThinkingConfigParamBetweenTools struct {
+	Type constant.BetweenTools `json:"type" default:"between_tools"`
+	paramObj
+}
+
+func (r ThinkingConfigParamBetweenTools) MarshalJSON() (data []byte, err error) {
+	type shadow ThinkingConfigParamBetweenTools
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ThinkingConfigParamBetweenTools) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ThinkingDelta struct {

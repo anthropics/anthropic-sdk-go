@@ -257,17 +257,36 @@ func shouldRetry(req *http.Request, res *http.Response) bool {
 
 	// If the header explicitly wants a retry behavior, respect that over the
 	// http status code.
-	if res.Header.Get("x-should-retry") == "true" {
-		return true
-	}
-	if res.Header.Get("x-should-retry") == "false" {
-		return false
+	if retry, ok := retryHeader(res); ok {
+		return retry
 	}
 
 	return res.StatusCode == http.StatusRequestTimeout ||
 		res.StatusCode == http.StatusConflict ||
 		res.StatusCode == http.StatusTooManyRequests ||
 		res.StatusCode >= http.StatusInternalServerError
+}
+
+// retryHeader reports what the x-should-retry header of res asks for, if it is set.
+func retryHeader(res *http.Response) (retry bool, ok bool) {
+	switch res.Header.Get("x-should-retry") {
+	case "true":
+		return true, true
+	case "false":
+		return false, true
+	default:
+		return false, false
+	}
+}
+
+// shouldRetryDroppedBody reports whether to retry after the body of res could not be read.
+// A dropped body is a connection error, so the status of res does not count, but its
+// x-should-retry header still applies.
+func shouldRetryDroppedBody(req *http.Request, res *http.Response) bool {
+	if retry, ok := retryHeader(res); ok && !retry {
+		return false
+	}
+	return shouldRetry(req, nil)
 }
 
 func parseRetryAfterHeader(resp *http.Response) (time.Duration, bool) {
@@ -384,10 +403,49 @@ func closeBody(res *http.Response) {
 	}
 }
 
+// bufferedBody is a response body that Execute has read into memory. readBody returns its
+// bytes without copying them.
+type bufferedBody struct {
+	contents []byte
+	offset   int
+	closed   bool
+}
+
+func (b *bufferedBody) Read(p []byte) (int, error) {
+	if b.closed {
+		return 0, http.ErrBodyReadAfterClose
+	}
+	if b.offset >= len(b.contents) {
+		return 0, io.EOF
+	}
+	n := copy(p, b.contents[b.offset:])
+	b.offset += n
+	return n, nil
+}
+
+func (b *bufferedBody) Close() error {
+	b.closed = true
+	return nil
+}
+
+// bufferBody reads the whole body of res into memory and leaves it on res.
+func bufferBody(res *http.Response) error {
+	contents, err := readBody(res)
+	if err != nil {
+		return err
+	}
+	res.Body = &bufferedBody{contents: contents}
+	return nil
+}
+
 // readBody reads the whole body of res and closes it.
 func readBody(res *http.Response) ([]byte, error) {
 	if res.Body == nil {
 		return nil, nil
+	}
+	if body, ok := res.Body.(*bufferedBody); ok && !body.closed && body.offset == 0 {
+		body.closed = true
+		return body.contents, nil
 	}
 	contents, err := io.ReadAll(res.Body)
 	_ = res.Body.Close()
@@ -463,14 +521,15 @@ func (cfg *RequestConfig) readsBody(res *http.Response) bool {
 
 // Execute sends the request until an attempt ends the call, which is one of:
 //
-//   - an attempt without a response (a connection error or a timeout of the attempt), once no
-//     retry is left: the error is returned;
+//   - an attempt without a response (a connection error, a timeout of the attempt, or a body
+//     that could not be read), once no retry is left: the error is returned;
 //   - a response that is not retried, with an error status: an APIError is returned;
 //   - a response that is not retried, for a raw or absent destination: the caller gets the
 //     response with its body unread;
 //   - a response that is not retried, for any other destination: the body is decoded into it.
 //
-// A response that is retried is closed unread.
+// A response that is retried is closed unread. The body of a response that ends the call is
+// read as part of the attempt, so that a connection that drops part-way through it is retried.
 func (cfg *RequestConfig) Execute() (err error) {
 	if err := cfg.prepare(); err != nil {
 		return err
@@ -508,6 +567,14 @@ func (cfg *RequestConfig) Execute() (err error) {
 
 		lastAttempt := retryCount >= cfg.MaxRetries
 		res, err = handler(req)
+		retry := shouldRetry(cfg.Request, res)
+		// The status and the headers say whether the response is retried, so only the body of
+		// a response that ends the call is read.
+		endsCall := lastAttempt || !retry
+		var readErr error
+		if err == nil && res != nil && endsCall && cfg.readsBody(res) {
+			readErr = bufferBody(res)
+		}
 		// Once the caller's context is done there is nothing left to retry.
 		if callerErr := callerCtx.Err(); callerErr != nil {
 			return callerErr
@@ -516,9 +583,15 @@ func (cfg *RequestConfig) Execute() (err error) {
 		// and surface the context error if this was the last attempt.
 		if ctxErr := ctx.Err(); ctxErr != nil {
 			closeBody(res)
-			res, err = nil, ctxErr
+			res, err, readErr = nil, ctxErr, nil
+			retry = shouldRetry(cfg.Request, nil)
 		}
-		if lastAttempt || !shouldRetry(cfg.Request, res) {
+		if readErr != nil {
+			// The response stays, for its status and headers.
+			err = readErr
+			retry = shouldRetryDroppedBody(cfg.Request, res)
+		}
+		if lastAttempt || !retry {
 			break
 		}
 
@@ -569,8 +642,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 
 // apiError reads the body of an error response and returns the APIError for it.
 func (cfg *RequestConfig) apiError(res *http.Response) error {
-	contents, err := io.ReadAll(res.Body)
-	_ = res.Body.Close()
+	contents, err := readBody(res)
 	if err != nil {
 		return err
 	}

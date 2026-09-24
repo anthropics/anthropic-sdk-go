@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"testing/iotest"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -22,6 +23,20 @@ type closureTransport struct {
 
 func (t *closureTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.fn(req)
+}
+
+// unreadBody is a response body that fails the test when it is read.
+type unreadBody struct {
+	t *testing.T
+}
+
+func (b unreadBody) Read([]byte) (int, error) {
+	b.t.Error("the body of a response that is retried must not be read")
+	return 0, io.EOF
+}
+
+func (b unreadBody) Close() error {
+	return nil
 }
 
 func TestUserAgentHeader(t *testing.T) {
@@ -400,6 +415,178 @@ func TestRequestTimeoutNotRetriedAfterContextDone(t *testing.T) {
 	)
 	if !errors.Is(err, context.Canceled) {
 		t.Errorf("expected context.Canceled, got: %v", err)
+	}
+	if want := 1; attempts != want {
+		t.Errorf("Expected %d attempts, got %d", want, attempts)
+	}
+}
+
+func TestResponseBodyReadErrorRetried(t *testing.T) {
+	attempts := 0
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithHTTPClient(&http.Client{
+			Transport: &closureTransport{
+				fn: func(req *http.Request) (*http.Response, error) {
+					attempts++
+					return &http.Response{
+						StatusCode: http.StatusBadRequest,
+						Body:       io.NopCloser(iotest.ErrReader(io.ErrUnexpectedEOF)),
+					}, nil
+				},
+			},
+		}),
+	)
+	_, err := client.Messages.New(
+		context.Background(),
+		anthropic.MessageNewParams{
+			MaxTokens: 1024,
+			Messages: []anthropic.MessageParam{{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+				Role: anthropic.MessageParamRoleUser,
+			}},
+			Model: anthropic.ModelClaudeSonnet5,
+		},
+		option.WithMaxRetries(1),
+	)
+	if !errors.Is(err, io.ErrUnexpectedEOF) {
+		t.Errorf("expected io.ErrUnexpectedEOF after exhausting retries, got: %v", err)
+	}
+	if want := 2; attempts != want {
+		t.Errorf("Expected %d attempts, got %d", want, attempts)
+	}
+}
+
+func TestRetriedResponseBodyNotRead(t *testing.T) {
+	attempts := 0
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithHTTPClient(&http.Client{
+			Transport: &closureTransport{
+				fn: func(req *http.Request) (*http.Response, error) {
+					attempts++
+					if attempts == 1 {
+						return &http.Response{
+							StatusCode: http.StatusInternalServerError,
+							Header: http.Header{
+								http.CanonicalHeaderKey("Retry-After-Ms"): []string{"1"},
+							},
+							Body: unreadBody{t},
+						}, nil
+					}
+					return &http.Response{
+						StatusCode: http.StatusBadRequest,
+						Body:       http.NoBody,
+					}, nil
+				},
+			},
+		}),
+	)
+	_, err := client.Messages.New(
+		context.Background(),
+		anthropic.MessageNewParams{
+			MaxTokens: 1024,
+			Messages: []anthropic.MessageParam{{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+				Role: anthropic.MessageParamRoleUser,
+			}},
+			Model: anthropic.ModelClaudeSonnet5,
+		},
+		option.WithMaxRetries(1),
+	)
+	if err == nil {
+		t.Error("expected the error of the last response")
+	}
+	if want := 2; attempts != want {
+		t.Errorf("Expected %d attempts, got %d", want, attempts)
+	}
+}
+
+func TestResponseBodyReadErrorKeepsResponse(t *testing.T) {
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithHTTPClient(&http.Client{
+			Transport: &closureTransport{
+				fn: func(req *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: http.StatusBadRequest,
+						Body:       io.NopCloser(iotest.ErrReader(io.ErrUnexpectedEOF)),
+					}, nil
+				},
+			},
+		}),
+	)
+	var res *http.Response
+	_, err := client.Messages.New(
+		context.Background(),
+		anthropic.MessageNewParams{
+			MaxTokens: 1024,
+			Messages: []anthropic.MessageParam{{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+				Role: anthropic.MessageParamRoleUser,
+			}},
+			Model: anthropic.ModelClaudeSonnet5,
+		},
+		option.WithMaxRetries(1),
+		option.WithResponseInto(&res),
+	)
+	if !errors.Is(err, io.ErrUnexpectedEOF) {
+		t.Errorf("expected io.ErrUnexpectedEOF, got: %v", err)
+	}
+	if res == nil || res.StatusCode != http.StatusBadRequest {
+		t.Errorf("expected the response that was received, got: %v", res)
+	}
+}
+
+func TestResponseBodyReadErrorNotRetriedWhenToldNotTo(t *testing.T) {
+	attempts := 0
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithHTTPClient(&http.Client{
+			Transport: &closureTransport{
+				fn: func(req *http.Request) (*http.Response, error) {
+					attempts++
+					return &http.Response{
+						StatusCode: http.StatusBadRequest,
+						Header: http.Header{
+							http.CanonicalHeaderKey("X-Should-Retry"): []string{"false"},
+						},
+						Body: io.NopCloser(iotest.ErrReader(io.ErrUnexpectedEOF)),
+					}, nil
+				},
+			},
+		}),
+	)
+	_, err := client.Messages.New(
+		context.Background(),
+		anthropic.MessageNewParams{
+			MaxTokens: 1024,
+			Messages: []anthropic.MessageParam{{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+				Role: anthropic.MessageParamRoleUser,
+			}},
+			Model: anthropic.ModelClaudeSonnet5,
+		},
+		option.WithMaxRetries(2),
+	)
+	if !errors.Is(err, io.ErrUnexpectedEOF) {
+		t.Errorf("expected io.ErrUnexpectedEOF, got: %v", err)
 	}
 	if want := 1; attempts != want {
 		t.Errorf("Expected %d attempts, got %d", want, attempts)

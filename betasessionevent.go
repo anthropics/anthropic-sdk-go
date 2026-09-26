@@ -4646,6 +4646,46 @@ func (r *BetaManagedAgentsSessionEventUnionUsage) UnmarshalJSON(data []byte) err
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The `type` of a session event.
+type BetaManagedAgentsSessionEventType string
+
+const (
+	BetaManagedAgentsSessionEventTypeUserMessage                    BetaManagedAgentsSessionEventType = "user.message"
+	BetaManagedAgentsSessionEventTypeUserInterrupt                  BetaManagedAgentsSessionEventType = "user.interrupt"
+	BetaManagedAgentsSessionEventTypeUserToolConfirmation           BetaManagedAgentsSessionEventType = "user.tool_confirmation"
+	BetaManagedAgentsSessionEventTypeUserCustomToolResult           BetaManagedAgentsSessionEventType = "user.custom_tool_result"
+	BetaManagedAgentsSessionEventTypeAgentCustomToolUse             BetaManagedAgentsSessionEventType = "agent.custom_tool_use"
+	BetaManagedAgentsSessionEventTypeAgentMessage                   BetaManagedAgentsSessionEventType = "agent.message"
+	BetaManagedAgentsSessionEventTypeAgentThinking                  BetaManagedAgentsSessionEventType = "agent.thinking"
+	BetaManagedAgentsSessionEventTypeAgentMCPToolUse                BetaManagedAgentsSessionEventType = "agent.mcp_tool_use"
+	BetaManagedAgentsSessionEventTypeAgentMCPToolResult             BetaManagedAgentsSessionEventType = "agent.mcp_tool_result"
+	BetaManagedAgentsSessionEventTypeAgentToolUse                   BetaManagedAgentsSessionEventType = "agent.tool_use"
+	BetaManagedAgentsSessionEventTypeAgentToolResult                BetaManagedAgentsSessionEventType = "agent.tool_result"
+	BetaManagedAgentsSessionEventTypeAgentThreadMessageReceived     BetaManagedAgentsSessionEventType = "agent.thread_message_received"
+	BetaManagedAgentsSessionEventTypeAgentThreadMessageSent         BetaManagedAgentsSessionEventType = "agent.thread_message_sent"
+	BetaManagedAgentsSessionEventTypeAgentThreadContextCompacted    BetaManagedAgentsSessionEventType = "agent.thread_context_compacted"
+	BetaManagedAgentsSessionEventTypeSessionError                   BetaManagedAgentsSessionEventType = "session.error"
+	BetaManagedAgentsSessionEventTypeSessionStatusRescheduled       BetaManagedAgentsSessionEventType = "session.status_rescheduled"
+	BetaManagedAgentsSessionEventTypeSessionStatusRunning           BetaManagedAgentsSessionEventType = "session.status_running"
+	BetaManagedAgentsSessionEventTypeSessionStatusIdle              BetaManagedAgentsSessionEventType = "session.status_idle"
+	BetaManagedAgentsSessionEventTypeSessionStatusTerminated        BetaManagedAgentsSessionEventType = "session.status_terminated"
+	BetaManagedAgentsSessionEventTypeSessionThreadCreated           BetaManagedAgentsSessionEventType = "session.thread_created"
+	BetaManagedAgentsSessionEventTypeSpanOutcomeEvaluationStart     BetaManagedAgentsSessionEventType = "span.outcome_evaluation_start"
+	BetaManagedAgentsSessionEventTypeSpanOutcomeEvaluationEnd       BetaManagedAgentsSessionEventType = "span.outcome_evaluation_end"
+	BetaManagedAgentsSessionEventTypeSpanModelRequestStart          BetaManagedAgentsSessionEventType = "span.model_request_start"
+	BetaManagedAgentsSessionEventTypeSpanModelRequestEnd            BetaManagedAgentsSessionEventType = "span.model_request_end"
+	BetaManagedAgentsSessionEventTypeSpanOutcomeEvaluationOngoing   BetaManagedAgentsSessionEventType = "span.outcome_evaluation_ongoing"
+	BetaManagedAgentsSessionEventTypeUserDefineOutcome              BetaManagedAgentsSessionEventType = "user.define_outcome"
+	BetaManagedAgentsSessionEventTypeSessionThreadStatusRunning     BetaManagedAgentsSessionEventType = "session.thread_status_running"
+	BetaManagedAgentsSessionEventTypeSessionThreadStatusIdle        BetaManagedAgentsSessionEventType = "session.thread_status_idle"
+	BetaManagedAgentsSessionEventTypeSessionThreadStatusTerminated  BetaManagedAgentsSessionEventType = "session.thread_status_terminated"
+	BetaManagedAgentsSessionEventTypeUserToolResult                 BetaManagedAgentsSessionEventType = "user.tool_result"
+	BetaManagedAgentsSessionEventTypeSessionThreadStatusRescheduled BetaManagedAgentsSessionEventType = "session.thread_status_rescheduled"
+	BetaManagedAgentsSessionEventTypeSessionUpdated                 BetaManagedAgentsSessionEventType = "session.updated"
+	BetaManagedAgentsSessionEventTypeSystemMessage                  BetaManagedAgentsSessionEventType = "system.message"
+	BetaManagedAgentsSessionEventTypeSessionUsage                   BetaManagedAgentsSessionEventType = "session.usage"
+)
+
 // The agent is idle waiting on one or more blocking user-input events (tool
 // confirmation, custom tool result, etc.). Resolving all of them transitions the
 // session back to running.
@@ -7884,7 +7924,7 @@ type BetaSessionEventListParams struct {
 	Order BetaSessionEventListParamsOrder `query:"order,omitzero" json:"-"`
 	// Filter by event type. Values match the `type` field on returned events (for
 	// example, `user.message` or `agent.tool_use`). Omit to return all event types.
-	Types []string `query:"types,omitzero" json:"-"`
+	Types []BetaManagedAgentsSessionEventType `query:"types,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

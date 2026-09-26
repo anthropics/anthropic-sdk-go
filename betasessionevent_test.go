@@ -36,7 +36,7 @@ func TestBetaSessionEventListWithOptionalParams(t *testing.T) {
 			Limit:        anthropic.Int(0),
 			Order:        anthropic.BetaSessionEventListParamsOrderAsc,
 			Page:         anthropic.String("page"),
-			Types:        []string{"string"},
+			Types:        []anthropic.BetaManagedAgentsSessionEventType{anthropic.BetaManagedAgentsSessionEventTypeUserMessage},
 			Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 			WorkspaceID:  anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},

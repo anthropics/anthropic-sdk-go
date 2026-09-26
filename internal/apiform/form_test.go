@@ -146,7 +146,7 @@ var tests = map[string]struct {
 }{
 	"file": {
 		buf: `--xxx
-Content-Disposition: form-data; name="file"; filename="anonymous_file"
+Content-Disposition: form-data; name="file"; filename=""
 Content-Type: application/octet-stream
 
 some file contents...

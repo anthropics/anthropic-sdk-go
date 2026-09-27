@@ -21,7 +21,7 @@ func main() {
 			anthropic.NewUserMessage(anthropic.NewTextBlock("Write me a haiku about Go.")),
 		},
 		// Model is your Foundry deployment's name, which defaults to the model ID.
-		Model: anthropic.ModelClaudeSonnet5,
+		Model: anthropic.ModelClaudeSonnet5_5,
 	})
 	if err != nil {
 		panic(err)

@@ -38,7 +38,7 @@ func main() {
 				}),
 			),
 		},
-		Model: anthropic.ModelClaudeSonnet5,
+		Model: anthropic.ModelClaudeSonnet5_5,
 	})
 	if err != nil {
 		fmt.Printf("Error creating message: %v\n", err)

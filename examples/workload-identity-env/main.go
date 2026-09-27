@@ -32,7 +32,7 @@ func main() {
 		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
 		},
-		Model:         anthropic.ModelClaudeSonnet5,
+		Model:         anthropic.ModelClaudeSonnet5_5,
 		StopSequences: []string{"```\n"},
 	})
 	if err != nil {

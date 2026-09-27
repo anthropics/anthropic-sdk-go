@@ -25,7 +25,7 @@ func main() {
 	agent, err := client.Beta.Agents.New(ctx, anthropic.BetaAgentNewParams{
 		Name: "simple-example-agent",
 		Model: anthropic.BetaManagedAgentsModelConfigParams{
-			ID: anthropic.BetaManagedAgentsModelClaudeSonnet5,
+			ID: anthropic.BetaManagedAgentsModelClaudeSonnet5_5,
 		},
 	})
 	if err != nil {

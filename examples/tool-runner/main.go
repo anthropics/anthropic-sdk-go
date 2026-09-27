@@ -56,7 +56,7 @@ func main() {
 
 	runner := client.Beta.Messages.NewToolRunner(tools, anthropic.BetaToolRunnerParams{
 		BetaMessageNewParams: anthropic.BetaMessageNewParams{
-			Model:     anthropic.ModelClaudeSonnet5,
+			Model:     anthropic.ModelClaudeSonnet5_5,
 			MaxTokens: 1000,
 			Messages: []anthropic.BetaMessageParam{
 				anthropic.NewBetaUserMessage(

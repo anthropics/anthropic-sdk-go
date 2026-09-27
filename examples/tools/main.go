@@ -72,7 +72,7 @@ func main() {
 
 	for {
 		message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
-			Model:     anthropic.ModelClaudeSonnet5,
+			Model:     anthropic.ModelClaudeSonnet5_5,
 			MaxTokens: 1024,
 			Messages:  messages,
 			Tools:     tools,

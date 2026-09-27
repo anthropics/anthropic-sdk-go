@@ -82,7 +82,7 @@ func main() {
 	agentV1, err := client.Beta.Agents.New(ctx, anthropic.BetaAgentNewParams{
 		Name: "comprehensive-example-agent",
 		Model: anthropic.BetaManagedAgentsModelConfigParams{
-			ID: anthropic.BetaManagedAgentsModelClaudeSonnet5,
+			ID: anthropic.BetaManagedAgentsModelClaudeSonnet5_5,
 		},
 		System: param.NewOpt("You are a helpful assistant."),
 		MCPServers: []anthropic.BetaManagedAgentsURLMCPServerParams{

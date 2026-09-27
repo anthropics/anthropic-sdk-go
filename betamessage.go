@@ -9259,10 +9259,10 @@ const (
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaFallbackParamThinkingUnion struct {
-	OfEnabled      *BetaThinkingConfigEnabledParam        `json:",omitzero,inline"`
-	OfDisabled     *BetaThinkingConfigDisabledParam       `json:",omitzero,inline"`
-	OfBetweenTools *BetaFallbackParamThinkingBetweenTools `json:",omitzero,inline"`
-	OfAdaptive     *BetaThinkingConfigAdaptiveParam       `json:",omitzero,inline"`
+	OfEnabled      *BetaThinkingConfigEnabledParam      `json:",omitzero,inline"`
+	OfDisabled     *BetaThinkingConfigDisabledParam     `json:",omitzero,inline"`
+	OfBetweenTools *BetaThinkingConfigBetweenToolsParam `json:",omitzero,inline"`
+	OfAdaptive     *BetaThinkingConfigAdaptiveParam     `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -9333,30 +9333,9 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaThinkingConfigEnabledParam]("enabled"),
 		apijson.Discriminator[BetaThinkingConfigDisabledParam]("disabled"),
-		apijson.Discriminator[BetaFallbackParamThinkingBetweenTools]("between_tools"),
+		apijson.Discriminator[BetaThinkingConfigBetweenToolsParam]("between_tools"),
 		apijson.Discriminator[BetaThinkingConfigAdaptiveParam]("adaptive"),
 	)
-}
-
-func NewBetaFallbackParamThinkingBetweenTools() BetaFallbackParamThinkingBetweenTools {
-	return BetaFallbackParamThinkingBetweenTools{
-		Type: "between_tools",
-	}
-}
-
-// This struct has a constant value, construct it with
-// [NewBetaFallbackParamThinkingBetweenTools].
-type BetaFallbackParamThinkingBetweenTools struct {
-	Type constant.BetweenTools `json:"type" default:"between_tools"`
-	paramObj
-}
-
-func (r BetaFallbackParamThinkingBetweenTools) MarshalJSON() (data []byte, err error) {
-	type shadow BetaFallbackParamThinkingBetweenTools
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *BetaFallbackParamThinkingBetweenTools) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 // The `from` model declined for policy reasons.
@@ -15115,6 +15094,27 @@ const (
 	BetaThinkingConfigAdaptiveDisplayUpdates    BetaThinkingConfigAdaptiveDisplay = "updates"
 )
 
+func NewBetaThinkingConfigBetweenToolsParam() BetaThinkingConfigBetweenToolsParam {
+	return BetaThinkingConfigBetweenToolsParam{
+		Type: "between_tools",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewBetaThinkingConfigBetweenToolsParam].
+type BetaThinkingConfigBetweenToolsParam struct {
+	Type constant.BetweenTools `json:"type" default:"between_tools"`
+	paramObj
+}
+
+func (r BetaThinkingConfigBetweenToolsParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaThinkingConfigBetweenToolsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaThinkingConfigBetweenToolsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 func NewBetaThinkingConfigDisabledParam() BetaThinkingConfigDisabledParam {
 	return BetaThinkingConfigDisabledParam{
 		Type: "disabled",
@@ -15196,7 +15196,7 @@ func BetaThinkingConfigParamOfEnabled(budgetTokens int64) BetaThinkingConfigPara
 type BetaThinkingConfigParamUnion struct {
 	OfEnabled      *BetaThinkingConfigEnabledParam      `json:",omitzero,inline"`
 	OfDisabled     *BetaThinkingConfigDisabledParam     `json:",omitzero,inline"`
-	OfBetweenTools *BetaThinkingConfigParamBetweenTools `json:",omitzero,inline"`
+	OfBetweenTools *BetaThinkingConfigBetweenToolsParam `json:",omitzero,inline"`
 	OfAdaptive     *BetaThinkingConfigAdaptiveParam     `json:",omitzero,inline"`
 	paramUnion
 }
@@ -15268,30 +15268,9 @@ func init() {
 		"type",
 		apijson.Discriminator[BetaThinkingConfigEnabledParam]("enabled"),
 		apijson.Discriminator[BetaThinkingConfigDisabledParam]("disabled"),
-		apijson.Discriminator[BetaThinkingConfigParamBetweenTools]("between_tools"),
+		apijson.Discriminator[BetaThinkingConfigBetweenToolsParam]("between_tools"),
 		apijson.Discriminator[BetaThinkingConfigAdaptiveParam]("adaptive"),
 	)
-}
-
-func NewBetaThinkingConfigParamBetweenTools() BetaThinkingConfigParamBetweenTools {
-	return BetaThinkingConfigParamBetweenTools{
-		Type: "between_tools",
-	}
-}
-
-// This struct has a constant value, construct it with
-// [NewBetaThinkingConfigParamBetweenTools].
-type BetaThinkingConfigParamBetweenTools struct {
-	Type constant.BetweenTools `json:"type" default:"between_tools"`
-	paramObj
-}
-
-func (r BetaThinkingConfigParamBetweenTools) MarshalJSON() (data []byte, err error) {
-	type shadow BetaThinkingConfigParamBetweenTools
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *BetaThinkingConfigParamBetweenTools) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 type BetaThinkingDelta struct {

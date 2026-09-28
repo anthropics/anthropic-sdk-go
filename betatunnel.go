@@ -2,6 +2,7 @@ package anthropic
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -159,10 +160,14 @@ func (r *BetaTunnelService) Archive(ctx context.Context, tunnelID string, body B
 // deprecation period. It supersedes the Admin API endpoints at
 // `/v1/organizations/tunnels`, which remain available during a migration window.
 //
-// Reveals a tunnel's connector token. The value is fetched live on each call;
-// Anthropic does not store it. Repeated calls return the same value until the
-// token is rotated. Exposed as POST so the token does not appear in intermediary
-// access logs.
+// Reveals a `cloudflare` tunnel's connector token. The value is fetched live on
+// each call; Anthropic does not store it. Repeated calls return the same value
+// until the token is rotated. Exposed as POST so the token does not appear in
+// intermediary access logs. A tunnel on the `relay` transport has no token to
+// reveal: its relay token was returned once when it was issued and only a hash is
+// kept, so the request is refused with an `invalid_request_error` whose error code
+// is `tunnel_token_not_revealable`, and `rotate_token` is the way to obtain a new
+// value.
 func (r *BetaTunnelService) RevealToken(ctx context.Context, tunnelID string, body BetaTunnelRevealTokenParams, opts ...option.RequestOption) (res *BetaTunnelToken, err error) {
 	for _, v := range body.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
@@ -186,9 +191,14 @@ func (r *BetaTunnelService) RevealToken(ctx context.Context, tunnelID string, bo
 // deprecation period. It supersedes the Admin API endpoints at
 // `/v1/organizations/tunnels`, which remain available during a migration window.
 //
-// Rotates a tunnel's connector token. Rotation invalidates the current token for
-// new connections and returns a fresh value; established connections are not
-// severed. A connector restarted after rotation must use the new value.
+// Rotates a tunnel's connector token and returns the fresh value. On the
+// `cloudflare` transport the previous token stops working for new connections and
+// established connections are not severed; a connector restarted after rotation
+// must use the new value. On the `relay` transport the new relay token is returned
+// in this response and never again (only a hash is kept), and the relay
+// connections established with the previous token are closed, so the relay
+// connector keeps carrying traffic only after it is redeployed with the new token;
+// relay token rotations are also rate limited per tunnel.
 func (r *BetaTunnelService) RotateToken(ctx context.Context, tunnelID string, params BetaTunnelRotateTokenParams, opts ...option.RequestOption) (res *BetaTunnelToken, err error) {
 	for _, v := range params.Betas {
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
@@ -207,6 +217,50 @@ func (r *BetaTunnelService) RotateToken(ctx context.Context, tunnelID string, pa
 	return res, err
 }
 
+// The tunnel is connected through the Cloudflare connector. Its connector token is
+// fetched with reveal_token. `type` is transitional: it reads `relay` for every
+// tunnel once the Cloudflare transport is retired.
+type BetaCloudflareTunnelTransport struct {
+	Type constant.Cloudflare `json:"type" default:"cloudflare"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCloudflareTunnelTransport) RawJSON() string { return r.JSON.raw }
+func (r *BetaCloudflareTunnelTransport) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The tunnel is connected through Anthropic's relay. In the create response
+// `token` is the tunnel's relay token, shown that once (only a hash is kept, so
+// reveal_token refuses a relay tunnel and rotate_token issues a new one); reads
+// never carry it.
+type BetaRelayTunnelTransport struct {
+	Type constant.Relay `json:"type" default:"relay"`
+	// The tunnel's relay token. Present only in the create response, which issues it;
+	// absent on every read. Store it: Anthropic keeps only a hash, reveal_token
+	// refuses a relay tunnel, and rotate_token is the only way to obtain a new one.
+	Token BetaTunnelToken `json:"token"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		Token       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaRelayTunnelTransport) RawJSON() string { return r.JSON.raw }
+func (r *BetaRelayTunnelTransport) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // An MCP tunnel.
 type BetaTunnel struct {
 	// Unique identifier for the tunnel, prefixed with `tnl_`.
@@ -221,8 +275,15 @@ type BetaTunnel struct {
 	// Anthropic-assigned hostname for the tunnel. MCP server URLs whose host is a
 	// subdomain of this value are routed through the tunnel. Globally unique and never
 	// reused, even after the tunnel is archived.
-	Domain string          `json:"domain" api:"required"`
-	Type   constant.Tunnel `json:"type" default:"tunnel"`
+	Domain string `json:"domain" api:"required"`
+	// How traffic reaches the tunnel. Chosen by Anthropic per organization when the
+	// tunnel is created; read-only and present on every tunnel, so automation can tell
+	// which connector to deploy. A union discriminated on `type`:
+	// `{"type": "cloudflare"}` or `{"type": "relay"}`. In the create response a
+	// `relay` tunnel's transport also carries `token`, its relay token, shown that
+	// once; no read carries a token.
+	Transport BetaTunnelTransportUnion `json:"transport" api:"required"`
+	Type      constant.Tunnel          `json:"type" default:"tunnel"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -230,6 +291,7 @@ type BetaTunnel struct {
 		CreatedAt   respjson.Field
 		DisplayName respjson.Field
 		Domain      respjson.Field
+		Transport   respjson.Field
 		Type        respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -263,6 +325,69 @@ type BetaTunnelToken struct {
 // Returns the unmodified JSON received from the API
 func (r BetaTunnelToken) RawJSON() string { return r.JSON.raw }
 func (r *BetaTunnelToken) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaTunnelTransportUnion contains all possible properties and values from
+// [BetaCloudflareTunnelTransport], [BetaRelayTunnelTransport].
+//
+// Use the [BetaTunnelTransportUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaTunnelTransportUnion struct {
+	// Any of "cloudflare", "relay".
+	Type string `json:"type"`
+	// This field is from variant [BetaRelayTunnelTransport].
+	Token BetaTunnelToken `json:"token"`
+	JSON  struct {
+		Type  respjson.Field
+		Token respjson.Field
+		raw   string
+	} `json:"-"`
+}
+
+// anyBetaTunnelTransport is implemented by each variant of
+// [BetaTunnelTransportUnion] to add type safety for the return type of
+// [BetaTunnelTransportUnion.AsAny]
+type anyBetaTunnelTransport interface {
+	implBetaTunnelTransportUnion()
+}
+
+func (BetaCloudflareTunnelTransport) implBetaTunnelTransportUnion() {}
+func (BetaRelayTunnelTransport) implBetaTunnelTransportUnion()      {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaTunnelTransportUnion.AsAny().(type) {
+//	case anthropic.BetaCloudflareTunnelTransport:
+//	case anthropic.BetaRelayTunnelTransport:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaTunnelTransportUnion) AsAny() anyBetaTunnelTransport {
+	switch u.Type {
+	case "cloudflare":
+		return u.AsCloudflare()
+	case "relay":
+		return u.AsRelay()
+	}
+	return nil
+}
+
+func (u BetaTunnelTransportUnion) AsCloudflare() (v BetaCloudflareTunnelTransport) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaTunnelTransportUnion) AsRelay() (v BetaRelayTunnelTransport) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaTunnelTransportUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaTunnelTransportUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

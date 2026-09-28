@@ -75,6 +75,7 @@ type CitationsDelta string                          // Always "citations_delta"
 type ClearThinking20251015 string                   // Always "clear_thinking_20251015"
 type ClearToolUses20250919 string                   // Always "clear_tool_uses_20250919"
 type Cloud string                                   // Always "cloud"
+type Cloudflare string                              // Always "cloudflare"
 type CodeExecution string                           // Always "code_execution"
 type CodeExecution20250522 string                   // Always "code_execution_20250522"
 type CodeExecution20250825 string                   // Always "code_execution_20250825"
@@ -197,6 +198,7 @@ type Read string                                    // Always "read"
 type RedactedThinking string                        // Always "redacted_thinking"
 type Redeemed string                                // Always "redeemed"
 type Refusal string                                 // Always "refusal"
+type Relay string                                   // Always "relay"
 type Rename string                                  // Always "rename"
 type SearchResult string                            // Always "search_result"
 type SearchResultLocation string                    // Always "search_result_location"
@@ -369,6 +371,7 @@ func (c CitationsDelta) Default() CitationsDelta                 { return "citat
 func (c ClearThinking20251015) Default() ClearThinking20251015   { return "clear_thinking_20251015" }
 func (c ClearToolUses20250919) Default() ClearToolUses20250919   { return "clear_tool_uses_20250919" }
 func (c Cloud) Default() Cloud                                   { return "cloud" }
+func (c Cloudflare) Default() Cloudflare                         { return "cloudflare" }
 func (c CodeExecution) Default() CodeExecution                   { return "code_execution" }
 func (c CodeExecution20250522) Default() CodeExecution20250522   { return "code_execution_20250522" }
 func (c CodeExecution20250825) Default() CodeExecution20250825   { return "code_execution_20250825" }
@@ -505,6 +508,7 @@ func (c Read) Default() Read                                 { return "read" }
 func (c RedactedThinking) Default() RedactedThinking         { return "redacted_thinking" }
 func (c Redeemed) Default() Redeemed                         { return "redeemed" }
 func (c Refusal) Default() Refusal                           { return "refusal" }
+func (c Relay) Default() Relay                               { return "relay" }
 func (c Rename) Default() Rename                             { return "rename" }
 func (c SearchResult) Default() SearchResult                 { return "search_result" }
 func (c SearchResultLocation) Default() SearchResultLocation { return "search_result_location" }
@@ -711,6 +715,7 @@ func (c CitationsDelta) MarshalJSON() ([]byte, error)                       { re
 func (c ClearThinking20251015) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c ClearToolUses20250919) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c Cloud) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
+func (c Cloudflare) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c CodeExecution) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c CodeExecution20250522) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c CodeExecution20250825) MarshalJSON() ([]byte, error)                { return marshalString(c) }
@@ -833,6 +838,7 @@ func (c Read) MarshalJSON() ([]byte, error)                                 { re
 func (c RedactedThinking) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Redeemed) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Refusal) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c Relay) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Rename) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c SearchResult) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c SearchResultLocation) MarshalJSON() ([]byte, error)                 { return marshalString(c) }

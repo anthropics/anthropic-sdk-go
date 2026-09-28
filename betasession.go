@@ -561,7 +561,8 @@ func (r *BetaManagedAgentsBranchCheckoutParam) UnmarshalJSON(data []byte) error 
 // A hard spend ceiling. The session stops issuing new model requests once the
 // tracked list cost reaches `max_list_cost`.
 type BetaManagedAgentsBudgetLimit struct {
-	// A monetary amount in a specific currency.
+	// Maximum list cost the session may accrue. List price is used regardless of any
+	// negotiated discount, so the cap fires at or before the actual charge.
 	MaxListCost BetaMonetaryAmount `json:"max_list_cost" api:"required"`
 	// Any of "limit".
 	Type BetaManagedAgentsBudgetLimitType `json:"type" api:"required"`
@@ -601,7 +602,8 @@ const (
 //
 // The properties MaxListCost, Type are required.
 type BetaManagedAgentsBudgetLimitParam struct {
-	// A monetary amount in a specific currency.
+	// Maximum list cost the session may accrue. List price is used regardless of any
+	// negotiated discount, so the cap fires at or before the actual charge.
 	MaxListCost BetaMonetaryAmountParam `json:"max_list_cost,omitzero" api:"required"`
 	// Any of "limit".
 	Type BetaManagedAgentsBudgetLimitType `json:"type,omitzero" api:"required"`
@@ -717,7 +719,8 @@ const (
 )
 
 type BetaManagedAgentsDeltaContent struct {
-	// Regular text content.
+	// A partial element of the content array at index, typed like the element itself —
+	// the same shape the buffered agent.message carries in content.
 	Content BetaManagedAgentsTextBlock `json:"content" api:"required"`
 	// Any of "content_delta".
 	Type BetaManagedAgentsDeltaContentType `json:"type" api:"required"`
@@ -923,7 +926,8 @@ type BetaManagedAgentsMemoryStoreResourceParam struct {
 	// Per-attachment guidance for the agent on how to use this store. Rendered into
 	// the memory section of the system prompt. Max 4096 chars.
 	Instructions param.Opt[string] `json:"instructions,omitzero"`
-	// Access mode for an attached memory store.
+	// Access mode for the mounted store. Defaults to read_write. read_only mounts the
+	// store as a read-only filesystem.
 	//
 	// Any of "read_write", "read_only".
 	Access BetaManagedAgentsMemoryStoreResourceParamAccess `json:"access,omitzero"`
@@ -944,7 +948,8 @@ const (
 	BetaManagedAgentsMemoryStoreResourceParamTypeMemoryStore BetaManagedAgentsMemoryStoreResourceParamType = "memory_store"
 )
 
-// Access mode for an attached memory store.
+// Access mode for the mounted store. Defaults to read_write. read_only mounts the
+// store as a read-only filesystem.
 type BetaManagedAgentsMemoryStoreResourceParamAccess string
 
 const (
@@ -952,7 +957,7 @@ const (
 	BetaManagedAgentsMemoryStoreResourceParamAccessReadOnly  BetaManagedAgentsMemoryStoreResourceParamAccess = "read_only"
 )
 
-// Resolved coordinator topology with a concrete agent roster.
+// Resolved multiagent orchestration configuration as returned in API responses.
 type BetaManagedAgentsMultiagent struct {
 	// Agents the coordinator may spawn as session threads, each resolved to a specific
 	// version.
@@ -1050,8 +1055,8 @@ const (
 	BetaManagedAgentsMultiagentTypeCoordinator BetaManagedAgentsMultiagentType = "coordinator"
 )
 
-// A coordinator topology: the session's primary thread orchestrates work by
-// spawning session threads, each running an agent drawn from the `agents` roster.
+// Multiagent orchestration configuration. Currently supports the `coordinator`
+// topology.
 //
 // The properties Agents, Type are required.
 type BetaManagedAgentsMultiagentParams struct {
@@ -1170,7 +1175,8 @@ func (u BetaManagedAgentsMultiagentRosterEntryParamsUnion) GetType() *string {
 
 // Evaluation state for a single outcome defined via a `define_outcome` event.
 type BetaManagedAgentsOutcomeEvaluationResource struct {
-	// A timestamp in RFC 3339 format
+	// When the outcome reached a terminal result. Null while
+	// `pending`/`running`/`evaluating`.
 	CompletedAt time.Time `json:"completed_at" api:"required" format:"date-time"`
 	// What the agent should produce.
 	Description string `json:"description" api:"required"`
@@ -1241,10 +1247,9 @@ type BetaManagedAgentsSession struct {
 	// Resolved `agent` definition for a `session`. Snapshot of the `agent` at
 	// `session` creation time.
 	Agent BetaManagedAgentsSessionAgent `json:"agent" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When the session was archived. Null if not archived.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
-	// A hard spend ceiling. The session stops issuing new model requests once the
-	// tracked list cost reaches `max_list_cost`.
+	// The session's enforced spend ceiling, or null when no budget is set.
 	Budget BetaManagedAgentsBudgetLimit `json:"budget" api:"required"`
 	// A timestamp in RFC 3339 format
 	CreatedAt     time.Time         `json:"created_at" api:"required" format:"date-time"`
@@ -1254,7 +1259,7 @@ type BetaManagedAgentsSession struct {
 	// session.
 	OutcomeEvaluations []BetaManagedAgentsOutcomeEvaluationResource `json:"outcome_evaluations" api:"required"`
 	Resources          []BetaManagedAgentsSessionResourceUnion      `json:"resources" api:"required"`
-	// Timing statistics for a session.
+	// Timing statistics for the session.
 	Stats BetaManagedAgentsSessionStats `json:"stats" api:"required"`
 	// SessionStatus enum
 	//
@@ -1265,7 +1270,7 @@ type BetaManagedAgentsSession struct {
 	Type BetaManagedAgentsSessionType `json:"type" api:"required"`
 	// A timestamp in RFC 3339 format
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
-	// Cumulative token usage for a session across all turns.
+	// Cumulative token usage for the session.
 	Usage BetaManagedAgentsSessionUsage `json:"usage" api:"required"`
 	// Vault IDs attached to the session at creation. Empty when no vaults were
 	// supplied.
@@ -1332,8 +1337,8 @@ type BetaManagedAgentsSessionAgent struct {
 	MCPServers  []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
 	// Model identifier and configuration.
 	Model BetaManagedAgentsModelConfig `json:"model" api:"required"`
-	// Resolved coordinator topology with full agent definitions for each roster
-	// member.
+	// Resolved multiagent orchestration configuration. Null when the agent is
+	// single-threaded.
 	Multiagent BetaManagedAgentsSessionMultiagentCoordinator `json:"multiagent" api:"required"`
 	Name       string                                        `json:"name" api:"required"`
 	Skills     []BetaManagedAgentsSessionAgentSkillUnion     `json:"skills" api:"required"`
@@ -1989,15 +1994,17 @@ func (r *BetaManagedAgentsSessionStats) UnmarshalJSON(data []byte) error {
 type BetaManagedAgentsSessionUpdatedEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the update was applied.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "session.updated".
 	Type BetaManagedAgentsSessionUpdatedEventType `json:"type" api:"required"`
-	// Resolved `agent` definition for a `session`. Snapshot of the `agent` at
-	// `session` creation time.
+	// The session's effective agent configuration after the update. Present only when
+	// the update changed `agent` (tools or mcp_servers); when present it is the full
+	// materialised snapshot, not a diff.
 	Agent BetaManagedAgentsSessionAgent `json:"agent" api:"nullable"`
-	// A hard spend ceiling. The session stops issuing new model requests once the
-	// tracked list cost reaches `max_list_cost`.
+	// The session's budget after the update: the new budget when set or replaced, or
+	// null when the update removed it. Present only when the update changed the
+	// budget.
 	Budget BetaManagedAgentsBudgetLimit `json:"budget" api:"nullable"`
 	// The session's full metadata bag after the update. Present when the update set
 	// non-empty metadata; absent when metadata was unchanged or cleared to empty.
@@ -2037,17 +2044,19 @@ type BetaManagedAgentsSessionUsage struct {
 	// unlike `stats.active_seconds`, which sums each thread's own active time. This is
 	// the duration the session's runtime cost is priced on.
 	ActiveSeconds float64 `json:"active_seconds"`
-	// Prompt-cache creation token usage broken down by cache lifetime.
+	// Tokens used to create prompt cache entries, broken down by cache TTL.
 	CacheCreation BetaManagedAgentsCacheCreationUsage `json:"cache_creation"`
 	// Total tokens read from prompt cache.
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens"`
 	// Total input tokens consumed across all turns.
 	InputTokens int64 `json:"input_tokens"`
-	// A monetary amount in a specific currency.
+	// Cumulative list cost of the session across all turns, priced at public list
+	// rates. Absent until cost tracking is available for the session.
 	ListCost BetaMonetaryAmount `json:"list_cost" api:"nullable"`
 	// Total output tokens generated across all turns.
 	OutputTokens int64 `json:"output_tokens"`
-	// Cumulative count of server-executed tool invocations, broken down by tool.
+	// Cumulative server-executed tool usage across all turns. Absent until server-tool
+	// tracking is available for the session.
 	ServerToolUse BetaManagedAgentsServerToolUsage `json:"server_tool_use" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2073,14 +2082,14 @@ func (r *BetaManagedAgentsSessionUsage) UnmarshalJSON(data []byte) error {
 type BetaManagedAgentsSessionUsageEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the snapshot was taken.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "session.usage".
 	Type BetaManagedAgentsSessionUsageEventType `json:"type" api:"required"`
-	// Point-in-time snapshot of a session's cumulative usage.
+	// The session's cumulative usage at the snapshot time.
 	Usage BetaManagedAgentsSessionUsageSnapshot `json:"usage" api:"required"`
-	// A hard spend ceiling. The session stops issuing new model requests once the
-	// tracked list cost reaches `max_list_cost`.
+	// The session's configured budget at the snapshot time, or null when the session
+	// has no budget.
 	Budget BetaManagedAgentsBudgetLimit `json:"budget" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2205,7 +2214,7 @@ func (r *BetaManagedAgentsStartEventPreviewUnion) UnmarshalJSON(data []byte) err
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Regular text content.
+// Content block in a mid-conversation system message. Text-only.
 type BetaManagedAgentsSystemContentBlock struct {
 	// The text content.
 	Text string `json:"text" api:"required"`
@@ -2242,7 +2251,7 @@ const (
 	BetaManagedAgentsSystemContentBlockTypeText BetaManagedAgentsSystemContentBlockType = "text"
 )
 
-// Regular text content.
+// Content block in a mid-conversation system message. Text-only.
 //
 // The properties Text, Type are required.
 type BetaManagedAgentsSystemContentBlockParam struct {
@@ -2270,7 +2279,7 @@ type BetaManagedAgentsSystemMessageEvent struct {
 	Content []BetaManagedAgentsSystemContentBlock `json:"content" api:"required"`
 	// Any of "system.message".
 	Type BetaManagedAgentsSystemMessageEventType `json:"type" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when this system message was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -2312,7 +2321,7 @@ type BetaManagedAgentsUserToolResultEvent struct {
 	Content []BetaManagedAgentsUserToolResultEventContentUnion `json:"content"`
 	// Whether the tool execution resulted in an error.
 	IsError bool `json:"is_error" api:"nullable"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when this result was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
 	// Set by the server to the subagent thread this result was routed to. Omitted when
 	// it was routed to the primary thread.
@@ -2490,8 +2499,10 @@ type BetaSessionNewParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// A hard spend ceiling. The session stops issuing new model requests once the
-	// tracked list cost reaches `max_list_cost`.
+	// Enforced spend ceiling for the session. Omit to create an uncapped session.
+	// Every model the session can run — the agent's model and each callable agent's
+	// model — must have a public list price, or the request is rejected with reason
+	// `model_not_budgetable`.
 	Budget BetaManagedAgentsBudgetLimitParam `json:"budget,omitzero"`
 	// Initial events to send to the `session` at creation, processed in order.
 	// Supports `user.message` and `user.define_outcome` events. Maximum 50 events.
@@ -2830,12 +2841,18 @@ type BetaSessionUpdateParams struct {
 	// Metadata patch. Set a key to a string to upsert it, or to null to delete it.
 	// Omit the field to preserve.
 	Metadata map[string]string `json:"metadata,omitzero"`
-	// Mid-session agent configuration update. Only `tools` and `mcp_servers` are
-	// updatable. Full replacement: the provided array becomes the new value. To
-	// preserve existing entries, GET the session, modify the array, and POST it back.
+	// Agent configuration update. Only `tools` and `mcp_servers` are updatable
+	// mid-session. Only valid for sessions created from an agent or deployment
+	// reference. The session must not be running.
 	Agent BetaManagedAgentsSessionAgentUpdateParam `json:"agent,omitzero"`
-	// A hard spend ceiling. The session stops issuing new model requests once the
-	// tracked list cost reaches `max_list_cost`.
+	// Enforced spend ceiling for the session. Set an object to replace the budget of a
+	// session that was created with one, or `null` to remove it; omit to preserve. A
+	// budget cannot be added to a session created without one (rejected with reason
+	// `budget_create_only`), and a removed budget cannot be re-added. Allowed in any
+	// non-terminated status. Lowering `max_list_cost` to at or below the session's
+	// consumed list cost is rejected with reason `budget_not_raised`, and every model
+	// the session can run must have a public list price or the request is rejected
+	// with reason `model_not_budgetable`.
 	Budget BetaManagedAgentsBudgetLimitParam `json:"budget,omitzero"`
 	// Vault IDs (`vlt_*`) to attach to the session. Not yet supported; requests
 	// setting this field are rejected. Reserved for future use.

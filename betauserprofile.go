@@ -148,7 +148,7 @@ func (r *BetaUserProfileService) NewEnrollmentURL(ctx context.Context, userProfi
 type BetaUserProfile struct {
 	// Unique identifier for this user profile, prefixed `uprof_`.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When this user profile was created, in RFC 3339 format.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Arbitrary key-value metadata. Maximum 16 pairs, keys up to 64 chars, values up
 	// to 512 chars.
@@ -160,13 +160,12 @@ type BetaUserProfile struct {
 	//
 	// Any of "user_profile".
 	Type BetaUserProfileType `json:"type" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When this user profile was last modified, in RFC 3339 format. Trust-grant status
+	// changes also bump this timestamp.
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
-	// How the platform uses the API on behalf of the entity this profile represents.
-	// `application`: the platform sells a product that uses the API behind the scenes,
-	// and the profile represents an individual end-user of that product.
-	// `passthrough`: the platform resells raw inference, and the profile identifies
-	// the resold-to company.
+	// How the platform uses the API for this entity: `application` (default) or
+	// `passthrough`. Present under the `user-profiles-2026-08-18` and later beta
+	// headers.
 	//
 	// Any of "application", "passthrough".
 	AccessType BetaUserProfileAccessType `json:"access_type"`
@@ -174,11 +173,17 @@ type BetaUserProfile struct {
 	// `user-profiles-2026-03-24` and `user-profiles-2026-08-18` beta headers; under
 	// `user-profiles-2026-09-04` the value is `external_user_details.reference_id`.
 	ExternalID string `json:"external_id" api:"nullable"`
-	// Details about the entity this profile represents, as the platform states them.
-	// Anthropic does not verify them. Every field is present, `null` until the
-	// platform supplies a value.
+	// Details about the entity this profile represents, as the platform states them;
+	// not verified by Anthropic. Present under the `user-profiles-2026-09-04` beta
+	// header, with every field present and `null` until the platform supplies a value;
+	// the earlier beta headers serve `reference_id` as the top-level `external_id`,
+	// and `user-profiles-2026-08-18` serves `onboarded_at` as
+	// `external_user_onboarded_at`.
 	ExternalUserDetails BetaUserProfileExternalUserDetails `json:"external_user_details"`
-	// A timestamp in RFC 3339 format
+	// When the entity this profile represents opened its account with the platform, as
+	// stated by the platform, in RFC 3339 format (UTC). `null` until the platform
+	// supplies one. Present under the `user-profiles-2026-08-18` beta header; under
+	// `user-profiles-2026-09-04` the value is `external_user_details.onboarded_at`.
 	ExternalUserOnboardedAt time.Time `json:"external_user_onboarded_at" api:"nullable" format:"date-time"`
 	// Real-world name of the entity this profile represents (company or individual).
 	// For a company the platform resells Claude access to (`access_type`
@@ -215,11 +220,9 @@ const (
 	BetaUserProfileTypeUserProfile BetaUserProfileType = "user_profile"
 )
 
-// How the platform uses the API on behalf of the entity this profile represents.
-// `application`: the platform sells a product that uses the API behind the scenes,
-// and the profile represents an individual end-user of that product.
-// `passthrough`: the platform resells raw inference, and the profile identifies
-// the resold-to company.
+// How the platform uses the API for this entity: `application` (default) or
+// `passthrough`. Present under the `user-profiles-2026-08-18` and later beta
+// headers.
 type BetaUserProfileAccessType string
 
 const (
@@ -234,7 +237,7 @@ const (
 // A URL to give to the entity that a user profile represents, so that the entity
 // can enroll for a trust grant.
 type BetaUserProfileEnrollmentURL struct {
-	// A timestamp in RFC 3339 format
+	// When this enrollment URL expires, in RFC 3339 format.
 	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
 	// Object type. Always `enrollment_url`.
 	//
@@ -269,11 +272,8 @@ const (
 // Anthropic does not verify them. Every field is present, `null` until the
 // platform supplies a value.
 type BetaUserProfileExternalUserDetails struct {
-	// The status of the entity's account on the platform, as the platform states it:
-	// `active`; `suspended`, when the platform has restricted the account and may
-	// restore it; or `blocked`, when the platform has barred it. It records the
-	// platform's decision only; the statuses in `trust_grants` are Anthropic's and do
-	// not follow it.
+	// The status of the entity's account on the platform: `active`, `suspended` or
+	// `blocked`. `null` until the platform supplies one.
 	//
 	// Any of "active", "suspended", "blocked".
 	AccountStatus BetaUserProfileExternalUserDetailsAccountStatus `json:"account_status" api:"required"`
@@ -283,15 +283,16 @@ type BetaUserProfileExternalUserDetails struct {
 	// The platform-computed hash of the entity's email address. `null` until the
 	// platform supplies one.
 	EmailHash string `json:"email_hash" api:"required"`
-	// What kind of entity the profile represents, as the platform states it:
-	// `individual`, `business`, `non_profit` or `government`.
+	// What kind of entity the profile represents: `individual`, `business`,
+	// `non_profit` or `government`. `null` until the platform supplies one.
 	//
 	// Any of "individual", "business", "non_profit", "government".
 	EntityType BetaUserProfileExternalUserDetailsEntityType `json:"entity_type" api:"required"`
 	// The platform-computed hash of the entity's name. `null` until the platform
 	// supplies one.
 	NameHash string `json:"name_hash" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When the entity opened its account with the platform, as stated by the platform,
+	// in RFC 3339 format (UTC). `null` until the platform supplies one.
 	OnboardedAt time.Time `json:"onboarded_at" api:"required" format:"date-time"`
 	// The platform's own reference for the entity. `null` until the platform supplies
 	// one.
@@ -316,11 +317,8 @@ func (r *BetaUserProfileExternalUserDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The status of the entity's account on the platform, as the platform states it:
-// `active`; `suspended`, when the platform has restricted the account and may
-// restore it; or `blocked`, when the platform has barred it. It records the
-// platform's decision only; the statuses in `trust_grants` are Anthropic's and do
-// not follow it.
+// The status of the entity's account on the platform: `active`, `suspended` or
+// `blocked`. `null` until the platform supplies one.
 type BetaUserProfileExternalUserDetailsAccountStatus string
 
 const (
@@ -335,8 +333,8 @@ const (
 	BetaUserProfileExternalUserDetailsAccountStatusBlocked BetaUserProfileExternalUserDetailsAccountStatus = "blocked"
 )
 
-// What kind of entity the profile represents, as the platform states it:
-// `individual`, `business`, `non_profit` or `government`.
+// What kind of entity the profile represents: `individual`, `business`,
+// `non_profit` or `government`. `null` until the platform supplies one.
 type BetaUserProfileExternalUserDetailsEntityType string
 
 const (
@@ -362,18 +360,18 @@ type BetaUserProfileExternalUserDetailsParams struct {
 	// end-user's row in the platform's database. Not interpreted by Anthropic and not
 	// enforced unique. 1 to 255 characters.
 	ReferenceID param.Opt[string] `json:"reference_id,omitzero"`
-	// A timestamp in RFC 3339 format
+	// When the entity opened its account with the platform, in RFC 3339 format: for an
+	// `application` profile, when the end-user signed up; for a `passthrough` profile,
+	// when the company became the platform's customer. Must be a complete timestamp no
+	// more than 1 minute in the future.
 	OnboardedAt param.Opt[time.Time] `json:"onboarded_at,omitzero" format:"date-time"`
-	// The status of the entity's account on the platform, as the platform states it:
-	// `active`; `suspended`, when the platform has restricted the account and may
-	// restore it; or `blocked`, when the platform has barred it. It records the
-	// platform's decision only; the statuses in `trust_grants` are Anthropic's and do
-	// not follow it.
+	// The status of the entity's account on the platform: `active`, `suspended` or
+	// `blocked`.
 	//
 	// Any of "active", "suspended", "blocked".
 	AccountStatus BetaUserProfileExternalUserDetailsParamsAccountStatus `json:"account_status,omitzero"`
-	// What kind of entity the profile represents, as the platform states it:
-	// `individual`, `business`, `non_profit` or `government`.
+	// What kind of entity the profile represents: `individual`, `business`,
+	// `non_profit` or `government`.
 	//
 	// Any of "individual", "business", "non_profit", "government".
 	EntityType BetaUserProfileExternalUserDetailsParamsEntityType `json:"entity_type,omitzero"`
@@ -388,11 +386,8 @@ func (r *BetaUserProfileExternalUserDetailsParams) UnmarshalJSON(data []byte) er
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The status of the entity's account on the platform, as the platform states it:
-// `active`; `suspended`, when the platform has restricted the account and may
-// restore it; or `blocked`, when the platform has barred it. It records the
-// platform's decision only; the statuses in `trust_grants` are Anthropic's and do
-// not follow it.
+// The status of the entity's account on the platform: `active`, `suspended` or
+// `blocked`.
 type BetaUserProfileExternalUserDetailsParamsAccountStatus string
 
 const (
@@ -407,8 +402,8 @@ const (
 	BetaUserProfileExternalUserDetailsParamsAccountStatusBlocked BetaUserProfileExternalUserDetailsParamsAccountStatus = "blocked"
 )
 
-// What kind of entity the profile represents, as the platform states it:
-// `individual`, `business`, `non_profit` or `government`.
+// What kind of entity the profile represents: `individual`, `business`,
+// `non_profit` or `government`.
 type BetaUserProfileExternalUserDetailsParamsEntityType string
 
 const (
@@ -459,7 +454,12 @@ type BetaUserProfileNewParams struct {
 	// (`access_type` `passthrough`), that company's name where known. Maximum 255
 	// characters.
 	Name param.Opt[string] `json:"name,omitzero"`
-	// A timestamp in RFC 3339 format
+	// When the entity this profile represents opened its account with the platform, in
+	// RFC 3339 format: for an `application` profile, when the end-user signed up; for
+	// a `passthrough` profile, when the company became the platform's customer. Must
+	// be a complete timestamp no more than 1 minute in the future. Optional. Accepted
+	// under the `user-profiles-2026-08-18` beta header; under
+	// `user-profiles-2026-09-04` send `external_user_details.onboarded_at` instead.
 	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
@@ -468,11 +468,10 @@ type BetaUserProfileNewParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// How the platform uses the API on behalf of the entity this profile represents.
-	// `application`: the platform sells a product that uses the API behind the scenes,
-	// and the profile represents an individual end-user of that product.
-	// `passthrough`: the platform resells raw inference, and the profile identifies
-	// the resold-to company.
+	// How the platform uses the API for this entity. `application` (default): the
+	// profile represents an individual end-user of the platform's product.
+	// `passthrough`: the profile identifies a company the platform resells Claude
+	// access to.
 	//
 	// Any of "application", "passthrough".
 	AccessType BetaUserProfileNewParamsAccessType `json:"access_type,omitzero"`
@@ -497,11 +496,10 @@ func (r *BetaUserProfileNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// How the platform uses the API on behalf of the entity this profile represents.
-// `application`: the platform sells a product that uses the API behind the scenes,
-// and the profile represents an individual end-user of that product.
-// `passthrough`: the platform resells raw inference, and the profile identifies
-// the resold-to company.
+// How the platform uses the API for this entity. `application` (default): the
+// profile represents an individual end-user of the platform's product.
+// `passthrough`: the profile identifies a company the platform resells Claude
+// access to.
 type BetaUserProfileNewParamsAccessType string
 
 const (
@@ -535,7 +533,11 @@ type BetaUserProfileUpdateParams struct {
 	// If present, replaces the stored name. Omit to leave unchanged. Maximum 255
 	// characters.
 	Name param.Opt[string] `json:"name,omitzero"`
-	// A timestamp in RFC 3339 format
+	// If present, replaces the stored account creation time. Omit to leave unchanged;
+	// once set, the value cannot be cleared and `null` is rejected. Must be a complete
+	// RFC 3339 timestamp no more than 1 minute in the future. Accepted under the
+	// `user-profiles-2026-08-18` beta header; under `user-profiles-2026-09-04` send
+	// `external_user_details.onboarded_at` instead.
 	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
@@ -544,11 +546,7 @@ type BetaUserProfileUpdateParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// How the platform uses the API on behalf of the entity this profile represents.
-	// `application`: the platform sells a product that uses the API behind the scenes,
-	// and the profile represents an individual end-user of that product.
-	// `passthrough`: the platform resells raw inference, and the profile identifies
-	// the resold-to company.
+	// If present, replaces the stored access type. Omit to leave unchanged.
 	//
 	// Any of "application", "passthrough".
 	AccessType BetaUserProfileUpdateParamsAccessType `json:"access_type,omitzero"`
@@ -575,11 +573,7 @@ func (r *BetaUserProfileUpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// How the platform uses the API on behalf of the entity this profile represents.
-// `application`: the platform sells a product that uses the API behind the scenes,
-// and the profile represents an individual end-user of that product.
-// `passthrough`: the platform resells raw inference, and the profile identifies
-// the resold-to company.
+// If present, replaces the stored access type. Omit to leave unchanged.
 type BetaUserProfileUpdateParamsAccessType string
 
 const (

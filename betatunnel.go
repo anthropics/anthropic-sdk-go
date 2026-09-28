@@ -211,9 +211,10 @@ func (r *BetaTunnelService) RotateToken(ctx context.Context, tunnelID string, pa
 type BetaTunnel struct {
 	// Unique identifier for the tunnel, prefixed with `tnl_`.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// RFC 3339 datetime string indicating when the tunnel was archived. Null if it is
+	// not archived.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
-	// A timestamp in RFC 3339 format
+	// RFC 3339 datetime string indicating when the tunnel was created.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Human-readable name for the tunnel (1-255 characters). Null if unset.
 	DisplayName string `json:"display_name" api:"required"`

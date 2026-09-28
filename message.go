@@ -1332,11 +1332,8 @@ func (r *BrowserSwitchTabConfigParam) UnmarshalJSON(data []byte) error {
 type BrowserToolset20260801Param struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Per-member configuration for `browser_toolset_20260801`: one optional field per
-	// member tool, keyed by the member name — the same name the member's `tool_use`
-	// blocks carry. Every member is an accepted key, and a member's defaults apply
-	// wherever its key is absent. Unknown keys are rejected: the field set is this
-	// toolset version's complete member set.
+	// Sparse per-member overrides, keyed by member name. Absent, null, and {} are
+	// equivalent; a member's defaults apply wherever its key is absent.
 	Configs BrowserToolsetConfigsParam `json:"configs,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "browser_toolset_20260801".
@@ -1579,6 +1576,218 @@ type CacheCreation struct {
 // Returns the unmodified JSON received from the API
 func (r CacheCreation) RawJSON() string { return r.JSON.raw }
 func (r *CacheCreation) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CacheMissMessagesChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                    `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.MessagesChanged `json:"type" default:"messages_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissMessagesChanged) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissMessagesChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CacheMissModelChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                 `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.ModelChanged `json:"type" default:"model_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissModelChanged) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissModelChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CacheMissPreviousMessageNotFound struct {
+	Type constant.PreviousMessageNotFound `json:"type" default:"previous_message_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissPreviousMessageNotFound) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissPreviousMessageNotFound) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// CacheMissReasonUnion contains all possible properties and values from
+// [CacheMissModelChanged], [CacheMissSystemChanged], [CacheMissToolsChanged],
+// [CacheMissMessagesChanged], [CacheMissPreviousMessageNotFound],
+// [CacheMissUnavailable].
+//
+// Use the [CacheMissReasonUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type CacheMissReasonUnion struct {
+	CacheMissedInputTokens int64 `json:"cache_missed_input_tokens"`
+	// Any of "model_changed", "system_changed", "tools_changed", "messages_changed",
+	// "previous_message_not_found", "unavailable".
+	Type string `json:"type"`
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// anyCacheMissReason is implemented by each variant of [CacheMissReasonUnion] to
+// add type safety for the return type of [CacheMissReasonUnion.AsAny]
+type anyCacheMissReason interface {
+	implCacheMissReasonUnion()
+}
+
+func (CacheMissModelChanged) implCacheMissReasonUnion()            {}
+func (CacheMissSystemChanged) implCacheMissReasonUnion()           {}
+func (CacheMissToolsChanged) implCacheMissReasonUnion()            {}
+func (CacheMissMessagesChanged) implCacheMissReasonUnion()         {}
+func (CacheMissPreviousMessageNotFound) implCacheMissReasonUnion() {}
+func (CacheMissUnavailable) implCacheMissReasonUnion()             {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := CacheMissReasonUnion.AsAny().(type) {
+//	case anthropic.CacheMissModelChanged:
+//	case anthropic.CacheMissSystemChanged:
+//	case anthropic.CacheMissToolsChanged:
+//	case anthropic.CacheMissMessagesChanged:
+//	case anthropic.CacheMissPreviousMessageNotFound:
+//	case anthropic.CacheMissUnavailable:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u CacheMissReasonUnion) AsAny() anyCacheMissReason {
+	switch u.Type {
+	case "model_changed":
+		return u.AsModelChanged()
+	case "system_changed":
+		return u.AsSystemChanged()
+	case "tools_changed":
+		return u.AsToolsChanged()
+	case "messages_changed":
+		return u.AsMessagesChanged()
+	case "previous_message_not_found":
+		return u.AsPreviousMessageNotFound()
+	case "unavailable":
+		return u.AsUnavailable()
+	}
+	return nil
+}
+
+func (u CacheMissReasonUnion) AsModelChanged() (v CacheMissModelChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CacheMissReasonUnion) AsSystemChanged() (v CacheMissSystemChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CacheMissReasonUnion) AsToolsChanged() (v CacheMissToolsChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CacheMissReasonUnion) AsMessagesChanged() (v CacheMissMessagesChanged) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CacheMissReasonUnion) AsPreviousMessageNotFound() (v CacheMissPreviousMessageNotFound) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u CacheMissReasonUnion) AsUnavailable() (v CacheMissUnavailable) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u CacheMissReasonUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *CacheMissReasonUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CacheMissSystemChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                  `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.SystemChanged `json:"type" default:"system_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissSystemChanged) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissSystemChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CacheMissToolsChanged struct {
+	// Approximate number of input tokens that would have been read from cache had the
+	// prefix matched the previous request.
+	CacheMissedInputTokens int64                 `json:"cache_missed_input_tokens" api:"required"`
+	Type                   constant.ToolsChanged `json:"type" default:"tools_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissedInputTokens respjson.Field
+		Type                   respjson.Field
+		ExtraFields            map[string]respjson.Field
+		raw                    string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissToolsChanged) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissToolsChanged) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type CacheMissUnavailable struct {
+	Type constant.Unavailable `json:"type" default:"unavailable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CacheMissUnavailable) RawJSON() string { return r.JSON.raw }
+func (r *CacheMissUnavailable) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2780,11 +2989,8 @@ func (r *ComputerScrollConfigParam) UnmarshalJSON(data []byte) error {
 type ComputerToolset20260801Param struct {
 	// Create a cache control breakpoint at this content block.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
-	// Per-member configuration for `computer_toolset_20260801`: one optional field per
-	// member tool, keyed by the member name — the same name the member's `tool_use`
-	// blocks carry. Every member is an accepted key, and a member's defaults apply
-	// wherever its key is absent. Unknown keys are rejected: the field set is this
-	// toolset version's complete member set.
+	// Sparse per-member overrides, keyed by member name. Absent, null, and {} are
+	// equivalent; a member's defaults apply wherever its key is absent.
 	Configs ComputerToolsetConfigsParam `json:"configs,omitzero"`
 	// This field can be elided, and will marshal its zero value as
 	// "computer_toolset_20260801".
@@ -4563,6 +4769,48 @@ func init() {
 	)
 }
 
+// Request-level diagnostics: why the prompt cache could not fully reuse the prefix
+// of the request named by `diagnostics.previous_message_id`.
+type Diagnostics struct {
+	// Explains why the prompt cache could not fully reuse the prefix from the request
+	// identified by `diagnostics.previous_message_id`. `null` means diagnosis is still
+	// pending — the response was serialized before the background comparison
+	// completed.
+	CacheMissReason CacheMissReasonUnion `json:"cache_miss_reason" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CacheMissReason respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r Diagnostics) RawJSON() string { return r.JSON.raw }
+func (r *Diagnostics) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Request-level diagnostics. Currently carries the previous response id for
+// prompt-cache divergence reporting.
+type DiagnosticsParam struct {
+	// The `id` (`msg_...`) from this client's previous /v1/messages response. The
+	// server compares that request's prompt fingerprint against this one and returns
+	// `diagnostics.cache_miss_reason` when the prompt-cache prefix could not be
+	// reused. Pass `null` on the first turn to opt in without a prior message to
+	// compare.
+	PreviousMessageID param.Opt[string] `json:"previous_message_id,omitzero"`
+	paramObj
+}
+
+func (r DiagnosticsParam) MarshalJSON() (data []byte, err error) {
+	type shadow DiagnosticsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *DiagnosticsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Tool invocation directly from the model.
 type DirectCaller struct {
 	Type constant.Direct `json:"type" default:"direct"`
@@ -5122,8 +5370,9 @@ type Message struct {
 	//
 	// The format and length of IDs may change over time.
 	ID string `json:"id" api:"required"`
-	// Information about the container used in the request (for the code execution
-	// tool)
+	// Information about the container used in this request.
+	//
+	// This will be non-null if a container tool (e.g. code execution) was used.
 	Container Container `json:"container" api:"required"`
 	// Content generated by the model.
 	//
@@ -5160,6 +5409,9 @@ type Message struct {
 	// [{ "type": "text", "text": "B)" }]
 	// ```
 	Content []ContentBlockUnion `json:"content" api:"required"`
+	// Request-level diagnostics. `null` when the request did not supply `diagnostics`,
+	// or when it did and no prompt-cache divergence was detected.
+	Diagnostics Diagnostics `json:"diagnostics" api:"required"`
 	// The model that will complete your prompt.
 	//
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
@@ -5169,7 +5421,9 @@ type Message struct {
 	//
 	// This will always be `"assistant"`.
 	Role constant.Assistant `json:"role" default:"assistant"`
-	// Structured information about a refusal.
+	// Structured information about why model output stopped.
+	//
+	// This is `null` when the `stop_reason` has no additional detail to report.
 	StopDetails RefusalStopDetails `json:"stop_details" api:"required"`
 	// The reason that we stopped.
 	//
@@ -5221,6 +5475,7 @@ type Message struct {
 		ID           respjson.Field
 		Container    respjson.Field
 		Content      respjson.Field
+		Diagnostics  respjson.Field
 		Model        respjson.Field
 		Role         respjson.Field
 		StopDetails  respjson.Field
@@ -6913,6 +7168,8 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model = string
 
 const (
+	// Efficient model for coding and agents
+	ModelClaudeSonnet5_5 Model = "claude-sonnet-5-5"
 	// Frontier intelligence for ambitious tasks across coding, scientific discovery,
 	// and enterprise workflows
 	ModelClaudeFable5_1 Model = "claude-fable-5-1"
@@ -6921,7 +7178,7 @@ const (
 	// Our most capable model for cybersecurity and biology research, available through
 	// trusted access programs
 	ModelClaudeMythos5_1 Model = "claude-mythos-5-1"
-	// High-performance model for coding and agents
+	// Efficient model for coding and agents
 	ModelClaudeSonnet5 Model = "claude-sonnet-5"
 	// Next generation of intelligence for the hardest knowledge work and coding
 	// problems
@@ -6960,7 +7217,10 @@ const (
 )
 
 type OutputConfigParam struct {
-	// All possible effort levels.
+	// How much effort the model should put into its response. Higher effort levels may
+	// result in more thorough analysis but take longer.
+	//
+	// Valid values are `low`, `medium`, `high`, `xhigh`, or `max`.
 	//
 	// Any of "low", "medium", "high", "xhigh", "max".
 	Effort OutputConfigEffort `json:"effort,omitzero"`
@@ -6978,7 +7238,10 @@ func (r *OutputConfigParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// All possible effort levels.
+// How much effort the model should put into its response. Higher effort levels may
+// result in more thorough analysis but take longer.
+//
+// Valid values are `low`, `medium`, `high`, `xhigh`, or `max`.
 type OutputConfigEffort string
 
 const (
@@ -7600,10 +7863,13 @@ func (r *MessageDeltaEvent) UnmarshalJSON(data []byte) error {
 }
 
 type MessageDeltaEventDelta struct {
-	// Information about the container used in the request (for the code execution
-	// tool)
+	// Information about the container used in this request.
+	//
+	// This will be non-null if a container tool (e.g. code execution) was used.
 	Container Container `json:"container" api:"required"`
-	// Structured information about a refusal.
+	// Structured information about why model output stopped.
+	//
+	// This is `null` when the `stop_reason` has no additional detail to report.
 	StopDetails RefusalStopDetails `json:"stop_details" api:"required"`
 	// Any of "end_turn", "max_tokens", "stop_sequence", "tool_use", "pause_turn",
 	// "refusal", "model_context_window_exceeded".
@@ -7866,7 +8132,9 @@ func (r *RedactedThinkingBlockParam) UnmarshalJSON(data []byte) error {
 
 // Structured information about a refusal.
 type RefusalStopDetails struct {
-	// The policy category that triggered a refusal.
+	// The policy category that triggered the refusal.
+	//
+	// `null` when the refusal doesn't map to a named category.
 	//
 	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction", "general_harms".
 	Category RefusalStopDetailsCategory `json:"category" api:"required"`
@@ -7892,7 +8160,9 @@ func (r *RefusalStopDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The policy category that triggered a refusal.
+// The policy category that triggered the refusal.
+//
+// `null` when the refusal doesn't map to a named category.
 type RefusalStopDetailsCategory string
 
 const (
@@ -9260,6 +9530,27 @@ const (
 	ThinkingConfigAdaptiveDisplayOmitted    ThinkingConfigAdaptiveDisplay = "omitted"
 )
 
+func NewThinkingConfigBetweenToolsParam() ThinkingConfigBetweenToolsParam {
+	return ThinkingConfigBetweenToolsParam{
+		Type: "between_tools",
+	}
+}
+
+// This struct has a constant value, construct it with
+// [NewThinkingConfigBetweenToolsParam].
+type ThinkingConfigBetweenToolsParam struct {
+	Type constant.BetweenTools `json:"type" default:"between_tools"`
+	paramObj
+}
+
+func (r ThinkingConfigBetweenToolsParam) MarshalJSON() (data []byte, err error) {
+	type shadow ThinkingConfigBetweenToolsParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ThinkingConfigBetweenToolsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 func NewThinkingConfigDisabledParam() ThinkingConfigDisabledParam {
 	return ThinkingConfigDisabledParam{
 		Type: "disabled",
@@ -9334,14 +9625,15 @@ func ThinkingConfigParamOfEnabled(budgetTokens int64) ThinkingConfigParamUnion {
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type ThinkingConfigParamUnion struct {
-	OfEnabled  *ThinkingConfigEnabledParam  `json:",omitzero,inline"`
-	OfDisabled *ThinkingConfigDisabledParam `json:",omitzero,inline"`
-	OfAdaptive *ThinkingConfigAdaptiveParam `json:",omitzero,inline"`
+	OfEnabled      *ThinkingConfigEnabledParam      `json:",omitzero,inline"`
+	OfDisabled     *ThinkingConfigDisabledParam     `json:",omitzero,inline"`
+	OfBetweenTools *ThinkingConfigBetweenToolsParam `json:",omitzero,inline"`
+	OfAdaptive     *ThinkingConfigAdaptiveParam     `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u ThinkingConfigParamUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled, u.OfAdaptive)
+	return param.MarshalUnion(u, u.OfEnabled, u.OfDisabled, u.OfBetweenTools, u.OfAdaptive)
 }
 func (u *ThinkingConfigParamUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
@@ -9352,6 +9644,8 @@ func (u *ThinkingConfigParamUnion) asAny() any {
 		return u.OfEnabled
 	} else if !param.IsOmitted(u.OfDisabled) {
 		return u.OfDisabled
+	} else if !param.IsOmitted(u.OfBetweenTools) {
+		return u.OfBetweenTools
 	} else if !param.IsOmitted(u.OfAdaptive) {
 		return u.OfAdaptive
 	}
@@ -9371,6 +9665,8 @@ func (u ThinkingConfigParamUnion) GetType() *string {
 	if vt := u.OfEnabled; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfBetweenTools; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAdaptive; vt != nil {
 		return (*string)(&vt.Type)
@@ -9393,6 +9689,7 @@ func init() {
 		"type",
 		apijson.Discriminator[ThinkingConfigEnabledParam]("enabled"),
 		apijson.Discriminator[ThinkingConfigDisabledParam]("disabled"),
+		apijson.Discriminator[ThinkingConfigBetweenToolsParam]("between_tools"),
 		apijson.Discriminator[ThinkingConfigAdaptiveParam]("adaptive"),
 	)
 }
@@ -12351,12 +12648,8 @@ type WebFetchTool20250910Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations CitationsConfigParam `json:"citations,omitzero"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources WebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
@@ -12402,12 +12695,8 @@ type WebFetchTool20260209Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations CitationsConfigParam `json:"citations,omitzero"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources WebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
@@ -12459,12 +12748,8 @@ type WebFetchTool20260309Param struct {
 	// Citations configuration for fetched documents. Citations are disabled by
 	// default.
 	Citations CitationsConfigParam `json:"citations,omitzero"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources WebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
@@ -12523,12 +12808,8 @@ type WebFetchTool20260318Param struct {
 	//
 	// Any of "full", "excluded".
 	ResponseInclusion WebFetchTool20260318ResponseInclusion `json:"response_inclusion,omitzero"`
-	// Which sources contribute to the set of URLs web fetch may fetch.
-	//
-	// Each key is a tagged variant: `user_input` is `all` or `none`; the two tool
-	// filters are `all`, `none`, `only` (only the named tools' results) or `except`
-	// (every result but the named tools'). A named tool must be declared in this
-	// request's `tools[]`.
+	// Which sources contribute to the set of URLs the tool may fetch. Omitted means
+	// every source.
 	URLSources WebFetchURLSourcesParam `json:"url_sources,omitzero"`
 	// Name of the tool.
 	//
@@ -13827,6 +14108,10 @@ type MessageNewParams struct {
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Request-level diagnostics. Supply `previous_message_id` to have the response
+	// include `diagnostics.cache_miss_reason` explaining any prompt-cache divergence
+	// from that prior request.
+	Diagnostics DiagnosticsParam `json:"diagnostics,omitzero"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
 	// Configuration options for the model's output, such as the output format.

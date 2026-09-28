@@ -124,27 +124,30 @@ func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string,
 type BetaManagedAgentsSessionThread struct {
 	// Unique identifier for this thread.
 	ID string `json:"id" api:"required"`
-	// The resolved agent a `session_thread` runs.
+	// Resolved agent definition for this thread. Snapshot of the agent at thread
+	// creation time.
 	Agent BetaManagedAgentsSessionThreadAgentUnion `json:"agent" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When the thread was archived. Null if not archived.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
-	// A timestamp in RFC 3339 format
+	// When the thread was created.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Parent thread that spawned this thread. Null for the primary thread.
 	ParentThreadID string `json:"parent_thread_id" api:"required"`
 	// The session this thread belongs to.
 	SessionID string `json:"session_id" api:"required"`
-	// Timing statistics for a session thread.
+	// Timing statistics for this thread. Null until the thread's first status
+	// transition.
 	Stats BetaManagedAgentsSessionThreadStats `json:"stats" api:"required"`
-	// SessionThreadStatus enum
+	// Current execution status of the thread.
 	//
 	// Any of "running", "idle", "rescheduling", "terminated".
 	Status BetaManagedAgentsSessionThreadStatus `json:"status" api:"required"`
 	// Any of "session_thread".
 	Type BetaManagedAgentsSessionThreadType `json:"type" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When the thread was last updated.
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
-	// Cumulative token usage for a session thread across all turns.
+	// Cumulative token usage for this thread. Null until the thread's first idle
+	// transition.
 	Usage BetaManagedAgentsSessionThreadUsage `json:"usage" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -342,17 +345,23 @@ type BetaManagedAgentsSessionThreadUsage struct {
 	// `stats.active_seconds`; surfaced here so a thread's usage carries every quantity
 	// its cost is priced on.
 	ActiveSeconds float64 `json:"active_seconds"`
-	// Prompt-cache creation token usage broken down by cache lifetime.
+	// Tokens used to create prompt cache entries, broken down by cache TTL.
 	CacheCreation BetaManagedAgentsCacheCreationUsage `json:"cache_creation"`
 	// Total tokens read from prompt cache.
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens"`
 	// Total input tokens consumed across all turns.
 	InputTokens int64 `json:"input_tokens"`
-	// A monetary amount in a specific currency.
+	// Cumulative list cost of this thread across all turns, priced at public list
+	// rates. Absent until cost tracking is available for the thread. Each figure is
+	// rounded to the nearest cent independently and the session's aggregate
+	// `usage.list_cost` additionally includes session runtime, so per-thread costs do
+	// not sum exactly to the session figure; the session figure is authoritative and
+	// is what a budget is enforced against.
 	ListCost BetaMonetaryAmount `json:"list_cost" api:"nullable"`
 	// Total output tokens generated across all turns.
 	OutputTokens int64 `json:"output_tokens"`
-	// Cumulative count of server-executed tool invocations, broken down by tool.
+	// Cumulative server-executed tool usage across all turns of this thread. Absent
+	// until server-tool tracking is available for the thread.
 	ServerToolUse BetaManagedAgentsServerToolUsage `json:"server_tool_use" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {

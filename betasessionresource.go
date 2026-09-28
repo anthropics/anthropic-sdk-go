@@ -334,7 +334,8 @@ type BetaManagedAgentsMemoryStoreResource struct {
 	MemoryStoreID string `json:"memory_store_id" api:"required"`
 	// Any of "memory_store".
 	Type BetaManagedAgentsMemoryStoreResourceType `json:"type" api:"required"`
-	// Access mode for an attached memory store.
+	// Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts
+	// the store as a read-only filesystem.
 	//
 	// Any of "read_write", "read_only".
 	Access BetaManagedAgentsMemoryStoreResourceAccess `json:"access" api:"nullable"`
@@ -376,7 +377,8 @@ const (
 	BetaManagedAgentsMemoryStoreResourceTypeMemoryStore BetaManagedAgentsMemoryStoreResourceType = "memory_store"
 )
 
-// Access mode for an attached memory store.
+// Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts
+// the store as a read-only filesystem.
 type BetaManagedAgentsMemoryStoreResourceAccess string
 
 const (
@@ -774,7 +776,7 @@ type BetaSessionResourceDeleteParams struct {
 }
 
 type BetaSessionResourceAddParams struct {
-	// Mount a file uploaded via the Files API into the session.
+	// Request parameters for adding a resource to a session.
 	BetaManagedAgentsFileResourceParams BetaManagedAgentsFileResourceParams
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).

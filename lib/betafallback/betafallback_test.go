@@ -320,6 +320,48 @@ func TestRefusalFallbackMiddlewareNullOverrideUnsetsTheOriginalField(t *testing.
 	assert.Equal(t, 0.5, retry["temperature"])
 }
 
+// betweenToolsParams spells the thinking config as raw JSON so the tests do
+// not pin the variant's generated type name, which is still settling.
+func betweenToolsParams() anthropic.BetaMessageNewParams {
+	params := fallbackTestParams
+	params.Thinking = param.Override[anthropic.BetaThinkingConfigParamUnion](json.RawMessage(`{"type":"between_tools"}`))
+	return params
+}
+
+func TestRefusalFallbackMiddlewareDegradesBetweenToolsThinkingToDisabled(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{refusalResponse("primary-model", "credit-token"), messageResponse("fallback-model")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
+		),
+	)
+
+	_, err := client.Beta.Messages.New(context.Background(), betweenToolsParams())
+	require.NoError(t, err)
+
+	require.Len(t, transport.bodies, 2)
+	assert.Equal(t, map[string]any{"type": "between_tools"}, transport.bodies[0]["thinking"])
+	assert.Equal(t, map[string]any{"type": "disabled"}, transport.bodies[1]["thinking"])
+}
+
+func TestRefusalFallbackMiddlewareFallbackThinkingOverridesBetweenTools(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{refusalResponse("primary-model", "credit-token"), messageResponse("fallback-model")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{
+				Model:    "fallback-model",
+				Thinking: param.Override[anthropic.BetaFallbackParamThinkingUnion](json.RawMessage(`{"type":"between_tools"}`)),
+			}},
+		),
+	)
+
+	_, err := client.Beta.Messages.New(context.Background(), betweenToolsParams())
+	require.NoError(t, err)
+
+	require.Len(t, transport.bodies, 2)
+	assert.Equal(t, map[string]any{"type": "between_tools"}, transport.bodies[1]["thinking"])
+}
+
 func TestRefusalFallbackMiddlewareEachHopPatchesTheOriginalParams(t *testing.T) {
 	client, transport := fallbackTestClient(t,
 		[]string{

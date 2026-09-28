@@ -210,9 +210,9 @@ func (r *BetaVaultCredentialService) MCPOAuthValidate(ctx context.Context, crede
 type BetaManagedAgentsCredential struct {
 	// Unique identifier for the credential.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When the credential was archived. Null if not archived.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
-	// Authentication details for a credential.
+	// Authentication configuration for this credential.
 	Auth BetaManagedAgentsCredentialAuthUnion `json:"auth" api:"required"`
 	// A timestamp in RFC 3339 format
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
@@ -412,17 +412,18 @@ type BetaManagedAgentsCredentialValidation struct {
 	CredentialID string `json:"credential_id" api:"required"`
 	// Whether the credential has a refresh token configured.
 	HasRefreshToken bool `json:"has_refresh_token" api:"required"`
-	// The failing step of an MCP validation probe.
+	// Details of the failing MCP probe step. Null when the probe succeeded.
 	MCPProbe BetaManagedAgentsMCPProbe `json:"mcp_probe" api:"required"`
-	// Outcome of a refresh-token exchange attempted during credential validation.
+	// Details of the refresh-token exchange attempted on a 401. Null when no refresh
+	// was attempted.
 	Refresh BetaManagedAgentsRefreshObject `json:"refresh" api:"required"`
-	// Overall verdict of a credential validation probe.
+	// Overall verdict of the validation probe.
 	//
 	// Any of "valid", "invalid", "unknown".
 	Status BetaManagedAgentsCredentialValidationStatus `json:"status" api:"required"`
 	// Any of "vault_credential_validation".
 	Type BetaManagedAgentsCredentialValidationType `json:"type" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When the validation probe was performed.
 	ValidatedAt time.Time `json:"validated_at" api:"required" format:"date-time"`
 	// Identifier of the vault containing the credential.
 	VaultID string `json:"vault_id" api:"required"`
@@ -781,7 +782,7 @@ type BetaManagedAgentsMCPOAuthAuthResponse struct {
 	Type BetaManagedAgentsMCPOAuthAuthResponseType `json:"type" api:"required"`
 	// A timestamp in RFC 3339 format
 	ExpiresAt time.Time `json:"expires_at" api:"nullable" format:"date-time"`
-	// OAuth refresh token configuration returned in credential responses.
+	// Refresh token configuration, if the credential supports token refresh.
 	Refresh BetaManagedAgentsMCPOAuthRefreshResponse `json:"refresh" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -818,7 +819,7 @@ type BetaManagedAgentsMCPOAuthCreateParams struct {
 	Type BetaManagedAgentsMCPOAuthCreateParamsType `json:"type,omitzero" api:"required"`
 	// A timestamp in RFC 3339 format
 	ExpiresAt param.Opt[time.Time] `json:"expires_at,omitzero" format:"date-time"`
-	// OAuth refresh token parameters for creating a credential with refresh support.
+	// Refresh token configuration, if the credential supports token refresh.
 	Refresh BetaManagedAgentsMCPOAuthRefreshParams `json:"refresh,omitzero"`
 	paramObj
 }
@@ -1113,7 +1114,7 @@ type BetaManagedAgentsMCPOAuthUpdateParams struct {
 	AccessToken param.Opt[string] `json:"access_token,omitzero"`
 	// A timestamp in RFC 3339 format
 	ExpiresAt param.Opt[time.Time] `json:"expires_at,omitzero" format:"date-time"`
-	// Parameters for updating OAuth refresh token configuration.
+	// Updated refresh token configuration.
 	Refresh BetaManagedAgentsMCPOAuthRefreshUpdateParams `json:"refresh,omitzero"`
 	paramObj
 }
@@ -1134,7 +1135,8 @@ const (
 
 // The failing step of an MCP validation probe.
 type BetaManagedAgentsMCPProbe struct {
-	// An HTTP response captured during a credential validation probe.
+	// The captured HTTP error response. Null when no HTTP response was received
+	// (timeout, DNS, TLS).
 	HTTPResponse BetaManagedAgentsRefreshHTTPResponse `json:"http_response" api:"required"`
 	// The MCP method that failed (for example `initialize` or `tools/list`).
 	Method string `json:"method" api:"required"`
@@ -1182,9 +1184,10 @@ func (r *BetaManagedAgentsRefreshHTTPResponse) UnmarshalJSON(data []byte) error 
 
 // Outcome of a refresh-token exchange attempted during credential validation.
 type BetaManagedAgentsRefreshObject struct {
-	// An HTTP response captured during a credential validation probe.
+	// The captured HTTP error response from the token endpoint. Populated only when
+	// `status` is `failed`.
 	HTTPResponse BetaManagedAgentsRefreshHTTPResponse `json:"http_response" api:"required"`
-	// Outcome of a refresh-token exchange attempted during credential validation.
+	// Outcome of the refresh attempt.
 	//
 	// Any of "succeeded", "failed", "connect_error", "no_refresh_token".
 	Status BetaManagedAgentsRefreshObjectStatus `json:"status" api:"required"`
@@ -1203,7 +1206,7 @@ func (r *BetaManagedAgentsRefreshObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Outcome of a refresh-token exchange attempted during credential validation.
+// Outcome of the refresh attempt.
 type BetaManagedAgentsRefreshObjectStatus string
 
 const (
@@ -1545,7 +1548,7 @@ const (
 )
 
 type BetaVaultCredentialNewParams struct {
-	// Authentication details for creating a credential.
+	// Authentication configuration for the credential.
 	Auth BetaVaultCredentialNewParamsAuthUnion `json:"auth,omitzero" api:"required"`
 	// Human-readable name for the credential. Up to 255 characters.
 	DisplayName param.Opt[string] `json:"display_name,omitzero"`
@@ -1725,7 +1728,8 @@ type BetaVaultCredentialUpdateParams struct {
 	// Metadata patch. Set a key to a string to upsert it, or to null to delete it.
 	// Omitted keys are preserved.
 	Metadata map[string]string `json:"metadata,omitzero"`
-	// Updated authentication details for a credential.
+	// Updated authentication configuration. The `type` is immutable; the variant sent
+	// must match the stored credential's type.
 	Auth BetaVaultCredentialUpdateParamsAuthUnion `json:"auth,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

@@ -27,9 +27,10 @@ func TestBetaOrganizationWorkspaceRateLimitListWithOptionalParams(t *testing.T) 
 		context.TODO(),
 		"workspace_id",
 		anthropic.BetaOrganizationWorkspaceRateLimitListParams{
-			GroupType: anthropic.BetaOrganizationWorkspaceRateLimitListParamsGroupTypeBatch,
-			Limit:     anthropic.Int(1),
-			Page:      anthropic.String("page"),
+			GroupType:        anthropic.BetaOrganizationWorkspaceRateLimitListParamsGroupTypeBatch,
+			IncludeInherited: anthropic.Bool(true),
+			Limit:            anthropic.Int(1),
+			Page:             anthropic.String("page"),
 		},
 	)
 	if err != nil {

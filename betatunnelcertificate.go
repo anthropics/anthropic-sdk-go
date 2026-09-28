@@ -172,11 +172,13 @@ func (r *BetaTunnelCertificateService) Archive(ctx context.Context, certificateI
 type BetaTunnelCertificate struct {
 	// Unique identifier for the certificate, prefixed with `tcrt_`.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// RFC 3339 datetime string indicating when the certificate was archived. Null if
+	// it is still in the trusted set.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
-	// A timestamp in RFC 3339 format
+	// RFC 3339 datetime string indicating when the certificate was registered.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// A timestamp in RFC 3339 format
+	// RFC 3339 datetime string indicating when the certificate expires, or `null` if
+	// it does not expire.
 	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
 	// Lowercase hex SHA-256 fingerprint of the certificate's DER encoding.
 	Fingerprint string `json:"fingerprint" api:"required"`

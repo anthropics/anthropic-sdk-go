@@ -657,10 +657,14 @@ type MessageBatchNewParamsRequestParams struct {
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
-	// Whether to incrementally stream the response using server-sent events.
+	// Whether to incrementally stream the response using server-sent events. When
+	// `true`, SDKs return a raw event stream.
 	//
-	// See [streaming](https://platform.claude.com/docs/en/build-with-claude/streaming)
-	// for details.
+	// In the TypeScript, Python and Ruby SDKs, the recommended way to stream is
+	// `messages.stream()`. It sets `stream` for you and accumulates the events into
+	// the final message. See
+	// [Streaming with SDKs](https://platform.claude.com/docs/en/build-with-claude/streaming#streaming-with-sdks)
+	// for an example in each language.
 	Stream param.Opt[bool] `json:"stream,omitzero"`
 	// Amount of randomness injected into the response.
 	//
@@ -702,6 +706,10 @@ type MessageBatchNewParamsRequestParams struct {
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
+	// Request-level diagnostics. Supply `previous_message_id` to have the response
+	// include `diagnostics.cache_miss_reason` explaining any prompt-cache divergence
+	// from that prior request.
+	Diagnostics DiagnosticsParam `json:"diagnostics,omitzero"`
 	// An object describing metadata about the request.
 	Metadata MetadataParam `json:"metadata,omitzero"`
 	// Configuration options for the model's output, such as the output format.

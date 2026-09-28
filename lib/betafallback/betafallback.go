@@ -93,7 +93,8 @@ func WithBetaFallbackState(state *BetaFallbackState) option.RequestOption {
 // from that attempt. output_config merges one level deep: its set subfields
 // override, its null subfields are removed, and the rest of the original
 // object survives (a null output_config removes it whole). Overrides never
-// carry from one hop to the next.
+// carry from one hop to the next. A between_tools thinking config is sent to
+// a fallback as disabled unless the fallback sets thinking itself.
 // An exhausted chain returns the last refusal as a normal response;
 // an empty chain disables the middleware.
 //
@@ -472,6 +473,10 @@ func mergeFallback(body map[string]json.RawMessage, fallback anthropic.BetaFallb
 			continue
 		}
 		merged[k] = v
+	}
+	// The fallback model may not accept between_tools thinking.
+	if _, set := overlay["thinking"]; !set && gjson.GetBytes(body["thinking"], "type").String() == "between_tools" {
+		merged["thinking"] = json.RawMessage(`{"type":"disabled"}`)
 	}
 
 	// A token cannot combine with server-side fallback params, and a stale

@@ -188,20 +188,24 @@ func (s *Stream[T]) Next() bool {
 	for s.decoder.Next() {
 		switch s.decoder.Event().Type {
 		case "completion":
-			var nxt T
-			s.err = json.Unmarshal(s.decoder.Event().Data, &nxt)
+			prev := s.cur
+			var zero T
+			s.cur = zero // decode in place; a fresh local would escape and allocate per event
+			s.err = json.Unmarshal(s.decoder.Event().Data, &s.cur)
 			if s.err != nil {
+				s.cur = prev
 				return false
 			}
-			s.cur = nxt
 			return true
 		case "message_start", "message_delta", "message_stop", "content_block_start", "content_block_delta", "content_block_stop", "message", "user.message", "user.interrupt", "user.tool_confirmation", "user.custom_tool_result", "user.tool_result", "agent.message", "agent.thinking", "agent.tool_use", "agent.tool_result", "agent.mcp_tool_use", "agent.mcp_tool_result", "agent.custom_tool_use", "agent.thread_context_compacted", "session.status_running", "session.status_idle", "session.status_rescheduled", "session.status_terminated", "session.error", "session.deleted", "session.updated", "span.model_request_start", "span.model_request_end", "span.outcome_evaluation_start", "span.outcome_evaluation_ongoing", "span.outcome_evaluation_end", "user.define_outcome", "agent.thread_message_received", "agent.thread_message_sent", "agent.session_thread_message_received", "agent.session_thread_message_sent", "session.thread_created", "session.thread_status_created", "session.thread_status_running", "session.thread_status_idle", "session.thread_status_rescheduled", "session.thread_status_terminated", "event_start", "event_delta", "system.message":
-			var nxt T
-			s.err = json.Unmarshal(s.decoder.Event().Data, &nxt)
+			prev := s.cur
+			var zero T
+			s.cur = zero // decode in place; a fresh local would escape and allocate per event
+			s.err = json.Unmarshal(s.decoder.Event().Data, &s.cur)
 			if s.err != nil {
+				s.cur = prev
 				return false
 			}
-			s.cur = nxt
 			return true
 		case "ping":
 			continue

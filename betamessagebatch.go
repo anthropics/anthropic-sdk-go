@@ -680,10 +680,14 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
-	// Whether to incrementally stream the response using server-sent events.
+	// Whether to incrementally stream the response using server-sent events. When
+	// `true`, SDKs return a raw event stream.
 	//
-	// See [streaming](https://platform.claude.com/docs/en/build-with-claude/streaming)
-	// for details.
+	// In the TypeScript, Python and Ruby SDKs, the recommended way to stream is
+	// `messages.stream()`. It sets `stream` for you and accumulates the events into
+	// the final message. See
+	// [Streaming with SDKs](https://platform.claude.com/docs/en/build-with-claude/streaming#streaming-with-sdks)
+	// for an example in each language.
 	Stream param.Opt[bool] `json:"stream,omitzero"`
 	// Amount of randomness injected into the response.
 	//
@@ -747,9 +751,8 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// declines, the second is tried, and so on. The string "default" requests the
 	// requested model's server-defined default fallback configuration.
 	Fallbacks BetaFallbacksParamUnion `json:"fallbacks,omitzero"`
-	// Inference speed mode. `fast` provides significantly faster output token
-	// generation at premium pricing. Not all models support `fast`; invalid
-	// combinations are rejected at create time.
+	// The inference speed mode for this request. `"fast"` enables high
+	// output-tokens-per-second inference.
 	//
 	// Any of "standard", "fast".
 	Speed string `json:"speed,omitzero"`
@@ -758,19 +761,22 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
 	// Compaction configuration.
 	//
-	// When set, this is a compaction request: the conversation in `messages` is
-	// summarized and the response holds only the resulting `compaction` block
-	// (`stop_reason` `"compaction"`), which later requests send first in `messages` in
-	// place of the messages it summarizes. Cannot be combined with
-	// `context_management`.
+	// When set on `POST /v1/messages`, the request is a compaction request: the
+	// conversation in `messages` is summarized and the response holds only the
+	// resulting `compaction` block (`stop_reason` `"compaction"`), which later
+	// requests send first in `messages` in place of the messages it summarizes.
+	// `POST /v1/messages/count_tokens` accepts this parameter and ignores it: the
+	// count it returns is for the conversation in `messages` as sent. Cannot be
+	// combined with `context_management`.
 	Compaction BetaCompactionConfigUnionParam `json:"compaction,omitzero"`
 	// Context management configuration.
 	//
 	// This allows you to control how Claude manages context across multiple requests,
 	// such as whether to clear function results or not.
 	ContextManagement BetaContextManagementConfigParam `json:"context_management,omitzero"`
-	// Request-level diagnostics. Currently carries the previous response id for
-	// prompt-cache divergence reporting.
+	// Request-level diagnostics. Supply `previous_message_id` to have the response
+	// include `diagnostics.cache_miss_reason` explaining any prompt-cache divergence
+	// from that prior request.
 	Diagnostics BetaDiagnosticsParam `json:"diagnostics,omitzero"`
 	// MCP servers to be utilized in this request
 	MCPServers []BetaRequestMCPServerURLDefinitionParam `json:"mcp_servers,omitzero"`

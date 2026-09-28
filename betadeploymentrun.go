@@ -118,19 +118,20 @@ const (
 type BetaManagedAgentsDeploymentRun struct {
 	// Unique identifier for this run (`drun_...`).
 	ID string `json:"id" api:"required"`
-	// A resolved agent reference with a concrete version.
+	// Snapshot of the agent at fire time. Always fully resolved — deployments pin
+	// agent + version.
 	Agent BetaManagedAgentsAgentReference `json:"agent" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Time this run record was persisted.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// ID of the deployment that produced this run.
 	DeploymentID string `json:"deployment_id" api:"required"`
-	// Why the run failed to create a session. The type identifies the failure; message
-	// is human-readable detail.
+	// Populated on creation failure. Null on success. Exactly one of `session_id` or
+	// `error` is non-null.
 	Error BetaManagedAgentsDeploymentRunErrorUnion `json:"error" api:"required"`
 	// Populated on success. Null on creation failure. Exactly one of `session_id` or
 	// `error` is non-null.
 	SessionID string `json:"session_id" api:"required"`
-	// Describes what triggered a deployment run, with trigger-specific metadata.
+	// What triggered this run and trigger-specific metadata.
 	TriggerContext BetaManagedAgentsTriggerContextUnion `json:"trigger_context" api:"required"`
 	// Any of "deployment_run".
 	Type BetaManagedAgentsDeploymentRunType `json:"type" api:"required"`
@@ -564,7 +565,9 @@ const (
 
 // The run was fired by the deployment's cron schedule.
 type BetaManagedAgentsScheduleTriggerContext struct {
-	// A timestamp in RFC 3339 format
+	// The UTC instant at which the cron expression matched in the configured timezone,
+	// before jitter is applied. At most one run is recorded per (`deployment_id`,
+	// `scheduled_at`) pair.
 	ScheduledAt time.Time `json:"scheduled_at" api:"required" format:"date-time"`
 	// Any of "schedule".
 	Type BetaManagedAgentsScheduleTriggerContextType `json:"type" api:"required"`

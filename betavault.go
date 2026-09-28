@@ -190,7 +190,7 @@ const (
 type BetaManagedAgentsVault struct {
 	// Unique identifier for the vault.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When the vault was archived. Null if not archived.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
 	// A timestamp in RFC 3339 format
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`

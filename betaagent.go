@@ -174,7 +174,7 @@ const (
 // A Managed Agents `agent`.
 type BetaManagedAgentsAgent struct {
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When the agent was archived. Null if not archived.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
 	// A timestamp in RFC 3339 format
 	CreatedAt   time.Time                                 `json:"created_at" api:"required" format:"date-time"`
@@ -183,7 +183,7 @@ type BetaManagedAgentsAgent struct {
 	Metadata    map[string]string                         `json:"metadata" api:"required"`
 	// Model identifier and configuration.
 	Model BetaManagedAgentsModelConfig `json:"model" api:"required"`
-	// Resolved coordinator topology with a concrete agent roster.
+	// Multiagent orchestration configuration. Null when the agent is single-threaded.
 	Multiagent BetaManagedAgentsMultiagent        `json:"multiagent" api:"required"`
 	Name       string                             `json:"name" api:"required"`
 	Skills     []BetaManagedAgentsAgentSkillUnion `json:"skills" api:"required"`
@@ -979,7 +979,8 @@ type BetaManagedAgentsAgentToolsetDefaultConfigParams struct {
 	// Whether tools are enabled and available to Claude by default. Defaults to true
 	// if not specified.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
-	// Permission policy for tool execution.
+	// Default permission policy for tools. Controls whether tool calls are
+	// auto-approved or require confirmation.
 	PermissionPolicy BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion `json:"permission_policy,omitzero"`
 	paramObj
 }
@@ -1182,7 +1183,7 @@ type BetaManagedAgentsAgentToolset20260401Params struct {
 	Type BetaManagedAgentsAgentToolset20260401ParamsType `json:"type,omitzero" api:"required"`
 	// Per-tool configuration overrides.
 	Configs []BetaManagedAgentsAgentToolConfigParamsUnion `json:"configs,omitzero"`
-	// Default configuration for all tools in a toolset.
+	// Default configuration applied to all tools in this set.
 	DefaultConfig BetaManagedAgentsAgentToolsetDefaultConfigParams `json:"default_config,omitzero"`
 	paramObj
 }
@@ -1563,7 +1564,8 @@ type BetaManagedAgentsBashToolConfigParams struct {
 	// Whether this tool is enabled and available to Claude. Overrides the
 	// default_config setting.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
-	// Permission policy for tool execution.
+	// Permission policy for this tool. Controls whether tool calls are auto-approved
+	// or require confirmation.
 	PermissionPolicy BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion `json:"permission_policy,omitzero"`
 	// Any of "bash".
 	Type BetaManagedAgentsBashToolConfigParamsType `json:"type,omitzero"`
@@ -1785,7 +1787,7 @@ type BetaManagedAgentsCustomToolParams struct {
 	// Description of what the tool does, shown to the agent to help it decide when to
 	// use the tool.
 	Description string `json:"description" api:"required"`
-	// JSON Schema for custom tool input parameters.
+	// JSON Schema defining the expected input parameters for the tool.
 	InputSchema BetaManagedAgentsCustomToolInputSchemaParam `json:"input_schema,omitzero" api:"required"`
 	// Unique name for the tool. 1-128 characters; letters, digits, underscores, and
 	// hyphens.
@@ -1913,7 +1915,8 @@ type BetaManagedAgentsEditToolConfigParams struct {
 	// Whether this tool is enabled and available to Claude. Overrides the
 	// default_config setting.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
-	// Permission policy for tool execution.
+	// Permission policy for this tool. Controls whether tool calls are auto-approved
+	// or require confirmation.
 	PermissionPolicy BetaManagedAgentsEditToolConfigParamsPermissionPolicyUnion `json:"permission_policy,omitzero"`
 	// Any of "edit".
 	Type BetaManagedAgentsEditToolConfigParamsType `json:"type,omitzero"`
@@ -2346,7 +2349,8 @@ type BetaManagedAgentsGlobToolConfigParams struct {
 	// Whether this tool is enabled and available to Claude. Overrides the
 	// default_config setting.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
-	// Permission policy for tool execution.
+	// Permission policy for this tool. Controls whether tool calls are auto-approved
+	// or require confirmation.
 	PermissionPolicy BetaManagedAgentsGlobToolConfigParamsPermissionPolicyUnion `json:"permission_policy,omitzero"`
 	// Any of "glob".
 	Type BetaManagedAgentsGlobToolConfigParamsType `json:"type,omitzero"`
@@ -2524,7 +2528,8 @@ type BetaManagedAgentsGrepToolConfigParams struct {
 	// Whether this tool is enabled and available to Claude. Overrides the
 	// default_config setting.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
-	// Permission policy for tool execution.
+	// Permission policy for this tool. Controls whether tool calls are auto-approved
+	// or require confirmation.
 	PermissionPolicy BetaManagedAgentsGrepToolConfigParamsPermissionPolicyUnion `json:"permission_policy,omitzero"`
 	// Any of "grep".
 	Type BetaManagedAgentsGrepToolConfigParamsType `json:"type,omitzero"`
@@ -2727,7 +2732,7 @@ type BetaManagedAgentsMCPToolConfigParams struct {
 	Name string `json:"name" api:"required"`
 	// Whether this tool is enabled. Overrides the `default_config` setting.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
-	// Permission policy for tool execution.
+	// Permission policy for this tool. Overrides the `default_config` setting.
 	PermissionPolicy BetaManagedAgentsMCPToolConfigParamsPermissionPolicyUnion `json:"permission_policy,omitzero"`
 	paramObj
 }
@@ -2920,7 +2925,7 @@ func (r *BetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion) Unmarsha
 type BetaManagedAgentsMCPToolsetDefaultConfigParams struct {
 	// Whether tools are enabled by default. Defaults to true if not specified.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
-	// Permission policy for tool execution.
+	// Default permission policy for tools from this server.
 	PermissionPolicy BetaManagedAgentsMCPToolsetDefaultConfigParamsPermissionPolicyUnion `json:"permission_policy,omitzero"`
 	paramObj
 }
@@ -2993,7 +2998,7 @@ type BetaManagedAgentsMCPToolsetParams struct {
 	Type BetaManagedAgentsMCPToolsetParamsType `json:"type,omitzero" api:"required"`
 	// Per-tool configuration overrides.
 	Configs []BetaManagedAgentsMCPToolConfigParams `json:"configs,omitzero"`
-	// Default configuration for all tools from an MCP server.
+	// Default configuration for all tools from this server.
 	DefaultConfig BetaManagedAgentsMCPToolsetDefaultConfigParams `json:"default_config,omitzero"`
 	paramObj
 }
@@ -3019,12 +3024,14 @@ const (
 type BetaManagedAgentsModel = string
 
 const (
+	// Efficient model for coding and agents
+	BetaManagedAgentsModelClaudeSonnet5_5 BetaManagedAgentsModel = "claude-sonnet-5-5"
 	// Powerful intelligence for coding, knowledge work, and long-running agents
 	BetaManagedAgentsModelClaudeOpus5_5 BetaManagedAgentsModel = "claude-opus-5-5"
 	// Frontier intelligence for ambitious tasks across coding, scientific discovery,
 	// and enterprise workflows
 	BetaManagedAgentsModelClaudeFable5_1 BetaManagedAgentsModel = "claude-fable-5-1"
-	// High-performance model for coding and agents
+	// Efficient model for coding and agents
 	BetaManagedAgentsModelClaudeSonnet5 BetaManagedAgentsModel = "claude-sonnet-5"
 	// Next generation of intelligence for the hardest knowledge work and coding
 	// problems
@@ -3060,15 +3067,16 @@ type BetaManagedAgentsModelConfig struct {
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
 	ID BetaManagedAgentsModel `json:"id" api:"required"`
-	// How hard Claude works on each turn. Sets `output_config.effort` on every
-	// Messages call the session makes.
+	// How hard Claude works on each inference call. One of `low`, `medium`, `high`,
+	// `xhigh`, `max`. Always present; resolved to the per-model default at save time
+	// when not supplied.
 	Effort BetaManagedAgentsModelConfigEffortUnion `json:"effort"`
 	// Geographic region for model inference. When unset, requests fall through to the
 	// workspace's default_inference_geo.
 	InferenceGeo string `json:"inference_geo"`
 	// Inference speed mode. `fast` provides significantly faster output token
-	// generation at premium pricing. Not all models support `fast`; invalid
-	// combinations are rejected at create time.
+	// generation at premium pricing. Defaults to `standard`. Not all models support
+	// `fast`; invalid combinations are rejected at create time.
 	//
 	// Any of "standard", "fast".
 	Speed BetaManagedAgentsModelConfigSpeed `json:"speed"`
@@ -3180,8 +3188,8 @@ func (r *BetaManagedAgentsModelConfigEffortUnion) UnmarshalJSON(data []byte) err
 }
 
 // Inference speed mode. `fast` provides significantly faster output token
-// generation at premium pricing. Not all models support `fast`; invalid
-// combinations are rejected at create time.
+// generation at premium pricing. Defaults to `standard`. Not all models support
+// `fast`; invalid combinations are rejected at create time.
 type BetaManagedAgentsModelConfigSpeed string
 
 const (
@@ -3206,9 +3214,7 @@ type BetaManagedAgentsModelConfigParams struct {
 	// (`"high"`) or `{"type": "high"}`. On create, omitting it resolves the per-model
 	// default; on update, omitting it leaves the stored value unchanged.
 	Effort BetaManagedAgentsModelConfigParamsEffortUnion `json:"effort,omitzero"`
-	// Inference speed mode. `fast` provides significantly faster output token
-	// generation at premium pricing. Not all models support `fast`; invalid
-	// combinations are rejected at create time.
+	// Inference speed mode. Defaults to `standard`.
 	//
 	// Any of "standard", "fast".
 	Speed BetaManagedAgentsModelConfigParamsSpeed `json:"speed,omitzero"`
@@ -3301,9 +3307,7 @@ const (
 	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelMax BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "max"
 )
 
-// Inference speed mode. `fast` provides significantly faster output token
-// generation at premium pricing. Not all models support `fast`; invalid
-// combinations are rejected at create time.
+// Inference speed mode. Defaults to `standard`.
 type BetaManagedAgentsModelConfigParamsSpeed string
 
 const (
@@ -3439,7 +3443,8 @@ type BetaManagedAgentsReadToolConfigParams struct {
 	// Whether this tool is enabled and available to Claude. Overrides the
 	// default_config setting.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
-	// Permission policy for tool execution.
+	// Permission policy for this tool. Controls whether tool calls are auto-approved
+	// or require confirmation.
 	PermissionPolicy BetaManagedAgentsReadToolConfigParamsPermissionPolicyUnion `json:"permission_policy,omitzero"`
 	// Any of "read".
 	Type BetaManagedAgentsReadToolConfigParamsType `json:"type,omitzero"`
@@ -4071,7 +4076,8 @@ type BetaManagedAgentsWebFetchToolConfigParams struct {
 	// Maximum number of tokens of fetched text content to include in context per call.
 	// Does not apply to binary content such as PDFs.
 	MaxContentTokens param.Opt[int64] `json:"max_content_tokens,omitzero"`
-	// Permission policy for tool execution.
+	// Permission policy for this tool. Controls whether tool calls are auto-approved
+	// or require confirmation.
 	PermissionPolicy BetaManagedAgentsWebFetchToolConfigParamsPermissionPolicyUnion `json:"permission_policy,omitzero"`
 	// Only fetch URLs whose host is one of these domains or a subdomain of one. Each
 	// entry is a plain hostname like "docs.example.com" (no scheme, port, or path). At
@@ -4269,7 +4275,8 @@ type BetaManagedAgentsWebSearchToolConfigParams struct {
 	// Whether this tool is enabled and available to Claude. Overrides the
 	// default_config setting.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
-	// Permission policy for tool execution.
+	// Permission policy for this tool. Controls whether tool calls are auto-approved
+	// or require confirmation.
 	PermissionPolicy BetaManagedAgentsWebSearchToolConfigParamsPermissionPolicyUnion `json:"permission_policy,omitzero"`
 	// Only return search results whose host is one of these domains or a subdomain of
 	// one. Each entry is a plain hostname like "docs.example.com" (no scheme or port;
@@ -4459,7 +4466,8 @@ type BetaManagedAgentsWriteToolConfigParams struct {
 	// Whether this tool is enabled and available to Claude. Overrides the
 	// default_config setting.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
-	// Permission policy for tool execution.
+	// Permission policy for this tool. Controls whether tool calls are auto-approved
+	// or require confirmation.
 	PermissionPolicy BetaManagedAgentsWriteToolConfigParamsPermissionPolicyUnion `json:"permission_policy,omitzero"`
 	// Any of "write".
 	Type BetaManagedAgentsWriteToolConfigParamsType `json:"type,omitzero"`
@@ -4560,8 +4568,8 @@ type BetaAgentNewParams struct {
 	// Arbitrary key-value metadata. Maximum 16 pairs, keys up to 64 chars, values up
 	// to 512 chars.
 	Metadata map[string]string `json:"metadata,omitzero"`
-	// A coordinator topology: the session's primary thread orchestrates work by
-	// spawning session threads, each running an agent drawn from the `agents` roster.
+	// Multiagent orchestration configuration. Currently supports the `coordinator`
+	// topology with a roster of 1-20 agents.
 	Multiagent BetaManagedAgentsMultiagentParams `json:"multiagent,omitzero"`
 	// Skills available to the agent.
 	Skills []BetaManagedAgentsSkillParamsUnion `json:"skills,omitzero"`
@@ -4828,8 +4836,8 @@ type BetaAgentUpdateParams struct {
 	// e.g. `claude-opus-5`, or a `model_config` object for additional configuration
 	// control. Omit to preserve. Cannot be cleared.
 	Model BetaManagedAgentsModelConfigParams `json:"model,omitzero"`
-	// A coordinator topology: the session's primary thread orchestrates work by
-	// spawning session threads, each running an agent drawn from the `agents` roster.
+	// Multiagent orchestration configuration. Full replacement. Omit to preserve; send
+	// null to clear.
 	Multiagent BetaManagedAgentsMultiagentParams `json:"multiagent,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`

@@ -208,6 +208,18 @@ func TestStreamingClaimFalseRetriesTheExactBody(t *testing.T) {
 	assert.Len(t, retry["messages"].([]any), 1, "no claim advertised, no turn appended")
 }
 
+func TestStreamingDegradesBetweenToolsThinkingToDisabled(t *testing.T) {
+	transport := &sseTransport{responses: []string{
+		refusalStream("primary-model", tokenNoClaim), servedStream("fallback-model"),
+	}}
+	client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-model"}})
+
+	_, _, _ = collectStream(t, client, context.Background(), betweenToolsParams())
+	require.Len(t, transport.bodies, 2)
+	assert.Equal(t, map[string]any{"type": "between_tools"}, transport.bodies[0]["thinking"])
+	assert.Equal(t, map[string]any{"type": "disabled"}, transport.bodies[1]["thinking"])
+}
+
 func TestStreamingMidStreamTokenlessRefusalSurfacesUntouched(t *testing.T) {
 	// Content already streamed and no token minted: no retry, the refusal
 	// passes through as-is.

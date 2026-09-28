@@ -263,7 +263,7 @@ type BetaManagedAgentsAgentCustomToolUseEvent struct {
 	Input map[string]any `json:"input" api:"required"`
 	// Name of the custom tool being called.
 	Name string `json:"name" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when this tool use was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "agent.custom_tool_use".
 	Type BetaManagedAgentsAgentCustomToolUseEventType `json:"type" api:"required"`
@@ -313,7 +313,7 @@ type BetaManagedAgentsAgentMCPToolResultEvent struct {
 	ID string `json:"id" api:"required"`
 	// The id of the `agent.mcp_tool_use` event this result corresponds to.
 	MCPToolUseID string `json:"mcp_tool_use_id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when this event was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "agent.mcp_tool_result".
 	Type BetaManagedAgentsAgentMCPToolResultEventType `json:"type" api:"required"`
@@ -490,17 +490,21 @@ type BetaManagedAgentsAgentMCPToolUseEvent struct {
 	MCPServerName string `json:"mcp_server_name" api:"required"`
 	// Name of the MCP tool being used.
 	Name string `json:"name" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when this event was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "agent.mcp_tool_use".
 	Type BetaManagedAgentsAgentMCPToolUseEventType `json:"type" api:"required"`
-	// AgentEvaluatedPermission enum
+	// The evaluated permission policy for this tool invocation.
 	//
 	// Any of "allow", "ask", "deny".
 	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
-	// Names the resolved permission_policy that produced evaluated_permission, and
-	// under auto carries the judgement. Open union: clients must tolerate unknown
-	// variants.
+	// Which resolved permission_policy produced evaluated_permission: always_allow,
+	// always_ask, or auto (with the server's per-invocation judgement). Absent only
+	// when the server refused the call before any policy applied (for example, the
+	// named tool is not enabled in the session); such a refusal has
+	// evaluated_permission deny. An event recorded before this field existed reads as
+	// the arm its evaluated_permission implies (always_allow for allow, always_ask for
+	// ask).
 	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// When set, this event was cross-posted from a subagent's thread to surface its
 	// permission request on the primary thread's stream. Empty on the thread's own
@@ -541,7 +545,7 @@ type BetaManagedAgentsAgentMessageEvent struct {
 	ID string `json:"id" api:"required"`
 	// Array of text blocks comprising the agent response.
 	Content []BetaManagedAgentsAgentMessageEventContentUnion `json:"content" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when this response was generated.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "agent.message".
 	Type BetaManagedAgentsAgentMessageEventType `json:"type" api:"required"`
@@ -637,7 +641,7 @@ const (
 type BetaManagedAgentsAgentThinkingEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when this thinking was produced.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "agent.thinking".
 	Type BetaManagedAgentsAgentThinkingEventType `json:"type" api:"required"`
@@ -667,7 +671,7 @@ const (
 type BetaManagedAgentsAgentThreadContextCompactedEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when compaction was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "agent.thread_context_compacted".
 	Type BetaManagedAgentsAgentThreadContextCompactedEventType `json:"type" api:"required"`
@@ -702,7 +706,7 @@ type BetaManagedAgentsAgentThreadMessageReceivedEvent struct {
 	Content []BetaManagedAgentsAgentThreadMessageReceivedEventContentUnion `json:"content" api:"required"`
 	// Public `sthr_` ID of the thread that sent the message.
 	FromSessionThreadID string `json:"from_session_thread_id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the message was received.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "agent.thread_message_received".
 	Type BetaManagedAgentsAgentThreadMessageReceivedEventType `json:"type" api:"required"`
@@ -870,7 +874,7 @@ type BetaManagedAgentsAgentThreadMessageSentEvent struct {
 	ID string `json:"id" api:"required"`
 	// Message content blocks.
 	Content []BetaManagedAgentsAgentThreadMessageSentEventContentUnion `json:"content" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the message was sent.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public `sthr_` ID of the thread the message was sent to.
 	ToSessionThreadID string `json:"to_session_thread_id" api:"required"`
@@ -1144,9 +1148,7 @@ func (r *BetaManagedAgentsAgentToolEvaluationAlwaysAsk) UnmarshalJSON(data []byt
 // The resolved permission_policy was auto: the server judged this invocation
 // individually.
 type BetaManagedAgentsAgentToolEvaluationAuto struct {
-	// The server's per-invocation judgement under the auto permission policy. Its type
-	// always equals the event's top-level evaluated_permission. Open union: clients
-	// must tolerate unknown variants.
+	// The server's judgement for this invocation.
 	EvaluatedPermission BetaManagedAgentsAgentAutoEvaluatedPermissionUnion `json:"evaluated_permission" api:"required"`
 	Type                constant.Auto                                      `json:"type" default:"auto"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -1168,7 +1170,7 @@ func (r *BetaManagedAgentsAgentToolEvaluationAuto) UnmarshalJSON(data []byte) er
 type BetaManagedAgentsAgentToolResultEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when this event was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// The id of the `agent.tool_use` event this result corresponds to.
 	ToolUseID string `json:"tool_use_id" api:"required"`
@@ -1343,17 +1345,21 @@ type BetaManagedAgentsAgentToolUseEvent struct {
 	Input map[string]any `json:"input" api:"required"`
 	// Name of the agent tool being used.
 	Name string `json:"name" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when this event was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "agent.tool_use".
 	Type BetaManagedAgentsAgentToolUseEventType `json:"type" api:"required"`
-	// AgentEvaluatedPermission enum
+	// The evaluated permission policy for this tool invocation.
 	//
 	// Any of "allow", "ask", "deny".
 	EvaluatedPermission BetaManagedAgentsAgentEvaluatedPermission `json:"evaluated_permission"`
-	// Names the resolved permission_policy that produced evaluated_permission, and
-	// under auto carries the judgement. Open union: clients must tolerate unknown
-	// variants.
+	// Which resolved permission_policy produced evaluated_permission: always_allow,
+	// always_ask, or auto (with the server's per-invocation judgement). Absent only
+	// when the server refused the call before any policy applied (for example, the
+	// named tool is not enabled in the session); such a refusal has
+	// evaluated_permission deny. An event recorded before this field existed reads as
+	// the arm its evaluated_permission implies (always_allow for allow, always_ask for
+	// ask).
 	Evaluation BetaManagedAgentsAgentToolEvaluationUnion `json:"evaluation"`
 	// When set, this event was cross-posted from a subagent's thread to surface its
 	// permission request on the primary thread's stream. Empty on the thread's own
@@ -1518,7 +1524,7 @@ func (r *BetaManagedAgentsBase64ImageSourceParam) UnmarshalJSON(data []byte) err
 type BetaManagedAgentsBillingError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
-	// What the client should do next in response to this error.
+	// What the client should do next.
 	RetryStatus BetaManagedAgentsBillingErrorRetryStatusUnion `json:"retry_status" api:"required"`
 	// Any of "billing_error".
 	Type BetaManagedAgentsBillingErrorType `json:"type" api:"required"`
@@ -1622,7 +1628,7 @@ type BetaManagedAgentsCredentialHostUnreachableError struct {
 	CredentialID string `json:"credential_id" api:"required"`
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
-	// What the client should do next in response to this error.
+	// What the client should do next.
 	RetryStatus BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion `json:"retry_status" api:"required"`
 	// Any of "credential_host_unreachable_error".
 	Type BetaManagedAgentsCredentialHostUnreachableErrorType `json:"type" api:"required"`
@@ -1733,7 +1739,7 @@ const (
 // Document content, either specified directly as base64 data, as text, or as a
 // reference via a URL.
 type BetaManagedAgentsDocumentBlock struct {
-	// Union type for document source variants.
+	// The source of the document data.
 	Source BetaManagedAgentsDocumentBlockSourceUnion `json:"source" api:"required"`
 	// Any of "document".
 	Type BetaManagedAgentsDocumentBlockType `json:"type" api:"required"`
@@ -1870,7 +1876,7 @@ const (
 //
 // The properties Source, Type are required.
 type BetaManagedAgentsDocumentBlockParam struct {
-	// Union type for document source variants.
+	// The source of the document data.
 	Source BetaManagedAgentsDocumentBlockSourceUnionParam `json:"source,omitzero" api:"required"`
 	// Any of "document".
 	Type BetaManagedAgentsDocumentBlockType `json:"type,omitzero" api:"required"`
@@ -2389,7 +2395,7 @@ const (
 
 // Image content specified directly as base64 data or as a reference via a URL.
 type BetaManagedAgentsImageBlock struct {
-	// Union type for image source variants.
+	// The source of the image data.
 	Source BetaManagedAgentsImageBlockSourceUnion `json:"source" api:"required"`
 	// Any of "image".
 	Type BetaManagedAgentsImageBlockType `json:"type" api:"required"`
@@ -2511,7 +2517,7 @@ const (
 //
 // The properties Source, Type are required.
 type BetaManagedAgentsImageBlockParam struct {
-	// Union type for image source variants.
+	// The source of the image data.
 	Source BetaManagedAgentsImageBlockSourceUnionParam `json:"source,omitzero" api:"required"`
 	// Any of "image".
 	Type BetaManagedAgentsImageBlockType `json:"type,omitzero" api:"required"`
@@ -2613,7 +2619,7 @@ type BetaManagedAgentsMCPAuthenticationFailedError struct {
 	MCPServerName string `json:"mcp_server_name" api:"required"`
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
-	// What the client should do next in response to this error.
+	// What the client should do next.
 	RetryStatus BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion `json:"retry_status" api:"required"`
 	// Any of "mcp_authentication_failed_error".
 	Type BetaManagedAgentsMCPAuthenticationFailedErrorType `json:"type" api:"required"`
@@ -2723,7 +2729,7 @@ type BetaManagedAgentsMCPConnectionFailedError struct {
 	MCPServerName string `json:"mcp_server_name" api:"required"`
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
-	// What the client should do next in response to this error.
+	// What the client should do next.
 	RetryStatus BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion `json:"retry_status" api:"required"`
 	// Any of "mcp_connection_failed_error".
 	Type BetaManagedAgentsMCPConnectionFailedErrorType `json:"type" api:"required"`
@@ -2832,7 +2838,7 @@ const (
 type BetaManagedAgentsModelOverloadedError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
-	// What the client should do next in response to this error.
+	// What the client should do next.
 	RetryStatus BetaManagedAgentsModelOverloadedErrorRetryStatusUnion `json:"retry_status" api:"required"`
 	// Any of "model_overloaded_error".
 	Type BetaManagedAgentsModelOverloadedErrorType `json:"type" api:"required"`
@@ -2937,7 +2943,7 @@ const (
 type BetaManagedAgentsModelRateLimitedError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
-	// What the client should do next in response to this error.
+	// What the client should do next.
 	RetryStatus BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion `json:"retry_status" api:"required"`
 	// Any of "model_rate_limited_error".
 	Type BetaManagedAgentsModelRateLimitedErrorType `json:"type" api:"required"`
@@ -3042,7 +3048,7 @@ const (
 type BetaManagedAgentsModelRequestFailedError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
-	// What the client should do next in response to this error.
+	// What the client should do next.
 	RetryStatus BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion `json:"retry_status" api:"required"`
 	// Any of "model_request_failed_error".
 	Type BetaManagedAgentsModelRequestFailedErrorType `json:"type" api:"required"`
@@ -3344,7 +3350,7 @@ const (
 
 // A block containing a web search result.
 type BetaManagedAgentsSearchResultBlock struct {
-	// Citation settings for a search result.
+	// Citation settings for this search result.
 	Citations BetaManagedAgentsSearchResultCitations `json:"citations" api:"required"`
 	// Array of text content blocks from the search result.
 	Content []BetaManagedAgentsSearchResultContent `json:"content" api:"required"`
@@ -3392,7 +3398,7 @@ const (
 //
 // The properties Citations, Content, Source, Title, Type are required.
 type BetaManagedAgentsSearchResultBlockParam struct {
-	// Citation settings for a search result.
+	// Citation settings for this search result.
 	Citations BetaManagedAgentsSearchResultCitationsParam `json:"citations,omitzero" api:"required"`
 	// Array of text content blocks from the search result.
 	Content []BetaManagedAgentsSearchResultContentParam `json:"content,omitzero" api:"required"`
@@ -3753,7 +3759,7 @@ const (
 type BetaManagedAgentsSessionDeletedEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the session was deleted.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "session.deleted".
 	Type BetaManagedAgentsSessionDeletedEventType `json:"type" api:"required"`
@@ -3808,7 +3814,7 @@ type BetaManagedAgentsSessionErrorEvent struct {
 	// Unique identifier for this event.
 	ID    string                                       `json:"id" api:"required"`
 	Error BetaManagedAgentsSessionErrorEventErrorUnion `json:"error" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the error occurred.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "session.error".
 	Type BetaManagedAgentsSessionErrorEventType `json:"type" api:"required"`
@@ -4640,6 +4646,46 @@ func (r *BetaManagedAgentsSessionEventUnionUsage) UnmarshalJSON(data []byte) err
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The `type` of a session event.
+type BetaManagedAgentsSessionEventType string
+
+const (
+	BetaManagedAgentsSessionEventTypeUserMessage                    BetaManagedAgentsSessionEventType = "user.message"
+	BetaManagedAgentsSessionEventTypeUserInterrupt                  BetaManagedAgentsSessionEventType = "user.interrupt"
+	BetaManagedAgentsSessionEventTypeUserToolConfirmation           BetaManagedAgentsSessionEventType = "user.tool_confirmation"
+	BetaManagedAgentsSessionEventTypeUserCustomToolResult           BetaManagedAgentsSessionEventType = "user.custom_tool_result"
+	BetaManagedAgentsSessionEventTypeAgentCustomToolUse             BetaManagedAgentsSessionEventType = "agent.custom_tool_use"
+	BetaManagedAgentsSessionEventTypeAgentMessage                   BetaManagedAgentsSessionEventType = "agent.message"
+	BetaManagedAgentsSessionEventTypeAgentThinking                  BetaManagedAgentsSessionEventType = "agent.thinking"
+	BetaManagedAgentsSessionEventTypeAgentMCPToolUse                BetaManagedAgentsSessionEventType = "agent.mcp_tool_use"
+	BetaManagedAgentsSessionEventTypeAgentMCPToolResult             BetaManagedAgentsSessionEventType = "agent.mcp_tool_result"
+	BetaManagedAgentsSessionEventTypeAgentToolUse                   BetaManagedAgentsSessionEventType = "agent.tool_use"
+	BetaManagedAgentsSessionEventTypeAgentToolResult                BetaManagedAgentsSessionEventType = "agent.tool_result"
+	BetaManagedAgentsSessionEventTypeAgentThreadMessageReceived     BetaManagedAgentsSessionEventType = "agent.thread_message_received"
+	BetaManagedAgentsSessionEventTypeAgentThreadMessageSent         BetaManagedAgentsSessionEventType = "agent.thread_message_sent"
+	BetaManagedAgentsSessionEventTypeAgentThreadContextCompacted    BetaManagedAgentsSessionEventType = "agent.thread_context_compacted"
+	BetaManagedAgentsSessionEventTypeSessionError                   BetaManagedAgentsSessionEventType = "session.error"
+	BetaManagedAgentsSessionEventTypeSessionStatusRescheduled       BetaManagedAgentsSessionEventType = "session.status_rescheduled"
+	BetaManagedAgentsSessionEventTypeSessionStatusRunning           BetaManagedAgentsSessionEventType = "session.status_running"
+	BetaManagedAgentsSessionEventTypeSessionStatusIdle              BetaManagedAgentsSessionEventType = "session.status_idle"
+	BetaManagedAgentsSessionEventTypeSessionStatusTerminated        BetaManagedAgentsSessionEventType = "session.status_terminated"
+	BetaManagedAgentsSessionEventTypeSessionThreadCreated           BetaManagedAgentsSessionEventType = "session.thread_created"
+	BetaManagedAgentsSessionEventTypeSpanOutcomeEvaluationStart     BetaManagedAgentsSessionEventType = "span.outcome_evaluation_start"
+	BetaManagedAgentsSessionEventTypeSpanOutcomeEvaluationEnd       BetaManagedAgentsSessionEventType = "span.outcome_evaluation_end"
+	BetaManagedAgentsSessionEventTypeSpanModelRequestStart          BetaManagedAgentsSessionEventType = "span.model_request_start"
+	BetaManagedAgentsSessionEventTypeSpanModelRequestEnd            BetaManagedAgentsSessionEventType = "span.model_request_end"
+	BetaManagedAgentsSessionEventTypeSpanOutcomeEvaluationOngoing   BetaManagedAgentsSessionEventType = "span.outcome_evaluation_ongoing"
+	BetaManagedAgentsSessionEventTypeUserDefineOutcome              BetaManagedAgentsSessionEventType = "user.define_outcome"
+	BetaManagedAgentsSessionEventTypeSessionThreadStatusRunning     BetaManagedAgentsSessionEventType = "session.thread_status_running"
+	BetaManagedAgentsSessionEventTypeSessionThreadStatusIdle        BetaManagedAgentsSessionEventType = "session.thread_status_idle"
+	BetaManagedAgentsSessionEventTypeSessionThreadStatusTerminated  BetaManagedAgentsSessionEventType = "session.thread_status_terminated"
+	BetaManagedAgentsSessionEventTypeUserToolResult                 BetaManagedAgentsSessionEventType = "user.tool_result"
+	BetaManagedAgentsSessionEventTypeSessionThreadStatusRescheduled BetaManagedAgentsSessionEventType = "session.thread_status_rescheduled"
+	BetaManagedAgentsSessionEventTypeSessionUpdated                 BetaManagedAgentsSessionEventType = "session.updated"
+	BetaManagedAgentsSessionEventTypeSystemMessage                  BetaManagedAgentsSessionEventType = "system.message"
+	BetaManagedAgentsSessionEventTypeSessionUsage                   BetaManagedAgentsSessionEventType = "session.usage"
+)
+
 // The agent is idle waiting on one or more blocking user-input events (tool
 // confirmation, custom tool result, etc.). Resolving all of them transitions the
 // session back to running.
@@ -4699,7 +4745,7 @@ const (
 type BetaManagedAgentsSessionStatusIdleEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp of status change.
 	ProcessedAt time.Time                                              `json:"processed_at" api:"required" format:"date-time"`
 	StopReason  BetaManagedAgentsSessionStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
 	// Any of "session.status_idle".
@@ -4821,7 +4867,7 @@ const (
 type BetaManagedAgentsSessionStatusRescheduledEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp of status change.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "session.status_rescheduled".
 	Type BetaManagedAgentsSessionStatusRescheduledEventType `json:"type" api:"required"`
@@ -4851,7 +4897,7 @@ const (
 type BetaManagedAgentsSessionStatusRunningEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp of status change.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "session.status_running".
 	Type BetaManagedAgentsSessionStatusRunningEventType `json:"type" api:"required"`
@@ -4881,7 +4927,7 @@ const (
 type BetaManagedAgentsSessionStatusTerminatedEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp of status change.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "session.status_terminated".
 	Type BetaManagedAgentsSessionStatusTerminatedEventType `json:"type" api:"required"`
@@ -4914,7 +4960,7 @@ type BetaManagedAgentsSessionThreadCreatedEvent struct {
 	ID string `json:"id" api:"required"`
 	// Name of the callable agent the thread runs.
 	AgentName string `json:"agent_name" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the thread was created.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public `sthr_` ID of the newly created thread.
 	SessionThreadID string `json:"session_thread_id" api:"required"`
@@ -4951,7 +4997,7 @@ type BetaManagedAgentsSessionThreadStatusIdleEvent struct {
 	ID string `json:"id" api:"required"`
 	// Name of the agent the thread runs.
 	AgentName string `json:"agent_name" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public sthr\_ ID of the thread that went idle.
 	SessionThreadID string                                                       `json:"session_thread_id" api:"required"`
@@ -5083,7 +5129,7 @@ type BetaManagedAgentsSessionThreadStatusRescheduledEvent struct {
 	ID string `json:"id" api:"required"`
 	// Name of the agent the thread runs.
 	AgentName string `json:"agent_name" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public sthr\_ ID of the thread that is retrying.
 	SessionThreadID string `json:"session_thread_id" api:"required"`
@@ -5120,7 +5166,7 @@ type BetaManagedAgentsSessionThreadStatusRunningEvent struct {
 	ID string `json:"id" api:"required"`
 	// Name of the agent the thread runs.
 	AgentName string `json:"agent_name" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public sthr\_ ID of the thread that started running.
 	SessionThreadID string `json:"session_thread_id" api:"required"`
@@ -5157,7 +5203,7 @@ type BetaManagedAgentsSessionThreadStatusTerminatedEvent struct {
 	ID string `json:"id" api:"required"`
 	// Name of the agent the thread runs.
 	AgentName string `json:"agent_name" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public sthr\_ ID of the thread that terminated.
 	SessionThreadID string `json:"session_thread_id" api:"required"`
@@ -5193,17 +5239,18 @@ type BetaManagedAgentsSessionUsageSnapshot struct {
 	// running status. Overlapping activity from concurrent threads is counted once.
 	// This is the duration the session's runtime cost is priced on.
 	ActiveSeconds float64 `json:"active_seconds"`
-	// Prompt-cache creation token usage broken down by cache lifetime.
+	// Tokens used to create prompt cache entries, broken down by cache TTL.
 	CacheCreation BetaManagedAgentsCacheCreationUsage `json:"cache_creation"`
 	// Total tokens read from prompt cache.
 	CacheReadInputTokens int64 `json:"cache_read_input_tokens"`
 	// Total input tokens consumed across all turns.
 	InputTokens int64 `json:"input_tokens"`
-	// A monetary amount in a specific currency.
+	// Cumulative list cost of the session across all turns, priced at public list
+	// rates.
 	ListCost BetaMonetaryAmount `json:"list_cost"`
 	// Total output tokens generated across all turns.
 	OutputTokens int64 `json:"output_tokens"`
-	// Cumulative count of server-executed tool invocations, broken down by tool.
+	// Cumulative server-executed tool usage across all turns.
 	ServerToolUse BetaManagedAgentsServerToolUsage `json:"server_tool_use"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -5233,9 +5280,9 @@ type BetaManagedAgentsSpanModelRequestEndEvent struct {
 	IsError bool `json:"is_error" api:"required"`
 	// The id of the corresponding `span.model_request_start` event.
 	ModelRequestStartID string `json:"model_request_start_id" api:"required"`
-	// Token usage for a single model request.
+	// Token usage for this model request.
 	ModelUsage BetaManagedAgentsSpanModelUsage `json:"model_usage" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the model request completed.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "span.model_request_end".
 	Type BetaManagedAgentsSpanModelRequestEndEventType `json:"type" api:"required"`
@@ -5268,7 +5315,7 @@ const (
 type BetaManagedAgentsSpanModelRequestStartEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the model request started.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "span.model_request_start".
 	Type BetaManagedAgentsSpanModelRequestStartEventType `json:"type" api:"required"`
@@ -5304,9 +5351,8 @@ type BetaManagedAgentsSpanModelUsage struct {
 	InputTokens int64 `json:"input_tokens" api:"required"`
 	// Output tokens generated by this request.
 	OutputTokens int64 `json:"output_tokens" api:"required"`
-	// Inference speed mode. `fast` provides significantly faster output token
-	// generation at premium pricing. Not all models support `fast`; invalid
-	// combinations are rejected at create time.
+	// Inference speed tier this request actually ran at. Mirrors `usage.speed` on
+	// /v1/messages. Only present when the fast-mode beta is active.
 	//
 	// Any of "standard", "fast".
 	Speed BetaManagedAgentsSpanModelUsageSpeed `json:"speed" api:"nullable"`
@@ -5328,9 +5374,8 @@ func (r *BetaManagedAgentsSpanModelUsage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Inference speed mode. `fast` provides significantly faster output token
-// generation at premium pricing. Not all models support `fast`; invalid
-// combinations are rejected at create time.
+// Inference speed tier this request actually ran at. Mirrors `usage.speed` on
+// /v1/messages. Only present when the fast-mode beta is active.
 type BetaManagedAgentsSpanModelUsageSpeed string
 
 const (
@@ -5355,7 +5400,7 @@ type BetaManagedAgentsSpanOutcomeEvaluationEndEvent struct {
 	OutcomeEvaluationStartID string `json:"outcome_evaluation_start_id" api:"required"`
 	// The `outc_` ID of the outcome being evaluated.
 	OutcomeID string `json:"outcome_id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when outcome evaluation ended.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Evaluation verdict. 'satisfied': criteria met, session goes idle.
 	// 'needs_revision': criteria not met, another revision cycle follows.
@@ -5367,7 +5412,8 @@ type BetaManagedAgentsSpanOutcomeEvaluationEndEvent struct {
 	Result string `json:"result" api:"required"`
 	// Any of "span.outcome_evaluation_end".
 	Type BetaManagedAgentsSpanOutcomeEvaluationEndEventType `json:"type" api:"required"`
-	// Token usage for a single model request.
+	// Aggregate token usage for this evaluation cycle. Sums across all grader model
+	// requests within the cycle.
 	Usage BetaManagedAgentsSpanModelUsage `json:"usage" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -5409,7 +5455,7 @@ type BetaManagedAgentsSpanOutcomeEvaluationOngoingEvent struct {
 	Iteration int64 `json:"iteration" api:"required"`
 	// The `outc_` ID of the outcome being evaluated.
 	OutcomeID string `json:"outcome_id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when this heartbeat was emitted.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "span.outcome_evaluation_ongoing".
 	Type BetaManagedAgentsSpanOutcomeEvaluationOngoingEventType `json:"type" api:"required"`
@@ -5446,7 +5492,7 @@ type BetaManagedAgentsSpanOutcomeEvaluationStartEvent struct {
 	Iteration int64 `json:"iteration" api:"required"`
 	// The `outc_` ID of the outcome being evaluated.
 	OutcomeID string `json:"outcome_id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when outcome evaluation started.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Any of "span.outcome_evaluation_start".
 	Type BetaManagedAgentsSpanOutcomeEvaluationStartEventType `json:"type" api:"required"`
@@ -6299,7 +6345,7 @@ const (
 type BetaManagedAgentsUnknownError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
-	// What the client should do next in response to this error.
+	// What the client should do next.
 	RetryStatus BetaManagedAgentsUnknownErrorRetryStatusUnion `json:"retry_status" api:"required"`
 	// Any of "unknown_error".
 	Type BetaManagedAgentsUnknownErrorType `json:"type" api:"required"`
@@ -6523,7 +6569,7 @@ type BetaManagedAgentsUserCustomToolResultEvent struct {
 	Content []BetaManagedAgentsUserCustomToolResultEventContentUnion `json:"content"`
 	// Whether the tool execution resulted in an error.
 	IsError bool `json:"is_error" api:"nullable"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when this result was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
 	// Set by the server to the subagent thread this result was routed to. Omitted when
 	// it was routed to the primary thread.
@@ -6923,9 +6969,10 @@ type BetaManagedAgentsUserDefineOutcomeEvent struct {
 	// Server-generated `outc_` ID for this outcome. Referenced by
 	// `span.outcome_evaluation_*` events and the session's `outcome_evaluations` list.
 	OutcomeID string `json:"outcome_id" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the outcome was accepted.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Rubric for grading the quality of an outcome.
+	// How to grade the outcome. File rubrics are currently resolved to their text
+	// content; clients should handle both variants.
 	Rubric BetaManagedAgentsUserDefineOutcomeEventRubricUnion `json:"rubric" api:"required"`
 	// Any of "user.define_outcome".
 	Type BetaManagedAgentsUserDefineOutcomeEventType `json:"type" api:"required"`
@@ -7030,7 +7077,7 @@ const (
 type BetaManagedAgentsUserDefineOutcomeEventParams struct {
 	// What the agent should produce. This is the task specification.
 	Description string `json:"description" api:"required"`
-	// Rubric for grading the quality of an outcome.
+	// How to grade the outcome. Text or file reference.
 	Rubric BetaManagedAgentsUserDefineOutcomeEventParamsRubricUnion `json:"rubric,omitzero" api:"required"`
 	// Any of "user.define_outcome".
 	Type BetaManagedAgentsUserDefineOutcomeEventParamsType `json:"type,omitzero" api:"required"`
@@ -7118,7 +7165,7 @@ type BetaManagedAgentsUserInterruptEvent struct {
 	ID string `json:"id" api:"required"`
 	// Any of "user.interrupt".
 	Type BetaManagedAgentsUserInterruptEventType `json:"type" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the interrupt was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
 	// If absent, interrupts every non-archived thread in a multiagent session (or the
 	// primary alone in a single-agent session). If present, interrupts only the named
@@ -7182,7 +7229,7 @@ type BetaManagedAgentsUserMessageEvent struct {
 	Content []BetaManagedAgentsUserMessageEventContentUnion `json:"content" api:"required"`
 	// Any of "user.message".
 	Type BetaManagedAgentsUserMessageEventType `json:"type" api:"required"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the agent finished processing this message.
 	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -7526,7 +7573,7 @@ const (
 type BetaManagedAgentsUserToolConfirmationEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// UserToolConfirmationResult enum
+	// The confirmation result: 'allow' or 'deny'.
 	//
 	// Any of "allow", "deny".
 	Result BetaManagedAgentsUserToolConfirmationEventResult `json:"result" api:"required"`
@@ -7540,7 +7587,7 @@ type BetaManagedAgentsUserToolConfirmationEvent struct {
 	// Optional message providing context for a 'deny' decision. Only allowed when
 	// result is 'deny'.
 	DenyMessage string `json:"deny_message" api:"nullable"`
-	// A timestamp in RFC 3339 format
+	// Timestamp when the confirmation was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
 	// Set by the server to the subagent thread this confirmation was routed to.
 	// Omitted when it was routed to the primary thread.
@@ -7565,7 +7612,7 @@ func (r *BetaManagedAgentsUserToolConfirmationEvent) UnmarshalJSON(data []byte) 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// UserToolConfirmationResult enum
+// The confirmation result: 'allow' or 'deny'.
 type BetaManagedAgentsUserToolConfirmationEventResult string
 
 const (
@@ -7583,7 +7630,7 @@ const (
 //
 // The properties Result, ToolUseID, Type are required.
 type BetaManagedAgentsUserToolConfirmationEventParams struct {
-	// UserToolConfirmationResult enum
+	// The confirmation result: 'allow' or 'deny'.
 	//
 	// Any of "allow", "deny".
 	Result BetaManagedAgentsUserToolConfirmationEventParamsResult `json:"result,omitzero" api:"required"`
@@ -7608,7 +7655,7 @@ func (r *BetaManagedAgentsUserToolConfirmationEventParams) UnmarshalJSON(data []
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// UserToolConfirmationResult enum
+// The confirmation result: 'allow' or 'deny'.
 type BetaManagedAgentsUserToolConfirmationEventParamsResult string
 
 const (
@@ -7877,7 +7924,7 @@ type BetaSessionEventListParams struct {
 	Order BetaSessionEventListParamsOrder `query:"order,omitzero" json:"-"`
 	// Filter by event type. Values match the `type` field on returned events (for
 	// example, `user.message` or `agent.tool_use`). Omit to return all event types.
-	Types []string `query:"types,omitzero" json:"-"`
+	Types []BetaManagedAgentsSessionEventType `query:"types,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

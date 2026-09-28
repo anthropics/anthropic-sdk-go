@@ -45,6 +45,7 @@ type Allow string                                   // Always "allow"
 type AlwaysAllow string                             // Always "always_allow"
 type AlwaysAsk string                               // Always "always_ask"
 type Any string                                     // Always "any"
+type APIActor string                                // Always "api_actor"
 type APIError string                                // Always "api_error"
 type APIKey string                                  // Always "api_key"
 type ApplicationPDF string                          // Always "application/pdf"
@@ -188,12 +189,22 @@ type NotFoundError string                           // Always "not_found_error"
 type Object string                                  // Always "object"
 type Only string                                    // Always "only"
 type Organization string                            // Always "organization"
+type OrganizationMember string                      // Always "organization_member"
 type OverloadedError string                         // Always "overloaded_error"
 type PageLocation string                            // Always "page_location"
 type PermissionError string                         // Always "permission_error"
+type Plugin string                                  // Always "plugin"
+type PluginDeleted string                           // Always "plugin_deleted"
+type PluginInstallationSetting string               // Always "plugin_installation_setting"
+type PluginInstallationSettingDeleted string        // Always "plugin_installation_setting_deleted"
+type PluginMarketplace string                       // Always "plugin_marketplace"
+type PluginMarketplaceValidationReport string       // Always "plugin_marketplace_validation_report"
+type PluginShare string                             // Always "plugin_share"
+type PluginVersion string                           // Always "plugin_version"
 type PreviousMessageNotFound string                 // Always "previous_message_not_found"
 type RateLimit string                               // Always "rate_limit"
 type RateLimitError string                          // Always "rate_limit_error"
+type RBACGroup string                               // Always "rbac_group"
 type Read string                                    // Always "read"
 type RedactedThinking string                        // Always "redacted_thinking"
 type Redeemed string                                // Always "redeemed"
@@ -333,6 +344,7 @@ func (c Allow) Default() Allow                                   { return "allow
 func (c AlwaysAllow) Default() AlwaysAllow                       { return "always_allow" }
 func (c AlwaysAsk) Default() AlwaysAsk                           { return "always_ask" }
 func (c Any) Default() Any                                       { return "any" }
+func (c APIActor) Default() APIActor                             { return "api_actor" }
 func (c APIError) Default() APIError                             { return "api_error" }
 func (c APIKey) Default() APIKey                                 { return "api_key" }
 func (c ApplicationPDF) Default() ApplicationPDF                 { return "application/pdf" }
@@ -496,14 +508,30 @@ func (c NotFoundError) Default() NotFoundError             { return "not_found_e
 func (c Object) Default() Object                           { return "object" }
 func (c Only) Default() Only                               { return "only" }
 func (c Organization) Default() Organization               { return "organization" }
+func (c OrganizationMember) Default() OrganizationMember   { return "organization_member" }
 func (c OverloadedError) Default() OverloadedError         { return "overloaded_error" }
 func (c PageLocation) Default() PageLocation               { return "page_location" }
 func (c PermissionError) Default() PermissionError         { return "permission_error" }
+func (c Plugin) Default() Plugin                           { return "plugin" }
+func (c PluginDeleted) Default() PluginDeleted             { return "plugin_deleted" }
+func (c PluginInstallationSetting) Default() PluginInstallationSetting {
+	return "plugin_installation_setting"
+}
+func (c PluginInstallationSettingDeleted) Default() PluginInstallationSettingDeleted {
+	return "plugin_installation_setting_deleted"
+}
+func (c PluginMarketplace) Default() PluginMarketplace { return "plugin_marketplace" }
+func (c PluginMarketplaceValidationReport) Default() PluginMarketplaceValidationReport {
+	return "plugin_marketplace_validation_report"
+}
+func (c PluginShare) Default() PluginShare     { return "plugin_share" }
+func (c PluginVersion) Default() PluginVersion { return "plugin_version" }
 func (c PreviousMessageNotFound) Default() PreviousMessageNotFound {
 	return "previous_message_not_found"
 }
 func (c RateLimit) Default() RateLimit                       { return "rate_limit" }
 func (c RateLimitError) Default() RateLimitError             { return "rate_limit_error" }
+func (c RBACGroup) Default() RBACGroup                       { return "rbac_group" }
 func (c Read) Default() Read                                 { return "read" }
 func (c RedactedThinking) Default() RedactedThinking         { return "redacted_thinking" }
 func (c Redeemed) Default() Redeemed                         { return "redeemed" }
@@ -685,6 +713,7 @@ func (c Allow) MarshalJSON() ([]byte, error)                                { re
 func (c AlwaysAllow) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c AlwaysAsk) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Any) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
+func (c APIActor) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c APIError) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c APIKey) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c ApplicationPDF) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
@@ -828,12 +857,22 @@ func (c NotFoundError) MarshalJSON() ([]byte, error)                        { re
 func (c Object) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Only) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Organization) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c OrganizationMember) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c OverloadedError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c PageLocation) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c PermissionError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c Plugin) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c PluginDeleted) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c PluginInstallationSetting) MarshalJSON() ([]byte, error)            { return marshalString(c) }
+func (c PluginInstallationSettingDeleted) MarshalJSON() ([]byte, error)     { return marshalString(c) }
+func (c PluginMarketplace) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c PluginMarketplaceValidationReport) MarshalJSON() ([]byte, error)    { return marshalString(c) }
+func (c PluginShare) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c PluginVersion) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c PreviousMessageNotFound) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c RateLimit) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c RateLimitError) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c RBACGroup) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Read) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c RedactedThinking) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Redeemed) MarshalJSON() ([]byte, error)                             { return marshalString(c) }

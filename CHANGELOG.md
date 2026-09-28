@@ -1,5 +1,44 @@
 # Changelog
 
+## 1.76.0 (2026-09-28)
+
+Full Changelog: [v1.75.0...v1.76.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.75.0...v1.76.0)
+
+### Features
+
+* **api:** add between_tools thinking type ([bc5be8f](https://github.com/anthropics/anthropic-sdk-go/commit/bc5be8f56546c9837c82e9e43aea2d71cc2657d4))
+* **api:** add claude-sonnet-5-5 ([48993ca](https://github.com/anthropics/anthropic-sdk-go/commit/48993caee92a520b886ba575da96541b9d174898))
+* **api:** add include_inherited and source to workspace rate limits ([bd6bb6d](https://github.com/anthropics/anthropic-sdk-go/commit/bd6bb6d16758f3f9db8b81fb44d9934c9e5685f2))
+* **api:** add typed event type values to the Managed Agents events list filter ([019b05b](https://github.com/anthropics/anthropic-sdk-go/commit/019b05b2502b992227b734a47e3159c43d18d74d))
+* **api:** cache diagnostics GA — diagnostics on Message / MessageCreateParams ([4ea973c](https://github.com/anthropics/anthropic-sdk-go/commit/4ea973c1de4a8411ed92422275f4999ff20c9e0b))
+
+
+### Bug Fixes
+
+* **client:** pass HTTP client when cloning request config ([cd8f34f](https://github.com/anthropics/anthropic-sdk-go/commit/cd8f34f7aac263031bcee8858654785070fdc28f))
+* **client:** retry when the connection drops part-way through a response ([4f7f317](https://github.com/anthropics/anthropic-sdk-go/commit/4f7f317447d60b66adacfc4df5c3b1423544b7b3))
+* **client:** send no placeholder filename for unnamed file uploads ([968849c](https://github.com/anthropics/anthropic-sdk-go/commit/968849c3e857e7659700f3fa7488320b570a0222))
+* **helpers:** degrade between_tools thinking to disabled on fallback hops ([#410](https://github.com/anthropics/anthropic-sdk-go/issues/410)) ([aa15d36](https://github.com/anthropics/anthropic-sdk-go/commit/aa15d367b5f0dd9d7e3c675d983ce82bc36a93bd))
+
+
+### Performance Improvements
+
+* **client:** decode SSE streams without per-event allocations ([0f84503](https://github.com/anthropics/anthropic-sdk-go/commit/0f845037b6d99c1937e1b7488261b6f5dbeb4c84))
+
+
+### Chores
+
+* **ci:** choose the CI runner by repository ([acb082a](https://github.com/anthropics/anthropic-sdk-go/commit/acb082a0e447d33b335c3c36d37b387004dfa987))
+* **docs:** clarify that stream: true returns the raw event stream ([5fafdf0](https://github.com/anthropics/anthropic-sdk-go/commit/5fafdf02b20eee5a191792ddbb3e64593f2d01b8))
+* **docs:** make Managed Agents actor descriptions resource-neutral ([ae3cc2f](https://github.com/anthropics/anthropic-sdk-go/commit/ae3cc2f504934685775014be5544cfd645d233b3))
+* **docs:** restore the research-preview notice on the Dream type ([d95f40a](https://github.com/anthropics/anthropic-sdk-go/commit/d95f40ad68d4777ae00284802b1471af166b73f8))
+* **internal:** simplify request execution ([4a68721](https://github.com/anthropics/anthropic-sdk-go/commit/4a687217dc3858e6a1359f421753ec90a0e8e329))
+
+
+### Documentation
+
+* **api:** prefer each field's own description over its shared type's ([d05f55e](https://github.com/anthropics/anthropic-sdk-go/commit/d05f55e8672adb1c90d977060ee407cebbd98c13))
+
 ## 1.75.0 (2026-09-22)
 
 Full Changelog: [v1.74.0...v1.75.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.74.0...v1.75.0)

@@ -211,6 +211,11 @@ type Redeemed string                                // Always "redeemed"
 type Refusal string                                 // Always "refusal"
 type Relay string                                   // Always "relay"
 type Rename string                                  // Always "rename"
+type RepositoryAuthenticationError string           // Always "repository_authentication_error"
+type RepositoryCheckoutError string                 // Always "repository_checkout_error"
+type RepositoryCloneError string                    // Always "repository_clone_error"
+type RepositoryForbiddenError string                // Always "repository_forbidden_error"
+type RepositoryNotFoundError string                 // Always "repository_not_found_error"
 type SearchResult string                            // Always "search_result"
 type SearchResultLocation string                    // Always "search_result_location"
 type SelfHosted string                              // Always "self_hosted"
@@ -529,15 +534,28 @@ func (c PluginVersion) Default() PluginVersion { return "plugin_version" }
 func (c PreviousMessageNotFound) Default() PreviousMessageNotFound {
 	return "previous_message_not_found"
 }
-func (c RateLimit) Default() RateLimit                       { return "rate_limit" }
-func (c RateLimitError) Default() RateLimitError             { return "rate_limit_error" }
-func (c RBACGroup) Default() RBACGroup                       { return "rbac_group" }
-func (c Read) Default() Read                                 { return "read" }
-func (c RedactedThinking) Default() RedactedThinking         { return "redacted_thinking" }
-func (c Redeemed) Default() Redeemed                         { return "redeemed" }
-func (c Refusal) Default() Refusal                           { return "refusal" }
-func (c Relay) Default() Relay                               { return "relay" }
-func (c Rename) Default() Rename                             { return "rename" }
+func (c RateLimit) Default() RateLimit               { return "rate_limit" }
+func (c RateLimitError) Default() RateLimitError     { return "rate_limit_error" }
+func (c RBACGroup) Default() RBACGroup               { return "rbac_group" }
+func (c Read) Default() Read                         { return "read" }
+func (c RedactedThinking) Default() RedactedThinking { return "redacted_thinking" }
+func (c Redeemed) Default() Redeemed                 { return "redeemed" }
+func (c Refusal) Default() Refusal                   { return "refusal" }
+func (c Relay) Default() Relay                       { return "relay" }
+func (c Rename) Default() Rename                     { return "rename" }
+func (c RepositoryAuthenticationError) Default() RepositoryAuthenticationError {
+	return "repository_authentication_error"
+}
+func (c RepositoryCheckoutError) Default() RepositoryCheckoutError {
+	return "repository_checkout_error"
+}
+func (c RepositoryCloneError) Default() RepositoryCloneError { return "repository_clone_error" }
+func (c RepositoryForbiddenError) Default() RepositoryForbiddenError {
+	return "repository_forbidden_error"
+}
+func (c RepositoryNotFoundError) Default() RepositoryNotFoundError {
+	return "repository_not_found_error"
+}
 func (c SearchResult) Default() SearchResult                 { return "search_result" }
 func (c SearchResultLocation) Default() SearchResultLocation { return "search_result_location" }
 func (c SelfHosted) Default() SelfHosted                     { return "self_hosted" }
@@ -879,6 +897,11 @@ func (c Redeemed) MarshalJSON() ([]byte, error)                             { re
 func (c Refusal) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Relay) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Rename) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c RepositoryAuthenticationError) MarshalJSON() ([]byte, error)        { return marshalString(c) }
+func (c RepositoryCheckoutError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c RepositoryCloneError) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c RepositoryForbiddenError) MarshalJSON() ([]byte, error)             { return marshalString(c) }
+func (c RepositoryNotFoundError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c SearchResult) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c SearchResultLocation) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c SelfHosted) MarshalJSON() ([]byte, error)                           { return marshalString(c) }

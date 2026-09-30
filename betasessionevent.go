@@ -4679,6 +4679,8 @@ type BetaManagedAgentsSessionEventUnion struct {
 	ToAgentName string `json:"to_agent_name"`
 	// This field is from variant [BetaManagedAgentsSessionErrorEvent].
 	Error BetaManagedAgentsSessionErrorEventErrorUnion `json:"error"`
+	// This field is from variant [BetaManagedAgentsSessionStatusIdleEvent].
+	StopDetails BetaManagedAgentsSessionRefusalStopDetails `json:"stop_details"`
 	// This field is a union of
 	// [BetaManagedAgentsSessionStatusIdleEventStopReasonUnion],
 	// [BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion]
@@ -4733,6 +4735,7 @@ type BetaManagedAgentsSessionEventUnion struct {
 		ToSessionThreadID        respjson.Field
 		ToAgentName              respjson.Field
 		Error                    respjson.Field
+		StopDetails              respjson.Field
 		StopReason               respjson.Field
 		AgentName                respjson.Field
 		Iteration                respjson.Field
@@ -5265,6 +5268,63 @@ const (
 	BetaManagedAgentsSessionEventTypeSessionUsage                   BetaManagedAgentsSessionEventType = "session.usage"
 )
 
+// The turn ended because the model's response was refused, for example by a safety
+// classifier.
+type BetaManagedAgentsSessionRefusal struct {
+	Type constant.Refusal `json:"type" default:"refusal"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSessionRefusal) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSessionRefusal) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Structured information about a refusal.
+type BetaManagedAgentsSessionRefusalStopDetails struct {
+	// The policy category that triggered the refusal, or `null` when there is no named
+	// category. New values can be added over time.
+	//
+	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction", "general_harms".
+	Category BetaManagedAgentsSessionRefusalStopDetailsCategory `json:"category" api:"required"`
+	// Human-readable explanation of the refusal, or `null` when none is available. The
+	// wording can change, so do not parse it.
+	Explanation string           `json:"explanation" api:"required"`
+	Type        constant.Refusal `json:"type" default:"refusal"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Category    respjson.Field
+		Explanation respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSessionRefusalStopDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSessionRefusalStopDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The policy category that triggered the refusal, or `null` when there is no named
+// category. New values can be added over time.
+type BetaManagedAgentsSessionRefusalStopDetailsCategory string
+
+const (
+	BetaManagedAgentsSessionRefusalStopDetailsCategoryCyber               BetaManagedAgentsSessionRefusalStopDetailsCategory = "cyber"
+	BetaManagedAgentsSessionRefusalStopDetailsCategoryBio                 BetaManagedAgentsSessionRefusalStopDetailsCategory = "bio"
+	BetaManagedAgentsSessionRefusalStopDetailsCategoryFrontierLLM         BetaManagedAgentsSessionRefusalStopDetailsCategory = "frontier_llm"
+	BetaManagedAgentsSessionRefusalStopDetailsCategoryReasoningExtraction BetaManagedAgentsSessionRefusalStopDetailsCategory = "reasoning_extraction"
+	BetaManagedAgentsSessionRefusalStopDetailsCategoryGeneralHarms        BetaManagedAgentsSessionRefusalStopDetailsCategory = "general_harms"
+)
+
 // The agent is idle waiting on one or more blocking user-input events (tool
 // confirmation, custom tool result, etc.). Resolving all of them transitions the
 // session back to running.
@@ -5325,7 +5385,10 @@ type BetaManagedAgentsSessionStatusIdleEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// Timestamp of status change.
-	ProcessedAt time.Time                                              `json:"processed_at" api:"required" format:"date-time"`
+	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
+	// Structured information about why the session stopped. `null` when there is
+	// nothing more to report.
+	StopDetails BetaManagedAgentsSessionRefusalStopDetails             `json:"stop_details" api:"required"`
 	StopReason  BetaManagedAgentsSessionStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
 	// Any of "session.status_idle".
 	Type BetaManagedAgentsSessionStatusIdleEventType `json:"type" api:"required"`
@@ -5333,6 +5396,7 @@ type BetaManagedAgentsSessionStatusIdleEvent struct {
 	JSON struct {
 		ID          respjson.Field
 		ProcessedAt respjson.Field
+		StopDetails respjson.Field
 		StopReason  respjson.Field
 		Type        respjson.Field
 		ExtraFields map[string]respjson.Field
@@ -5350,14 +5414,15 @@ func (r *BetaManagedAgentsSessionStatusIdleEvent) UnmarshalJSON(data []byte) err
 // properties and values from [BetaManagedAgentsSessionEndTurn],
 // [BetaManagedAgentsSessionRequiresAction],
 // [BetaManagedAgentsSessionRetriesExhausted],
-// [BetaManagedAgentsSessionBudgetReached].
+// [BetaManagedAgentsSessionBudgetReached], [BetaManagedAgentsSessionRefusal].
 //
 // Use the [BetaManagedAgentsSessionStatusIdleEventStopReasonUnion.AsAny] method to
 // switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsSessionStatusIdleEventStopReasonUnion struct {
-	// Any of "end_turn", "requires_action", "retries_exhausted", "budget_reached".
+	// Any of "end_turn", "requires_action", "retries_exhausted", "budget_reached",
+	// "refusal".
 	Type string `json:"type"`
 	// This field is from variant [BetaManagedAgentsSessionRequiresAction].
 	EventIDs []string `json:"event_ids"`
@@ -5383,6 +5448,7 @@ func (BetaManagedAgentsSessionRetriesExhausted) implBetaManagedAgentsSessionStat
 }
 func (BetaManagedAgentsSessionBudgetReached) implBetaManagedAgentsSessionStatusIdleEventStopReasonUnion() {
 }
+func (BetaManagedAgentsSessionRefusal) implBetaManagedAgentsSessionStatusIdleEventStopReasonUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -5391,6 +5457,7 @@ func (BetaManagedAgentsSessionBudgetReached) implBetaManagedAgentsSessionStatusI
 //	case anthropic.BetaManagedAgentsSessionRequiresAction:
 //	case anthropic.BetaManagedAgentsSessionRetriesExhausted:
 //	case anthropic.BetaManagedAgentsSessionBudgetReached:
+//	case anthropic.BetaManagedAgentsSessionRefusal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -5404,6 +5471,8 @@ func (u BetaManagedAgentsSessionStatusIdleEventStopReasonUnion) AsAny() anyBetaM
 		return u.AsRetriesExhausted()
 	case "budget_reached":
 		return u.AsBudgetReached()
+	case "refusal":
+		return u.AsRefusal()
 	}
 	return nil
 }
@@ -5424,6 +5493,11 @@ func (u BetaManagedAgentsSessionStatusIdleEventStopReasonUnion) AsRetriesExhaust
 }
 
 func (u BetaManagedAgentsSessionStatusIdleEventStopReasonUnion) AsBudgetReached() (v BetaManagedAgentsSessionBudgetReached) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionStatusIdleEventStopReasonUnion) AsRefusal() (v BetaManagedAgentsSessionRefusal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5579,8 +5653,11 @@ type BetaManagedAgentsSessionThreadStatusIdleEvent struct {
 	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public sthr\_ ID of the thread that went idle.
-	SessionThreadID string                                                       `json:"session_thread_id" api:"required"`
-	StopReason      BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
+	SessionThreadID string `json:"session_thread_id" api:"required"`
+	// Structured information about why the thread stopped. `null` when there is
+	// nothing more to report.
+	StopDetails BetaManagedAgentsSessionRefusalStopDetails                   `json:"stop_details" api:"required"`
+	StopReason  BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
 	// Any of "session.thread_status_idle".
 	Type BetaManagedAgentsSessionThreadStatusIdleEventType `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -5589,6 +5666,7 @@ type BetaManagedAgentsSessionThreadStatusIdleEvent struct {
 		AgentName       respjson.Field
 		ProcessedAt     respjson.Field
 		SessionThreadID respjson.Field
+		StopDetails     respjson.Field
 		StopReason      respjson.Field
 		Type            respjson.Field
 		ExtraFields     map[string]respjson.Field
@@ -5606,14 +5684,15 @@ func (r *BetaManagedAgentsSessionThreadStatusIdleEvent) UnmarshalJSON(data []byt
 // possible properties and values from [BetaManagedAgentsSessionEndTurn],
 // [BetaManagedAgentsSessionRequiresAction],
 // [BetaManagedAgentsSessionRetriesExhausted],
-// [BetaManagedAgentsSessionBudgetReached].
+// [BetaManagedAgentsSessionBudgetReached], [BetaManagedAgentsSessionRefusal].
 //
 // Use the [BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion.AsAny]
 // method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion struct {
-	// Any of "end_turn", "requires_action", "retries_exhausted", "budget_reached".
+	// Any of "end_turn", "requires_action", "retries_exhausted", "budget_reached",
+	// "refusal".
 	Type string `json:"type"`
 	// This field is from variant [BetaManagedAgentsSessionRequiresAction].
 	EventIDs []string `json:"event_ids"`
@@ -5640,6 +5719,8 @@ func (BetaManagedAgentsSessionRetriesExhausted) implBetaManagedAgentsSessionThre
 }
 func (BetaManagedAgentsSessionBudgetReached) implBetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion() {
 }
+func (BetaManagedAgentsSessionRefusal) implBetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion() {
+}
 
 // Use the following switch statement to find the correct variant
 //
@@ -5648,6 +5729,7 @@ func (BetaManagedAgentsSessionBudgetReached) implBetaManagedAgentsSessionThreadS
 //	case anthropic.BetaManagedAgentsSessionRequiresAction:
 //	case anthropic.BetaManagedAgentsSessionRetriesExhausted:
 //	case anthropic.BetaManagedAgentsSessionBudgetReached:
+//	case anthropic.BetaManagedAgentsSessionRefusal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -5661,6 +5743,8 @@ func (u BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion) AsAny() an
 		return u.AsRetriesExhausted()
 	case "budget_reached":
 		return u.AsBudgetReached()
+	case "refusal":
+		return u.AsRefusal()
 	}
 	return nil
 }
@@ -5681,6 +5765,11 @@ func (u BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion) AsRetriesE
 }
 
 func (u BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion) AsBudgetReached() (v BetaManagedAgentsSessionBudgetReached) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion) AsRefusal() (v BetaManagedAgentsSessionRefusal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -6194,6 +6283,8 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 	ToAgentName string `json:"to_agent_name"`
 	// This field is from variant [BetaManagedAgentsSessionErrorEvent].
 	Error BetaManagedAgentsSessionErrorEventErrorUnion `json:"error"`
+	// This field is from variant [BetaManagedAgentsSessionStatusIdleEvent].
+	StopDetails BetaManagedAgentsSessionRefusalStopDetails `json:"stop_details"`
 	// This field is a union of
 	// [BetaManagedAgentsSessionStatusIdleEventStopReasonUnion],
 	// [BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion]
@@ -6254,6 +6345,7 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 		ToSessionThreadID        respjson.Field
 		ToAgentName              respjson.Field
 		Error                    respjson.Field
+		StopDetails              respjson.Field
 		StopReason               respjson.Field
 		AgentName                respjson.Field
 		Iteration                respjson.Field

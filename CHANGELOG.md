@@ -1,5 +1,37 @@
 # Changelog
 
+## 1.77.0 (2026-09-30)
+
+Full Changelog: [v1.76.0...v1.77.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.76.0...v1.77.0)
+
+### Features
+
+* **analytics:** keep the per-user report actor a union ([#416](https://github.com/anthropics/anthropic-sdk-go/issues/416)) ([03b3feb](https://github.com/anthropics/anthropic-sdk-go/commit/03b3febaa33eb719a0d02fce1c4f188b4e7e5353))
+* **api:** add a refusal stop reason and stop_details to Managed Agents session idle events ([2225664](https://github.com/anthropics/anthropic-sdk-go/commit/22256643c4c083be32f5d3e85923f08df78f1234))
+* **api:** add Claude Enterprise analytics, spend limits, and RBAC groups and roles to the Admin API ([9039d31](https://github.com/anthropics/anthropic-sdk-go/commit/9039d31a7d3bb1d8b61e052f62415f754f829460))
+* **api:** add per-user usage and cost reports to the Admin API analytics ([14fa777](https://github.com/anthropics/anthropic-sdk-go/commit/14fa7778260c0f4ecb7db05e82e0699b7e2b9366))
+* **api:** add Plugins and Plugin Marketplaces to the Admin API ([785997a](https://github.com/anthropics/anthropic-sdk-go/commit/785997aca3d92c84d538b81f8454dd3147df90b5))
+* **api:** add repository error types to Managed Agents session errors ([9dfb79b](https://github.com/anthropics/anthropic-sdk-go/commit/9dfb79bef0da35b98523b7e85235929294af2ac3))
+* **api:** allow removing a plugin's org-wide installation setting ([ef365f2](https://github.com/anthropics/anthropic-sdk-go/commit/ef365f24760f2035187f360d42139cdb3420c452))
+* **api:** MCP tunnels beta: add read-only `transport` object to Tunnel and return the one-time relay `token` in the create response ([f6572a5](https://github.com/anthropics/anthropic-sdk-go/commit/f6572a529dee57053b4f42ef07cc771a8149810c))
+* **api:** Organization API endpoints are now GA ([4fc56d2](https://github.com/anthropics/anthropic-sdk-go/commit/4fc56d20b0d3d647539a152dc75b8627faa1fc06))
+
+
+### Bug Fixes
+
+* **api:** make memory store description, metadata, archived_at required ([b8bf04b](https://github.com/anthropics/anthropic-sdk-go/commit/b8bf04bdff33841b78daa0e629e9e10805ae21d1))
+* **api:** type admin plugin preference and marketplace fields as enums ([9e2de19](https://github.com/anthropics/anthropic-sdk-go/commit/9e2de19e28f3447e5159bbad4926fc158675aee6))
+* **client:** redact sensitive headers in DumpRequest and DumpResponse ([f57d275](https://github.com/anthropics/anthropic-sdk-go/commit/f57d27555d3fdcbff3f70ad68d02f121e131a4c6))
+* **pagination:** auto-paging continues past an empty page while next_page is set ([2c8cdd7](https://github.com/anthropics/anthropic-sdk-go/commit/2c8cdd779bf2e35c7ec84faebcd61c8a3e6251fa))
+* **tools:** stop the session tool runner after any idle that ends the turn ([#413](https://github.com/anthropics/anthropic-sdk-go/issues/413)) ([bb2421f](https://github.com/anthropics/anthropic-sdk-go/commit/bb2421f1a60dd786aa72e917c7323689de5975ff))
+
+
+### Chores
+
+* **api:** update MCP Tunnels types and descriptions ([1b0aac7](https://github.com/anthropics/anthropic-sdk-go/commit/1b0aac779331bed5801cc60a86ca32eade474778))
+* **docs:** remove placeholder enum descriptions ([d156e86](https://github.com/anthropics/anthropic-sdk-go/commit/d156e867a32849273921d95150a3dee2f2d27f24))
+* **tests:** platform clients do not mirror the Organization service ([#414](https://github.com/anthropics/anthropic-sdk-go/issues/414)) ([108cfae](https://github.com/anthropics/anthropic-sdk-go/commit/108cfae33d6403a1c6e24e814b152b04a6b5118f))
+
 ## 1.76.0 (2026-09-28)
 
 Full Changelog: [v1.75.0...v1.76.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.75.0...v1.76.0)

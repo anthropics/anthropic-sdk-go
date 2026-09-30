@@ -376,7 +376,7 @@ func TestFirstPartyEnvironmentDoesNotLeak(t *testing.T) {
 
 // Services Foundry does not serve. A service added to anthropic.Client fails
 // the test below until someone decides whether Foundry serves it.
-var excludedServices = map[string]bool{"Completions": true, "Models": true}
+var excludedServices = map[string]bool{"Completions": true, "Models": true, "Organization": true}
 
 func TestClientServicesMatchAnthropicClient(t *testing.T) {
 	foundryType := reflect.TypeFor[Client]()

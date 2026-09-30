@@ -85,9 +85,9 @@ func main() {
 			fmt.Println("[final]", previews.AgentMessageText(event.ID))
 
 		case "session.status_idle":
-			if event.StopReason.Type == "end_turn" {
-				return
-			}
+			// The session is no longer doing work (whatever the stop reason) and
+			// the stream stays open, so stop reading.
+			return
 
 		case "session.error":
 			fmt.Println("[error]", event.Error.Type, event.Error.Message)

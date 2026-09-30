@@ -128,13 +128,17 @@ func toolConfirmationEvt(toolUseID, result string) map[string]any {
 	}
 }
 
-func idleEndTurnEvt(id string) map[string]any {
+func idleEvt(id, stopReason string) map[string]any {
 	return map[string]any{
 		"type":         "session.status_idle",
 		"id":           id,
-		"stop_reason":  map[string]any{"type": "end_turn"},
+		"stop_reason":  map[string]any{"type": stopReason},
 		"processed_at": "2026-05-11T12:00:00Z",
 	}
+}
+
+func idleEndTurnEvt(id string) map[string]any {
+	return idleEvt(id, "end_turn")
 }
 
 // idleRequiresActionEvt is a session.status_idle with stop_reason
@@ -554,41 +558,57 @@ func TestSessionToolRunner_SkipsUnownedToolByDefault(t *testing.T) {
 // unowned tool_use still unanswered, so it must NOT arm the countdown — the
 // runner has not handled that call, its owner still has to.
 func TestSessionToolRunner_SkippedUnownedToolDoesNotTripIdle(t *testing.T) {
-	server := newSessionEventsServer(t)
-	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
-		streamWriter(w, r, nil, true) // no live events; reconcile drives the test
-	}
-	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		body, _ := json.Marshal(map[string]any{
-			"data": []any{
-				toolUseEvt("evt_pending", "not_ours", map[string]any{}),
-				idleEndTurnEvt("evt_idle"),
-			},
-			"first_id": "evt_pending", "has_more": false, "last_id": "evt_idle",
+	ask := askToolUseEvt("evt_pending", "not_ours", map[string]any{}, "ask")
+	idle := idleEndTurnEvt("evt_idle")
+	allow := toolConfirmationEvt("evt_pending", "allow")
+
+	for name, events := range map[string]struct {
+		history []any
+		live    []string
+	}{
+		"ungated, in history":  {history: []any{toolUseEvt("evt_pending", "not_ours", map[string]any{}), idle}},
+		"approved, in history": {history: []any{ask, idle, allow}},
+		"approved, on the live stream": {live: []string{
+			sseLine("agent.tool_use", ask),
+			sseLine("session.status_idle", idle),
+			sseLine("user.tool_confirmation", allow),
+		}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				streamWriter(w, r, events.live, true)
+			}
+			server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				body, _ := json.Marshal(map[string]any{
+					"data":     append([]any{}, events.history...),
+					"first_id": "evt_pending", "has_more": false, "last_id": "evt_idle",
+				})
+				_, _ = w.Write(body)
+			}
+			server.HandleSend = func(http.ResponseWriter, *http.Request) {
+				t.Fatal("runner must not post any result for a tool it does not own")
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), nil, 100*time.Millisecond)
+
+			require.True(t, r.Next(), "the unowned call must still be surfaced")
+			call := r.Current()
+			require.Equal(t, "evt_pending", call.ToolUseID)
+			require.False(t, call.Posted)
+			require.False(t, call.IsError)
+			require.Empty(t, call.Result.ToolUseID, "no result was built for the skipped call")
+
+			for r.Next() {
+				t.Fatalf("unexpected extra yield: %+v", r.Current())
+			}
+			require.NotErrorIs(t, r.Err(), ErrIdleTimeout,
+				"runner idled out with an unowned tool_use still unanswered — the countdown must not start over outstanding work")
 		})
-		_, _ = w.Write(body)
 	}
-	server.HandleSend = func(http.ResponseWriter, *http.Request) {
-		t.Fatal("runner must not post any result for a tool it does not own")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	r := newShortIdleRunner(t, ctx, server.Client(), nil, 100*time.Millisecond)
-
-	require.True(t, r.Next(), "reconcile must still surface the unowned call")
-	call := r.Current()
-	require.Equal(t, "evt_pending", call.ToolUseID)
-	require.False(t, call.Posted)
-	require.False(t, call.IsError)
-	require.Empty(t, call.Result.ToolUseID, "no result was built for the skipped call")
-
-	for r.Next() {
-		t.Fatalf("unexpected extra yield: %+v", r.Current())
-	}
-	require.NotErrorIs(t, r.Err(), ErrIdleTimeout,
-		"runner idled out with an unowned tool_use still unanswered — reconcile must not arm over outstanding work")
 }
 
 func TestSessionToolRunner_SessionTerminatedEndsIteration(t *testing.T) {
@@ -711,11 +731,40 @@ func TestSessionToolRunner_ReconcileSurfacesSessionTerminatedFromHistory(t *test
 }
 
 func TestSessionToolRunner_IdleTimeoutEndsIteration(t *testing.T) {
-	server := newSessionEventsServer(t)
-	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
-		streamWriter(w, r, []string{sseLine("session.status_idle", idleEndTurnEvt("evt_idle"))}, true)
-	}
+	for _, stopReason := range []string{"end_turn", "refusal", "retries_exhausted", "budget_reached", "newer_than_this_sdk"} {
+		idle := idleEvt("evt_idle", stopReason)
 
+		t.Run(stopReason+" on the live stream", func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				streamWriter(w, r, []string{sseLine("session.status_idle", idle)}, true)
+			}
+			requireIdleTimeout(t, server)
+		})
+
+		// The turn ended before the runner attached, so only the history shows it.
+		t.Run(stopReason+" in history", func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				streamWriter(w, r, nil, true)
+			}
+			server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				body, _ := json.Marshal(map[string]any{
+					"data":     []any{idle},
+					"first_id": "evt_idle",
+					"has_more": false,
+					"last_id":  "evt_idle",
+				})
+				_, _ = w.Write(body)
+			}
+			requireIdleTimeout(t, server)
+		})
+	}
+}
+
+func requireIdleTimeout(t *testing.T, server *sessionEventsServer) {
+	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	r := newShortIdleRunner(t, ctx, server.Client(), nil, 100*time.Millisecond)
@@ -723,6 +772,42 @@ func TestSessionToolRunner_IdleTimeoutEndsIteration(t *testing.T) {
 		t.Fatalf("unexpected yield: %+v", r.Current())
 	}
 	require.ErrorIs(t, r.Err(), ErrIdleTimeout)
+}
+
+// The session is waiting on a client, so its turn is not over.
+func TestSessionToolRunner_RequiresActionIdleDoesNotEndIteration(t *testing.T) {
+	idle := idleRequiresActionEvt("evt_idle", "evt_elsewhere")
+
+	for name, events := range map[string]struct {
+		live    []string
+		history []any
+	}{
+		"on the live stream": {live: []string{sseLine("session.status_idle", idle)}},
+		"in history":         {history: []any{idle}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				streamWriter(w, r, events.live, true)
+			}
+			server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				body, _ := json.Marshal(map[string]any{
+					"data":     append([]any{}, events.history...),
+					"first_id": "evt_idle", "has_more": false, "last_id": "evt_idle",
+				})
+				_, _ = w.Write(body)
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), nil, 100*time.Millisecond)
+			for r.Next() {
+				t.Fatalf("unexpected yield: %+v", r.Current())
+			}
+			require.NotErrorIs(t, r.Err(), ErrIdleTimeout)
+		})
+	}
 }
 
 // shrinkSendBackoff makes tool-result send retries back off in milliseconds
@@ -1408,40 +1493,196 @@ func TestSessionToolRunner_OpenApprovalKeepsRunnerAliveThenAnswerLetsItStop(t *t
 // blocker, the end_turn the runner saw mid-hold applies and it stops on its
 // own — a held call defers the countdown, it must not cancel it outright.
 func TestSessionToolRunner_DenyAfterEndTurnResumesIdle(t *testing.T) {
-	server := newSessionEventsServer(t)
-	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
-		// Hold the call, go idle on end_turn, then deny it — and stay connected.
-		streamWriter(w, r, []string{
-			sseLine("agent.tool_use", askToolUseEvt("evt_ask", "echo", map[string]any{}, "ask")),
-			sseLine("session.status_idle", idleEndTurnEvt("evt_idle")),
-			sseLine("user.tool_confirmation", toolConfirmationEvt("evt_ask", "deny")),
-		}, true)
+	// Hold the call, go idle on end_turn, then deny it — and stay connected.
+	ask := askToolUseEvt("evt_ask", "echo", map[string]any{}, "ask")
+	idle := idleEndTurnEvt("evt_idle")
+	deny := toolConfirmationEvt("evt_ask", "deny")
+
+	for name, handlers := range map[string]struct{ stream, list http.HandlerFunc }{
+		"on the live stream": {
+			stream: func(w http.ResponseWriter, r *http.Request) {
+				streamWriter(w, r, []string{
+					sseLine("agent.tool_use", ask),
+					sseLine("session.status_idle", idle),
+					sseLine("user.tool_confirmation", deny),
+				}, true)
+			},
+		},
+		"in history": {
+			stream: func(w http.ResponseWriter, r *http.Request) { streamWriter(w, r, nil, true) },
+			list: func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				body, _ := json.Marshal(map[string]any{
+					"data":     []any{ask, idle, deny},
+					"first_id": "evt_ask",
+					"has_more": false,
+					"last_id":  deny["id"],
+				})
+				_, _ = w.Write(body)
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = handlers.stream
+			server.HandleList = handlers.list
+			server.HandleSend = func(http.ResponseWriter, *http.Request) { t.Error("a denied tool must post nothing") }
+
+			echo := &stubBetaTool{name: "echo"}
+			// MaxIdle well under the ctx bound: a correct runner times out shortly after
+			// the deny; a runner that mis-counts the released call as outstanding hangs
+			// until ctx.
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 200*time.Millisecond)
+
+			start := time.Now()
+			var yielded []DispatchedToolCall
+			for r.Next() {
+				yielded = append(yielded, r.Current())
+			}
+			elapsed := time.Since(start)
+
+			require.ErrorIs(t, r.Err(), ErrIdleTimeout,
+				"the idle countdown must resume after a deny releases the last held call")
+			require.Less(t, elapsed, 4*time.Second,
+				"runner took %s — the released call was wrongly counted as outstanding and the countdown never resumed", elapsed)
+			require.Len(t, yielded, 1, "the denied call is yielded exactly once")
+			require.Equal(t, "deny", yielded[0].Confirmation)
+			require.Equal(t, int32(0), echo.runs.Load())
+			require.NoError(t, r.Close())
+		})
 	}
-	server.HandleSend = func(http.ResponseWriter, *http.Request) { t.Error("a denied tool must post nothing") }
+}
+
+// The allow twin of the test above: the released call runs and posts its
+// result, nothing else arrives, and the runner must still stop on its own.
+func TestSessionToolRunner_AllowAfterEndTurnResumesIdle(t *testing.T) {
+	ask := askToolUseEvt("evt_ask", "echo", map[string]any{}, "ask")
+	idle := idleEndTurnEvt("evt_idle")
+	allow := toolConfirmationEvt("evt_ask", "allow")
+
+	for name, handlers := range map[string]struct{ stream, list http.HandlerFunc }{
+		"on the live stream": {
+			stream: func(w http.ResponseWriter, r *http.Request) {
+				streamWriter(w, r, []string{
+					sseLine("agent.tool_use", ask),
+					sseLine("session.status_idle", idle),
+					sseLine("user.tool_confirmation", allow),
+				}, true)
+			},
+		},
+		"in history": {
+			stream: func(w http.ResponseWriter, r *http.Request) { streamWriter(w, r, nil, true) },
+			list: func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				body, _ := json.Marshal(map[string]any{
+					"data":     []any{ask, idle, allow},
+					"first_id": "evt_ask",
+					"has_more": false,
+					"last_id":  allow["id"],
+				})
+				_, _ = w.Write(body)
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = handlers.stream
+			server.HandleList = handlers.list
+			server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(sendOK()))
+			}
+
+			echo := &stubBetaTool{name: "echo"}
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 200*time.Millisecond)
+
+			var yielded []DispatchedToolCall
+			for r.Next() {
+				yielded = append(yielded, r.Current())
+			}
+
+			require.ErrorIs(t, r.Err(), ErrIdleTimeout)
+			require.Len(t, yielded, 1)
+			require.Equal(t, "allow", yielded[0].Confirmation)
+			require.True(t, yielded[0].Posted)
+			require.Equal(t, int32(1), echo.runs.Load())
+		})
+	}
+}
+
+// The stream drops while an approved call is executing, so the reconcile after
+// the reconnect queues a second copy of it. The first copy's post fails; the
+// countdown must not start until the retry has finished too.
+func TestSessionToolRunner_RetriedApprovedCallNotCutShortByIdle(t *testing.T) {
+	server := newSessionEventsServer(t)
+	const maxIdle = 100 * time.Millisecond
+
+	var streamConns atomic.Int32
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, nil, streamConns.Add(1) > 1) // the first connection drops at once
+	}
+
+	var lists atomic.Int32
+	reconciledAgain := make(chan struct{})
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		allow := toolConfirmationEvt("evt_ask", "allow")
+		body, _ := json.Marshal(map[string]any{
+			"data": []any{
+				askToolUseEvt("evt_ask", "echo", map[string]any{}, "ask"),
+				idleEndTurnEvt("evt_idle"),
+				allow,
+			},
+			"first_id": "evt_ask", "has_more": false, "last_id": allow["id"],
+		})
+		_, _ = w.Write(body)
+		if lists.Add(1) == 2 {
+			close(reconciledAgain)
+		}
+	}
+
+	var sends atomic.Int32
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		if sends.Add(1) == 1 {
+			http.Error(w, "bad", http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
 
 	echo := &stubBetaTool{name: "echo"}
-	// MaxIdle well under the ctx bound: a correct runner times out shortly after
-	// the deny; a runner that mis-counts the released call as outstanding hangs
-	// until ctx.
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	echo.run = func(ctx context.Context, _ json.RawMessage) (string, bool) {
+		if echo.runs.Load() == 1 {
+			<-reconciledAgain
+			time.Sleep(maxIdle) // let the reconcile finish routing the second copy
+			return "ok", false
+		}
+		select {
+		case <-ctx.Done():
+			return "aborted", true
+		case <-time.After(3 * maxIdle):
+			return "ok", false
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 200*time.Millisecond)
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, maxIdle)
 
-	start := time.Now()
 	var yielded []DispatchedToolCall
 	for r.Next() {
 		yielded = append(yielded, r.Current())
 	}
-	elapsed := time.Since(start)
 
-	require.ErrorIs(t, r.Err(), ErrIdleTimeout,
-		"the idle countdown must resume after a deny releases the last held call")
-	require.Less(t, elapsed, 4*time.Second,
-		"runner took %s — the released call was wrongly counted as outstanding and the countdown never resumed", elapsed)
-	require.Len(t, yielded, 1, "the denied call is yielded exactly once")
-	require.Equal(t, "deny", yielded[0].Confirmation)
-	require.Equal(t, int32(0), echo.runs.Load())
-	require.NoError(t, r.Close())
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout)
+	require.Len(t, yielded, 2)
+	require.False(t, yielded[0].Posted, "the first result post fails (permanent 4xx)")
+	require.True(t, yielded[1].Posted, "the retried result post succeeds")
+	require.False(t, yielded[1].IsError, "the countdown must not abort the retry while it runs")
 }
 
 // An end_turn armed the countdown, then the stream dropped. The reconciled

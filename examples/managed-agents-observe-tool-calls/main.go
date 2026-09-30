@@ -180,7 +180,7 @@ func main() {
 	// 3. Iterate the SessionToolRunner: it attaches to the session, runs each
 	//    tool call locally, posts the result back, and yields one
 	//    DispatchedToolCall per completed call. The runner stops on its own once
-	//    the session goes idle (MaxIdle after an end_turn); the ctx timeout is
+	//    the session goes idle (MaxIdle after its turn ends); the ctx timeout is
 	//    just a hard cap for the demo. It does NOT touch any work-item lease.
 	//    No RequestOptions: a session you own is driven with the SDK client's
 	//    own ANTHROPIC_API_KEY auth, not an environment key.

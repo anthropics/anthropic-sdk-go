@@ -329,7 +329,6 @@ func (r *BetaManagedAgentsSessionThreadStats) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SessionThreadStatus enum
 type BetaManagedAgentsSessionThreadStatus string
 
 const (

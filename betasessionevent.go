@@ -298,7 +298,6 @@ const (
 	BetaManagedAgentsAgentCustomToolUseEventTypeAgentCustomToolUse BetaManagedAgentsAgentCustomToolUseEventType = "agent.custom_tool_use"
 )
 
-// AgentEvaluatedPermission enum
 type BetaManagedAgentsAgentEvaluatedPermission string
 
 const (

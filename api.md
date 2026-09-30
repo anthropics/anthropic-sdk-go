@@ -2214,6 +2214,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsCostBucketedResult">BetaAnalyticsCostBucketedResult</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsCostReportTimeBucket">BetaAnalyticsCostReportTimeBucket</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsCostType">BetaAnalyticsCostType</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsCostUsersItem">BetaAnalyticsCostUsersItem</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsCoworkMetrics">BetaAnalyticsCoworkMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsDesignMetrics">BetaAnalyticsDesignMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsLinesOfCode">BetaAnalyticsLinesOfCode</a>
@@ -2237,8 +2238,10 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsToolActions">BetaAnalyticsToolActions</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsUsageBucketedResult">BetaAnalyticsUsageBucketedResult</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsUsageReportTimeBucket">BetaAnalyticsUsageReportTimeBucket</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsUsageUsersItem">BetaAnalyticsUsageUsersItem</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsUser">BetaAnalyticsUser</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsUserActivity">BetaAnalyticsUserActivity</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsUserActor">BetaAnalyticsUserActor</a>
 
 #### Summaries
 
@@ -2292,11 +2295,23 @@ Methods:
 
 - <code title="get /v1/organizations/analytics/usage_report?beta=true">client.Beta.Organization.Analytics.UsageReport.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationAnalyticsUsageReportService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationAnalyticsUsageReportListParams">BetaOrganizationAnalyticsUsageReportListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsUsageReportTimeBucket">BetaAnalyticsUsageReportTimeBucket</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
+#### UserUsageReport
+
+Methods:
+
+- <code title="get /v1/organizations/analytics/user_usage_report?beta=true">client.Beta.Organization.Analytics.UserUsageReport.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationAnalyticsUserUsageReportService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationAnalyticsUserUsageReportListParams">BetaOrganizationAnalyticsUserUsageReportListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsUsageUsersItem">BetaAnalyticsUsageUsersItem</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
 #### CostReport
 
 Methods:
 
 - <code title="get /v1/organizations/analytics/cost_report?beta=true">client.Beta.Organization.Analytics.CostReport.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationAnalyticsCostReportService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationAnalyticsCostReportListParams">BetaOrganizationAnalyticsCostReportListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsCostReportTimeBucket">BetaAnalyticsCostReportTimeBucket</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+#### UserCostReport
+
+Methods:
+
+- <code title="get /v1/organizations/analytics/user_cost_report?beta=true">client.Beta.Organization.Analytics.UserCostReport.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationAnalyticsUserCostReportService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationAnalyticsUserCostReportListParams">BetaOrganizationAnalyticsUserCostReportListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsCostUsersItem">BetaAnalyticsCostUsersItem</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 ### SpendLimits
 

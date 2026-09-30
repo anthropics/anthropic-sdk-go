@@ -82,7 +82,9 @@ TEST_PATHS=(
 	betaorganizationanalyticsskill_test.go
 	betaorganizationanalyticsartifact_test.go
 	betaorganizationanalyticsusagereport_test.go
+	betaorganizationanalyticsuserusagereport_test.go
 	betaorganizationanalyticscostreport_test.go
+	betaorganizationanalyticsusercostreport_test.go
 	betaorganizationspendlimit_test.go
 	betaorganizationspendlimiteffective_test.go
 	betaorganizationspendlimitincreaserequest_test.go

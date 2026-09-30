@@ -16,16 +16,18 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewBetaOrganizationAnalyticsService] method instead.
 type BetaOrganizationAnalyticsService struct {
-	Options     []option.RequestOption
-	Summaries   BetaOrganizationAnalyticsSummaryService
-	Users       BetaOrganizationAnalyticsUserService
-	Apps        BetaOrganizationAnalyticsAppService
-	Connectors  BetaOrganizationAnalyticsConnectorService
-	Plugins     BetaOrganizationAnalyticsPluginService
-	Skills      BetaOrganizationAnalyticsSkillService
-	Artifacts   BetaOrganizationAnalyticsArtifactService
-	UsageReport BetaOrganizationAnalyticsUsageReportService
-	CostReport  BetaOrganizationAnalyticsCostReportService
+	Options         []option.RequestOption
+	Summaries       BetaOrganizationAnalyticsSummaryService
+	Users           BetaOrganizationAnalyticsUserService
+	Apps            BetaOrganizationAnalyticsAppService
+	Connectors      BetaOrganizationAnalyticsConnectorService
+	Plugins         BetaOrganizationAnalyticsPluginService
+	Skills          BetaOrganizationAnalyticsSkillService
+	Artifacts       BetaOrganizationAnalyticsArtifactService
+	UsageReport     BetaOrganizationAnalyticsUsageReportService
+	UserUsageReport BetaOrganizationAnalyticsUserUsageReportService
+	CostReport      BetaOrganizationAnalyticsCostReportService
+	UserCostReport  BetaOrganizationAnalyticsUserCostReportService
 }
 
 // NewBetaOrganizationAnalyticsService generates a new service that applies the
@@ -42,7 +44,9 @@ func NewBetaOrganizationAnalyticsService(opts ...option.RequestOption) (r BetaOr
 	r.Skills = NewBetaOrganizationAnalyticsSkillService(opts...)
 	r.Artifacts = NewBetaOrganizationAnalyticsArtifactService(opts...)
 	r.UsageReport = NewBetaOrganizationAnalyticsUsageReportService(opts...)
+	r.UserUsageReport = NewBetaOrganizationAnalyticsUserUsageReportService(opts...)
 	r.CostReport = NewBetaOrganizationAnalyticsCostReportService(opts...)
+	r.UserCostReport = NewBetaOrganizationAnalyticsUserCostReportService(opts...)
 	return
 }
 
@@ -666,6 +670,150 @@ const (
 	BetaAnalyticsCostTypeCodeExecution BetaAnalyticsCostType = "code_execution"
 	BetaAnalyticsCostTypeTokens        BetaAnalyticsCostType = "tokens"
 	BetaAnalyticsCostTypeWebSearch     BetaAnalyticsCostType = "web_search"
+)
+
+type BetaAnalyticsCostUsersItem struct {
+	// The user this row's usage or cost is attributed to. Always a `user_actor`.
+	Actor BetaAnalyticsUserActor `json:"actor" api:"required"`
+	// Amount (post-discount, pre-credit) in fractional cents (minor units).
+	Amount string `json:"amount" api:"required"`
+	// Claude Tag (Claude in Slack) spend category: `engaged` (a person addressed
+	// Claude in a channel or thread), `proactive` (Claude responded without being
+	// addressed), `scheduled` (a scheduled routine ran), `monitoring` (Claude watching
+	// a channel it was asked to monitor), or `dm` (direct messages with Claude).
+	// Populated only when `claude_tag_category` is in `group_by[]`; null for usage
+	// that is not Claude Tag. Direct-message usage is billed to the individual user
+	// and is reported under that user's product, not under `claude-tag`. New
+	// categories may be added over time.
+	//
+	// Any of "dm", "engaged", "monitoring", "proactive", "scheduled".
+	ClaudeTagCategory BetaAnalyticsClaudeTagCategory `json:"claude_tag_category" api:"required"`
+	// Slack user ID (for example `U0123ABCDEF`) of the member the Claude Tag (Claude
+	// in Slack) usage is attributed to, not a claude.ai user ID. Populated only when
+	// `claude_tag_user_id` is in `group_by[]`; null for usage that is not Claude Tag
+	// and for Claude Tag usage that is not attributed to a single user (for example
+	// `monitoring`, and `proactive` usage Claude initiated), so per-user rows can sum
+	// to less than the Claude Tag total. Cannot be combined with
+	// `group_by[]=rbac_group_id` or the `rbac_group_ids[]` filter.
+	ClaudeTagUserID string `json:"claude_tag_user_id" api:"required"`
+	// Context-window pricing tier of the usage or cost. Null unless `context_window`
+	// is in `group_by[]`; it can also be null on grouped rows with no context-window
+	// tier, such as code execution.
+	//
+	// Any of "0-200k", "200k-1M".
+	ContextWindow BetaAnalyticsContextWindow `json:"context_window" api:"required"`
+	// Cost component breakdown; null when returning the combined total.
+	//
+	// Any of "code_execution", "tokens", "web_search".
+	CostType BetaAnalyticsCostType `json:"cost_type" api:"required"`
+	// Currency code for the cost amount. Currently always `"USD"`.
+	Currency string `json:"currency" api:"required"`
+	// End of the row's UTC time bucket (exclusive), as an RFC 3339 timestamp; equal to
+	// `starting_at` plus one `bucket_width`. Null unless `bucket_width` is set.
+	EndingAt time.Time `json:"ending_at" api:"required" format:"date-time"`
+	// Inference region of the usage or cost. Null unless `inference_geo` is in
+	// `group_by[]`; it can also be null on grouped rows where the region is not set
+	// (the rows that `inference_geos[]=not_available` matches).
+	//
+	// Any of "global", "us".
+	InferenceGeo BetaAnalyticsCostUsersItemInferenceGeo `json:"inference_geo" api:"required"`
+	// List-price amount (pre-discount) in fractional cents.
+	ListAmount string `json:"list_amount" api:"required"`
+	// Model that produced the usage or cost, as a model name in the form the
+	// `models[]` filter accepts (for example, `claude-opus-5`). Null unless `model` is
+	// in `group_by[]`; it can also be null on grouped rows whose usage or cost is not
+	// attributed to a specific model, such as code execution.
+	Model string `json:"model" api:"required"`
+	// Product surface that produced the usage or cost. Null unless product is in
+	// `group_by[]`; it can also be null on grouped rows whose usage cannot be
+	// attributed to a known surface. Values include `chat`, `claude_code`, `cowork`,
+	// `office_agent`, `claude_in_chrome`, `claude_design`, and `claude-tag`.
+	// `claude-tag` is Claude Tag, the Claude product in Slack. Some unattributed usage
+	// is reported as "other".
+	Product string `json:"product" api:"required"`
+	// RBAC group (team) the usage is attributed to, in the public tagged
+	// `rbac_group_...` spelling — the same spelling the activity resources use for
+	// this key, so the same team has one id across resources and it round-trips as an
+	// `rbac_group_ids[]` filter value. Populated only when `rbac_group_id` is in
+	// `group_by[]`. Any-membership semantics: a user in several groups contributes
+	// their full usage to each of those groups' rows, so the named-group rows overlap
+	// and their sum can exceed the org total. A null value is the single unassigned
+	// row: users in no group on that (UTC) day. For the true org total, run the same
+	// query without `group_by[]`.
+	RBACGroupID string `json:"rbac_group_id" api:"required"`
+	// Number of API requests in this row's scope. Null when `group_by` includes
+	// `cost_type` or `token_type` (the count has no per-component attribution; read it
+	// from the ungrouped response). For sandbox / code-execution events, this counts
+	// execution spans rather than HTTP requests (these rows surface with
+	// `product: null`).
+	Requests int64 `json:"requests" api:"required"`
+	// Slack channel the usage originated from. Populated only when `slack_channel_id`
+	// is in `group_by[]`; null for usage outside Slack (and for rows recorded before
+	// channel attribution was enabled).
+	SlackChannelID string `json:"slack_channel_id" api:"required"`
+	// Inference speed mode of the usage or cost: `fast` or `standard`. Null unless
+	// `speed` is in `group_by[]`.
+	//
+	// Any of "fast", "standard".
+	Speed BetaAnalyticsCostUsersItemSpeed `json:"speed" api:"required"`
+	// Start of the row's UTC time bucket (inclusive), as an RFC 3339 timestamp. Null
+	// unless `bucket_width` is set; without `bucket_width`, each row aggregates the
+	// full requested range.
+	StartingAt time.Time `json:"starting_at" api:"required" format:"date-time"`
+	// Token type when `cost_type` is `tokens`; null otherwise.
+	//
+	// Any of "cache_creation.ephemeral_1h_input_tokens",
+	// "cache_creation.ephemeral_5m_input_tokens", "cache_read_input_tokens",
+	// "output_tokens", "uncached_input_tokens".
+	TokenType BetaAnalyticsTokenType `json:"token_type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Actor             respjson.Field
+		Amount            respjson.Field
+		ClaudeTagCategory respjson.Field
+		ClaudeTagUserID   respjson.Field
+		ContextWindow     respjson.Field
+		CostType          respjson.Field
+		Currency          respjson.Field
+		EndingAt          respjson.Field
+		InferenceGeo      respjson.Field
+		ListAmount        respjson.Field
+		Model             respjson.Field
+		Product           respjson.Field
+		RBACGroupID       respjson.Field
+		Requests          respjson.Field
+		SlackChannelID    respjson.Field
+		Speed             respjson.Field
+		StartingAt        respjson.Field
+		TokenType         respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsCostUsersItem) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsCostUsersItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Inference region of the usage or cost. Null unless `inference_geo` is in
+// `group_by[]`; it can also be null on grouped rows where the region is not set
+// (the rows that `inference_geos[]=not_available` matches).
+type BetaAnalyticsCostUsersItemInferenceGeo string
+
+const (
+	BetaAnalyticsCostUsersItemInferenceGeoGlobal BetaAnalyticsCostUsersItemInferenceGeo = "global"
+	BetaAnalyticsCostUsersItemInferenceGeoUs     BetaAnalyticsCostUsersItemInferenceGeo = "us"
+)
+
+// Inference speed mode of the usage or cost: `fast` or `standard`. Null unless
+// `speed` is in `group_by[]`.
+type BetaAnalyticsCostUsersItemSpeed string
+
+const (
+	BetaAnalyticsCostUsersItemSpeedFast     BetaAnalyticsCostUsersItemSpeed = "fast"
+	BetaAnalyticsCostUsersItemSpeedStandard BetaAnalyticsCostUsersItemSpeed = "standard"
 )
 
 // Cowork activity metrics for a single user on a given day.
@@ -1787,6 +1935,146 @@ func (r *BetaAnalyticsUsageReportTimeBucket) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type BetaAnalyticsUsageUsersItem struct {
+	// The user this row's usage or cost is attributed to. Always a `user_actor`.
+	Actor BetaAnalyticsUserActor `json:"actor" api:"required"`
+	// The number of input tokens for cache creation.
+	CacheCreation BetaCacheCreation `json:"cache_creation" api:"required"`
+	// The number of input tokens read from the cache.
+	CacheReadInputTokens int64 `json:"cache_read_input_tokens" api:"required"`
+	// Claude Tag (Claude in Slack) spend category: `engaged` (a person addressed
+	// Claude in a channel or thread), `proactive` (Claude responded without being
+	// addressed), `scheduled` (a scheduled routine ran), `monitoring` (Claude watching
+	// a channel it was asked to monitor), or `dm` (direct messages with Claude).
+	// Populated only when `claude_tag_category` is in `group_by[]`; null for usage
+	// that is not Claude Tag. Direct-message usage is billed to the individual user
+	// and is reported under that user's product, not under `claude-tag`. New
+	// categories may be added over time.
+	//
+	// Any of "dm", "engaged", "monitoring", "proactive", "scheduled".
+	ClaudeTagCategory BetaAnalyticsClaudeTagCategory `json:"claude_tag_category" api:"required"`
+	// Slack user ID (for example `U0123ABCDEF`) of the member the Claude Tag (Claude
+	// in Slack) usage is attributed to, not a claude.ai user ID. Populated only when
+	// `claude_tag_user_id` is in `group_by[]`; null for usage that is not Claude Tag
+	// and for Claude Tag usage that is not attributed to a single user (for example
+	// `monitoring`, and `proactive` usage Claude initiated), so per-user rows can sum
+	// to less than the Claude Tag total. Cannot be combined with
+	// `group_by[]=rbac_group_id` or the `rbac_group_ids[]` filter.
+	ClaudeTagUserID string `json:"claude_tag_user_id" api:"required"`
+	// Context-window pricing tier of the usage or cost. Null unless `context_window`
+	// is in `group_by[]`; it can also be null on grouped rows with no context-window
+	// tier, such as code execution.
+	//
+	// Any of "0-200k", "200k-1M".
+	ContextWindow BetaAnalyticsContextWindow `json:"context_window" api:"required"`
+	// End of the row's UTC time bucket (exclusive), as an RFC 3339 timestamp; equal to
+	// `starting_at` plus one `bucket_width`. Null unless `bucket_width` is set.
+	EndingAt time.Time `json:"ending_at" api:"required" format:"date-time"`
+	// Inference region of the usage or cost. Null unless `inference_geo` is in
+	// `group_by[]`; it can also be null on grouped rows where the region is not set
+	// (the rows that `inference_geos[]=not_available` matches).
+	//
+	// Any of "global", "us".
+	InferenceGeo BetaAnalyticsUsageUsersItemInferenceGeo `json:"inference_geo" api:"required"`
+	// Model that produced the usage or cost, as a model name in the form the
+	// `models[]` filter accepts (for example, `claude-opus-5`). Null unless `model` is
+	// in `group_by[]`; it can also be null on grouped rows whose usage or cost is not
+	// attributed to a specific model, such as code execution.
+	Model string `json:"model" api:"required"`
+	// The number of output tokens generated.
+	OutputTokens int64 `json:"output_tokens" api:"required"`
+	// Product surface that produced the usage or cost. Null unless product is in
+	// `group_by[]`; it can also be null on grouped rows whose usage cannot be
+	// attributed to a known surface. Values include `chat`, `claude_code`, `cowork`,
+	// `office_agent`, `claude_in_chrome`, `claude_design`, and `claude-tag`.
+	// `claude-tag` is Claude Tag, the Claude product in Slack. Some unattributed usage
+	// is reported as "other".
+	Product string `json:"product" api:"required"`
+	// RBAC group (team) the usage is attributed to, in the public tagged
+	// `rbac_group_...` spelling — the same spelling the activity resources use for
+	// this key, so the same team has one id across resources and it round-trips as an
+	// `rbac_group_ids[]` filter value. Populated only when `rbac_group_id` is in
+	// `group_by[]`. Any-membership semantics: a user in several groups contributes
+	// their full usage to each of those groups' rows, so the named-group rows overlap
+	// and their sum can exceed the org total. A null value is the single unassigned
+	// row: users in no group on that (UTC) day. For the true org total, run the same
+	// query without `group_by[]`.
+	RBACGroupID string `json:"rbac_group_id" api:"required"`
+	// Number of API requests in this row's scope. For sandbox / code-execution events,
+	// this counts execution spans rather than HTTP requests (these rows surface with
+	// `product: null`).
+	Requests int64 `json:"requests" api:"required"`
+	// Server-side tool usage metrics.
+	ServerToolUse BetaAnalyticsServerToolUse `json:"server_tool_use" api:"required"`
+	// Slack channel the usage originated from. Populated only when `slack_channel_id`
+	// is in `group_by[]`; null for usage outside Slack (and for rows recorded before
+	// channel attribution was enabled).
+	SlackChannelID string `json:"slack_channel_id" api:"required"`
+	// Inference speed mode of the usage or cost: `fast` or `standard`. Null unless
+	// `speed` is in `group_by[]`.
+	//
+	// Any of "fast", "standard".
+	Speed BetaAnalyticsUsageUsersItemSpeed `json:"speed" api:"required"`
+	// Start of the row's UTC time bucket (inclusive), as an RFC 3339 timestamp. Null
+	// unless `bucket_width` is set; without `bucket_width`, each row aggregates the
+	// full requested range.
+	StartingAt time.Time `json:"starting_at" api:"required" format:"date-time"`
+	// Total token count across all token types. This is the value the default
+	// `order_by` (`total_tokens`) sorts on.
+	TotalTokens int64 `json:"total_tokens" api:"required"`
+	// The number of uncached input tokens processed.
+	UncachedInputTokens int64 `json:"uncached_input_tokens" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Actor                respjson.Field
+		CacheCreation        respjson.Field
+		CacheReadInputTokens respjson.Field
+		ClaudeTagCategory    respjson.Field
+		ClaudeTagUserID      respjson.Field
+		ContextWindow        respjson.Field
+		EndingAt             respjson.Field
+		InferenceGeo         respjson.Field
+		Model                respjson.Field
+		OutputTokens         respjson.Field
+		Product              respjson.Field
+		RBACGroupID          respjson.Field
+		Requests             respjson.Field
+		ServerToolUse        respjson.Field
+		SlackChannelID       respjson.Field
+		Speed                respjson.Field
+		StartingAt           respjson.Field
+		TotalTokens          respjson.Field
+		UncachedInputTokens  respjson.Field
+		ExtraFields          map[string]respjson.Field
+		raw                  string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsUsageUsersItem) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsUsageUsersItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Inference region of the usage or cost. Null unless `inference_geo` is in
+// `group_by[]`; it can also be null on grouped rows where the region is not set
+// (the rows that `inference_geos[]=not_available` matches).
+type BetaAnalyticsUsageUsersItemInferenceGeo string
+
+const (
+	BetaAnalyticsUsageUsersItemInferenceGeoGlobal BetaAnalyticsUsageUsersItemInferenceGeo = "global"
+	BetaAnalyticsUsageUsersItemInferenceGeoUs     BetaAnalyticsUsageUsersItemInferenceGeo = "us"
+)
+
+// Inference speed mode of the usage or cost: `fast` or `standard`. Null unless
+// `speed` is in `group_by[]`.
+type BetaAnalyticsUsageUsersItemSpeed string
+
+const (
+	BetaAnalyticsUsageUsersItemSpeedFast     BetaAnalyticsUsageUsersItemSpeed = "fast"
+	BetaAnalyticsUsageUsersItemSpeedStandard BetaAnalyticsUsageUsersItemSpeed = "standard"
+)
+
 // A user in the organization, identified by tagged id and email address.
 type BetaAnalyticsUser struct {
 	// Tagged user identifier (e.g. `user_...`)
@@ -1875,5 +2163,48 @@ type BetaAnalyticsUserActivity struct {
 // Returns the unmodified JSON received from the API
 func (r BetaAnalyticsUserActivity) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsUserActivity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaAnalyticsUserActor struct {
+	// True when the account has been deleted, or when the user is no longer a member
+	// of the organization or its associated organizations (for example, their
+	// membership was removed or they were deprovisioned via your identity provider).
+	// `email_address` stays populated for removed users and is null when the account
+	// has been deleted. `name` follows the rules described on that field. The
+	// `user_id` is still populated for reconciliation.
+	Deleted bool `json:"deleted" api:"required"`
+	// The user's email address, including for users who are no longer members of the
+	// organization or its associated organizations. Null when the account has been
+	// deleted (check `deleted`) and for system-minted service accounts, which have no
+	// person's mailbox behind them (check `name`).
+	EmailAddress string `json:"email_address" api:"required"`
+	// The user's full name. Null when the user has not set a name. Returns
+	// `"Deleted User"` when the account itself has been deleted, or when the user is
+	// no longer a member of the organization or its associated organizations and the
+	// organization has chosen to hide the names of removed users. Otherwise, the name
+	// stays populated for removed users. Rows for system-minted service accounts
+	// render the service name (for example, `"Claude Security"` for usage by
+	// Anthropic's security-patching service) or null.
+	Name string `json:"name" api:"required"`
+	// Actor type. Always `"user_actor"`.
+	Type constant.UserActor `json:"type" default:"user_actor"`
+	// Tagged user ID.
+	UserID string `json:"user_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Deleted      respjson.Field
+		EmailAddress respjson.Field
+		Name         respjson.Field
+		Type         respjson.Field
+		UserID       respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsUserActor) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsUserActor) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

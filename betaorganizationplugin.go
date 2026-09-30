@@ -317,6 +317,8 @@ type BetaPlugin struct {
 	// setting, or its plugin marketplace's default. Null for a member-owned Plugin,
 	// which has shares instead. One of `required`, `auto_install`, `available`,
 	// `not_available`; a value this API does not yet name is returned as stored.
+	//
+	// Any of "auto_install", "available", "not_available", "required".
 	OrganizationInstallationPreference BetaPluginOrganizationInstallationPreference `json:"organization_installation_preference" api:"required"`
 	// Organization-owned Plugin: true while it has no organization-wide setting of its
 	// own and `organization_installation_preference` is its plugin marketplace's

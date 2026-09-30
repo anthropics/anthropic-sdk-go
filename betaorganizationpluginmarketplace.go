@@ -255,6 +255,8 @@ type BetaPluginMarketplace struct {
 	// it with no setting of its own gets. Null for a member's personal plugin
 	// marketplace. One of `required`, `auto_install`, `available`, `not_available`; a
 	// value this API does not yet name is returned as stored.
+	//
+	// Any of "auto_install", "available", "not_available", "required".
 	DefaultInstallationPreference BetaPluginMarketplaceDefaultInstallationPreference `json:"default_installation_preference" api:"required"`
 	// RFC 3339. When the most recent synchronization attempt to finish did so,
 	// whatever its outcome; for a repository plugin marketplace no synchronization has
@@ -276,12 +278,17 @@ type BetaPluginMarketplace struct {
 	// Git repository the owner connected, into which nothing can be uploaded;
 	// `directory` is Anthropic's own catalog, which this API does not list. A value
 	// this API does not yet name is returned as stored.
+	//
+	// Any of "directory", "github", "gitlab", "manual", "public_git".
 	Source BetaPluginMarketplaceSource `json:"source" api:"required"`
 	// Outcome of the plugin marketplace's most recent synchronization: one of
 	// `success`, `in_progress`, `failed_content`, `failed_transient`, `failed_auth`,
 	// `failed_limits`; a value this API does not yet name is returned as stored. Null
 	// until a synchronization is first attempted — so always for a `manual` plugin
 	// marketplace.
+	//
+	// Any of "failed_auth", "failed_content", "failed_limits", "failed_transient",
+	// "in_progress", "success".
 	SyncStatus BetaPluginMarketplaceSyncStatus `json:"sync_status" api:"required"`
 	// Always `plugin_marketplace`.
 	Type constant.PluginMarketplace `json:"type" default:"plugin_marketplace"`

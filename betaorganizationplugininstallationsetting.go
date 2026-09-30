@@ -299,6 +299,8 @@ type BetaPluginInstallationSetting struct {
 	// The setting the target holds for this Plugin. One of `required`, `auto_install`,
 	// `available`, `not_available`; a value this API does not yet name is returned as
 	// stored.
+	//
+	// Any of "auto_install", "available", "not_available", "required".
 	InstallationPreference BetaPluginInstallationSettingInstallationPreference `json:"installation_preference" api:"required"`
 	// The Plugin's ID.
 	PluginID string `json:"plugin_id" api:"required"`

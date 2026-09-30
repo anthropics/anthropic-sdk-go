@@ -279,6 +279,54 @@ func TestNonJSONErrorBody(t *testing.T) {
 	}
 }
 
+func TestErrorDumpRedactsSensitiveHeaders(t *testing.T) {
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithHTTPClient(&http.Client{
+			Transport: &closureTransport{
+				fn: func(req *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: http.StatusBadRequest,
+						Header: http.Header{
+							http.CanonicalHeaderKey("Set-Cookie"): []string{"session=dump-secret-cookie"},
+						},
+						Body: io.NopCloser(strings.NewReader("dump-body")),
+					}, nil
+				},
+			},
+		}),
+		option.WithHeader("Authorization", "Bearer dump-secret-token"),
+		option.WithHeader("X-Api-Key", "dump-secret-key"),
+	)
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{{
+			Content: []anthropic.ContentBlockParamUnion{{
+				OfText: &anthropic.TextBlockParam{
+					Text: "x",
+				},
+			}},
+			Role: anthropic.MessageParamRoleUser,
+		}},
+		Model: anthropic.ModelClaudeSonnet5_5,
+	})
+	var apiErr *anthropic.Error
+	if !errors.As(err, &apiErr) {
+		t.Fatalf("Expected an API error, got %v", err)
+	}
+	for _, dump := range []string{string(apiErr.DumpRequest(true)), string(apiErr.DumpResponse(true))} {
+		if strings.Contains(dump, "dump-secret") || !strings.Contains(dump, "***") {
+			t.Errorf("Expected sensitive headers to be redacted, got:\n%s", dump)
+		}
+	}
+	if dump := string(apiErr.DumpResponse(true)); !strings.Contains(dump, "dump-body") {
+		t.Errorf("Expected a second response dump to include the body, got:\n%s", dump)
+	}
+	if got := apiErr.Request.Header.Get("X-Api-Key"); got != "dump-secret-key" {
+		t.Errorf("Expected the request's X-Api-Key header to be unchanged, got %q", got)
+	}
+}
+
 func TestContextCancel(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithAPIKey("my-anthropic-api-key"),

@@ -18,6 +18,7 @@ import (
 	"cmp"
 	"encoding"
 	"encoding/base64"
+	stdjson "encoding/json"
 	"fmt"
 	"github.com/anthropics/anthropic-sdk-go/internal/encoding/json/sentinel"
 	"github.com/anthropics/anthropic-sdk-go/internal/encoding/json/shims"
@@ -626,12 +627,13 @@ func (bits floatEncoder) encode(e *encodeState, v reflect.Value, opts encOpts) {
 }
 
 var (
-	float32Encoder = (floatEncoder(32)).encode
-	float64Encoder = (floatEncoder(64)).encode
+	float32Encoder   = (floatEncoder(32)).encode
+	float64Encoder   = (floatEncoder(64)).encode
+	stdlibNumberType = shims.TypeFor[stdjson.Number]()
 )
 
 func stringEncoder(e *encodeState, v reflect.Value, opts encOpts) {
-	if v.Type() == numberType {
+	if v.Type() == numberType || v.Type() == stdlibNumberType {
 		numStr := v.String()
 		// In Go1.5 the empty string encodes to "0", while this is not a valid number literal
 		// we keep compatibility so check validity after this.

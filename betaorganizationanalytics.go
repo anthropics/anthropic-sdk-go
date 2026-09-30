@@ -1,6 +1,7 @@
 package anthropic
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -674,7 +675,7 @@ const (
 
 type BetaAnalyticsCostUsersItem struct {
 	// The user this row's usage or cost is attributed to. Always a `user_actor`.
-	Actor BetaAnalyticsUserActor `json:"actor" api:"required"`
+	Actor BetaAnalyticsCostUsersItemActorUnion `json:"actor" api:"required"`
 	// Amount (post-discount, pre-credit) in fractional cents (minor units).
 	Amount string `json:"amount" api:"required"`
 	// Claude Tag (Claude in Slack) spend category: `engaged` (a person addressed
@@ -794,6 +795,70 @@ type BetaAnalyticsCostUsersItem struct {
 // Returns the unmodified JSON received from the API
 func (r BetaAnalyticsCostUsersItem) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsCostUsersItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaAnalyticsCostUsersItemActorUnion contains all possible properties and values
+// from [BetaAnalyticsUserActor].
+//
+// Use the [BetaAnalyticsCostUsersItemActorUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaAnalyticsCostUsersItemActorUnion struct {
+	// This field is from variant [BetaAnalyticsUserActor].
+	Deleted bool `json:"deleted"`
+	// This field is from variant [BetaAnalyticsUserActor].
+	EmailAddress string `json:"email_address"`
+	// This field is from variant [BetaAnalyticsUserActor].
+	Name string `json:"name"`
+	// Any of "user_actor".
+	Type string `json:"type"`
+	// This field is from variant [BetaAnalyticsUserActor].
+	UserID string `json:"user_id"`
+	JSON   struct {
+		Deleted      respjson.Field
+		EmailAddress respjson.Field
+		Name         respjson.Field
+		Type         respjson.Field
+		UserID       respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// anyBetaAnalyticsCostUsersItemActor is implemented by each variant of
+// [BetaAnalyticsCostUsersItemActorUnion] to add type safety for the return type of
+// [BetaAnalyticsCostUsersItemActorUnion.AsAny]
+type anyBetaAnalyticsCostUsersItemActor interface {
+	implBetaAnalyticsCostUsersItemActorUnion()
+}
+
+func (BetaAnalyticsUserActor) implBetaAnalyticsCostUsersItemActorUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaAnalyticsCostUsersItemActorUnion.AsAny().(type) {
+//	case anthropic.BetaAnalyticsUserActor:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaAnalyticsCostUsersItemActorUnion) AsAny() anyBetaAnalyticsCostUsersItemActor {
+	switch u.Type {
+	case "user_actor":
+		return u.AsUserActor()
+	}
+	return nil
+}
+
+func (u BetaAnalyticsCostUsersItemActorUnion) AsUserActor() (v BetaAnalyticsUserActor) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaAnalyticsCostUsersItemActorUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaAnalyticsCostUsersItemActorUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1937,7 +2002,7 @@ func (r *BetaAnalyticsUsageReportTimeBucket) UnmarshalJSON(data []byte) error {
 
 type BetaAnalyticsUsageUsersItem struct {
 	// The user this row's usage or cost is attributed to. Always a `user_actor`.
-	Actor BetaAnalyticsUserActor `json:"actor" api:"required"`
+	Actor BetaAnalyticsUsageUsersItemActorUnion `json:"actor" api:"required"`
 	// The number of input tokens for cache creation.
 	CacheCreation BetaCacheCreation `json:"cache_creation" api:"required"`
 	// The number of input tokens read from the cache.
@@ -2053,6 +2118,70 @@ type BetaAnalyticsUsageUsersItem struct {
 // Returns the unmodified JSON received from the API
 func (r BetaAnalyticsUsageUsersItem) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsUsageUsersItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaAnalyticsUsageUsersItemActorUnion contains all possible properties and
+// values from [BetaAnalyticsUserActor].
+//
+// Use the [BetaAnalyticsUsageUsersItemActorUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaAnalyticsUsageUsersItemActorUnion struct {
+	// This field is from variant [BetaAnalyticsUserActor].
+	Deleted bool `json:"deleted"`
+	// This field is from variant [BetaAnalyticsUserActor].
+	EmailAddress string `json:"email_address"`
+	// This field is from variant [BetaAnalyticsUserActor].
+	Name string `json:"name"`
+	// Any of "user_actor".
+	Type string `json:"type"`
+	// This field is from variant [BetaAnalyticsUserActor].
+	UserID string `json:"user_id"`
+	JSON   struct {
+		Deleted      respjson.Field
+		EmailAddress respjson.Field
+		Name         respjson.Field
+		Type         respjson.Field
+		UserID       respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// anyBetaAnalyticsUsageUsersItemActor is implemented by each variant of
+// [BetaAnalyticsUsageUsersItemActorUnion] to add type safety for the return type
+// of [BetaAnalyticsUsageUsersItemActorUnion.AsAny]
+type anyBetaAnalyticsUsageUsersItemActor interface {
+	implBetaAnalyticsUsageUsersItemActorUnion()
+}
+
+func (BetaAnalyticsUserActor) implBetaAnalyticsUsageUsersItemActorUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaAnalyticsUsageUsersItemActorUnion.AsAny().(type) {
+//	case anthropic.BetaAnalyticsUserActor:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaAnalyticsUsageUsersItemActorUnion) AsAny() anyBetaAnalyticsUsageUsersItemActor {
+	switch u.Type {
+	case "user_actor":
+		return u.AsUserActor()
+	}
+	return nil
+}
+
+func (u BetaAnalyticsUsageUsersItemActorUnion) AsUserActor() (v BetaAnalyticsUserActor) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaAnalyticsUsageUsersItemActorUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaAnalyticsUsageUsersItemActorUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

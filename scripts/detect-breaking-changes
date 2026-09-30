@@ -15,6 +15,22 @@ TEST_PATHS=(
 	file_test.go
 	skill_test.go
 	skillversion_test.go
+	organization_test.go
+	organizationapikey_test.go
+	organizationexternalkey_test.go
+	organizationfederationissuer_test.go
+	organizationfederationrule_test.go
+	organizationfederationruleworkspace_test.go
+	organizationinvite_test.go
+	organizationserviceaccount_test.go
+	organizationserviceaccountworkspace_test.go
+	organizationuser_test.go
+	organizationworkspace_test.go
+	organizationworkspaceratelimit_test.go
+	organizationworkspacemember_test.go
+	organizationworkspaceserviceaccount_test.go
+	organizationratelimit_test.go
+	organizationcompliancesetting_test.go
 	betamodel_test.go
 	betamessage_test.go
 	betamessagebatch_test.go

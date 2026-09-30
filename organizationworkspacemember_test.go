@@ -1,0 +1,156 @@
+package anthropic_test
+
+import (
+	"context"
+	"errors"
+	"os"
+	"testing"
+
+	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/option"
+)
+
+func TestOrganizationWorkspaceMemberGet(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Organization.Workspaces.Members.Get(
+		context.TODO(),
+		"user_id",
+		anthropic.OrganizationWorkspaceMemberGetParams{
+			WorkspaceID: "workspace_id",
+		},
+	)
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestOrganizationWorkspaceMemberUpdate(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Organization.Workspaces.Members.Update(
+		context.TODO(),
+		"user_id",
+		anthropic.OrganizationWorkspaceMemberUpdateParams{
+			WorkspaceID:   "workspace_id",
+			WorkspaceRole: anthropic.WorkspaceRoleWorkspaceAdmin,
+		},
+	)
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestOrganizationWorkspaceMemberListWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Organization.Workspaces.Members.List(
+		context.TODO(),
+		"workspace_id",
+		anthropic.OrganizationWorkspaceMemberListParams{
+			AfterID:  anthropic.String("after_id"),
+			BeforeID: anthropic.String("before_id"),
+			Limit:    anthropic.Int(1),
+		},
+	)
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestOrganizationWorkspaceMemberAdd(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Organization.Workspaces.Members.Add(
+		context.TODO(),
+		"workspace_id",
+		anthropic.OrganizationWorkspaceMemberAddParams{
+			UserID:        "user_01WCz1FkmYMm4gnmykNKUu3Q",
+			WorkspaceRole: anthropic.NoBillingWorkspaceRoleWorkspaceAdmin,
+		},
+	)
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestOrganizationWorkspaceMemberRemove(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anthropic.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("my-anthropic-api-key"),
+	)
+	_, err := client.Organization.Workspaces.Members.Remove(
+		context.TODO(),
+		"user_id",
+		anthropic.OrganizationWorkspaceMemberRemoveParams{
+			WorkspaceID: "workspace_id",
+		},
+	)
+	if err != nil {
+		var apierr *anthropic.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}

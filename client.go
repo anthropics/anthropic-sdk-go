@@ -21,13 +21,14 @@ import (
 // interacting with the anthropic API. You should not instantiate this client
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
-	Options     []option.RequestOption
-	Completions CompletionService
-	Messages    MessageService
-	Models      ModelService
-	Files       FileService
-	Skills      SkillService
-	Beta        BetaService
+	Options      []option.RequestOption
+	Completions  CompletionService
+	Messages     MessageService
+	Models       ModelService
+	Files        FileService
+	Skills       SkillService
+	Organization OrganizationService
+	Beta         BetaService
 }
 
 // DefaultClientOptions walks the default credential chain per the
@@ -220,6 +221,7 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 	r.Models = NewModelService(opts...)
 	r.Files = NewFileService(opts...)
 	r.Skills = NewSkillService(opts...)
+	r.Organization = NewOrganizationService(opts...)
 	r.Beta = NewBetaService(opts...)
 
 	return

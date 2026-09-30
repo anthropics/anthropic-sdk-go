@@ -7211,8 +7211,18 @@ const (
 	// Powerful intelligence for long-running agents and coding
 	ModelClaudeOpus4_5_20251101 Model = "claude-opus-4-5-20251101"
 	// High-performance model for agents and coding
+	//
+	// Deprecated: Will reach end-of-life on November 30, 2026. Please migrate to
+	// claude-sonnet-5-5. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
 	ModelClaudeSonnet4_5 Model = "claude-sonnet-4-5"
 	// High-performance model for agents and coding
+	//
+	// Deprecated: Will reach end-of-life on November 30, 2026. Please migrate to
+	// claude-sonnet-5-5. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
 	ModelClaudeSonnet4_5_20250929 Model = "claude-sonnet-4-5-20250929"
 )
 

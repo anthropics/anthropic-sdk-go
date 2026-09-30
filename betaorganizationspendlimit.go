@@ -6,12 +6,15 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"slices"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
@@ -50,6 +53,42 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 	path := fmt.Sprintf("v1/organizations/spend_limits/%s?beta=true", spendLimitID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
+}
+
+// List the organization's spend limits.
+//
+// A Claude Console organization's limits come in an order that is stable across
+// pages. A Claude Enterprise organization's are grouped by scope type, in the
+// order `organization`, `seat_tier`, `rbac_group`, `organization_service`, `user`;
+// within a type they come in a fixed order that is not creation order.
+func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSpendLimit], err error) {
+	var raw *http.Response
+	for _, v := range params.Betas {
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	}
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	path := "v1/organizations/spend_limits?beta=true"
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.Execute()
+	if err != nil {
+		return nil, err
+	}
+	res.SetPageConfig(cfg, raw)
+	return res, nil
+}
+
+// List the organization's spend limits.
+//
+// A Claude Console organization's limits come in an order that is stable across
+// pages. A Claude Enterprise organization's are grouped by scope type, in the
+// order `organization`, `seat_tier`, `rbac_group`, `organization_service`, `user`;
+// within a type they come in a fixed order that is not creation order.
+func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSpendLimit] {
+	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete a spend limit.
@@ -97,6 +136,10 @@ type BetaSpendLimit struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// ISO 4217 code of the organization's billing currency; the unit for `amount`.
 	Currency string `json:"currency" api:"required"`
+	// Read-only. `false` when extra usage is switched off for this organization
+	// (`organization` limit) or for this member (`user` limit); `amount` is kept and
+	// applies again when it's switched back on. Always `true` for other limits.
+	IsEnabled bool `json:"is_enabled" api:"required"`
 	// Length of the window the limit resets over. `amount` caps spend within each
 	// period.
 	//
@@ -115,6 +158,7 @@ type BetaSpendLimit struct {
 		Amount      respjson.Field
 		CreatedAt   respjson.Field
 		Currency    respjson.Field
+		IsEnabled   respjson.Field
 		Period      respjson.Field
 		Scope       respjson.Field
 		Type        respjson.Field
@@ -873,6 +917,34 @@ type BetaOrganizationSpendLimitDeleteResponse struct {
 func (r BetaOrganizationSpendLimitDeleteResponse) RawJSON() string { return r.JSON.raw }
 func (r *BetaOrganizationSpendLimitDeleteResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaOrganizationSpendLimitListParams struct {
+	// Opaque cursor from a previous response's `next_page` field.
+	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Maximum number of limits per page. Defaults to `20`.
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Return only limits with these scope types. A Claude Console organization has
+	// `organization` and `workspace` limits; a Claude Enterprise organization has
+	// `organization`, `seat_tier`, `rbac_group`, `organization_service` and `user`
+	// limits. Omit for all.
+	//
+	// Any of "organization", "organization_service", "rbac_group", "seat_tier",
+	// "user", "workspace".
+	ScopeType []string `query:"scope_type,omitzero" json:"-"`
+	// This endpoint is in beta: requests must send `spend-limit-reads-2026-09-26` in
+	// this header.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
+	paramObj
+}
+
+// URLQuery serializes [BetaOrganizationSpendLimitListParams]'s query parameters as
+// `url.Values`.
+func (r BetaOrganizationSpendLimitListParams) URLQuery() (v url.Values, err error) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
+		NestedFormat: apiquery.NestedQueryFormatBrackets,
+	})
 }
 
 type BetaOrganizationSpendLimitSetParams struct {

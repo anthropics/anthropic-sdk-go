@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.78.0 (2026-09-30)
+
+Full Changelog: [v1.77.0...v1.78.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.77.0...v1.78.0)
+
+### Features
+
+* **api:** add list spend limits endpoint ([597ed95](https://github.com/anthropics/anthropic-sdk-go/commit/597ed951b374caed841d1e3ac20ae3974e9d4cad))
+
+
+### Chores
+
+* **api:** mark Claude Sonnet 4.5 as deprecated (end-of-life November 30, 2026) ([5464a3e](https://github.com/anthropics/anthropic-sdk-go/commit/5464a3e35b37cd5dfbded29d1d6c4b6e21d81928))
+
 ## 1.77.0 (2026-09-30)
 
 Full Changelog: [v1.76.0...v1.77.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.76.0...v1.77.0)

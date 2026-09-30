@@ -201,14 +201,14 @@ func main() {
 		data, _ := json.MarshalIndent(event, "", "  ")
 		fmt.Println(string(data))
 
-		if event.Type == "agent.tool_use" && event.Name == "get_weather" {
+		if event.Type == "agent.custom_tool_use" && event.Name == "get_weather" {
 			_, err = client.Beta.Sessions.Events.Send(ctx, session.ID, anthropic.BetaSessionEventSendParams{
 				Events: []anthropic.BetaManagedAgentsEventParamsUnion{
 					{
-						OfUserToolResult: &anthropic.BetaManagedAgentsUserToolResultEventParams{
-							Type:      anthropic.BetaManagedAgentsUserToolResultEventParamsTypeUserToolResult,
-							ToolUseID: event.ID,
-							Content: []anthropic.BetaManagedAgentsUserToolResultEventParamsContentUnion{
+						OfUserCustomToolResult: &anthropic.BetaManagedAgentsUserCustomToolResultEventParams{
+							Type:            anthropic.BetaManagedAgentsUserCustomToolResultEventParamsTypeUserCustomToolResult,
+							CustomToolUseID: event.ID,
+							Content: []anthropic.BetaManagedAgentsUserCustomToolResultEventParamsContentUnion{
 								{
 									OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 										Text: `{"temperature_c": 14}`,
@@ -225,7 +225,9 @@ func main() {
 			}
 		}
 
-		if event.Type == "session.status_idle" && event.StopReason.Type == "end_turn" {
+		// A requires_action idle waits on the tool result sent above; after any
+		// other idle nothing more arrives, so stop reading.
+		if event.Type == "session.status_idle" && event.StopReason.Type != "requires_action" {
 			break
 		}
 	}

@@ -84,8 +84,9 @@ func sendTestRequest(t *testing.T, client *Client) {
 // --- Service surface parity ---
 
 // excludedServices are anthropic.Client fields intentionally NOT mirrored here.
-// Completions is the deprecated text-completions API.
-var excludedServices = map[string]bool{"Completions": true}
+// Completions is the deprecated text-completions API. Organization is the Admin
+// API, which takes a first-party admin key.
+var excludedServices = map[string]bool{"Completions": true, "Organization": true}
 
 func TestClientServicesMatchAnthropicClient(t *testing.T) {
 	gcType := reflect.TypeFor[Client]()

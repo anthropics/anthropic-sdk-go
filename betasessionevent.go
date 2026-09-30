@@ -298,7 +298,6 @@ const (
 	BetaManagedAgentsAgentCustomToolUseEventTypeAgentCustomToolUse BetaManagedAgentsAgentCustomToolUseEventType = "agent.custom_tool_use"
 )
 
-// AgentEvaluatedPermission enum
 type BetaManagedAgentsAgentEvaluatedPermission string
 
 const (
@@ -3272,6 +3271,526 @@ func (r *BetaManagedAgentsRedactedBlockParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The repository host rejected the credentials, or required credentials and
+// received none.
+type BetaManagedAgentsRepositoryAuthenticationError struct {
+	// Human-readable error description.
+	Message string `json:"message" api:"required"`
+	// URL of the repository that could not be cloned. Null when it could not be
+	// identified.
+	RepositoryURL string `json:"repository_url" api:"required"`
+	// What the client should do next. Always `retrying`: the session keeps running
+	// without the repository.
+	RetryStatus BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.RepositoryAuthenticationError                         `json:"type" default:"repository_authentication_error"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Message       respjson.Field
+		RepositoryURL respjson.Field
+		RetryStatus   respjson.Field
+		Type          respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsRepositoryAuthenticationError) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRepositoryAuthenticationError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion contains all
+// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
+//
+// Use the [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion.AsAny]
+// method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion struct {
+	// Any of "retrying", "exhausted", "terminal".
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsRepositoryAuthenticationErrorRetryStatus is implemented by
+// each variant of [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion]
+// to add type safety for the return type of
+// [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsRepositoryAuthenticationErrorRetryStatus interface {
+	implBetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion()
+}
+
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsRetryStatusRetrying:
+//	case anthropic.BetaManagedAgentsRetryStatusExhausted:
+//	case anthropic.BetaManagedAgentsRetryStatusTerminal:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryAuthenticationErrorRetryStatus {
+	switch u.Type {
+	case "retrying":
+		return u.AsRetrying()
+	case "exhausted":
+		return u.AsExhausted()
+	case "terminal":
+		return u.AsTerminal()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The requested branch or commit does not exist in the repository.
+type BetaManagedAgentsRepositoryCheckoutError struct {
+	// Human-readable error description.
+	Message string `json:"message" api:"required"`
+	// URL of the repository that could not be cloned. Null when it could not be
+	// identified.
+	RepositoryURL string `json:"repository_url" api:"required"`
+	// What the client should do next. Always `retrying`: the session keeps running
+	// without the repository.
+	RetryStatus BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.RepositoryCheckoutError                         `json:"type" default:"repository_checkout_error"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Message       respjson.Field
+		RepositoryURL respjson.Field
+		RetryStatus   respjson.Field
+		Type          respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsRepositoryCheckoutError) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRepositoryCheckoutError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion contains all possible
+// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
+//
+// Use the [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion.AsAny] method
+// to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion struct {
+	// Any of "retrying", "exhausted", "terminal".
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsRepositoryCheckoutErrorRetryStatus is implemented by each
+// variant of [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion] to add
+// type safety for the return type of
+// [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsRepositoryCheckoutErrorRetryStatus interface {
+	implBetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion()
+}
+
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsRetryStatusRetrying:
+//	case anthropic.BetaManagedAgentsRetryStatusExhausted:
+//	case anthropic.BetaManagedAgentsRetryStatusTerminal:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryCheckoutErrorRetryStatus {
+	switch u.Type {
+	case "retrying":
+		return u.AsRetrying()
+	case "exhausted":
+		return u.AsExhausted()
+	case "terminal":
+		return u.AsTerminal()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The repository could not be cloned.
+type BetaManagedAgentsRepositoryCloneError struct {
+	// Human-readable error description.
+	Message string `json:"message" api:"required"`
+	// URL of the repository that could not be cloned. Null when it could not be
+	// identified.
+	RepositoryURL string `json:"repository_url" api:"required"`
+	// What the client should do next. Always `retrying`: the session keeps running
+	// without the repository.
+	RetryStatus BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.RepositoryCloneError                         `json:"type" default:"repository_clone_error"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Message       respjson.Field
+		RepositoryURL respjson.Field
+		RetryStatus   respjson.Field
+		Type          respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsRepositoryCloneError) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRepositoryCloneError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion contains all possible
+// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
+//
+// Use the [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion.AsAny] method to
+// switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion struct {
+	// Any of "retrying", "exhausted", "terminal".
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsRepositoryCloneErrorRetryStatus is implemented by each
+// variant of [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion] to add type
+// safety for the return type of
+// [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsRepositoryCloneErrorRetryStatus interface {
+	implBetaManagedAgentsRepositoryCloneErrorRetryStatusUnion()
+}
+
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryCloneErrorRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryCloneErrorRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryCloneErrorRetryStatusUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsRetryStatusRetrying:
+//	case anthropic.BetaManagedAgentsRetryStatusExhausted:
+//	case anthropic.BetaManagedAgentsRetryStatusTerminal:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryCloneErrorRetryStatus {
+	switch u.Type {
+	case "retrying":
+		return u.AsRetrying()
+	case "exhausted":
+		return u.AsExhausted()
+	case "terminal":
+		return u.AsTerminal()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The repository host refused access to the repository.
+type BetaManagedAgentsRepositoryForbiddenError struct {
+	// Human-readable error description.
+	Message string `json:"message" api:"required"`
+	// URL of the repository that could not be cloned. Null when it could not be
+	// identified.
+	RepositoryURL string `json:"repository_url" api:"required"`
+	// What the client should do next. Always `retrying`: the session keeps running
+	// without the repository.
+	RetryStatus BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.RepositoryForbiddenError                         `json:"type" default:"repository_forbidden_error"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Message       respjson.Field
+		RepositoryURL respjson.Field
+		RetryStatus   respjson.Field
+		Type          respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsRepositoryForbiddenError) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRepositoryForbiddenError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion contains all possible
+// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
+//
+// Use the [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion.AsAny] method
+// to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion struct {
+	// Any of "retrying", "exhausted", "terminal".
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsRepositoryForbiddenErrorRetryStatus is implemented by each
+// variant of [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion] to add
+// type safety for the return type of
+// [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsRepositoryForbiddenErrorRetryStatus interface {
+	implBetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion()
+}
+
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsRetryStatusRetrying:
+//	case anthropic.BetaManagedAgentsRetryStatusExhausted:
+//	case anthropic.BetaManagedAgentsRetryStatusTerminal:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryForbiddenErrorRetryStatus {
+	switch u.Type {
+	case "retrying":
+		return u.AsRetrying()
+	case "exhausted":
+		return u.AsExhausted()
+	case "terminal":
+		return u.AsTerminal()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) RawJSON() string {
+	return u.JSON.raw
+}
+
+func (r *BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The repository host reported the repository as not found.
+type BetaManagedAgentsRepositoryNotFoundError struct {
+	// Human-readable error description.
+	Message string `json:"message" api:"required"`
+	// URL of the repository that could not be cloned. Null when it could not be
+	// identified.
+	RepositoryURL string `json:"repository_url" api:"required"`
+	// What the client should do next. Always `retrying`: the session keeps running
+	// without the repository.
+	RetryStatus BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.RepositoryNotFoundError                         `json:"type" default:"repository_not_found_error"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Message       respjson.Field
+		RepositoryURL respjson.Field
+		RetryStatus   respjson.Field
+		Type          respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsRepositoryNotFoundError) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRepositoryNotFoundError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion contains all possible
+// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
+//
+// Use the [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion.AsAny] method
+// to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion struct {
+	// Any of "retrying", "exhausted", "terminal".
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsRepositoryNotFoundErrorRetryStatus is implemented by each
+// variant of [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion] to add
+// type safety for the return type of
+// [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsRepositoryNotFoundErrorRetryStatus interface {
+	implBetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion()
+}
+
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsRetryStatusRetrying:
+//	case anthropic.BetaManagedAgentsRetryStatusExhausted:
+//	case anthropic.BetaManagedAgentsRetryStatusTerminal:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryNotFoundErrorRetryStatus {
+	switch u.Type {
+	case "retrying":
+		return u.AsRetrying()
+	case "exhausted":
+		return u.AsExhausted()
+	case "terminal":
+		return u.AsTerminal()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // This turn is dead; queued inputs are flushed and the session returns to idle.
 // Client may send a new prompt.
 type BetaManagedAgentsRetryStatusExhausted struct {
@@ -3843,7 +4362,12 @@ func (r *BetaManagedAgentsSessionErrorEvent) UnmarshalJSON(data []byte) error {
 // [BetaManagedAgentsMCPConnectionFailedError],
 // [BetaManagedAgentsMCPAuthenticationFailedError],
 // [BetaManagedAgentsBillingError],
-// [BetaManagedAgentsCredentialHostUnreachableError].
+// [BetaManagedAgentsCredentialHostUnreachableError],
+// [BetaManagedAgentsRepositoryAuthenticationError],
+// [BetaManagedAgentsRepositoryForbiddenError],
+// [BetaManagedAgentsRepositoryNotFoundError],
+// [BetaManagedAgentsRepositoryCheckoutError],
+// [BetaManagedAgentsRepositoryCloneError].
 //
 // Use the [BetaManagedAgentsSessionErrorEventErrorUnion.AsAny] method to switch on
 // the variant.
@@ -3858,25 +4382,34 @@ type BetaManagedAgentsSessionErrorEventErrorUnion struct {
 	// [BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion],
 	// [BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion],
 	// [BetaManagedAgentsBillingErrorRetryStatusUnion],
-	// [BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion]
+	// [BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion]
 	RetryStatus BetaManagedAgentsSessionErrorEventErrorUnionRetryStatus `json:"retry_status"`
 	// Any of "unknown_error", "model_overloaded_error", "model_rate_limited_error",
 	// "model_request_failed_error", "mcp_connection_failed_error",
 	// "mcp_authentication_failed_error", "billing_error",
-	// "credential_host_unreachable_error".
+	// "credential_host_unreachable_error", "repository_authentication_error",
+	// "repository_forbidden_error", "repository_not_found_error",
+	// "repository_checkout_error", "repository_clone_error".
 	Type          string `json:"type"`
 	MCPServerName string `json:"mcp_server_name"`
 	// This field is from variant [BetaManagedAgentsCredentialHostUnreachableError].
 	CredentialID string `json:"credential_id"`
 	// This field is from variant [BetaManagedAgentsCredentialHostUnreachableError].
-	VaultID string `json:"vault_id"`
-	JSON    struct {
+	VaultID       string `json:"vault_id"`
+	RepositoryURL string `json:"repository_url"`
+	JSON          struct {
 		Message       respjson.Field
 		RetryStatus   respjson.Field
 		Type          respjson.Field
 		MCPServerName respjson.Field
 		CredentialID  respjson.Field
 		VaultID       respjson.Field
+		RepositoryURL respjson.Field
 		raw           string
 	} `json:"-"`
 }
@@ -3898,6 +4431,12 @@ func (BetaManagedAgentsMCPAuthenticationFailedError) implBetaManagedAgentsSessio
 func (BetaManagedAgentsBillingError) implBetaManagedAgentsSessionErrorEventErrorUnion() {}
 func (BetaManagedAgentsCredentialHostUnreachableError) implBetaManagedAgentsSessionErrorEventErrorUnion() {
 }
+func (BetaManagedAgentsRepositoryAuthenticationError) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+}
+func (BetaManagedAgentsRepositoryForbiddenError) implBetaManagedAgentsSessionErrorEventErrorUnion() {}
+func (BetaManagedAgentsRepositoryNotFoundError) implBetaManagedAgentsSessionErrorEventErrorUnion()  {}
+func (BetaManagedAgentsRepositoryCheckoutError) implBetaManagedAgentsSessionErrorEventErrorUnion()  {}
+func (BetaManagedAgentsRepositoryCloneError) implBetaManagedAgentsSessionErrorEventErrorUnion()     {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -3910,6 +4449,11 @@ func (BetaManagedAgentsCredentialHostUnreachableError) implBetaManagedAgentsSess
 //	case anthropic.BetaManagedAgentsMCPAuthenticationFailedError:
 //	case anthropic.BetaManagedAgentsBillingError:
 //	case anthropic.BetaManagedAgentsCredentialHostUnreachableError:
+//	case anthropic.BetaManagedAgentsRepositoryAuthenticationError:
+//	case anthropic.BetaManagedAgentsRepositoryForbiddenError:
+//	case anthropic.BetaManagedAgentsRepositoryNotFoundError:
+//	case anthropic.BetaManagedAgentsRepositoryCheckoutError:
+//	case anthropic.BetaManagedAgentsRepositoryCloneError:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -3931,6 +4475,16 @@ func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsAny() anyBetaManagedAgen
 		return u.AsBillingError()
 	case "credential_host_unreachable_error":
 		return u.AsCredentialHostUnreachableError()
+	case "repository_authentication_error":
+		return u.AsRepositoryAuthenticationError()
+	case "repository_forbidden_error":
+		return u.AsRepositoryForbiddenError()
+	case "repository_not_found_error":
+		return u.AsRepositoryNotFoundError()
+	case "repository_checkout_error":
+		return u.AsRepositoryCheckoutError()
+	case "repository_clone_error":
+		return u.AsRepositoryCloneError()
 	}
 	return nil
 }
@@ -3971,6 +4525,31 @@ func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsBillingError() (v BetaMa
 }
 
 func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsCredentialHostUnreachableError() (v BetaManagedAgentsCredentialHostUnreachableError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryAuthenticationError() (v BetaManagedAgentsRepositoryAuthenticationError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryForbiddenError() (v BetaManagedAgentsRepositoryForbiddenError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryNotFoundError() (v BetaManagedAgentsRepositoryNotFoundError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryCheckoutError() (v BetaManagedAgentsRepositoryCheckoutError) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryCloneError() (v BetaManagedAgentsRepositoryCloneError) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -4100,6 +4679,8 @@ type BetaManagedAgentsSessionEventUnion struct {
 	ToAgentName string `json:"to_agent_name"`
 	// This field is from variant [BetaManagedAgentsSessionErrorEvent].
 	Error BetaManagedAgentsSessionErrorEventErrorUnion `json:"error"`
+	// This field is from variant [BetaManagedAgentsSessionStatusIdleEvent].
+	StopDetails BetaManagedAgentsSessionRefusalStopDetails `json:"stop_details"`
 	// This field is a union of
 	// [BetaManagedAgentsSessionStatusIdleEventStopReasonUnion],
 	// [BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion]
@@ -4154,6 +4735,7 @@ type BetaManagedAgentsSessionEventUnion struct {
 		ToSessionThreadID        respjson.Field
 		ToAgentName              respjson.Field
 		Error                    respjson.Field
+		StopDetails              respjson.Field
 		StopReason               respjson.Field
 		AgentName                respjson.Field
 		Iteration                respjson.Field
@@ -4686,6 +5268,63 @@ const (
 	BetaManagedAgentsSessionEventTypeSessionUsage                   BetaManagedAgentsSessionEventType = "session.usage"
 )
 
+// The turn ended because the model's response was refused, for example by a safety
+// classifier.
+type BetaManagedAgentsSessionRefusal struct {
+	Type constant.Refusal `json:"type" default:"refusal"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSessionRefusal) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSessionRefusal) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Structured information about a refusal.
+type BetaManagedAgentsSessionRefusalStopDetails struct {
+	// The policy category that triggered the refusal, or `null` when there is no named
+	// category. New values can be added over time.
+	//
+	// Any of "cyber", "bio", "frontier_llm", "reasoning_extraction", "general_harms".
+	Category BetaManagedAgentsSessionRefusalStopDetailsCategory `json:"category" api:"required"`
+	// Human-readable explanation of the refusal, or `null` when none is available. The
+	// wording can change, so do not parse it.
+	Explanation string           `json:"explanation" api:"required"`
+	Type        constant.Refusal `json:"type" default:"refusal"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Category    respjson.Field
+		Explanation respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSessionRefusalStopDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSessionRefusalStopDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The policy category that triggered the refusal, or `null` when there is no named
+// category. New values can be added over time.
+type BetaManagedAgentsSessionRefusalStopDetailsCategory string
+
+const (
+	BetaManagedAgentsSessionRefusalStopDetailsCategoryCyber               BetaManagedAgentsSessionRefusalStopDetailsCategory = "cyber"
+	BetaManagedAgentsSessionRefusalStopDetailsCategoryBio                 BetaManagedAgentsSessionRefusalStopDetailsCategory = "bio"
+	BetaManagedAgentsSessionRefusalStopDetailsCategoryFrontierLLM         BetaManagedAgentsSessionRefusalStopDetailsCategory = "frontier_llm"
+	BetaManagedAgentsSessionRefusalStopDetailsCategoryReasoningExtraction BetaManagedAgentsSessionRefusalStopDetailsCategory = "reasoning_extraction"
+	BetaManagedAgentsSessionRefusalStopDetailsCategoryGeneralHarms        BetaManagedAgentsSessionRefusalStopDetailsCategory = "general_harms"
+)
+
 // The agent is idle waiting on one or more blocking user-input events (tool
 // confirmation, custom tool result, etc.). Resolving all of them transitions the
 // session back to running.
@@ -4746,7 +5385,10 @@ type BetaManagedAgentsSessionStatusIdleEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// Timestamp of status change.
-	ProcessedAt time.Time                                              `json:"processed_at" api:"required" format:"date-time"`
+	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
+	// Structured information about why the session stopped. `null` when there is
+	// nothing more to report.
+	StopDetails BetaManagedAgentsSessionRefusalStopDetails             `json:"stop_details" api:"required"`
 	StopReason  BetaManagedAgentsSessionStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
 	// Any of "session.status_idle".
 	Type BetaManagedAgentsSessionStatusIdleEventType `json:"type" api:"required"`
@@ -4754,6 +5396,7 @@ type BetaManagedAgentsSessionStatusIdleEvent struct {
 	JSON struct {
 		ID          respjson.Field
 		ProcessedAt respjson.Field
+		StopDetails respjson.Field
 		StopReason  respjson.Field
 		Type        respjson.Field
 		ExtraFields map[string]respjson.Field
@@ -4771,14 +5414,15 @@ func (r *BetaManagedAgentsSessionStatusIdleEvent) UnmarshalJSON(data []byte) err
 // properties and values from [BetaManagedAgentsSessionEndTurn],
 // [BetaManagedAgentsSessionRequiresAction],
 // [BetaManagedAgentsSessionRetriesExhausted],
-// [BetaManagedAgentsSessionBudgetReached].
+// [BetaManagedAgentsSessionBudgetReached], [BetaManagedAgentsSessionRefusal].
 //
 // Use the [BetaManagedAgentsSessionStatusIdleEventStopReasonUnion.AsAny] method to
 // switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsSessionStatusIdleEventStopReasonUnion struct {
-	// Any of "end_turn", "requires_action", "retries_exhausted", "budget_reached".
+	// Any of "end_turn", "requires_action", "retries_exhausted", "budget_reached",
+	// "refusal".
 	Type string `json:"type"`
 	// This field is from variant [BetaManagedAgentsSessionRequiresAction].
 	EventIDs []string `json:"event_ids"`
@@ -4804,6 +5448,7 @@ func (BetaManagedAgentsSessionRetriesExhausted) implBetaManagedAgentsSessionStat
 }
 func (BetaManagedAgentsSessionBudgetReached) implBetaManagedAgentsSessionStatusIdleEventStopReasonUnion() {
 }
+func (BetaManagedAgentsSessionRefusal) implBetaManagedAgentsSessionStatusIdleEventStopReasonUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -4812,6 +5457,7 @@ func (BetaManagedAgentsSessionBudgetReached) implBetaManagedAgentsSessionStatusI
 //	case anthropic.BetaManagedAgentsSessionRequiresAction:
 //	case anthropic.BetaManagedAgentsSessionRetriesExhausted:
 //	case anthropic.BetaManagedAgentsSessionBudgetReached:
+//	case anthropic.BetaManagedAgentsSessionRefusal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -4825,6 +5471,8 @@ func (u BetaManagedAgentsSessionStatusIdleEventStopReasonUnion) AsAny() anyBetaM
 		return u.AsRetriesExhausted()
 	case "budget_reached":
 		return u.AsBudgetReached()
+	case "refusal":
+		return u.AsRefusal()
 	}
 	return nil
 }
@@ -4845,6 +5493,11 @@ func (u BetaManagedAgentsSessionStatusIdleEventStopReasonUnion) AsRetriesExhaust
 }
 
 func (u BetaManagedAgentsSessionStatusIdleEventStopReasonUnion) AsBudgetReached() (v BetaManagedAgentsSessionBudgetReached) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionStatusIdleEventStopReasonUnion) AsRefusal() (v BetaManagedAgentsSessionRefusal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5000,8 +5653,11 @@ type BetaManagedAgentsSessionThreadStatusIdleEvent struct {
 	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public sthr\_ ID of the thread that went idle.
-	SessionThreadID string                                                       `json:"session_thread_id" api:"required"`
-	StopReason      BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
+	SessionThreadID string `json:"session_thread_id" api:"required"`
+	// Structured information about why the thread stopped. `null` when there is
+	// nothing more to report.
+	StopDetails BetaManagedAgentsSessionRefusalStopDetails                   `json:"stop_details" api:"required"`
+	StopReason  BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
 	// Any of "session.thread_status_idle".
 	Type BetaManagedAgentsSessionThreadStatusIdleEventType `json:"type" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -5010,6 +5666,7 @@ type BetaManagedAgentsSessionThreadStatusIdleEvent struct {
 		AgentName       respjson.Field
 		ProcessedAt     respjson.Field
 		SessionThreadID respjson.Field
+		StopDetails     respjson.Field
 		StopReason      respjson.Field
 		Type            respjson.Field
 		ExtraFields     map[string]respjson.Field
@@ -5027,14 +5684,15 @@ func (r *BetaManagedAgentsSessionThreadStatusIdleEvent) UnmarshalJSON(data []byt
 // possible properties and values from [BetaManagedAgentsSessionEndTurn],
 // [BetaManagedAgentsSessionRequiresAction],
 // [BetaManagedAgentsSessionRetriesExhausted],
-// [BetaManagedAgentsSessionBudgetReached].
+// [BetaManagedAgentsSessionBudgetReached], [BetaManagedAgentsSessionRefusal].
 //
 // Use the [BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion.AsAny]
 // method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion struct {
-	// Any of "end_turn", "requires_action", "retries_exhausted", "budget_reached".
+	// Any of "end_turn", "requires_action", "retries_exhausted", "budget_reached",
+	// "refusal".
 	Type string `json:"type"`
 	// This field is from variant [BetaManagedAgentsSessionRequiresAction].
 	EventIDs []string `json:"event_ids"`
@@ -5061,6 +5719,8 @@ func (BetaManagedAgentsSessionRetriesExhausted) implBetaManagedAgentsSessionThre
 }
 func (BetaManagedAgentsSessionBudgetReached) implBetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion() {
 }
+func (BetaManagedAgentsSessionRefusal) implBetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion() {
+}
 
 // Use the following switch statement to find the correct variant
 //
@@ -5069,6 +5729,7 @@ func (BetaManagedAgentsSessionBudgetReached) implBetaManagedAgentsSessionThreadS
 //	case anthropic.BetaManagedAgentsSessionRequiresAction:
 //	case anthropic.BetaManagedAgentsSessionRetriesExhausted:
 //	case anthropic.BetaManagedAgentsSessionBudgetReached:
+//	case anthropic.BetaManagedAgentsSessionRefusal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -5082,6 +5743,8 @@ func (u BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion) AsAny() an
 		return u.AsRetriesExhausted()
 	case "budget_reached":
 		return u.AsBudgetReached()
+	case "refusal":
+		return u.AsRefusal()
 	}
 	return nil
 }
@@ -5102,6 +5765,11 @@ func (u BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion) AsRetriesE
 }
 
 func (u BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion) AsBudgetReached() (v BetaManagedAgentsSessionBudgetReached) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion) AsRefusal() (v BetaManagedAgentsSessionRefusal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5615,6 +6283,8 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 	ToAgentName string `json:"to_agent_name"`
 	// This field is from variant [BetaManagedAgentsSessionErrorEvent].
 	Error BetaManagedAgentsSessionErrorEventErrorUnion `json:"error"`
+	// This field is from variant [BetaManagedAgentsSessionStatusIdleEvent].
+	StopDetails BetaManagedAgentsSessionRefusalStopDetails `json:"stop_details"`
 	// This field is a union of
 	// [BetaManagedAgentsSessionStatusIdleEventStopReasonUnion],
 	// [BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion]
@@ -5675,6 +6345,7 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 		ToSessionThreadID        respjson.Field
 		ToAgentName              respjson.Field
 		Error                    respjson.Field
+		StopDetails              respjson.Field
 		StopReason               respjson.Field
 		AgentName                respjson.Field
 		Iteration                respjson.Field

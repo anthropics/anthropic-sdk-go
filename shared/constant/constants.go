@@ -41,10 +41,12 @@ type AgentCreated string                            // Always "agent.created"
 type AgentDeleted string                            // Always "agent.deleted"
 type AgentUpdated string                            // Always "agent.updated"
 type All string                                     // Always "all"
+type AllConnectors string                           // Always "all_connectors"
 type Allow string                                   // Always "allow"
 type AlwaysAllow string                             // Always "always_allow"
 type AlwaysAsk string                               // Always "always_ask"
 type Any string                                     // Always "any"
+type APIActor string                                // Always "api_actor"
 type APIError string                                // Always "api_error"
 type APIKey string                                  // Always "api_key"
 type ApplicationPDF string                          // Always "application/pdf"
@@ -95,6 +97,9 @@ type Computer20250124 string                        // Always "computer_20250124
 type Computer20251124 string                        // Always "computer_20251124"
 type ComputerToolset20260801 string                 // Always "computer_toolset_20260801"
 type ConflictError string                           // Always "conflict_error"
+type Connector string                               // Always "connector"
+type ConnectorScope string                          // Always "connector_scope"
+type ConnectorTool string                           // Always "connector_tool"
 type ContainerUpload string                         // Always "container_upload"
 type Content string                                 // Always "content"
 type ContentBlockDelta string                       // Always "content_block_delta"
@@ -187,19 +192,42 @@ type NotFoundError string                           // Always "not_found_error"
 type Object string                                  // Always "object"
 type Only string                                    // Always "only"
 type Organization string                            // Always "organization"
+type OrganizationMember string                      // Always "organization_member"
+type OrganizationService string                     // Always "organization_service"
 type OverloadedError string                         // Always "overloaded_error"
 type PageLocation string                            // Always "page_location"
 type PermissionError string                         // Always "permission_error"
+type Plugin string                                  // Always "plugin"
+type PluginDeleted string                           // Always "plugin_deleted"
+type PluginInstallationSetting string               // Always "plugin_installation_setting"
+type PluginInstallationSettingDeleted string        // Always "plugin_installation_setting_deleted"
+type PluginMarketplace string                       // Always "plugin_marketplace"
+type PluginMarketplaceValidationReport string       // Always "plugin_marketplace_validation_report"
+type PluginShare string                             // Always "plugin_share"
+type PluginVersion string                           // Always "plugin_version"
 type PreviousMessageNotFound string                 // Always "previous_message_not_found"
 type RateLimit string                               // Always "rate_limit"
 type RateLimitError string                          // Always "rate_limit_error"
+type RBACGroup string                               // Always "rbac_group"
+type RBACGroupDeleted string                        // Always "rbac_group_deleted"
+type RBACGroupMember string                         // Always "rbac_group_member"
+type RBACGroupMemberDeleted string                  // Always "rbac_group_member_deleted"
+type RBACRole string                                // Always "rbac_role"
+type RBACRolePermission string                      // Always "rbac_role_permission"
 type Read string                                    // Always "read"
 type RedactedThinking string                        // Always "redacted_thinking"
 type Redeemed string                                // Always "redeemed"
 type Refusal string                                 // Always "refusal"
 type Rename string                                  // Always "rename"
+type RepositoryAuthenticationError string           // Always "repository_authentication_error"
+type RepositoryCheckoutError string                 // Always "repository_checkout_error"
+type RepositoryCloneError string                    // Always "repository_clone_error"
+type RepositoryForbiddenError string                // Always "repository_forbidden_error"
+type RepositoryNotFoundError string                 // Always "repository_not_found_error"
+type ScopedAPIKeyActor string                       // Always "scoped_api_key_actor"
 type SearchResult string                            // Always "search_result"
 type SearchResultLocation string                    // Always "search_result_location"
+type SeatTier string                                // Always "seat_tier"
 type SelfHosted string                              // Always "self_hosted"
 type ServerToolUse string                           // Always "server_tool_use"
 type ServiceAccount string                          // Always "service_account"
@@ -230,6 +258,9 @@ type SkillDeleted string                            // Always "skill_deleted"
 type SkillVersion string                            // Always "skill_version"
 type SkillVersionDeleted string                     // Always "skill_version_deleted"
 type Skills string                                  // Always "skills"
+type SpendLimit string                              // Always "spend_limit"
+type SpendLimitDeleted string                       // Always "spend_limit_deleted"
+type SpendLimitIncreaseRequest string               // Always "spend_limit_increase_request"
 type StrReplace string                              // Always "str_replace"
 type StrReplaceBasedEditTool string                 // Always "str_replace_based_edit_tool"
 type StrReplaceEditor string                        // Always "str_replace_editor"
@@ -327,10 +358,12 @@ func (c AgentCreated) Default() AgentCreated                     { return "agent
 func (c AgentDeleted) Default() AgentDeleted                     { return "agent.deleted" }
 func (c AgentUpdated) Default() AgentUpdated                     { return "agent.updated" }
 func (c All) Default() All                                       { return "all" }
+func (c AllConnectors) Default() AllConnectors                   { return "all_connectors" }
 func (c Allow) Default() Allow                                   { return "allow" }
 func (c AlwaysAllow) Default() AlwaysAllow                       { return "always_allow" }
 func (c AlwaysAsk) Default() AlwaysAsk                           { return "always_ask" }
 func (c Any) Default() Any                                       { return "any" }
+func (c APIActor) Default() APIActor                             { return "api_actor" }
 func (c APIError) Default() APIError                             { return "api_error" }
 func (c APIKey) Default() APIKey                                 { return "api_key" }
 func (c ApplicationPDF) Default() ApplicationPDF                 { return "application/pdf" }
@@ -395,6 +428,9 @@ func (c ComputerToolset20260801) Default() ComputerToolset20260801 {
 	return "computer_toolset_20260801"
 }
 func (c ConflictError) Default() ConflictError                   { return "conflict_error" }
+func (c Connector) Default() Connector                           { return "connector" }
+func (c ConnectorScope) Default() ConnectorScope                 { return "connector_scope" }
+func (c ConnectorTool) Default() ConnectorTool                   { return "connector_tool" }
 func (c ContainerUpload) Default() ContainerUpload               { return "container_upload" }
 func (c Content) Default() Content                               { return "content" }
 func (c ContentBlockDelta) Default() ContentBlockDelta           { return "content_block_delta" }
@@ -493,21 +529,58 @@ func (c NotFoundError) Default() NotFoundError             { return "not_found_e
 func (c Object) Default() Object                           { return "object" }
 func (c Only) Default() Only                               { return "only" }
 func (c Organization) Default() Organization               { return "organization" }
+func (c OrganizationMember) Default() OrganizationMember   { return "organization_member" }
+func (c OrganizationService) Default() OrganizationService { return "organization_service" }
 func (c OverloadedError) Default() OverloadedError         { return "overloaded_error" }
 func (c PageLocation) Default() PageLocation               { return "page_location" }
 func (c PermissionError) Default() PermissionError         { return "permission_error" }
+func (c Plugin) Default() Plugin                           { return "plugin" }
+func (c PluginDeleted) Default() PluginDeleted             { return "plugin_deleted" }
+func (c PluginInstallationSetting) Default() PluginInstallationSetting {
+	return "plugin_installation_setting"
+}
+func (c PluginInstallationSettingDeleted) Default() PluginInstallationSettingDeleted {
+	return "plugin_installation_setting_deleted"
+}
+func (c PluginMarketplace) Default() PluginMarketplace { return "plugin_marketplace" }
+func (c PluginMarketplaceValidationReport) Default() PluginMarketplaceValidationReport {
+	return "plugin_marketplace_validation_report"
+}
+func (c PluginShare) Default() PluginShare     { return "plugin_share" }
+func (c PluginVersion) Default() PluginVersion { return "plugin_version" }
 func (c PreviousMessageNotFound) Default() PreviousMessageNotFound {
 	return "previous_message_not_found"
 }
-func (c RateLimit) Default() RateLimit                       { return "rate_limit" }
-func (c RateLimitError) Default() RateLimitError             { return "rate_limit_error" }
-func (c Read) Default() Read                                 { return "read" }
-func (c RedactedThinking) Default() RedactedThinking         { return "redacted_thinking" }
-func (c Redeemed) Default() Redeemed                         { return "redeemed" }
-func (c Refusal) Default() Refusal                           { return "refusal" }
-func (c Rename) Default() Rename                             { return "rename" }
+func (c RateLimit) Default() RateLimit                           { return "rate_limit" }
+func (c RateLimitError) Default() RateLimitError                 { return "rate_limit_error" }
+func (c RBACGroup) Default() RBACGroup                           { return "rbac_group" }
+func (c RBACGroupDeleted) Default() RBACGroupDeleted             { return "rbac_group_deleted" }
+func (c RBACGroupMember) Default() RBACGroupMember               { return "rbac_group_member" }
+func (c RBACGroupMemberDeleted) Default() RBACGroupMemberDeleted { return "rbac_group_member_deleted" }
+func (c RBACRole) Default() RBACRole                             { return "rbac_role" }
+func (c RBACRolePermission) Default() RBACRolePermission         { return "rbac_role_permission" }
+func (c Read) Default() Read                                     { return "read" }
+func (c RedactedThinking) Default() RedactedThinking             { return "redacted_thinking" }
+func (c Redeemed) Default() Redeemed                             { return "redeemed" }
+func (c Refusal) Default() Refusal                               { return "refusal" }
+func (c Rename) Default() Rename                                 { return "rename" }
+func (c RepositoryAuthenticationError) Default() RepositoryAuthenticationError {
+	return "repository_authentication_error"
+}
+func (c RepositoryCheckoutError) Default() RepositoryCheckoutError {
+	return "repository_checkout_error"
+}
+func (c RepositoryCloneError) Default() RepositoryCloneError { return "repository_clone_error" }
+func (c RepositoryForbiddenError) Default() RepositoryForbiddenError {
+	return "repository_forbidden_error"
+}
+func (c RepositoryNotFoundError) Default() RepositoryNotFoundError {
+	return "repository_not_found_error"
+}
+func (c ScopedAPIKeyActor) Default() ScopedAPIKeyActor       { return "scoped_api_key_actor" }
 func (c SearchResult) Default() SearchResult                 { return "search_result" }
 func (c SearchResultLocation) Default() SearchResultLocation { return "search_result_location" }
+func (c SeatTier) Default() SeatTier                         { return "seat_tier" }
 func (c SelfHosted) Default() SelfHosted                     { return "self_hosted" }
 func (c ServerToolUse) Default() ServerToolUse               { return "server_tool_use" }
 func (c ServiceAccount) Default() ServiceAccount             { return "service_account" }
@@ -552,7 +625,12 @@ func (c SkillDeleted) Default() SkillDeleted               { return "skill_delet
 func (c SkillVersion) Default() SkillVersion               { return "skill_version" }
 func (c SkillVersionDeleted) Default() SkillVersionDeleted { return "skill_version_deleted" }
 func (c Skills) Default() Skills                           { return "skills" }
-func (c StrReplace) Default() StrReplace                   { return "str_replace" }
+func (c SpendLimit) Default() SpendLimit                   { return "spend_limit" }
+func (c SpendLimitDeleted) Default() SpendLimitDeleted     { return "spend_limit_deleted" }
+func (c SpendLimitIncreaseRequest) Default() SpendLimitIncreaseRequest {
+	return "spend_limit_increase_request"
+}
+func (c StrReplace) Default() StrReplace { return "str_replace" }
 func (c StrReplaceBasedEditTool) Default() StrReplaceBasedEditTool {
 	return "str_replace_based_edit_tool"
 }
@@ -677,10 +755,12 @@ func (c AgentCreated) MarshalJSON() ([]byte, error)                         { re
 func (c AgentDeleted) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c AgentUpdated) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c All) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
+func (c AllConnectors) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Allow) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c AlwaysAllow) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c AlwaysAsk) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Any) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
+func (c APIActor) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c APIError) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c APIKey) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c ApplicationPDF) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
@@ -731,6 +811,9 @@ func (c Computer20250124) MarshalJSON() ([]byte, error)                     { re
 func (c Computer20251124) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c ComputerToolset20260801) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c ConflictError) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c Connector) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c ConnectorScope) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c ConnectorTool) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c ContainerUpload) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Content) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c ContentBlockDelta) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
@@ -823,19 +906,42 @@ func (c NotFoundError) MarshalJSON() ([]byte, error)                        { re
 func (c Object) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Only) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Organization) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c OrganizationMember) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c OrganizationService) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c OverloadedError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c PageLocation) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c PermissionError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c Plugin) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c PluginDeleted) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c PluginInstallationSetting) MarshalJSON() ([]byte, error)            { return marshalString(c) }
+func (c PluginInstallationSettingDeleted) MarshalJSON() ([]byte, error)     { return marshalString(c) }
+func (c PluginMarketplace) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c PluginMarketplaceValidationReport) MarshalJSON() ([]byte, error)    { return marshalString(c) }
+func (c PluginShare) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c PluginVersion) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c PreviousMessageNotFound) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c RateLimit) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c RateLimitError) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c RBACGroup) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c RBACGroupDeleted) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c RBACGroupMember) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c RBACGroupMemberDeleted) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c RBACRole) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c RBACRolePermission) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c Read) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c RedactedThinking) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Redeemed) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Refusal) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Rename) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c RepositoryAuthenticationError) MarshalJSON() ([]byte, error)        { return marshalString(c) }
+func (c RepositoryCheckoutError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c RepositoryCloneError) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c RepositoryForbiddenError) MarshalJSON() ([]byte, error)             { return marshalString(c) }
+func (c RepositoryNotFoundError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c ScopedAPIKeyActor) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c SearchResult) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c SearchResultLocation) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c SeatTier) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c SelfHosted) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c ServerToolUse) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c ServiceAccount) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
@@ -866,6 +972,9 @@ func (c SkillDeleted) MarshalJSON() ([]byte, error)                         { re
 func (c SkillVersion) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c SkillVersionDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Skills) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c SpendLimit) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c SpendLimitDeleted) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c SpendLimitIncreaseRequest) MarshalJSON() ([]byte, error)            { return marshalString(c) }
 func (c StrReplace) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c StrReplaceBasedEditTool) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c StrReplaceEditor) MarshalJSON() ([]byte, error)                     { return marshalString(c) }

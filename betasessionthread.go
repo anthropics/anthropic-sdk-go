@@ -329,7 +329,6 @@ func (r *BetaManagedAgentsSessionThreadStats) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SessionThreadStatus enum
 type BetaManagedAgentsSessionThreadStatus string
 
 const (
@@ -478,6 +477,8 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 	ToAgentName string `json:"to_agent_name"`
 	// This field is from variant [BetaManagedAgentsSessionErrorEvent].
 	Error BetaManagedAgentsSessionErrorEventErrorUnion `json:"error"`
+	// This field is from variant [BetaManagedAgentsSessionStatusIdleEvent].
+	StopDetails BetaManagedAgentsSessionRefusalStopDetails `json:"stop_details"`
 	// This field is a union of
 	// [BetaManagedAgentsSessionStatusIdleEventStopReasonUnion],
 	// [BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion]
@@ -538,6 +539,7 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 		ToSessionThreadID        respjson.Field
 		ToAgentName              respjson.Field
 		Error                    respjson.Field
+		StopDetails              respjson.Field
 		StopReason               respjson.Field
 		AgentName                respjson.Field
 		Iteration                respjson.Field

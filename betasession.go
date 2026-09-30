@@ -788,7 +788,6 @@ const (
 	BetaManagedAgentsDeltaEventTypeEventDelta BetaManagedAgentsDeltaEventType = "event_delta"
 )
 
-// EventDeltaType enum
 type BetaManagedAgentsDeltaType string
 
 const (
@@ -1261,8 +1260,6 @@ type BetaManagedAgentsSession struct {
 	Resources          []BetaManagedAgentsSessionResourceUnion      `json:"resources" api:"required"`
 	// Timing statistics for the session.
 	Stats BetaManagedAgentsSessionStats `json:"stats" api:"required"`
-	// SessionStatus enum
-	//
 	// Any of "rescheduling", "running", "idle", "terminated".
 	Status BetaManagedAgentsSessionStatus `json:"status" api:"required"`
 	Title  string                         `json:"title" api:"required"`
@@ -1308,7 +1305,6 @@ func (r *BetaManagedAgentsSession) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// SessionStatus enum
 type BetaManagedAgentsSessionStatus string
 
 const (

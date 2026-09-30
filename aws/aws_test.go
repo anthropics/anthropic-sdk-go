@@ -84,6 +84,10 @@ func sendTestRequest(t *testing.T, client *Client) {
 
 // --- Service sync test ---
 
+// excludedServices are anthropic.Client fields intentionally not mirrored here.
+// Organization is the Admin API, which takes a first-party admin key.
+var excludedServices = map[string]bool{"Organization": true}
+
 func TestClientServicesMatchAnthropicClient(t *testing.T) {
 	awsType := reflect.TypeOf(Client{})
 	anthropicType := reflect.TypeOf(anthropic.Client{})
@@ -91,6 +95,12 @@ func TestClientServicesMatchAnthropicClient(t *testing.T) {
 	for i := 0; i < anthropicType.NumField(); i++ {
 		field := anthropicType.Field(i)
 		awsField, ok := awsType.FieldByName(field.Name)
+		if excludedServices[field.Name] {
+			if ok {
+				t.Errorf("aws.Client exposes %q, which is intentionally excluded", field.Name)
+			}
+			continue
+		}
 		if !ok {
 			t.Errorf("aws.Client is missing field %q (type %s) from anthropic.Client", field.Name, field.Type)
 			continue

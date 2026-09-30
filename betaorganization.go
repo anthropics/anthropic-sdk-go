@@ -29,6 +29,12 @@ type BetaOrganizationService struct {
 	Workspaces         BetaOrganizationWorkspaceService
 	RateLimits         BetaOrganizationRateLimitService
 	ComplianceSettings BetaOrganizationComplianceSettingService
+	Analytics          BetaOrganizationAnalyticsService
+	SpendLimits        BetaOrganizationSpendLimitService
+	RBACGroups         BetaOrganizationRBACGroupService
+	RBACRoles          BetaOrganizationRBACRoleService
+	Plugins            BetaOrganizationPluginService
+	PluginMarketplaces BetaOrganizationPluginMarketplaceService
 }
 
 // NewBetaOrganizationService generates a new service that applies the given
@@ -46,6 +52,12 @@ func NewBetaOrganizationService(opts ...option.RequestOption) (r BetaOrganizatio
 	r.Workspaces = NewBetaOrganizationWorkspaceService(opts...)
 	r.RateLimits = NewBetaOrganizationRateLimitService(opts...)
 	r.ComplianceSettings = NewBetaOrganizationComplianceSettingService(opts...)
+	r.Analytics = NewBetaOrganizationAnalyticsService(opts...)
+	r.SpendLimits = NewBetaOrganizationSpendLimitService(opts...)
+	r.RBACGroups = NewBetaOrganizationRBACGroupService(opts...)
+	r.RBACRoles = NewBetaOrganizationRBACRoleService(opts...)
+	r.Plugins = NewBetaOrganizationPluginService(opts...)
+	r.PluginMarketplaces = NewBetaOrganizationPluginMarketplaceService(opts...)
 	return
 }
 

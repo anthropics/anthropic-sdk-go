@@ -19,8 +19,9 @@ import (
 )
 
 // DefaultMaxIdle is used for [SessionToolRunnerOptions.MaxIdle] when it is nil:
-// once the session goes idle with stop_reason "end_turn", the runner keeps
-// running for this long before stopping (any new event resets the countdown).
+// once the session goes idle with any stop_reason but "requires_action", the
+// runner keeps running for this long before stopping (any new event resets the
+// countdown).
 const DefaultMaxIdle = 60 * time.Second
 
 const (
@@ -64,10 +65,10 @@ var (
 	// can move on.
 	ErrSessionTerminated = errors.New("session terminated")
 
-	// ErrIdleTimeout means the session went idle with stop_reason "end_turn"
-	// and stayed quiet for MaxIdle. The consumer chose this timeout, so treat
-	// it as expected.
-	ErrIdleTimeout = errors.New("session idle after end_turn")
+	// ErrIdleTimeout means the session went idle with any stop_reason but
+	// "requires_action" and stayed quiet for MaxIdle. The consumer chose this
+	// timeout, so treat it as expected.
+	ErrIdleTimeout = errors.New("session idle after its turn ended")
 )
 
 // SessionToolRunnerOptions configures a [SessionToolRunner]. The
@@ -87,8 +88,8 @@ type SessionToolRunnerOptions struct {
 	Tools []BetaTool
 
 	// MaxIdle is how long the runner keeps running after the session goes idle
-	// with stop_reason "end_turn" before it stops; any new event resets the
-	// countdown and it re-arms on the next "end_turn" idle. The countdown is
+	// with any stop_reason but "requires_action" before it stops; any new event
+	// resets the countdown and it re-arms on the next such idle. The countdown is
 	// deferred while a confirmation-gated call is held or still dispatching,
 	// and starts fresh once the last such call resolves. nil uses
 	// [DefaultMaxIdle] (60s). A non-nil value <= 0 disables it — the runner
@@ -226,7 +227,7 @@ type DispatchedToolCall struct {
 // It is the sessions-side counterpart to (*BetaMessageService).NewToolRunner:
 // it does ONLY the tool-execution loop — attach to the event stream, reconcile
 // via the events list endpoint, dispatch the registered tools, post results,
-// and the idle-after-end_turn timeout.
+// and the idle timeout.
 // Lease heartbeating, work claiming, and skill download are not its concern —
 // see [github.com/anthropics/anthropic-sdk-go/lib/environments.EnvironmentWorker]
 // for the full self-hosted runner composition.
@@ -591,15 +592,28 @@ type idleClock struct {
 	// retiring the last blocker applies it. Cleared by any disarm. While it is
 	// set — and, more generally, while blockers is non-empty — armedAt is zero.
 	armPending bool
-	blockers   map[string]struct{}
+	// blockers counts the blocks per tool-use id: a reconcile can queue a second
+	// copy of an approved call while the first is still dispatching, and each
+	// copy is blocked and unblocked on its own.
+	blockers map[string]int
 }
 
 func newIdleClock(maxIdle time.Duration) *idleClock {
-	return &idleClock{maxIdle: maxIdle, wake: make(chan struct{}, 1), blockers: map[string]struct{}{}}
+	return &idleClock{maxIdle: maxIdle, wake: make(chan struct{}, 1), blockers: map[string]int{}}
 }
 
-// noteEvent arms on session.status_idle with stop_reason "end_turn";
-// disarms on anything else.
+// endsTurn reports whether an event is a session.status_idle whose turn is
+// over. Only "requires_action" leaves the turn open: the session resumes once a
+// client resolves the events it names. Every other stop reason ends the turn,
+// including one newer than this SDK's types.
+func endsTurn(eventType, stopReason string) bool {
+	if eventType != string(BetaManagedAgentsSessionStatusIdleEventTypeSessionStatusIdle) {
+		return false
+	}
+	return stopReason != string(BetaManagedAgentsSessionRequiresActionTypeRequiresAction)
+}
+
+// noteEvent arms on an idle that ends the turn; disarms on anything else.
 //
 // user.tool_confirmation is neutral: it signals neither agent activity nor an
 // idle, and its effect on the clock flows through block/unblock instead —
@@ -608,8 +622,7 @@ func (c *idleClock) noteEvent(eventType, stopReason string) {
 	if eventType == "user.tool_confirmation" {
 		return
 	}
-	if eventType == string(BetaManagedAgentsSessionStatusIdleEventTypeSessionStatusIdle) &&
-		stopReason == string(BetaManagedAgentsSessionEndTurnTypeEndTurn) {
+	if endsTurn(eventType, stopReason) {
 		c.arm()
 	} else {
 		c.disarm()
@@ -657,9 +670,9 @@ func (c *idleClock) disarm() {
 // block registers gated work that must finish before an idle countdown starts.
 func (c *idleClock) block(id string) {
 	c.mu.Lock()
-	c.blockers[id] = struct{}{}
+	c.blockers[id]++
 	// Defensive: a blocker taken while the countdown runs converts it into a
-	// pending arm, so a stale end_turn cannot stop the runner mid-gate.
+	// pending arm, so a stale idle cannot stop the runner mid-gate.
 	was := !c.armedAt.IsZero()
 	if was {
 		c.armPending = true
@@ -671,7 +684,7 @@ func (c *idleClock) block(id string) {
 	}
 }
 
-// unblock retires gated work (a no-op for ids never blocked) and applies a
+// unblock retires one block on id (a no-op for ids never blocked) and applies a
 // pending arm once the last blocker retires — the countdown then runs a full
 // fresh window from now. The apply happens inside the critical section:
 // deciding under the lock but stamping after releasing it would let a
@@ -679,7 +692,11 @@ func (c *idleClock) block(id string) {
 // gap and be overwritten, resurrecting a cancelled countdown.
 func (c *idleClock) unblock(id string) {
 	c.mu.Lock()
-	delete(c.blockers, id)
+	if c.blockers[id] > 1 {
+		c.blockers[id]--
+	} else {
+		delete(c.blockers, id)
+	}
 	fire := len(c.blockers) == 0 && c.armPending
 	if fire {
 		c.armPending = false
@@ -831,7 +848,7 @@ func jitterDuration(d time.Duration) time.Duration {
 // this check streamLoop would reconnect forever against a dead session.
 func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToolUse) error {
 	var pending []pendingToolUse
-	lastWasEndTurn := false
+	lastEndedTurn := false
 	pager := r.eventService.ListAutoPaging(ctx, r.sessionID,
 		BetaSessionEventListParams{
 			Limit: param.NewOpt(int64(1000)),
@@ -869,8 +886,11 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 			r.log.Info("reconcile: session already terminated", slog.String("type", ev.Type))
 			return ErrSessionTerminated
 		}
-		lastWasEndTurn = ev.Type == string(BetaManagedAgentsSessionStatusIdleEventTypeSessionStatusIdle) &&
-			ev.StopReason.Type == string(BetaManagedAgentsSessionEndTurnTypeEndTurn)
+		// Neutral here as in idleClock.noteEvent: a verdict is neither agent
+		// activity nor an idle.
+		if ev.Type != "user.tool_confirmation" {
+			lastEndedTurn = endsTurn(ev.Type, ev.StopReason.Type)
+		}
 	}
 	if err := pager.Err(); err != nil {
 		r.log.Warn("reconcile list failed", slog.Any("error", err))
@@ -897,25 +917,31 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 		}
 	}
 	// Routing resolved denied calls in place (marking them answered) and held
-	// ask-gated calls for their verdict. If the last event in history is an
-	// end_turn idle and no tool work is outstanding, the session is done — arm
-	// the stop-countdown so the runner stops even if that end_turn arrived
-	// during a disconnect. A still-held call doesn't count as outstanding: the
+	// ask-gated calls for their verdict. If the last event in history ends the
+	// turn and no tool work is outstanding, the session is done — arm the
+	// stop-countdown so the runner stops even if that idle arrived during a
+	// disconnect. A still-held call doesn't count as outstanding: the
 	// clock blocks on it, so the arm is held pending until its verdict lands.
-	if lastWasEndTurn && len(r.outstanding(unanswered)) == 0 {
+	if lastEndedTurn && len(r.outstanding(unanswered)) == 0 {
 		r.idle.arm()
 	}
 	return nil
 }
 
 // outstanding returns the reconciled tool calls that still owe the session a
-// result: neither answered (a denial resolves a call in place) nor held
-// awaiting a user confirmation.
+// result: neither answered (a denial resolves a call in place), nor held
+// awaiting a user confirmation, nor released by one to a tool this runner owns
+// (the clock blocks on those until the dispatch loop has finished with them).
 func (r *SessionToolRunner) outstanding(unanswered []pendingToolUse) []pendingToolUse {
 	var out []pendingToolUse
 	for _, p := range unanswered {
 		id := p.id()
 		if _, held := r.awaitingConfirmation[id]; held {
+			continue
+		}
+		_, confirmed := r.confirmationVerdicts[id]
+		_, owned := r.byName[p.name()]
+		if confirmed && owned {
 			continue
 		}
 		if r.isAnswered(id) {
@@ -1042,7 +1068,7 @@ func (r *SessionToolRunner) idleWatchdog(ctx context.Context) error {
 		case <-timer.C:
 			at := r.idle.snapshot()
 			if !at.IsZero() && time.Since(at) >= r.idle.maxIdle {
-				r.log.Info("session idle after end_turn; stopping",
+				r.log.Info("session idle after its turn ended; stopping",
 					slog.Duration("max_idle", r.idle.maxIdle))
 				return ErrIdleTimeout
 			}
@@ -1097,6 +1123,11 @@ func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) Dispa
 		// keeps it out of the idle/end-turn accounting and re-surfaces it
 		// after a reconnect until its owner answers it.
 		log.Info("tool not owned by this runner; leaving the tool_use_id pending for its owner")
+		if p.confirmation == "allow" {
+			// The approval kept the idle countdown pending on this call. Drop
+			// it instead of starting it: the owner still has to answer.
+			r.idle.disarm()
+		}
 		return call
 	} else {
 		// Derive the per-tool timeout from the runner ctx (not

@@ -15,6 +15,22 @@ TEST_PATHS=(
 	file_test.go
 	skill_test.go
 	skillversion_test.go
+	organization_test.go
+	organizationapikey_test.go
+	organizationexternalkey_test.go
+	organizationfederationissuer_test.go
+	organizationfederationrule_test.go
+	organizationfederationruleworkspace_test.go
+	organizationinvite_test.go
+	organizationserviceaccount_test.go
+	organizationserviceaccountworkspace_test.go
+	organizationuser_test.go
+	organizationworkspace_test.go
+	organizationworkspaceratelimit_test.go
+	organizationworkspacemember_test.go
+	organizationworkspaceserviceaccount_test.go
+	organizationratelimit_test.go
+	organizationcompliancesetting_test.go
 	betamodel_test.go
 	betamessage_test.go
 	betamessagebatch_test.go
@@ -58,6 +74,29 @@ TEST_PATHS=(
 	betaorganizationworkspaceserviceaccount_test.go
 	betaorganizationratelimit_test.go
 	betaorganizationcompliancesetting_test.go
+	betaorganizationanalyticssummary_test.go
+	betaorganizationanalyticsuser_test.go
+	betaorganizationanalyticsappchatproject_test.go
+	betaorganizationanalyticsconnector_test.go
+	betaorganizationanalyticsplugin_test.go
+	betaorganizationanalyticsskill_test.go
+	betaorganizationanalyticsartifact_test.go
+	betaorganizationanalyticsusagereport_test.go
+	betaorganizationanalyticsuserusagereport_test.go
+	betaorganizationanalyticscostreport_test.go
+	betaorganizationanalyticsusercostreport_test.go
+	betaorganizationspendlimit_test.go
+	betaorganizationspendlimiteffective_test.go
+	betaorganizationspendlimitincreaserequest_test.go
+	betaorganizationrbacgroup_test.go
+	betaorganizationrbacgroupmember_test.go
+	betaorganizationrbacrole_test.go
+	betaorganizationrbacrolepermission_test.go
+	betaorganizationplugin_test.go
+	betaorganizationpluginversion_test.go
+	betaorganizationplugininstallationsetting_test.go
+	betaorganizationpluginshare_test.go
+	betaorganizationpluginmarketplace_test.go
 	usage_test.go
 	paginationauto_test.go
 	paginationmanual_test.go

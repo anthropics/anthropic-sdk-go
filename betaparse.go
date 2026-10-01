@@ -71,7 +71,9 @@ func schemaToRaw(v any) (json.RawMessage, error) {
 	schema := reflector.Reflect(val.Interface())
 
 	// Transform the schema in-place on the typed struct, then marshal once.
-	transformSchema(schema)
+	if err := transformSchema(schema); err != nil {
+		return nil, fmt.Errorf("anthropic: failed to transform schema: %w", err)
+	}
 
 	result, err := json.Marshal(schema)
 	if err != nil {

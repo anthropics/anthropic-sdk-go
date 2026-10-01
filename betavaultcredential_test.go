@@ -226,7 +226,6 @@ func TestBetaVaultCredentialArchiveWithOptionalParams(t *testing.T) {
 }
 
 func TestBetaVaultCredentialMCPOAuthValidateWithOptionalParams(t *testing.T) {
-	t.Skip("prism can't find endpoint with beta only tag")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL

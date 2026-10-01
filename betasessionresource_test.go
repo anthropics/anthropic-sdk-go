@@ -12,7 +12,6 @@ import (
 )
 
 func TestBetaSessionResourceGetWithOptionalParams(t *testing.T) {
-	t.Skip("prism can't find endpoint with beta only tag")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -43,7 +42,6 @@ func TestBetaSessionResourceGetWithOptionalParams(t *testing.T) {
 }
 
 func TestBetaSessionResourceUpdateWithOptionalParams(t *testing.T) {
-	t.Skip("prism can't find endpoint with beta only tag")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -75,7 +73,6 @@ func TestBetaSessionResourceUpdateWithOptionalParams(t *testing.T) {
 }
 
 func TestBetaSessionResourceListWithOptionalParams(t *testing.T) {
-	t.Skip("prism can't find endpoint with beta only tag")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -107,7 +104,6 @@ func TestBetaSessionResourceListWithOptionalParams(t *testing.T) {
 }
 
 func TestBetaSessionResourceDeleteWithOptionalParams(t *testing.T) {
-	t.Skip("prism can't find endpoint with beta only tag")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -138,7 +134,6 @@ func TestBetaSessionResourceDeleteWithOptionalParams(t *testing.T) {
 }
 
 func TestBetaSessionResourceAddWithOptionalParams(t *testing.T) {
-	t.Skip("prism can't find endpoint with beta only tag")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL

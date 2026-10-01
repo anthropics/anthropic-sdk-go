@@ -14,7 +14,7 @@ func P[T any](v T) *T { return &v }
 
 type Primitives struct {
 	A bool    `form:"a"`
-	B int     `form:"b"`
+	B int64   `form:"b"`
 	C uint    `form:"c"`
 	D float64 `form:"d"`
 	E float32 `form:"e"`
@@ -30,7 +30,7 @@ type PrimitivesBrackets struct {
 
 type PrimitivePointers struct {
 	A *bool    `form:"a"`
-	B *int     `form:"b"`
+	B *int64   `form:"b"`
 	C *uint    `form:"c"`
 	D *float64 `form:"d"`
 	E *float32 `form:"e"`
@@ -335,7 +335,7 @@ Content-Disposition: form-data; name="f.4"
 `,
 		PrimitivePointers{
 			A: P(false),
-			B: P(237628372683),
+			B: P(int64(237628372683)),
 			C: P(uint(654)),
 			D: P(9999.43),
 			E: P(float32(43.76)),

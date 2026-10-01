@@ -256,6 +256,12 @@ type BetaModelInfo struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// A human-readable name for the model.
 	DisplayName string `json:"display_name" api:"required"`
+	// The model line this model belongs to, such as `opus` for both Claude Opus 4.5
+	// and Claude Opus 4.6. More lines may be added. `null` when the model belongs to
+	// no line, as a fine-tuned model does; do not infer a line from the `id`.
+	//
+	// Any of "haiku", "sonnet", "opus", "fable", "mythos".
+	Line BetaModelLine `json:"line" api:"required"`
 	// Maximum input context window size in tokens for this model.
 	MaxInputTokens int64 `json:"max_input_tokens" api:"required"`
 	// Maximum value for the `max_tokens` parameter when using this model.
@@ -271,6 +277,7 @@ type BetaModelInfo struct {
 		Capabilities          respjson.Field
 		CreatedAt             respjson.Field
 		DisplayName           respjson.Field
+		Line                  respjson.Field
 		MaxInputTokens        respjson.Field
 		MaxTokens             respjson.Field
 		Type                  respjson.Field
@@ -284,6 +291,18 @@ func (r BetaModelInfo) RawJSON() string { return r.JSON.raw }
 func (r *BetaModelInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// A Claude model line, such as `opus` or `sonnet`. More lines may be added as new
+// values.
+type BetaModelLine string
+
+const (
+	BetaModelLineHaiku  BetaModelLine = "haiku"
+	BetaModelLineSonnet BetaModelLine = "sonnet"
+	BetaModelLineOpus   BetaModelLine = "opus"
+	BetaModelLineFable  BetaModelLine = "fable"
+	BetaModelLineMythos BetaModelLine = "mythos"
+)
 
 // Thinking capability details.
 type BetaThinkingCapability struct {

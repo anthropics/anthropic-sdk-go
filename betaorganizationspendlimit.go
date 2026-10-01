@@ -67,7 +67,7 @@ func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params Bet
 		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
 	}
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "spend-limit-reads-2026-09-26"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/spend_limits?beta=true"
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {

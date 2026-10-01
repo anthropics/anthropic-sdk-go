@@ -525,6 +525,8 @@ type BetaOrganizationWorkspaceListParams struct {
 	BeforeID param.Opt[string] `query:"before_id,omitzero" json:"-"`
 	// Whether to include Workspaces that have been archived in the response
 	IncludeArchived param.Opt[bool] `query:"include_archived,omitzero" json:"-"`
+	// Whether to include the organization's default Workspace in the response
+	IncludeDefault param.Opt[bool] `query:"include_default,omitzero" json:"-"`
 	// Number of items to return per page.
 	//
 	// Defaults to `20`. Ranges from `1` to `1000`.

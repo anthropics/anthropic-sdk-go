@@ -112,7 +112,6 @@ func TestBetaMemoryStoreMemoryUpdateWithOptionalParams(t *testing.T) {
 }
 
 func TestBetaMemoryStoreMemoryListWithOptionalParams(t *testing.T) {
-	t.Skip("buildURL drops path-level query params")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL

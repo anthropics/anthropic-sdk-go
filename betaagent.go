@@ -4619,7 +4619,7 @@ type BetaAgentNewParams struct {
 	Multiagent BetaManagedAgentsMultiagentParams `json:"multiagent,omitzero"`
 	// Skills available to the agent.
 	Skills []BetaManagedAgentsSkillParamsUnion `json:"skills,omitzero"`
-	// Tool configurations available to the agent. Maximum of 128 tools across all
+	// Tool configurations available to the agent. Maximum of 256 tools across all
 	// toolsets allowed.
 	Tools []BetaAgentNewParamsToolUnion `json:"tools,omitzero"`
 	// Optional header to specify the beta version(s) you want to use.
@@ -4874,7 +4874,7 @@ type BetaAgentUpdateParams struct {
 	// Skills. Full replacement. Omit to preserve; send empty array or null to clear.
 	Skills []BetaManagedAgentsSkillParamsUnion `json:"skills,omitzero"`
 	// Tool configurations available to the agent. Full replacement. Omit to preserve;
-	// send empty array or null to clear. Maximum of 128 tools across all toolsets
+	// send empty array or null to clear. Maximum of 256 tools across all toolsets
 	// allowed.
 	Tools []BetaAgentUpdateParamsToolUnion `json:"tools,omitzero"`
 	// Model identifier. Accepts the

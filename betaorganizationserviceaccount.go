@@ -60,7 +60,10 @@ func (r *BetaOrganizationServiceAccountService) New(ctx context.Context, params 
 		for i, v := range params.Betas {
 			headerValues[i] = fmt.Sprintf("%v", v)
 		}
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/service_accounts?beta=true"
@@ -80,7 +83,10 @@ func (r *BetaOrganizationServiceAccountService) Get(ctx context.Context, service
 		for i, v := range query.Betas {
 			headerValues[i] = fmt.Sprintf("%v", v)
 		}
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if serviceAccountID == "" {
@@ -109,7 +115,10 @@ func (r *BetaOrganizationServiceAccountService) Update(ctx context.Context, serv
 		for i, v := range params.Betas {
 			headerValues[i] = fmt.Sprintf("%v", v)
 		}
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if serviceAccountID == "" {
@@ -138,7 +147,10 @@ func (r *BetaOrganizationServiceAccountService) List(ctx context.Context, params
 		for i, v := range params.Betas {
 			headerValues[i] = fmt.Sprintf("%v", v)
 		}
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -186,7 +198,10 @@ func (r *BetaOrganizationServiceAccountService) Archive(ctx context.Context, ser
 		for i, v := range body.Betas {
 			headerValues[i] = fmt.Sprintf("%v", v)
 		}
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if serviceAccountID == "" {

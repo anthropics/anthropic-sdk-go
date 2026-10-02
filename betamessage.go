@@ -10651,13 +10651,11 @@ type BetaMessage struct {
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "role": "user",
-	//	  "content": "What's the Greek name for Sun? (A) Sol (B) Helios (C) Sun"
-	//	},
-	//	{ "role": "assistant", "content": "The best answer is (" }
-	//
+	//   {
+	//     "role": "user",
+	//     "content": "What's the Greek name for Sun? (A) Sol (B) Helios (C) Sun"
+	//   },
+	//   { "role": "assistant", "content": "The best answer is (" }
 	// ]
 	// ```
 	//
@@ -10691,15 +10689,15 @@ type BetaMessage struct {
 	//
 	// This may be one the following values:
 	//
-	//   - `"end_turn"`: the model reached a natural stopping point
-	//   - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
-	//   - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
-	//   - `"tool_use"`: the model invoked one or more tools
-	//   - `"pause_turn"`: we paused a long-running turn. You may provide the response
-	//     back as-is in a subsequent request to let the model continue.
-	//   - `"refusal"`: when streaming classifiers intervene to handle potential policy
-	//     violations
-	//   - `"model_context_window_exceeded"`: we exceeded the model's context window
+	// - `"end_turn"`: the model reached a natural stopping point
+	// - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
+	// - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
+	// - `"tool_use"`: the model invoked one or more tools
+	// - `"pause_turn"`: we paused a long-running turn. You may provide the response
+	//   back as-is in a subsequent request to let the model continue.
+	// - `"refusal"`: when streaming classifiers intervene to handle potential policy
+	//   violations
+	// - `"model_context_window_exceeded"`: we exceeded the model's context window
 	//
 	// In non-streaming mode this value is always non-null. In streaming mode, it is
 	// null in the `message_start` event and non-null otherwise.
@@ -21903,11 +21901,9 @@ type BetaMessageNewParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{ "role": "user", "content": "Hello there." },
-	//	{ "role": "assistant", "content": "Hi, I'm Claude. How can I help you?" },
-	//	{ "role": "user", "content": "Can you explain LLMs in plain English?" }
-	//
+	//   { "role": "user", "content": "Hello there." },
+	//   { "role": "assistant", "content": "Hi, I'm Claude. How can I help you?" },
+	//   { "role": "user", "content": "Can you explain LLMs in plain English?" }
 	// ]
 	// ```
 	//
@@ -21915,13 +21911,11 @@ type BetaMessageNewParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "role": "user",
-	//	  "content": "What's the Greek name for Sun? (A) Sol (B) Helios (C) Sun"
-	//	},
-	//	{ "role": "assistant", "content": "The best answer is (" }
-	//
+	//   {
+	//     "role": "user",
+	//     "content": "What's the Greek name for Sun? (A) Sol (B) Helios (C) Sun"
+	//   },
+	//   { "role": "assistant", "content": "The best answer is (" }
 	// ]
 	// ```
 	//
@@ -22109,32 +22103,30 @@ type BetaMessageNewParams struct {
 	//
 	// Each tool definition includes:
 	//
-	//   - `name`: Name of the tool.
-	//   - `description`: Optional, but strongly-recommended description of the tool.
-	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
-	//     tool `input` shape that the model will produce in `tool_use` output content
-	//     blocks.
+	// - `name`: Name of the tool.
+	// - `description`: Optional, but strongly-recommended description of the tool.
+	// - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//   tool `input` shape that the model will produce in `tool_use` output content
+	//   blocks.
 	//
 	// For example, if you defined `tools` as:
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "name": "get_stock_price",
-	//	  "description": "Get the current stock price for a given ticker symbol.",
-	//	  "input_schema": {
-	//	    "type": "object",
-	//	    "properties": {
-	//	      "ticker": {
-	//	        "type": "string",
-	//	        "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
-	//	      }
-	//	    },
-	//	    "required": ["ticker"]
-	//	  }
-	//	}
-	//
+	//   {
+	//     "name": "get_stock_price",
+	//     "description": "Get the current stock price for a given ticker symbol.",
+	//     "input_schema": {
+	//       "type": "object",
+	//       "properties": {
+	//         "ticker": {
+	//           "type": "string",
+	//           "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+	//         }
+	//       },
+	//       "required": ["ticker"]
+	//     }
+	//   }
 	// ]
 	// ```
 	//
@@ -22143,14 +22135,12 @@ type BetaMessageNewParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "type": "tool_use",
-	//	  "id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
-	//	  "name": "get_stock_price",
-	//	  "input": { "ticker": "^GSPC" }
-	//	}
-	//
+	//   {
+	//     "type": "tool_use",
+	//     "id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
+	//     "name": "get_stock_price",
+	//     "input": { "ticker": "^GSPC" }
+	//   }
 	// ]
 	// ```
 	//
@@ -22160,13 +22150,11 @@ type BetaMessageNewParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "type": "tool_result",
-	//	  "tool_use_id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
-	//	  "content": "259.75 USD"
-	//	}
-	//
+	//   {
+	//     "type": "tool_result",
+	//     "tool_use_id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
+	//     "content": "259.75 USD"
+	//   }
 	// ]
 	// ```
 	//
@@ -22290,11 +22278,9 @@ type BetaMessageCountTokensParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{ "role": "user", "content": "Hello there." },
-	//	{ "role": "assistant", "content": "Hi, I'm Claude. How can I help you?" },
-	//	{ "role": "user", "content": "Can you explain LLMs in plain English?" }
-	//
+	//   { "role": "user", "content": "Hello there." },
+	//   { "role": "assistant", "content": "Hi, I'm Claude. How can I help you?" },
+	//   { "role": "user", "content": "Can you explain LLMs in plain English?" }
 	// ]
 	// ```
 	//
@@ -22302,13 +22288,11 @@ type BetaMessageCountTokensParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "role": "user",
-	//	  "content": "What's the Greek name for Sun? (A) Sol (B) Helios (C) Sun"
-	//	},
-	//	{ "role": "assistant", "content": "The best answer is (" }
-	//
+	//   {
+	//     "role": "user",
+	//     "content": "What's the Greek name for Sun? (A) Sol (B) Helios (C) Sun"
+	//   },
+	//   { "role": "assistant", "content": "The best answer is (" }
 	// ]
 	// ```
 	//
@@ -22417,32 +22401,30 @@ type BetaMessageCountTokensParams struct {
 	//
 	// Each tool definition includes:
 	//
-	//   - `name`: Name of the tool.
-	//   - `description`: Optional, but strongly-recommended description of the tool.
-	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
-	//     tool `input` shape that the model will produce in `tool_use` output content
-	//     blocks.
+	// - `name`: Name of the tool.
+	// - `description`: Optional, but strongly-recommended description of the tool.
+	// - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//   tool `input` shape that the model will produce in `tool_use` output content
+	//   blocks.
 	//
 	// For example, if you defined `tools` as:
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "name": "get_stock_price",
-	//	  "description": "Get the current stock price for a given ticker symbol.",
-	//	  "input_schema": {
-	//	    "type": "object",
-	//	    "properties": {
-	//	      "ticker": {
-	//	        "type": "string",
-	//	        "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
-	//	      }
-	//	    },
-	//	    "required": ["ticker"]
-	//	  }
-	//	}
-	//
+	//   {
+	//     "name": "get_stock_price",
+	//     "description": "Get the current stock price for a given ticker symbol.",
+	//     "input_schema": {
+	//       "type": "object",
+	//       "properties": {
+	//         "ticker": {
+	//           "type": "string",
+	//           "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+	//         }
+	//       },
+	//       "required": ["ticker"]
+	//     }
+	//   }
 	// ]
 	// ```
 	//
@@ -22451,14 +22433,12 @@ type BetaMessageCountTokensParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "type": "tool_use",
-	//	  "id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
-	//	  "name": "get_stock_price",
-	//	  "input": { "ticker": "^GSPC" }
-	//	}
-	//
+	//   {
+	//     "type": "tool_use",
+	//     "id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
+	//     "name": "get_stock_price",
+	//     "input": { "ticker": "^GSPC" }
+	//   }
 	// ]
 	// ```
 	//
@@ -22468,13 +22448,11 @@ type BetaMessageCountTokensParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "type": "tool_result",
-	//	  "tool_use_id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
-	//	  "content": "259.75 USD"
-	//	}
-	//
+	//   {
+	//     "type": "tool_result",
+	//     "tool_use_id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
+	//     "content": "259.75 USD"
+	//   }
 	// ]
 	// ```
 	//

@@ -670,11 +670,9 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{ "role": "user", "content": "Hello there." },
-	//	{ "role": "assistant", "content": "Hi, I'm Claude. How can I help you?" },
-	//	{ "role": "user", "content": "Can you explain LLMs in plain English?" }
-	//
+	//   { "role": "user", "content": "Hello there." },
+	//   { "role": "assistant", "content": "Hi, I'm Claude. How can I help you?" },
+	//   { "role": "user", "content": "Can you explain LLMs in plain English?" }
 	// ]
 	// ```
 	//
@@ -682,13 +680,11 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "role": "user",
-	//	  "content": "What's the Greek name for Sun? (A) Sol (B) Helios (C) Sun"
-	//	},
-	//	{ "role": "assistant", "content": "The best answer is (" }
-	//
+	//   {
+	//     "role": "user",
+	//     "content": "What's the Greek name for Sun? (A) Sol (B) Helios (C) Sun"
+	//   },
+	//   { "role": "assistant", "content": "The best answer is (" }
 	// ]
 	// ```
 	//
@@ -888,32 +884,30 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// Each tool definition includes:
 	//
-	//   - `name`: Name of the tool.
-	//   - `description`: Optional, but strongly-recommended description of the tool.
-	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
-	//     tool `input` shape that the model will produce in `tool_use` output content
-	//     blocks.
+	// - `name`: Name of the tool.
+	// - `description`: Optional, but strongly-recommended description of the tool.
+	// - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//   tool `input` shape that the model will produce in `tool_use` output content
+	//   blocks.
 	//
 	// For example, if you defined `tools` as:
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "name": "get_stock_price",
-	//	  "description": "Get the current stock price for a given ticker symbol.",
-	//	  "input_schema": {
-	//	    "type": "object",
-	//	    "properties": {
-	//	      "ticker": {
-	//	        "type": "string",
-	//	        "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
-	//	      }
-	//	    },
-	//	    "required": ["ticker"]
-	//	  }
-	//	}
-	//
+	//   {
+	//     "name": "get_stock_price",
+	//     "description": "Get the current stock price for a given ticker symbol.",
+	//     "input_schema": {
+	//       "type": "object",
+	//       "properties": {
+	//         "ticker": {
+	//           "type": "string",
+	//           "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+	//         }
+	//       },
+	//       "required": ["ticker"]
+	//     }
+	//   }
 	// ]
 	// ```
 	//
@@ -922,14 +916,12 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "type": "tool_use",
-	//	  "id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
-	//	  "name": "get_stock_price",
-	//	  "input": { "ticker": "^GSPC" }
-	//	}
-	//
+	//   {
+	//     "type": "tool_use",
+	//     "id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
+	//     "name": "get_stock_price",
+	//     "input": { "ticker": "^GSPC" }
+	//   }
 	// ]
 	// ```
 	//
@@ -939,13 +931,11 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// ```json
 	// [
-	//
-	//	{
-	//	  "type": "tool_result",
-	//	  "tool_use_id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
-	//	  "content": "259.75 USD"
-	//	}
-	//
+	//   {
+	//     "type": "tool_result",
+	//     "tool_use_id": "toolu_01D7FLrfh4GYq7yT1ULFeyMV",
+	//     "content": "259.75 USD"
+	//   }
 	// ]
 	// ```
 	//

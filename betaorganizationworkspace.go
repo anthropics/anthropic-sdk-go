@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -47,8 +48,12 @@ func NewBetaOrganizationWorkspaceService(opts ...option.RequestOption) (r BetaOr
 
 // Create Workspace
 func (r *BetaOrganizationWorkspaceService) New(ctx context.Context, params BetaOrganizationWorkspaceNewParams, opts ...option.RequestOption) (res *BetaWorkspace, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/workspaces?beta=true"

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -40,8 +41,12 @@ func NewBetaVaultCredentialService(opts ...option.RequestOption) (r BetaVaultCre
 
 // Create Credential
 func (r *BetaVaultCredentialService) New(ctx context.Context, vaultID string, params BetaVaultCredentialNewParams, opts ...option.RequestOption) (res *BetaManagedAgentsCredential, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -59,8 +64,12 @@ func (r *BetaVaultCredentialService) New(ctx context.Context, vaultID string, pa
 
 // Get Credential
 func (r *BetaVaultCredentialService) Get(ctx context.Context, credentialID string, params BetaVaultCredentialGetParams, opts ...option.RequestOption) (res *BetaManagedAgentsCredential, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -82,8 +91,12 @@ func (r *BetaVaultCredentialService) Get(ctx context.Context, credentialID strin
 
 // Update Credential
 func (r *BetaVaultCredentialService) Update(ctx context.Context, credentialID string, params BetaVaultCredentialUpdateParams, opts ...option.RequestOption) (res *BetaManagedAgentsCredential, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -106,8 +119,12 @@ func (r *BetaVaultCredentialService) Update(ctx context.Context, credentialID st
 // List Credentials
 func (r *BetaVaultCredentialService) List(ctx context.Context, vaultID string, params BetaVaultCredentialListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaManagedAgentsCredential], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -138,8 +155,12 @@ func (r *BetaVaultCredentialService) ListAutoPaging(ctx context.Context, vaultID
 
 // Delete Credential
 func (r *BetaVaultCredentialService) Delete(ctx context.Context, credentialID string, params BetaVaultCredentialDeleteParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeletedCredential, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -161,8 +182,12 @@ func (r *BetaVaultCredentialService) Delete(ctx context.Context, credentialID st
 
 // Archive Credential
 func (r *BetaVaultCredentialService) Archive(ctx context.Context, credentialID string, params BetaVaultCredentialArchiveParams, opts ...option.RequestOption) (res *BetaManagedAgentsCredential, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -184,8 +209,12 @@ func (r *BetaVaultCredentialService) Archive(ctx context.Context, credentialID s
 
 // Validate Credential
 func (r *BetaVaultCredentialService) MCPOAuthValidate(ctx context.Context, credentialID string, params BetaVaultCredentialMCPOAuthValidateParams, opts ...option.RequestOption) (res *BetaManagedAgentsCredentialValidation, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))

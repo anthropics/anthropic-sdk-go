@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
@@ -42,8 +43,12 @@ func NewBetaEnvironmentService(opts ...option.RequestOption) (r BetaEnvironmentS
 
 // Create a new environment with the specified configuration.
 func (r *BetaEnvironmentService) New(ctx context.Context, params BetaEnvironmentNewParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -57,8 +62,12 @@ func (r *BetaEnvironmentService) New(ctx context.Context, params BetaEnvironment
 
 // Retrieve a specific environment by ID.
 func (r *BetaEnvironmentService) Get(ctx context.Context, environmentID string, query BetaEnvironmentGetParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
-	for _, v := range query.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(query.Betas) > 0 {
+		headerValues := make([]string, len(query.Betas))
+		for i, v := range query.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -76,8 +85,12 @@ func (r *BetaEnvironmentService) Get(ctx context.Context, environmentID string, 
 
 // Update an existing environment's configuration.
 func (r *BetaEnvironmentService) Update(ctx context.Context, environmentID string, params BetaEnvironmentUpdateParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -96,8 +109,12 @@ func (r *BetaEnvironmentService) Update(ctx context.Context, environmentID strin
 // List environments with pagination support.
 func (r *BetaEnvironmentService) List(ctx context.Context, params BetaEnvironmentListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaEnvironment], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -124,8 +141,12 @@ func (r *BetaEnvironmentService) ListAutoPaging(ctx context.Context, params Beta
 
 // Delete an environment by ID. Returns a confirmation of the deletion.
 func (r *BetaEnvironmentService) Delete(ctx context.Context, environmentID string, body BetaEnvironmentDeleteParams, opts ...option.RequestOption) (res *BetaEnvironmentDeleteResponse, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -144,8 +165,12 @@ func (r *BetaEnvironmentService) Delete(ctx context.Context, environmentID strin
 // Archive an environment by ID. Archived environments cannot be used to create new
 // sessions.
 func (r *BetaEnvironmentService) Archive(ctx context.Context, environmentID string, body BetaEnvironmentArchiveParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))

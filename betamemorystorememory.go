@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -40,8 +41,12 @@ func NewBetaMemoryStoreMemoryService(opts ...option.RequestOption) (r BetaMemory
 
 // Create a memory
 func (r *BetaMemoryStoreMemoryService) New(ctx context.Context, memoryStoreID string, params BetaMemoryStoreMemoryNewParams, opts ...option.RequestOption) (res *BetaManagedAgentsMemory, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -59,8 +64,12 @@ func (r *BetaMemoryStoreMemoryService) New(ctx context.Context, memoryStoreID st
 
 // Retrieve a memory
 func (r *BetaMemoryStoreMemoryService) Get(ctx context.Context, memoryID string, params BetaMemoryStoreMemoryGetParams, opts ...option.RequestOption) (res *BetaManagedAgentsMemory, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -82,8 +91,12 @@ func (r *BetaMemoryStoreMemoryService) Get(ctx context.Context, memoryID string,
 
 // Update a memory
 func (r *BetaMemoryStoreMemoryService) Update(ctx context.Context, memoryID string, params BetaMemoryStoreMemoryUpdateParams, opts ...option.RequestOption) (res *BetaManagedAgentsMemory, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -106,8 +119,12 @@ func (r *BetaMemoryStoreMemoryService) Update(ctx context.Context, memoryID stri
 // List memories
 func (r *BetaMemoryStoreMemoryService) List(ctx context.Context, memoryStoreID string, params BetaMemoryStoreMemoryListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaManagedAgentsMemoryListItemUnion], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -138,8 +155,12 @@ func (r *BetaMemoryStoreMemoryService) ListAutoPaging(ctx context.Context, memor
 
 // Delete a memory
 func (r *BetaMemoryStoreMemoryService) Delete(ctx context.Context, memoryID string, params BetaMemoryStoreMemoryDeleteParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeletedMemory, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))

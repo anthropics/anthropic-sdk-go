@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
@@ -52,8 +53,12 @@ func NewBetaOrganizationFederationRuleWorkspaceService(opts ...option.RequestOpt
 // fields on the rule itself.
 func (r *BetaOrganizationFederationRuleWorkspaceService) List(ctx context.Context, federationRuleID string, params BetaOrganizationFederationRuleWorkspaceListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaFederationRuleWorkspace], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -105,8 +110,12 @@ func (r *BetaOrganizationFederationRuleWorkspaceService) ListAutoPaging(ctx cont
 // may only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
 func (r *BetaOrganizationFederationRuleWorkspaceService) Add(ctx context.Context, federationRuleID string, params BetaOrganizationFederationRuleWorkspaceAddParams, opts ...option.RequestOption) (res *BetaFederationRuleWorkspace, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if federationRuleID == "" {
@@ -129,8 +138,12 @@ func (r *BetaOrganizationFederationRuleWorkspaceService) Add(ctx context.Context
 // may only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
 func (r *BetaOrganizationFederationRuleWorkspaceService) Remove(ctx context.Context, workspaceID string, params BetaOrganizationFederationRuleWorkspaceRemoveParams, opts ...option.RequestOption) (res *BetaOrganizationFederationRuleWorkspaceRemoveResponse, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if params.FederationRuleID == "" {

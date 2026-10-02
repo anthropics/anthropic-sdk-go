@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -40,8 +41,12 @@ func NewBetaDeploymentService(opts ...option.RequestOption) (r BetaDeploymentSer
 
 // Create Deployment
 func (r *BetaDeploymentService) New(ctx context.Context, params BetaDeploymentNewParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeployment, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -55,8 +60,12 @@ func (r *BetaDeploymentService) New(ctx context.Context, params BetaDeploymentNe
 
 // Get Deployment
 func (r *BetaDeploymentService) Get(ctx context.Context, deploymentID string, query BetaDeploymentGetParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeployment, err error) {
-	for _, v := range query.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(query.Betas) > 0 {
+		headerValues := make([]string, len(query.Betas))
+		for i, v := range query.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -74,8 +83,12 @@ func (r *BetaDeploymentService) Get(ctx context.Context, deploymentID string, qu
 
 // Update Deployment
 func (r *BetaDeploymentService) Update(ctx context.Context, deploymentID string, params BetaDeploymentUpdateParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeployment, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -94,8 +107,12 @@ func (r *BetaDeploymentService) Update(ctx context.Context, deploymentID string,
 // List Deployments
 func (r *BetaDeploymentService) List(ctx context.Context, params BetaDeploymentListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaManagedAgentsDeployment], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -122,8 +139,12 @@ func (r *BetaDeploymentService) ListAutoPaging(ctx context.Context, params BetaD
 
 // Archive Deployment
 func (r *BetaDeploymentService) Archive(ctx context.Context, deploymentID string, body BetaDeploymentArchiveParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeployment, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -141,8 +162,12 @@ func (r *BetaDeploymentService) Archive(ctx context.Context, deploymentID string
 
 // Pause Deployment
 func (r *BetaDeploymentService) Pause(ctx context.Context, deploymentID string, body BetaDeploymentPauseParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeployment, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -160,8 +185,12 @@ func (r *BetaDeploymentService) Pause(ctx context.Context, deploymentID string, 
 
 // Run Deployment Now
 func (r *BetaDeploymentService) Run(ctx context.Context, deploymentID string, body BetaDeploymentRunParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeploymentRun, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -179,8 +208,12 @@ func (r *BetaDeploymentService) Run(ctx context.Context, deploymentID string, bo
 
 // Unpause Deployment
 func (r *BetaDeploymentService) Unpause(ctx context.Context, deploymentID string, body BetaDeploymentUnpauseParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeployment, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -41,8 +42,12 @@ func NewBetaSessionResourceService(opts ...option.RequestOption) (r BetaSessionR
 
 // Get Session Resource
 func (r *BetaSessionResourceService) Get(ctx context.Context, resourceID string, params BetaSessionResourceGetParams, opts ...option.RequestOption) (res *BetaSessionResourceGetResponseUnion, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -64,8 +69,12 @@ func (r *BetaSessionResourceService) Get(ctx context.Context, resourceID string,
 
 // Update Session Resource
 func (r *BetaSessionResourceService) Update(ctx context.Context, resourceID string, params BetaSessionResourceUpdateParams, opts ...option.RequestOption) (res *BetaSessionResourceUpdateResponseUnion, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -88,8 +97,12 @@ func (r *BetaSessionResourceService) Update(ctx context.Context, resourceID stri
 // List Session Resources
 func (r *BetaSessionResourceService) List(ctx context.Context, sessionID string, params BetaSessionResourceListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaManagedAgentsSessionResourceUnion], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -120,8 +133,12 @@ func (r *BetaSessionResourceService) ListAutoPaging(ctx context.Context, session
 
 // Delete Session Resource
 func (r *BetaSessionResourceService) Delete(ctx context.Context, resourceID string, params BetaSessionResourceDeleteParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeleteSessionResource, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -143,8 +160,12 @@ func (r *BetaSessionResourceService) Delete(ctx context.Context, resourceID stri
 
 // Add Session Resource
 func (r *BetaSessionResourceService) Add(ctx context.Context, sessionID string, params BetaSessionResourceAddParams, opts ...option.RequestOption) (res *BetaManagedAgentsFileResource, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))

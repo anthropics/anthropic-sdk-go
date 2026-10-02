@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
@@ -51,8 +52,12 @@ func NewBetaOrganizationWorkspaceServiceAccountService(opts ...option.RequestOpt
 // exists; an explicitly added membership is returned with its assigned role. An
 // archived service account returns 404.
 func (r *BetaOrganizationWorkspaceServiceAccountService) Get(ctx context.Context, serviceAccountID string, params BetaOrganizationWorkspaceServiceAccountGetParams, opts ...option.RequestOption) (res *BetaServiceAccountWorkspaceMember, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if params.WorkspaceID == "" {
@@ -81,8 +86,12 @@ func (r *BetaOrganizationWorkspaceServiceAccountService) Get(ctx context.Context
 // `POST /workspaces/{workspace_id}/service_accounts`. Archived workspaces
 // return 400. Archived service accounts cannot be updated and are rejected.
 func (r *BetaOrganizationWorkspaceServiceAccountService) Update(ctx context.Context, serviceAccountID string, params BetaOrganizationWorkspaceServiceAccountUpdateParams, opts ...option.RequestOption) (res *BetaServiceAccountWorkspaceMember, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if params.WorkspaceID == "" {
@@ -112,8 +121,12 @@ func (r *BetaOrganizationWorkspaceServiceAccountService) Update(ctx context.Cont
 // list. Memberships of archived service accounts are omitted from the results.
 func (r *BetaOrganizationWorkspaceServiceAccountService) List(ctx context.Context, workspaceID string, params BetaOrganizationWorkspaceServiceAccountListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaServiceAccountWorkspaceMember], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -165,8 +178,12 @@ func (r *BetaOrganizationWorkspaceServiceAccountService) ListAutoPaging(ctx cont
 // `workspace_role` is replaced with the value supplied here. Archived workspaces
 // return 400. Archived service accounts cannot be added and are rejected.
 func (r *BetaOrganizationWorkspaceServiceAccountService) Add(ctx context.Context, workspaceID string, params BetaOrganizationWorkspaceServiceAccountAddParams, opts ...option.RequestOption) (res *BetaServiceAccountWorkspaceMember, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
@@ -191,8 +208,12 @@ func (r *BetaOrganizationWorkspaceServiceAccountService) Add(ctx context.Context
 // reverts to the implicit `workspace_user` membership. Archived workspaces
 // return 400.
 func (r *BetaOrganizationWorkspaceServiceAccountService) Remove(ctx context.Context, serviceAccountID string, params BetaOrganizationWorkspaceServiceAccountRemoveParams, opts ...option.RequestOption) (res *BetaOrganizationWorkspaceServiceAccountRemoveResponse, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if params.WorkspaceID == "" {

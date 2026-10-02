@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apiform"
@@ -86,8 +87,12 @@ func NewBetaOrganizationPluginService(opts ...option.RequestOption) (r BetaOrgan
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
 func (r *BetaOrganizationPluginService) New(ctx context.Context, params BetaOrganizationPluginNewParams, opts ...option.RequestOption) (res *BetaPlugin, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "ce-plugins-2026-09-01")}, opts...)
@@ -109,8 +114,12 @@ func (r *BetaOrganizationPluginService) New(ctx context.Context, params BetaOrga
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
 func (r *BetaOrganizationPluginService) Get(ctx context.Context, pluginID string, params BetaOrganizationPluginGetParams, opts ...option.RequestOption) (res *BetaPlugin, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "ce-plugins-2026-09-01")}, opts...)
@@ -155,8 +164,12 @@ func (r *BetaOrganizationPluginService) Get(ctx context.Context, pluginID string
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
 func (r *BetaOrganizationPluginService) Update(ctx context.Context, pluginID string, params BetaOrganizationPluginUpdateParams, opts ...option.RequestOption) (res *BetaPlugin, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "ce-plugins-2026-09-01")}, opts...)
@@ -190,8 +203,12 @@ func (r *BetaOrganizationPluginService) Update(ctx context.Context, pluginID str
 // readiness enabled.
 func (r *BetaOrganizationPluginService) List(ctx context.Context, params BetaOrganizationPluginListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaPlugin], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "ce-plugins-2026-09-01"), option.WithResponseInto(&raw)}, opts...)
@@ -253,8 +270,12 @@ func (r *BetaOrganizationPluginService) ListAutoPaging(ctx context.Context, para
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
 func (r *BetaOrganizationPluginService) Delete(ctx context.Context, pluginID string, body BetaOrganizationPluginDeleteParams, opts ...option.RequestOption) (res *BetaDeletedPlugin, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, option.WithHeaderAdd("anthropic-beta", strings.Join(headerValues, ",")))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "ce-plugins-2026-09-01")}, opts...)

@@ -1,6 +1,7 @@
 package pagination
 
 import (
+	"iter"
 	"net/http"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -135,6 +136,16 @@ func (r *PageAutoPager[T]) Index() int {
 	return r.run
 }
 
+func (r *PageAutoPager[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for r.Next() {
+			if !yield(r.Current()) {
+				break
+			}
+		}
+	}
+}
+
 type TokenPage[T any] struct {
 	Data     []T    `json:"data"`
 	HasMore  bool   `json:"has_more"`
@@ -239,6 +250,16 @@ func (r *TokenPageAutoPager[T]) Err() error {
 
 func (r *TokenPageAutoPager[T]) Index() int {
 	return r.run
+}
+
+func (r *TokenPageAutoPager[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for r.Next() {
+			if !yield(r.Current()) {
+				break
+			}
+		}
+	}
 }
 
 type PageCursor[T any] struct {
@@ -348,6 +369,16 @@ func (r *PageCursorAutoPager[T]) Index() int {
 	return r.run
 }
 
+func (r *PageCursorAutoPager[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for r.Next() {
+			if !yield(r.Current()) {
+				break
+			}
+		}
+	}
+}
+
 type BidirectionalPageCursor[T any] struct {
 	Data     []T    `json:"data"`
 	NextPage string `json:"next_page" api:"nullable"`
@@ -455,4 +486,14 @@ func (r *BidirectionalPageCursorAutoPager[T]) Err() error {
 
 func (r *BidirectionalPageCursorAutoPager[T]) Index() int {
 	return r.run
+}
+
+func (r *BidirectionalPageCursorAutoPager[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for r.Next() {
+			if !yield(r.Current()) {
+				break
+			}
+		}
+	}
 }

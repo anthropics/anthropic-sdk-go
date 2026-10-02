@@ -69,7 +69,7 @@ func (r *BetaEnvironmentService) Get(ctx context.Context, environmentID string, 
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s?beta=true", environmentID)
+	path := requestconfig.FormatPath("v1/environments/%s?beta=true", environmentID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -88,7 +88,7 @@ func (r *BetaEnvironmentService) Update(ctx context.Context, environmentID strin
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s?beta=true", environmentID)
+	path := requestconfig.FormatPath("v1/environments/%s?beta=true", environmentID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -136,7 +136,7 @@ func (r *BetaEnvironmentService) Delete(ctx context.Context, environmentID strin
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s?beta=true", environmentID)
+	path := requestconfig.FormatPath("v1/environments/%s?beta=true", environmentID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -156,7 +156,7 @@ func (r *BetaEnvironmentService) Archive(ctx context.Context, environmentID stri
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/archive?beta=true", environmentID)
+	path := requestconfig.FormatPath("v1/environments/%s/archive?beta=true", environmentID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

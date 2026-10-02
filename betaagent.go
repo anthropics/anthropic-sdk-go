@@ -71,7 +71,7 @@ func (r *BetaAgentService) Get(ctx context.Context, agentID string, params BetaA
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s?beta=true", agentID)
+	path := requestconfig.FormatPath("v1/agents/%s?beta=true", agentID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
 }
@@ -90,7 +90,7 @@ func (r *BetaAgentService) Update(ctx context.Context, agentID string, params Be
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s?beta=true", agentID)
+	path := requestconfig.FormatPath("v1/agents/%s?beta=true", agentID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -138,7 +138,7 @@ func (r *BetaAgentService) Archive(ctx context.Context, agentID string, body Bet
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/archive?beta=true", agentID)
+	path := requestconfig.FormatPath("v1/agents/%s/archive?beta=true", agentID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

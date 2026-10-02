@@ -61,7 +61,7 @@ func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, par
 		err = errors.New("missing required work_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/%s?beta=true", params.EnvironmentID, workID)
+	path := requestconfig.FormatPath("v1/environments/%s/work/%s?beta=true", params.EnvironmentID, workID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -89,7 +89,7 @@ func (r *BetaEnvironmentWorkService) Update(ctx context.Context, workID string, 
 		err = errors.New("missing required work_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/%s?beta=true", params.EnvironmentID, workID)
+	path := requestconfig.FormatPath("v1/environments/%s/work/%s?beta=true", params.EnvironmentID, workID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -111,7 +111,7 @@ func (r *BetaEnvironmentWorkService) List(ctx context.Context, environmentID str
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work?beta=true", environmentID)
+	path := requestconfig.FormatPath("v1/environments/%s/work?beta=true", environmentID)
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -155,7 +155,7 @@ func (r *BetaEnvironmentWorkService) Ack(ctx context.Context, workID string, par
 		err = errors.New("missing required work_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/%s/ack?beta=true", params.EnvironmentID, workID)
+	path := requestconfig.FormatPath("v1/environments/%s/work/%s/ack?beta=true", params.EnvironmentID, workID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -180,7 +180,7 @@ func (r *BetaEnvironmentWorkService) Heartbeat(ctx context.Context, workID strin
 		err = errors.New("missing required work_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/%s/heartbeat?beta=true", params.EnvironmentID, workID)
+	path := requestconfig.FormatPath("v1/environments/%s/work/%s/heartbeat?beta=true", params.EnvironmentID, workID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -204,7 +204,7 @@ func (r *BetaEnvironmentWorkService) Poll(ctx context.Context, environmentID str
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/poll?beta=true", environmentID)
+	path := requestconfig.FormatPath("v1/environments/%s/work/poll?beta=true", environmentID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
 }
@@ -223,7 +223,7 @@ func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID st
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/stats?beta=true", environmentID)
+	path := requestconfig.FormatPath("v1/environments/%s/work/stats?beta=true", environmentID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -251,7 +251,7 @@ func (r *BetaEnvironmentWorkService) Stop(ctx context.Context, workID string, pa
 		err = errors.New("missing required work_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/%s/stop?beta=true", params.EnvironmentID, workID)
+	path := requestconfig.FormatPath("v1/environments/%s/work/%s/stop?beta=true", params.EnvironmentID, workID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

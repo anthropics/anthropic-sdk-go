@@ -1,8 +1,14 @@
 package anthropic
 
 import (
+	"context"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+
 	"fmt"
+	"github.com/anthropics/anthropic-sdk-go/option"
 	"testing"
 )
 
@@ -235,5 +241,99 @@ func TestBetaManagedAgentsEventAccumulator_ZeroValue(t *testing.T) {
 	}
 	if len(acc.AgentMessages) != 0 {
 		t.Fatal("expected empty map from zero value")
+	}
+}
+
+func TestBetaManagedAgentsEventAccumulator_ReplayedStartKeepsCanonicalMessage(t *testing.T) {
+	for _, withPreview := range []bool{false, true} {
+		t.Run(fmt.Sprintf("initial_preview=%t", withPreview), func(t *testing.T) {
+			var acc BetaManagedAgentsEventAccumulator
+			if withPreview {
+				feed(&acc, eventStart(t, "evt_final"), eventDelta(t, "evt_final", "unfinished", 0))
+			}
+			raw := `{"type":"agent.message","id":"evt_final","processed_at":"2026-01-01T00:00:00Z","content":[{"type":"text","text":"complete"}],"future_field":{"n":9007199254740993}}`
+			final := sseEvent(t, raw)
+			feed(&acc, final, eventStart(t, "evt_final"))
+			got := acc.AgentMessages["evt_final"]
+			if got.RawJSON() != raw || !got.JSON.ProcessedAt.Valid() || acc.AgentMessageText("evt_final") != "complete" {
+				t.Fatalf("replayed start overwrote final state: %+v", got)
+			}
+			feed(&acc, eventDelta(t, "evt_final", "stale", 0), eventDelta(t, "evt_final", "extra", 1),
+				sseEvent(t, `{"type":"span.model_request_end","id":"end","processed_at":"2026-01-01T00:00:01Z"}`))
+			if got := acc.AgentMessages["evt_final"]; got.RawJSON() != raw || acc.AgentMessageText("evt_final") != "complete" {
+				t.Fatalf("final message was changed or removed after restart: %+v", got)
+			}
+			if final.RawJSON() != raw {
+				t.Fatal("input event was changed")
+			}
+		})
+	}
+}
+
+func TestBetaManagedAgentsEventAccumulator_RestartControlsAndFinalReplacement(t *testing.T) {
+	var acc BetaManagedAgentsEventAccumulator
+	feed(&acc, eventStart(t, "open"), eventDelta(t, "open", "old preview", 0), eventStart(t, "open"), eventDelta(t, "open", "fresh preview", 0))
+	if acc.AgentMessageText("open") != "fresh preview" {
+		t.Fatal("an unfinished preview can no longer restart")
+	}
+	feed(&acc, sseEvent(t, `{"type":"agent.message","id":"final","processed_at":"2026-01-01T00:00:00Z","content":[{"type":"text","text":"first"}]}`),
+		sseEvent(t, `{"type":"agent.message","id":"final","processed_at":"2026-01-01T00:00:01Z","content":[{"type":"text","text":"replacement"}]}`))
+	if acc.AgentMessageText("final") != "replacement" {
+		t.Fatal("new canonical event did not replace its predecessor")
+	}
+	feed(&acc, eventStart(t, "independent"), eventDelta(t, "independent", "another preview", 0))
+	if acc.AgentMessageText("independent") != "another preview" {
+		t.Fatal("other event IDs stopped accumulating")
+	}
+	var nilAccumulator *BetaManagedAgentsEventAccumulator
+	nilAccumulator.Accumulate(eventStart(t, "ignored"))
+}
+
+func TestBetaManagedAgentsEventAccumulator_HTTPReplayRetainsFinalTranscript(t *testing.T) {
+	rawFinal := `{"type":"agent.message","id":"final","processed_at":"2026-01-01T00:00:00Z","content":[{"type":"text","text":"canonical output"}]}`
+	events := []BetaManagedAgentsStreamSessionEventsUnion{
+		eventStart(t, "final"), eventDelta(t, "final", "partial", 0), sseEvent(t, rawFinal),
+		eventStart(t, "final"), eventDelta(t, "final", "stale", 0),
+		sseEvent(t, `{"type":"span.model_request_end","id":"end","processed_at":"2026-01-01T00:00:01Z"}`),
+	}
+	var wire strings.Builder
+	for _, event := range events {
+		fmt.Fprintf(&wire, "event: %s\ndata: %s\n\n", event.Type, event.RawJSON())
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || r.URL.Path != "/v1/sessions/session_test/events/stream" {
+			t.Errorf("unexpected request %s %s", r.Method, r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "text/event-stream")
+		text := wire.String()
+		for len(text) > 0 {
+			n := min(7, len(text))
+			if _, err := fmt.Fprint(w, text[:n]); err != nil {
+				return
+			}
+			if flusher, ok := w.(http.Flusher); ok {
+				flusher.Flush()
+			}
+			text = text[n:]
+		}
+	}))
+	defer server.Close()
+	client := NewClient(option.WithBaseURL(server.URL), option.WithAPIKey("test-key"), option.WithMaxRetries(0))
+	stream := client.Beta.Sessions.Events.StreamEvents(context.Background(), "session_test", BetaSessionEventStreamParams{})
+	defer stream.Close()
+	var acc BetaManagedAgentsEventAccumulator
+	count := 0
+	for stream.Next() {
+		acc.Accumulate(stream.Current())
+		count++
+	}
+	if err := stream.Err(); err != nil {
+		t.Fatal(err)
+	}
+	if count != len(events) {
+		t.Fatalf("decoded %d events; want %d", count, len(events))
+	}
+	if len(acc.AgentMessages) != 1 || acc.AgentMessageText("final") != "canonical output" || acc.AgentMessages["final"].RawJSON() != rawFinal {
+		t.Fatalf("final transcript was lost after decoded replay: %+v", acc.AgentMessages)
 	}
 }

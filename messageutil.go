@@ -203,7 +203,12 @@ func (r Message) ToParam() MessageParam {
 }
 
 func (r ContentBlockUnion) ToParam() ContentBlockParamUnion {
-	return r.AsAny().toParamUnion()
+	variant := r.AsAny()
+	if variant == nil {
+		// Preserve blocks from newer API versions, matching the beta converter.
+		return param.Override[ContentBlockParamUnion](json.RawMessage(r.RawJSON()))
+	}
+	return variant.toParamUnion()
 }
 
 func (variant TextBlock) toParamUnion() ContentBlockParamUnion {

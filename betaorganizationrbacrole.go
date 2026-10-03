@@ -86,7 +86,14 @@ type BetaRBACRole struct {
 	ID string `json:"id" api:"required"`
 	// RFC 3339 datetime string indicating when the RBAC Role was created.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Name of the RBAC Role.
+	// Name of the RBAC Role. For a role created by Anthropic, this name can differ
+	// from the label claude.ai shows, and Anthropic may change the name. To keep a
+	// lasting reference to a role, store its `id`.
+	DisplayName string `json:"display_name" api:"required"`
+	// Deprecated: use `display_name` instead. Name of the RBAC Role; always the same
+	// value as `display_name`.
+	//
+	// Deprecated: Use `display_name` instead; `name` always has the same value.
 	Name string `json:"name" api:"required"`
 	// Object type.
 	//
@@ -98,6 +105,7 @@ type BetaRBACRole struct {
 	JSON struct {
 		ID          respjson.Field
 		CreatedAt   respjson.Field
+		DisplayName respjson.Field
 		Name        respjson.Field
 		Type        respjson.Field
 		UpdatedAt   respjson.Field

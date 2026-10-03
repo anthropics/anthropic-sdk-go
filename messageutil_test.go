@@ -1,13 +1,20 @@
 package anthropic_test
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
+	"sync/atomic"
 	"testing"
 
 	"github.com/tidwall/gjson"
 
 	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
@@ -289,5 +296,144 @@ func TestAccumulateMessageDeltaStopDetails(t *testing.T) {
 	)
 	if message.StopDetails.Category != "" {
 		t.Errorf("Expected the last delta's null stop_details to win, got %+v", message.StopDetails)
+	}
+}
+
+func TestContentBlockToParamPreservesUnknownVariants(t *testing.T) {
+	cases := []string{
+		`{"type":"future_result","payload":{"number":9007199254740993,"empty":null,"flag":false,"items":["a",2]},"content":"opaque"}`,
+		`{"type":"future_text","text":"verbatim <tag> & unicode ☃","extra":{}}`,
+		`{"type":"future_tool","id":"call_1","name":"unregistered","input":{"x":1}}`,
+	}
+	for _, raw := range cases {
+		t.Run(gjson.Get(raw, "type").String(), func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Errorf("ToParam panicked on unknown content: %v", r)
+				}
+			}()
+			var block anthropic.ContentBlockUnion
+			if err := json.Unmarshal([]byte(raw), &block); err != nil {
+				t.Fatal(err)
+			}
+			encoded, err := json.Marshal(block.ToParam())
+			if err != nil {
+				t.Fatal(err)
+			}
+			// encoding/json may escape HTML even for a raw payload; preserve its
+			// normal encoding behavior while keeping unknown fields and numbers.
+			expected, err := json.Marshal(json.RawMessage(raw))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(encoded) != string(expected) {
+				t.Errorf("unknown content changed: got %s, want %s", encoded, expected)
+			}
+			if block.RawJSON() != raw {
+				t.Fatal("ToParam modified the response block")
+			}
+			var beta anthropic.BetaContentBlockUnion
+			if err := json.Unmarshal([]byte(raw), &beta); err != nil {
+				t.Fatal(err)
+			}
+			betaEncoded, err := json.Marshal(beta.ToParam())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(betaEncoded) != string(encoded) {
+				t.Errorf("GA and beta differed: %s vs %s", encoded, betaEncoded)
+			}
+		})
+	}
+}
+
+func TestUnknownContentSurvivesHTTPMessageReplay(t *testing.T) {
+	for _, streaming := range []bool{false, true} {
+		t.Run(fmt.Sprintf("streaming=%t", streaming), func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Errorf("message replay panicked: %v", r)
+				}
+			}()
+			const unknown = `{"type":"future_result","payload":{"number":9007199254740993,"empty":null},"token":"opaque"}`
+			const final = `{"id":"msg_2","type":"message","role":"assistant","model":"m","content":[{"type":"text","text":"continued"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":1}}`
+			var requests atomic.Int32
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodPost || r.URL.Path != "/v1/messages" {
+					t.Errorf("unexpected request %s %s", r.Method, r.URL.Path)
+				}
+				body, err := io.ReadAll(r.Body)
+				if err != nil {
+					t.Error(err)
+					http.Error(w, "read error", 500)
+					return
+				}
+				if requests.Add(1) == 1 {
+					if streaming {
+						w.Header().Set("Content-Type", "text/event-stream")
+						events := []string{
+							messageStartWithUsage,
+							`{"type":"content_block_start","index":0,"content_block":{"type":"text","text":"before"}}`,
+							`{"type":"content_block_stop","index":0}`,
+							`{"type":"content_block_start","index":1,"content_block":` + unknown + `}`,
+							`{"type":"content_block_stop","index":1}`,
+							`{"type":"content_block_start","index":2,"content_block":{"type":"text","text":"after"}}`,
+							`{"type":"content_block_stop","index":2}`,
+							`{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"output_tokens":3}}`,
+							`{"type":"message_stop"}`,
+						}
+						for _, event := range events {
+							fmt.Fprintf(w, "event: %s\ndata: %s\n\n", gjson.Get(event, "type").String(), event)
+						}
+					} else {
+						w.Header().Set("Content-Type", "application/json")
+						fmt.Fprint(w, `{"id":"msg_1","type":"message","role":"assistant","model":"m","content":[{"type":"text","text":"before"},`+unknown+`,{"type":"text","text":"after"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":1,"output_tokens":3}}`)
+					}
+					return
+				}
+				replay := gjson.GetBytes(body, "messages.0.content")
+				if got := replay.Get("1").Raw; got != unknown {
+					t.Errorf("unknown block not preserved in HTTP request: %s", got)
+				}
+				if len(replay.Array()) != 3 || replay.Get("0.text").String() != "before" || replay.Get("2.text").String() != "after" {
+					t.Errorf("content order changed: %s", replay.Raw)
+				}
+				w.Header().Set("Content-Type", "application/json")
+				fmt.Fprint(w, final)
+			}))
+			defer server.Close()
+			client := anthropic.NewClient(option.WithBaseURL(server.URL), option.WithAPIKey("test-key"), option.WithMaxRetries(0))
+			params := anthropic.MessageNewParams{Model: "m", MaxTokens: 16, Messages: []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hello"))}}
+			var message anthropic.Message
+			if streaming {
+				stream := client.Messages.NewStreaming(context.Background(), params)
+				defer stream.Close()
+				for stream.Next() {
+					if err := message.Accumulate(stream.Current()); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if err := stream.Err(); err != nil {
+					t.Fatal(err)
+				}
+			} else {
+				response, err := client.Messages.New(context.Background(), params)
+				if err != nil {
+					t.Fatal(err)
+				}
+				message = *response
+			}
+			params.Messages = []anthropic.MessageParam{message.ToParam(), anthropic.NewUserMessage(anthropic.NewTextBlock("continue"))}
+			response, err := client.Messages.New(context.Background(), params)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if response.Content[0].Text != "continued" {
+				t.Fatalf("unexpected response: %+v", response)
+			}
+			if requests.Load() != 2 {
+				t.Fatalf("expected two HTTP requests, got %d", requests.Load())
+			}
+		})
 	}
 }

@@ -52,8 +52,13 @@ func transformSchema(s *jsonschema.Schema) {
 	}
 
 	// Convert oneOf to anyOf before recursing so variants are transformed once.
-	if len(s.OneOf) > 0 && len(s.AnyOf) == 0 {
-		s.AnyOf = s.OneOf
+	// Sibling unions are conjunctive: retain both when anyOf is already set.
+	if len(s.OneOf) > 0 {
+		if len(s.AnyOf) == 0 {
+			s.AnyOf = s.OneOf
+		} else {
+			s.AllOf = append(s.AllOf, &jsonschema.Schema{AnyOf: s.OneOf})
+		}
 	}
 	s.OneOf = nil
 

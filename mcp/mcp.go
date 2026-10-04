@@ -83,7 +83,8 @@ func (t *betaTool) Description() string                             { return t.t
 func (t *betaTool) InputSchema() anthropic.BetaToolInputSchemaParam { return t.schema }
 
 func (t *betaTool) Execute(ctx context.Context, input json.RawMessage) ([]anthropic.BetaToolResultBlockParamContentUnion, error) {
-	var args map[string]any
+	// Keep numeric tokens exact when relaying tool arguments to the MCP server.
+	var args map[string]json.RawMessage
 	if err := json.Unmarshal(input, &args); err != nil {
 		return nil, fmt.Errorf("mcp tool %s: failed to unmarshal input: %w", t.tool.Name, err)
 	}

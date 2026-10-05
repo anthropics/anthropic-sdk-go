@@ -96,9 +96,19 @@ func (t *betaTool) Execute(ctx context.Context, input json.RawMessage) ([]anthro
 		return nil, fmt.Errorf("mcp tool %s: %w", t.tool.Name, err)
 	}
 
+	content := result.Content
+	// Structured-only responses need the same conversion on success and failure.
+	if len(content) == 0 && result.StructuredContent != nil {
+		b, marshalErr := json.Marshal(result.StructuredContent)
+		if marshalErr != nil {
+			return nil, fmt.Errorf("mcp tool %s: failed to marshal structured content: %w", t.tool.Name, marshalErr)
+		}
+		content = []mcpsdk.Content{&mcpsdk.TextContent{Text: string(b)}}
+	}
+
 	if result.IsError {
 		var parts []string
-		for _, c := range result.Content {
+		for _, c := range content {
 			if tc, ok := c.(*mcpsdk.TextContent); ok && tc.Text != "" {
 				parts = append(parts, tc.Text)
 			}
@@ -110,25 +120,12 @@ func (t *betaTool) Execute(ctx context.Context, input json.RawMessage) ([]anthro
 		return nil, errors.New(msg)
 	}
 
-	// Per the MCP spec, when both Content and StructuredContent are present,
-	// Content is a text mirror of StructuredContent and either is sufficient.
-	// When Content is empty but StructuredContent is set, encode the structured
-	// data as a text block — matching the TS and Python implementations.
-	if len(result.Content) == 0 {
-		if result.StructuredContent != nil {
-			b, marshalErr := json.Marshal(result.StructuredContent)
-			if marshalErr != nil {
-				return nil, fmt.Errorf("mcp tool %s: failed to marshal structured content: %w", t.tool.Name, marshalErr)
-			}
-			return []anthropic.BetaToolResultBlockParamContentUnion{
-				{OfText: &anthropic.BetaTextBlockParam{Text: string(b)}},
-			}, nil
-		}
+	if len(content) == 0 {
 		return nil, nil
 	}
 
-	blocks := make([]anthropic.BetaToolResultBlockParamContentUnion, 0, len(result.Content))
-	for _, c := range result.Content {
+	blocks := make([]anthropic.BetaToolResultBlockParamContentUnion, 0, len(content))
+	for _, c := range content {
 		block, convErr := ToBlock(c)
 		if convErr != nil {
 			return nil, convErr

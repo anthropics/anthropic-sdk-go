@@ -151,7 +151,8 @@ func ToBlock(content mcpsdk.Content) (anthropic.BetaToolResultBlockParamContentU
 		return anthropic.BetaToolResultBlockParamContentUnion{OfText: &anthropic.BetaTextBlockParam{Text: v.Text}}, nil
 
 	case *mcpsdk.ImageContent:
-		if !isSupportedImageMimeType(v.MIMEType) {
+		mimeType := normalizeMimeType(v.MIMEType)
+		if !isSupportedImageMimeType(mimeType) {
 			return anthropic.BetaToolResultBlockParamContentUnion{}, &UnsupportedValueError{
 				fmt.Sprintf("unsupported image MIME type: %s", v.MIMEType),
 			}
@@ -160,7 +161,7 @@ func ToBlock(content mcpsdk.Content) (anthropic.BetaToolResultBlockParamContentU
 			Source: anthropic.BetaImageBlockParamSourceUnion{
 				OfBase64: &anthropic.BetaBase64ImageSourceParam{
 					Data:      base64.StdEncoding.EncodeToString(v.Data),
-					MediaType: anthropic.BetaBase64ImageSourceMediaType(v.MIMEType),
+					MediaType: anthropic.BetaBase64ImageSourceMediaType(mimeType),
 				},
 			},
 		}}, nil
@@ -250,7 +251,7 @@ func ResourceToFile(result *mcpsdk.ReadResourceResult) (io.Reader, error) {
 // -----------------------------------------------------------------------------
 
 func convertResourceContents(res *mcpsdk.ResourceContents) (anthropic.BetaToolResultBlockParamContentUnion, error) {
-	mimeType := res.MIMEType
+	mimeType := normalizeMimeType(res.MIMEType)
 
 	if isSupportedImageMimeType(mimeType) {
 		if len(res.Blob) == 0 {
@@ -296,7 +297,7 @@ func convertResourceContents(res *mcpsdk.ResourceContents) (anthropic.BetaToolRe
 	}
 
 	return anthropic.BetaToolResultBlockParamContentUnion{}, &UnsupportedValueError{
-		fmt.Sprintf("unsupported MIME type %q for resource: %s", mimeType, res.URI),
+		fmt.Sprintf("unsupported MIME type %q for resource: %s", res.MIMEType, res.URI),
 	}
 }
 
@@ -307,11 +308,22 @@ var supportedImageMimeTypes = map[string]bool{
 	"image/webp": true,
 }
 
+func normalizeMimeType(mimeType string) string {
+	base, _, _ := strings.Cut(mimeType, ";")
+	base = strings.ToLower(strings.TrimSpace(base))
+	// An invalid empty type must not become the missing-MIME text default.
+	if base == "" {
+		return mimeType
+	}
+	return base
+}
+
 func isSupportedImageMimeType(mimeType string) bool {
-	return supportedImageMimeTypes[mimeType]
+	return supportedImageMimeTypes[normalizeMimeType(mimeType)]
 }
 
 func isSupportedResourceMimeType(mimeType string) bool {
+	mimeType = normalizeMimeType(mimeType)
 	return mimeType == "" ||
 		strings.HasPrefix(mimeType, "text/") ||
 		mimeType == "application/pdf" ||

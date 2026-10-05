@@ -121,8 +121,21 @@ func (acc *BetaMessage) Accumulate(event BetaRawMessageStreamEventUnion) error {
 			}
 			cb.Citations = append(cb.Citations, citation)
 		case "compaction_delta":
-			cb.Content.OfString = event.Delta.Content
-			cb.EncryptedContent = event.Delta.EncryptedContent
+			// Field presence distinguishes an omitted update from an explicit null
+			// or empty string, which must also replace the cached wire value.
+			if raw := event.Delta.JSON.Content.Raw(); raw != "" {
+				cb.Content = BetaContentBlockUnionContent{}
+				if err := cb.Content.UnmarshalJSON([]byte(raw)); err != nil {
+					return err
+				}
+				cb.JSON.Content = event.Delta.JSON.Content
+				cb.JSON.raw, _ = sjson.SetRaw(cb.JSON.raw, "content", raw)
+			}
+			if raw := event.Delta.JSON.EncryptedContent.Raw(); raw != "" {
+				cb.EncryptedContent = event.Delta.EncryptedContent
+				cb.JSON.EncryptedContent = event.Delta.JSON.EncryptedContent
+				cb.JSON.raw, _ = sjson.SetRaw(cb.JSON.raw, "encrypted_content", raw)
+			}
 		}
 	case "message_stop":
 		// A block whose stop event never arrived has not been refreshed yet.

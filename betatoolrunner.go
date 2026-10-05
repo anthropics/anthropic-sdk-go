@@ -354,7 +354,8 @@ func newBetaToolResultErrorBlockParam(toolUseID string, errorText string) BetaTo
 // availableToolNames returns the tool names currently offered to the model:
 // every registered tool, minus names dropped by tool_removal blocks in
 // role "system" messages, plus names re-enabled by later tool_addition
-// blocks, with the queued changes read as the last such message. Removal is
+// blocks. Compaction blocks retain the changes of the messages they replaced;
+// fold those at their position, then apply the queued changes last. Removal is
 // only a hint — the model can still call a removed tool — so a removed tool
 // must resolve to the same not-found result as one that was never registered.
 func (b *betaToolRunnerBase) availableToolNames() map[string]struct{} {
@@ -363,11 +364,26 @@ func (b *betaToolRunnerBase) availableToolNames() map[string]struct{} {
 		available[name] = struct{}{}
 	}
 	for _, message := range b.Params.Messages {
-		if message.Role != BetaMessageParamRoleSystem {
-			continue
-		}
 		for _, block := range message.Content {
-			applyToolChange(block, available)
+			switch message.Role {
+			case BetaMessageParamRoleSystem:
+				applyToolChange(block, available)
+			case BetaMessageParamRoleAssistant:
+				if block.OfCompaction != nil {
+					for _, change := range block.OfCompaction.ToolChanges {
+						// ToParam preserves response changes as raw JSON overrides.
+						// Decode a temporary copy without rewriting the replayed history.
+						data, err := json.Marshal(change)
+						if err != nil {
+							continue
+						}
+						var decoded BetaContentBlockParamUnion
+						if err := json.Unmarshal(data, &decoded); err == nil {
+							applyToolChange(decoded, available)
+						}
+					}
+				}
+			}
 		}
 	}
 	for _, block := range b.pendingToolChanges {

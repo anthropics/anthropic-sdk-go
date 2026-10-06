@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -638,4 +639,73 @@ func TestStreamingFallbackRedirectsThroughAPlatformTransform(t *testing.T) {
 	require.Len(t, transport.bodies, 2)
 	_, hasModel := transport.bodies[1]["model"]
 	assert.False(t, hasModel, "the transform moved the model out of the body")
+}
+
+func TestStreamingFallbackPreservesContextErrors(t *testing.T) {
+	for _, cause := range []error{context.Canceled, context.DeadlineExceeded} {
+		for _, details := range []string{tokenWithClaim, tokenNoClaim} {
+			t.Run(cause.Error()+"/"+details, func(t *testing.T) {
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+				scripted := &sseTransport{t: t, responses: []string{
+					refusalStream("primary-model", details), servedStream("second-fallback"),
+				}}
+				calls := 0
+				transport := roundTripFunc(func(req *http.Request) (*http.Response, error) {
+					calls++
+					if calls == 2 {
+						if errors.Is(cause, context.Canceled) {
+							cancel()
+						}
+						return nil, fmt.Errorf("fallback request interrupted: %w", cause)
+					}
+					return scripted.RoundTrip(req)
+				})
+				client := anthropic.NewClient(
+					option.WithAPIKey("test-key"), option.WithMaxRetries(0),
+					option.WithHTTPClient(&http.Client{Transport: transport}),
+					option.WithMiddleware(betafallback.BetaRefusalFallbackMiddleware([]anthropic.BetaFallbackParam{
+						{Model: "first-fallback"}, {Model: "second-fallback"},
+					})),
+				)
+				stream := client.Beta.Messages.NewStreaming(ctx, fallbackTestParams)
+				defer stream.Close()
+				var terminalEvents []string
+				for stream.Next() {
+					typ := string(stream.Current().Type)
+					if typ == "message_delta" || typ == "message_stop" {
+						terminalEvents = append(terminalEvents, typ)
+					}
+				}
+				require.ErrorIs(t, stream.Err(), cause)
+				assert.Equal(t, 2, calls, "cancellation must not advance to another model")
+				assert.Empty(t, terminalEvents, "an interrupted fallback must not finish as a successful refusal")
+			})
+		}
+	}
+}
+
+func TestStreamingFallbackStillSkipsOrdinaryTransportErrors(t *testing.T) {
+	scripted := &sseTransport{t: t, responses: []string{
+		refusalStream("primary-model", tokenWithClaim), servedStream("second-fallback"),
+	}}
+	calls := 0
+	transport := roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		calls++
+		if calls == 2 {
+			return nil, io.ErrUnexpectedEOF
+		}
+		return scripted.RoundTrip(req)
+	})
+	client := anthropic.NewClient(
+		option.WithAPIKey("test-key"), option.WithMaxRetries(0),
+		option.WithHTTPClient(&http.Client{Transport: transport}),
+		option.WithMiddleware(betafallback.BetaRefusalFallbackMiddleware([]anthropic.BetaFallbackParam{
+			{Model: "first-fallback"}, {Model: "second-fallback"},
+		})),
+	)
+	message, _, _ := collectStream(t, client, context.Background(), fallbackTestParams)
+	assert.Equal(t, 3, calls)
+	assert.Equal(t, anthropic.BetaStopReasonEndTurn, message.StopReason)
+	assert.Equal(t, anthropic.Model("second-fallback"), message.Model)
 }

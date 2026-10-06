@@ -26,7 +26,9 @@ package betafallback
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -733,6 +735,9 @@ func (s *streamSplicer) tryHop(entry anthropic.BetaFallbackParam, token string, 
 	}
 	res, err := s.send(payload)
 	if err != nil {
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return nil, err
+		}
 		s.lastHopStatus = 0
 		return nil, nil
 	}

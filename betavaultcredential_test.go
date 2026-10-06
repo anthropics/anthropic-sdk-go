@@ -66,7 +66,7 @@ func TestBetaVaultCredentialGetWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Vaults.Credentials.Get(
 		context.TODO(),
-		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
+		"vcrd_011CZkZEMt8gZan2iYPQfSkw",
 		anthropic.BetaVaultCredentialGetParams{
 			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
@@ -96,7 +96,7 @@ func TestBetaVaultCredentialUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Vaults.Credentials.Update(
 		context.TODO(),
-		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
+		"vcrd_011CZkZEMt8gZan2iYPQfSkw",
 		anthropic.BetaVaultCredentialUpdateParams{
 			VaultID: "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Auth: anthropic.BetaVaultCredentialUpdateParamsAuthUnion{
@@ -179,7 +179,7 @@ func TestBetaVaultCredentialDeleteWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Vaults.Credentials.Delete(
 		context.TODO(),
-		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
+		"vcrd_011CZkZEMt8gZan2iYPQfSkw",
 		anthropic.BetaVaultCredentialDeleteParams{
 			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
@@ -209,7 +209,7 @@ func TestBetaVaultCredentialArchiveWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Vaults.Credentials.Archive(
 		context.TODO(),
-		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
+		"vcrd_011CZkZEMt8gZan2iYPQfSkw",
 		anthropic.BetaVaultCredentialArchiveParams{
 			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
@@ -239,7 +239,7 @@ func TestBetaVaultCredentialMCPOAuthValidateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Vaults.Credentials.MCPOAuthValidate(
 		context.TODO(),
-		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
+		"vcrd_011CZkZEMt8gZan2iYPQfSkw",
 		anthropic.BetaVaultCredentialMCPOAuthValidateParams{
 			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},

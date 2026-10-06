@@ -77,7 +77,7 @@ func (r *BetaOrganizationPluginShareService) List(ctx context.Context, pluginID 
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/shares?beta=true", pluginID)
+	path := fmt.Sprintf("v1/organizations/plugins/%s/shares?beta=true", url.PathEscape(pluginID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err

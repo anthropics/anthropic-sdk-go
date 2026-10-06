@@ -60,7 +60,7 @@ func (r *OrganizationWorkspaceService) Get(ctx context.Context, workspaceID stri
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s", workspaceID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s", url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -72,7 +72,7 @@ func (r *OrganizationWorkspaceService) Update(ctx context.Context, workspaceID s
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s", workspaceID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s", url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -107,7 +107,7 @@ func (r *OrganizationWorkspaceService) Archive(ctx context.Context, workspaceID 
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive", workspaceID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive", url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

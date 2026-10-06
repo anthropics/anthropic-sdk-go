@@ -83,7 +83,7 @@ func (r *BetaVaultService) Get(ctx context.Context, vaultID string, query BetaVa
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s?beta=true", vaultID)
+	path := fmt.Sprintf("v1/vaults/%s?beta=true", url.PathEscape(vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -109,7 +109,7 @@ func (r *BetaVaultService) Update(ctx context.Context, vaultID string, params Be
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s?beta=true", vaultID)
+	path := fmt.Sprintf("v1/vaults/%s?beta=true", url.PathEscape(vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -171,7 +171,7 @@ func (r *BetaVaultService) Delete(ctx context.Context, vaultID string, body Beta
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s?beta=true", vaultID)
+	path := fmt.Sprintf("v1/vaults/%s?beta=true", url.PathEscape(vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -197,7 +197,7 @@ func (r *BetaVaultService) Archive(ctx context.Context, vaultID string, body Bet
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/archive?beta=true", vaultID)
+	path := fmt.Sprintf("v1/vaults/%s/archive?beta=true", url.PathEscape(vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

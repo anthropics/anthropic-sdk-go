@@ -100,7 +100,7 @@ func (r *BetaOrganizationFederationRuleService) Get(ctx context.Context, federat
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", federationRuleID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", url.PathEscape(federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -142,7 +142,7 @@ func (r *BetaOrganizationFederationRuleService) Update(ctx context.Context, fede
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", federationRuleID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", url.PathEscape(federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -225,7 +225,7 @@ func (r *BetaOrganizationFederationRuleService) Archive(ctx context.Context, fed
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/archive?beta=true", federationRuleID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s/archive?beta=true", url.PathEscape(federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -269,8 +269,9 @@ type BetaFederationRule struct {
 	Name string `json:"name" api:"required"`
 	// Space-separated OAuth scopes granted on the minted token.
 	OAuthScope string `json:"oauth_scope" api:"required"`
-	// Identity that tokens minted via this rule act as. Currently always a
-	// `service_account` target.
+	// What this rule targets. Check `type` before reading the other fields. Tokens
+	// minted via a rule whose target `type` is `service_account` act as that service
+	// account.
 	Target BetaServiceAccountTarget `json:"target" api:"required"`
 	// Lifetime in seconds of access tokens minted via this rule. Minted tokens are
 	// capped at `max(60, min(this value, 2 × remaining assertion validity))` seconds.

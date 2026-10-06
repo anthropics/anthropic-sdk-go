@@ -58,7 +58,7 @@ func (r *BetaOrganizationInviteService) Get(ctx context.Context, inviteID string
 		err = errors.New("missing required invite_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/invites/%s?beta=true", inviteID)
+	path := fmt.Sprintf("v1/organizations/invites/%s?beta=true", url.PathEscape(inviteID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -93,7 +93,7 @@ func (r *BetaOrganizationInviteService) Delete(ctx context.Context, inviteID str
 		err = errors.New("missing required invite_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/invites/%s?beta=true", inviteID)
+	path := fmt.Sprintf("v1/organizations/invites/%s?beta=true", url.PathEscape(inviteID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

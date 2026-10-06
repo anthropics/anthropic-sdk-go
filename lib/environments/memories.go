@@ -196,9 +196,9 @@ type attachedStore struct {
 	memoryStoreID string
 	files         storeFiles
 	readOnly      bool
-	// mu guards baseline and refusedSHAs while a pass fans out its fetches
-	// or uploads; the merge decisions before the fan-out run serially and
-	// take no lock.
+	// mu guards baseline, refusedSHAs and sentSHAs while a pass fans out its
+	// fetches or uploads; the merge decisions before the fan-out run serially
+	// and take no lock.
 	mu sync.Mutex
 	// baseline is {rel path → content sha} as of the last download or
 	// successful sync.
@@ -208,6 +208,10 @@ type attachedStore struct {
 	refusedSHAs map[string]string
 	// When each path was first seen missing locally.
 	pendingDeletes map[string]time.Time
+	// sentSHAs is {rel path → sha} of content sent whose outcome is unknown —
+	// recorded before the request, dropped after a successful response, else
+	// settled by the next listing.
+	sentSHAs map[string]string
 }
 
 // SessionMemoryStoresOptions configures a [SessionMemoryStores].
@@ -248,6 +252,10 @@ type SessionMemoryStoresOptions struct {
 //   - a file the server refuses (too large, invalid content) is skipped —
 //     warned once and retried only after the file changes; other files keep
 //     syncing;
+//   - an upload whose response never arrives may still have been saved, so
+//     the sha of the bytes sent is remembered until the next sync has listed
+//     the server: a memory holding exactly that sha is this sync's own
+//     upload, not a remote edit, and a newer local edit goes out over it;
 //   - a file deleted locally is deleted on the server, guarded by an
 //     expected_content_sha256 precondition so a concurrent server-side
 //     edit wins and restores the file. The delete waits
@@ -437,6 +445,7 @@ func (s *SessionMemoryStores) downloadStore(ctx context.Context, resource anthro
 		baseline:       map[string]string{},
 		refusedSHAs:    map[string]string{},
 		pendingDeletes: map[string]time.Time{},
+		sentSHAs:       map[string]string{},
 	}
 	if err := s.stampAndPull(ctx, store); err != nil {
 		// A half-downloaded folder self-destructs; Dispose removes only what
@@ -480,6 +489,20 @@ func (s *SessionMemoryStores) rebuild(ctx context.Context, store *attachedStore,
 	return s.stampAndPull(ctx, store)
 }
 
+// settleSent resolves the uploads whose response never arrived, against a
+// fresh listing. A memory holding exactly the sha that was sent is that
+// upload, saved after all: it enters the baseline, so it reads as synced
+// rather than as a remote edit. Every record is then dropped — kept past this
+// listing, one would claim another writer's identical bytes.
+func settleSent(store *attachedStore, remote map[string]anthropic.BetaManagedAgentsMemory) {
+	for rel, sha := range store.sentSHAs {
+		if listed, ok := remote[rel]; ok && listed.ContentSha256 == sha {
+			store.baseline[rel] = sha
+		}
+	}
+	clear(store.sentSHAs)
+}
+
 // stampAndPull writes the trust marker, then pulls every remote memory;
 // pushes nothing. The baseline is rebuilt from only the writes that
 // succeed, so it never holds a file that isn't on disk. Every memory is
@@ -487,6 +510,7 @@ func (s *SessionMemoryStores) rebuild(ctx context.Context, store *attachedStore,
 // round-trips than a request per memory.
 func (s *SessionMemoryStores) stampAndPull(ctx context.Context, store *attachedStore) error {
 	store.baseline = map[string]string{}
+	clear(store.sentSHAs)
 	clear(store.pendingDeletes) // earlier absence observations no longer describe this disk
 	if err := store.files.Put(MarkerPath,
 		fmt.Appendf(nil, "version %d\n%s", markerVersion, store.memoryStoreID)); err != nil {
@@ -640,7 +664,10 @@ func (s *SessionMemoryStores) flushStore(ctx context.Context, store *attachedSto
 	}
 	dirty := map[string]string{}
 	for rel, sha := range scan.files {
-		if sha != store.baseline[rel] && store.refusedSHAs[rel] != sha {
+		// A path with an unsettled send counts even at its baseline sha: the
+		// send may have landed, leaving the server ahead of the file.
+		_, unsettled := store.sentSHAs[rel]
+		if (sha != store.baseline[rel] || unsettled) && store.refusedSHAs[rel] != sha {
 			dirty[rel] = sha
 		}
 	}
@@ -665,6 +692,7 @@ func (s *SessionMemoryStores) flushStore(ctx context.Context, store *attachedSto
 		}
 		remote[strings.TrimLeft(item.Path, "/")] = item
 	}
+	settleSent(store, remote)
 	var uploads []pendingUpload
 	for _, rel := range slices.Sorted(maps.Keys(dirty)) {
 		localSHA := dirty[rel]
@@ -672,6 +700,11 @@ func (s *SessionMemoryStores) flushStore(ctx context.Context, store *attachedSto
 		var existing *anthropic.BetaManagedAgentsMemory
 		if item, ok := remote[rel]; ok {
 			existing = &item
+		}
+		if hasBase && localSHA == baseSHA {
+			// Listed only for its unsettled send, which never landed: the
+			// file holds nothing the server lacks.
+			continue
 		}
 		if existing != nil && existing.ContentSha256 == localSHA {
 			store.baseline[rel] = localSHA
@@ -733,18 +766,19 @@ func (s *SessionMemoryStores) syncStore(ctx context.Context, store *attachedStor
 		}
 		return s.rebuild(ctx, store, "the folder or its marker is gone")
 	}
-	// A lone file vanishing is an ordinary deletion; two or more at once
-	// with nothing left is a wiped folder.
-	if len(local) == 0 && len(store.baseline) > 1 {
-		return s.rebuild(ctx, store, "every memory file is gone at once")
-	}
-
 	remote := map[string]anthropic.BetaManagedAgentsMemory{}
 	for item, err := range s.listMemories(ctx, store.memoryStoreID, anthropic.BetaManagedAgentsMemoryViewBasic) {
 		if err != nil {
 			return err
 		}
 		remote[strings.TrimLeft(item.Path, "/")] = item
+	}
+	settleSent(store, remote)
+	// A lone file vanishing is an ordinary deletion; two or more at once
+	// with nothing left is a wiped folder — counted after settling, so an
+	// upload that landed unheard counts.
+	if len(local) == 0 && len(store.baseline) > 1 {
+		return s.rebuild(ctx, store, "every memory file is gone at once")
 	}
 
 	deletes := &deletePass{
@@ -1026,6 +1060,10 @@ func (s *SessionMemoryStores) upload(ctx context.Context, store *attachedStore, 
 		// deletion.
 		return "", false
 	}
+	sum := sha256.Sum256(data)
+	store.mu.Lock()
+	store.sentSHAs[rel] = hex.EncodeToString(sum[:])
+	store.mu.Unlock()
 	var item *anthropic.BetaManagedAgentsMemory
 	if existing == nil {
 		item, err = s.client.Beta.MemoryStores.Memories.New(ctx, store.memoryStoreID,
@@ -1055,7 +1093,9 @@ func (s *SessionMemoryStores) upload(ctx context.Context, store *attachedStore, 
 		case existing != nil && isStatus(err, 409):
 			// The precondition lost a race: the remote moved under us, so the
 			// push is dropped. The local file is now stale — the next sync
-			// sees remoteChanged and pulls the winner over it.
+			// sees remoteChanged and pulls the winner over it. A client retry
+			// of an attempt that was saved ends here too, so the sent sha
+			// stays for the next listing to tell the two apart.
 			s.log.Warn("memory changed both locally and remotely; the upload was refused and "+
 				"the local edit loses",
 				slog.String("path", rel), slog.String("memory_store_id", store.memoryStoreID))
@@ -1074,6 +1114,7 @@ func (s *SessionMemoryStores) upload(ctx context.Context, store *attachedStore, 
 	}
 	store.mu.Lock()
 	delete(store.refusedSHAs, rel)
+	delete(store.sentSHAs, rel)
 	store.mu.Unlock()
 	return item.ContentSha256, true
 }

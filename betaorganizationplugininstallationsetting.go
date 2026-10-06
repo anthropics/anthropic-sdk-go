@@ -76,7 +76,7 @@ func (r *BetaOrganizationPluginInstallationSettingService) List(ctx context.Cont
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/installation_settings?beta=true", pluginID)
+	path := fmt.Sprintf("v1/organizations/plugins/%s/installation_settings?beta=true", url.PathEscape(pluginID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -158,7 +158,7 @@ func (r *BetaOrganizationPluginInstallationSettingService) Remove(ctx context.Co
 		err = errors.New("missing required target parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/installation_settings/%s?beta=true", params.PluginID, target)
+	path := fmt.Sprintf("v1/organizations/plugins/%s/installation_settings/%s?beta=true", url.PathEscape(params.PluginID), url.PathEscape(target))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -206,7 +206,7 @@ func (r *BetaOrganizationPluginInstallationSettingService) Set(ctx context.Conte
 		err = errors.New("missing required target parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/installation_settings/%s?beta=true", params.PluginID, target)
+	path := fmt.Sprintf("v1/organizations/plugins/%s/installation_settings/%s?beta=true", url.PathEscape(params.PluginID), url.PathEscape(target))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

@@ -83,10 +83,10 @@ func schemaToRaw(v any) (json.RawMessage, error) {
 	return raw, nil
 }
 
-// outputFormatDest checks both OutputFormat.Schema and OutputConfig.Format.Schema
-// for a struct pointer and returns it. Returns (nil, false) if neither has one.
+// outputFormatDest returns the struct pointer to auto-parse the response into,
+// preferring OutputConfig.Format over the deprecated OutputFormat.
 func outputFormatDest(params BetaMessageNewParams) (any, bool) {
-	for _, schema := range []any{params.OutputFormat.Schema, params.OutputConfig.Format.Schema} {
+	for _, schema := range []any{params.OutputConfig.Format.Schema, params.OutputFormat.Schema} {
 		if schema == nil {
 			continue
 		}

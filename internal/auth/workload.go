@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/anthropics/anthropic-sdk-go/config"
 	"github.com/anthropics/anthropic-sdk-go/internal"
 )
 
@@ -63,7 +64,7 @@ func NewOIDCFederationCredentials(cfg OIDCFederationConfig) TokenProvider {
 		if effectiveBase == "" {
 			effectiveBase = strings.TrimRight(baseURL, "/")
 		}
-		if err := requireSecureTokenEndpoint(effectiveBase); err != nil {
+		if err := config.RequireSecureTokenEndpoint(effectiveBase); err != nil {
 			return nil, err
 		}
 		jwt, err := cfg.IdentityProvider.GetIdentityToken(ctx)

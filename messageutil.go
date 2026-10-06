@@ -202,8 +202,16 @@ func (r Message) ToParam() MessageParam {
 	return p
 }
 
+// ToParam converts the block into the param that sends it back in a later
+// request. A block or citation of a type this SDK version does not model has no
+// Of* variant, so it is sent as its raw JSON with every Of* field nil; after
+// [Message.Accumulate] that raw JSON lacks any deltas of an unmodeled type.
 func (r ContentBlockUnion) ToParam() ContentBlockParamUnion {
-	return r.AsAny().toParamUnion()
+	variant := r.AsAny()
+	if variant == nil {
+		return param.Override[ContentBlockParamUnion](json.RawMessage(r.RawJSON()))
+	}
+	return variant.toParamUnion()
 }
 
 func (variant TextBlock) toParamUnion() ContentBlockParamUnion {
@@ -355,10 +363,18 @@ func (r TextBlock) ToParam() TextBlockParam {
 	}
 
 	for _, citation := range r.Citations {
-		p.Citations = append(p.Citations, citation.AsAny().toParamUnion())
+		p.Citations = append(p.Citations, citation.toParam())
 	}
 
 	return p
+}
+
+func (r TextCitationUnion) toParam() TextCitationParamUnion {
+	variant := r.AsAny()
+	if variant == nil {
+		return param.Override[TextCitationParamUnion](json.RawMessage(r.RawJSON()))
+	}
+	return variant.toParamUnion()
 }
 
 func (r ThinkingBlock) ToParam() ThinkingBlockParam {

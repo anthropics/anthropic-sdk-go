@@ -29,10 +29,9 @@ func main() {
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather like in San Francisco for the next 3 days? Include wind information.")),
 		},
-		OutputFormat: anthropic.BetaJSONOutputFormatParam{
-			Schema: &weather,
+		OutputConfig: anthropic.BetaOutputConfigParam{
+			Format: anthropic.BetaJSONOutputFormatParam{Schema: &weather},
 		},
-		Betas: []anthropic.AnthropicBeta{"structured-outputs-2025-11-13"},
 	})
 
 	var msg anthropic.BetaMessage

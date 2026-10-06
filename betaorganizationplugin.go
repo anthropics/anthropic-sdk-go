@@ -133,7 +133,7 @@ func (r *BetaOrganizationPluginService) Get(ctx context.Context, pluginID string
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s?beta=true", pluginID)
+	path := fmt.Sprintf("v1/organizations/plugins/%s?beta=true", url.PathEscape(pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
 }
@@ -186,7 +186,7 @@ func (r *BetaOrganizationPluginService) Update(ctx context.Context, pluginID str
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s?beta=true", pluginID)
+	path := fmt.Sprintf("v1/organizations/plugins/%s?beta=true", url.PathEscape(pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -298,7 +298,7 @@ func (r *BetaOrganizationPluginService) Delete(ctx context.Context, pluginID str
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s?beta=true", pluginID)
+	path := fmt.Sprintf("v1/organizations/plugins/%s?beta=true", url.PathEscape(pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

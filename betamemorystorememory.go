@@ -60,7 +60,7 @@ func (r *BetaMemoryStoreMemoryService) New(ctx context.Context, memoryStoreID st
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories?beta=true", memoryStoreID)
+	path := fmt.Sprintf("v1/memory_stores/%s/memories?beta=true", url.PathEscape(memoryStoreID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -90,7 +90,7 @@ func (r *BetaMemoryStoreMemoryService) Get(ctx context.Context, memoryID string,
 		err = errors.New("missing required memory_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", params.MemoryStoreID, memoryID)
+	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
 }
@@ -120,7 +120,7 @@ func (r *BetaMemoryStoreMemoryService) Update(ctx context.Context, memoryID stri
 		err = errors.New("missing required memory_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", params.MemoryStoreID, memoryID)
+	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -147,7 +147,7 @@ func (r *BetaMemoryStoreMemoryService) List(ctx context.Context, memoryStoreID s
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories?beta=true", memoryStoreID)
+	path := fmt.Sprintf("v1/memory_stores/%s/memories?beta=true", url.PathEscape(memoryStoreID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -190,7 +190,7 @@ func (r *BetaMemoryStoreMemoryService) Delete(ctx context.Context, memoryID stri
 		err = errors.New("missing required memory_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", params.MemoryStoreID, memoryID)
+	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, params, &res, opts...)
 	return res, err
 }

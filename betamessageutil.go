@@ -337,9 +337,17 @@ func (r BetaTextBlock) ToParam() BetaTextBlockParam {
 		p.Citations = make([]BetaTextCitationParamUnion, 0, len(r.Citations))
 	}
 	for _, citation := range r.Citations {
-		p.Citations = append(p.Citations, citation.AsAny().toParamUnion())
+		p.Citations = append(p.Citations, citation.toParam())
 	}
 	return p
+}
+
+func (r BetaTextCitationUnion) toParam() BetaTextCitationParamUnion {
+	variant := r.AsAny()
+	if variant == nil {
+		return param.Override[BetaTextCitationParamUnion](json.RawMessage(r.RawJSON()))
+	}
+	return variant.toParamUnion()
 }
 
 func (r BetaCitationCharLocation) toParamUnion() BetaTextCitationParamUnion {

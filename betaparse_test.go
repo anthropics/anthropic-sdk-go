@@ -311,6 +311,33 @@ func TestParseOutputContent(t *testing.T) {
 	})
 }
 
+func TestOutputFormatDest(t *testing.T) {
+	config, legacy := testOrder{Currency: "config"}, testOrder{Currency: "legacy"}
+
+	tests := []struct {
+		name   string
+		params BetaMessageNewParams
+		want   any
+		wantOK bool
+	}{
+		{"neither", BetaMessageNewParams{}, nil, false},
+		{"output_config.format", BetaMessageNewParams{OutputConfig: BetaOutputConfigParam{Format: BetaJSONOutputFormatParam{Schema: &config}}}, &config, true},
+		{"deprecated output_format", BetaMessageNewParams{OutputFormat: BetaJSONOutputFormatParam{Schema: &legacy}}, &legacy, true},
+		{"both prefers output_config.format", BetaMessageNewParams{
+			OutputConfig: BetaOutputConfigParam{Format: BetaJSONOutputFormatParam{Schema: &config}},
+			OutputFormat: BetaJSONOutputFormatParam{Schema: &legacy},
+		}, &config, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, ok := outputFormatDest(tt.params)
+			if ok != tt.wantOK || got != tt.want {
+				t.Errorf("outputFormatDest() = (%v, %v), want (%v, %v)", got, ok, tt.want, tt.wantOK)
+			}
+		})
+	}
+}
+
 func TestNewAutoParseWithMockServer(t *testing.T) {
 	responseJSON := `{
 		"id": "msg_123",

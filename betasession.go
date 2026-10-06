@@ -89,7 +89,7 @@ func (r *BetaSessionService) Get(ctx context.Context, sessionID string, query Be
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s?beta=true", sessionID)
+	path := fmt.Sprintf("v1/sessions/%s?beta=true", url.PathEscape(sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -115,7 +115,7 @@ func (r *BetaSessionService) Update(ctx context.Context, sessionID string, param
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s?beta=true", sessionID)
+	path := fmt.Sprintf("v1/sessions/%s?beta=true", url.PathEscape(sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -177,7 +177,7 @@ func (r *BetaSessionService) Delete(ctx context.Context, sessionID string, body 
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s?beta=true", sessionID)
+	path := fmt.Sprintf("v1/sessions/%s?beta=true", url.PathEscape(sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -203,7 +203,7 @@ func (r *BetaSessionService) Archive(ctx context.Context, sessionID string, body
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/archive?beta=true", sessionID)
+	path := fmt.Sprintf("v1/sessions/%s/archive?beta=true", url.PathEscape(sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -215,7 +215,7 @@ func (r *BetaSessionService) Archive(ctx context.Context, sessionID string, body
 // The properties Model, Type are required.
 type BetaManagedAgentsAdvisorParams struct {
 	// A Claude model id. The model must be permitted as an advisor for this agent's
-	// model — see the sessions/threads/advisor spec.
+	// model.
 	Model string `json:"model" api:"required"`
 	// Any of "advisor".
 	Type BetaManagedAgentsAdvisorParamsType `json:"type,omitzero" api:"required"`
@@ -1097,8 +1097,7 @@ const (
 	BetaManagedAgentsMultiagentTypeCoordinator BetaManagedAgentsMultiagentType = "coordinator"
 )
 
-// Multiagent orchestration configuration. Currently supports the `coordinator`
-// topology.
+// Multiagent orchestration configuration.
 //
 // The properties Agents, Type are required.
 type BetaManagedAgentsMultiagentParams struct {

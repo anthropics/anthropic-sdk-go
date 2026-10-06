@@ -46,7 +46,7 @@ func (r *OrganizationAPIKeyService) Get(ctx context.Context, apiKeyID string, op
 		err = errors.New("missing required api_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/api_keys/%s", apiKeyID)
+	path := fmt.Sprintf("v1/organizations/api_keys/%s", url.PathEscape(apiKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -58,7 +58,7 @@ func (r *OrganizationAPIKeyService) Update(ctx context.Context, apiKeyID string,
 		err = errors.New("missing required api_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/api_keys/%s", apiKeyID)
+	path := fmt.Sprintf("v1/organizations/api_keys/%s", url.PathEscape(apiKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }

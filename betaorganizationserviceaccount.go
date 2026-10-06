@@ -93,7 +93,7 @@ func (r *BetaOrganizationServiceAccountService) Get(ctx context.Context, service
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s?beta=true", serviceAccountID)
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s?beta=true", url.PathEscape(serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -125,7 +125,7 @@ func (r *BetaOrganizationServiceAccountService) Update(ctx context.Context, serv
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s?beta=true", serviceAccountID)
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s?beta=true", url.PathEscape(serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -208,7 +208,7 @@ func (r *BetaOrganizationServiceAccountService) Archive(ctx context.Context, ser
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/archive?beta=true", serviceAccountID)
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s/archive?beta=true", url.PathEscape(serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

@@ -86,6 +86,9 @@ func (s RequestOptionFunc) Apply(r *RequestConfig) error    { return s(r) }
 func (s PreRequestOptionFunc) Apply(r *RequestConfig) error { return s(r) }
 
 func NewRequestConfig(ctx context.Context, method string, u string, body any, dst any, opts ...RequestOption) (*RequestConfig, error) {
+	if err := validateRequestPath(u); err != nil {
+		return nil, err
+	}
 	var reader io.Reader
 
 	contentType := "application/json"
@@ -465,7 +468,7 @@ func (cfg *RequestConfig) prepare() (err error) {
 		}
 	}
 
-	cfg.Request.URL, err = cfg.BaseURL.Parse(strings.TrimLeft(cfg.Request.URL.String(), "/"))
+	err = resolveRequestURL(cfg.BaseURL, cfg.Request)
 	if err != nil {
 		return err
 	}

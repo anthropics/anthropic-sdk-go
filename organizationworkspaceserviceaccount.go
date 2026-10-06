@@ -60,7 +60,7 @@ func (r *OrganizationWorkspaceServiceAccountService) Get(ctx context.Context, se
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/service_accounts/%s", query.WorkspaceID, serviceAccountID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/service_accounts/%s", url.PathEscape(query.WorkspaceID), url.PathEscape(serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -87,7 +87,7 @@ func (r *OrganizationWorkspaceServiceAccountService) Update(ctx context.Context,
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/service_accounts/%s", params.WorkspaceID, serviceAccountID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/service_accounts/%s", url.PathEscape(params.WorkspaceID), url.PathEscape(serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -112,7 +112,7 @@ func (r *OrganizationWorkspaceServiceAccountService) List(ctx context.Context, w
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/service_accounts", workspaceID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/service_accounts", url.PathEscape(workspaceID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -161,7 +161,7 @@ func (r *OrganizationWorkspaceServiceAccountService) Add(ctx context.Context, wo
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/service_accounts", workspaceID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/service_accounts", url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -188,7 +188,7 @@ func (r *OrganizationWorkspaceServiceAccountService) Remove(ctx context.Context,
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/service_accounts/%s", body.WorkspaceID, serviceAccountID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/service_accounts/%s", url.PathEscape(body.WorkspaceID), url.PathEscape(serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

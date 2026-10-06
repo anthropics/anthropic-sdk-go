@@ -166,3 +166,64 @@ func TestMiddleware_UnresolvedBaseURLFails(t *testing.T) {
 		t.Fatalf("got %v, want base URL error", err)
 	}
 }
+
+type countingTransport struct{ calls int }
+
+func (c *countingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	c.calls++
+	return http.DefaultTransport.RoundTrip(req)
+}
+
+type doerFunc func(*http.Request) (*http.Response, error)
+
+func (f doerFunc) Do(req *http.Request) (*http.Response, error) { return f(req) }
+
+func TestTokenRequestHandler(t *testing.T) {
+	replayed := 0
+	elsewhere := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { replayed++ }))
+	defer elsewhere.Close()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, elsewhere.URL+r.URL.Path, http.StatusTemporaryRedirect)
+	}))
+	defer server.Close()
+
+	t.Run("does not follow a redirect, and keeps the client's transport", func(t *testing.T) {
+		transport := &countingTransport{}
+		client := &http.Client{Transport: transport}
+		handler := TokenRequestHandler(&requestconfig.RequestConfig{HTTPClient: client})
+
+		req, _ := http.NewRequest(http.MethodPost, server.URL+"/v1/oauth/token", strings.NewReader(`{"refresh_token":"rt"}`))
+		resp, err := handler(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusTemporaryRedirect {
+			t.Fatalf("status = %d, want the 307 surfaced", resp.StatusCode)
+		}
+		if replayed != 0 {
+			t.Fatalf("the body was replayed to the redirect target %d time(s)", replayed)
+		}
+		if transport.calls != 1 {
+			t.Fatalf("the client's transport saw %d request(s), want 1", transport.calls)
+		}
+		if client.CheckRedirect != nil {
+			t.Fatal("the caller's client was modified")
+		}
+	})
+
+	t.Run("a custom doer is used as it is", func(t *testing.T) {
+		called := false
+		handler := TokenRequestHandler(&requestconfig.RequestConfig{
+			HTTPClient: http.DefaultClient,
+			CustomHTTPDoer: doerFunc(func(req *http.Request) (*http.Response, error) {
+				called = true
+				return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Request: req}, nil
+			}),
+		})
+		req, _ := http.NewRequest(http.MethodPost, server.URL, nil)
+		if _, err := handler(req); err != nil || !called {
+			t.Fatalf("custom doer not used: called=%v err=%v", called, err)
+		}
+	})
+}

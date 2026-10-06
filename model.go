@@ -62,7 +62,7 @@ func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetPa
 		err = errors.New("missing required model_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/models/%s", modelID)
+	path := fmt.Sprintf("v1/models/%s", url.PathEscape(modelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -193,7 +193,10 @@ type ModelCapabilities struct {
 	Batch CapabilitySupport `json:"batch" api:"required"`
 	// Whether the model supports citation generation.
 	Citations CapabilitySupport `json:"citations" api:"required"`
-	// Whether the model supports code execution tools.
+	// Whether code that the model runs in the code execution tool can call the
+	// request's other tools, as in programmatic tool calling and dynamic filtering for
+	// web search and web fetch. Support for the code execution tool itself is in
+	// `server_tools.code_execution`.
 	CodeExecution CapabilitySupport `json:"code_execution" api:"required"`
 	// Context management support and available strategies.
 	ContextManagement ContextManagementCapability `json:"context_management" api:"required"`
@@ -203,6 +206,11 @@ type ModelCapabilities struct {
 	ImageInput CapabilitySupport `json:"image_input" api:"required"`
 	// Whether the model accepts PDF content blocks.
 	PDFInput CapabilitySupport `json:"pdf_input" api:"required"`
+	// Whether this model supports the web search and code execution server tools.
+	// `supported` is true when the model supports at least one of the tools. A
+	// supported tool can still be rejected for your organization, for example when an
+	// admin has turned web search off.
+	ServerTools ServerToolsCapability `json:"server_tools" api:"required"`
 	// Whether the model supports structured output / JSON mode / strict tool schemas.
 	StructuredOutputs CapabilitySupport `json:"structured_outputs" api:"required"`
 	// Thinking capability and supported type configurations.
@@ -216,6 +224,7 @@ type ModelCapabilities struct {
 		Effort            respjson.Field
 		ImageInput        respjson.Field
 		PDFInput          respjson.Field
+		ServerTools       respjson.Field
 		StructuredOutputs respjson.Field
 		Thinking          respjson.Field
 		ExtraFields       map[string]respjson.Field
@@ -287,6 +296,32 @@ const (
 	ModelLineMythos ModelLine = "mythos"
 )
 
+// Web search and code execution tool support, with one entry per tool.
+type ServerToolsCapability struct {
+	// Whether the model supports the code execution tool: true when the model supports
+	// at least one version of the tool, not necessarily every version.
+	CodeExecution CapabilitySupport `json:"code_execution" api:"required"`
+	// Whether this capability is supported by the model.
+	Supported bool `json:"supported" api:"required"`
+	// Whether the model supports the web search tool: true when the model supports at
+	// least one version of the tool, not necessarily every version.
+	WebSearch CapabilitySupport `json:"web_search" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CodeExecution respjson.Field
+		Supported     respjson.Field
+		WebSearch     respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ServerToolsCapability) RawJSON() string { return r.JSON.raw }
+func (r *ServerToolsCapability) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Thinking capability details.
 type ThinkingCapability struct {
 	// Whether this capability is supported by the model.
@@ -308,15 +343,23 @@ func (r *ThinkingCapability) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Supported thinking type configurations.
+// Which `thinking.type` values the model accepts on requests. Read each key on its
+// own: for example, `enabled` can be false while `disabled` is true.
 type ThinkingTypes struct {
-	// Whether the model supports thinking with type 'adaptive' (auto).
+	// Whether the model accepts thinking with type 'adaptive' (the model decides
+	// whether and how much to think).
 	Adaptive CapabilitySupport `json:"adaptive" api:"required"`
-	// Whether the model supports thinking with type 'enabled'.
+	// Whether the model accepts thinking with type 'disabled' (thinking turned off).
+	// False exactly when a request that sends it gets a 400 from this model. True on a
+	// model that does not support thinking.
+	Disabled CapabilitySupport `json:"disabled" api:"required"`
+	// Whether the model accepts thinking with type 'enabled' (extended thinking with a
+	// caller-set `budget_tokens`).
 	Enabled CapabilitySupport `json:"enabled" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Adaptive    respjson.Field
+		Disabled    respjson.Field
 		Enabled     respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string

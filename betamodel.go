@@ -62,7 +62,7 @@ func (r *BetaModelService) Get(ctx context.Context, modelID string, query BetaMo
 		err = errors.New("missing required model_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/models/%s?beta=true", modelID)
+	path := fmt.Sprintf("v1/models/%s?beta=true", url.PathEscape(modelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -216,7 +216,10 @@ type BetaModelCapabilities struct {
 	Batch BetaCapabilitySupport `json:"batch" api:"required"`
 	// Whether the model supports citation generation.
 	Citations BetaCapabilitySupport `json:"citations" api:"required"`
-	// Whether the model supports code execution tools.
+	// Whether code that the model runs in the code execution tool can call the
+	// request's other tools, as in programmatic tool calling and dynamic filtering for
+	// web search and web fetch. Support for the code execution tool itself is in
+	// `server_tools.code_execution`.
 	CodeExecution BetaCapabilitySupport `json:"code_execution" api:"required"`
 	// Server-side compaction support (the top-level `compaction` parameter) and the
 	// accepted `compaction.type` values.
@@ -229,6 +232,11 @@ type BetaModelCapabilities struct {
 	ImageInput BetaCapabilitySupport `json:"image_input" api:"required"`
 	// Whether the model accepts PDF content blocks.
 	PDFInput BetaCapabilitySupport `json:"pdf_input" api:"required"`
+	// Whether this model supports the web search and code execution server tools.
+	// `supported` is true when the model supports at least one of the tools. A
+	// supported tool can still be rejected for your organization, for example when an
+	// admin has turned web search off.
+	ServerTools BetaServerToolsCapability `json:"server_tools" api:"required"`
 	// Whether the model supports structured output / JSON mode / strict tool schemas.
 	StructuredOutputs BetaCapabilitySupport `json:"structured_outputs" api:"required"`
 	// Thinking capability and supported type configurations.
@@ -243,6 +251,7 @@ type BetaModelCapabilities struct {
 		Effort            respjson.Field
 		ImageInput        respjson.Field
 		PDFInput          respjson.Field
+		ServerTools       respjson.Field
 		StructuredOutputs respjson.Field
 		Thinking          respjson.Field
 		ExtraFields       map[string]respjson.Field
@@ -319,6 +328,32 @@ const (
 	BetaModelLineMythos BetaModelLine = "mythos"
 )
 
+// Web search and code execution tool support, with one entry per tool.
+type BetaServerToolsCapability struct {
+	// Whether the model supports the code execution tool: true when the model supports
+	// at least one version of the tool, not necessarily every version.
+	CodeExecution BetaCapabilitySupport `json:"code_execution" api:"required"`
+	// Whether this capability is supported by the model.
+	Supported bool `json:"supported" api:"required"`
+	// Whether the model supports the web search tool: true when the model supports at
+	// least one version of the tool, not necessarily every version.
+	WebSearch BetaCapabilitySupport `json:"web_search" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CodeExecution respjson.Field
+		Supported     respjson.Field
+		WebSearch     respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaServerToolsCapability) RawJSON() string { return r.JSON.raw }
+func (r *BetaServerToolsCapability) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Thinking capability details.
 type BetaThinkingCapability struct {
 	// Whether this capability is supported by the model.
@@ -340,15 +375,23 @@ func (r *BetaThinkingCapability) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Supported thinking type configurations.
+// Which `thinking.type` values the model accepts on requests. Read each key on its
+// own: for example, `enabled` can be false while `disabled` is true.
 type BetaThinkingTypes struct {
-	// Whether the model supports thinking with type 'adaptive' (auto).
+	// Whether the model accepts thinking with type 'adaptive' (the model decides
+	// whether and how much to think).
 	Adaptive BetaCapabilitySupport `json:"adaptive" api:"required"`
-	// Whether the model supports thinking with type 'enabled'.
+	// Whether the model accepts thinking with type 'disabled' (thinking turned off).
+	// False exactly when a request that sends it gets a 400 from this model. True on a
+	// model that does not support thinking.
+	Disabled BetaCapabilitySupport `json:"disabled" api:"required"`
+	// Whether the model accepts thinking with type 'enabled' (extended thinking with a
+	// caller-set `budget_tokens`).
 	Enabled BetaCapabilitySupport `json:"enabled" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Adaptive    respjson.Field
+		Disabled    respjson.Field
 		Enabled     respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string

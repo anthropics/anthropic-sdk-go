@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/anthropics/anthropic-sdk-go/config"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 )
 
@@ -110,6 +111,16 @@ type clientKey struct {
 	customDoer requestconfig.HTTPDoer
 }
 
+// TokenRequestHandler returns what token requests are sent with: r's HTTP
+// client with redirects turned off ([config.WithoutRedirects]). A custom doer
+// keeps its own policy.
+func TokenRequestHandler(r *requestconfig.RequestConfig) func(*http.Request) (*http.Response, error) {
+	if r.CustomHTTPDoer != nil {
+		return r.CustomHTTPDoer.Do
+	}
+	return config.WithoutRedirects(r.HTTPClient).Do
+}
+
 // WithAuthMiddleware returns a [requestconfig.RequestOptionFunc] that appends
 // HTTP middleware which authenticates requests using a cached bearer token.
 //
@@ -138,11 +149,7 @@ func WithAuthMiddleware(provider TokenProvider) requestconfig.RequestOptionFunc 
 		mu.Lock()
 		cache, ok := byKey[key]
 		if !ok {
-			handler := r.HTTPClient.Do
-			if r.CustomHTTPDoer != nil {
-				handler = r.CustomHTTPDoer.Do
-			}
-			cache = NewTokenCache(provider, handler)
+			cache = NewTokenCache(provider, TokenRequestHandler(r))
 			byKey[key] = cache
 		}
 		mu.Unlock()

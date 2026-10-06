@@ -70,6 +70,21 @@ func TestContentBlockUnionToParam(t *testing.T) {
 	})
 }
 
+func TestContentBlockToParamKeepsUnmodeledBlock(t *testing.T) {
+	for _, block := range []string{
+		`{"type":"some_future_block","zebra":1,"alpha":{"nested":[true,null]}}`,
+		`{"text":"x","citations":[{"type":"some_future_citation","zebra":1}],"type":"text"}`,
+	} {
+		sent, err := json.Marshal(unmarshalContentBlockParam(t, block))
+		if err != nil {
+			t.Fatalf("Failed to marshal param: %v", err)
+		}
+		if string(sent) != block {
+			t.Errorf("ToParam changed the block\n want: %s\n  got: %s", block, sent)
+		}
+	}
+}
+
 func TestTextCitationToParamKeepsAllFields(t *testing.T) {
 	t.Run("page_location keeps cited_text", func(t *testing.T) {
 		result := unmarshalContentBlockParam(t, `{"type":"text","text":"x","citations":[{"type":"page_location","cited_text":"quoted","document_index":2,"document_title":"Doc","start_page_number":3,"end_page_number":4}]}`)

@@ -86,7 +86,7 @@ func (r *BetaAgentService) Get(ctx context.Context, agentID string, params BetaA
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s?beta=true", agentID)
+	path := fmt.Sprintf("v1/agents/%s?beta=true", url.PathEscape(agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
 }
@@ -112,7 +112,7 @@ func (r *BetaAgentService) Update(ctx context.Context, agentID string, params Be
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s?beta=true", agentID)
+	path := fmt.Sprintf("v1/agents/%s?beta=true", url.PathEscape(agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -174,7 +174,7 @@ func (r *BetaAgentService) Archive(ctx context.Context, agentID string, body Bet
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/archive?beta=true", agentID)
+	path := fmt.Sprintf("v1/agents/%s/archive?beta=true", url.PathEscape(agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -544,9 +544,11 @@ type BetaManagedAgentsAgentToolConfigUnion struct {
 	PermissionPolicy BetaManagedAgentsAgentToolConfigUnionPermissionPolicy `json:"permission_policy"`
 	// Any of "bash", "edit", "read", "write", "glob", "grep", "web_fetch",
 	// "web_search".
-	Type           string   `json:"type"`
-	AllowedDomains []string `json:"allowed_domains"`
-	BlockedDomains []string `json:"blocked_domains"`
+	Type string `json:"type"`
+	// This field is from variant [BetaManagedAgentsWebFetchToolConfig].
+	URLSources     BetaManagedAgentsWebFetchURLSources `json:"url_sources"`
+	AllowedDomains []string                            `json:"allowed_domains"`
+	BlockedDomains []string                            `json:"blocked_domains"`
 	// This field is from variant [BetaManagedAgentsWebFetchToolConfig].
 	MaxContentTokens int64 `json:"max_content_tokens"`
 	// This field is from variant [BetaManagedAgentsWebSearchToolConfig].
@@ -556,6 +558,7 @@ type BetaManagedAgentsAgentToolConfigUnion struct {
 		Name             respjson.Field
 		PermissionPolicy respjson.Field
 		Type             respjson.Field
+		URLSources       respjson.Field
 		AllowedDomains   respjson.Field
 		BlockedDomains   respjson.Field
 		MaxContentTokens respjson.Field
@@ -736,6 +739,14 @@ func (u *BetaManagedAgentsAgentToolConfigParamsUnion) asAny() any {
 func (u BetaManagedAgentsAgentToolConfigParamsUnion) GetMaxContentTokens() *int64 {
 	if vt := u.OfWebFetch; vt != nil && vt.MaxContentTokens.Valid() {
 		return &vt.MaxContentTokens.Value
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsAgentToolConfigParamsUnion) GetURLSources() *BetaManagedAgentsWebFetchURLSourcesParams {
+	if vt := u.OfWebFetch; vt != nil {
+		return &vt.URLSources
 	}
 	return nil
 }
@@ -4015,15 +4026,19 @@ type BetaManagedAgentsWebFetchToolConfig struct {
 	// Permission policy for tool execution.
 	PermissionPolicy BetaManagedAgentsWebFetchToolConfigPermissionPolicyUnion `json:"permission_policy" api:"required"`
 	Type             constant.WebFetch                                        `json:"type" default:"web_fetch"`
-	AllowedDomains   []string                                                 `json:"allowed_domains"`
-	BlockedDomains   []string                                                 `json:"blocked_domains"`
-	MaxContentTokens int64                                                    `json:"max_content_tokens" api:"nullable"`
+	// Which sources contribute URLs the tool may fetch, always in the object form.
+	// Null when not set, which allows every source.
+	URLSources       BetaManagedAgentsWebFetchURLSources `json:"url_sources" api:"required"`
+	AllowedDomains   []string                            `json:"allowed_domains"`
+	BlockedDomains   []string                            `json:"blocked_domains"`
+	MaxContentTokens int64                               `json:"max_content_tokens" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Enabled          respjson.Field
 		Name             respjson.Field
 		PermissionPolicy respjson.Field
 		Type             respjson.Field
+		URLSources       respjson.Field
 		AllowedDomains   respjson.Field
 		BlockedDomains   respjson.Field
 		MaxContentTokens respjson.Field
@@ -4137,6 +4152,8 @@ type BetaManagedAgentsWebFetchToolConfigParams struct {
 	BlockedDomains []string `json:"blocked_domains,omitzero"`
 	// Any of "web_fetch".
 	Type BetaManagedAgentsWebFetchToolConfigParamsType `json:"type,omitzero"`
+	// Which sources contribute URLs the tool may fetch. Omit to allow every source.
+	URLSources BetaManagedAgentsWebFetchURLSourcesParams `json:"url_sources,omitzero"`
 	// Must be "web_fetch".
 	//
 	// This field can be elided, and will marshal its zero value as "web_fetch".
@@ -4206,6 +4223,702 @@ type BetaManagedAgentsWebFetchToolConfigParamsType string
 const (
 	BetaManagedAgentsWebFetchToolConfigParamsTypeWebFetch BetaManagedAgentsWebFetchToolConfigParamsType = "web_fetch"
 )
+
+// Every URL from this source may be fetched. This is the default.
+type BetaManagedAgentsWebFetchURLSourceAll struct {
+	Type constant.All `json:"type" default:"all"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsWebFetchURLSourceAll) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsWebFetchURLSourceAll) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsWebFetchURLSourceAll to a
+// BetaManagedAgentsWebFetchURLSourceAllParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsWebFetchURLSourceAllParam.Overrides()
+func (r BetaManagedAgentsWebFetchURLSourceAll) ToParam() BetaManagedAgentsWebFetchURLSourceAllParam {
+	return param.Override[BetaManagedAgentsWebFetchURLSourceAllParam](json.RawMessage(r.RawJSON()))
+}
+
+func NewBetaManagedAgentsWebFetchURLSourceAllParam() BetaManagedAgentsWebFetchURLSourceAllParam {
+	return BetaManagedAgentsWebFetchURLSourceAllParam{
+		Type: "all",
+	}
+}
+
+// Every URL from this source may be fetched. This is the default.
+//
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsWebFetchURLSourceAllParam].
+type BetaManagedAgentsWebFetchURLSourceAllParam struct {
+	Type constant.All `json:"type" default:"all"`
+	paramObj
+}
+
+func (r BetaManagedAgentsWebFetchURLSourceAllParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsWebFetchURLSourceAllParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsWebFetchURLSourceAllParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Every tool's results contribute URLs that may be fetched, except the named
+// tools' results.
+type BetaManagedAgentsWebFetchURLSourceExcept struct {
+	// The tools whose results do not contribute. Between 1 and 128 entries, each with
+	// a different name. An empty list is rejected; use "all" to leave out no tool's
+	// results.
+	Tools []BetaManagedAgentsWebFetchURLSourceToolReference `json:"tools" api:"required"`
+	Type  constant.Except                                   `json:"type" default:"except"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Tools       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsWebFetchURLSourceExcept) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsWebFetchURLSourceExcept) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsWebFetchURLSourceExcept to a
+// BetaManagedAgentsWebFetchURLSourceExceptParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsWebFetchURLSourceExceptParam.Overrides()
+func (r BetaManagedAgentsWebFetchURLSourceExcept) ToParam() BetaManagedAgentsWebFetchURLSourceExceptParam {
+	return param.Override[BetaManagedAgentsWebFetchURLSourceExceptParam](json.RawMessage(r.RawJSON()))
+}
+
+// Every tool's results contribute URLs that may be fetched, except the named
+// tools' results.
+//
+// The properties Tools, Type are required.
+type BetaManagedAgentsWebFetchURLSourceExceptParam struct {
+	// The tools whose results do not contribute. Between 1 and 128 entries, each with
+	// a different name. An empty list is rejected; use "all" to leave out no tool's
+	// results.
+	Tools []BetaManagedAgentsWebFetchURLSourceToolReferenceParam `json:"tools,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "except".
+	Type constant.Except `json:"type" default:"except"`
+	paramObj
+}
+
+func (r BetaManagedAgentsWebFetchURLSourceExceptParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsWebFetchURLSourceExceptParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsWebFetchURLSourceExceptParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// This source contributes no URLs that may be fetched.
+type BetaManagedAgentsWebFetchURLSourceNone struct {
+	Type constant.None `json:"type" default:"none"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsWebFetchURLSourceNone) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsWebFetchURLSourceNone) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsWebFetchURLSourceNone to a
+// BetaManagedAgentsWebFetchURLSourceNoneParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsWebFetchURLSourceNoneParam.Overrides()
+func (r BetaManagedAgentsWebFetchURLSourceNone) ToParam() BetaManagedAgentsWebFetchURLSourceNoneParam {
+	return param.Override[BetaManagedAgentsWebFetchURLSourceNoneParam](json.RawMessage(r.RawJSON()))
+}
+
+func NewBetaManagedAgentsWebFetchURLSourceNoneParam() BetaManagedAgentsWebFetchURLSourceNoneParam {
+	return BetaManagedAgentsWebFetchURLSourceNoneParam{
+		Type: "none",
+	}
+}
+
+// This source contributes no URLs that may be fetched.
+//
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsWebFetchURLSourceNoneParam].
+type BetaManagedAgentsWebFetchURLSourceNoneParam struct {
+	Type constant.None `json:"type" default:"none"`
+	paramObj
+}
+
+func (r BetaManagedAgentsWebFetchURLSourceNoneParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsWebFetchURLSourceNoneParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsWebFetchURLSourceNoneParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only the named tools' results contribute URLs that may be fetched.
+type BetaManagedAgentsWebFetchURLSourceOnly struct {
+	// The tools whose results contribute. Between 1 and 128 entries, each with a
+	// different name. An empty list is rejected; use "none" to allow no tool's
+	// results.
+	Tools []BetaManagedAgentsWebFetchURLSourceToolReference `json:"tools" api:"required"`
+	Type  constant.Only                                     `json:"type" default:"only"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Tools       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsWebFetchURLSourceOnly) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsWebFetchURLSourceOnly) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsWebFetchURLSourceOnly to a
+// BetaManagedAgentsWebFetchURLSourceOnlyParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsWebFetchURLSourceOnlyParam.Overrides()
+func (r BetaManagedAgentsWebFetchURLSourceOnly) ToParam() BetaManagedAgentsWebFetchURLSourceOnlyParam {
+	return param.Override[BetaManagedAgentsWebFetchURLSourceOnlyParam](json.RawMessage(r.RawJSON()))
+}
+
+// Only the named tools' results contribute URLs that may be fetched.
+//
+// The properties Tools, Type are required.
+type BetaManagedAgentsWebFetchURLSourceOnlyParam struct {
+	// The tools whose results contribute. Between 1 and 128 entries, each with a
+	// different name. An empty list is rejected; use "none" to allow no tool's
+	// results.
+	Tools []BetaManagedAgentsWebFetchURLSourceToolReferenceParam `json:"tools,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "only".
+	Type constant.Only `json:"type" default:"only"`
+	paramObj
+}
+
+func (r BetaManagedAgentsWebFetchURLSourceOnlyParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsWebFetchURLSourceOnlyParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsWebFetchURLSourceOnlyParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// String form of a url_sources value that has no field other than its type: "all"
+// means {"type": "all"} and "none" means {"type": "none"}.
+type BetaManagedAgentsWebFetchURLSourceShorthand string
+
+const (
+	BetaManagedAgentsWebFetchURLSourceShorthandAll  BetaManagedAgentsWebFetchURLSourceShorthand = "all"
+	BetaManagedAgentsWebFetchURLSourceShorthandNone BetaManagedAgentsWebFetchURLSourceShorthand = "none"
+)
+
+// BetaManagedAgentsWebFetchURLSourceToolFilterUnion contains all possible
+// properties and values from [BetaManagedAgentsWebFetchURLSourceAll],
+// [BetaManagedAgentsWebFetchURLSourceNone],
+// [BetaManagedAgentsWebFetchURLSourceOnly],
+// [BetaManagedAgentsWebFetchURLSourceExcept].
+//
+// Use the [BetaManagedAgentsWebFetchURLSourceToolFilterUnion.AsAny] method to
+// switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsWebFetchURLSourceToolFilterUnion struct {
+	// Any of "all", "none", "only", "except".
+	Type  string                                            `json:"type"`
+	Tools []BetaManagedAgentsWebFetchURLSourceToolReference `json:"tools"`
+	JSON  struct {
+		Type  respjson.Field
+		Tools respjson.Field
+		raw   string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsWebFetchURLSourceToolFilter is implemented by each variant
+// of [BetaManagedAgentsWebFetchURLSourceToolFilterUnion] to add type safety for
+// the return type of [BetaManagedAgentsWebFetchURLSourceToolFilterUnion.AsAny]
+type anyBetaManagedAgentsWebFetchURLSourceToolFilter interface {
+	implBetaManagedAgentsWebFetchURLSourceToolFilterUnion()
+}
+
+func (BetaManagedAgentsWebFetchURLSourceAll) implBetaManagedAgentsWebFetchURLSourceToolFilterUnion() {
+}
+func (BetaManagedAgentsWebFetchURLSourceNone) implBetaManagedAgentsWebFetchURLSourceToolFilterUnion() {
+}
+func (BetaManagedAgentsWebFetchURLSourceOnly) implBetaManagedAgentsWebFetchURLSourceToolFilterUnion() {
+}
+func (BetaManagedAgentsWebFetchURLSourceExcept) implBetaManagedAgentsWebFetchURLSourceToolFilterUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsWebFetchURLSourceToolFilterUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsWebFetchURLSourceAll:
+//	case anthropic.BetaManagedAgentsWebFetchURLSourceNone:
+//	case anthropic.BetaManagedAgentsWebFetchURLSourceOnly:
+//	case anthropic.BetaManagedAgentsWebFetchURLSourceExcept:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterUnion) AsAny() anyBetaManagedAgentsWebFetchURLSourceToolFilter {
+	switch u.Type {
+	case "all":
+		return u.AsAll()
+	case "none":
+		return u.AsNone()
+	case "only":
+		return u.AsOnly()
+	case "except":
+		return u.AsExcept()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterUnion) AsAll() (v BetaManagedAgentsWebFetchURLSourceAll) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterUnion) AsNone() (v BetaManagedAgentsWebFetchURLSourceNone) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterUnion) AsOnly() (v BetaManagedAgentsWebFetchURLSourceOnly) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterUnion) AsExcept() (v BetaManagedAgentsWebFetchURLSourceExcept) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsWebFetchURLSourceToolFilterUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsWebFetchURLSourceToolFilterUnion to a
+// BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam.Overrides()
+func (r BetaManagedAgentsWebFetchURLSourceToolFilterUnion) ToParam() BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam {
+	return param.Override[BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam](json.RawMessage(r.RawJSON()))
+}
+
+func BetaManagedAgentsWebFetchURLSourceToolFilterParamOfOnly(tools []BetaManagedAgentsWebFetchURLSourceToolReferenceParam) BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam {
+	var only BetaManagedAgentsWebFetchURLSourceOnlyParam
+	only.Tools = tools
+	return BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam{OfOnly: &only}
+}
+
+func BetaManagedAgentsWebFetchURLSourceToolFilterParamOfExcept(tools []BetaManagedAgentsWebFetchURLSourceToolReferenceParam) BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam {
+	var except BetaManagedAgentsWebFetchURLSourceExceptParam
+	except.Tools = tools
+	return BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam{OfExcept: &except}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam struct {
+	OfAll    *BetaManagedAgentsWebFetchURLSourceAllParam    `json:",omitzero,inline"`
+	OfNone   *BetaManagedAgentsWebFetchURLSourceNoneParam   `json:",omitzero,inline"`
+	OfOnly   *BetaManagedAgentsWebFetchURLSourceOnlyParam   `json:",omitzero,inline"`
+	OfExcept *BetaManagedAgentsWebFetchURLSourceExceptParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAll, u.OfNone, u.OfOnly, u.OfExcept)
+}
+func (u *BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAll) {
+		return u.OfAll
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
+	} else if !param.IsOmitted(u.OfOnly) {
+		return u.OfOnly
+	} else if !param.IsOmitted(u.OfExcept) {
+		return u.OfExcept
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam) GetType() *string {
+	if vt := u.OfAll; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfNone; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfOnly; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfExcept; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's Tools property, if present.
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam) GetTools() []BetaManagedAgentsWebFetchURLSourceToolReferenceParam {
+	if vt := u.OfOnly; vt != nil {
+		return vt.Tools
+	} else if vt := u.OfExcept; vt != nil {
+		return vt.Tools
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam](
+		"type",
+		apijson.Discriminator[BetaManagedAgentsWebFetchURLSourceAllParam]("all"),
+		apijson.Discriminator[BetaManagedAgentsWebFetchURLSourceNoneParam]("none"),
+		apijson.Discriminator[BetaManagedAgentsWebFetchURLSourceOnlyParam]("only"),
+		apijson.Discriminator[BetaManagedAgentsWebFetchURLSourceExceptParam]("except"),
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaManagedAgentsWebFetchURLSourceToolFilterParamsUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfBetaManagedAgentsWebFetchURLSourceShorthand)
+	OfBetaManagedAgentsWebFetchURLSourceShorthand       param.Opt[BetaManagedAgentsWebFetchURLSourceShorthand]  `json:",omitzero,inline"`
+	OfBetaManagedAgentsWebFetchURLSourceToolFilterUnion *BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterParamsUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBetaManagedAgentsWebFetchURLSourceShorthand, u.OfBetaManagedAgentsWebFetchURLSourceToolFilterUnion)
+}
+func (u *BetaManagedAgentsWebFetchURLSourceToolFilterParamsUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaManagedAgentsWebFetchURLSourceToolFilterParamsUnion) asAny() any {
+	if !param.IsOmitted(u.OfBetaManagedAgentsWebFetchURLSourceShorthand) {
+		return &u.OfBetaManagedAgentsWebFetchURLSourceShorthand
+	} else if !param.IsOmitted(u.OfBetaManagedAgentsWebFetchURLSourceToolFilterUnion) {
+		return u.OfBetaManagedAgentsWebFetchURLSourceToolFilterUnion.asAny()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterParamsUnion) GetType() *string {
+	if u.OfBetaManagedAgentsWebFetchURLSourceToolFilterUnion != nil {
+		return u.OfBetaManagedAgentsWebFetchURLSourceToolFilterUnion.GetType()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's Tools property, if present.
+func (u BetaManagedAgentsWebFetchURLSourceToolFilterParamsUnion) GetTools() []BetaManagedAgentsWebFetchURLSourceToolReferenceParam {
+	if u.OfBetaManagedAgentsWebFetchURLSourceToolFilterUnion != nil {
+		return u.OfBetaManagedAgentsWebFetchURLSourceToolFilterUnion.GetTools()
+	}
+	return nil
+}
+
+// Names one tool in an only or except list.
+type BetaManagedAgentsWebFetchURLSourceToolReference struct {
+	// Name of the tool. Compared exactly, so upper and lower case letters are
+	// different.
+	Name string `json:"name" api:"required"`
+	// Must be "tool_reference".
+	Type constant.ToolReference `json:"type" default:"tool_reference"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Name        respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsWebFetchURLSourceToolReference) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsWebFetchURLSourceToolReference) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsWebFetchURLSourceToolReference to a
+// BetaManagedAgentsWebFetchURLSourceToolReferenceParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsWebFetchURLSourceToolReferenceParam.Overrides()
+func (r BetaManagedAgentsWebFetchURLSourceToolReference) ToParam() BetaManagedAgentsWebFetchURLSourceToolReferenceParam {
+	return param.Override[BetaManagedAgentsWebFetchURLSourceToolReferenceParam](json.RawMessage(r.RawJSON()))
+}
+
+// Names one tool in an only or except list.
+//
+// The properties Name, Type are required.
+type BetaManagedAgentsWebFetchURLSourceToolReferenceParam struct {
+	// Name of the tool. Compared exactly, so upper and lower case letters are
+	// different.
+	Name string `json:"name" api:"required"`
+	// Must be "tool_reference".
+	//
+	// This field can be elided, and will marshal its zero value as "tool_reference".
+	Type constant.ToolReference `json:"type" default:"tool_reference"`
+	paramObj
+}
+
+func (r BetaManagedAgentsWebFetchURLSourceToolReferenceParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsWebFetchURLSourceToolReferenceParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsWebFetchURLSourceToolReferenceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsWebFetchURLSourceUserInputUnion contains all possible
+// properties and values from [BetaManagedAgentsWebFetchURLSourceAll],
+// [BetaManagedAgentsWebFetchURLSourceNone].
+//
+// Use the [BetaManagedAgentsWebFetchURLSourceUserInputUnion.AsAny] method to
+// switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsWebFetchURLSourceUserInputUnion struct {
+	// Any of "all", "none".
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsWebFetchURLSourceUserInput is implemented by each variant of
+// [BetaManagedAgentsWebFetchURLSourceUserInputUnion] to add type safety for the
+// return type of [BetaManagedAgentsWebFetchURLSourceUserInputUnion.AsAny]
+type anyBetaManagedAgentsWebFetchURLSourceUserInput interface {
+	implBetaManagedAgentsWebFetchURLSourceUserInputUnion()
+}
+
+func (BetaManagedAgentsWebFetchURLSourceAll) implBetaManagedAgentsWebFetchURLSourceUserInputUnion() {}
+func (BetaManagedAgentsWebFetchURLSourceNone) implBetaManagedAgentsWebFetchURLSourceUserInputUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsWebFetchURLSourceUserInputUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsWebFetchURLSourceAll:
+//	case anthropic.BetaManagedAgentsWebFetchURLSourceNone:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsWebFetchURLSourceUserInputUnion) AsAny() anyBetaManagedAgentsWebFetchURLSourceUserInput {
+	switch u.Type {
+	case "all":
+		return u.AsAll()
+	case "none":
+		return u.AsNone()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsWebFetchURLSourceUserInputUnion) AsAll() (v BetaManagedAgentsWebFetchURLSourceAll) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsWebFetchURLSourceUserInputUnion) AsNone() (v BetaManagedAgentsWebFetchURLSourceNone) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsWebFetchURLSourceUserInputUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsWebFetchURLSourceUserInputUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaManagedAgentsWebFetchURLSourceUserInputUnion to a
+// BetaManagedAgentsWebFetchURLSourceUserInputUnionParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaManagedAgentsWebFetchURLSourceUserInputUnionParam.Overrides()
+func (r BetaManagedAgentsWebFetchURLSourceUserInputUnion) ToParam() BetaManagedAgentsWebFetchURLSourceUserInputUnionParam {
+	return param.Override[BetaManagedAgentsWebFetchURLSourceUserInputUnionParam](json.RawMessage(r.RawJSON()))
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaManagedAgentsWebFetchURLSourceUserInputUnionParam struct {
+	OfAll  *BetaManagedAgentsWebFetchURLSourceAllParam  `json:",omitzero,inline"`
+	OfNone *BetaManagedAgentsWebFetchURLSourceNoneParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaManagedAgentsWebFetchURLSourceUserInputUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAll, u.OfNone)
+}
+func (u *BetaManagedAgentsWebFetchURLSourceUserInputUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaManagedAgentsWebFetchURLSourceUserInputUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAll) {
+		return u.OfAll
+	} else if !param.IsOmitted(u.OfNone) {
+		return u.OfNone
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsWebFetchURLSourceUserInputUnionParam) GetType() *string {
+	if vt := u.OfAll; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfNone; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaManagedAgentsWebFetchURLSourceUserInputUnionParam](
+		"type",
+		apijson.Discriminator[BetaManagedAgentsWebFetchURLSourceAllParam]("all"),
+		apijson.Discriminator[BetaManagedAgentsWebFetchURLSourceNoneParam]("none"),
+	)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaManagedAgentsWebFetchURLSourceUserInputParamsUnion struct {
+	// Check if union is this variant with
+	// !param.IsOmitted(union.OfBetaManagedAgentsWebFetchURLSourceShorthand)
+	OfBetaManagedAgentsWebFetchURLSourceShorthand      param.Opt[BetaManagedAgentsWebFetchURLSourceShorthand] `json:",omitzero,inline"`
+	OfBetaManagedAgentsWebFetchURLSourceUserInputUnion *BetaManagedAgentsWebFetchURLSourceUserInputUnionParam `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaManagedAgentsWebFetchURLSourceUserInputParamsUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfBetaManagedAgentsWebFetchURLSourceShorthand, u.OfBetaManagedAgentsWebFetchURLSourceUserInputUnion)
+}
+func (u *BetaManagedAgentsWebFetchURLSourceUserInputParamsUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaManagedAgentsWebFetchURLSourceUserInputParamsUnion) asAny() any {
+	if !param.IsOmitted(u.OfBetaManagedAgentsWebFetchURLSourceShorthand) {
+		return &u.OfBetaManagedAgentsWebFetchURLSourceShorthand
+	} else if !param.IsOmitted(u.OfBetaManagedAgentsWebFetchURLSourceUserInputUnion) {
+		return u.OfBetaManagedAgentsWebFetchURLSourceUserInputUnion.asAny()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsWebFetchURLSourceUserInputParamsUnion) GetType() *string {
+	if u.OfBetaManagedAgentsWebFetchURLSourceUserInputUnion != nil {
+		return u.OfBetaManagedAgentsWebFetchURLSourceUserInputUnion.GetType()
+	}
+	return nil
+}
+
+// Which sources contribute URLs the web_fetch tool may fetch. A key that is null
+// was not set and allows every URL from that source.
+type BetaManagedAgentsWebFetchURLSources struct {
+	// Which custom tools' results contribute URLs that may be fetched. Null when not
+	// set, which allows every custom tool's results.
+	ClientToolResults BetaManagedAgentsWebFetchURLSourceToolFilterUnion `json:"client_tool_results" api:"required"`
+	// Which of the web_search and web_fetch tools' results contribute URLs that may be
+	// fetched. Null when not set, which allows both.
+	ServerToolResults BetaManagedAgentsWebFetchURLSourceToolFilterUnion `json:"server_tool_results" api:"required"`
+	// Whether URLs in the text of user messages may be fetched. Null when not set,
+	// which allows them.
+	UserInput BetaManagedAgentsWebFetchURLSourceUserInputUnion `json:"user_input" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ClientToolResults respjson.Field
+		ServerToolResults respjson.Field
+		UserInput         respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsWebFetchURLSources) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsWebFetchURLSources) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Which sources contribute URLs the web_fetch tool may fetch. When web_fetch is
+// limited to URLs the conversation has already shown the model (in a user message,
+// a custom tool's result, or an earlier web_search or web_fetch result), each key
+// narrows one of those sources and defaults to "all". Setting all three keys to
+// "none" is rejected.
+type BetaManagedAgentsWebFetchURLSourcesParams struct {
+	// Which custom tools' results contribute URLs that may be fetched: "all" (the
+	// default), "none", or an only or except list. Each name in a list must be a
+	// custom tool in the same tools array.
+	ClientToolResults BetaManagedAgentsWebFetchURLSourceToolFilterParamsUnion `json:"client_tool_results,omitzero"`
+	// Which of the web_search and web_fetch tools' results contribute URLs that may be
+	// fetched: "all" (the default), "none", or an only or except list. Each name in a
+	// list must be "web_search" or "web_fetch".
+	ServerToolResults BetaManagedAgentsWebFetchURLSourceToolFilterParamsUnion `json:"server_tool_results,omitzero"`
+	// Whether URLs in the text of user messages may be fetched: "all" (the default) or
+	// "none".
+	UserInput BetaManagedAgentsWebFetchURLSourceUserInputParamsUnion `json:"user_input,omitzero"`
+	paramObj
+}
+
+func (r BetaManagedAgentsWebFetchURLSourcesParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsWebFetchURLSourcesParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsWebFetchURLSourcesParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Configuration for the web_search tool.
 type BetaManagedAgentsWebSearchToolConfig struct {
@@ -4614,8 +5327,7 @@ type BetaAgentNewParams struct {
 	// Arbitrary key-value metadata. Maximum 16 pairs, keys up to 64 chars, values up
 	// to 512 chars.
 	Metadata map[string]string `json:"metadata,omitzero"`
-	// Multiagent orchestration configuration. Currently supports the `coordinator`
-	// topology with a roster of 1-20 agents.
+	// Multiagent orchestration configuration.
 	Multiagent BetaManagedAgentsMultiagentParams `json:"multiagent,omitzero"`
 	// Skills available to the agent.
 	Skills []BetaManagedAgentsSkillParamsUnion `json:"skills,omitzero"`

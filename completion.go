@@ -44,6 +44,9 @@ func NewCompletionService(opts ...option.RequestOption) (r CompletionService) {
 // [migration guide](https://platform.claude.com/docs/en/build-with-claude/working-with-messages)
 // for guidance in migrating from Text Completions to Messages.
 //
+// Deprecated: Use the
+// [Messages API](https://platform.claude.com/docs/en/api/messages/create) instead.
+//
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *CompletionService) New(ctx context.Context, params CompletionNewParams, opts ...option.RequestOption) (res *Completion, err error) {
 	if len(params.Betas) > 0 {
@@ -73,6 +76,9 @@ func (r *CompletionService) New(ctx context.Context, params CompletionNewParams,
 // Future models and features will not be compatible with Text Completions. See our
 // [migration guide](https://platform.claude.com/docs/en/build-with-claude/working-with-messages)
 // for guidance in migrating from Text Completions to Messages.
+//
+// Deprecated: Use the
+// [Messages API](https://platform.claude.com/docs/en/api/messages/create) instead.
 //
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *CompletionService) NewStreaming(ctx context.Context, params CompletionNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[Completion]) {

@@ -60,7 +60,7 @@ func (r *BetaVaultCredentialService) New(ctx context.Context, vaultID string, pa
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials?beta=true", vaultID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials?beta=true", url.PathEscape(vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -90,7 +90,7 @@ func (r *BetaVaultCredentialService) Get(ctx context.Context, credentialID strin
 		err = errors.New("missing required credential_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", params.VaultID, credentialID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -120,7 +120,7 @@ func (r *BetaVaultCredentialService) Update(ctx context.Context, credentialID st
 		err = errors.New("missing required credential_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", params.VaultID, credentialID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -147,7 +147,7 @@ func (r *BetaVaultCredentialService) List(ctx context.Context, vaultID string, p
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials?beta=true", vaultID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials?beta=true", url.PathEscape(vaultID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -190,7 +190,7 @@ func (r *BetaVaultCredentialService) Delete(ctx context.Context, credentialID st
 		err = errors.New("missing required credential_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", params.VaultID, credentialID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -220,7 +220,7 @@ func (r *BetaVaultCredentialService) Archive(ctx context.Context, credentialID s
 		err = errors.New("missing required credential_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials/%s/archive?beta=true", params.VaultID, credentialID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials/%s/archive?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -250,7 +250,7 @@ func (r *BetaVaultCredentialService) MCPOAuthValidate(ctx context.Context, crede
 		err = errors.New("missing required credential_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials/%s/mcp_oauth_validate?beta=true", params.VaultID, credentialID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials/%s/mcp_oauth_validate?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

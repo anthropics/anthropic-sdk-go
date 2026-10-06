@@ -99,7 +99,7 @@ func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string
 		err = errors.New("missing required message_batch_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", messageBatchID)
+	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", url.PathEscape(messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -175,7 +175,7 @@ func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID str
 		err = errors.New("missing required message_batch_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", messageBatchID)
+	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", url.PathEscape(messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -212,7 +212,7 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 		err = errors.New("missing required message_batch_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s/cancel?beta=true", messageBatchID)
+	path := fmt.Sprintf("v1/messages/batches/%s/cancel?beta=true", url.PathEscape(messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -249,7 +249,7 @@ func (r *BetaMessageBatchService) ResultsStreaming(ctx context.Context, messageB
 		err = errors.New("missing required message_batch_id parameter")
 		return jsonl.NewStream[BetaMessageBatchIndividualResponse](nil, err)
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s/results?beta=true", messageBatchID)
+	path := fmt.Sprintf("v1/messages/batches/%s/results?beta=true", url.PathEscape(messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
 	return jsonl.NewStream[BetaMessageBatchIndividualResponse](raw, err)
 }

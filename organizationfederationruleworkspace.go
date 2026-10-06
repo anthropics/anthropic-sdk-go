@@ -58,7 +58,7 @@ func (r *OrganizationFederationRuleWorkspaceService) List(ctx context.Context, f
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces", federationRuleID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces", url.PathEscape(federationRuleID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ func (r *OrganizationFederationRuleWorkspaceService) Add(ctx context.Context, fe
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces", federationRuleID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces", url.PathEscape(federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -132,7 +132,7 @@ func (r *OrganizationFederationRuleWorkspaceService) Remove(ctx context.Context,
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces/%s", body.FederationRuleID, workspaceID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces/%s", url.PathEscape(body.FederationRuleID), url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

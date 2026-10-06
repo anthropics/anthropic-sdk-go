@@ -48,7 +48,7 @@ func (r *OrganizationWorkspaceMemberService) Get(ctx context.Context, userID str
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", query.WorkspaceID, userID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", url.PathEscape(query.WorkspaceID), url.PathEscape(userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -64,7 +64,7 @@ func (r *OrganizationWorkspaceMemberService) Update(ctx context.Context, userID 
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", params.WorkspaceID, userID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", url.PathEscape(params.WorkspaceID), url.PathEscape(userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -78,7 +78,7 @@ func (r *OrganizationWorkspaceMemberService) List(ctx context.Context, workspace
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", workspaceID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", url.PathEscape(workspaceID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (r *OrganizationWorkspaceMemberService) Add(ctx context.Context, workspaceI
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", workspaceID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -119,7 +119,7 @@ func (r *OrganizationWorkspaceMemberService) Remove(ctx context.Context, userID 
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", body.WorkspaceID, userID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", url.PathEscape(body.WorkspaceID), url.PathEscape(userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

@@ -9831,7 +9831,9 @@ func (r *BetaIterationsUsageItemUnion) UnmarshalJSON(data []byte) error {
 //
 //	var result MyStruct
 //	msg, _ := client.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
-//	    OutputFormat: anthropic.BetaJSONOutputFormatParam{Schema: &result},
+//	    OutputConfig: anthropic.BetaOutputConfigParam{
+//	        Format: anthropic.BetaJSONOutputFormatParam{Schema: &result},
+//	    },
 //	    ...
 //	})
 //
@@ -9850,9 +9852,9 @@ type BetaJSONOutputFormatParam struct {
 	// auto-parsing and type safety. If you already have a JSON schema as bytes,
 	// use json.RawMessage to avoid unnecessary marshaling overhead.
 	//
-	// Set the schema on either BetaMessageNewParams.OutputFormat or
-	// BetaMessageNewParams.OutputConfig.Format, not both. If both carry a struct
-	// pointer, OutputFormat wins for auto-parse.
+	// Set the schema on either BetaMessageNewParams.OutputConfig.Format or the
+	// deprecated BetaMessageNewParams.OutputFormat, not both. If both carry a struct
+	// pointer, OutputConfig.Format wins for auto-parse.
 	Schema any `json:"schema,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as "json_schema".
 	Type constant.JSONSchema `json:"type" default:"json_schema"`

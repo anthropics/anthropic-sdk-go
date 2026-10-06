@@ -25,7 +25,7 @@ func TestBetaSessionThreadEventListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Sessions.Threads.Events.List(
 		context.TODO(),
-		"sthr_011CZkZVWa6oIjw0rgXZpnBt",
+		"sthr_011CZkZVWa6oJjw1rgXZpnBt",
 		anthropic.BetaSessionThreadEventListParams{
 			SessionID:   "sesn_011CZkZAtmR3yMPDzynEDxu7",
 			Limit:       anthropic.Int(0),

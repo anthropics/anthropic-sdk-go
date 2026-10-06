@@ -63,7 +63,7 @@ func (r *BetaSessionEventService) List(ctx context.Context, sessionID string, pa
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", sessionID)
+	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", url.PathEscape(sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func (r *BetaSessionEventService) Send(ctx context.Context, sessionID string, pa
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", sessionID)
+	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", url.PathEscape(sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -132,7 +132,7 @@ func (r *BetaSessionEventService) StreamEvents(ctx context.Context, sessionID st
 		err = errors.New("missing required session_id parameter")
 		return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](nil, err)
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events/stream?beta=true", sessionID)
+	path := fmt.Sprintf("v1/sessions/%s/events/stream?beta=true", url.PathEscape(sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &raw, opts...)
 	return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](ssestream.NewDecoder(raw), err)
 }
@@ -5628,8 +5628,8 @@ const (
 	BetaManagedAgentsSessionStatusTerminatedEventTypeSessionStatusTerminated BetaManagedAgentsSessionStatusTerminatedEventType = "session.status_terminated"
 )
 
-// Emitted when a subagent is spawned as a new thread. Written to the parent
-// thread's output stream so clients observing the session see child creation.
+// Emitted when a child thread is created. Written to the parent thread's output
+// stream so clients observing the session see child creation.
 type BetaManagedAgentsSessionThreadCreatedEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`

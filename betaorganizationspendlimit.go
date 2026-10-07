@@ -61,7 +61,9 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 // A Claude Console organization's limits come in an order that is stable across
 // pages. A Claude Enterprise organization's are grouped by scope type, in the
 // order `organization`, `seat_tier`, `rbac_group`, `organization_service`, `user`;
-// within a type they come in a fixed order that is not creation order.
+// within a type they come in a fixed order that is not creation order. Listing
+// Claude Console limits is in an early access preview. To request access, contact
+// your Anthropic account team.
 func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSpendLimit], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -94,7 +96,9 @@ func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params Bet
 // A Claude Console organization's limits come in an order that is stable across
 // pages. A Claude Enterprise organization's are grouped by scope type, in the
 // order `organization`, `seat_tier`, `rbac_group`, `organization_service`, `user`;
-// within a type they come in a fixed order that is not creation order.
+// within a type they come in a fixed order that is not creation order. Listing
+// Claude Console limits is in an early access preview. To request access, contact
+// your Anthropic account team.
 func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSpendLimit] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }

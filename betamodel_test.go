@@ -55,6 +55,7 @@ func TestBetaModelListWithOptionalParams(t *testing.T) {
 	_, err := client.Beta.Models.List(context.TODO(), anthropic.BetaModelListParams{
 		AfterID:     anthropic.String("after_id"),
 		BeforeID:    anthropic.String("before_id"),
+		Lifecycle:   []string{"active"},
 		Limit:       anthropic.Int(1),
 		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),

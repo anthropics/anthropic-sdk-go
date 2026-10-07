@@ -278,8 +278,24 @@ type BetaModelInfo struct {
 	// RFC 3339 datetime string representing the time at which the model was released.
 	// May be set to an epoch value if the release date is unknown.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// RFC 3339 datetime string representing the time of the model's most recent
+	// deprecation. Populated for `deprecated` and `retired` models; `null` while the
+	// model is `active`.
+	DeprecatedAt time.Time `json:"deprecated_at" api:"required" format:"date-time"`
 	// A human-readable name for the model.
 	DisplayName string `json:"display_name" api:"required"`
+	// The model's current lifecycle stage.
+	//
+	// - `active`: The model is available for use, open to new adopters, and not
+	//   scheduled for retirement.
+	// - `deprecated`: The model remains callable for organizations with existing
+	//   access, but is headed for retirement and closed to new adopters.
+	// - `retired`: The model is no longer available for use; inference requests naming
+	//   it fail. It remains in the catalogue as the historical record of its
+	//   retirement.
+	//
+	// Any of "active", "deprecated", "retired".
+	Lifecycle BetaModelInfoLifecycle `json:"lifecycle" api:"required"`
 	// The model line this model belongs to, such as `opus` for both Claude Opus 4.5
 	// and Claude Opus 4.6. More lines may be added. `null` when the model belongs to
 	// no line; do not infer a line from the `id`.
@@ -290,6 +306,12 @@ type BetaModelInfo struct {
 	MaxInputTokens int64 `json:"max_input_tokens" api:"required"`
 	// Maximum value for the `max_tokens` parameter when using this model.
 	MaxTokens int64 `json:"max_tokens" api:"required"`
+	// RFC 3339 datetime string representing the model's currently scheduled retirement
+	// date. The schedule can be revised until retirement occurs; `null` while the
+	// model is `active` or while no retirement is scheduled. A past date on a
+	// `deprecated` model means retirement is overdue, not that it has occurred:
+	// `lifecycle` is the retirement signal.
+	RetiresAt time.Time `json:"retires_at" api:"required" format:"date-time"`
 	// Object type.
 	//
 	// For Models, this is always `"model"`.
@@ -300,10 +322,13 @@ type BetaModelInfo struct {
 		AllowedFallbackModels respjson.Field
 		Capabilities          respjson.Field
 		CreatedAt             respjson.Field
+		DeprecatedAt          respjson.Field
 		DisplayName           respjson.Field
+		Lifecycle             respjson.Field
 		Line                  respjson.Field
 		MaxInputTokens        respjson.Field
 		MaxTokens             respjson.Field
+		RetiresAt             respjson.Field
 		Type                  respjson.Field
 		ExtraFields           map[string]respjson.Field
 		raw                   string
@@ -315,6 +340,23 @@ func (r BetaModelInfo) RawJSON() string { return r.JSON.raw }
 func (r *BetaModelInfo) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// The model's current lifecycle stage.
+//
+//   - `active`: The model is available for use, open to new adopters, and not
+//     scheduled for retirement.
+//   - `deprecated`: The model remains callable for organizations with existing
+//     access, but is headed for retirement and closed to new adopters.
+//   - `retired`: The model is no longer available for use; inference requests naming
+//     it fail. It remains in the catalogue as the historical record of its
+//     retirement.
+type BetaModelInfoLifecycle string
+
+const (
+	BetaModelInfoLifecycleActive     BetaModelInfoLifecycle = "active"
+	BetaModelInfoLifecycleDeprecated BetaModelInfoLifecycle = "deprecated"
+	BetaModelInfoLifecycleRetired    BetaModelInfoLifecycle = "retired"
+)
 
 // A Claude model line, such as `opus` or `sonnet`. More lines may be added as new
 // values.
@@ -435,6 +477,13 @@ type BetaModelListParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Filter the list to models in any of the given lifecycle stages (`active`,
+	// `deprecated`, or `retired`). Up to 3 values. When omitted, the list contains the
+	// `active` and `deprecated` models; `retired` models appear only when `retired` is
+	// requested explicitly.
+	//
+	// Any of "active", "deprecated", "retired".
+	Lifecycle []string `query:"lifecycle,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

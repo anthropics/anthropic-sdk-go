@@ -3071,6 +3071,8 @@ const (
 type BetaManagedAgentsModel = string
 
 const (
+	// Fastest model for high-volume, real-time tasks
+	BetaManagedAgentsModelClaudeHaiku5_5 BetaManagedAgentsModel = "claude-haiku-5-5"
 	// Efficient model for coding and agents
 	BetaManagedAgentsModelClaudeSonnet5_5 BetaManagedAgentsModel = "claude-sonnet-5-5"
 	// Powerful intelligence for coding, knowledge work, and long-running agents

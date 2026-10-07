@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -43,8 +44,15 @@ func NewModelService(opts ...option.RequestOption) (r ModelService) {
 // The Models API response can be used to determine information about a specific
 // model or resolve a model alias to a model ID.
 func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetParams, opts ...option.RequestOption) (res *ModelInfo, err error) {
-	for _, v := range query.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(query.Betas) > 0 {
+		headerValues := make([]string, len(query.Betas))
+		for i, v := range query.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -54,7 +62,7 @@ func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetPa
 		err = errors.New("missing required model_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/models/%s", modelID)
+	path := fmt.Sprintf("v1/models/%s", url.PathEscape(modelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -65,8 +73,15 @@ func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetPa
 // use in the API. More recently released models are listed first.
 func (r *ModelService) List(ctx context.Context, params ModelListParams, opts ...option.RequestOption) (res *pagination.Page[ModelInfo], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -178,7 +193,10 @@ type ModelCapabilities struct {
 	Batch CapabilitySupport `json:"batch" api:"required"`
 	// Whether the model supports citation generation.
 	Citations CapabilitySupport `json:"citations" api:"required"`
-	// Whether the model supports code execution tools.
+	// Whether code that the model runs in the code execution tool can call the
+	// request's other tools, as in programmatic tool calling and dynamic filtering for
+	// web search and web fetch. Support for the code execution tool itself is in
+	// `server_tools.code_execution`.
 	CodeExecution CapabilitySupport `json:"code_execution" api:"required"`
 	// Context management support and available strategies.
 	ContextManagement ContextManagementCapability `json:"context_management" api:"required"`
@@ -188,6 +206,11 @@ type ModelCapabilities struct {
 	ImageInput CapabilitySupport `json:"image_input" api:"required"`
 	// Whether the model accepts PDF content blocks.
 	PDFInput CapabilitySupport `json:"pdf_input" api:"required"`
+	// Whether this model supports the web search and code execution server tools.
+	// `supported` is true when the model supports at least one of the tools. A
+	// supported tool can still be rejected for your organization, for example when an
+	// admin has turned web search off.
+	ServerTools ServerToolsCapability `json:"server_tools" api:"required"`
 	// Whether the model supports structured output / JSON mode / strict tool schemas.
 	StructuredOutputs CapabilitySupport `json:"structured_outputs" api:"required"`
 	// Thinking capability and supported type configurations.
@@ -201,6 +224,7 @@ type ModelCapabilities struct {
 		Effort            respjson.Field
 		ImageInput        respjson.Field
 		PDFInput          respjson.Field
+		ServerTools       respjson.Field
 		StructuredOutputs respjson.Field
 		Thinking          respjson.Field
 		ExtraFields       map[string]respjson.Field
@@ -223,12 +247,40 @@ type ModelInfo struct {
 	// RFC 3339 datetime string representing the time at which the model was released.
 	// May be set to an epoch value if the release date is unknown.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// RFC 3339 datetime string representing the time of the model's most recent
+	// deprecation. Populated for `deprecated` and `retired` models; `null` while the
+	// model is `active`.
+	DeprecatedAt time.Time `json:"deprecated_at" api:"required" format:"date-time"`
 	// A human-readable name for the model.
 	DisplayName string `json:"display_name" api:"required"`
+	// The model's current lifecycle stage.
+	//
+	// - `active`: The model is available for use, open to new adopters, and not
+	//   scheduled for retirement.
+	// - `deprecated`: The model remains callable for organizations with existing
+	//   access, but is headed for retirement and closed to new adopters.
+	// - `retired`: The model is no longer available for use; inference requests naming
+	//   it fail. It remains in the catalogue as the historical record of its
+	//   retirement.
+	//
+	// Any of "active", "deprecated", "retired".
+	Lifecycle ModelInfoLifecycle `json:"lifecycle" api:"required"`
+	// The model line this model belongs to, such as `opus` for both Claude Opus 4.5
+	// and Claude Opus 4.6. More lines may be added. `null` when the model belongs to
+	// no line; do not infer a line from the `id`.
+	//
+	// Any of "haiku", "sonnet", "opus", "fable", "mythos".
+	Line ModelLine `json:"line" api:"required"`
 	// Maximum input context window size in tokens for this model.
 	MaxInputTokens int64 `json:"max_input_tokens" api:"required"`
 	// Maximum value for the `max_tokens` parameter when using this model.
 	MaxTokens int64 `json:"max_tokens" api:"required"`
+	// RFC 3339 datetime string representing the model's currently scheduled retirement
+	// date. The schedule can be revised until retirement occurs; `null` while the
+	// model is `active` or while no retirement is scheduled. A past date on a
+	// `deprecated` model means retirement is overdue, not that it has occurred:
+	// `lifecycle` is the retirement signal.
+	RetiresAt time.Time `json:"retires_at" api:"required" format:"date-time"`
 	// Object type.
 	//
 	// For Models, this is always `"model"`.
@@ -238,9 +290,13 @@ type ModelInfo struct {
 		ID             respjson.Field
 		Capabilities   respjson.Field
 		CreatedAt      respjson.Field
+		DeprecatedAt   respjson.Field
 		DisplayName    respjson.Field
+		Lifecycle      respjson.Field
+		Line           respjson.Field
 		MaxInputTokens respjson.Field
 		MaxTokens      respjson.Field
+		RetiresAt      respjson.Field
 		Type           respjson.Field
 		ExtraFields    map[string]respjson.Field
 		raw            string
@@ -250,6 +306,61 @@ type ModelInfo struct {
 // Returns the unmodified JSON received from the API
 func (r ModelInfo) RawJSON() string { return r.JSON.raw }
 func (r *ModelInfo) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The model's current lifecycle stage.
+//
+//   - `active`: The model is available for use, open to new adopters, and not
+//     scheduled for retirement.
+//   - `deprecated`: The model remains callable for organizations with existing
+//     access, but is headed for retirement and closed to new adopters.
+//   - `retired`: The model is no longer available for use; inference requests naming
+//     it fail. It remains in the catalogue as the historical record of its
+//     retirement.
+type ModelInfoLifecycle string
+
+const (
+	ModelInfoLifecycleActive     ModelInfoLifecycle = "active"
+	ModelInfoLifecycleDeprecated ModelInfoLifecycle = "deprecated"
+	ModelInfoLifecycleRetired    ModelInfoLifecycle = "retired"
+)
+
+// A Claude model line, such as `opus` or `sonnet`. More lines may be added as new
+// values.
+type ModelLine string
+
+const (
+	ModelLineHaiku  ModelLine = "haiku"
+	ModelLineSonnet ModelLine = "sonnet"
+	ModelLineOpus   ModelLine = "opus"
+	ModelLineFable  ModelLine = "fable"
+	ModelLineMythos ModelLine = "mythos"
+)
+
+// Web search and code execution tool support, with one entry per tool.
+type ServerToolsCapability struct {
+	// Whether the model supports the code execution tool: true when the model supports
+	// at least one version of the tool, not necessarily every version.
+	CodeExecution CapabilitySupport `json:"code_execution" api:"required"`
+	// Whether this capability is supported by the model.
+	Supported bool `json:"supported" api:"required"`
+	// Whether the model supports the web search tool: true when the model supports at
+	// least one version of the tool, not necessarily every version.
+	WebSearch CapabilitySupport `json:"web_search" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CodeExecution respjson.Field
+		Supported     respjson.Field
+		WebSearch     respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ServerToolsCapability) RawJSON() string { return r.JSON.raw }
+func (r *ServerToolsCapability) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -274,15 +385,23 @@ func (r *ThinkingCapability) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Supported thinking type configurations.
+// Which `thinking.type` values the model accepts on requests. Read each key on its
+// own: for example, `enabled` can be false while `disabled` is true.
 type ThinkingTypes struct {
-	// Whether the model supports thinking with type 'adaptive' (auto).
+	// Whether the model accepts thinking with type 'adaptive' (the model decides
+	// whether and how much to think).
 	Adaptive CapabilitySupport `json:"adaptive" api:"required"`
-	// Whether the model supports thinking with type 'enabled'.
+	// Whether the model accepts thinking with type 'disabled' (thinking turned off).
+	// False exactly when a request that sends it gets a 400 from this model. True on a
+	// model that does not support thinking.
+	Disabled CapabilitySupport `json:"disabled" api:"required"`
+	// Whether the model accepts thinking with type 'enabled' (extended thinking with a
+	// caller-set `budget_tokens`).
 	Enabled CapabilitySupport `json:"enabled" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Adaptive    respjson.Field
+		Disabled    respjson.Field
 		Enabled     respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -326,6 +445,13 @@ type ModelListParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Filter the list to models in any of the given lifecycle stages (`active`,
+	// `deprecated`, or `retired`). Up to 3 values. When omitted, the list contains the
+	// `active` and `deprecated` models; `retired` models appear only when `retired` is
+	// requested explicitly.
+	//
+	// Any of "active", "deprecated", "retired".
+	Lifecycle []string `query:"lifecycle,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -42,8 +43,15 @@ func NewBetaSessionThreadService(opts ...option.RequestOption) (r BetaSessionThr
 
 // Get Session Thread
 func (r *BetaSessionThreadService) Get(ctx context.Context, threadID string, params BetaSessionThreadGetParams, opts ...option.RequestOption) (res *BetaManagedAgentsSessionThread, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -58,7 +66,7 @@ func (r *BetaSessionThreadService) Get(ctx context.Context, threadID string, par
 		err = errors.New("missing required thread_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads/%s?beta=true", params.SessionID, threadID)
+	path := fmt.Sprintf("v1/sessions/%s/threads/%s?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -66,8 +74,15 @@ func (r *BetaSessionThreadService) Get(ctx context.Context, threadID string, par
 // List Session Threads
 func (r *BetaSessionThreadService) List(ctx context.Context, sessionID string, params BetaSessionThreadListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaManagedAgentsSessionThread], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -78,7 +93,7 @@ func (r *BetaSessionThreadService) List(ctx context.Context, sessionID string, p
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads?beta=true", sessionID)
+	path := fmt.Sprintf("v1/sessions/%s/threads?beta=true", url.PathEscape(sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -98,8 +113,15 @@ func (r *BetaSessionThreadService) ListAutoPaging(ctx context.Context, sessionID
 
 // Archive Session Thread
 func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string, params BetaSessionThreadArchiveParams, opts ...option.RequestOption) (res *BetaManagedAgentsSessionThread, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -114,13 +136,13 @@ func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string,
 		err = errors.New("missing required thread_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads/%s/archive?beta=true", params.SessionID, threadID)
+	path := fmt.Sprintf("v1/sessions/%s/threads/%s/archive?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
 
 // An execution thread within a `session`. Each session has one primary thread plus
-// zero or more child threads spawned by the coordinator.
+// zero or more child threads.
 type BetaManagedAgentsSessionThread struct {
 	// Unique identifier for this thread.
 	ID string `json:"id" api:"required"`

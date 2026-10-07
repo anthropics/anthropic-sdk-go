@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -49,8 +50,15 @@ func NewBetaTunnelService(opts ...option.RequestOption) (r BetaTunnelService) {
 // it is not idempotent. The new tunnel rejects MCP traffic until at least one CA
 // certificate is added.
 func (r *BetaTunnelService) New(ctx context.Context, params BetaTunnelNewParams, opts ...option.RequestOption) (res *BetaTunnel, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -69,8 +77,15 @@ func (r *BetaTunnelService) New(ctx context.Context, params BetaTunnelNewParams,
 //
 // Fetches a tunnel by ID.
 func (r *BetaTunnelService) Get(ctx context.Context, tunnelID string, query BetaTunnelGetParams, opts ...option.RequestOption) (res *BetaTunnel, err error) {
-	for _, v := range query.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(query.Betas) > 0 {
+		headerValues := make([]string, len(query.Betas))
+		for i, v := range query.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -81,7 +96,7 @@ func (r *BetaTunnelService) Get(ctx context.Context, tunnelID string, query Beta
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s?beta=true", tunnelID)
+	path := fmt.Sprintf("v1/tunnels/%s?beta=true", url.PathEscape(tunnelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -95,8 +110,15 @@ func (r *BetaTunnelService) Get(ctx context.Context, tunnelID string, query Beta
 // tunnels are excluded unless include_archived is set.
 func (r *BetaTunnelService) List(ctx context.Context, params BetaTunnelListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaTunnel], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -137,8 +159,15 @@ func (r *BetaTunnelService) ListAutoPaging(ctx context.Context, params BetaTunne
 // re-allocated, and the tunnel token is invalidated. Retrying against an
 // already-archived tunnel returns the existing record unchanged.
 func (r *BetaTunnelService) Archive(ctx context.Context, tunnelID string, body BetaTunnelArchiveParams, opts ...option.RequestOption) (res *BetaTunnel, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -149,7 +178,7 @@ func (r *BetaTunnelService) Archive(ctx context.Context, tunnelID string, body B
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/archive?beta=true", tunnelID)
+	path := fmt.Sprintf("v1/tunnels/%s/archive?beta=true", url.PathEscape(tunnelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -164,8 +193,15 @@ func (r *BetaTunnelService) Archive(ctx context.Context, tunnelID string, body B
 // token is rotated. Exposed as POST so the token does not appear in intermediary
 // access logs.
 func (r *BetaTunnelService) RevealToken(ctx context.Context, tunnelID string, body BetaTunnelRevealTokenParams, opts ...option.RequestOption) (res *BetaTunnelToken, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -176,7 +212,7 @@ func (r *BetaTunnelService) RevealToken(ctx context.Context, tunnelID string, bo
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/reveal_token?beta=true", tunnelID)
+	path := fmt.Sprintf("v1/tunnels/%s/reveal_token?beta=true", url.PathEscape(tunnelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -190,8 +226,15 @@ func (r *BetaTunnelService) RevealToken(ctx context.Context, tunnelID string, bo
 // new connections and returns a fresh value; established connections are not
 // severed. A connector restarted after rotation must use the new value.
 func (r *BetaTunnelService) RotateToken(ctx context.Context, tunnelID string, params BetaTunnelRotateTokenParams, opts ...option.RequestOption) (res *BetaTunnelToken, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -202,7 +245,7 @@ func (r *BetaTunnelService) RotateToken(ctx context.Context, tunnelID string, pa
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/rotate_token?beta=true", tunnelID)
+	path := fmt.Sprintf("v1/tunnels/%s/rotate_token?beta=true", url.PathEscape(tunnelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

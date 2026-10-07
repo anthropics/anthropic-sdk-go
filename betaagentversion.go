@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
@@ -37,8 +38,15 @@ func NewBetaAgentVersionService(opts ...option.RequestOption) (r BetaAgentVersio
 // List Agent Versions
 func (r *BetaAgentVersionService) List(ctx context.Context, agentID string, params BetaAgentVersionListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaManagedAgentsAgent], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -49,7 +57,7 @@ func (r *BetaAgentVersionService) List(ctx context.Context, agentID string, para
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/versions?beta=true", agentID)
+	path := fmt.Sprintf("v1/agents/%s/versions?beta=true", url.PathEscape(agentID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err

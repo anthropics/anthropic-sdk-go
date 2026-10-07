@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -54,8 +55,15 @@ func NewBetaOrganizationServiceAccountService(opts ...option.RequestOption) (r B
 // requires an interactive credential (a user OAuth token or a Console session) — a
 // workload may only create `developer`-role service accounts.
 func (r *BetaOrganizationServiceAccountService) New(ctx context.Context, params BetaOrganizationServiceAccountNewParams, opts ...option.RequestOption) (res *BetaServiceAccount, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/service_accounts?beta=true"
@@ -70,15 +78,22 @@ func (r *BetaOrganizationServiceAccountService) New(ctx context.Context, params 
 //
 // Retrieve a service account by its ID (`svac_...`).
 func (r *BetaOrganizationServiceAccountService) Get(ctx context.Context, serviceAccountID string, query BetaOrganizationServiceAccountGetParams, opts ...option.RequestOption) (res *BetaServiceAccount, err error) {
-	for _, v := range query.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(query.Betas) > 0 {
+		headerValues := make([]string, len(query.Betas))
+		for i, v := range query.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if serviceAccountID == "" {
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s?beta=true", serviceAccountID)
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s?beta=true", url.PathEscape(serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -95,15 +110,22 @@ func (r *BetaOrganizationServiceAccountService) Get(ctx context.Context, service
 // `organization_role` to `admin` (even when unchanged) requires an interactive
 // credential (a user OAuth token or a Console session).
 func (r *BetaOrganizationServiceAccountService) Update(ctx context.Context, serviceAccountID string, params BetaOrganizationServiceAccountUpdateParams, opts ...option.RequestOption) (res *BetaServiceAccount, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if serviceAccountID == "" {
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s?beta=true", serviceAccountID)
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s?beta=true", url.PathEscape(serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -120,8 +142,15 @@ func (r *BetaOrganizationServiceAccountService) Update(ctx context.Context, serv
 // service accounts.
 func (r *BetaOrganizationServiceAccountService) List(ctx context.Context, params BetaOrganizationServiceAccountListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaServiceAccount], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -164,15 +193,22 @@ func (r *BetaOrganizationServiceAccountService) ListAutoPaging(ctx context.Conte
 // still targets this service account, same as issuer archival; archive those rules
 // first or change their target to another service account.
 func (r *BetaOrganizationServiceAccountService) Archive(ctx context.Context, serviceAccountID string, body BetaOrganizationServiceAccountArchiveParams, opts ...option.RequestOption) (res *BetaServiceAccount, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if serviceAccountID == "" {
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/archive?beta=true", serviceAccountID)
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s/archive?beta=true", url.PathEscape(serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -40,8 +41,15 @@ func NewBetaVaultCredentialService(opts ...option.RequestOption) (r BetaVaultCre
 
 // Create Credential
 func (r *BetaVaultCredentialService) New(ctx context.Context, vaultID string, params BetaVaultCredentialNewParams, opts ...option.RequestOption) (res *BetaManagedAgentsCredential, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -52,15 +60,22 @@ func (r *BetaVaultCredentialService) New(ctx context.Context, vaultID string, pa
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials?beta=true", vaultID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials?beta=true", url.PathEscape(vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Get Credential
 func (r *BetaVaultCredentialService) Get(ctx context.Context, credentialID string, params BetaVaultCredentialGetParams, opts ...option.RequestOption) (res *BetaManagedAgentsCredential, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -75,15 +90,22 @@ func (r *BetaVaultCredentialService) Get(ctx context.Context, credentialID strin
 		err = errors.New("missing required credential_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", params.VaultID, credentialID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Update Credential
 func (r *BetaVaultCredentialService) Update(ctx context.Context, credentialID string, params BetaVaultCredentialUpdateParams, opts ...option.RequestOption) (res *BetaManagedAgentsCredential, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -98,7 +120,7 @@ func (r *BetaVaultCredentialService) Update(ctx context.Context, credentialID st
 		err = errors.New("missing required credential_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", params.VaultID, credentialID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -106,8 +128,15 @@ func (r *BetaVaultCredentialService) Update(ctx context.Context, credentialID st
 // List Credentials
 func (r *BetaVaultCredentialService) List(ctx context.Context, vaultID string, params BetaVaultCredentialListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaManagedAgentsCredential], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -118,7 +147,7 @@ func (r *BetaVaultCredentialService) List(ctx context.Context, vaultID string, p
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials?beta=true", vaultID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials?beta=true", url.PathEscape(vaultID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -138,8 +167,15 @@ func (r *BetaVaultCredentialService) ListAutoPaging(ctx context.Context, vaultID
 
 // Delete Credential
 func (r *BetaVaultCredentialService) Delete(ctx context.Context, credentialID string, params BetaVaultCredentialDeleteParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeletedCredential, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -154,15 +190,22 @@ func (r *BetaVaultCredentialService) Delete(ctx context.Context, credentialID st
 		err = errors.New("missing required credential_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", params.VaultID, credentialID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
 
 // Archive Credential
 func (r *BetaVaultCredentialService) Archive(ctx context.Context, credentialID string, params BetaVaultCredentialArchiveParams, opts ...option.RequestOption) (res *BetaManagedAgentsCredential, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -177,15 +220,22 @@ func (r *BetaVaultCredentialService) Archive(ctx context.Context, credentialID s
 		err = errors.New("missing required credential_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials/%s/archive?beta=true", params.VaultID, credentialID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials/%s/archive?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
 
 // Validate Credential
 func (r *BetaVaultCredentialService) MCPOAuthValidate(ctx context.Context, credentialID string, params BetaVaultCredentialMCPOAuthValidateParams, opts ...option.RequestOption) (res *BetaManagedAgentsCredentialValidation, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -200,7 +250,7 @@ func (r *BetaVaultCredentialService) MCPOAuthValidate(ctx context.Context, crede
 		err = errors.New("missing required credential_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/credentials/%s/mcp_oauth_validate?beta=true", params.VaultID, credentialID)
+	path := fmt.Sprintf("v1/vaults/%s/credentials/%s/mcp_oauth_validate?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

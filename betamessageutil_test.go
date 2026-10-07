@@ -153,16 +153,20 @@ func TestBetaCompactionToParamKeepsToolChanges(t *testing.T) {
 	}
 }
 
-// A block type this SDK version does not model has no param variant to
-// populate, so it goes back exactly as it was received.
+// A block or citation type this SDK version does not model has no param variant
+// to populate, so it goes back exactly as it was received.
 func TestBetaContentBlockToParamKeepsUnmodeledBlock(t *testing.T) {
-	block := `{"type":"some_future_block","zebra":1,"alpha":{"nested":[true,null]}}`
-	sent, err := json.Marshal(unmarshalBetaContentBlockParam(t, block))
-	if err != nil {
-		t.Fatalf("Failed to marshal param: %v", err)
-	}
-	if string(sent) != block {
-		t.Errorf("ToParam changed the block\n want: %s\n  got: %s", block, sent)
+	for _, block := range []string{
+		`{"type":"some_future_block","zebra":1,"alpha":{"nested":[true,null]}}`,
+		`{"text":"x","citations":[{"type":"some_future_citation","zebra":1}],"type":"text"}`,
+	} {
+		sent, err := json.Marshal(unmarshalBetaContentBlockParam(t, block))
+		if err != nil {
+			t.Fatalf("Failed to marshal param: %v", err)
+		}
+		if string(sent) != block {
+			t.Errorf("ToParam changed the block\n want: %s\n  got: %s", block, sent)
+		}
 	}
 }
 

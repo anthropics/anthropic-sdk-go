@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"iter"
 	"net/http"
 	"strings"
 
@@ -156,6 +157,16 @@ func (s *eventStreamDecoder) Err() error {
 	return s.err
 }
 
+func (e *eventStreamDecoder) All() iter.Seq[Event] {
+	return func(yield func(Event) bool) {
+		for e.Next() {
+			if !yield(e.Event()) {
+				break
+			}
+		}
+	}
+}
+
 type Stream[T any] struct {
 	decoder Decoder
 	cur     T
@@ -240,4 +251,14 @@ func (s *Stream[T]) Close() error {
 		return nil
 	}
 	return s.decoder.Close()
+}
+
+func (s *Stream[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for s.Next() {
+			if !yield(s.Current()) {
+				break
+			}
+		}
+	}
 }

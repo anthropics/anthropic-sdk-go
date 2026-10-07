@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -47,8 +48,15 @@ func NewBetaTunnelCertificateService(opts ...option.RequestOption) (r BetaTunnel
 // server certificate against this CA when it terminates the inner TLS session. A
 // tunnel holds at most two non-archived certificates.
 func (r *BetaTunnelCertificateService) New(ctx context.Context, tunnelID string, params BetaTunnelCertificateNewParams, opts ...option.RequestOption) (res *BetaTunnelCertificate, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -59,7 +67,7 @@ func (r *BetaTunnelCertificateService) New(ctx context.Context, tunnelID string,
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/certificates?beta=true", tunnelID)
+	path := fmt.Sprintf("v1/tunnels/%s/certificates?beta=true", url.PathEscape(tunnelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -71,8 +79,15 @@ func (r *BetaTunnelCertificateService) New(ctx context.Context, tunnelID string,
 //
 // Fetches a tunnel certificate by ID.
 func (r *BetaTunnelCertificateService) Get(ctx context.Context, certificateID string, params BetaTunnelCertificateGetParams, opts ...option.RequestOption) (res *BetaTunnelCertificate, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -87,7 +102,7 @@ func (r *BetaTunnelCertificateService) Get(ctx context.Context, certificateID st
 		err = errors.New("missing required certificate_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/certificates/%s?beta=true", params.TunnelID, certificateID)
+	path := fmt.Sprintf("v1/tunnels/%s/certificates/%s?beta=true", url.PathEscape(params.TunnelID), url.PathEscape(certificateID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -101,8 +116,15 @@ func (r *BetaTunnelCertificateService) Get(ctx context.Context, certificateID st
 // excluded unless include_archived is set.
 func (r *BetaTunnelCertificateService) List(ctx context.Context, tunnelID string, params BetaTunnelCertificateListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaTunnelCertificate], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -113,7 +135,7 @@ func (r *BetaTunnelCertificateService) List(ctx context.Context, tunnelID string
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/certificates?beta=true", tunnelID)
+	path := fmt.Sprintf("v1/tunnels/%s/certificates?beta=true", url.PathEscape(tunnelID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -147,8 +169,15 @@ func (r *BetaTunnelCertificateService) ListAutoPaging(ctx context.Context, tunne
 // certificate is permitted; the tunnel rejects MCP traffic until a new certificate
 // is added.
 func (r *BetaTunnelCertificateService) Archive(ctx context.Context, certificateID string, params BetaTunnelCertificateArchiveParams, opts ...option.RequestOption) (res *BetaTunnelCertificate, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -163,7 +192,7 @@ func (r *BetaTunnelCertificateService) Archive(ctx context.Context, certificateI
 		err = errors.New("missing required certificate_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/certificates/%s/archive?beta=true", params.TunnelID, certificateID)
+	path := fmt.Sprintf("v1/tunnels/%s/certificates/%s/archive?beta=true", url.PathEscape(params.TunnelID), url.PathEscape(certificateID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

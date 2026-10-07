@@ -98,7 +98,6 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 }
 
 func TestBetaAgentGetWithOptionalParams(t *testing.T) {
-	t.Skip("buildURL drops path-level query params")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -219,7 +218,6 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 }
 
 func TestBetaAgentListWithOptionalParams(t *testing.T) {
-	t.Skip("buildURL drops path-level query params")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL

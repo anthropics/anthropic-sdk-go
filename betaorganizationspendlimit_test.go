@@ -102,6 +102,7 @@ func TestBetaOrganizationSpendLimitSetWithOptionalParams(t *testing.T) {
 			},
 		},
 		Period: anthropic.BetaSpendLimitPeriodMonthly,
+		Betas:  []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

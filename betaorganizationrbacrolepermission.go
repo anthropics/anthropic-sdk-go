@@ -50,7 +50,7 @@ func (r *BetaOrganizationRBACRolePermissionService) List(ctx context.Context, rb
 		err = errors.New("missing required rbac_role_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_roles/%s/permissions?beta=true", rbacRoleID)
+	path := fmt.Sprintf("v1/organizations/rbac_roles/%s/permissions?beta=true", url.PathEscape(rbacRoleID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -50,7 +51,7 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 		err = errors.New("missing required spend_limit_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limits/%s?beta=true", spendLimitID)
+	path := fmt.Sprintf("v1/organizations/spend_limits/%s?beta=true", url.PathEscape(spendLimitID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -63,11 +64,18 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 // within a type they come in a fixed order that is not creation order.
 func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSpendLimit], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "spend-limit-reads-2026-09-26"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/spend_limits?beta=true"
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -104,7 +112,7 @@ func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLim
 		err = errors.New("missing required spend_limit_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limits/%s?beta=true", spendLimitID)
+	path := fmt.Sprintf("v1/organizations/spend_limits/%s?beta=true", url.PathEscape(spendLimitID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -117,10 +125,20 @@ func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLim
 // Console organization sets `organization` and `workspace` limits, which are
 // monthly and always carry an amount. Setting those limits is in an early access
 // preview. To request access, contact your Anthropic account team.
-func (r *BetaOrganizationSpendLimitService) Set(ctx context.Context, body BetaOrganizationSpendLimitSetParams, opts ...option.RequestOption) (res *BetaSpendLimit, err error) {
+func (r *BetaOrganizationSpendLimitService) Set(ctx context.Context, params BetaOrganizationSpendLimitSetParams, opts ...option.RequestOption) (res *BetaSpendLimit, err error) {
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
+	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/spend_limits?beta=true"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
@@ -961,6 +979,8 @@ type BetaOrganizationSpendLimitSetParams struct {
 	Scope BetaOrganizationSpendLimitSetParamsScopeUnion `json:"scope,omitzero" api:"required"`
 	// Any of "daily", "monthly", "weekly".
 	Period BetaSpendLimitPeriod `json:"period,omitzero"`
+	// Optional header to specify the beta version(s) you want to use.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 

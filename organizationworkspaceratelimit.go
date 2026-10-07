@@ -56,7 +56,7 @@ func (r *OrganizationWorkspaceRateLimitService) List(ctx context.Context, worksp
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/rate_limits", workspaceID)
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/rate_limits", url.PathEscape(workspaceID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err

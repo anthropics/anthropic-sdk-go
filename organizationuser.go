@@ -45,7 +45,7 @@ func (r *OrganizationUserService) Get(ctx context.Context, userID string, opts .
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s", userID)
+	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -57,7 +57,7 @@ func (r *OrganizationUserService) Update(ctx context.Context, userID string, bod
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s", userID)
+	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -92,7 +92,7 @@ func (r *OrganizationUserService) Remove(ctx context.Context, userID string, opt
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s", userID)
+	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

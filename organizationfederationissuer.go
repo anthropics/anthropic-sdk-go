@@ -74,7 +74,7 @@ func (r *OrganizationFederationIssuerService) Get(ctx context.Context, federatio
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", federationIssuerID)
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", url.PathEscape(federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -97,7 +97,7 @@ func (r *OrganizationFederationIssuerService) Update(ctx context.Context, federa
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", federationIssuerID)
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", url.PathEscape(federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -156,7 +156,7 @@ func (r *OrganizationFederationIssuerService) Archive(ctx context.Context, feder
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s/archive", federationIssuerID)
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s/archive", url.PathEscape(federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

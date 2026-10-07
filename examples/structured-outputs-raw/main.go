@@ -41,10 +41,9 @@ func main() {
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather like in San Francisco for the next 3 days?")),
 		},
-		OutputFormat: anthropic.BetaJSONOutputFormatParam{
-			Schema: schema,
+		OutputConfig: anthropic.BetaOutputConfigParam{
+			Format: anthropic.BetaJSONOutputFormatParam{Schema: schema},
 		},
-		Betas: []anthropic.AnthropicBeta{"structured-outputs-2025-11-13"},
 	})
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)

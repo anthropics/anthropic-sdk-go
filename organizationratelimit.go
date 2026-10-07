@@ -39,8 +39,8 @@ func NewOrganizationRateLimitService(opts ...option.RequestOption) (r Organizati
 // List Messages API rate limits for your organization.
 //
 // Each entry corresponds to one rate-limit group (either a model family or an
-// API-surface category such as the Files API or Message Batches) and contains the
-// set of limiter values that apply to it.
+// API-surface category such as the Message Batches API or the web search tool) and
+// contains the set of limiter values that apply to it.
 //
 // When `limit` is omitted, every matching entry is returned in a single page; when
 // `limit` truncates the result, follow `next_page` to fetch the remaining entries.
@@ -64,8 +64,8 @@ func (r *OrganizationRateLimitService) List(ctx context.Context, query Organizat
 // List Messages API rate limits for your organization.
 //
 // Each entry corresponds to one rate-limit group (either a model family or an
-// API-surface category such as the Files API or Message Batches) and contains the
-// set of limiter values that apply to it.
+// API-surface category such as the Message Batches API or the web search tool) and
+// contains the set of limiter values that apply to it.
 //
 // When `limit` is omitted, every matching entry is returned in a single page; when
 // `limit` truncates the result, follow `next_page` to fetch the remaining entries.

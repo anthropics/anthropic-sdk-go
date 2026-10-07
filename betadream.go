@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -50,8 +51,15 @@ func NewBetaDreamService(opts ...option.RequestOption) (r BetaDreamService) {
 // [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#create-a-dream)
 // to learn more about creating dreams.
 func (r *BetaDreamService) New(ctx context.Context, params BetaDreamNewParams, opts ...option.RequestOption) (res *BetaDream, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -71,8 +79,15 @@ func (r *BetaDreamService) New(ctx context.Context, params BetaDreamNewParams, o
 // [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#track-progress)
 // for how to poll a dream and what each status means.
 func (r *BetaDreamService) Get(ctx context.Context, dreamID string, query BetaDreamGetParams, opts ...option.RequestOption) (res *BetaDream, err error) {
-	for _, v := range query.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(query.Betas) > 0 {
+		headerValues := make([]string, len(query.Betas))
+		for i, v := range query.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -83,7 +98,7 @@ func (r *BetaDreamService) Get(ctx context.Context, dreamID string, query BetaDr
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s?beta=true", dreamID)
+	path := fmt.Sprintf("v1/dreams/%s?beta=true", url.PathEscape(dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -97,8 +112,15 @@ func (r *BetaDreamService) Get(ctx context.Context, dreamID string, query BetaDr
 // for how to page through dreams.
 func (r *BetaDreamService) List(ctx context.Context, params BetaDreamListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaDream], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -140,8 +162,15 @@ func (r *BetaDreamService) ListAutoPaging(ctx context.Context, params BetaDreamL
 // [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#archive-a-dream)
 // to learn more about archiving dreams.
 func (r *BetaDreamService) Archive(ctx context.Context, dreamID string, body BetaDreamArchiveParams, opts ...option.RequestOption) (res *BetaDream, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -152,7 +181,7 @@ func (r *BetaDreamService) Archive(ctx context.Context, dreamID string, body Bet
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s/archive?beta=true", dreamID)
+	path := fmt.Sprintf("v1/dreams/%s/archive?beta=true", url.PathEscape(dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -168,8 +197,15 @@ func (r *BetaDreamService) Archive(ctx context.Context, dreamID string, body Bet
 // [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#cancel-a-dream)
 // to learn more about canceling dreams.
 func (r *BetaDreamService) Cancel(ctx context.Context, dreamID string, body BetaDreamCancelParams, opts ...option.RequestOption) (res *BetaDream, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -180,7 +216,7 @@ func (r *BetaDreamService) Cancel(ctx context.Context, dreamID string, body Beta
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s/cancel?beta=true", dreamID)
+	path := fmt.Sprintf("v1/dreams/%s/cancel?beta=true", url.PathEscape(dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

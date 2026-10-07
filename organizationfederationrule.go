@@ -79,7 +79,7 @@ func (r *OrganizationFederationRuleService) Get(ctx context.Context, federationR
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s", federationRuleID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s", url.PathEscape(federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -111,7 +111,7 @@ func (r *OrganizationFederationRuleService) Update(ctx context.Context, federati
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s", federationRuleID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s", url.PathEscape(federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -174,7 +174,7 @@ func (r *OrganizationFederationRuleService) Archive(ctx context.Context, federat
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/archive", federationRuleID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s/archive", url.PathEscape(federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -215,8 +215,9 @@ type FederationRule struct {
 	Name string `json:"name" api:"required"`
 	// Space-separated OAuth scopes granted on the minted token.
 	OAuthScope string `json:"oauth_scope" api:"required"`
-	// Identity that tokens minted via this rule act as. Currently always a
-	// `service_account` target.
+	// What this rule targets. Check `type` before reading the other fields. Tokens
+	// minted via a rule whose target `type` is `service_account` act as that service
+	// account.
 	Target ServiceAccountTarget `json:"target" api:"required"`
 	// Lifetime in seconds of access tokens minted via this rule. Minted tokens are
 	// capped at `max(60, min(this value, 2 × remaining assertion validity))` seconds.

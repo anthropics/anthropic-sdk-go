@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -56,8 +57,15 @@ func NewBetaOrganizationFederationIssuerService(opts ...option.RequestOption) (r
 // modes the issuer URL is only matched as the JWT's `iss` claim and is not
 // fetched.
 func (r *BetaOrganizationFederationIssuerService) New(ctx context.Context, params BetaOrganizationFederationIssuerNewParams, opts ...option.RequestOption) (res *BetaFederationIssuer, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/federation_issuers?beta=true"
@@ -72,15 +80,22 @@ func (r *BetaOrganizationFederationIssuerService) New(ctx context.Context, param
 //
 // Retrieve a federation issuer by its ID (`fdis_...`).
 func (r *BetaOrganizationFederationIssuerService) Get(ctx context.Context, federationIssuerID string, query BetaOrganizationFederationIssuerGetParams, opts ...option.RequestOption) (res *BetaFederationIssuer, err error) {
-	for _, v := range query.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(query.Betas) > 0 {
+		headerValues := make([]string, len(query.Betas))
+		for i, v := range query.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if federationIssuerID == "" {
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s?beta=true", federationIssuerID)
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s?beta=true", url.PathEscape(federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -98,15 +113,22 @@ func (r *BetaOrganizationFederationIssuerService) Get(ctx context.Context, feder
 // Updating an issuer that backs a rule with a scope outside `workspace:developer`
 // or `workspace:inference` requires a Console session.
 func (r *BetaOrganizationFederationIssuerService) Update(ctx context.Context, federationIssuerID string, params BetaOrganizationFederationIssuerUpdateParams, opts ...option.RequestOption) (res *BetaFederationIssuer, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if federationIssuerID == "" {
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s?beta=true", federationIssuerID)
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s?beta=true", url.PathEscape(federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -121,8 +143,15 @@ func (r *BetaOrganizationFederationIssuerService) Update(ctx context.Context, fe
 // Archived issuers are excluded unless `include_archived=true`.
 func (r *BetaOrganizationFederationIssuerService) List(ctx context.Context, params BetaOrganizationFederationIssuerListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaFederationIssuer], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -163,15 +192,22 @@ func (r *BetaOrganizationFederationIssuerService) ListAutoPaging(ctx context.Con
 // the issuer; archive those rules first (a rule's issuer cannot be changed), or
 // recreate them against another issuer.
 func (r *BetaOrganizationFederationIssuerService) Archive(ctx context.Context, federationIssuerID string, body BetaOrganizationFederationIssuerArchiveParams, opts ...option.RequestOption) (res *BetaFederationIssuer, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if federationIssuerID == "" {
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s/archive?beta=true", federationIssuerID)
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s/archive?beta=true", url.PathEscape(federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

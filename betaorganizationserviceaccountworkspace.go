@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
@@ -58,8 +59,15 @@ func NewBetaOrganizationServiceAccountWorkspaceService(opts ...option.RequestOpt
 // is archived. Restart pagination from the first page to recover.
 func (r *BetaOrganizationServiceAccountWorkspaceService) List(ctx context.Context, serviceAccountID string, params BetaOrganizationServiceAccountWorkspaceListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaServiceAccountWorkspaceMember], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -67,7 +75,7 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) List(ctx context.Contex
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces?beta=true", serviceAccountID)
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces?beta=true", url.PathEscape(serviceAccountID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -115,15 +123,22 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) ListAutoPaging(ctx cont
 // with the value supplied here. Archived workspaces return 400. Archived service
 // accounts cannot be added and are rejected.
 func (r *BetaOrganizationServiceAccountWorkspaceService) Add(ctx context.Context, serviceAccountID string, params BetaOrganizationServiceAccountWorkspaceAddParams, opts ...option.RequestOption) (res *BetaServiceAccountWorkspaceMember, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if serviceAccountID == "" {
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces?beta=true", serviceAccountID)
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces?beta=true", url.PathEscape(serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -143,8 +158,15 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) Add(ctx context.Context
 // persists; deleting an explicit default-workspace row reverts to the implicit
 // `workspace_user` membership. Archived workspaces return 400.
 func (r *BetaOrganizationServiceAccountWorkspaceService) Remove(ctx context.Context, workspaceID string, params BetaOrganizationServiceAccountWorkspaceRemoveParams, opts ...option.RequestOption) (res *BetaOrganizationServiceAccountWorkspaceRemoveResponse, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if params.ServiceAccountID == "" {
@@ -155,7 +177,7 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) Remove(ctx context.Cont
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces/%s?beta=true", params.ServiceAccountID, workspaceID)
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces/%s?beta=true", url.PathEscape(params.ServiceAccountID), url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

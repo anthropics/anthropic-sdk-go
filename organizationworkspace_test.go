@@ -127,6 +127,7 @@ func TestOrganizationWorkspaceListWithOptionalParams(t *testing.T) {
 		AfterID:         anthropic.String("after_id"),
 		BeforeID:        anthropic.String("before_id"),
 		IncludeArchived: anthropic.Bool(true),
+		IncludeDefault:  anthropic.Bool(true),
 		Limit:           anthropic.Int(1),
 	})
 	if err != nil {

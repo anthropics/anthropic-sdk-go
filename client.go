@@ -239,10 +239,6 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 // request. If a URLQuery method is implemented, the returned [url.Values] will be
 // used as query strings to the url.
 //
-// If your params struct uses [param.Field], you must provide either [MarshalJSON],
-// [URLQuery], and/or [MarshalForm] functions. It is undefined behavior to use a
-// struct uses [param.Field] without specifying how it is serialized.
-//
 // Any "…Params" object defined in this library can be used as the request
 // argument. Note that 'path' arguments will not be forwarded into the url.
 //

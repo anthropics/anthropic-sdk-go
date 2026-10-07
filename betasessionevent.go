@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -43,8 +44,15 @@ func NewBetaSessionEventService(opts ...option.RequestOption) (r BetaSessionEven
 // List Events
 func (r *BetaSessionEventService) List(ctx context.Context, sessionID string, params BetaSessionEventListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaManagedAgentsSessionEventUnion], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -55,7 +63,7 @@ func (r *BetaSessionEventService) List(ctx context.Context, sessionID string, pa
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", sessionID)
+	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", url.PathEscape(sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -75,8 +83,15 @@ func (r *BetaSessionEventService) ListAutoPaging(ctx context.Context, sessionID 
 
 // Send Events
 func (r *BetaSessionEventService) Send(ctx context.Context, sessionID string, params BetaSessionEventSendParams, opts ...option.RequestOption) (res *BetaManagedAgentsSendSessionEvents, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -87,7 +102,7 @@ func (r *BetaSessionEventService) Send(ctx context.Context, sessionID string, pa
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", sessionID)
+	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", url.PathEscape(sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -98,8 +113,15 @@ func (r *BetaSessionEventService) StreamEvents(ctx context.Context, sessionID st
 		raw *http.Response
 		err error
 	)
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -110,7 +132,7 @@ func (r *BetaSessionEventService) StreamEvents(ctx context.Context, sessionID st
 		err = errors.New("missing required session_id parameter")
 		return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](nil, err)
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events/stream?beta=true", sessionID)
+	path := fmt.Sprintf("v1/sessions/%s/events/stream?beta=true", url.PathEscape(sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &raw, opts...)
 	return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](ssestream.NewDecoder(raw), err)
 }
@@ -5606,8 +5628,8 @@ const (
 	BetaManagedAgentsSessionStatusTerminatedEventTypeSessionStatusTerminated BetaManagedAgentsSessionStatusTerminatedEventType = "session.status_terminated"
 )
 
-// Emitted when a subagent is spawned as a new thread. Written to the parent
-// thread's output stream so clients observing the session see child creation.
+// Emitted when a child thread is created. Written to the parent thread's output
+// stream so clients observing the session see child creation.
 type BetaManagedAgentsSessionThreadCreatedEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`

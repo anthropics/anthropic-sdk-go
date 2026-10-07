@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -93,6 +94,12 @@ type memoryServer struct {
 	// FailUploads answers every create or update with this status, before it
 	// is recorded or applied. Zero means none.
 	FailUploads int
+	// loseUploadResponses applies every create or update, then drops the
+	// connection before any of the response is sent — the write is saved and
+	// recorded, and the client never hears back. Set via
+	// SetLoseUploadResponses; with no response to order the two sides, read
+	// Files through FilesSnapshot afterwards.
+	loseUploadResponses bool
 	// MaxContentBytes answers any create/update whose content exceeds it
 	// with a 400 — recorded, never applied. Zero means no cap.
 	MaxContentBytes int
@@ -146,6 +153,18 @@ func (m *memoryServer) SetUploadHook(fn func(ctx context.Context, path string)) 
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.uploadHook = fn
+}
+
+func (m *memoryServer) SetLoseUploadResponses(lose bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.loseUploadResponses = lose
+}
+
+func (m *memoryServer) FilesSnapshot() map[string]string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return maps.Clone(m.Files)
 }
 
 func (m *memoryServer) ReceivedSnapshot() []string {
@@ -329,6 +348,9 @@ func (m *memoryServer) handleMemories(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		m.Files[bare] = in.Content
+		if m.loseUploadResponses {
+			panic(http.ErrAbortHandler)
+		}
 		_ = json.NewEncoder(w).Encode(m.itemJSON(bare, true))
 	case len(rest) == 3 && rest[1] == "memories":
 		id, _ := url.PathUnescape(rest[2])
@@ -379,6 +401,9 @@ func (m *memoryServer) handleMemories(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			m.Files[path] = in.Content
+			if m.loseUploadResponses {
+				panic(http.ErrAbortHandler)
+			}
 			_ = json.NewEncoder(w).Encode(m.itemJSON(path, true))
 		case http.MethodDelete:
 			expected := r.URL.Query().Get("expected_content_sha256")

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
@@ -61,8 +62,15 @@ func NewBetaOrganizationFederationRuleService(opts ...option.RequestOption) (r B
 // only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
 func (r *BetaOrganizationFederationRuleService) New(ctx context.Context, params BetaOrganizationFederationRuleNewParams, opts ...option.RequestOption) (res *BetaFederationRule, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/federation_rules?beta=true"
@@ -77,15 +85,22 @@ func (r *BetaOrganizationFederationRuleService) New(ctx context.Context, params 
 //
 // Retrieve a federation rule by its ID (`fdrl_...`).
 func (r *BetaOrganizationFederationRuleService) Get(ctx context.Context, federationRuleID string, query BetaOrganizationFederationRuleGetParams, opts ...option.RequestOption) (res *BetaFederationRule, err error) {
-	for _, v := range query.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(query.Betas) > 0 {
+		headerValues := make([]string, len(query.Betas))
+		for i, v := range query.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if federationRuleID == "" {
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", federationRuleID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", url.PathEscape(federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -112,15 +127,22 @@ func (r *BetaOrganizationFederationRuleService) Get(ctx context.Context, federat
 // `workspace:developer` or `workspace:inference`; other scopes require a Console
 // session.
 func (r *BetaOrganizationFederationRuleService) Update(ctx context.Context, federationRuleID string, params BetaOrganizationFederationRuleUpdateParams, opts ...option.RequestOption) (res *BetaFederationRule, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if federationRuleID == "" {
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", federationRuleID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", url.PathEscape(federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -136,8 +158,15 @@ func (r *BetaOrganizationFederationRuleService) Update(ctx context.Context, fede
 // `include_archived=true`.
 func (r *BetaOrganizationFederationRuleService) List(ctx context.Context, params BetaOrganizationFederationRuleListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaFederationRule], err error) {
 	var raw *http.Response
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -181,15 +210,22 @@ func (r *BetaOrganizationFederationRuleService) ListAutoPaging(ctx context.Conte
 // only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
 func (r *BetaOrganizationFederationRuleService) Archive(ctx context.Context, federationRuleID string, body BetaOrganizationFederationRuleArchiveParams, opts ...option.RequestOption) (res *BetaFederationRule, err error) {
-	for _, v := range body.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	opts = slices.Concat(r.Options, opts)
 	if federationRuleID == "" {
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/archive?beta=true", federationRuleID)
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s/archive?beta=true", url.PathEscape(federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -233,8 +269,9 @@ type BetaFederationRule struct {
 	Name string `json:"name" api:"required"`
 	// Space-separated OAuth scopes granted on the minted token.
 	OAuthScope string `json:"oauth_scope" api:"required"`
-	// Identity that tokens minted via this rule act as. Currently always a
-	// `service_account` target.
+	// What this rule targets. Check `type` before reading the other fields. Tokens
+	// minted via a rule whose target `type` is `service_account` act as that service
+	// account.
 	Target BetaServiceAccountTarget `json:"target" api:"required"`
 	// Lifetime in seconds of access tokens minted via this rule. Minted tokens are
 	// capped at `max(60, min(this value, 2 × remaining assertion validity))` seconds.

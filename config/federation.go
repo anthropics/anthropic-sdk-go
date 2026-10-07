@@ -163,6 +163,9 @@ func ExchangeFederationAssertion(ctx context.Context, params FederationExchangeP
 	if base == "" {
 		base = defaultAPIBaseURL
 	}
+	if err := RequireSecureTokenEndpoint(base); err != nil {
+		return nil, fmt.Errorf("ExchangeFederationAssertion: %w", err)
+	}
 
 	bodyJSON, err := json.Marshal(federationExchangeRequest{
 		GrantType:        GrantTypeJWTBearer,
@@ -188,9 +191,9 @@ func ExchangeFederationAssertion(ctx context.Context, params FederationExchangeP
 	}
 	req.Header.Set("User-Agent", ua)
 
-	client := params.HTTPClient
-	if client == nil {
-		client = &http.Client{Timeout: 30 * time.Second}
+	client := NewTokenHTTPClient()
+	if params.HTTPClient != nil {
+		client = WithoutRedirects(params.HTTPClient)
 	}
 	resp, err := client.Do(req)
 	if err != nil {

@@ -49,7 +49,7 @@ func (r *BetaOrganizationRBACGroupMemberService) List(ctx context.Context, rbacG
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members?beta=true", rbacGroupID)
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members?beta=true", url.PathEscape(rbacGroupID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (r *BetaOrganizationRBACGroupMemberService) Add(ctx context.Context, rbacGr
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members?beta=true", rbacGroupID)
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members?beta=true", url.PathEscape(rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -100,7 +100,7 @@ func (r *BetaOrganizationRBACGroupMemberService) Remove(ctx context.Context, use
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members/%s?beta=true", body.RBACGroupID, userID)
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members/%s?beta=true", url.PathEscape(body.RBACGroupID), url.PathEscape(userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

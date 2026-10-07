@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
@@ -43,10 +44,20 @@ func NewCompletionService(opts ...option.RequestOption) (r CompletionService) {
 // [migration guide](https://platform.claude.com/docs/en/build-with-claude/working-with-messages)
 // for guidance in migrating from Text Completions to Messages.
 //
+// Deprecated: Use the
+// [Messages API](https://platform.claude.com/docs/en/api/messages/create) instead.
+//
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *CompletionService) New(ctx context.Context, params CompletionNewParams, opts ...option.RequestOption) (res *Completion, err error) {
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -66,14 +77,24 @@ func (r *CompletionService) New(ctx context.Context, params CompletionNewParams,
 // [migration guide](https://platform.claude.com/docs/en/build-with-claude/working-with-messages)
 // for guidance in migrating from Text Completions to Messages.
 //
+// Deprecated: Use the
+// [Messages API](https://platform.claude.com/docs/en/api/messages/create) instead.
+//
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *CompletionService) NewStreaming(ctx context.Context, params CompletionNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[Completion]) {
 	var (
 		raw *http.Response
 		err error
 	)
-	for _, v := range params.Betas {
-		opts = append(opts, option.WithHeaderAdd("anthropic-beta", fmt.Sprintf("%v", v)))
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
 	}
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -101,9 +122,9 @@ type Completion struct {
 	//
 	// This may be one the following values:
 	//
-	//   - `"stop_sequence"`: we reached a stop sequence — either provided by you via the
-	//     `stop_sequences` parameter, or a stop sequence built into the model
-	//   - `"max_tokens"`: we exceeded `max_tokens_to_sample` or the model's maximum
+	// - `"stop_sequence"`: we reached a stop sequence — either provided by you via the
+	//   `stop_sequences` parameter, or a stop sequence built into the model
+	// - `"max_tokens"`: we exceeded `max_tokens_to_sample` or the model's maximum
 	StopReason string `json:"stop_reason" api:"required"`
 	// Object type.
 	//

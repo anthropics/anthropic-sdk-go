@@ -50,7 +50,7 @@ func (r *BetaOrganizationSpendLimitIncreaseRequestService) Get(ctx context.Conte
 		err = errors.New("missing required spend_limit_increase_request_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s?beta=true", spendLimitIncreaseRequestID)
+	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s?beta=true", url.PathEscape(spendLimitIncreaseRequestID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -95,7 +95,7 @@ func (r *BetaOrganizationSpendLimitIncreaseRequestService) Approve(ctx context.C
 		err = errors.New("missing required spend_limit_increase_request_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/approve?beta=true", spendLimitIncreaseRequestID)
+	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/approve?beta=true", url.PathEscape(spendLimitIncreaseRequestID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -110,7 +110,7 @@ func (r *BetaOrganizationSpendLimitIncreaseRequestService) Deny(ctx context.Cont
 		err = errors.New("missing required spend_limit_increase_request_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/deny?beta=true", spendLimitIncreaseRequestID)
+	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/deny?beta=true", url.PathEscape(spendLimitIncreaseRequestID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }

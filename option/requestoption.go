@@ -596,15 +596,11 @@ func withConfig(cfg *config.Config, quiet bool) RequestOption {
 				return nil, resolveErr
 			}
 
-			handler := rc.HTTPClient.Do
-			if rc.CustomHTTPDoer != nil {
-				handler = rc.CustomHTTPDoer.Do
-			}
 			key := withConfigClientKey{httpClient: rc.HTTPClient, customDoer: rc.CustomHTTPDoer}
 			cacheMu.Lock()
 			cache, ok := cacheBy[key]
 			if !ok {
-				cache = auth.NewTokenCache(provider, handler)
+				cache = auth.NewTokenCache(provider, auth.TokenRequestHandler(rc))
 				cacheBy[key] = cache
 			}
 			cacheMu.Unlock()

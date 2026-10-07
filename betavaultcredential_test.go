@@ -66,7 +66,7 @@ func TestBetaVaultCredentialGetWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Vaults.Credentials.Get(
 		context.TODO(),
-		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
+		"vcrd_011CZkZEMt8gZan2iYPQfSkw",
 		anthropic.BetaVaultCredentialGetParams{
 			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
@@ -96,7 +96,7 @@ func TestBetaVaultCredentialUpdateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Vaults.Credentials.Update(
 		context.TODO(),
-		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
+		"vcrd_011CZkZEMt8gZan2iYPQfSkw",
 		anthropic.BetaVaultCredentialUpdateParams{
 			VaultID: "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Auth: anthropic.BetaVaultCredentialUpdateParamsAuthUnion{
@@ -134,7 +134,6 @@ func TestBetaVaultCredentialUpdateWithOptionalParams(t *testing.T) {
 }
 
 func TestBetaVaultCredentialListWithOptionalParams(t *testing.T) {
-	t.Skip("buildURL drops path-level query params")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -180,7 +179,7 @@ func TestBetaVaultCredentialDeleteWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Vaults.Credentials.Delete(
 		context.TODO(),
-		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
+		"vcrd_011CZkZEMt8gZan2iYPQfSkw",
 		anthropic.BetaVaultCredentialDeleteParams{
 			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
@@ -210,7 +209,7 @@ func TestBetaVaultCredentialArchiveWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Vaults.Credentials.Archive(
 		context.TODO(),
-		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
+		"vcrd_011CZkZEMt8gZan2iYPQfSkw",
 		anthropic.BetaVaultCredentialArchiveParams{
 			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
@@ -227,7 +226,6 @@ func TestBetaVaultCredentialArchiveWithOptionalParams(t *testing.T) {
 }
 
 func TestBetaVaultCredentialMCPOAuthValidateWithOptionalParams(t *testing.T) {
-	t.Skip("prism can't find endpoint with beta only tag")
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -241,7 +239,7 @@ func TestBetaVaultCredentialMCPOAuthValidateWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Vaults.Credentials.MCPOAuthValidate(
 		context.TODO(),
-		"vcrd_011CZkZEMt8gZan2iYOQfSkw",
+		"vcrd_011CZkZEMt8gZan2iYPQfSkw",
 		anthropic.BetaVaultCredentialMCPOAuthValidateParams{
 			VaultID:     "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},

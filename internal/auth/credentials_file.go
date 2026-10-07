@@ -259,7 +259,7 @@ func loadUserOAuthProfile(cfg *config.Config) (*CredentialsResult, error) {
 		if base == "" {
 			base = strings.TrimRight(baseURL, "/")
 		}
-		if err := requireSecureTokenEndpoint(base); err != nil {
+		if err := config.RequireSecureTokenEndpoint(base); err != nil {
 			return nil, err
 		}
 		// Re-read credentials file to check if token is still fresh. Skip

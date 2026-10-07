@@ -221,14 +221,14 @@ func (d *decoderBuilder) newStructUnionDecoder(t reflect.Type) decoderFunc {
 			if i, ok := discrimIndex[n.Get(EscapeSJSONKey(discrimKey)).String()]; ok {
 				sub := decoderState{strict: state.strict}
 				inner := v.FieldByIndex(decoders[i].field.Index)
-				if decoders[i].decoder(n, inner, &sub) == nil {
-					state.exactness.absorb(sub.exactness)
-					return nil
-				}
+				err := decoders[i].decoder(n, inner, &sub)
+				state.exactness.absorb(sub.exactness)
+				return err
 			}
 		}
 
 		var best exactness
+		var bestErr error
 		bestVariant := -1
 		for i, decoder := range decoders {
 			// Pointers are used to discern JSON object variants from value variants
@@ -238,11 +238,14 @@ func (d *decoderBuilder) newStructUnionDecoder(t reflect.Type) decoderFunc {
 
 			sub := decoderState{strict: state.strict}
 			inner := v.FieldByIndex(decoder.field.Index)
-			if err := decoder.decoder(n, inner, &sub); err != nil {
+			// A variant with an invalid field still competes, so that a worse
+			// fit is not picked in its place.
+			err := decoder.decoder(n, inner, &sub)
+			if err != nil && sub.exactness.fieldErrors == 0 {
 				continue
 			}
 			if bestVariant < 0 || sub.exactness.betterThan(best) {
-				best, bestVariant = sub.exactness, i
+				best, bestErr, bestVariant = sub.exactness, err, i
 				// A perfect fit cannot be beaten once the discriminator
 				// scan (or the fit itself) has ruled out a later hit.
 				if best.perfect() && (scanned || best.constHit()) {
@@ -267,7 +270,7 @@ func (d *decoderBuilder) newStructUnionDecoder(t reflect.Type) decoderFunc {
 			v.FieldByIndex(decoders[i].field.Index).SetZero()
 		}
 
-		return nil
+		return bestErr
 	}
 }
 

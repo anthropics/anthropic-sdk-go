@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.79.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.79.0...v1.79.1) (2026-10-08)
+
+### Chores
+
+* **ci:** check that pull requests update the changelog
+* **docs:** note that listing Claude Console spend limits is in early access
+
 ## 1.79.0 (2026-10-07)
 
 Full Changelog: [v1.78.0...v1.79.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.78.0...v1.79.0)

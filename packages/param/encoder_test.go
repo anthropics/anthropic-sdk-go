@@ -216,6 +216,54 @@ func TestExtraFields(t *testing.T) {
 	}
 }
 
+// Extra fields are applied one at a time with sjson, so map iteration order
+// would otherwise show up as byte order in the output. Two or more keys are
+// needed to observe it: a single key cannot permute.
+func TestExtraFieldsSorted(t *testing.T) {
+	const expected = `{"a":"hello","b":123,"c":"third","d":true,"m":["second"],"z":1}`
+
+	for range 100 {
+		v := Struct{A: "hello", B: 123}
+		v.SetExtraFields(map[string]any{
+			"z": 1,
+			"c": "third",
+			"m": []string{"second"},
+			"d": true,
+		})
+		bytes, err := json.Marshal(v)
+		if err != nil {
+			t.Fatalf("failed to marshal: %v", err)
+		}
+		if string(bytes) != expected {
+			t.Fatalf("failed to marshal: got %v", string(bytes))
+		}
+	}
+}
+
+// A decoded tool input schema keeps the keys the SDK does not model
+// ($schema, additionalProperties, ...) as extra fields; the same request must
+// re-encode byte for byte every time, or a prefix-keyed prompt cache misses.
+func TestDecodedExtraFieldsStableAcrossMarshals(t *testing.T) {
+	const in = `{"first":"x","second":1,"$schema":"http://json-schema.org/draft-07/schema#","additionalProperties":false,"title":"t"}`
+	var v StructWithAdditionalProperties
+	if err := json.Unmarshal([]byte(in), &v); err != nil {
+		t.Fatal(err)
+	}
+	first, err := json.Marshal(v)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for range 100 {
+		again, err := json.Marshal(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(again) != string(first) {
+			t.Fatalf("marshal is not stable:\n%s\n%s", first, again)
+		}
+	}
+}
+
 func TestExtraFieldsForceOmitted(t *testing.T) {
 	v := Struct{
 		// Testing with the zero value.

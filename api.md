@@ -2437,10 +2437,14 @@ Params Types:
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsArtifactActivity">BetaAnalyticsArtifactActivity</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsChatCoworkUnifiedChatMetrics">BetaAnalyticsChatCoworkUnifiedChatMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsChatCoworkUnifiedSessionsMetrics">BetaAnalyticsChatCoworkUnifiedSessionsMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsChatMetrics">BetaAnalyticsChatMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsClaudeCodeMetrics">BetaAnalyticsClaudeCodeMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsClaudeTagCategory">BetaAnalyticsClaudeTagCategory</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsConnectorActivity">BetaAnalyticsConnectorActivity</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics">BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsConnectorChatCoworkUnifiedSessionsMetrics">BetaAnalyticsConnectorChatCoworkUnifiedSessionsMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsConnectorChatMetrics">BetaAnalyticsConnectorChatMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsConnectorClaudeCodeMetrics">BetaAnalyticsConnectorClaudeCodeMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsConnectorCoworkMetrics">BetaAnalyticsConnectorCoworkMetrics</a>
@@ -2465,6 +2469,8 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsServerToolUse">BetaAnalyticsServerToolUse</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsSingleDayActivitySummary">BetaAnalyticsSingleDayActivitySummary</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsSkillActivity">BetaAnalyticsSkillActivity</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsSkillChatCoworkUnifiedChatMetrics">BetaAnalyticsSkillChatCoworkUnifiedChatMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsSkillChatCoworkUnifiedSessionsMetrics">BetaAnalyticsSkillChatCoworkUnifiedSessionsMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsSkillChatMetrics">BetaAnalyticsSkillChatMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsSkillClaudeCodeMetrics">BetaAnalyticsSkillClaudeCodeMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaAnalyticsSkillCoworkMetrics">BetaAnalyticsSkillCoworkMetrics</a>

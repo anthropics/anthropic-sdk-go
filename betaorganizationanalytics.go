@@ -122,6 +122,183 @@ func (r *BetaAnalyticsArtifactActivity) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Chat activity recorded while members had Chat and Cowork unified turned on.
+type BetaAnalyticsChatCoworkUnifiedChatMetrics struct {
+	// Same measure as `chat_metrics.connectors_used_count`, for activity recorded
+	// while members had Chat and Cowork unified turned on.
+	ConnectorsUsedCount int64 `json:"connectors_used_count" api:"required"`
+	// Same measure as `chat_metrics.distinct_artifacts_created_count`, for activity
+	// recorded while members had Chat and Cowork unified turned on. Exact in
+	// date-range mode: a creation belongs to exactly one day, so the per-day counts
+	// never overlap and their sum over the window is the exact count of distinct
+	// creations in it.
+	DistinctArtifactsCreatedCount int64 `json:"distinct_artifacts_created_count" api:"required"`
+	// Same measure as `chat_metrics.distinct_connectors_used_count`, for activity
+	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
+	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
+	// count cannot be computed.
+	DistinctConnectorsUsedCount int64 `json:"distinct_connectors_used_count" api:"required"`
+	// Same measure as `chat_metrics.distinct_conversation_count`, for activity
+	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
+	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
+	// count cannot be computed.
+	DistinctConversationCount int64 `json:"distinct_conversation_count" api:"required"`
+	// Same measure as `chat_metrics.distinct_files_uploaded_count`, for activity
+	// recorded while members had Chat and Cowork unified turned on. It counts uploaded
+	// files as well as files Claude created and images returned by Claude's tools,
+	// such as screenshots. Approximate (HLL, typical error <2%) in date-range mode.
+	// Null on aggregated rows where a distinct count cannot be computed.
+	DistinctFilesUploadedCount int64 `json:"distinct_files_uploaded_count" api:"required"`
+	// Same measure as `chat_metrics.distinct_projects_created_count`, for activity
+	// recorded while members had Chat and Cowork unified turned on. Exact in
+	// date-range mode: a creation belongs to exactly one day, so the per-day counts
+	// never overlap and their sum over the window is the exact count of distinct
+	// creations in it.
+	DistinctProjectsCreatedCount int64 `json:"distinct_projects_created_count" api:"required"`
+	// Same measure as `chat_metrics.distinct_projects_used_count`, for activity
+	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
+	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
+	// count cannot be computed.
+	DistinctProjectsUsedCount int64 `json:"distinct_projects_used_count" api:"required"`
+	// Always null: shared-artifact views are not currently measured.
+	DistinctSharedArtifactsViewedCount int64 `json:"distinct_shared_artifacts_viewed_count" api:"required"`
+	// Same measure as `chat_metrics.distinct_skills_used_count`, for activity recorded
+	// while members had Chat and Cowork unified turned on. Approximate (HLL, typical
+	// error <2%) in date-range mode. Null on aggregated rows where a distinct count
+	// cannot be computed.
+	DistinctSkillsUsedCount int64 `json:"distinct_skills_used_count" api:"required"`
+	// Same measure as `chat_metrics.message_count`, for activity recorded while
+	// members had Chat and Cowork unified turned on.
+	MessageCount int64 `json:"message_count" api:"required"`
+	// Same measure as `chat_metrics.shared_conversations_viewed_count`, for activity
+	// recorded while members had Chat and Cowork unified turned on.
+	SharedConversationsViewedCount int64 `json:"shared_conversations_viewed_count" api:"required"`
+	// Same measure as `chat_metrics.thinking_message_count`, for activity recorded
+	// while members had Chat and Cowork unified turned on.
+	ThinkingMessageCount int64 `json:"thinking_message_count" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ConnectorsUsedCount                respjson.Field
+		DistinctArtifactsCreatedCount      respjson.Field
+		DistinctConnectorsUsedCount        respjson.Field
+		DistinctConversationCount          respjson.Field
+		DistinctFilesUploadedCount         respjson.Field
+		DistinctProjectsCreatedCount       respjson.Field
+		DistinctProjectsUsedCount          respjson.Field
+		DistinctSharedArtifactsViewedCount respjson.Field
+		DistinctSkillsUsedCount            respjson.Field
+		MessageCount                       respjson.Field
+		SharedConversationsViewedCount     respjson.Field
+		ThinkingMessageCount               respjson.Field
+		ExtraFields                        map[string]respjson.Field
+		raw                                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsChatCoworkUnifiedChatMetrics) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsChatCoworkUnifiedChatMetrics) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Cowork session activity recorded while members had Chat and Cowork unified
+// turned on.
+type BetaAnalyticsChatCoworkUnifiedSessionsMetrics struct {
+	// Same measure as `cowork_metrics.action_count`, for activity recorded while
+	// members had Chat and Cowork unified turned on.
+	ActionCount int64 `json:"action_count" api:"required"`
+	// Same measure as `cowork_metrics.artifacts_created_count`, for activity recorded
+	// while members had Chat and Cowork unified turned on. Exact in date-range mode: a
+	// creation belongs to exactly one day, so the per-day counts never overlap and
+	// their sum over the window is the exact count of distinct creations in it.
+	ArtifactsCreatedCount int64 `json:"artifacts_created_count" api:"required"`
+	// Same measure as `cowork_metrics.connectors_used_count`, for activity recorded
+	// while members had Chat and Cowork unified turned on.
+	ConnectorsUsedCount int64 `json:"connectors_used_count" api:"required"`
+	// Same measure as `cowork_metrics.dispatch_turn_count`, for activity recorded
+	// while members had Chat and Cowork unified turned on.
+	DispatchTurnCount int64 `json:"dispatch_turn_count" api:"required"`
+	// Same measure as `cowork_metrics.distinct_connectors_used_count`, for activity
+	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
+	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
+	// count cannot be computed.
+	DistinctConnectorsUsedCount int64 `json:"distinct_connectors_used_count" api:"required"`
+	// Same measure as `cowork_metrics.distinct_plugins_used_count`, for activity
+	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
+	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
+	// count cannot be computed.
+	DistinctPluginsUsedCount int64 `json:"distinct_plugins_used_count" api:"required"`
+	// Same measure as `cowork_metrics.distinct_session_count`, for activity recorded
+	// while members had Chat and Cowork unified turned on. Approximate (HLL, typical
+	// error <2%) in date-range mode. Null on aggregated rows where a distinct count
+	// cannot be computed.
+	DistinctSessionCount int64 `json:"distinct_session_count" api:"required"`
+	// Same measure as `cowork_metrics.distinct_skills_used_count`, for activity
+	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
+	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
+	// count cannot be computed.
+	DistinctSkillsUsedCount int64 `json:"distinct_skills_used_count" api:"required"`
+	// Same measure as `cowork_metrics.edit_tool_count`, for activity recorded while
+	// members had Chat and Cowork unified turned on.
+	EditToolCount int64 `json:"edit_tool_count" api:"required"`
+	// Same measure as `cowork_metrics.file_edit_count`, for activity recorded while
+	// members had Chat and Cowork unified turned on.
+	FileEditCount int64 `json:"file_edit_count" api:"required"`
+	// Same measure as `cowork_metrics.message_count`, for activity recorded while
+	// members had Chat and Cowork unified turned on.
+	MessageCount int64 `json:"message_count" api:"required"`
+	// Same measure as `cowork_metrics.multi_edit_tool_count`, for activity recorded
+	// while members had Chat and Cowork unified turned on. Claude no longer has a
+	// multi-edit tool, so expect 0 when not null; each edit is now a separate Edit
+	// tool call, counted in `edit_tool_count` and `file_edit_count`.
+	MultiEditToolCount int64 `json:"multi_edit_tool_count" api:"required"`
+	// Same measure as `cowork_metrics.notebook_edit_tool_count`, for activity recorded
+	// while members had Chat and Cowork unified turned on.
+	NotebookEditToolCount int64 `json:"notebook_edit_tool_count" api:"required"`
+	// Same measure as `cowork_metrics.plugins_used_count`, for activity recorded while
+	// members had Chat and Cowork unified turned on.
+	PluginsUsedCount int64 `json:"plugins_used_count" api:"required"`
+	// Same measure as `cowork_metrics.sessions_with_file_edits_count`, for activity
+	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
+	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
+	// count cannot be computed.
+	SessionsWithFileEditsCount int64 `json:"sessions_with_file_edits_count" api:"required"`
+	// Same measure as `cowork_metrics.skills_used_count`, for activity recorded while
+	// members had Chat and Cowork unified turned on.
+	SkillsUsedCount int64 `json:"skills_used_count" api:"required"`
+	// Same measure as `cowork_metrics.write_tool_count`, for activity recorded while
+	// members had Chat and Cowork unified turned on.
+	WriteToolCount int64 `json:"write_tool_count" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ActionCount                 respjson.Field
+		ArtifactsCreatedCount       respjson.Field
+		ConnectorsUsedCount         respjson.Field
+		DispatchTurnCount           respjson.Field
+		DistinctConnectorsUsedCount respjson.Field
+		DistinctPluginsUsedCount    respjson.Field
+		DistinctSessionCount        respjson.Field
+		DistinctSkillsUsedCount     respjson.Field
+		EditToolCount               respjson.Field
+		FileEditCount               respjson.Field
+		MessageCount                respjson.Field
+		MultiEditToolCount          respjson.Field
+		NotebookEditToolCount       respjson.Field
+		PluginsUsedCount            respjson.Field
+		SessionsWithFileEditsCount  respjson.Field
+		SkillsUsedCount             respjson.Field
+		WriteToolCount              respjson.Field
+		ExtraFields                 map[string]respjson.Field
+		raw                         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsChatCoworkUnifiedSessionsMetrics) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsChatCoworkUnifiedSessionsMetrics) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Claude.ai activity metrics for a single user on a given day.
 type BetaAnalyticsChatMetrics struct {
 	// Number of MCP connector invocations.
@@ -370,10 +547,10 @@ func (r *BetaAnalyticsConnectorActivity) UnmarshalJSON(data []byte) error {
 type BetaAnalyticsConnectorActivityChatCoworkUnifiedMetrics struct {
 	// A connector's use in chat conversations recorded while members had Chat and
 	// Cowork unified turned on.
-	Chat BetaAnalyticsConnectorActivityChatCoworkUnifiedMetricsChat `json:"chat" api:"required"`
+	Chat BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics `json:"chat" api:"required"`
 	// A connector's use in Cowork sessions recorded while members had Chat and Cowork
 	// unified turned on.
-	Sessions BetaAnalyticsConnectorActivityChatCoworkUnifiedMetricsSessions `json:"sessions" api:"required"`
+	Sessions BetaAnalyticsConnectorChatCoworkUnifiedSessionsMetrics `json:"sessions" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Chat        respjson.Field
@@ -391,7 +568,7 @@ func (r *BetaAnalyticsConnectorActivityChatCoworkUnifiedMetrics) UnmarshalJSON(d
 
 // A connector's use in chat conversations recorded while members had Chat and
 // Cowork unified turned on.
-type BetaAnalyticsConnectorActivityChatCoworkUnifiedMetricsChat struct {
+type BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics struct {
 	// Same measure as `chat_metrics.distinct_conversation_connector_used_count`, for
 	// activity recorded while members had Chat and Cowork unified turned on.
 	// Approximate (HLL, typical error <2%) in date-range mode. Null on aggregated rows
@@ -406,16 +583,14 @@ type BetaAnalyticsConnectorActivityChatCoworkUnifiedMetricsChat struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaAnalyticsConnectorActivityChatCoworkUnifiedMetricsChat) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *BetaAnalyticsConnectorActivityChatCoworkUnifiedMetricsChat) UnmarshalJSON(data []byte) error {
+func (r BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A connector's use in Cowork sessions recorded while members had Chat and Cowork
 // unified turned on.
-type BetaAnalyticsConnectorActivityChatCoworkUnifiedMetricsSessions struct {
+type BetaAnalyticsConnectorChatCoworkUnifiedSessionsMetrics struct {
 	// Same measure as `cowork_metrics.distinct_session_connector_used_count`, for
 	// activity recorded while members had Chat and Cowork unified turned on.
 	// Approximate (HLL, typical error <2%) in date-range mode. Null on aggregated rows
@@ -430,10 +605,8 @@ type BetaAnalyticsConnectorActivityChatCoworkUnifiedMetricsSessions struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaAnalyticsConnectorActivityChatCoworkUnifiedMetricsSessions) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *BetaAnalyticsConnectorActivityChatCoworkUnifiedMetricsSessions) UnmarshalJSON(data []byte) error {
+func (r BetaAnalyticsConnectorChatCoworkUnifiedSessionsMetrics) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsConnectorChatCoworkUnifiedSessionsMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1514,9 +1687,9 @@ type BetaAnalyticsSingleDayActivitySummary struct {
 	// Omitted from the response on deployments that do not offer Chat and Cowork
 	// unified.
 	ChatCoworkUnifiedDailyActiveUserCount int64 `json:"chat_cowork_unified_daily_active_user_count" api:"nullable"`
-	// Number of users with activity in Chat and Cowork unified in the 30-day rolling
-	// window. Omitted from the response on deployments that do not offer Chat and
-	// Cowork unified.
+	// Number of users with activity in Chat and Cowork unified in the 28-day rolling
+	// window (30 days when the request filters by `rbac_group_id`). Omitted from the
+	// response on deployments that do not offer Chat and Cowork unified.
 	ChatCoworkUnifiedMonthlyActiveUserCount int64 `json:"chat_cowork_unified_monthly_active_user_count" api:"nullable"`
 	// Number of users with activity in Chat and Cowork unified in the 7-day rolling
 	// window. Omitted from the response on deployments that do not offer Chat and
@@ -1811,10 +1984,10 @@ func (r *BetaAnalyticsSkillActivity) UnmarshalJSON(data []byte) error {
 type BetaAnalyticsSkillActivityChatCoworkUnifiedMetrics struct {
 	// A skill's use in chat conversations recorded while members had Chat and Cowork
 	// unified turned on.
-	Chat BetaAnalyticsSkillActivityChatCoworkUnifiedMetricsChat `json:"chat" api:"required"`
+	Chat BetaAnalyticsSkillChatCoworkUnifiedChatMetrics `json:"chat" api:"required"`
 	// A skill's use in Cowork sessions recorded while members had Chat and Cowork
 	// unified turned on.
-	Sessions BetaAnalyticsSkillActivityChatCoworkUnifiedMetricsSessions `json:"sessions" api:"required"`
+	Sessions BetaAnalyticsSkillChatCoworkUnifiedSessionsMetrics `json:"sessions" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Chat        respjson.Field
@@ -1830,9 +2003,21 @@ func (r *BetaAnalyticsSkillActivityChatCoworkUnifiedMetrics) UnmarshalJSON(data 
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Skill share status (claude.ai only): one of `private`, `organization`, or
+// `public`. Null for skills used only in Claude Code or Office (no per-skill
+// share-status concept) and when share-status reporting is not yet available for
+// the organization. Filterable via `filter[]=share_status:{value}`.
+type BetaAnalyticsSkillActivityShareStatus string
+
+const (
+	BetaAnalyticsSkillActivityShareStatusOrganization BetaAnalyticsSkillActivityShareStatus = "organization"
+	BetaAnalyticsSkillActivityShareStatusPrivate      BetaAnalyticsSkillActivityShareStatus = "private"
+	BetaAnalyticsSkillActivityShareStatusPublic       BetaAnalyticsSkillActivityShareStatus = "public"
+)
+
 // A skill's use in chat conversations recorded while members had Chat and Cowork
 // unified turned on.
-type BetaAnalyticsSkillActivityChatCoworkUnifiedMetricsChat struct {
+type BetaAnalyticsSkillChatCoworkUnifiedChatMetrics struct {
 	// Same measure as `chat_metrics.distinct_conversation_skill_used_count`, for
 	// activity recorded while members had Chat and Cowork unified turned on.
 	// Approximate (HLL, typical error <2%) in date-range mode. Null on aggregated rows
@@ -1847,14 +2032,14 @@ type BetaAnalyticsSkillActivityChatCoworkUnifiedMetricsChat struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaAnalyticsSkillActivityChatCoworkUnifiedMetricsChat) RawJSON() string { return r.JSON.raw }
-func (r *BetaAnalyticsSkillActivityChatCoworkUnifiedMetricsChat) UnmarshalJSON(data []byte) error {
+func (r BetaAnalyticsSkillChatCoworkUnifiedChatMetrics) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsSkillChatCoworkUnifiedChatMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A skill's use in Cowork sessions recorded while members had Chat and Cowork
 // unified turned on.
-type BetaAnalyticsSkillActivityChatCoworkUnifiedMetricsSessions struct {
+type BetaAnalyticsSkillChatCoworkUnifiedSessionsMetrics struct {
 	// Same measure as `cowork_metrics.distinct_session_skill_used_count`, for activity
 	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
 	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
@@ -1869,24 +2054,10 @@ type BetaAnalyticsSkillActivityChatCoworkUnifiedMetricsSessions struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaAnalyticsSkillActivityChatCoworkUnifiedMetricsSessions) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *BetaAnalyticsSkillActivityChatCoworkUnifiedMetricsSessions) UnmarshalJSON(data []byte) error {
+func (r BetaAnalyticsSkillChatCoworkUnifiedSessionsMetrics) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsSkillChatCoworkUnifiedSessionsMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Skill share status (claude.ai only): one of `private`, `organization`, or
-// `public`. Null for skills used only in Claude Code or Office (no per-skill
-// share-status concept) and when share-status reporting is not yet available for
-// the organization. Filterable via `filter[]=share_status:{value}`.
-type BetaAnalyticsSkillActivityShareStatus string
-
-const (
-	BetaAnalyticsSkillActivityShareStatusOrganization BetaAnalyticsSkillActivityShareStatus = "organization"
-	BetaAnalyticsSkillActivityShareStatusPrivate      BetaAnalyticsSkillActivityShareStatus = "private"
-	BetaAnalyticsSkillActivityShareStatusPublic       BetaAnalyticsSkillActivityShareStatus = "public"
-)
 
 // Claude.ai activity metrics for a single skill on a given day.
 type BetaAnalyticsSkillChatMetrics struct {
@@ -2543,10 +2714,10 @@ func (r *BetaAnalyticsUserActivity) UnmarshalJSON(data []byte) error {
 // not offer Chat and Cowork unified.
 type BetaAnalyticsUserActivityChatCoworkUnifiedMetrics struct {
 	// Chat activity recorded while members had Chat and Cowork unified turned on.
-	Chat BetaAnalyticsUserActivityChatCoworkUnifiedMetricsChat `json:"chat" api:"required"`
+	Chat BetaAnalyticsChatCoworkUnifiedChatMetrics `json:"chat" api:"required"`
 	// Cowork session activity recorded while members had Chat and Cowork unified
 	// turned on.
-	Sessions BetaAnalyticsUserActivityChatCoworkUnifiedMetricsSessions `json:"sessions" api:"required"`
+	Sessions BetaAnalyticsChatCoworkUnifiedSessionsMetrics `json:"sessions" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Chat        respjson.Field
@@ -2559,182 +2730,6 @@ type BetaAnalyticsUserActivityChatCoworkUnifiedMetrics struct {
 // Returns the unmodified JSON received from the API
 func (r BetaAnalyticsUserActivityChatCoworkUnifiedMetrics) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsUserActivityChatCoworkUnifiedMetrics) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Chat activity recorded while members had Chat and Cowork unified turned on.
-type BetaAnalyticsUserActivityChatCoworkUnifiedMetricsChat struct {
-	// Same measure as `chat_metrics.connectors_used_count`, for activity recorded
-	// while members had Chat and Cowork unified turned on.
-	ConnectorsUsedCount int64 `json:"connectors_used_count" api:"required"`
-	// Same measure as `chat_metrics.distinct_artifacts_created_count`, for activity
-	// recorded while members had Chat and Cowork unified turned on. Exact in
-	// date-range mode: a creation belongs to exactly one day, so the per-day counts
-	// never overlap and their sum over the window is the exact count of distinct
-	// creations in it.
-	DistinctArtifactsCreatedCount int64 `json:"distinct_artifacts_created_count" api:"required"`
-	// Same measure as `chat_metrics.distinct_connectors_used_count`, for activity
-	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
-	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
-	// count cannot be computed.
-	DistinctConnectorsUsedCount int64 `json:"distinct_connectors_used_count" api:"required"`
-	// Same measure as `chat_metrics.distinct_conversation_count`, for activity
-	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
-	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
-	// count cannot be computed.
-	DistinctConversationCount int64 `json:"distinct_conversation_count" api:"required"`
-	// Same measure as `chat_metrics.distinct_files_uploaded_count`, for activity
-	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
-	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
-	// count cannot be computed.
-	DistinctFilesUploadedCount int64 `json:"distinct_files_uploaded_count" api:"required"`
-	// Same measure as `chat_metrics.distinct_projects_created_count`, for activity
-	// recorded while members had Chat and Cowork unified turned on. Exact in
-	// date-range mode: a creation belongs to exactly one day, so the per-day counts
-	// never overlap and their sum over the window is the exact count of distinct
-	// creations in it.
-	DistinctProjectsCreatedCount int64 `json:"distinct_projects_created_count" api:"required"`
-	// Same measure as `chat_metrics.distinct_projects_used_count`, for activity
-	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
-	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
-	// count cannot be computed.
-	DistinctProjectsUsedCount int64 `json:"distinct_projects_used_count" api:"required"`
-	// Always null: shared-artifact views are not currently measured.
-	DistinctSharedArtifactsViewedCount int64 `json:"distinct_shared_artifacts_viewed_count" api:"required"`
-	// Same measure as `chat_metrics.distinct_skills_used_count`, for activity recorded
-	// while members had Chat and Cowork unified turned on. Approximate (HLL, typical
-	// error <2%) in date-range mode. Null on aggregated rows where a distinct count
-	// cannot be computed.
-	DistinctSkillsUsedCount int64 `json:"distinct_skills_used_count" api:"required"`
-	// Same measure as `chat_metrics.message_count`, for activity recorded while
-	// members had Chat and Cowork unified turned on.
-	MessageCount int64 `json:"message_count" api:"required"`
-	// Same measure as `chat_metrics.shared_conversations_viewed_count`, for activity
-	// recorded while members had Chat and Cowork unified turned on.
-	SharedConversationsViewedCount int64 `json:"shared_conversations_viewed_count" api:"required"`
-	// Same measure as `chat_metrics.thinking_message_count`, for activity recorded
-	// while members had Chat and Cowork unified turned on.
-	ThinkingMessageCount int64 `json:"thinking_message_count" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ConnectorsUsedCount                respjson.Field
-		DistinctArtifactsCreatedCount      respjson.Field
-		DistinctConnectorsUsedCount        respjson.Field
-		DistinctConversationCount          respjson.Field
-		DistinctFilesUploadedCount         respjson.Field
-		DistinctProjectsCreatedCount       respjson.Field
-		DistinctProjectsUsedCount          respjson.Field
-		DistinctSharedArtifactsViewedCount respjson.Field
-		DistinctSkillsUsedCount            respjson.Field
-		MessageCount                       respjson.Field
-		SharedConversationsViewedCount     respjson.Field
-		ThinkingMessageCount               respjson.Field
-		ExtraFields                        map[string]respjson.Field
-		raw                                string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaAnalyticsUserActivityChatCoworkUnifiedMetricsChat) RawJSON() string { return r.JSON.raw }
-func (r *BetaAnalyticsUserActivityChatCoworkUnifiedMetricsChat) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Cowork session activity recorded while members had Chat and Cowork unified
-// turned on.
-type BetaAnalyticsUserActivityChatCoworkUnifiedMetricsSessions struct {
-	// Same measure as `cowork_metrics.action_count`, for activity recorded while
-	// members had Chat and Cowork unified turned on.
-	ActionCount int64 `json:"action_count" api:"required"`
-	// Same measure as `cowork_metrics.artifacts_created_count`, for activity recorded
-	// while members had Chat and Cowork unified turned on. Exact in date-range mode: a
-	// creation belongs to exactly one day, so the per-day counts never overlap and
-	// their sum over the window is the exact count of distinct creations in it.
-	ArtifactsCreatedCount int64 `json:"artifacts_created_count" api:"required"`
-	// Same measure as `cowork_metrics.connectors_used_count`, for activity recorded
-	// while members had Chat and Cowork unified turned on.
-	ConnectorsUsedCount int64 `json:"connectors_used_count" api:"required"`
-	// Same measure as `cowork_metrics.dispatch_turn_count`, for activity recorded
-	// while members had Chat and Cowork unified turned on.
-	DispatchTurnCount int64 `json:"dispatch_turn_count" api:"required"`
-	// Same measure as `cowork_metrics.distinct_connectors_used_count`, for activity
-	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
-	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
-	// count cannot be computed.
-	DistinctConnectorsUsedCount int64 `json:"distinct_connectors_used_count" api:"required"`
-	// Same measure as `cowork_metrics.distinct_session_count`, for activity recorded
-	// while members had Chat and Cowork unified turned on. Approximate (HLL, typical
-	// error <2%) in date-range mode. Null on aggregated rows where a distinct count
-	// cannot be computed.
-	DistinctSessionCount int64 `json:"distinct_session_count" api:"required"`
-	// Same measure as `cowork_metrics.distinct_skills_used_count`, for activity
-	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
-	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
-	// count cannot be computed.
-	DistinctSkillsUsedCount int64 `json:"distinct_skills_used_count" api:"required"`
-	// Same measure as `cowork_metrics.message_count`, for activity recorded while
-	// members had Chat and Cowork unified turned on.
-	MessageCount int64 `json:"message_count" api:"required"`
-	// Same measure as `cowork_metrics.skills_used_count`, for activity recorded while
-	// members had Chat and Cowork unified turned on.
-	SkillsUsedCount int64 `json:"skills_used_count" api:"required"`
-	// Same measure as `cowork_metrics.distinct_plugins_used_count`, for activity
-	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
-	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
-	// count cannot be computed.
-	DistinctPluginsUsedCount int64 `json:"distinct_plugins_used_count" api:"nullable"`
-	// Same measure as `cowork_metrics.edit_tool_count`, for activity recorded while
-	// members had Chat and Cowork unified turned on.
-	EditToolCount int64 `json:"edit_tool_count" api:"nullable"`
-	// Same measure as `cowork_metrics.file_edit_count`, for activity recorded while
-	// members had Chat and Cowork unified turned on.
-	FileEditCount int64 `json:"file_edit_count" api:"nullable"`
-	// Same measure as `cowork_metrics.multi_edit_tool_count`, for activity recorded
-	// while members had Chat and Cowork unified turned on.
-	MultiEditToolCount int64 `json:"multi_edit_tool_count" api:"nullable"`
-	// Same measure as `cowork_metrics.notebook_edit_tool_count`, for activity recorded
-	// while members had Chat and Cowork unified turned on.
-	NotebookEditToolCount int64 `json:"notebook_edit_tool_count" api:"nullable"`
-	// Same measure as `cowork_metrics.plugins_used_count`, for activity recorded while
-	// members had Chat and Cowork unified turned on.
-	PluginsUsedCount int64 `json:"plugins_used_count" api:"nullable"`
-	// Same measure as `cowork_metrics.sessions_with_file_edits_count`, for activity
-	// recorded while members had Chat and Cowork unified turned on. Approximate (HLL,
-	// typical error <2%) in date-range mode. Null on aggregated rows where a distinct
-	// count cannot be computed.
-	SessionsWithFileEditsCount int64 `json:"sessions_with_file_edits_count" api:"nullable"`
-	// Same measure as `cowork_metrics.write_tool_count`, for activity recorded while
-	// members had Chat and Cowork unified turned on.
-	WriteToolCount int64 `json:"write_tool_count" api:"nullable"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ActionCount                 respjson.Field
-		ArtifactsCreatedCount       respjson.Field
-		ConnectorsUsedCount         respjson.Field
-		DispatchTurnCount           respjson.Field
-		DistinctConnectorsUsedCount respjson.Field
-		DistinctSessionCount        respjson.Field
-		DistinctSkillsUsedCount     respjson.Field
-		MessageCount                respjson.Field
-		SkillsUsedCount             respjson.Field
-		DistinctPluginsUsedCount    respjson.Field
-		EditToolCount               respjson.Field
-		FileEditCount               respjson.Field
-		MultiEditToolCount          respjson.Field
-		NotebookEditToolCount       respjson.Field
-		PluginsUsedCount            respjson.Field
-		SessionsWithFileEditsCount  respjson.Field
-		WriteToolCount              respjson.Field
-		ExtraFields                 map[string]respjson.Field
-		raw                         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaAnalyticsUserActivityChatCoworkUnifiedMetricsSessions) RawJSON() string {
-	return r.JSON.raw
-}
-func (r *BetaAnalyticsUserActivityChatCoworkUnifiedMetricsSessions) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

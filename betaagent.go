@@ -6391,7 +6391,7 @@ const (
 type BetaAgentNewParams struct {
 	// Model identifier. Accepts the
 	// [model string](https://platform.claude.com/docs/en/about-claude/models/overview#latest-models-comparison),
-	// e.g. `claude-opus-5`, or a `model_config` object for additional configuration
+	// e.g. `claude-opus-5-5`, or a `model_config` object for additional configuration
 	// control
 	Model BetaManagedAgentsModelConfigParams `json:"model,omitzero" api:"required"`
 	// Human-readable name for the agent.
@@ -6679,7 +6679,7 @@ type BetaAgentUpdateParams struct {
 	Tools []BetaAgentUpdateParamsToolUnion `json:"tools,omitzero"`
 	// Model identifier. Accepts the
 	// [model string](https://platform.claude.com/docs/en/about-claude/models/overview#latest-models-comparison),
-	// e.g. `claude-opus-5`, or a `model_config` object for additional configuration
+	// e.g. `claude-opus-5-5`, or a `model_config` object for additional configuration
 	// control. Omit to preserve. Cannot be cleared.
 	Model BetaManagedAgentsModelConfigParams `json:"model,omitzero"`
 	// Multiagent orchestration configuration. Full replacement. Omit to preserve; send

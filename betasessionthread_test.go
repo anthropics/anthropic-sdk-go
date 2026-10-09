@@ -59,6 +59,7 @@ func TestBetaSessionThreadListWithOptionalParams(t *testing.T) {
 		anthropic.BetaSessionThreadListParams{
 			Limit:       anthropic.Int(0),
 			Page:        anthropic.String("page"),
+			Statuses:    []anthropic.BetaManagedAgentsSessionThreadStatus{anthropic.BetaManagedAgentsSessionThreadStatusRunning},
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},

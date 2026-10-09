@@ -43,15 +43,17 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 		Metadata: map[string]string{
 			"foo": "bar",
 		},
-		Multiagent: anthropic.BetaManagedAgentsMultiagentParams{
-			Agents: []anthropic.BetaManagedAgentsMultiagentRosterEntryParamsUnion{{
-				OfString: anthropic.String("agent_011CZkYqphY8vELVzwCUpqiQ"),
-			}, {
-				OfBetaManagedAgentsMultiagentSelfs: &anthropic.BetaManagedAgentsMultiagentSelfParams{
-					Type: anthropic.BetaManagedAgentsMultiagentSelfParamsTypeSelf,
-				},
-			}},
-			Type: anthropic.BetaManagedAgentsMultiagentParamsTypeCoordinator,
+		Multiagent: anthropic.BetaManagedAgentsMultiagentParamsUnion{
+			OfCoordinator: &anthropic.BetaManagedAgentsMultiagentCoordinatorParams{
+				Agents: []anthropic.BetaManagedAgentsMultiagentRosterEntryParamsUnion{{
+					OfString: anthropic.String("agent_011CZkYqphY8vELVzwCUpqiQ"),
+				}, {
+					OfBetaManagedAgentsMultiagentSelfs: &anthropic.BetaManagedAgentsMultiagentSelfParams{
+						Type: anthropic.BetaManagedAgentsMultiagentSelfParamsTypeSelf,
+					},
+				}},
+				Type: anthropic.BetaManagedAgentsMultiagentCoordinatorParamsTypeCoordinator,
+			},
 		},
 		Skills: []anthropic.BetaManagedAgentsSkillParamsUnion{{
 			OfAnthropic: &anthropic.BetaManagedAgentsAnthropicSkillParams{
@@ -160,15 +162,17 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 				InferenceGeo: anthropic.String("inference_geo"),
 				Speed:        anthropic.BetaManagedAgentsModelConfigParamsSpeedStandard,
 			},
-			Multiagent: anthropic.BetaManagedAgentsMultiagentParams{
-				Agents: []anthropic.BetaManagedAgentsMultiagentRosterEntryParamsUnion{{
-					OfString: anthropic.String("agent_011CZkYqphY8vELVzwCUpqiQ"),
-				}, {
-					OfBetaManagedAgentsMultiagentSelfs: &anthropic.BetaManagedAgentsMultiagentSelfParams{
-						Type: anthropic.BetaManagedAgentsMultiagentSelfParamsTypeSelf,
-					},
-				}},
-				Type: anthropic.BetaManagedAgentsMultiagentParamsTypeCoordinator,
+			Multiagent: anthropic.BetaManagedAgentsMultiagentParamsUnion{
+				OfCoordinator: &anthropic.BetaManagedAgentsMultiagentCoordinatorParams{
+					Agents: []anthropic.BetaManagedAgentsMultiagentRosterEntryParamsUnion{{
+						OfString: anthropic.String("agent_011CZkYqphY8vELVzwCUpqiQ"),
+					}, {
+						OfBetaManagedAgentsMultiagentSelfs: &anthropic.BetaManagedAgentsMultiagentSelfParams{
+							Type: anthropic.BetaManagedAgentsMultiagentSelfParamsTypeSelf,
+						},
+					}},
+					Type: anthropic.BetaManagedAgentsMultiagentCoordinatorParamsTypeCoordinator,
+				},
 			},
 			Name: anthropic.String("name"),
 			Skills: []anthropic.BetaManagedAgentsSkillParamsUnion{{

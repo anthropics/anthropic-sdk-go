@@ -6,6 +6,11 @@
 
 * set the required type field in union param constructor helpers
 
+
+### Documentation
+
+* **api:** clarify when custom tool results can be sent
+
 ## [1.80.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.79.1...v1.80.0) (2026-10-09)
 
 ### Features

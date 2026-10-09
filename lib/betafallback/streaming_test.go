@@ -5,8 +5,12 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -26,6 +30,8 @@ type sseTransport struct {
 	contentTypes []string // parallel to responses; missing entries are text/event-stream
 	bodies       []map[string]any
 	betas        [][]string
+	methods      []string
+	paths        []string
 }
 
 func (s *sseTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -35,6 +41,8 @@ func (s *sseTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	require.NoError(s.t, json.Unmarshal(buf, &body))
 	s.bodies = append(s.bodies, body)
 	s.betas = append(s.betas, req.Header.Values("anthropic-beta"))
+	s.methods = append(s.methods, req.Method)
+	s.paths = append(s.paths, req.URL.Path)
 	require.NotEmpty(s.t, s.responses, "more requests than scripted responses")
 	next := s.responses[0]
 	s.responses = s.responses[1:]
@@ -348,6 +356,109 @@ func TestStreamingHopSuppliedIterationsRideThroughLabeled(t *testing.T) {
 	assert.Equal(t, "primary-model", iterations[1].Model)
 	assert.Equal(t, "fallback-model", iterations[2].Model)
 	assert.Equal(t, "fallback_message", iterations[2].Type)
+}
+
+func TestStreamingServingHopPreservesReportedIterations(t *testing.T) {
+	first := `{"type":"message","model":"reported-model","input_tokens":11,"output_tokens":7,"cache_read_input_tokens":3,"cache_creation_input_tokens":40,"cache_creation":{"ephemeral_5m_input_tokens":17,"ephemeral_1h_input_tokens":23},"future_detail":{"retained":true}}`
+	completedFirst := strings.Replace(first, `"type":"message"`, `"type":"fallback_message"`, 1)
+	second := `{"type":"message","input_tokens":21,"output_tokens":9,"cache_read_input_tokens":4,"cache_creation_input_tokens":0,"cache_creation":null}`
+	completedSecond := `{"type":"fallback_message","model":"fallback-model","input_tokens":21,"output_tokens":9,"cache_read_input_tokens":4,"cache_creation_input_tokens":0,"cache_creation":null}`
+	compaction := `{"type":"compaction","input_tokens":31,"output_tokens":2,"cache_read_input_tokens":5,"cache_creation_input_tokens":0}`
+	advisor := `{"type":"advisor_message","input_tokens":41,"output_tokens":4,"cache_read_input_tokens":6,"cache_creation_input_tokens":0}`
+	future := `{"type":"future_iteration","payload":{"retained":true}}`
+	completion := `{"type":"fallback_message","model":"fallback-model","input_tokens":12,"output_tokens":3,"cache_read_input_tokens":0,"cache_creation_input_tokens":0,"cache_creation":null}`
+	declined := `{"type":"message","model":"primary-model","input_tokens":10,"output_tokens":5,"cache_read_input_tokens":0,"cache_creation_input_tokens":0,"cache_creation":null}`
+	tests := []struct {
+		name     string
+		reported string
+		expected string
+	}{
+		{"absent", "", completion},
+		{"empty", "[]", completion},
+		{"message", "[" + first + "]", completedFirst},
+		{"fallback_message", "[" + completedFirst + "]", completedFirst},
+		{"compaction_only", "[" + compaction + "]", compaction + "," + completion},
+		{"server_loop", "[" + first + "," + compaction + "," + second + "]", first + "," + compaction + "," + completedSecond},
+		{"multiple_sampling", "[" + first + "," + second + "]", first + "," + completedSecond},
+		{"mixed", "[" + compaction + "," + advisor + "," + first + "]", compaction + "," + advisor + "," + completedFirst},
+		{"trailing_compaction", "[" + first + "," + compaction + "]", completedFirst + "," + compaction},
+		{"trailing_unknown", "[" + first + "," + future + "]", completedFirst + "," + future},
+		{"unknown_only", "[" + future + "]", future + "," + completion},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			served := servedStream("canonical-fallback-model")
+			if tc.reported != "" {
+				served = strings.Replace(served, `"output_tokens":3,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}`,
+					`"output_tokens":3,"cache_read_input_tokens":0,"cache_creation_input_tokens":0,"iterations":`+tc.reported+`}}`, 1)
+			}
+			transport := &sseTransport{responses: []string{refusalStream("primary-model", tokenNoClaim), served}}
+			client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-model"}})
+			msg, sequence, deltas := collectStream(t, client, context.Background(), fallbackTestParams)
+			require.Len(t, deltas, 1)
+			require.Len(t, transport.bodies, 2)
+			assert.Equal(t, "fallback-model", transport.bodies[1]["model"])
+			assert.Equal(t, creditTokenBody("credit-token-a"), transport.bodies[1]["fallback_credit_token"])
+			assert.Contains(t, transport.betas[1], string(anthropic.AnthropicBetaFallbackCredit2026_07_01))
+			assert.Equal(t, http.MethodPost, transport.methods[1])
+			assert.Equal(t, "/v1/messages", transport.paths[1])
+			counts := map[string]int{}
+			for _, event := range sequence {
+				counts[event]++
+			}
+			assert.Equal(t, 1, counts["message_start"])
+			assert.Equal(t, 1, counts["message_stop"])
+			assert.Equal(t, anthropic.BetaStopReasonEndTurn, msg.StopReason)
+			assert.Equal(t, int64(3), msg.Usage.OutputTokens)
+			var delta struct {
+				Usage struct {
+					Iterations json.RawMessage `json:"iterations"`
+				} `json:"usage"`
+			}
+			require.NoError(t, json.Unmarshal([]byte(deltas[0]), &delta))
+			expected := "[" + declined + "," + tc.expected + "]"
+			assert.JSONEq(t, expected, string(delta.Usage.Iterations))
+			var accumulated []json.RawMessage
+			for _, iteration := range msg.Usage.Iterations {
+				accumulated = append(accumulated, json.RawMessage(iteration.RawJSON()))
+			}
+			rawAccumulated, err := json.Marshal(accumulated)
+			require.NoError(t, err)
+			assert.JSONEq(t, expected, string(rawAccumulated))
+		})
+	}
+}
+
+func TestStreamingIterationTypesTrackGeneratedUnion(t *testing.T) {
+	file, err := parser.ParseFile(token.NewFileSet(), "../../betamessage.go", nil, 0)
+	require.NoError(t, err)
+	var generated []string
+	for _, declaration := range file.Decls {
+		method, ok := declaration.(*ast.FuncDecl)
+		if !ok || method.Name.Name != "AsAny" || method.Recv == nil {
+			continue
+		}
+		receiver, ok := method.Recv.List[0].Type.(*ast.Ident)
+		if !ok || receiver.Name != "BetaIterationsUsageItemUnion" {
+			continue
+		}
+		ast.Inspect(method.Body, func(node ast.Node) bool {
+			clause, ok := node.(*ast.CaseClause)
+			if !ok {
+				return true
+			}
+			for _, expression := range clause.List {
+				literal, ok := expression.(*ast.BasicLit)
+				require.True(t, ok)
+				value, err := strconv.Unquote(literal.Value)
+				require.NoError(t, err)
+				generated = append(generated, value)
+			}
+			return false
+		})
+	}
+	require.ElementsMatch(t, []string{"message", "fallback_message", "compaction", "advisor_message"}, generated,
+		"update hopIterations sampling classification when the generated iteration union changes")
 }
 
 func TestStreaming400OnATokenedAttemptRetriesTheLastEntryTokenless(t *testing.T) {

@@ -499,10 +499,8 @@ func (s *streamSplicer) readStop() []byte {
 	return data
 }
 
-// rewriteTerminal rebuilds a terminal message_delta: usage.iterations becomes
-// the whole-chain ledger (plus this hop, last entry typed fallback_message),
-// optionally recommended_model is stamped null when absent, and a suppressed
-// message_start's input_transformations is forwarded when the delta has none.
+// rewriteTerminal forwards the terminal delta with the whole-chain ledger,
+// recommendation and suppressed start transformations.
 func (s *streamSplicer) rewriteTerminal(data []byte, includeSelf bool, stampRecommended bool) []byte {
 	iterations := append([]json.RawMessage{}, s.ledger...)
 	if includeSelf {
@@ -525,15 +523,8 @@ func (s *streamSplicer) rewriteTerminal(data []byte, includeSelf bool, stampReco
 	return out
 }
 
-// hopIterations builds the current hop's usage.iterations contribution from
-// its terminal delta. A hop reporting its own iterations (a server-stitched
-// envelope, or a server-tool loop) contributes them verbatim; otherwise one
-// entry is synthesized from its delta usage. Every non-final entry is
-// (re)typed message — those attempts did not serve; the final hop's last
-// entry is the fallback_message completer. The hop's model is stamped only
-// when the contribution is unambiguously the hop itself: a single entry. A
-// multi-entry array attributes per-iteration usage the wire did not break
-// down by model.
+// hopIterations preserves a serving hop's reported ledger, relabeling only
+// its last sampling iteration. A declined envelope contributes ordinary attempts.
 func (s *streamSplicer) hopIterations(deltaData []byte, final bool) []json.RawMessage {
 	var entries []json.RawMessage
 	if reported := gjson.GetBytes(deltaData, "usage.iterations"); reported.IsArray() && len(reported.Array()) > 0 {
@@ -543,18 +534,36 @@ func (s *streamSplicer) hopIterations(deltaData []byte, final bool) []json.RawMe
 	} else {
 		entries = []json.RawMessage{synthesizedEntry(deltaData)}
 	}
+	messageType := string((anthropic.BetaMessageIterationUsage{}).Type.Default())
+	fallbackMessageType := string((anthropic.BetaFallbackMessageIterationUsage{}).Type.Default())
+	completion := -1
+	if final {
+		for i := len(entries) - 1; i >= 0; i-- {
+			typ := gjson.GetBytes(entries[i], "type").String()
+			if typ == messageType || typ == fallbackMessageType {
+				completion = i
+				break
+			}
+		}
+		if completion < 0 {
+			entries = append(entries, synthesizedEntry(deltaData))
+			completion = len(entries) - 1
+		}
+	}
 	for i, entry := range entries {
-		last := i == len(entries)-1
+		if final && i != completion {
+			continue
+		}
 		typ := gjson.GetBytes(entry, "type").String()
 		switch {
-		case final && last:
-			typ = "fallback_message"
-		case typ == "fallback_message":
+		case final:
+			typ = fallbackMessageType
+		case typ == fallbackMessageType:
 			// The envelope's serving hop declined the overall request; it is
 			// an ordinary attempt in the merged ledger.
-			typ = "message"
+			typ = messageType
 		case typ == "":
-			typ = "message"
+			typ = messageType
 		}
 		patched, err := sjson.SetBytes(entry, "type", typ)
 		if err != nil {

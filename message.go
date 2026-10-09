@@ -429,9 +429,9 @@ func (u BashCodeExecutionToolResultBlockParamContentUnion) GetStdout() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BashCodeExecutionToolResultBlockParamContentUnion) GetType() *string {
 	if vt := u.OfRequestBashCodeExecutionToolResultError; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfRequestBashCodeExecutionResultBlock; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -2678,13 +2678,13 @@ func (u BrowserStateChangeUnionParam) GetError() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BrowserStateChangeUnionParam) GetType() *string {
 	if vt := u.OfTabOpened; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDownloadStarted; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDownloadCompleted; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDownloadFailed; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -4898,11 +4898,11 @@ func (u CodeExecutionToolResultBlockParamContentUnion) GetEncryptedStdout() *str
 // Returns a pointer to the underlying variant's property, if present.
 func (u CodeExecutionToolResultBlockParamContentUnion) GetType() *string {
 	if vt := u.OfRequestCodeExecutionToolResultError; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfRequestCodeExecutionResultBlock; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfRequestEncryptedCodeExecutionResultBlock; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -7327,37 +7327,37 @@ func (u ContentBlockParamUnion) GetFileID() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockParamUnion) GetType() *string {
 	if vt := u.OfText; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfImage; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDocument; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfSearchResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfThinking; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfRedactedThinking; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfToolUse; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfToolResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfServerToolUse; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebSearchToolResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebFetchToolResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecutionToolResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfBashCodeExecutionToolResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfTextEditorCodeExecutionToolResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfToolSearchToolResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfContainerUpload; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -7806,7 +7806,7 @@ func (u contentBlockParamUnionContent) GetType() *string {
 	switch vt := u.any.(type) {
 	case *WebSearchToolResultBlockParamContentUnion:
 		if vt.OfRequestWebSearchToolResultError != nil {
-			return (*string)(&vt.OfRequestWebSearchToolResultError.Type)
+			return paramutil.AddrOrDefault(vt.OfRequestWebSearchToolResultError.Type)
 		}
 	case *WebFetchToolResultBlockParamContentUnion:
 		return vt.GetType()
@@ -8143,9 +8143,9 @@ func (u ContentBlockSourceContentItemUnionParam) GetTransformations() *ImageTran
 // Returns a pointer to the underlying variant's property, if present.
 func (u ContentBlockSourceContentItemUnionParam) GetType() *string {
 	if vt := u.OfText; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfImage; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -8442,9 +8442,9 @@ func (u DocumentBlockParamSourceUnion) GetData() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetMediaType() *string {
 	if vt := u.OfBase64; vt != nil {
-		return (*string)(&vt.MediaType)
+		return paramutil.AddrOrDefault(vt.MediaType)
 	} else if vt := u.OfText; vt != nil {
-		return (*string)(&vt.MediaType)
+		return paramutil.AddrOrDefault(vt.MediaType)
 	}
 	return nil
 }
@@ -8452,15 +8452,15 @@ func (u DocumentBlockParamSourceUnion) GetMediaType() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u DocumentBlockParamSourceUnion) GetType() *string {
 	if vt := u.OfBase64; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfText; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfContent; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfURL; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfFile; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -8641,11 +8641,11 @@ func (u ImageBlockParamSourceUnion) GetFileID() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u ImageBlockParamSourceUnion) GetType() *string {
 	if vt := u.OfBase64; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfURL; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfFile; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -9049,41 +9049,41 @@ func (u MessageCountTokensToolUnionParam) GetName() *string {
 	if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfBashTool20250124; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfCodeExecutionTool20250825; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfCodeExecutionTool20260120; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfTextEditor20250728; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebFetchTool20250910; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebSearchTool20260318; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebFetchTool20260318; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	}
 	return nil
 }
@@ -9181,41 +9181,41 @@ func (u MessageCountTokensToolUnionParam) GetType() *string {
 	if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfBashTool20250124; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecutionTool20250825; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecutionTool20260120; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfBrowserToolset20260801; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfComputerToolset20260801; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfTextEditor20250728; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebFetchTool20250910; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebSearchTool20260318; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebFetchTool20260318; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil {
@@ -11901,11 +11901,11 @@ func (u *ServerToolUseBlockParamCallerUnion) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u ServerToolUseBlockParamCallerUnion) GetType() *string {
 	if vt := u.OfDirect; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecution20250825; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecution20260120; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -12309,15 +12309,15 @@ func (u TextCitationParamUnion) GetDocumentTitle() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextCitationParamUnion) GetType() *string {
 	if vt := u.OfCharLocation; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfPageLocation; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfContentBlockLocation; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebSearchResultLocation; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfSearchResultLocation; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -12722,13 +12722,13 @@ func (u TextEditorCodeExecutionToolResultBlockParamContentUnion) GetOldStart() *
 // Returns a pointer to the underlying variant's property, if present.
 func (u TextEditorCodeExecutionToolResultBlockParamContentUnion) GetType() *string {
 	if vt := u.OfRequestTextEditorCodeExecutionToolResultError; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfRequestTextEditorCodeExecutionViewResultBlock; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfRequestTextEditorCodeExecutionCreateResultBlock; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfRequestTextEditorCodeExecutionStrReplaceResultBlock; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -13074,13 +13074,13 @@ func (u ThinkingConfigParamUnion) GetBudgetTokens() *int64 {
 // Returns a pointer to the underlying variant's property, if present.
 func (u ThinkingConfigParamUnion) GetType() *string {
 	if vt := u.OfEnabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfBetweenTools; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAdaptive; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -13283,13 +13283,13 @@ func (u ToolChoiceUnionParam) GetName() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolChoiceUnionParam) GetType() *string {
 	if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAny; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfTool; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfNone; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -13567,17 +13567,17 @@ func (u ToolResultBlockParamContentUnion) GetStateChanges() []BrowserStateChange
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolResultBlockParamContentUnion) GetType() *string {
 	if vt := u.OfText; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfImage; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfSearchResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDocument; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfToolReference; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfBrowserState; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -13967,9 +13967,9 @@ func (u ToolSearchToolResultBlockParamContentUnion) GetToolReferences() []ToolRe
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolSearchToolResultBlockParamContentUnion) GetType() *string {
 	if vt := u.OfRequestToolSearchToolResultError; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfRequestToolSearchToolSearchResultBlock; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -14323,41 +14323,41 @@ func (u ToolUnionParam) GetName() *string {
 	if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Name)
 	} else if vt := u.OfBashTool20250124; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfCodeExecutionTool20250825; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfCodeExecutionTool20260120; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfTextEditor20250728; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebFetchTool20250910; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebSearchTool20260318; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebFetchTool20260318; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	}
 	return nil
 }
@@ -14455,41 +14455,41 @@ func (u ToolUnionParam) GetType() *string {
 	if vt := u.OfTool; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfBashTool20250124; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecutionTool20250522; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecutionTool20250825; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecutionTool20260120; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecutionTool20260521; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfBrowserToolset20260801; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfMemoryTool20250818; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfComputerToolset20260801; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfTextEditor20250124; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfTextEditor20250429; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfTextEditor20250728; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebSearchTool20250305; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebFetchTool20250910; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebSearchTool20260209; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebFetchTool20260209; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebFetchTool20260309; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebSearchTool20260318; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWebFetchTool20260318; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfToolSearchToolBm25_20251119; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfToolSearchToolRegex20251119; vt != nil {
@@ -15849,11 +15849,11 @@ func (u *ToolUseBlockParamCallerUnion) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u ToolUseBlockParamCallerUnion) GetType() *string {
 	if vt := u.OfDirect; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecution20250825; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecution20260120; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -16752,9 +16752,9 @@ func (u WebFetchToolResultBlockParamContentUnion) GetRetrievedAt() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u WebFetchToolResultBlockParamContentUnion) GetType() *string {
 	if vt := u.OfRequestWebFetchToolResultError; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfRequestWebFetchResultBlock; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -16790,11 +16790,11 @@ func (u *WebFetchToolResultBlockParamCallerUnion) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u WebFetchToolResultBlockParamCallerUnion) GetType() *string {
 	if vt := u.OfDirect; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecution20250825; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecution20260120; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -17039,13 +17039,13 @@ func (u *WebFetchURLSourcesClientToolResultsUnionParam) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u WebFetchURLSourcesClientToolResultsUnionParam) GetType() *string {
 	if vt := u.OfAll; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfNone; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfOnly; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfExcept; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -17104,13 +17104,13 @@ func (u *WebFetchURLSourcesServerToolResultsUnionParam) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u WebFetchURLSourcesServerToolResultsUnionParam) GetType() *string {
 	if vt := u.OfAll; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfNone; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfOnly; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfExcept; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -17163,9 +17163,9 @@ func (u *WebFetchURLSourcesUserInputUnionParam) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u WebFetchURLSourcesUserInputUnionParam) GetType() *string {
 	if vt := u.OfAll; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfNone; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -17578,11 +17578,11 @@ func (u *WebSearchToolResultBlockParamCallerUnion) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u WebSearchToolResultBlockParamCallerUnion) GetType() *string {
 	if vt := u.OfDirect; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecution20250825; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCodeExecution20260120; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

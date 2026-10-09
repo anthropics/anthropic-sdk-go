@@ -1143,7 +1143,7 @@ func (u BetaManagedAgentsMultiagentParamsUnion) GetType() *string {
 	if vt := u.OfCoordinator; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfMultiagent20261001; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

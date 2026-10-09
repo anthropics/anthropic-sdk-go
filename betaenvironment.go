@@ -12,6 +12,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
@@ -376,9 +377,9 @@ func (u BetaCloudConfigParamsNetworkingUnion) GetAllowedHosts() []string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaCloudConfigParamsNetworkingUnion) GetType() *string {
 	if vt := u.OfUnrestricted; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfLimited; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -864,9 +865,9 @@ func (u BetaEnvironmentNewParamsConfigUnion) GetPackages() *BetaPackagesParams {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaEnvironmentNewParamsConfigUnion) GetType() *string {
 	if vt := u.OfCloud; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfSelfHosted; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -984,9 +985,9 @@ func (u BetaEnvironmentUpdateParamsConfigUnion) GetPackages() *BetaPackagesParam
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaEnvironmentUpdateParamsConfigUnion) GetType() *string {
 	if vt := u.OfCloud; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfSelfHosted; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

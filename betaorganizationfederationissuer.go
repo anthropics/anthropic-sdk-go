@@ -13,6 +13,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
@@ -631,11 +632,11 @@ func (u BetaOrganizationFederationIssuerNewParamsJWKSUnion) GetKeys() []map[stri
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaOrganizationFederationIssuerNewParamsJWKSUnion) GetType() *string {
 	if vt := u.OfDiscovery; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfExplicitURL; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfInline; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -756,11 +757,11 @@ func (u BetaOrganizationFederationIssuerUpdateParamsJWKSUnion) GetKeys() []map[s
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaOrganizationFederationIssuerUpdateParamsJWKSUnion) GetType() *string {
 	if vt := u.OfDiscovery; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfExplicitURL; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfInline; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

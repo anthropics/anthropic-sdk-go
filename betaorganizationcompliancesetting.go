@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
@@ -249,9 +250,9 @@ func (u *BetaComplianceSettingsStateParamUnion) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaComplianceSettingsStateParamUnion) GetType() *string {
 	if vt := u.OfEnabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

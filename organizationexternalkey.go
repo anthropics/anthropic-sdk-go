@@ -12,6 +12,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
@@ -664,11 +665,11 @@ func (u OrganizationExternalKeyNewParamsProviderConfigUnion) GetClientID() *stri
 // Returns a pointer to the underlying variant's property, if present.
 func (u OrganizationExternalKeyNewParamsProviderConfigUnion) GetType() *string {
 	if vt := u.OfAWS; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfGCP; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAzure; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -797,11 +798,11 @@ func (u OrganizationExternalKeyUpdateParamsProviderConfigUnion) GetClientID() *s
 // Returns a pointer to the underlying variant's property, if present.
 func (u OrganizationExternalKeyUpdateParamsProviderConfigUnion) GetType() *string {
 	if vt := u.OfAWS; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfGCP; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAzure; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

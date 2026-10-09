@@ -762,21 +762,21 @@ func (u BetaManagedAgentsAgentToolConfigParamsUnion) GetUserLocation() *BetaMana
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsAgentToolConfigParamsUnion) GetName() *string {
 	if vt := u.OfBash; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfEdit; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfRead; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWrite; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfGlob; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfGrep; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebFetch; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	} else if vt := u.OfWebSearch; vt != nil {
-		return (*string)(&vt.Name)
+		return paramutil.AddrOrDefault(vt.Name)
 	}
 	return nil
 }
@@ -1075,7 +1075,7 @@ func (u BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion) G
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -1666,7 +1666,7 @@ func (u BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion) GetType() *s
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -2017,7 +2017,7 @@ func (u BetaManagedAgentsEditToolConfigParamsPermissionPolicyUnion) GetType() *s
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -2451,7 +2451,7 @@ func (u BetaManagedAgentsGlobToolConfigParamsPermissionPolicyUnion) GetType() *s
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -2630,7 +2630,7 @@ func (u BetaManagedAgentsGrepToolConfigParamsPermissionPolicyUnion) GetType() *s
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -2827,7 +2827,7 @@ func (u BetaManagedAgentsMCPToolConfigParamsPermissionPolicyUnion) GetType() *st
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -3020,7 +3020,7 @@ func (u BetaManagedAgentsMCPToolsetDefaultConfigParamsPermissionPolicyUnion) Get
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -3559,9 +3559,9 @@ func (u BetaManagedAgentsMultiagentAdvisorParamsUnion) GetModel() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsMultiagentAdvisorParamsUnion) GetType() *string {
 	if vt := u.OfEnabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -3876,9 +3876,9 @@ func (u *BetaManagedAgentsMultiagentInlineAgentsParamsUnion) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsMultiagentInlineAgentsParamsUnion) GetType() *string {
 	if vt := u.OfEnabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -4187,9 +4187,9 @@ func (u BetaManagedAgentsMultiagentSubagentsParamsUnion) GetPredefinedAgents() [
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsMultiagentSubagentsParamsUnion) GetType() *string {
 	if vt := u.OfEnabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -4406,9 +4406,9 @@ func (u BetaManagedAgentsMultiagentWorkflowsParamsUnion) GetPredefinedAgents() [
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsMultiagentWorkflowsParamsUnion) GetType() *string {
 	if vt := u.OfEnabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -4641,7 +4641,7 @@ func (u BetaManagedAgentsReadToolConfigParamsPermissionPolicyUnion) GetType() *s
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -5292,7 +5292,7 @@ func (u BetaManagedAgentsWebFetchToolConfigParamsPermissionPolicyUnion) GetType(
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -5673,13 +5673,13 @@ func (u *BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsWebFetchURLSourceToolFilterUnionParam) GetType() *string {
 	if vt := u.OfAll; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfNone; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfOnly; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfExcept; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -5902,9 +5902,9 @@ func (u *BetaManagedAgentsWebFetchURLSourceUserInputUnionParam) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsWebFetchURLSourceUserInputUnionParam) GetType() *string {
 	if vt := u.OfAll; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfNone; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -6189,7 +6189,7 @@ func (u BetaManagedAgentsWebSearchToolConfigParamsPermissionPolicyUnion) GetType
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -6368,7 +6368,7 @@ func (u BetaManagedAgentsWriteToolConfigParamsPermissionPolicyUnion) GetType() *
 	} else if vt := u.OfAlwaysAsk; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

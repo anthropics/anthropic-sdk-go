@@ -4,6 +4,7 @@
 
 ### Bug Fixes
 
+* **client:** return a constant's value from a param union's getter
 * set the required type field in union param constructor helpers
 
 

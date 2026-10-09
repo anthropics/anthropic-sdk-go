@@ -2,6 +2,7 @@ package constant
 
 import (
 	shimjson "github.com/anthropics/anthropic-sdk-go/internal/encoding/json"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 )
 
 // ModelNonStreamingTokens defines the maximum tokens for models that should limit
@@ -1214,15 +1215,9 @@ func (c WorkspaceRateLimit) MarshalJSON() ([]byte, error)                { retur
 func (c Write) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Zoom) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 
-type constant[T any] interface {
+func marshalString[T interface {
+	~string
 	Constant[T]
-	*T
-}
-
-func marshalString[T ~string, PT constant[T]](v T) ([]byte, error) {
-	var zero T
-	if v == zero {
-		v = PT(&v).Default()
-	}
-	return shimjson.Marshal(string(v))
+}](v T) ([]byte, error) {
+	return shimjson.Marshal(paramutil.AddrOrDefault(v))
 }

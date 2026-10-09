@@ -105,6 +105,9 @@ func (s *eventStreamDecoder) Next() bool {
 
 		// Dispatch event on an empty line
 		if len(txt) == 0 {
+			if event == "" && data.Len() == 0 {
+				continue
+			}
 			s.evt = Event{
 				Type: event,
 				Data: data.Bytes(),

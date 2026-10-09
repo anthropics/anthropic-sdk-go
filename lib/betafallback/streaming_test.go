@@ -361,6 +361,9 @@ func TestStreamingHopSuppliedIterationsRideThroughLabeled(t *testing.T) {
 func TestStreamingServingHopPreservesReportedIterations(t *testing.T) {
 	first := `{"type":"message","model":"reported-model","input_tokens":11,"output_tokens":7,"cache_read_input_tokens":3,"cache_creation_input_tokens":40,"cache_creation":{"ephemeral_5m_input_tokens":17,"ephemeral_1h_input_tokens":23},"future_detail":{"retained":true}}`
 	completedFirst := strings.Replace(first, `"type":"message"`, `"type":"fallback_message"`, 1)
+	nullModel := strings.Replace(first, `"model":"reported-model"`, `"model":null`, 1)
+	emptyModel := strings.Replace(first, `"model":"reported-model"`, `"model":""`, 1)
+	completedUnattributed := strings.Replace(completedFirst, `"model":"reported-model"`, `"model":"fallback-model"`, 1)
 	second := `{"type":"message","input_tokens":21,"output_tokens":9,"cache_read_input_tokens":4,"cache_creation_input_tokens":0,"cache_creation":null}`
 	completedSecond := `{"type":"fallback_message","model":"fallback-model","input_tokens":21,"output_tokens":9,"cache_read_input_tokens":4,"cache_creation_input_tokens":0,"cache_creation":null}`
 	compaction := `{"type":"compaction","input_tokens":31,"output_tokens":2,"cache_read_input_tokens":5,"cache_creation_input_tokens":0}`
@@ -376,10 +379,14 @@ func TestStreamingServingHopPreservesReportedIterations(t *testing.T) {
 		{"absent", "", completion},
 		{"empty", "[]", completion},
 		{"message", "[" + first + "]", completedFirst},
+		{"sampling_null_model", "[" + nullModel + "]", completedUnattributed},
+		{"sampling_empty_model", "[" + emptyModel + "]", completedUnattributed},
 		{"fallback_message", "[" + completedFirst + "]", completedFirst},
 		{"compaction_only", "[" + compaction + "]", compaction + "," + completion},
 		{"server_loop", "[" + first + "," + compaction + "," + second + "]", first + "," + compaction + "," + completedSecond},
 		{"multiple_sampling", "[" + first + "," + second + "]", first + "," + completedSecond},
+		{"earlier_sampling_null_model", "[" + nullModel + "," + second + "]", nullModel + "," + completedSecond},
+		{"earlier_sampling_empty_model", "[" + emptyModel + "," + second + "]", emptyModel + "," + completedSecond},
 		{"mixed", "[" + compaction + "," + advisor + "," + first + "]", compaction + "," + advisor + "," + completedFirst},
 		{"trailing_compaction", "[" + first + "," + compaction + "]", completedFirst + "," + compaction},
 		{"trailing_unknown", "[" + first + "," + future + "]", completedFirst + "," + future},

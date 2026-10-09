@@ -571,7 +571,7 @@ func (s *streamSplicer) hopIterations(deltaData []byte, final bool) []json.RawMe
 		}
 		// Entries the hop supplied unlabeled can only be the hop's own
 		// attempts; a server-stitched envelope labels its merged ledger.
-		if !gjson.GetBytes(patched, "model").Exists() {
+		if model := gjson.GetBytes(patched, "model"); !model.Exists() || (final && model.String() == "") {
 			if p, err := sjson.SetBytes(patched, "model", s.hopModel); err == nil {
 				patched = p
 			}

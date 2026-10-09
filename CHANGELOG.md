@@ -1,6 +1,11 @@
 # Changelog
 
-## [1.80.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.80.0...v1.80.1) (2026-10-09)
+## [1.81.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.80.0...v1.81.0) (2026-10-09)
+
+### Features
+
+* **api:** add organization_type_not_supported error to spend limit lists
+
 
 ### Bug Fixes
 

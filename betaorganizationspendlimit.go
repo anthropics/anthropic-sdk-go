@@ -59,12 +59,10 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 
 // List the organization's spend limits.
 //
-// A Claude Console organization's limits come in an order that is stable across
-// pages. A Claude Enterprise organization's are grouped by scope type, in the
-// order `organization`, `seat_tier`, `rbac_group`, `organization_service`, `user`;
-// within a type they come in a fixed order that is not creation order. Listing
-// Claude Console limits is in an early access preview. To request access, contact
-// your Anthropic account team.
+// Limits are grouped by scope type, in the order `organization`, `seat_tier`,
+// `rbac_group`, `organization_service`, `user`; within a type they come in a fixed
+// order that is not creation order. Supported for Claude Enterprise organizations
+// only, not for Claude Console organizations.
 func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSpendLimit], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -94,12 +92,10 @@ func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params Bet
 
 // List the organization's spend limits.
 //
-// A Claude Console organization's limits come in an order that is stable across
-// pages. A Claude Enterprise organization's are grouped by scope type, in the
-// order `organization`, `seat_tier`, `rbac_group`, `organization_service`, `user`;
-// within a type they come in a fixed order that is not creation order. Listing
-// Claude Console limits is in an early access preview. To request access, contact
-// your Anthropic account team.
+// Limits are grouped by scope type, in the order `organization`, `seat_tier`,
+// `rbac_group`, `organization_service`, `user`; within a type they come in a fixed
+// order that is not creation order. Supported for Claude Enterprise organizations
+// only, not for Claude Console organizations.
 func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSpendLimit] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
@@ -947,10 +943,7 @@ type BetaOrganizationSpendLimitListParams struct {
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
 	// Maximum number of limits per page. Defaults to `20`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Return only limits with these scope types. A Claude Console organization has
-	// `organization` and `workspace` limits; a Claude Enterprise organization has
-	// `organization`, `seat_tier`, `rbac_group`, `organization_service` and `user`
-	// limits. Omit for all.
+	// Return only limits with these scope types. Omit for all.
 	//
 	// Any of "organization", "organization_service", "rbac_group", "seat_tier",
 	// "user", "workspace".

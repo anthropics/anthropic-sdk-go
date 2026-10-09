@@ -37,8 +37,8 @@ func NewBetaOrganizationSpendLimitEffectiveService(opts ...option.RequestOption)
 //
 // Returns one row per (member, period) the member resolves a spend limit for, with
 // the `source` scope the spend limit was inherited from. Paginates by member, so a
-// member's periods never split across pages. Listing Claude Console limits is in
-// an early access preview. To request access, contact your Anthropic account team.
+// member's periods never split across pages. Supported for Claude Enterprise
+// organizations only, not for Claude Console organizations.
 func (r *BetaOrganizationSpendLimitEffectiveService) List(ctx context.Context, query BetaOrganizationSpendLimitEffectiveListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSpendSummary], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
@@ -60,8 +60,8 @@ func (r *BetaOrganizationSpendLimitEffectiveService) List(ctx context.Context, q
 //
 // Returns one row per (member, period) the member resolves a spend limit for, with
 // the `source` scope the spend limit was inherited from. Paginates by member, so a
-// member's periods never split across pages. Listing Claude Console limits is in
-// an early access preview. To request access, contact your Anthropic account team.
+// member's periods never split across pages. Supported for Claude Enterprise
+// organizations only, not for Claude Console organizations.
 func (r *BetaOrganizationSpendLimitEffectiveService) ListAutoPaging(ctx context.Context, query BetaOrganizationSpendLimitEffectiveListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSpendSummary] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, query, opts...))
 }

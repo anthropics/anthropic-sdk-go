@@ -18,6 +18,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 // BetaSessionThreadService contains methods and other services that help with
@@ -141,6 +142,269 @@ func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string,
 	return res, err
 }
 
+// An agent that has no Agent resource, and so no `id` or `version`. It is defined
+// inline, in a workflow run's plan or when a session thread is spawned, and is not
+// saved.
+type BetaManagedAgentsInlineAgent struct {
+	Description string                                    `json:"description" api:"required"`
+	MCPServers  []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
+	// Model identifier and configuration.
+	Model BetaManagedAgentsModelConfig `json:"model" api:"required"`
+	// The name that the agent's definition gave, or one that the server assigned.
+	Name   string                                   `json:"name" api:"required"`
+	Skills []BetaManagedAgentsInlineAgentSkillUnion `json:"skills" api:"required"`
+	System string                                   `json:"system" api:"required"`
+	Tools  []BetaManagedAgentsInlineAgentToolUnion  `json:"tools" api:"required"`
+	Type   constant.Inline                          `json:"type" default:"inline"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Description respjson.Field
+		MCPServers  respjson.Field
+		Model       respjson.Field
+		Name        respjson.Field
+		Skills      respjson.Field
+		System      respjson.Field
+		Tools       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsInlineAgent) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsInlineAgent) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsInlineAgentSkillUnion contains all possible properties and
+// values from [BetaManagedAgentsAnthropicSkill], [BetaManagedAgentsCustomSkill].
+//
+// Use the [BetaManagedAgentsInlineAgentSkillUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsInlineAgentSkillUnion struct {
+	SkillID string `json:"skill_id"`
+	// Any of "anthropic", "custom".
+	Type    string `json:"type"`
+	Version string `json:"version"`
+	JSON    struct {
+		SkillID respjson.Field
+		Type    respjson.Field
+		Version respjson.Field
+		raw     string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsInlineAgentSkill is implemented by each variant of
+// [BetaManagedAgentsInlineAgentSkillUnion] to add type safety for the return type
+// of [BetaManagedAgentsInlineAgentSkillUnion.AsAny]
+type anyBetaManagedAgentsInlineAgentSkill interface {
+	implBetaManagedAgentsInlineAgentSkillUnion()
+}
+
+func (BetaManagedAgentsAnthropicSkill) implBetaManagedAgentsInlineAgentSkillUnion() {}
+func (BetaManagedAgentsCustomSkill) implBetaManagedAgentsInlineAgentSkillUnion()    {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsInlineAgentSkillUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsAnthropicSkill:
+//	case anthropic.BetaManagedAgentsCustomSkill:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsInlineAgentSkillUnion) AsAny() anyBetaManagedAgentsInlineAgentSkill {
+	switch u.Type {
+	case "anthropic":
+		return u.AsAnthropic()
+	case "custom":
+		return u.AsCustom()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsInlineAgentSkillUnion) AsAnthropic() (v BetaManagedAgentsAnthropicSkill) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsInlineAgentSkillUnion) AsCustom() (v BetaManagedAgentsCustomSkill) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsInlineAgentSkillUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsInlineAgentSkillUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsInlineAgentToolUnion contains all possible properties and
+// values from [BetaManagedAgentsAgentToolset20260401],
+// [BetaManagedAgentsMCPToolset], [BetaManagedAgentsCustomTool].
+//
+// Use the [BetaManagedAgentsInlineAgentToolUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsInlineAgentToolUnion struct {
+	// This field is a union of [[]BetaManagedAgentsAgentToolConfigUnion],
+	// [[]BetaManagedAgentsMCPToolConfig]
+	Configs BetaManagedAgentsInlineAgentToolUnionConfigs `json:"configs"`
+	// This field is a union of [BetaManagedAgentsAgentToolsetDefaultConfig],
+	// [BetaManagedAgentsMCPToolsetDefaultConfig]
+	DefaultConfig BetaManagedAgentsInlineAgentToolUnionDefaultConfig `json:"default_config"`
+	// Any of "agent_toolset_20260401", "mcp_toolset", "custom".
+	Type string `json:"type"`
+	// This field is from variant [BetaManagedAgentsMCPToolset].
+	MCPServerName string `json:"mcp_server_name"`
+	// This field is from variant [BetaManagedAgentsCustomTool].
+	Description string `json:"description"`
+	// This field is from variant [BetaManagedAgentsCustomTool].
+	InputSchema BetaManagedAgentsCustomToolInputSchema `json:"input_schema"`
+	// This field is from variant [BetaManagedAgentsCustomTool].
+	Name string `json:"name"`
+	JSON struct {
+		Configs       respjson.Field
+		DefaultConfig respjson.Field
+		Type          respjson.Field
+		MCPServerName respjson.Field
+		Description   respjson.Field
+		InputSchema   respjson.Field
+		Name          respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsInlineAgentTool is implemented by each variant of
+// [BetaManagedAgentsInlineAgentToolUnion] to add type safety for the return type
+// of [BetaManagedAgentsInlineAgentToolUnion.AsAny]
+type anyBetaManagedAgentsInlineAgentTool interface {
+	implBetaManagedAgentsInlineAgentToolUnion()
+}
+
+func (BetaManagedAgentsAgentToolset20260401) implBetaManagedAgentsInlineAgentToolUnion() {}
+func (BetaManagedAgentsMCPToolset) implBetaManagedAgentsInlineAgentToolUnion()           {}
+func (BetaManagedAgentsCustomTool) implBetaManagedAgentsInlineAgentToolUnion()           {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsInlineAgentToolUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsAgentToolset20260401:
+//	case anthropic.BetaManagedAgentsMCPToolset:
+//	case anthropic.BetaManagedAgentsCustomTool:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsInlineAgentToolUnion) AsAny() anyBetaManagedAgentsInlineAgentTool {
+	switch u.Type {
+	case "agent_toolset_20260401":
+		return u.AsAgentToolset20260401()
+	case "mcp_toolset":
+		return u.AsMCPToolset()
+	case "custom":
+		return u.AsCustom()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsInlineAgentToolUnion) AsAgentToolset20260401() (v BetaManagedAgentsAgentToolset20260401) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsInlineAgentToolUnion) AsMCPToolset() (v BetaManagedAgentsMCPToolset) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsInlineAgentToolUnion) AsCustom() (v BetaManagedAgentsCustomTool) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsInlineAgentToolUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsInlineAgentToolUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsInlineAgentToolUnionConfigs is an implicit subunion of
+// [BetaManagedAgentsInlineAgentToolUnion].
+// BetaManagedAgentsInlineAgentToolUnionConfigs provides convenient access to the
+// sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [BetaManagedAgentsInlineAgentToolUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfBetaManagedAgentsAgentToolConfigArray
+// OfBetaManagedAgentsMCPToolConfigArray]
+type BetaManagedAgentsInlineAgentToolUnionConfigs struct {
+	// This field will be present if the value is a
+	// [[]BetaManagedAgentsAgentToolConfigUnion] instead of an object.
+	OfBetaManagedAgentsAgentToolConfigArray []BetaManagedAgentsAgentToolConfigUnion `json:",inline"`
+	// This field will be present if the value is a [[]BetaManagedAgentsMCPToolConfig]
+	// instead of an object.
+	OfBetaManagedAgentsMCPToolConfigArray []BetaManagedAgentsMCPToolConfig `json:",inline"`
+	JSON                                  struct {
+		OfBetaManagedAgentsAgentToolConfigArray respjson.Field
+		OfBetaManagedAgentsMCPToolConfigArray   respjson.Field
+		raw                                     string
+	} `json:"-"`
+}
+
+func (r *BetaManagedAgentsInlineAgentToolUnionConfigs) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsInlineAgentToolUnionDefaultConfig is an implicit subunion of
+// [BetaManagedAgentsInlineAgentToolUnion].
+// BetaManagedAgentsInlineAgentToolUnionDefaultConfig provides convenient access to
+// the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [BetaManagedAgentsInlineAgentToolUnion].
+type BetaManagedAgentsInlineAgentToolUnionDefaultConfig struct {
+	Enabled bool `json:"enabled"`
+	// This field is a union of
+	// [BetaManagedAgentsAgentToolsetDefaultConfigPermissionPolicyUnion],
+	// [BetaManagedAgentsMCPToolsetDefaultConfigPermissionPolicyUnion]
+	PermissionPolicy BetaManagedAgentsInlineAgentToolUnionDefaultConfigPermissionPolicy `json:"permission_policy"`
+	JSON             struct {
+		Enabled          respjson.Field
+		PermissionPolicy respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+func (r *BetaManagedAgentsInlineAgentToolUnionDefaultConfig) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsInlineAgentToolUnionDefaultConfigPermissionPolicy is an
+// implicit subunion of [BetaManagedAgentsInlineAgentToolUnion].
+// BetaManagedAgentsInlineAgentToolUnionDefaultConfigPermissionPolicy provides
+// convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [BetaManagedAgentsInlineAgentToolUnion].
+type BetaManagedAgentsInlineAgentToolUnionDefaultConfigPermissionPolicy struct {
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+func (r *BetaManagedAgentsInlineAgentToolUnionDefaultConfigPermissionPolicy) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // An execution thread within a `session`. Each session has one primary thread plus
 // zero or more child threads.
 type BetaManagedAgentsSessionThread struct {
@@ -171,6 +435,9 @@ type BetaManagedAgentsSessionThread struct {
 	// Cumulative token usage for this thread. Null until the thread's first idle
 	// transition.
 	Usage BetaManagedAgentsSessionThreadUsage `json:"usage" api:"required"`
+	// Identifier of the workflow run that created the thread, or `null` for any other
+	// thread.
+	WorkflowRunID string `json:"workflow_run_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID             respjson.Field
@@ -184,6 +451,7 @@ type BetaManagedAgentsSessionThread struct {
 		Type           respjson.Field
 		UpdatedAt      respjson.Field
 		Usage          respjson.Field
+		WorkflowRunID  respjson.Field
 		ExtraFields    map[string]respjson.Field
 		raw            string
 	} `json:"-"`
@@ -196,7 +464,8 @@ func (r *BetaManagedAgentsSessionThread) UnmarshalJSON(data []byte) error {
 }
 
 // BetaManagedAgentsSessionThreadAgentUnion contains all possible properties and
-// values from [BetaManagedAgentsSessionThreadAgent], [BetaManagedAgentsAdvisor].
+// values from [BetaManagedAgentsSessionThreadAgent], [BetaManagedAgentsAdvisor],
+// [BetaManagedAgentsInlineAgent].
 //
 // Use the [BetaManagedAgentsSessionThreadAgentUnion.AsAny] method to switch on the
 // variant.
@@ -204,22 +473,20 @@ func (r *BetaManagedAgentsSessionThread) UnmarshalJSON(data []byte) error {
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsSessionThreadAgentUnion struct {
 	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
-	ID string `json:"id"`
-	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
-	Description string `json:"description"`
-	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
-	MCPServers []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers"`
+	ID          string                                    `json:"id"`
+	Description string                                    `json:"description"`
+	MCPServers  []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers"`
 	// This field is a union of [BetaManagedAgentsModelConfig], [string]
 	Model BetaManagedAgentsSessionThreadAgentUnionModel `json:"model"`
-	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
-	Name string `json:"name"`
-	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
-	Skills []BetaManagedAgentsSessionThreadAgentSkillUnion `json:"skills"`
-	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
-	System string `json:"system"`
-	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
-	Tools []BetaManagedAgentsSessionThreadAgentToolUnion `json:"tools"`
-	// Any of "agent", "advisor".
+	Name  string                                        `json:"name"`
+	// This field is a union of [[]BetaManagedAgentsSessionThreadAgentSkillUnion],
+	// [[]BetaManagedAgentsInlineAgentSkillUnion]
+	Skills BetaManagedAgentsSessionThreadAgentUnionSkills `json:"skills"`
+	System string                                         `json:"system"`
+	// This field is a union of [[]BetaManagedAgentsSessionThreadAgentToolUnion],
+	// [[]BetaManagedAgentsInlineAgentToolUnion]
+	Tools BetaManagedAgentsSessionThreadAgentUnionTools `json:"tools"`
+	// Any of "agent", "advisor", "inline".
 	Type string `json:"type"`
 	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
 	Version int64 `json:"version"`
@@ -247,12 +514,14 @@ type anyBetaManagedAgentsSessionThreadAgent interface {
 
 func (BetaManagedAgentsSessionThreadAgent) implBetaManagedAgentsSessionThreadAgentUnion() {}
 func (BetaManagedAgentsAdvisor) implBetaManagedAgentsSessionThreadAgentUnion()            {}
+func (BetaManagedAgentsInlineAgent) implBetaManagedAgentsSessionThreadAgentUnion()        {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsSessionThreadAgentUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsSessionThreadAgent:
 //	case anthropic.BetaManagedAgentsAdvisor:
+//	case anthropic.BetaManagedAgentsInlineAgent:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -262,6 +531,8 @@ func (u BetaManagedAgentsSessionThreadAgentUnion) AsAny() anyBetaManagedAgentsSe
 		return u.AsAgent()
 	case "advisor":
 		return u.AsAdvisor()
+	case "inline":
+		return u.AsInline()
 	}
 	return nil
 }
@@ -272,6 +543,11 @@ func (u BetaManagedAgentsSessionThreadAgentUnion) AsAgent() (v BetaManagedAgents
 }
 
 func (u BetaManagedAgentsSessionThreadAgentUnion) AsAdvisor() (v BetaManagedAgentsAdvisor) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionThreadAgentUnion) AsInline() (v BetaManagedAgentsInlineAgent) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -315,6 +591,64 @@ type BetaManagedAgentsSessionThreadAgentUnionModel struct {
 }
 
 func (r *BetaManagedAgentsSessionThreadAgentUnionModel) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsSessionThreadAgentUnionSkills is an implicit subunion of
+// [BetaManagedAgentsSessionThreadAgentUnion].
+// BetaManagedAgentsSessionThreadAgentUnionSkills provides convenient access to the
+// sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [BetaManagedAgentsSessionThreadAgentUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfBetaManagedAgentsSessionThreadAgentSkills
+// OfBetaManagedAgentsInlineAgentSkills]
+type BetaManagedAgentsSessionThreadAgentUnionSkills struct {
+	// This field will be present if the value is a
+	// [[]BetaManagedAgentsSessionThreadAgentSkillUnion] instead of an object.
+	OfBetaManagedAgentsSessionThreadAgentSkills []BetaManagedAgentsSessionThreadAgentSkillUnion `json:",inline"`
+	// This field will be present if the value is a
+	// [[]BetaManagedAgentsInlineAgentSkillUnion] instead of an object.
+	OfBetaManagedAgentsInlineAgentSkills []BetaManagedAgentsInlineAgentSkillUnion `json:",inline"`
+	JSON                                 struct {
+		OfBetaManagedAgentsSessionThreadAgentSkills respjson.Field
+		OfBetaManagedAgentsInlineAgentSkills        respjson.Field
+		raw                                         string
+	} `json:"-"`
+}
+
+func (r *BetaManagedAgentsSessionThreadAgentUnionSkills) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsSessionThreadAgentUnionTools is an implicit subunion of
+// [BetaManagedAgentsSessionThreadAgentUnion].
+// BetaManagedAgentsSessionThreadAgentUnionTools provides convenient access to the
+// sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [BetaManagedAgentsSessionThreadAgentUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfBetaManagedAgentsSessionThreadAgentTools
+// OfBetaManagedAgentsInlineAgentTools]
+type BetaManagedAgentsSessionThreadAgentUnionTools struct {
+	// This field will be present if the value is a
+	// [[]BetaManagedAgentsSessionThreadAgentToolUnion] instead of an object.
+	OfBetaManagedAgentsSessionThreadAgentTools []BetaManagedAgentsSessionThreadAgentToolUnion `json:",inline"`
+	// This field will be present if the value is a
+	// [[]BetaManagedAgentsInlineAgentToolUnion] instead of an object.
+	OfBetaManagedAgentsInlineAgentTools []BetaManagedAgentsInlineAgentToolUnion `json:",inline"`
+	JSON                                struct {
+		OfBetaManagedAgentsSessionThreadAgentTools respjson.Field
+		OfBetaManagedAgentsInlineAgentTools        respjson.Field
+		raw                                        string
+	} `json:"-"`
+}
+
+func (r *BetaManagedAgentsSessionThreadAgentUnionTools) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -437,7 +771,14 @@ func (r *BetaManagedAgentsSessionThreadUsage) UnmarshalJSON(data []byte) error {
 // [BetaManagedAgentsSessionThreadStatusRescheduledEvent],
 // [BetaManagedAgentsSessionUpdatedEvent], [BetaManagedAgentsStartEvent],
 // [BetaManagedAgentsDeltaEvent], [BetaManagedAgentsSystemMessageEvent],
-// [BetaManagedAgentsSessionUsageEvent].
+// [BetaManagedAgentsSessionUsageEvent],
+// [BetaManagedAgentsWorkflowRunCreatedEvent],
+// [BetaManagedAgentsWorkflowRunStatusEndedEvent],
+// [BetaManagedAgentsWorkflowRunPhaseStartedEvent],
+// [BetaManagedAgentsWorkflowRunPhaseEndedEvent],
+// [BetaManagedAgentsWorkflowRunStatusRunningEvent],
+// [BetaManagedAgentsWorkflowRunStatusIdleEvent],
+// [BetaManagedAgentsWorkflowRunErrorEvent].
 //
 // Use the [BetaManagedAgentsStreamSessionThreadEventsUnion.AsAny] method to switch
 // on the variant.
@@ -468,12 +809,17 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 	// "session.thread_status_running", "session.thread_status_idle",
 	// "session.thread_status_terminated", "user.tool_result",
 	// "session.thread_status_rescheduled", "session.updated", "event_start",
-	// "event_delta", "system.message", "session.usage".
+	// "event_delta", "system.message", "session.usage", "workflow_run.created",
+	// "workflow_run.status_ended", "workflow_run.phase_started",
+	// "workflow_run.phase_ended", "workflow_run.status_running",
+	// "workflow_run.status_idle", "workflow_run.error".
 	Type            string    `json:"type"`
 	ProcessedAt     time.Time `json:"processed_at"`
 	SessionThreadID string    `json:"session_thread_id"`
-	Result          string    `json:"result"`
-	ToolUseID       string    `json:"tool_use_id"`
+	// This field is a union of [BetaManagedAgentsUserToolConfirmationEventResult],
+	// [string], [BetaManagedAgentsWorkflowRunResultUnion]
+	Result    BetaManagedAgentsStreamSessionThreadEventsUnionResult `json:"result"`
+	ToolUseID string                                                `json:"tool_use_id"`
 	// This field is from variant [BetaManagedAgentsUserToolConfirmationEvent].
 	DenyMessage string `json:"deny_message"`
 	// This field is from variant [BetaManagedAgentsUserCustomToolResultEvent].
@@ -497,17 +843,19 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 	ToSessionThreadID string `json:"to_session_thread_id"`
 	// This field is from variant [BetaManagedAgentsAgentThreadMessageSentEvent].
 	ToAgentName string `json:"to_agent_name"`
-	// This field is from variant [BetaManagedAgentsSessionErrorEvent].
-	Error BetaManagedAgentsSessionErrorEventErrorUnion `json:"error"`
+	// This field is a union of [BetaManagedAgentsSessionErrorEventErrorUnion],
+	// [BetaManagedAgentsWorkflowRunErrorUnion]
+	Error BetaManagedAgentsStreamSessionThreadEventsUnionError `json:"error"`
 	// This field is from variant [BetaManagedAgentsSessionStatusIdleEvent].
 	StopDetails BetaManagedAgentsSessionRefusalStopDetails `json:"stop_details"`
 	// This field is a union of
 	// [BetaManagedAgentsSessionStatusIdleEventStopReasonUnion],
 	// [BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion]
-	StopReason BetaManagedAgentsStreamSessionThreadEventsUnionStopReason `json:"stop_reason"`
-	AgentName  string                                                    `json:"agent_name"`
-	Iteration  int64                                                     `json:"iteration"`
-	OutcomeID  string                                                    `json:"outcome_id"`
+	StopReason    BetaManagedAgentsStreamSessionThreadEventsUnionStopReason `json:"stop_reason"`
+	AgentName     string                                                    `json:"agent_name"`
+	WorkflowRunID string                                                    `json:"workflow_run_id"`
+	Iteration     int64                                                     `json:"iteration"`
+	OutcomeID     string                                                    `json:"outcome_id"`
 	// This field is from variant [BetaManagedAgentsSpanOutcomeEvaluationEndEvent].
 	Explanation string `json:"explanation"`
 	// This field is from variant [BetaManagedAgentsSpanOutcomeEvaluationEndEvent].
@@ -518,9 +866,8 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 	// This field is from variant [BetaManagedAgentsSpanModelRequestEndEvent].
 	ModelRequestStartID string `json:"model_request_start_id"`
 	// This field is from variant [BetaManagedAgentsSpanModelRequestEndEvent].
-	ModelUsage BetaManagedAgentsSpanModelUsage `json:"model_usage"`
-	// This field is from variant [BetaManagedAgentsUserDefineOutcomeEvent].
-	Description string `json:"description"`
+	ModelUsage  BetaManagedAgentsSpanModelUsage `json:"model_usage"`
+	Description string                          `json:"description"`
 	// This field is from variant [BetaManagedAgentsUserDefineOutcomeEvent].
 	MaxIterations int64 `json:"max_iterations"`
 	// This field is from variant [BetaManagedAgentsUserDefineOutcomeEvent].
@@ -539,7 +886,12 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 	Delta BetaManagedAgentsDeltaContent `json:"delta"`
 	// This field is from variant [BetaManagedAgentsDeltaEvent].
 	EventID string `json:"event_id"`
-	JSON    struct {
+	// This field is from variant [BetaManagedAgentsWorkflowRunCreatedEvent].
+	Phases             []BetaManagedAgentsWorkflowRunPhase `json:"phases"`
+	WorkflowRunPhaseID string                              `json:"workflow_run_phase_id"`
+	// This field is from variant [BetaManagedAgentsWorkflowRunPhaseEndedEvent].
+	PhaseStartedID string `json:"phase_started_id"`
+	JSON           struct {
 		ID                       respjson.Field
 		Content                  respjson.Field
 		Type                     respjson.Field
@@ -564,6 +916,7 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 		StopDetails              respjson.Field
 		StopReason               respjson.Field
 		AgentName                respjson.Field
+		WorkflowRunID            respjson.Field
 		Iteration                respjson.Field
 		OutcomeID                respjson.Field
 		Explanation              respjson.Field
@@ -581,6 +934,9 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 		Event                    respjson.Field
 		Delta                    respjson.Field
 		EventID                  respjson.Field
+		Phases                   respjson.Field
+		WorkflowRunPhaseID       respjson.Field
+		PhaseStartedID           respjson.Field
 		raw                      string
 	} `json:"-"`
 }
@@ -651,6 +1007,19 @@ func (BetaManagedAgentsStartEvent) implBetaManagedAgentsStreamSessionThreadEvent
 func (BetaManagedAgentsDeltaEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion()          {}
 func (BetaManagedAgentsSystemMessageEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion()  {}
 func (BetaManagedAgentsSessionUsageEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion()   {}
+func (BetaManagedAgentsWorkflowRunCreatedEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion() {
+}
+func (BetaManagedAgentsWorkflowRunStatusEndedEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion() {
+}
+func (BetaManagedAgentsWorkflowRunPhaseStartedEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion() {
+}
+func (BetaManagedAgentsWorkflowRunPhaseEndedEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion() {
+}
+func (BetaManagedAgentsWorkflowRunStatusRunningEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion() {
+}
+func (BetaManagedAgentsWorkflowRunStatusIdleEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion() {
+}
+func (BetaManagedAgentsWorkflowRunErrorEvent) implBetaManagedAgentsStreamSessionThreadEventsUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -692,6 +1061,13 @@ func (BetaManagedAgentsSessionUsageEvent) implBetaManagedAgentsStreamSessionThre
 //	case anthropic.BetaManagedAgentsDeltaEvent:
 //	case anthropic.BetaManagedAgentsSystemMessageEvent:
 //	case anthropic.BetaManagedAgentsSessionUsageEvent:
+//	case anthropic.BetaManagedAgentsWorkflowRunCreatedEvent:
+//	case anthropic.BetaManagedAgentsWorkflowRunStatusEndedEvent:
+//	case anthropic.BetaManagedAgentsWorkflowRunPhaseStartedEvent:
+//	case anthropic.BetaManagedAgentsWorkflowRunPhaseEndedEvent:
+//	case anthropic.BetaManagedAgentsWorkflowRunStatusRunningEvent:
+//	case anthropic.BetaManagedAgentsWorkflowRunStatusIdleEvent:
+//	case anthropic.BetaManagedAgentsWorkflowRunErrorEvent:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -771,6 +1147,20 @@ func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsAny() anyBetaManagedA
 		return u.AsSystemMessage()
 	case "session.usage":
 		return u.AsSessionUsage()
+	case "workflow_run.created":
+		return u.AsWorkflowRunCreated()
+	case "workflow_run.status_ended":
+		return u.AsWorkflowRunStatusEnded()
+	case "workflow_run.phase_started":
+		return u.AsWorkflowRunPhaseStarted()
+	case "workflow_run.phase_ended":
+		return u.AsWorkflowRunPhaseEnded()
+	case "workflow_run.status_running":
+		return u.AsWorkflowRunStatusRunning()
+	case "workflow_run.status_idle":
+		return u.AsWorkflowRunStatusIdle()
+	case "workflow_run.error":
+		return u.AsWorkflowRunError()
 	}
 	return nil
 }
@@ -960,6 +1350,41 @@ func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsSessionUsage() (v Bet
 	return
 }
 
+func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsWorkflowRunCreated() (v BetaManagedAgentsWorkflowRunCreatedEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsWorkflowRunStatusEnded() (v BetaManagedAgentsWorkflowRunStatusEndedEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsWorkflowRunPhaseStarted() (v BetaManagedAgentsWorkflowRunPhaseStartedEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsWorkflowRunPhaseEnded() (v BetaManagedAgentsWorkflowRunPhaseEndedEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsWorkflowRunStatusRunning() (v BetaManagedAgentsWorkflowRunStatusRunningEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsWorkflowRunStatusIdle() (v BetaManagedAgentsWorkflowRunStatusIdleEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsStreamSessionThreadEventsUnion) AsWorkflowRunError() (v BetaManagedAgentsWorkflowRunErrorEvent) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaManagedAgentsStreamSessionThreadEventsUnion) RawJSON() string { return u.JSON.raw }
 
@@ -1030,6 +1455,103 @@ type BetaManagedAgentsStreamSessionThreadEventsUnionContent struct {
 }
 
 func (r *BetaManagedAgentsStreamSessionThreadEventsUnionContent) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsStreamSessionThreadEventsUnionResult is an implicit subunion of
+// [BetaManagedAgentsStreamSessionThreadEventsUnion].
+// BetaManagedAgentsStreamSessionThreadEventsUnionResult provides convenient access
+// to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [BetaManagedAgentsStreamSessionThreadEventsUnion].
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfBetaManagedAgentsUserToolConfirmationEventResult OfString]
+type BetaManagedAgentsStreamSessionThreadEventsUnionResult struct {
+	// This field will be present if the value is a
+	// [BetaManagedAgentsUserToolConfirmationEventResult] instead of an object.
+	OfBetaManagedAgentsUserToolConfirmationEventResult BetaManagedAgentsUserToolConfirmationEventResult `json:",inline"`
+	// This field will be present if the value is a [string] instead of an object.
+	OfString string `json:",inline"`
+	Type     string `json:"type"`
+	// This field is from variant [BetaManagedAgentsWorkflowRunResultUnion].
+	Error BetaManagedAgentsWorkflowRunErrorUnion `json:"error"`
+	JSON  struct {
+		OfBetaManagedAgentsUserToolConfirmationEventResult respjson.Field
+		OfString                                           respjson.Field
+		Type                                               respjson.Field
+		Error                                              respjson.Field
+		raw                                                string
+	} `json:"-"`
+}
+
+func (r *BetaManagedAgentsStreamSessionThreadEventsUnionResult) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsStreamSessionThreadEventsUnionError is an implicit subunion of
+// [BetaManagedAgentsStreamSessionThreadEventsUnion].
+// BetaManagedAgentsStreamSessionThreadEventsUnionError provides convenient access
+// to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [BetaManagedAgentsStreamSessionThreadEventsUnion].
+type BetaManagedAgentsStreamSessionThreadEventsUnionError struct {
+	Message string `json:"message"`
+	// This field is a union of [BetaManagedAgentsUnknownErrorRetryStatusUnion],
+	// [BetaManagedAgentsModelOverloadedErrorRetryStatusUnion],
+	// [BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion],
+	// [BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion],
+	// [BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion],
+	// [BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion],
+	// [BetaManagedAgentsBillingErrorRetryStatusUnion],
+	// [BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion]
+	RetryStatus   BetaManagedAgentsStreamSessionThreadEventsUnionErrorRetryStatus `json:"retry_status"`
+	Type          string                                                          `json:"type"`
+	MCPServerName string                                                          `json:"mcp_server_name"`
+	// This field is from variant [BetaManagedAgentsSessionErrorEventErrorUnion].
+	CredentialID string `json:"credential_id"`
+	// This field is from variant [BetaManagedAgentsSessionErrorEventErrorUnion].
+	VaultID       string `json:"vault_id"`
+	RepositoryURL string `json:"repository_url"`
+	JSON          struct {
+		Message       respjson.Field
+		RetryStatus   respjson.Field
+		Type          respjson.Field
+		MCPServerName respjson.Field
+		CredentialID  respjson.Field
+		VaultID       respjson.Field
+		RepositoryURL respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+func (r *BetaManagedAgentsStreamSessionThreadEventsUnionError) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsStreamSessionThreadEventsUnionErrorRetryStatus is an implicit
+// subunion of [BetaManagedAgentsStreamSessionThreadEventsUnion].
+// BetaManagedAgentsStreamSessionThreadEventsUnionErrorRetryStatus provides
+// convenient access to the sub-properties of the union.
+//
+// For type safety it is recommended to directly use a variant of the
+// [BetaManagedAgentsStreamSessionThreadEventsUnion].
+type BetaManagedAgentsStreamSessionThreadEventsUnionErrorRetryStatus struct {
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+func (r *BetaManagedAgentsStreamSessionThreadEventsUnionErrorRetryStatus) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1124,6 +1646,11 @@ type BetaSessionThreadListParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Return only threads that have one of these statuses.
+	//
+	// Repeat the parameter to give more than one status. Leave it out to return
+	// threads of every status.
+	Statuses []BetaManagedAgentsSessionThreadStatus `query:"statuses,omitzero" json:"-"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

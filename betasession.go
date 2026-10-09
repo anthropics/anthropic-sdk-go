@@ -19,6 +19,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 // BetaSessionService contains methods and other services that help with
@@ -999,133 +1000,160 @@ const (
 	BetaManagedAgentsMemoryStoreResourceParamAccessReadOnly  BetaManagedAgentsMemoryStoreResourceParamAccess = "read_only"
 )
 
-// Resolved multiagent orchestration configuration as returned in API responses.
-type BetaManagedAgentsMultiagent struct {
-	// Agents the coordinator may spawn as session threads, each resolved to a specific
-	// version.
-	Agents []BetaManagedAgentsMultiagentAgentUnion `json:"agents" api:"required"`
-	// Any of "coordinator".
-	Type BetaManagedAgentsMultiagentType `json:"type" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Agents      respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsMultiagent) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsMultiagent) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// BetaManagedAgentsMultiagentAgentUnion contains all possible properties and
-// values from [BetaManagedAgentsAgentReference], [BetaManagedAgentsAdvisor].
+// BetaManagedAgentsMultiagentUnion contains all possible properties and values
+// from [BetaManagedAgentsMultiagentCoordinator],
+// [BetaManagedAgentsMultiagent20261001].
 //
-// Use the [BetaManagedAgentsMultiagentAgentUnion.AsAny] method to switch on the
+// Use the [BetaManagedAgentsMultiagentUnion.AsAny] method to switch on the
 // variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsMultiagentAgentUnion struct {
-	// This field is from variant [BetaManagedAgentsAgentReference].
-	ID string `json:"id"`
-	// Any of "agent", "advisor".
+type BetaManagedAgentsMultiagentUnion struct {
+	// This field is from variant [BetaManagedAgentsMultiagentCoordinator].
+	Agents []BetaManagedAgentsMultiagentCoordinatorAgentUnion `json:"agents"`
+	// Any of "coordinator", "multiagent_20261001".
 	Type string `json:"type"`
-	// This field is from variant [BetaManagedAgentsAgentReference].
-	Version int64 `json:"version"`
-	// This field is from variant [BetaManagedAgentsAdvisor].
-	Model string `json:"model"`
-	JSON  struct {
-		ID      respjson.Field
-		Type    respjson.Field
-		Version respjson.Field
-		Model   respjson.Field
-		raw     string
+	// This field is from variant [BetaManagedAgentsMultiagent20261001].
+	Advisor BetaManagedAgentsMultiagentAdvisorUnion `json:"advisor"`
+	// This field is from variant [BetaManagedAgentsMultiagent20261001].
+	Subagents BetaManagedAgentsMultiagentSubagentsUnion `json:"subagents"`
+	// This field is from variant [BetaManagedAgentsMultiagent20261001].
+	Workflows BetaManagedAgentsMultiagentWorkflowsUnion `json:"workflows"`
+	JSON      struct {
+		Agents    respjson.Field
+		Type      respjson.Field
+		Advisor   respjson.Field
+		Subagents respjson.Field
+		Workflows respjson.Field
+		raw       string
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsMultiagentAgent is implemented by each variant of
-// [BetaManagedAgentsMultiagentAgentUnion] to add type safety for the return type
-// of [BetaManagedAgentsMultiagentAgentUnion.AsAny]
-type anyBetaManagedAgentsMultiagentAgent interface {
-	implBetaManagedAgentsMultiagentAgentUnion()
+// anyBetaManagedAgentsMultiagent is implemented by each variant of
+// [BetaManagedAgentsMultiagentUnion] to add type safety for the return type of
+// [BetaManagedAgentsMultiagentUnion.AsAny]
+type anyBetaManagedAgentsMultiagent interface {
+	implBetaManagedAgentsMultiagentUnion()
 }
 
-func (BetaManagedAgentsAgentReference) implBetaManagedAgentsMultiagentAgentUnion() {}
-func (BetaManagedAgentsAdvisor) implBetaManagedAgentsMultiagentAgentUnion()        {}
+func (BetaManagedAgentsMultiagentCoordinator) implBetaManagedAgentsMultiagentUnion() {}
+func (BetaManagedAgentsMultiagent20261001) implBetaManagedAgentsMultiagentUnion()    {}
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsMultiagentAgentUnion.AsAny().(type) {
-//	case anthropic.BetaManagedAgentsAgentReference:
-//	case anthropic.BetaManagedAgentsAdvisor:
+//	switch variant := BetaManagedAgentsMultiagentUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsMultiagentCoordinator:
+//	case anthropic.BetaManagedAgentsMultiagent20261001:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsMultiagentAgentUnion) AsAny() anyBetaManagedAgentsMultiagentAgent {
+func (u BetaManagedAgentsMultiagentUnion) AsAny() anyBetaManagedAgentsMultiagent {
 	switch u.Type {
-	case "agent":
-		return u.AsAgent()
-	case "advisor":
-		return u.AsAdvisor()
+	case "coordinator":
+		return u.AsCoordinator()
+	case "multiagent_20261001":
+		return u.AsMultiagent20261001()
 	}
 	return nil
 }
 
-func (u BetaManagedAgentsMultiagentAgentUnion) AsAgent() (v BetaManagedAgentsAgentReference) {
+func (u BetaManagedAgentsMultiagentUnion) AsCoordinator() (v BetaManagedAgentsMultiagentCoordinator) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsMultiagentAgentUnion) AsAdvisor() (v BetaManagedAgentsAdvisor) {
+func (u BetaManagedAgentsMultiagentUnion) AsMultiagent20261001() (v BetaManagedAgentsMultiagent20261001) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsMultiagentAgentUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaManagedAgentsMultiagentUnion) RawJSON() string { return u.JSON.raw }
 
-func (r *BetaManagedAgentsMultiagentAgentUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsMultiagentUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsMultiagentType string
+func BetaManagedAgentsMultiagentParamsOfCoordinator(agents []BetaManagedAgentsMultiagentRosterEntryParamsUnion) BetaManagedAgentsMultiagentParamsUnion {
+	var coordinator BetaManagedAgentsMultiagentCoordinatorParams
+	coordinator.Agents = agents
+	return BetaManagedAgentsMultiagentParamsUnion{OfCoordinator: &coordinator}
+}
 
-const (
-	BetaManagedAgentsMultiagentTypeCoordinator BetaManagedAgentsMultiagentType = "coordinator"
-)
-
-// Multiagent orchestration configuration.
+// Only one field can be non-zero.
 //
-// The properties Agents, Type are required.
-type BetaManagedAgentsMultiagentParams struct {
-	// Agents the coordinator may spawn as session threads. 1–20 entries. Each entry is
-	// an agent ID string, a versioned `{"type":"agent","id","version"}` reference, or
-	// `{"type":"self"}` to allow recursive self-invocation. Entries must reference
-	// distinct agents (after resolving `self` and string forms); at most one `self`.
-	// Referenced agents must exist, must not be archived, and must not themselves have
-	// `multiagent` set (depth limit 1).
-	Agents []BetaManagedAgentsMultiagentRosterEntryParamsUnion `json:"agents,omitzero" api:"required"`
-	// Any of "coordinator".
-	Type BetaManagedAgentsMultiagentParamsType `json:"type,omitzero" api:"required"`
-	paramObj
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaManagedAgentsMultiagentParamsUnion struct {
+	OfCoordinator        *BetaManagedAgentsMultiagentCoordinatorParams `json:",omitzero,inline"`
+	OfMultiagent20261001 *BetaManagedAgentsMultiagent20261001Params    `json:",omitzero,inline"`
+	paramUnion
 }
 
-func (r BetaManagedAgentsMultiagentParams) MarshalJSON() (data []byte, err error) {
-	type shadow BetaManagedAgentsMultiagentParams
-	return param.MarshalObject(r, (*shadow)(&r))
+func (u BetaManagedAgentsMultiagentParamsUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCoordinator, u.OfMultiagent20261001)
 }
-func (r *BetaManagedAgentsMultiagentParams) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
+func (u *BetaManagedAgentsMultiagentParamsUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
 }
 
-type BetaManagedAgentsMultiagentParamsType string
+func (u *BetaManagedAgentsMultiagentParamsUnion) asAny() any {
+	if !param.IsOmitted(u.OfCoordinator) {
+		return u.OfCoordinator
+	} else if !param.IsOmitted(u.OfMultiagent20261001) {
+		return u.OfMultiagent20261001
+	}
+	return nil
+}
 
-const (
-	BetaManagedAgentsMultiagentParamsTypeCoordinator BetaManagedAgentsMultiagentParamsType = "coordinator"
-)
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsMultiagentParamsUnion) GetAgents() []BetaManagedAgentsMultiagentRosterEntryParamsUnion {
+	if vt := u.OfCoordinator; vt != nil {
+		return vt.Agents
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsMultiagentParamsUnion) GetAdvisor() *BetaManagedAgentsMultiagentAdvisorParamsUnion {
+	if vt := u.OfMultiagent20261001; vt != nil {
+		return &vt.Advisor
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsMultiagentParamsUnion) GetSubagents() *BetaManagedAgentsMultiagentSubagentsParamsUnion {
+	if vt := u.OfMultiagent20261001; vt != nil {
+		return &vt.Subagents
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsMultiagentParamsUnion) GetWorkflows() *BetaManagedAgentsMultiagentWorkflowsParamsUnion {
+	if vt := u.OfMultiagent20261001; vt != nil {
+		return &vt.Workflows
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsMultiagentParamsUnion) GetType() *string {
+	if vt := u.OfCoordinator; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfMultiagent20261001; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaManagedAgentsMultiagentParamsUnion](
+		"type",
+		apijson.Discriminator[BetaManagedAgentsMultiagentCoordinatorParams]("coordinator"),
+		apijson.Discriminator[BetaManagedAgentsMultiagent20261001Params]("multiagent_20261001"),
+	)
+}
 
 func BetaManagedAgentsMultiagentRosterEntryParamsOfBetaManagedAgentsAgents(id string, type_ BetaManagedAgentsAgentParamsType) BetaManagedAgentsMultiagentRosterEntryParamsUnion {
 	var variant BetaManagedAgentsAgentParams
@@ -1377,11 +1405,11 @@ type BetaManagedAgentsSessionAgent struct {
 	Model BetaManagedAgentsModelConfig `json:"model" api:"required"`
 	// Resolved multiagent orchestration configuration. Null when the agent is
 	// single-threaded.
-	Multiagent BetaManagedAgentsSessionMultiagentCoordinator `json:"multiagent" api:"required"`
-	Name       string                                        `json:"name" api:"required"`
-	Skills     []BetaManagedAgentsSessionAgentSkillUnion     `json:"skills" api:"required"`
-	System     string                                        `json:"system" api:"required"`
-	Tools      []BetaManagedAgentsSessionAgentToolUnion      `json:"tools" api:"required"`
+	Multiagent BetaManagedAgentsSessionMultiagentUnion   `json:"multiagent" api:"required"`
+	Name       string                                    `json:"name" api:"required"`
+	Skills     []BetaManagedAgentsSessionAgentSkillUnion `json:"skills" api:"required"`
+	System     string                                    `json:"system" api:"required"`
+	Tools      []BetaManagedAgentsSessionAgentToolUnion  `json:"tools" api:"required"`
 	// Any of "agent".
 	Type    BetaManagedAgentsSessionAgentType `json:"type" api:"required"`
 	Version int64                             `json:"version" api:"required"`
@@ -1849,6 +1877,80 @@ func init() {
 	)
 }
 
+// BetaManagedAgentsSessionMultiagentUnion contains all possible properties and
+// values from [BetaManagedAgentsSessionMultiagentCoordinator],
+// [BetaManagedAgentsSessionMultiagent20261001].
+//
+// Use the [BetaManagedAgentsSessionMultiagentUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsSessionMultiagentUnion struct {
+	// This field is from variant [BetaManagedAgentsSessionMultiagentCoordinator].
+	Agents []BetaManagedAgentsSessionMultiagentCoordinatorAgentUnion `json:"agents"`
+	// Any of "coordinator", "multiagent_20261001".
+	Type string `json:"type"`
+	// This field is from variant [BetaManagedAgentsSessionMultiagent20261001].
+	Advisor BetaManagedAgentsMultiagentAdvisorUnion `json:"advisor"`
+	// This field is from variant [BetaManagedAgentsSessionMultiagent20261001].
+	Subagents BetaManagedAgentsSessionMultiagentSubagentsUnion `json:"subagents"`
+	// This field is from variant [BetaManagedAgentsSessionMultiagent20261001].
+	Workflows BetaManagedAgentsSessionMultiagentWorkflowsUnion `json:"workflows"`
+	JSON      struct {
+		Agents    respjson.Field
+		Type      respjson.Field
+		Advisor   respjson.Field
+		Subagents respjson.Field
+		Workflows respjson.Field
+		raw       string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsSessionMultiagent is implemented by each variant of
+// [BetaManagedAgentsSessionMultiagentUnion] to add type safety for the return type
+// of [BetaManagedAgentsSessionMultiagentUnion.AsAny]
+type anyBetaManagedAgentsSessionMultiagent interface {
+	implBetaManagedAgentsSessionMultiagentUnion()
+}
+
+func (BetaManagedAgentsSessionMultiagentCoordinator) implBetaManagedAgentsSessionMultiagentUnion() {}
+func (BetaManagedAgentsSessionMultiagent20261001) implBetaManagedAgentsSessionMultiagentUnion()    {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsSessionMultiagentUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsSessionMultiagentCoordinator:
+//	case anthropic.BetaManagedAgentsSessionMultiagent20261001:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsSessionMultiagentUnion) AsAny() anyBetaManagedAgentsSessionMultiagent {
+	switch u.Type {
+	case "coordinator":
+		return u.AsCoordinator()
+	case "multiagent_20261001":
+		return u.AsMultiagent20261001()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsSessionMultiagentUnion) AsCoordinator() (v BetaManagedAgentsSessionMultiagentCoordinator) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionMultiagentUnion) AsMultiagent20261001() (v BetaManagedAgentsSessionMultiagent20261001) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsSessionMultiagentUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsSessionMultiagentUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Resolved coordinator topology with full agent definitions for each roster
 // member.
 type BetaManagedAgentsSessionMultiagentCoordinator struct {
@@ -2002,6 +2104,222 @@ type BetaManagedAgentsSessionMultiagentCoordinatorType string
 const (
 	BetaManagedAgentsSessionMultiagentCoordinatorTypeCoordinator BetaManagedAgentsSessionMultiagentCoordinatorType = "coordinator"
 )
+
+// BetaManagedAgentsSessionMultiagentSubagentsUnion contains all possible
+// properties and values from [BetaManagedAgentsSessionMultiagentSubagentsEnabled],
+// [BetaManagedAgentsMultiagentSubagentsDisabled].
+//
+// Use the [BetaManagedAgentsSessionMultiagentSubagentsUnion.AsAny] method to
+// switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsSessionMultiagentSubagentsUnion struct {
+	// This field is from variant [BetaManagedAgentsSessionMultiagentSubagentsEnabled].
+	InlineAgents BetaManagedAgentsMultiagentInlineAgentsUnion `json:"inline_agents"`
+	// This field is from variant [BetaManagedAgentsSessionMultiagentSubagentsEnabled].
+	PredefinedAgents []BetaManagedAgentsSessionThreadAgent `json:"predefined_agents"`
+	// Any of "enabled", "disabled".
+	Type string `json:"type"`
+	JSON struct {
+		InlineAgents     respjson.Field
+		PredefinedAgents respjson.Field
+		Type             respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsSessionMultiagentSubagents is implemented by each variant of
+// [BetaManagedAgentsSessionMultiagentSubagentsUnion] to add type safety for the
+// return type of [BetaManagedAgentsSessionMultiagentSubagentsUnion.AsAny]
+type anyBetaManagedAgentsSessionMultiagentSubagents interface {
+	implBetaManagedAgentsSessionMultiagentSubagentsUnion()
+}
+
+func (BetaManagedAgentsSessionMultiagentSubagentsEnabled) implBetaManagedAgentsSessionMultiagentSubagentsUnion() {
+}
+func (BetaManagedAgentsMultiagentSubagentsDisabled) implBetaManagedAgentsSessionMultiagentSubagentsUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsSessionMultiagentSubagentsUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsSessionMultiagentSubagentsEnabled:
+//	case anthropic.BetaManagedAgentsMultiagentSubagentsDisabled:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsSessionMultiagentSubagentsUnion) AsAny() anyBetaManagedAgentsSessionMultiagentSubagents {
+	switch u.Type {
+	case "enabled":
+		return u.AsEnabled()
+	case "disabled":
+		return u.AsDisabled()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsSessionMultiagentSubagentsUnion) AsEnabled() (v BetaManagedAgentsSessionMultiagentSubagentsEnabled) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionMultiagentSubagentsUnion) AsDisabled() (v BetaManagedAgentsMultiagentSubagentsDisabled) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsSessionMultiagentSubagentsUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsSessionMultiagentSubagentsUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The agent can spawn session threads.
+type BetaManagedAgentsSessionMultiagentSubagentsEnabled struct {
+	// Whether the agent can define inline agents, which are not saved, when it spawns
+	// session threads.
+	InlineAgents BetaManagedAgentsMultiagentInlineAgentsUnion `json:"inline_agents" api:"required"`
+	// Full `agent` definitions of the predefined agents, which are saved agents that
+	// this agent can spawn as session threads.
+	PredefinedAgents []BetaManagedAgentsSessionThreadAgent `json:"predefined_agents" api:"required"`
+	Type             constant.Enabled                      `json:"type" default:"enabled"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		InlineAgents     respjson.Field
+		PredefinedAgents respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSessionMultiagentSubagentsEnabled) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSessionMultiagentSubagentsEnabled) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsSessionMultiagentWorkflowsUnion contains all possible
+// properties and values from [BetaManagedAgentsSessionMultiagentWorkflowsEnabled],
+// [BetaManagedAgentsMultiagentWorkflowsDisabled].
+//
+// Use the [BetaManagedAgentsSessionMultiagentWorkflowsUnion.AsAny] method to
+// switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsSessionMultiagentWorkflowsUnion struct {
+	// This field is from variant [BetaManagedAgentsSessionMultiagentWorkflowsEnabled].
+	InlineAgents BetaManagedAgentsMultiagentInlineAgentsUnion `json:"inline_agents"`
+	// This field is from variant [BetaManagedAgentsSessionMultiagentWorkflowsEnabled].
+	PredefinedAgents []BetaManagedAgentsSessionThreadAgent `json:"predefined_agents"`
+	// Any of "enabled", "disabled".
+	Type string `json:"type"`
+	JSON struct {
+		InlineAgents     respjson.Field
+		PredefinedAgents respjson.Field
+		Type             respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsSessionMultiagentWorkflows is implemented by each variant of
+// [BetaManagedAgentsSessionMultiagentWorkflowsUnion] to add type safety for the
+// return type of [BetaManagedAgentsSessionMultiagentWorkflowsUnion.AsAny]
+type anyBetaManagedAgentsSessionMultiagentWorkflows interface {
+	implBetaManagedAgentsSessionMultiagentWorkflowsUnion()
+}
+
+func (BetaManagedAgentsSessionMultiagentWorkflowsEnabled) implBetaManagedAgentsSessionMultiagentWorkflowsUnion() {
+}
+func (BetaManagedAgentsMultiagentWorkflowsDisabled) implBetaManagedAgentsSessionMultiagentWorkflowsUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsSessionMultiagentWorkflowsUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsSessionMultiagentWorkflowsEnabled:
+//	case anthropic.BetaManagedAgentsMultiagentWorkflowsDisabled:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsSessionMultiagentWorkflowsUnion) AsAny() anyBetaManagedAgentsSessionMultiagentWorkflows {
+	switch u.Type {
+	case "enabled":
+		return u.AsEnabled()
+	case "disabled":
+		return u.AsDisabled()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsSessionMultiagentWorkflowsUnion) AsEnabled() (v BetaManagedAgentsSessionMultiagentWorkflowsEnabled) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsSessionMultiagentWorkflowsUnion) AsDisabled() (v BetaManagedAgentsMultiagentWorkflowsDisabled) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsSessionMultiagentWorkflowsUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsSessionMultiagentWorkflowsUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The agent can start workflow runs.
+type BetaManagedAgentsSessionMultiagentWorkflowsEnabled struct {
+	// Whether a run's plan can define inline agents, which are not saved.
+	InlineAgents BetaManagedAgentsMultiagentInlineAgentsUnion `json:"inline_agents" api:"required"`
+	// Full `agent` definitions of the predefined agents, which are saved agents that a
+	// run's plan can use.
+	PredefinedAgents []BetaManagedAgentsSessionThreadAgent `json:"predefined_agents" api:"required"`
+	Type             constant.Enabled                      `json:"type" default:"enabled"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		InlineAgents     respjson.Field
+		PredefinedAgents respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSessionMultiagentWorkflowsEnabled) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSessionMultiagentWorkflowsEnabled) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Resolved multiagent configuration with three members, as copied to the `session`
+// at creation.
+type BetaManagedAgentsSessionMultiagent20261001 struct {
+	// Whether the session's primary thread can consult an advisor model.
+	Advisor BetaManagedAgentsMultiagentAdvisorUnion `json:"advisor" api:"required"`
+	// Whether the agent can spawn session threads.
+	Subagents BetaManagedAgentsSessionMultiagentSubagentsUnion `json:"subagents" api:"required"`
+	Type      constant.Multiagent20261001                      `json:"type" default:"multiagent_20261001"`
+	// Whether the agent can start workflow runs.
+	Workflows BetaManagedAgentsSessionMultiagentWorkflowsUnion `json:"workflows" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Advisor     respjson.Field
+		Subagents   respjson.Field
+		Type        respjson.Field
+		Workflows   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsSessionMultiagent20261001) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSessionMultiagent20261001) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // Timing statistics for a session.
 type BetaManagedAgentsSessionStats struct {

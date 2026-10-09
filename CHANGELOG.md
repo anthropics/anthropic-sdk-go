@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.80.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.79.1...v1.80.0) (2026-10-09)
+
+### Features
+
+* **api:** add types for the Chat and Cowork unified analytics metrics
+* **api:** add workflows, multiagent configuration and thread status filtering to Managed Agents
+
 ## [1.79.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.79.0...v1.79.1) (2026-10-08)
 
 ### Chores

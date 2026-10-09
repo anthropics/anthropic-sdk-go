@@ -434,12 +434,14 @@ func (r BetaDreamInputUnion) ToParam() BetaDreamInputUnionParam {
 func BetaDreamInputParamOfMemoryStore(memoryStoreID string) BetaDreamInputUnionParam {
 	var memoryStore BetaDreamMemoryStoreInputParam
 	memoryStore.MemoryStoreID = memoryStoreID
+	memoryStore.Type = BetaDreamMemoryStoreInputTypeMemoryStore
 	return BetaDreamInputUnionParam{OfMemoryStore: &memoryStore}
 }
 
 func BetaDreamInputParamOfSessions(sessionIDs []string) BetaDreamInputUnionParam {
 	var sessions BetaDreamSessionsInputParam
 	sessions.SessionIDs = sessionIDs
+	sessions.Type = BetaDreamSessionsInputTypeSessions
 	return BetaDreamInputUnionParam{OfSessions: &sessions}
 }
 
@@ -895,6 +897,7 @@ func BetaOutputBehaviorParamOfCreateNew(type_ BetaOutputBehaviorCreateNewType) B
 func BetaOutputBehaviorParamOfUpdateExisting(memoryStoreID string) BetaOutputBehaviorUnionParam {
 	var updateExisting BetaOutputBehaviorUpdateExistingParam
 	updateExisting.MemoryStoreID = memoryStoreID
+	updateExisting.Type = BetaOutputBehaviorUpdateExistingTypeUpdateExisting
 	return BetaOutputBehaviorUnionParam{OfUpdateExisting: &updateExisting}
 }
 

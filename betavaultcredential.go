@@ -402,6 +402,7 @@ func BetaManagedAgentsCredentialNetworkingParamsOfUnrestricted(type_ BetaManaged
 func BetaManagedAgentsCredentialNetworkingParamsOfLimited(allowedHosts []string) BetaManagedAgentsCredentialNetworkingParamsUnion {
 	var limited BetaManagedAgentsLimitedCredentialNetworkingParams
 	limited.AllowedHosts = allowedHosts
+	limited.Type = BetaManagedAgentsLimitedCredentialNetworkingParamsTypeLimited
 	return BetaManagedAgentsCredentialNetworkingParamsUnion{OfLimited: &limited}
 }
 

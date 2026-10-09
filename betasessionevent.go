@@ -2010,6 +2010,7 @@ func init() {
 func BetaManagedAgentsEventParamsOfUserMessage(content []BetaManagedAgentsUserMessageEventParamsContentUnion) BetaManagedAgentsEventParamsUnion {
 	var userMessage BetaManagedAgentsUserMessageEventParams
 	userMessage.Content = content
+	userMessage.Type = BetaManagedAgentsUserMessageEventParamsTypeUserMessage
 	return BetaManagedAgentsEventParamsUnion{OfUserMessage: &userMessage}
 }
 
@@ -2030,6 +2031,7 @@ func BetaManagedAgentsEventParamsOfUserToolConfirmation(result BetaManagedAgents
 func BetaManagedAgentsEventParamsOfUserCustomToolResult(customToolUseID string) BetaManagedAgentsEventParamsUnion {
 	var userCustomToolResult BetaManagedAgentsUserCustomToolResultEventParams
 	userCustomToolResult.CustomToolUseID = customToolUseID
+	userCustomToolResult.Type = BetaManagedAgentsUserCustomToolResultEventParamsTypeUserCustomToolResult
 	return BetaManagedAgentsEventParamsUnion{OfUserCustomToolResult: &userCustomToolResult}
 }
 
@@ -2051,12 +2053,14 @@ func BetaManagedAgentsEventParamsOfUserDefineOutcome[
 func BetaManagedAgentsEventParamsOfUserToolResult(toolUseID string) BetaManagedAgentsEventParamsUnion {
 	var userToolResult BetaManagedAgentsUserToolResultEventParams
 	userToolResult.ToolUseID = toolUseID
+	userToolResult.Type = BetaManagedAgentsUserToolResultEventParamsTypeUserToolResult
 	return BetaManagedAgentsEventParamsUnion{OfUserToolResult: &userToolResult}
 }
 
 func BetaManagedAgentsEventParamsOfSystemMessage(content []BetaManagedAgentsSystemContentBlockParam) BetaManagedAgentsEventParamsUnion {
 	var systemMessage BetaManagedAgentsSystemMessageEventParams
 	systemMessage.Content = content
+	systemMessage.Type = BetaManagedAgentsSystemMessageEventParamsTypeSystemMessage
 	return BetaManagedAgentsEventParamsUnion{OfSystemMessage: &systemMessage}
 }
 

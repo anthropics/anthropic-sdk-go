@@ -484,6 +484,7 @@ func (r *BetaManagedAgentsDeploymentInitialEventUnionContent) UnmarshalJSON(data
 func BetaManagedAgentsDeploymentInitialEventParamsOfUserMessage(content []BetaManagedAgentsUserMessageEventParamsContentUnion) BetaManagedAgentsDeploymentInitialEventParamsUnion {
 	var userMessage BetaManagedAgentsUserMessageEventParams
 	userMessage.Content = content
+	userMessage.Type = BetaManagedAgentsUserMessageEventParamsTypeUserMessage
 	return BetaManagedAgentsDeploymentInitialEventParamsUnion{OfUserMessage: &userMessage}
 }
 
@@ -505,6 +506,7 @@ func BetaManagedAgentsDeploymentInitialEventParamsOfUserDefineOutcome[
 func BetaManagedAgentsDeploymentInitialEventParamsOfSystemMessage(content []BetaManagedAgentsSystemContentBlockParam) BetaManagedAgentsDeploymentInitialEventParamsUnion {
 	var systemMessage BetaManagedAgentsSystemMessageEventParams
 	systemMessage.Content = content
+	systemMessage.Type = BetaManagedAgentsSystemMessageEventParamsTypeSystemMessage
 	return BetaManagedAgentsDeploymentInitialEventParamsUnion{OfSystemMessage: &systemMessage}
 }
 

@@ -1077,6 +1077,7 @@ func (r *BetaManagedAgentsMultiagentUnion) UnmarshalJSON(data []byte) error {
 func BetaManagedAgentsMultiagentParamsOfCoordinator(agents []BetaManagedAgentsMultiagentRosterEntryParamsUnion) BetaManagedAgentsMultiagentParamsUnion {
 	var coordinator BetaManagedAgentsMultiagentCoordinatorParams
 	coordinator.Agents = agents
+	coordinator.Type = BetaManagedAgentsMultiagentCoordinatorParamsTypeCoordinator
 	return BetaManagedAgentsMultiagentParamsUnion{OfCoordinator: &coordinator}
 }
 

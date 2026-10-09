@@ -4940,12 +4940,14 @@ const (
 func BetaManagedAgentsSkillParamsOfAnthropic(skillID string) BetaManagedAgentsSkillParamsUnion {
 	var anthropic BetaManagedAgentsAnthropicSkillParams
 	anthropic.SkillID = skillID
+	anthropic.Type = BetaManagedAgentsAnthropicSkillParamsTypeAnthropic
 	return BetaManagedAgentsSkillParamsUnion{OfAnthropic: &anthropic}
 }
 
 func BetaManagedAgentsSkillParamsOfCustom(skillID string) BetaManagedAgentsSkillParamsUnion {
 	var custom BetaManagedAgentsCustomSkillParams
 	custom.SkillID = skillID
+	custom.Type = BetaManagedAgentsCustomSkillParamsTypeCustom
 	return BetaManagedAgentsSkillParamsUnion{OfCustom: &custom}
 }
 

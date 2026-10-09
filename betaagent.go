@@ -3094,10 +3094,8 @@ const (
 	// Powerful intelligence for long-running agents and coding
 	BetaManagedAgentsModelClaudeOpus4_6 BetaManagedAgentsModel = "claude-opus-4-6"
 	// Best combination of speed and intelligence
-	BetaManagedAgentsModelClaudeSonnet4_6 BetaManagedAgentsModel = "claude-sonnet-4-6"
-	// Fastest model with near-frontier intelligence
-	BetaManagedAgentsModelClaudeHaiku4_5 BetaManagedAgentsModel = "claude-haiku-4-5"
-	// Fastest model with near-frontier intelligence
+	BetaManagedAgentsModelClaudeSonnet4_6         BetaManagedAgentsModel = "claude-sonnet-4-6"
+	BetaManagedAgentsModelClaudeHaiku4_5          BetaManagedAgentsModel = "claude-haiku-4-5"
 	BetaManagedAgentsModelClaudeHaiku4_5_20251001 BetaManagedAgentsModel = "claude-haiku-4-5-20251001"
 	// Powerful intelligence for long-running agents and coding
 	BetaManagedAgentsModelClaudeOpus4_5 BetaManagedAgentsModel = "claude-opus-4-5"

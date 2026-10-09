@@ -7,6 +7,11 @@
 * set the required type field in union param constructor helpers
 
 
+### Chores
+
+* **docs:** correct prefill, thinking, fallback and model descriptions
+
+
 ### Documentation
 
 * **api:** clarify when custom tool results can be sent

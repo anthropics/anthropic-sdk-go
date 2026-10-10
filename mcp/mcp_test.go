@@ -1,7 +1,11 @@
 package mcp_test
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go/mcp"
@@ -257,5 +261,110 @@ func TestResourceToFile_EmptyContents(t *testing.T) {
 	var mcpErr *mcp.UnsupportedValueError
 	if !errors.As(err, &mcpErr) {
 		t.Fatalf("expected UnsupportedValueError, got %T", err)
+	}
+}
+
+func TestToBlockImageMediaTypeVariants(t *testing.T) {
+	for _, canonical := range []string{"image/jpeg", "image/png", "image/gif", "image/webp"} {
+		for _, value := range []string{canonical, strings.ToUpper(canonical), canonical + "; charset=binary", " " + strings.ToUpper(canonical) + " ; profile=\"A;B\" "} {
+			t.Run(value, func(t *testing.T) {
+				image := &mcpsdk.ImageContent{Data: []byte{0, 1, 255}, MIMEType: value}
+				block, err := mcp.ToBlock(image)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if block.OfImage == nil || block.OfImage.Source.OfBase64 == nil {
+					t.Fatal("expected an image")
+				}
+				source := block.OfImage.Source.OfBase64
+				if string(source.MediaType) != canonical || source.Data != base64.StdEncoding.EncodeToString(image.Data) {
+					t.Fatalf("unexpected image source: %+v", source)
+				}
+				wire, err := json.Marshal(block)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !bytes.Contains(wire, []byte(`"media_type":"`+canonical+`"`)) {
+					t.Fatalf("noncanonical wire media type: %s", wire)
+				}
+				if image.MIMEType != value || !bytes.Equal(image.Data, []byte{0, 1, 255}) {
+					t.Fatal("input changed")
+				}
+				message, err := mcp.ToMessage(&mcpsdk.PromptMessage{Role: "user", Content: image})
+				if err != nil || len(message.Content) != 1 || message.Content[0].OfImage == nil {
+					t.Fatalf("prompt conversion failed: %+v %v", message, err)
+				}
+			})
+		}
+	}
+}
+
+func TestResourceMediaTypeVariants(t *testing.T) {
+	for _, tc := range []struct{ mime, kind string }{
+		{"IMAGE/PNG; profile=\"A;B\"", "image"},
+		{" Application/PDF ; version=1.7 ", "pdf"},
+		{"TEXT/PLAIN; charset=utf-8", "text"},
+		{" Text/Markdown ; charset=utf-8 ", "text"},
+	} {
+		t.Run(tc.mime, func(t *testing.T) {
+			resource := &mcpsdk.ResourceContents{URI: "file:///item", MIMEType: tc.mime, Blob: []byte("exact payload")}
+			result := &mcpsdk.ReadResourceResult{Contents: []*mcpsdk.ResourceContents{
+				{URI: "file:///unsupported", MIMEType: "application/octet-stream", Blob: []byte("skip")},
+				resource,
+				{URI: "file:///later.txt", MIMEType: "text/plain", Text: "wrong item"},
+			}}
+			selected, err := mcp.ResourceToBlock(result)
+			if err != nil {
+				t.Fatal(err)
+			}
+			embedded, err := mcp.ToBlock(&mcpsdk.EmbeddedResource{Resource: resource})
+			if err != nil {
+				t.Fatal(err)
+			}
+			a, _ := json.Marshal(selected)
+			b, _ := json.Marshal(embedded)
+			if !bytes.Equal(a, b) {
+				t.Fatalf("resource selection differs from embedded conversion: %s != %s", a, b)
+			}
+			switch tc.kind {
+			case "image":
+				if selected.OfImage == nil || selected.OfImage.Source.OfBase64 == nil || selected.OfImage.Source.OfBase64.MediaType != "image/png" {
+					t.Fatalf("expected canonical PNG: %s", a)
+				}
+			case "pdf":
+				if selected.OfDocument == nil || selected.OfDocument.Source.OfBase64 == nil || selected.OfDocument.Source.OfBase64.Data != base64.StdEncoding.EncodeToString(resource.Blob) {
+					t.Fatalf("expected original PDF payload: %s", a)
+				}
+			case "text":
+				if selected.OfDocument == nil || selected.OfDocument.Source.OfText == nil || selected.OfDocument.Source.OfText.Data != "exact payload" {
+					t.Fatalf("expected first supported text: %s", a)
+				}
+			}
+			if resource.MIMEType != tc.mime || !bytes.Equal(resource.Blob, []byte("exact payload")) {
+				t.Fatal("source mutated")
+			}
+		})
+	}
+}
+
+func TestMediaTypeNormalizationDoesNotBroadenSupportedKinds(t *testing.T) {
+	for _, mimeType := range []string{"IMAGE/BMP; version=1", "application/pdfx", "application/octet-stream", " ", "; charset=utf-8"} {
+		t.Run(mimeType, func(t *testing.T) {
+			_, err := mcp.ToBlock(&mcpsdk.ImageContent{MIMEType: mimeType, Data: []byte("x")})
+			var unsupported *mcp.UnsupportedValueError
+			if !errors.As(err, &unsupported) {
+				t.Fatalf("unsupported image accepted: %v", err)
+			}
+			_, err = mcp.ResourceToBlock(&mcpsdk.ReadResourceResult{Contents: []*mcpsdk.ResourceContents{{MIMEType: mimeType, Blob: []byte("x")}}})
+			if !errors.As(err, &unsupported) {
+				t.Fatalf("unsupported resource accepted: %v", err)
+			}
+		})
+	}
+	for _, mimeType := range []string{"IMAGE/PNG; version=1", "APPLICATION/PDF"} {
+		_, err := mcp.ToBlock(&mcpsdk.EmbeddedResource{Resource: &mcpsdk.ResourceContents{URI: "file:///x", MIMEType: mimeType, Text: "not binary"}})
+		if err == nil || !strings.Contains(err.Error(), "blob data") {
+			t.Fatalf("missing binary data lost validation: %v", err)
+		}
 	}
 }

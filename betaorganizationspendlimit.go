@@ -156,8 +156,8 @@ type BetaSpendLimit struct {
 	// ISO 4217 code of the organization's billing currency; the unit for `amount`.
 	Currency string `json:"currency" api:"required"`
 	// Read-only. `false` when extra usage is switched off for this organization
-	// (`organization` limit) or for this member (`user` limit); `amount` is kept and
-	// applies again when it's switched back on. Always `true` for other limits.
+	// (`organization` limit); `amount` is kept and applies again when it's switched
+	// back on. Always `true` for other limits.
 	IsEnabled bool `json:"is_enabled" api:"required"`
 	// Length of the window the limit resets over. `amount` caps spend within each
 	// period.

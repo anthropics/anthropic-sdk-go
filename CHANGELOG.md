@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.81.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.80.0...v1.81.0) (2026-10-09)
+## [1.81.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.80.0...v1.81.0) (2026-10-10)
 
 ### Features
 
@@ -23,6 +23,7 @@
 ### Documentation
 
 * **api:** clarify when custom tool results can be sent
+* **api:** say is_enabled is always true for user spend limits
 
 ## [1.80.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.79.1...v1.80.0) (2026-10-09)
 

@@ -215,6 +215,8 @@ func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptio
 //
 // [config.LoadDefaultConfig] sets cfg.BearerAuthTokenProvider from the SSO token cache for SSO
 // profiles; step 3 keeps that token from being sent to Bedrock.
+// A non-empty AWS_BEARER_TOKEN_BEDROCK value takes precedence even over an explicitly
+// supplied or rotating cfg.BearerAuthTokenProvider; that provider is not called.
 //
 // The Bedrock adaptation (URL and body rewriting, request signing, and
 // normalization of streaming responses to SSE) should run closest to the wire.

@@ -207,6 +207,7 @@ type streamSplicer struct {
 	hopModel    string // model string the hop was requested as
 	effModel    string // last seam's to.model within the hop, else hopModel
 	isRetryHop  bool
+	accepted    bool   // a non-refusal terminal delta has arrived for this hop
 	startRaw    []byte // held message_start data (emitted when the wire opens)
 	contentSeen bool
 	open        map[int]bool
@@ -275,6 +276,7 @@ func (s *streamSplicer) advance() {
 			// unterminated final frame); the spliced stream still completes.
 			s.emit("message_stop", []byte(`{"type": "message_stop"}`))
 			s.stopSent = true
+			s.pinCompletedHop()
 		}
 		s.finish(err)
 		return
@@ -282,6 +284,7 @@ func (s *streamSplicer) advance() {
 	evt := s.dec.Event()
 	if evt.Type == "message_stop" {
 		s.stopSent = true
+		s.pinCompletedHop()
 	}
 	switch evt.Type {
 	case "ping":
@@ -325,6 +328,13 @@ func (s *streamSplicer) advance() {
 	default:
 		// message_stop and anything unrecognised pass through.
 		s.emit(evt.Type, evt.Data)
+	}
+}
+
+// A route is reusable only once its non-refusal response completes.
+func (s *streamSplicer) pinCompletedHop() {
+	if s.isRetryHop && s.accepted && s.state != nil {
+		s.state.SetIndex(s.next - 1)
 	}
 }
 
@@ -431,6 +441,9 @@ func (s *streamSplicer) handleTerminal(evt ssestream.Event) {
 	refused := parsed.Get("delta.stop_reason").String() == string(anthropic.BetaStopReasonRefusal)
 
 	if !refused {
+		if reason := parsed.Get("delta.stop_reason"); reason.Type == gjson.String && reason.String() != "" {
+			s.accepted = true
+		}
 		s.ensureWireOpen()
 		s.terminalSent = true
 		if !s.isRetryHop {
@@ -663,11 +676,7 @@ func (s *streamSplicer) openNextHop() {
 	var lastEntry anthropic.BetaFallbackParam
 	for s.next < len(s.fallbacks) {
 		entry := s.fallbacks[s.next]
-		index := s.next
 		s.next++
-		if s.state != nil {
-			s.state.SetIndex(index)
-		}
 		res, err := s.tryHop(entry, s.token, s.continuation)
 		if err != nil {
 			s.finish(err)
@@ -760,6 +769,7 @@ func (s *streamSplicer) engage(res *http.Response, entry anthropic.BetaFallbackP
 	s.hopModel = string(entry.Model)
 	s.effModel = s.hopModel
 	s.isRetryHop = true
+	s.accepted = false
 	s.contentSeen = false
 	s.sawSeam = false
 	s.open = map[int]bool{}

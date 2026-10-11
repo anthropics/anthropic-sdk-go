@@ -24,7 +24,7 @@ import (
 )
 
 // BetaFallbackState keeps the requests that share it on the model that
-// accepted, so a conversation never re-asks a model that already refused.
+// accepted. Failed, refused, or abandoned attempts leave the previous pin intact.
 // Use one zero-value state per conversation, passed with
 // [WithBetaFallbackState] on each of its requests. Safe for concurrent use;
 // when requests race, the last pin written wins.
@@ -237,9 +237,6 @@ func BetaRefusalFallbackMiddleware(fallbacks []anthropic.BetaFallbackParam) opti
 
 			index++
 			fallback := fallbacks[index]
-			if state != nil {
-				state.SetIndex(index)
-			}
 			seams = append(seams, seam{from: fromModel, to: string(fallback.Model), category: category})
 			fromModel = string(fallback.Model)
 			var tokenSent bool
@@ -258,8 +255,12 @@ func BetaRefusalFallbackMiddleware(fallbacks []anthropic.BetaFallbackParam) opti
 			}
 		}
 		if err == nil && len(seams) > 0 {
-			if perr := prependSeams(res, seams); perr != nil {
+			served, perr := prependSeams(res, seams)
+			if perr != nil {
 				return nil, perr
+			}
+			if served && state != nil {
+				state.SetIndex(index)
 			}
 		}
 		return res, err
@@ -269,23 +270,24 @@ func BetaRefusalFallbackMiddleware(fallbacks []anthropic.BetaFallbackParam) opti
 // prependSeams rewrites a served message's content to open with the fallback
 // boundary blocks, mirroring the streaming splice's block shape. An
 // exhausted chain's refusal — and anything that isn't an inspectable served
-// message — is left as written.
-func prependSeams(res *http.Response, seams []seam) error {
+// message — is left as written. The result reports whether a served message was found.
+func prependSeams(res *http.Response, seams []seam) (bool, error) {
 	if res.StatusCode != http.StatusOK || res.Header.Get("Content-Encoding") != "" {
-		return nil
+		return false, nil
 	}
 	buf, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		return fmt.Errorf("betafallback: reading response body: %w", err)
+		return false, fmt.Errorf("betafallback: reading response body: %w", err)
 	}
 	res.Body = io.NopCloser(bytes.NewReader(buf))
-	if gjson.GetBytes(buf, "stop_reason").String() == string(anthropic.BetaStopReasonRefusal) {
-		return nil
+	if gjson.GetBytes(buf, "type").String() != "message" ||
+		gjson.GetBytes(buf, "stop_reason").String() == string(anthropic.BetaStopReasonRefusal) {
+		return false, nil
 	}
 	content := gjson.GetBytes(buf, "content")
 	if !content.IsArray() {
-		return nil
+		return false, nil
 	}
 	blocks := make([]json.RawMessage, 0, len(seams)+len(content.Array()))
 	for _, sm := range seams {
@@ -301,8 +303,9 @@ func prependSeams(res *http.Response, seams []seam) error {
 			res.Header = http.Header{}
 		}
 		res.Header.Set("Content-Length", strconv.Itoa(len(patched)))
+		return true, nil
 	}
-	return nil
+	return false, nil
 }
 
 // trimHistory rewrites body["messages"] through trimFallbackTurns and

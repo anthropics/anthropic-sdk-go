@@ -848,14 +848,14 @@ func TestRefusalFallbackMiddlewareReentersTheChainWhenTheClientRetries(t *testin
 	assert.Equal(t, creditTokenBody("token-2"), transport.bodies[3]["fallback_credit_token"], "the re-entered chain redeems the fresh token")
 }
 
-func TestRefusalFallbackMiddlewareReentersAtThePinWhenTheClientRetries(t *testing.T) {
+func TestRefusalFallbackMiddlewareKeepsThePreviousRouteWhenTheClientRetries(t *testing.T) {
 	overloaded := `{"type": "error", "error": {"type": "overloaded_error", "message": "Overloaded"}}`
 	transport := &scriptedTransport{
 		t: t,
 		responses: []string{
 			refusalResponse("primary-model", "credit-token"),
 			overloaded,
-			messageResponse("fallback-model"),
+			messageResponse("primary-model"),
 		},
 		statuses: []int{http.StatusOK, 529, http.StatusOK},
 		headers:  []http.Header{nil, {"Retry-After": []string{"0"}}},
@@ -869,13 +869,15 @@ func TestRefusalFallbackMiddlewareReentersAtThePinWhenTheClientRetries(t *testin
 		)),
 	)
 
+	state := &betafallback.BetaFallbackState{}
 	message, err := client.Beta.Messages.New(context.Background(), fallbackTestParams,
-		betafallback.WithBetaFallbackState(&betafallback.BetaFallbackState{}))
+		betafallback.WithBetaFallbackState(state))
 	require.NoError(t, err)
-	assert.Equal(t, anthropic.Model("fallback-model"), message.Model)
-	assert.Equal(t, []string{"primary-model", "fallback-model", "fallback-model"}, transport.models())
+	assert.Equal(t, anthropic.Model("primary-model"), message.Model)
+	assert.Equal(t, -1, state.Index(), "an overloaded fallback did not serve the request")
+	assert.Equal(t, []string{"primary-model", "fallback-model", "primary-model"}, transport.models())
 	_, hasToken := transport.bodies[2]["fallback_credit_token"]
-	assert.False(t, hasToken, "the pinned re-entry has no refusal to redeem")
+	assert.False(t, hasToken, "the retried original request has no refusal to redeem")
 }
 
 func TestRefusalFallbackMiddlewareSkipsEncodedResponseBodies(t *testing.T) {

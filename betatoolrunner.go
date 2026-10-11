@@ -59,11 +59,12 @@ type betaToolRunnerBase struct {
 
 func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool, params BetaToolRunnerParams, opts []option.RequestOption) betaToolRunnerBase {
 	toolMap := make(map[string]BetaTool)
-	apiTools := make([]BetaToolUnionParam, len(tools))
+	apiTools := make([]BetaToolUnionParam, 0, len(params.Tools)+len(tools))
+	apiTools = append(apiTools, params.Tools...)
 
-	for i, tool := range tools {
+	for _, tool := range tools {
 		toolMap[tool.Name()] = tool
-		apiTools[i] = betaToolDefinition(tool)
+		apiTools = append(apiTools, betaToolDefinition(tool))
 	}
 
 	// Add tools to the API params
@@ -653,6 +654,8 @@ type BetaToolRunner struct {
 // the model generating tool calls, executing those tool calls, and sending the
 // results back to the model until a final answer is produced or the maximum
 // number of iterations is reached.
+// Definitions in params.Tools are retained before the runnable tools; only tools
+// supplied in the tools argument are executed locally.
 func (r *BetaMessageService) NewToolRunner(tools []BetaTool, params BetaToolRunnerParams, opts ...option.RequestOption) *BetaToolRunner {
 	return &BetaToolRunner{
 		betaToolRunnerBase: newBetaToolRunnerBase(r, tools, params, opts),
@@ -754,6 +757,8 @@ type BetaToolRunnerStreaming struct {
 // the loop between the model generating tool calls, executing those tool calls, and
 // sending the results back to the model using streaming API calls until a final answer
 // is produced or the maximum number of iterations is reached.
+// Definitions in params.Tools are retained before the runnable tools; only tools
+// supplied in the tools argument are executed locally.
 func (r *BetaMessageService) NewToolRunnerStreaming(tools []BetaTool, params BetaToolRunnerParams, opts ...option.RequestOption) *BetaToolRunnerStreaming {
 	return &BetaToolRunnerStreaming{
 		betaToolRunnerBase: newBetaToolRunnerBase(r, tools, params, opts),

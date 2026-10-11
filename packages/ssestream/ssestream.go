@@ -31,6 +31,7 @@ func NewDecoder(res *http.Response) Decoder {
 		decoder = t(res.Body)
 	} else {
 		scn := bufio.NewScanner(res.Body)
+		scn.Split(newSSELineSplitFunc())
 		scn.Buffer(nil, bufio.MaxScanTokenSize<<9)
 		decoder = &eventStreamDecoder{rc: res.Body, scn: scn}
 	}
@@ -43,6 +44,31 @@ func NewDecoder(res *http.Response) Decoder {
 	}
 
 	return decoder
+}
+
+// newSSELineSplitFunc accepts CR, LF and CRLF, including CRLF split across reads.
+// A CR ends the current line immediately; a following LF belongs to that same ending.
+func newSSELineSplitFunc() bufio.SplitFunc {
+	skipLF := false
+	return func(data []byte, atEOF bool) (int, []byte, error) {
+		start := 0
+		if skipLF && len(data) > 0 {
+			skipLF = false
+			if data[0] == '\n' {
+				start = 1
+			}
+		}
+		for i := start; i < len(data); i++ {
+			if data[i] == '\r' || data[i] == '\n' {
+				skipLF = data[i] == '\r'
+				return i + 1, data[start:i], nil
+			}
+		}
+		if atEOF && len(data) > start {
+			return len(data), data[start:], nil
+		}
+		return start, nil, nil
+	}
 }
 
 // richErrorDecoder wraps a Decoder and carries the original [*http.Response]

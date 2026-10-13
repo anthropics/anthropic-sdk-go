@@ -18,6 +18,7 @@
 ### Chores
 
 * **docs:** correct prefill, thinking, fallback and model descriptions
+* **docs:** document the scope required to assign the managed role
 * **docs:** update model examples
 * **internal:** narrow the tripwire test rule in the contributor guides
 * **tests:** stop listing the stream event types in the accumulator test

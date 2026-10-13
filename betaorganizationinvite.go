@@ -187,7 +187,8 @@ type BetaOrganizationInviteNewParams struct {
 	// The accepted values depend on the organization type. Console and API
 	// organizations accept `user`, `developer`, `billing`, and `claude_code_user`;
 	// `admin` cannot be assigned through the API. Claude Enterprise organizations
-	// accept `user` and `managed`.
+	// accept `user` and `managed`; inviting with the `managed` role requires the
+	// `write:rbac_groups` scope in addition to `write:members`.
 	//
 	// Any of "billing", "claude_code_user", "developer", "managed", "user".
 	Role BetaOrganizationInviteNewParamsRole `json:"role,omitzero" api:"required"`
@@ -211,7 +212,8 @@ func (r *BetaOrganizationInviteNewParams) UnmarshalJSON(data []byte) error {
 // The accepted values depend on the organization type. Console and API
 // organizations accept `user`, `developer`, `billing`, and `claude_code_user`;
 // `admin` cannot be assigned through the API. Claude Enterprise organizations
-// accept `user` and `managed`.
+// accept `user` and `managed`; inviting with the `managed` role requires the
+// `write:rbac_groups` scope in addition to `write:members`.
 type BetaOrganizationInviteNewParamsRole string
 
 const (

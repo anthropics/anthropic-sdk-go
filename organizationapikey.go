@@ -47,6 +47,7 @@ func (r *OrganizationAPIKeyService) Get(ctx context.Context, apiKeyID string, op
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/api_keys/%s", url.PathEscape(apiKeyID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.api_keys.retrieve", "/v1/organizations/api_keys/{api_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.api_key.id", apiKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -59,6 +60,7 @@ func (r *OrganizationAPIKeyService) Update(ctx context.Context, apiKeyID string,
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/api_keys/%s", url.PathEscape(apiKeyID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.api_keys.update", "/v1/organizations/api_keys/{api_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.api_key.id", apiKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -69,6 +71,7 @@ func (r *OrganizationAPIKeyService) List(ctx context.Context, query Organization
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/api_keys"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.api_keys.list", "/v1/organizations/api_keys", "after_id", "before_id", "created_by_user_id", "limit", "status", "workspace_id"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err

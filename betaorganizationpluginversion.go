@@ -92,6 +92,7 @@ func (r *BetaOrganizationPluginVersionService) New(ctx context.Context, pluginID
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/plugins/%s/versions?beta=true", url.PathEscape(pluginID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.create", "/v1/organizations/plugins/{plugin_id}/versions"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID), requestconfig.WithSpanCreatedID("anthropic.organization.plugin.version.id", &res, func(created *BetaPluginVersion) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -130,6 +131,7 @@ func (r *BetaOrganizationPluginVersionService) Get(ctx context.Context, version 
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/plugins/%s/versions/%s?beta=true", url.PathEscape(params.PluginID), url.PathEscape(version))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.retrieve", "/v1/organizations/plugins/{plugin_id}/versions/{version}", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", params.PluginID), requestconfig.WithSpanAttribute("anthropic.organization.plugin.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
 }
@@ -168,6 +170,7 @@ func (r *BetaOrganizationPluginVersionService) List(ctx context.Context, pluginI
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/plugins/%s/versions?beta=true", url.PathEscape(pluginID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.list", "/v1/organizations/plugins/{plugin_id}/versions", "limit", "organization_id", "page"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -249,6 +252,7 @@ func (r *BetaOrganizationPluginVersionService) Download(ctx context.Context, ver
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/plugins/%s/versions/%s/content?beta=true", url.PathEscape(params.PluginID), url.PathEscape(version))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.download", "/v1/organizations/plugins/{plugin_id}/versions/{version}/content", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", params.PluginID), requestconfig.WithSpanAttribute("anthropic.organization.plugin.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
 }

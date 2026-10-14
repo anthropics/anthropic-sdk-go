@@ -65,6 +65,7 @@ func (r *BetaSessionService) New(ctx context.Context, params BetaSessionNewParam
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	path := "v1/sessions?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.create", "/v1/sessions"), sessionsCreateSpan(params, &res), requestconfig.WithSpanCreatedID("anthropic.session.id", &res, func(created *BetaManagedAgentsSession) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -91,6 +92,7 @@ func (r *BetaSessionService) Get(ctx context.Context, sessionID string, query Be
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.retrieve", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -117,6 +119,7 @@ func (r *BetaSessionService) Update(ctx context.Context, sessionID string, param
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.update", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -140,6 +143,7 @@ func (r *BetaSessionService) List(ctx context.Context, params BetaSessionListPar
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/sessions?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.list", "/v1/sessions", "agent_id", "agent_version", "created_at[gt]", "created_at[gte]", "created_at[lt]", "created_at[lte]", "deployment_id", "include_archived", "limit", "memory_store_id", "order", "page", "statuses"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -179,6 +183,7 @@ func (r *BetaSessionService) Delete(ctx context.Context, sessionID string, body 
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.delete", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -205,6 +210,7 @@ func (r *BetaSessionService) Archive(ctx context.Context, sessionID string, body
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/archive?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.archive", "/v1/sessions/{session_id}/archive"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -338,7 +344,7 @@ type BetaManagedAgentsAgentWithOverridesParams struct {
 	// Replacement MCP server list. Full replacement: the provided array becomes the
 	// MCP servers. Send an empty array to clear; omit to preserve the agent's servers.
 	MCPServers []BetaManagedAgentsURLMCPServerParams `json:"mcp_servers,omitzero"`
-	// Replacement model. Accepts the model string, e.g. `claude-opus-5`, or a
+	// Replacement model. Accepts the model string, e.g. `claude-opus-5-5`, or a
 	// `model_config` object. Omit to use the agent's model.
 	Model BetaManagedAgentsModelConfigParams `json:"model,omitzero"`
 	// Replacement skill list. Full replacement: the provided array becomes the skills.
@@ -1077,6 +1083,7 @@ func (r *BetaManagedAgentsMultiagentUnion) UnmarshalJSON(data []byte) error {
 func BetaManagedAgentsMultiagentParamsOfCoordinator(agents []BetaManagedAgentsMultiagentRosterEntryParamsUnion) BetaManagedAgentsMultiagentParamsUnion {
 	var coordinator BetaManagedAgentsMultiagentCoordinatorParams
 	coordinator.Agents = agents
+	coordinator.Type = BetaManagedAgentsMultiagentCoordinatorParamsTypeCoordinator
 	return BetaManagedAgentsMultiagentParamsUnion{OfCoordinator: &coordinator}
 }
 
@@ -1142,7 +1149,7 @@ func (u BetaManagedAgentsMultiagentParamsUnion) GetType() *string {
 	if vt := u.OfCoordinator; vt != nil {
 		return (*string)(&vt.Type)
 	} else if vt := u.OfMultiagent20261001; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -1398,9 +1405,13 @@ const (
 // Resolved `agent` definition for a `session`. Snapshot of the `agent` at
 // `session` creation time.
 type BetaManagedAgentsSessionAgent struct {
-	ID          string                                    `json:"id" api:"required"`
-	Description string                                    `json:"description" api:"required"`
-	MCPServers  []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
+	ID          string `json:"id" api:"required"`
+	Description string `json:"description" api:"required"`
+	// Execution principal snapshotted from the agent at session creation. Always
+	// present; `{"type": "service_account"}` when runs carry no customer-named
+	// principal.
+	ExecutionIdentity BetaManagedAgentsExecutionIdentityUnion   `json:"execution_identity" api:"required"`
+	MCPServers        []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
 	// Model identifier and configuration.
 	Model BetaManagedAgentsModelConfig `json:"model" api:"required"`
 	// Resolved multiagent orchestration configuration. Null when the agent is
@@ -1415,19 +1426,20 @@ type BetaManagedAgentsSessionAgent struct {
 	Version int64                             `json:"version" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
-		Description respjson.Field
-		MCPServers  respjson.Field
-		Model       respjson.Field
-		Multiagent  respjson.Field
-		Name        respjson.Field
-		Skills      respjson.Field
-		System      respjson.Field
-		Tools       respjson.Field
-		Type        respjson.Field
-		Version     respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		ID                respjson.Field
+		Description       respjson.Field
+		ExecutionIdentity respjson.Field
+		MCPServers        respjson.Field
+		Model             respjson.Field
+		Multiagent        respjson.Field
+		Name              respjson.Field
+		Skills            respjson.Field
+		System            respjson.Field
+		Tools             respjson.Field
+		Type              respjson.Field
+		Version           respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -1987,6 +1999,8 @@ type BetaManagedAgentsSessionMultiagentCoordinatorAgentUnion struct {
 	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
 	Description string `json:"description"`
 	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
+	ExecutionIdentity BetaManagedAgentsExecutionIdentityUnion `json:"execution_identity"`
+	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
 	MCPServers []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers"`
 	// This field is a union of [BetaManagedAgentsModelConfig], [string]
 	Model BetaManagedAgentsSessionMultiagentCoordinatorAgentUnionModel `json:"model"`
@@ -2003,17 +2017,18 @@ type BetaManagedAgentsSessionMultiagentCoordinatorAgentUnion struct {
 	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
 	Version int64 `json:"version"`
 	JSON    struct {
-		ID          respjson.Field
-		Description respjson.Field
-		MCPServers  respjson.Field
-		Model       respjson.Field
-		Name        respjson.Field
-		Skills      respjson.Field
-		System      respjson.Field
-		Tools       respjson.Field
-		Type        respjson.Field
-		Version     respjson.Field
-		raw         string
+		ID                respjson.Field
+		Description       respjson.Field
+		ExecutionIdentity respjson.Field
+		MCPServers        respjson.Field
+		Model             respjson.Field
+		Name              respjson.Field
+		Skills            respjson.Field
+		System            respjson.Field
+		Tools             respjson.Field
+		Type              respjson.Field
+		Version           respjson.Field
+		raw               string
 	} `json:"-"`
 }
 

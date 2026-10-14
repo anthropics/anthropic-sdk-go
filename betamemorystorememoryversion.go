@@ -66,6 +66,7 @@ func (r *BetaMemoryStoreMemoryVersionService) Get(ctx context.Context, memoryVer
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryVersionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memory_versions.retrieve", "/v1/memory_stores/{memory_store_id}/memory_versions/{memory_version_id}", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("anthropic.memory_store.memory_version.id", memoryVersionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
 }
@@ -93,6 +94,7 @@ func (r *BetaMemoryStoreMemoryVersionService) List(ctx context.Context, memorySt
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions?beta=true", url.PathEscape(memoryStoreID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memory_versions.list", "/v1/memory_stores/{memory_store_id}/memory_versions", "api_key_id", "created_at[gte]", "created_at[lte]", "limit", "memory_id", "operation", "page", "service_account_id", "session_id", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -136,6 +138,7 @@ func (r *BetaMemoryStoreMemoryVersionService) Redact(ctx context.Context, memory
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions/%s/redact?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryVersionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memory_versions.redact", "/v1/memory_stores/{memory_store_id}/memory_versions/{memory_version_id}/redact"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("anthropic.memory_store.memory_version.id", memoryVersionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

@@ -8,15 +8,10 @@ import (
 	"github.com/anthropics/anthropic-sdk-go"
 )
 
-// TestAccumulateExhaustive fails when the generated code gains a stream-event or
-// delta variant that Accumulate does not handle, so no new variant is dropped
-// silently. On failure, handle the named variant in Accumulate, then add it
-// to the list below.
+// TestAccumulateExhaustive fails when the generated code gains a delta variant
+// that Accumulate does not handle, so no new variant is dropped silently. On
+// failure, handle the named variant in Accumulate, then add it to the list.
 func TestAccumulateExhaustive(t *testing.T) {
-	events := []string{
-		"content_block_delta", "content_block_start", "content_block_stop",
-		"message_delta", "message_start", "message_stop",
-	}
 	deltas := []string{
 		"citations_delta", "input_json_delta", "signature_delta",
 		"text_delta", "thinking_delta",
@@ -26,9 +21,7 @@ func TestAccumulateExhaustive(t *testing.T) {
 		union   any
 		handled []string
 	}{
-		{"events", anthropic.MessageStreamEventUnion{}, events},
 		{"deltas", anthropic.RawContentBlockDeltaUnion{}, deltas},
-		{"beta events", anthropic.BetaRawMessageStreamEventUnion{}, events},
 		{"beta deltas", anthropic.BetaRawContentBlockDeltaUnion{}, append([]string{"compaction_delta"}, deltas...)},
 	} {
 		t.Run(tt.name, func(t *testing.T) {

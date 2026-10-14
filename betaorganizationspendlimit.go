@@ -13,6 +13,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
@@ -52,18 +53,17 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/spend_limits/%s?beta=true", url.PathEscape(spendLimitID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.retrieve", "/v1/organizations/spend_limits/{spend_limit_id}"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit.id", spendLimitID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // List the organization's spend limits.
 //
-// A Claude Console organization's limits come in an order that is stable across
-// pages. A Claude Enterprise organization's are grouped by scope type, in the
-// order `organization`, `seat_tier`, `rbac_group`, `organization_service`, `user`;
-// within a type they come in a fixed order that is not creation order. Listing
-// Claude Console limits is in an early access preview. To request access, contact
-// your Anthropic account team.
+// Limits are grouped by scope type, in the order `organization`, `seat_tier`,
+// `rbac_group`, `organization_service`, `user`; within a type they come in a fixed
+// order that is not creation order. Supported for Claude Enterprise organizations
+// only, not for Claude Console organizations.
 func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSpendLimit], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -79,6 +79,7 @@ func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params Bet
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "spend-limit-reads-2026-09-26"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/spend_limits?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.list", "/v1/organizations/spend_limits", "limit", "page", "scope_type"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -93,12 +94,10 @@ func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params Bet
 
 // List the organization's spend limits.
 //
-// A Claude Console organization's limits come in an order that is stable across
-// pages. A Claude Enterprise organization's are grouped by scope type, in the
-// order `organization`, `seat_tier`, `rbac_group`, `organization_service`, `user`;
-// within a type they come in a fixed order that is not creation order. Listing
-// Claude Console limits is in an early access preview. To request access, contact
-// your Anthropic account team.
+// Limits are grouped by scope type, in the order `organization`, `seat_tier`,
+// `rbac_group`, `organization_service`, `user`; within a type they come in a fixed
+// order that is not creation order. Supported for Claude Enterprise organizations
+// only, not for Claude Console organizations.
 func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSpendLimit] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
@@ -117,6 +116,7 @@ func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLim
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/spend_limits/%s?beta=true", url.PathEscape(spendLimitID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.delete", "/v1/organizations/spend_limits/{spend_limit_id}"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit.id", spendLimitID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -142,6 +142,7 @@ func (r *BetaOrganizationSpendLimitService) Set(ctx context.Context, params Beta
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/spend_limits?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.set", "/v1/organizations/spend_limits"), requestconfig.WithSpanCreatedID("anthropic.organization.spend_limit.id", &res, func(created *BetaSpendLimit) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -159,8 +160,8 @@ type BetaSpendLimit struct {
 	// ISO 4217 code of the organization's billing currency; the unit for `amount`.
 	Currency string `json:"currency" api:"required"`
 	// Read-only. `false` when extra usage is switched off for this organization
-	// (`organization` limit) or for this member (`user` limit); `amount` is kept and
-	// applies again when it's switched back on. Always `true` for other limits.
+	// (`organization` limit); `amount` is kept and applies again when it's switched
+	// back on. Always `true` for other limits.
 	IsEnabled bool `json:"is_enabled" api:"required"`
 	// Length of the window the limit resets over. `amount` caps spend within each
 	// period.
@@ -946,10 +947,7 @@ type BetaOrganizationSpendLimitListParams struct {
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
 	// Maximum number of limits per page. Defaults to `20`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Return only limits with these scope types. A Claude Console organization has
-	// `organization` and `workspace` limits; a Claude Enterprise organization has
-	// `organization`, `seat_tier`, `rbac_group`, `organization_service` and `user`
-	// limits. Omit for all.
+	// Return only limits with these scope types. Omit for all.
 	//
 	// Any of "organization", "organization_service", "rbac_group", "seat_tier",
 	// "user", "workspace".
@@ -1043,11 +1041,11 @@ func (u BetaOrganizationSpendLimitSetParamsScopeUnion) GetWorkspaceID() *string 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaOrganizationSpendLimitSetParamsScopeUnion) GetType() *string {
 	if vt := u.OfUser; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfOrganization; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfWorkspace; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

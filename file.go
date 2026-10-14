@@ -51,6 +51,7 @@ func (r *FileService) List(ctx context.Context, params FileListParams, opts ...o
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/files"
+	opts = append(opts, requestconfig.WithSpan("anthropic.files.list", "/v1/files", "ids", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -79,6 +80,7 @@ func (r *FileService) Delete(ctx context.Context, fileID string, body FileDelete
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/files/%s", url.PathEscape(fileID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.files.delete", "/v1/files/{file_id}"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -95,6 +97,7 @@ func (r *FileService) Download(ctx context.Context, fileID string, query FileDow
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/files/%s/content", url.PathEscape(fileID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.files.download", "/v1/files/{file_id}/content"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -110,6 +113,7 @@ func (r *FileService) GetMetadata(ctx context.Context, fileID string, query File
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/files/%s", url.PathEscape(fileID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.files.retrieve_metadata", "/v1/files/{file_id}"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -121,6 +125,7 @@ func (r *FileService) Upload(ctx context.Context, params FileUploadParams, opts 
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/files"
+	opts = append(opts, requestconfig.WithSpan("anthropic.files.upload", "/v1/files"), requestconfig.WithSpanCreatedID("anthropic.file.id", &res, func(created *FileMetadata) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

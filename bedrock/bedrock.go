@@ -25,7 +25,9 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 
+	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
@@ -204,6 +206,13 @@ func WithLoadDefaultConfig(ctx context.Context, optFns ...func(*config.LoadOptio
 	return WithConfig(cfg)
 }
 
+// withPlatform names Amazon Bedrock as the gen_ai.provider.name of the
+// OpenTelemetry spans, and this package in their instrumentation scope.
+var withPlatform = requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+	rc.OpenTelemetry.ProviderName, rc.OpenTelemetry.Platform = telemetry.ProviderBedrock, "bedrock"
+	return nil
+})
+
 // WithConfig returns a request option that uses the provided config and registers middleware to
 // intercept requests to the Messages API, enabling this SDK to work with Amazon Bedrock.
 //
@@ -249,7 +258,7 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 	signer := v4.NewSigner()
 	middleware := bedrockMiddleware(signer, cfg)
 
-	return option.Join(option.WithoutEnvironmentDefaults(), requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+	return option.Join(option.WithoutEnvironmentDefaults(), withPlatform, requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		if credentialErr != nil {
 			return credentialErr
 		}
@@ -356,7 +365,7 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 			}
 
 			hash := sha256.Sum256(body)
-			err = signer.SignHTTP(ctx, credentials, r, hex.EncodeToString(hash[:]), "bedrock", cfg.Region, time.Now())
+			err = awsauth.SignHTTP(ctx, signer, credentials, r, hex.EncodeToString(hash[:]), "bedrock", cfg.Region, time.Now())
 			if err != nil {
 				return nil, err
 			}

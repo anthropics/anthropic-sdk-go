@@ -46,6 +46,7 @@ func (r *OrganizationUserService) Get(ctx context.Context, userID string, opts .
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.retrieve", "/v1/organizations/users/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.user.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -58,6 +59,7 @@ func (r *OrganizationUserService) Update(ctx context.Context, userID string, bod
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.update", "/v1/organizations/users/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.user.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -68,6 +70,7 @@ func (r *OrganizationUserService) List(ctx context.Context, query OrganizationUs
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/users"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.list", "/v1/organizations/users", "after_id", "before_id", "email", "limit", "roles"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -93,6 +96,7 @@ func (r *OrganizationUserService) Remove(ctx context.Context, userID string, opt
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.remove", "/v1/organizations/users/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.user.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -162,7 +166,8 @@ type OrganizationUserUpdateParams struct {
 	// The accepted values depend on the organization type. Console and API
 	// organizations accept `user`, `developer`, `billing`, and `claude_code_user`;
 	// `admin` cannot be assigned through the API. Claude Enterprise organizations
-	// accept `user` and `managed`.
+	// accept `user` and `managed`; changing a User's role to `managed` requires the
+	// `write:rbac_groups` scope in addition to `write:members`.
 	//
 	// Any of "billing", "claude_code_user", "developer", "managed", "user".
 	Role OrganizationUserUpdateParamsRole `json:"role,omitzero" api:"required"`
@@ -182,7 +187,8 @@ func (r *OrganizationUserUpdateParams) UnmarshalJSON(data []byte) error {
 // The accepted values depend on the organization type. Console and API
 // organizations accept `user`, `developer`, `billing`, and `claude_code_user`;
 // `admin` cannot be assigned through the API. Claude Enterprise organizations
-// accept `user` and `managed`.
+// accept `user` and `managed`; changing a User's role to `managed` requires the
+// `write:rbac_groups` scope in addition to `write:members`.
 type OrganizationUserUpdateParamsRole string
 
 const (

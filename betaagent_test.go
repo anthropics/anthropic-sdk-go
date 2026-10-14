@@ -26,7 +26,7 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Agents.New(context.TODO(), anthropic.BetaAgentNewParams{
 		Model: anthropic.BetaManagedAgentsModelConfigParams{
-			ID: anthropic.BetaManagedAgentsModelClaudeOpus5,
+			ID: anthropic.BetaManagedAgentsModelClaudeOpus5_5,
 			Effort: anthropic.BetaManagedAgentsModelConfigParamsEffortUnion{
 				OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel: anthropic.String("low"),
 			},
@@ -35,6 +35,11 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 		},
 		Name:        "My First Agent",
 		Description: anthropic.String("A general-purpose starter agent."),
+		ExecutionIdentity: anthropic.BetaManagedAgentsExecutionIdentityParamsUnion{
+			OfAWSRole: &anthropic.BetaManagedAgentsAWSRoleExecutionIdentityParams{
+				RoleARN: "role_arn",
+			},
+		},
 		MCPServers: []anthropic.BetaManagedAgentsURLMCPServerParams{{
 			Name: "example-mcp",
 			Type: anthropic.BetaManagedAgentsURLMCPServerParamsTypeURL,
@@ -146,6 +151,11 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 		"agent_011CZkYpogX7uDKUyvBTophP",
 		anthropic.BetaAgentUpdateParams{
 			Description: anthropic.String("updated"),
+			ExecutionIdentity: anthropic.BetaManagedAgentsExecutionIdentityParamsUnion{
+				OfAWSRole: &anthropic.BetaManagedAgentsAWSRoleExecutionIdentityParams{
+					RoleARN: "role_arn",
+				},
+			},
 			MCPServers: []anthropic.BetaManagedAgentsURLMCPServerParams{{
 				Name: "example-mcp",
 				Type: anthropic.BetaManagedAgentsURLMCPServerParamsTypeURL,
@@ -155,7 +165,7 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 				"foo": "string",
 			},
 			Model: anthropic.BetaManagedAgentsModelConfigParams{
-				ID: anthropic.BetaManagedAgentsModelClaudeOpus5,
+				ID: anthropic.BetaManagedAgentsModelClaudeOpus5_5,
 				Effort: anthropic.BetaManagedAgentsModelConfigParamsEffortUnion{
 					OfBetaManagedAgentsModelConfigsEffortBetaManagedAgentsEffortLevel: anthropic.String("low"),
 				},

@@ -68,6 +68,7 @@ func (r *BetaSessionThreadService) Get(ctx context.Context, threadID string, par
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/threads/%s?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.retrieve", "/v1/sessions/{session_id}/threads/{thread_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.thread.id", threadID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -95,6 +96,7 @@ func (r *BetaSessionThreadService) List(ctx context.Context, sessionID string, p
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/threads?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.list", "/v1/sessions/{session_id}/threads", "limit", "page", "statuses"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -138,6 +140,7 @@ func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string,
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/threads/%s/archive?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.archive", "/v1/sessions/{session_id}/threads/{thread_id}/archive"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.thread.id", threadID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -146,8 +149,10 @@ func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string,
 // inline, in a workflow run's plan or when a session thread is spawned, and is not
 // saved.
 type BetaManagedAgentsInlineAgent struct {
-	Description string                                    `json:"description" api:"required"`
-	MCPServers  []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
+	Description string `json:"description" api:"required"`
+	// The session's execution principal.
+	ExecutionIdentity BetaManagedAgentsExecutionIdentityUnion   `json:"execution_identity" api:"required"`
+	MCPServers        []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
 	// Model identifier and configuration.
 	Model BetaManagedAgentsModelConfig `json:"model" api:"required"`
 	// The name that the agent's definition gave, or one that the server assigned.
@@ -158,16 +163,17 @@ type BetaManagedAgentsInlineAgent struct {
 	Type   constant.Inline                          `json:"type" default:"inline"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Description respjson.Field
-		MCPServers  respjson.Field
-		Model       respjson.Field
-		Name        respjson.Field
-		Skills      respjson.Field
-		System      respjson.Field
-		Tools       respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Description       respjson.Field
+		ExecutionIdentity respjson.Field
+		MCPServers        respjson.Field
+		Model             respjson.Field
+		Name              respjson.Field
+		Skills            respjson.Field
+		System            respjson.Field
+		Tools             respjson.Field
+		Type              respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -473,9 +479,11 @@ func (r *BetaManagedAgentsSessionThread) UnmarshalJSON(data []byte) error {
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsSessionThreadAgentUnion struct {
 	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
-	ID          string                                    `json:"id"`
-	Description string                                    `json:"description"`
-	MCPServers  []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers"`
+	ID          string `json:"id"`
+	Description string `json:"description"`
+	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
+	ExecutionIdentity BetaManagedAgentsExecutionIdentityUnion   `json:"execution_identity"`
+	MCPServers        []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers"`
 	// This field is a union of [BetaManagedAgentsModelConfig], [string]
 	Model BetaManagedAgentsSessionThreadAgentUnionModel `json:"model"`
 	Name  string                                        `json:"name"`
@@ -491,17 +499,18 @@ type BetaManagedAgentsSessionThreadAgentUnion struct {
 	// This field is from variant [BetaManagedAgentsSessionThreadAgent].
 	Version int64 `json:"version"`
 	JSON    struct {
-		ID          respjson.Field
-		Description respjson.Field
-		MCPServers  respjson.Field
-		Model       respjson.Field
-		Name        respjson.Field
-		Skills      respjson.Field
-		System      respjson.Field
-		Tools       respjson.Field
-		Type        respjson.Field
-		Version     respjson.Field
-		raw         string
+		ID                respjson.Field
+		Description       respjson.Field
+		ExecutionIdentity respjson.Field
+		MCPServers        respjson.Field
+		Model             respjson.Field
+		Name              respjson.Field
+		Skills            respjson.Field
+		System            respjson.Field
+		Tools             respjson.Field
+		Type              respjson.Field
+		Version           respjson.Field
+		raw               string
 	} `json:"-"`
 }
 

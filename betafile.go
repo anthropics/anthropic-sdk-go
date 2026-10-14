@@ -62,6 +62,7 @@ func (r *BetaFileService) List(ctx context.Context, params BetaFileListParams, o
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/files?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.files.list", "/v1/files", "ids", "limit", "page", "scope_id"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -100,6 +101,7 @@ func (r *BetaFileService) Delete(ctx context.Context, fileID string, body BetaFi
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/files/%s?beta=true", url.PathEscape(fileID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.files.delete", "/v1/files/{file_id}"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -126,6 +128,7 @@ func (r *BetaFileService) Download(ctx context.Context, fileID string, query Bet
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/files/%s/content?beta=true", url.PathEscape(fileID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.files.download", "/v1/files/{file_id}/content"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -151,6 +154,7 @@ func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query 
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/files/%s?beta=true", url.PathEscape(fileID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.files.retrieve_metadata", "/v1/files/{file_id}"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -172,6 +176,7 @@ func (r *BetaFileService) Upload(ctx context.Context, params BetaFileUploadParam
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/files?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.files.upload", "/v1/files"), requestconfig.WithSpanCreatedID("anthropic.file.id", &res, func(created *BetaFileMetadata) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

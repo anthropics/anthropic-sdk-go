@@ -727,7 +727,7 @@ func TestContextDeadlineStreaming(t *testing.T) {
 				}},
 				Role: anthropic.MessageParamRoleUser,
 			}},
-			Model: anthropic.ModelClaudeOpus5,
+			Model: anthropic.ModelClaudeOpus5_5,
 		})
 		for stream.Next() {
 			_ = stream.Current()
@@ -785,7 +785,7 @@ func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
 					}},
 					Role: anthropic.MessageParamRoleUser,
 				}},
-				Model: anthropic.ModelClaudeOpus5,
+				Model: anthropic.ModelClaudeOpus5_5,
 			},
 			option.WithRequestTimeout((100 * time.Millisecond)),
 		)

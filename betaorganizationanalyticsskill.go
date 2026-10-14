@@ -45,6 +45,8 @@ func (r *BetaOrganizationAnalyticsSkillService) List(ctx context.Context, query 
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/analytics/skills?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.skills.list", "/v1/organizations/analytics/skills", "date", "ending_date", "filter", "group_by", "limit", "order", "order_by", "page", "starting_date"))
+	opts = append(opts, requestconfig.WithSpanContentQuery("filter"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err

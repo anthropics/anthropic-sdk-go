@@ -52,7 +52,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 				Effort: anthropic.BetaSystemMessageOutputConfigEffortLow,
 			},
 		}},
-		Model: anthropic.ModelClaudeOpus5,
+		Model: anthropic.ModelClaudeOpus5_5,
 		CacheControl: anthropic.BetaCacheControlEphemeralParam{
 			TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 		},
@@ -239,7 +239,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 				Effort: anthropic.BetaSystemMessageOutputConfigEffortLow,
 			},
 		}},
-		Model: anthropic.ModelClaudeOpus5,
+		Model: anthropic.ModelClaudeOpus5_5,
 		CacheControl: anthropic.BetaCacheControlEphemeralParam{
 			TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 		},

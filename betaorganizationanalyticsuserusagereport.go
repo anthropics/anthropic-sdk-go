@@ -47,6 +47,7 @@ func (r *BetaOrganizationAnalyticsUserUsageReportService) List(ctx context.Conte
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/analytics/user_usage_report?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.user_usage_report.list", "/v1/organizations/analytics/user_usage_report", "bucket_width", "claude_tag_categories", "claude_tag_user_ids", "context_windows", "ending_at", "exclude_deleted_users", "group_by", "inference_geos", "limit", "models", "order", "order_by", "page", "products", "rbac_group_ids", "slack_channel_ids", "speeds", "starting_at", "user_ids"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err

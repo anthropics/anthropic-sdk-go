@@ -140,6 +140,11 @@ type EnvironmentWorkerOptions struct {
 // exposes the per-item flow for callers that already hold a claimed work item
 // (for example a `worker poll --on-work` hook) and only need the
 // run/heartbeat/force-stop machinery.
+//
+// Run emits an OpenTelemetry span, anthropic.environment.work, for each work
+// item, as a child of the span in its context, with the spans of everything
+// the worker does for the item as its children (see [WorkPoller]). HandleItem
+// emits none.
 type EnvironmentWorker struct {
 	client anthropic.Client
 	opts   EnvironmentWorkerOptions
@@ -213,7 +218,12 @@ func (w *EnvironmentWorker) Run(ctx context.Context) error {
 			continue
 		}
 		// handleItem logs its own per-item failures; the poll loop keeps going.
-		_ = w.handleItem(ctx, work, w.opts.EnvironmentKey, noHeartbeatSentinel)
+		lost, err := w.handleItem(poller.workCtx, work, w.opts.EnvironmentKey, noHeartbeatSentinel)
+		if lost {
+			// Neither finished with nor failed: the worker no longer holds the item's lease.
+			err = context.Canceled
+		}
+		poller.finishWork(err)
 	}
 	if err := poller.Err(); err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
 		return err
@@ -343,7 +353,8 @@ func (w *EnvironmentWorker) HandleItem(ctx context.Context, opts HandleItemOptio
 			Type: "session",
 		},
 	}
-	return w.handleItem(ctx, work, environmentKey, expectedLastHeartbeat)
+	_, err := w.handleItem(ctx, work, environmentKey, expectedLastHeartbeat)
+	return err
 }
 
 // checkItemCredential verifies that the item will have a Bearer credential:
@@ -375,8 +386,9 @@ func checkItemCredential(environmentKey, workSecret string) error {
 // logs a warning and falls back to environmentKey unchanged.
 // expectedLastHeartbeat is the first heartbeat's expected_last_heartbeat:
 // noHeartbeatSentinel to start the lease, or the token a previous heartbeat
-// returned to continue one.
-func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.BetaSelfHostedWork, environmentKey, expectedLastHeartbeat string) error {
+// returned to continue one. lost is whether the worker no longer held the lease
+// when it stopped: the lease was lost, or the API rejected a heartbeat for good.
+func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.BetaSelfHostedWork, environmentKey, expectedLastHeartbeat string) (lost bool, err error) {
 	log := w.opts.Logger
 	if log == nil {
 		log = slog.Default()
@@ -410,7 +422,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 		// so an empty credential here means a future code path bypassed that
 		// validation; surface it rather than fire requests with the parent
 		// client's credentials.
-		return err
+		return false, err
 	}
 	hbStopOpts := make([]option.RequestOption, 0, len(w.opts.RequestOptions)+len(helperOpts))
 	hbStopOpts = append(hbStopOpts, w.opts.RequestOptions...)
@@ -446,17 +458,18 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	}()
 
 	// Deferred first so it runs last on every exit path: end the heartbeat,
-	// then force-stop the item on a fresh context (a cancelled ctx must not
-	// skip it; a 409 means it already stopped) unless the lease was lost.
+	// then force-stop the item on a context that outlives ctx (a canceled ctx
+	// must not skip it; a 409 means it already stopped) unless the lease was lost.
 	defer func() {
 		sessCancel()
 		<-hbDone
+		lost = leaseEnd.lost() || leaseEnd == leaseHeartbeatRejected
 		if leaseEnd.lost() {
 			log.Info("lease lost; released without stopping it")
 			return
 		}
 
-		stopCtx, cancel := context.WithTimeout(context.Background(), stopTimeout)
+		stopCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), stopTimeout)
 		defer cancel()
 		if err := stopWork(stopCtx, w.client, work.ID,
 			anthropic.BetaEnvironmentWorkStopParams{
@@ -474,7 +487,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	// The queue also sends "healthcheck" items, which the generated type does not model.
 	if work.Data.Type != "session" {
 		log.Debug("skipping non-session work item", slog.String("type", string(work.Data.Type)))
-		return nil
+		return false, nil
 	}
 
 	env := &agenttoolset.AgentToolContext{
@@ -500,7 +513,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 		// skill degrades the session, a missing memory folder corrupts it.
 		err = fmt.Errorf("retrieve session %s: %w", sessionID, err)
 		log.Warn("session lookup failed", slog.Any("error", err))
-		return err
+		return false, err
 	}
 	if err := env.SetupSkillsFromSession(sessCtx, w.client, session, hbStopOpts...); err != nil {
 		log.Warn("skill setup failed", slog.Any("error", err))
@@ -532,7 +545,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 		if err != nil {
 			// Unreachable after checkOptions; kept so a bad interval can never
 			// run a session without its memory.
-			return err
+			return false, err
 		}
 		if w.memoryClock != nil {
 			stores.setClock(w.memoryClock)
@@ -547,7 +560,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 			// names a memory folder that isn't there would run with amnesia
 			// and sync nothing back, which is worse than not running at all.
 			log.Error("memory store download failed", slog.Any("error", err))
-			return err
+			return false, err
 		}
 		// A store mounted outside the workdir must stay reachable by the file
 		// tools; read-only stores still refuse writes via ReadOnlyRoots.
@@ -564,7 +577,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 		if w.opts.MemorySyncInterval >= 0 && hasMemoryStore(session) {
 			err := fmt.Errorf("session %s: %w", sessionID, ErrSessionMemoryNoToken)
 			log.Error("memory stores cannot be mounted", slog.Any("error", err))
-			return err
+			return false, err
 		}
 		log.Debug("memory stores disabled for this item")
 	}
@@ -600,7 +613,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	if err != nil {
 		// Same validation invariant as the hbStopOpts construction above —
 		// surface rather than send with the parent client's credentials.
-		return err
+		return false, err
 	}
 	runnerReqOpts := make([]option.RequestOption, 0, len(w.opts.RequestOptions)+len(runnerBearerOpts))
 	runnerReqOpts = append(runnerReqOpts, w.opts.RequestOptions...)
@@ -639,7 +652,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 		}
 	}
 
-	return runErr
+	return false, runErr
 }
 
 // leaseEndReason is why heartbeating of a work item ended. The zero value,

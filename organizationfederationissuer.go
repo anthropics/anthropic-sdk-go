@@ -12,6 +12,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
@@ -58,6 +59,7 @@ func NewOrganizationFederationIssuerService(opts ...option.RequestOption) (r Org
 func (r *OrganizationFederationIssuerService) New(ctx context.Context, body OrganizationFederationIssuerNewParams, opts ...option.RequestOption) (res *FederationIssuer, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/federation_issuers"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.create", "/v1/organizations/federation_issuers"), requestconfig.WithSpanCreatedID("anthropic.organization.federation_issuer.id", &res, func(created *FederationIssuer) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -75,6 +77,7 @@ func (r *OrganizationFederationIssuerService) Get(ctx context.Context, federatio
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", url.PathEscape(federationIssuerID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.retrieve", "/v1/organizations/federation_issuers/{federation_issuer_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -98,6 +101,7 @@ func (r *OrganizationFederationIssuerService) Update(ctx context.Context, federa
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", url.PathEscape(federationIssuerID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.update", "/v1/organizations/federation_issuers/{federation_issuer_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -115,6 +119,7 @@ func (r *OrganizationFederationIssuerService) List(ctx context.Context, query Or
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/federation_issuers"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.list", "/v1/organizations/federation_issuers", "include_archived", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -157,6 +162,7 @@ func (r *OrganizationFederationIssuerService) Archive(ctx context.Context, feder
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/federation_issuers/%s/archive", url.PathEscape(federationIssuerID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.archive", "/v1/organizations/federation_issuers/{federation_issuer_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -578,11 +584,11 @@ func (u OrganizationFederationIssuerNewParamsJWKSUnion) GetKeys() []map[string]a
 // Returns a pointer to the underlying variant's property, if present.
 func (u OrganizationFederationIssuerNewParamsJWKSUnion) GetType() *string {
 	if vt := u.OfDiscovery; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfExplicitURL; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfInline; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -695,11 +701,11 @@ func (u OrganizationFederationIssuerUpdateParamsJWKSUnion) GetKeys() []map[strin
 // Returns a pointer to the underlying variant's property, if present.
 func (u OrganizationFederationIssuerUpdateParamsJWKSUnion) GetType() *string {
 	if vt := u.OfDiscovery; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfExplicitURL; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfInline; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

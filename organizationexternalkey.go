@@ -12,6 +12,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
@@ -43,6 +44,7 @@ func NewOrganizationExternalKeyService(opts ...option.RequestOption) (r Organiza
 func (r *OrganizationExternalKeyService) New(ctx context.Context, body OrganizationExternalKeyNewParams, opts ...option.RequestOption) (res *ExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/external_keys"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.create", "/v1/organizations/external_keys"), requestconfig.WithSpanCreatedID("anthropic.organization.external_key.id", &res, func(created *ExternalKey) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -55,6 +57,7 @@ func (r *OrganizationExternalKeyService) Get(ctx context.Context, externalKeyID 
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.retrieve", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -71,6 +74,7 @@ func (r *OrganizationExternalKeyService) Update(ctx context.Context, externalKey
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.update", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -84,6 +88,7 @@ func (r *OrganizationExternalKeyService) List(ctx context.Context, query Organiz
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/external_keys"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.list", "/v1/organizations/external_keys", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -114,6 +119,7 @@ func (r *OrganizationExternalKeyService) Delete(ctx context.Context, externalKey
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.delete", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -131,6 +137,7 @@ func (r *OrganizationExternalKeyService) Validate(ctx context.Context, externalK
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/external_keys/%s/validate", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.validate", "/v1/organizations/external_keys/{external_key_id}/validate"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -664,11 +671,11 @@ func (u OrganizationExternalKeyNewParamsProviderConfigUnion) GetClientID() *stri
 // Returns a pointer to the underlying variant's property, if present.
 func (u OrganizationExternalKeyNewParamsProviderConfigUnion) GetType() *string {
 	if vt := u.OfAWS; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfGCP; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAzure; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -797,11 +804,11 @@ func (u OrganizationExternalKeyUpdateParamsProviderConfigUnion) GetClientID() *s
 // Returns a pointer to the underlying variant's property, if present.
 func (u OrganizationExternalKeyUpdateParamsProviderConfigUnion) GetType() *string {
 	if vt := u.OfAWS; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfGCP; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAzure; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

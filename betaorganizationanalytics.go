@@ -810,9 +810,9 @@ type BetaAnalyticsCostBucketedResult struct {
 	// List-price amount (pre-discount) in fractional cents.
 	ListAmount string `json:"list_amount" api:"required"`
 	// Model that produced the usage or cost, as a model name in the form the
-	// `models[]` filter accepts (for example, `claude-opus-5`). Null unless `model` is
-	// in `group_by[]`; it can also be null on grouped rows whose usage or cost is not
-	// attributed to a specific model, such as code execution.
+	// `models[]` filter accepts (for example, `claude-opus-5-5`). Null unless `model`
+	// is in `group_by[]`; it can also be null on grouped rows whose usage or cost is
+	// not attributed to a specific model, such as code execution.
 	Model string `json:"model" api:"required"`
 	// Product surface that produced the usage or cost. Null unless product is in
 	// `group_by[]`; it can also be null on grouped rows whose usage cannot be
@@ -984,9 +984,9 @@ type BetaAnalyticsCostUsersItem struct {
 	// List-price amount (pre-discount) in fractional cents.
 	ListAmount string `json:"list_amount" api:"required"`
 	// Model that produced the usage or cost, as a model name in the form the
-	// `models[]` filter accepts (for example, `claude-opus-5`). Null unless `model` is
-	// in `group_by[]`; it can also be null on grouped rows whose usage or cost is not
-	// attributed to a specific model, such as code execution.
+	// `models[]` filter accepts (for example, `claude-opus-5-5`). Null unless `model`
+	// is in `group_by[]`; it can also be null on grouped rows whose usage or cost is
+	// not attributed to a specific model, such as code execution.
 	Model string `json:"model" api:"required"`
 	// Product surface that produced the usage or cost. Null unless product is in
 	// `group_by[]`; it can also be null on grouped rows whose usage cannot be
@@ -2287,9 +2287,9 @@ type BetaAnalyticsUsageBucketedResult struct {
 	// Any of "global", "us".
 	InferenceGeo BetaAnalyticsUsageBucketedResultInferenceGeo `json:"inference_geo" api:"required"`
 	// Model that produced the usage or cost, as a model name in the form the
-	// `models[]` filter accepts (for example, `claude-opus-5`). Null unless `model` is
-	// in `group_by[]`; it can also be null on grouped rows whose usage or cost is not
-	// attributed to a specific model, such as code execution.
+	// `models[]` filter accepts (for example, `claude-opus-5-5`). Null unless `model`
+	// is in `group_by[]`; it can also be null on grouped rows whose usage or cost is
+	// not attributed to a specific model, such as code execution.
 	Model string `json:"model" api:"required"`
 	// The number of output tokens generated.
 	OutputTokens int64 `json:"output_tokens" api:"required"`
@@ -2445,9 +2445,9 @@ type BetaAnalyticsUsageUsersItem struct {
 	// Any of "global", "us".
 	InferenceGeo BetaAnalyticsUsageUsersItemInferenceGeo `json:"inference_geo" api:"required"`
 	// Model that produced the usage or cost, as a model name in the form the
-	// `models[]` filter accepts (for example, `claude-opus-5`). Null unless `model` is
-	// in `group_by[]`; it can also be null on grouped rows whose usage or cost is not
-	// attributed to a specific model, such as code execution.
+	// `models[]` filter accepts (for example, `claude-opus-5-5`). Null unless `model`
+	// is in `group_by[]`; it can also be null on grouped rows whose usage or cost is
+	// not attributed to a specific model, such as code execution.
 	Model string `json:"model" api:"required"`
 	// The number of output tokens generated.
 	OutputTokens int64 `json:"output_tokens" api:"required"`

@@ -8,13 +8,18 @@ import (
 	"iter"
 	"log/slog"
 	"math/rand/v2"
+	"slices"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/sendwindow"
 	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
+	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
+	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -276,6 +281,9 @@ type SessionToolRunner struct {
 	// x-stainless-helper telemetry header. Immutable after construction.
 	reqOpts []option.RequestOption
 
+	// telemetry configures the OpenTelemetry span of each tool run.
+	telemetry tracing.Options
+
 	// ctx is the runner's internal context — a child of the caller's ctx —
 	// used by all background loops. cancel terminates them.
 	ctx    context.Context
@@ -298,7 +306,7 @@ type SessionToolRunner struct {
 	// re-dispatching the same tool_use across reconcile+stream overlaps;
 	// `answered` prevents re-executing a tool whose result the server already
 	// has. One mutex covers both — they're always touched together at low
-	// frequency.
+	// frequency. It also guards primaryThreadID.
 	mu       sync.Mutex
 	seen     map[string]struct{}
 	answered map[string]struct{}
@@ -309,6 +317,18 @@ type SessionToolRunner struct {
 	// stream goroutine (streamLoop / reconcile), so no lock is needed for them.
 	confirmationVerdicts map[string]string
 	awaitingConfirmation map[string]pendingToolUse
+
+	// primaryThreadID is the ID of the Session's primary thread, whose tool-use
+	// events have no session_thread_id. The first session.thread_status_* event
+	// of the Session's event log has it: the primary thread runs before any other
+	// thread exists. It is set once, under mu, because the stream goroutine sets
+	// it and the dispatch goroutine reads it. It stays empty for a Session whose
+	// log has no such event.
+	primaryThreadID string
+	// historyRead says that the reconcile pass of the current connection read the
+	// whole event log, so that the events of the live stream continue it without
+	// a gap. Only the stream goroutine touches it.
+	historyRead bool
 
 	// idle owns the single stop-countdown, armed off the server's
 	// session.status_idle stop_reason, including its deferral while
@@ -367,6 +387,7 @@ func (r *BetaSessionEventService) NewToolRunner(ctx context.Context, sessionID s
 		log:          log,
 		byName:       byName,
 		reqOpts:      reqOpts,
+		telemetry:    openTelemetryOptions(ctx, slices.Concat(r.Options, reqOpts)),
 		ctx:          internalCtx,
 		cancel:       cancel,
 		sendWindow:   sendwindow.FromContext(ctx),
@@ -565,6 +586,15 @@ func (p pendingToolUse) input() map[string]any {
 		return p.customToolUse.Input
 	}
 	return p.toolUse.Input
+}
+
+// sessionThreadID returns the session_thread_id of the tool-use event, which is
+// empty for an event of the Session's primary thread.
+func (p pendingToolUse) sessionThreadID() string {
+	if p.custom {
+		return p.customToolUse.SessionThreadID
+	}
+	return p.toolUse.SessionThreadID
 }
 
 // idleClock is the idle stop-countdown state. idleWatchdog reads it and
@@ -772,6 +802,11 @@ func (r *SessionToolRunner) streamLoop(ctx context.Context, out chan<- pendingTo
 			}
 			ev := stream.Current()
 			r.idle.noteEvent(ev.Type, ev.StopReason.Type)
+			// After a history pass that failed, the stream may start past the log's
+			// first thread status event, and its own first one may be of another thread.
+			if r.historyRead {
+				r.notePrimaryThread(ev.Type, ev.SessionThreadID)
+			}
 			switch ev.Type {
 			case string(BetaManagedAgentsAgentToolUseEventTypeAgentToolUse):
 				if r.markSeen(ev.ID) {
@@ -858,6 +893,9 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 		r.reqOpts...)
 	for pager.Next() {
 		ev := pager.Current()
+		// The list starts at the log's start, so its first thread status event is
+		// the log's first.
+		r.notePrimaryThread(ev.Type, ev.SessionThreadID)
 		switch ev.Type {
 		case string(BetaManagedAgentsAgentToolUseEventTypeAgentToolUse):
 			r.markSeen(ev.ID)
@@ -892,6 +930,7 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 			lastEndedTurn = endsTurn(ev.Type, ev.StopReason.Type)
 		}
 	}
+	r.historyRead = pager.Err() == nil
 	if err := pager.Err(); err != nil {
 		r.log.Warn("reconcile list failed", slog.Any("error", err))
 		return nil
@@ -1102,11 +1141,26 @@ func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) Dispa
 		Confirmation:  p.confirmation,
 	}
 
+	// Without a conversation ID from the application, the conversation ID is the ID
+	// of the thread that the tool call belongs to: the event's thread, or the
+	// primary thread for an event without one. The span of the request that sends
+	// the tool's result has it, as the tool's span does.
+	threadConversationID := ""
+	if r.telemetry.ConversationID == "" {
+		if threadConversationID = p.sessionThreadID(); threadConversationID == "" {
+			threadConversationID = r.primaryThread()
+		}
+	}
+	sendOpts := r.reqOpts
+	if threadConversationID != "" {
+		sendOpts = append(slices.Clip(sendOpts), option.WithOpenTelemetryConversationID(threadConversationID))
+	}
+
 	rawInput, err := json.Marshal(p.input())
 	if err != nil {
 		log.Warn("re-encoding tool input failed", slog.Any("error", err))
 		call.IsError = true
-		return r.postCall(ctx, call, textOnlyResult(fmt.Sprintf("tool input could not be re-encoded: %v", err)))
+		return r.postCall(ctx, call, textOnlyResult(fmt.Sprintf("tool input could not be re-encoded: %v", err)), sendOpts)
 	}
 
 	var blocks []BetaToolResultBlockParamContentUnion
@@ -1136,12 +1190,24 @@ func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) Dispa
 		// while teardown blocks on the drain.
 		toolTimeout := r.toolTimeout()
 		toolCtx, cancel := context.WithTimeout(ctx, toolTimeout)
+		resourceIDs := []attribute.KeyValue{attribute.String("anthropic.session.id", r.sessionID)}
+		if threadID := p.sessionThreadID(); threadID != "" {
+			resourceIDs = append(resourceIDs, attribute.String("anthropic.session.thread.id", threadID))
+		}
+		// The platform's spans have the thread ID as their conversation ID, so that the tool spans share their conversation.
+		if threadConversationID != "" {
+			resourceIDs = append(resourceIDs, telemetry.GenAIConversationIDKey.String(threadConversationID))
+		}
+		// A Session event has no toolset_name.
+		toolCtx, span := telemetry.StartToolUseSpan(toolCtx, r.telemetry, toolSpanName(tool, !p.custom), name, "", tool.Description, id, resourceIDs...)
 		out, runErr := tool.Execute(toolCtx, rawInput)
 		cancel()
 		switch {
 		case errors.Is(toolCtx.Err(), context.DeadlineExceeded):
 			call.IsError = true
 			blocks = textOnlyResult(fmt.Sprintf("tool %q timed out after %s", name, toolTimeout))
+			// A tool that runs out of time has failed.
+			runErr = context.DeadlineExceeded
 		case runErr != nil:
 			call.IsError = true
 			blocks = textOnlyResult(runErr.Error())
@@ -1149,11 +1215,38 @@ func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) Dispa
 			blocks = out
 			call.IsError = false
 		}
+		if len(blocks) == 0 {
+			blocks = textOnlyResult("(no output)")
+		}
+		// ctx, not toolCtx: the runner's timeout on toolCtx is a failure of the tool,
+		// and toolCtx is always canceled by now.
+		telemetry.EndToolUseSpan(ctx, span, r.telemetry, rawInput, sentToolResultContent(blocks), runErr)
 	}
-	if len(blocks) == 0 {
-		blocks = textOnlyResult("(no output)")
+	return r.postCall(ctx, call, blocks, sendOpts)
+}
+
+// sentToolResultContent is the tool result blocks of a call, which encode as the
+// content of the result event that the runner sends for them. It is the same in
+// both kinds of event. The blocks are only converted when the span records them.
+// A block that the event holds as the text of its JSON encodes as the block
+// itself, because a span keeps a text block whole and would so keep data that it
+// leaves out of a block of that type.
+type sentToolResultContent []BetaToolResultBlockParamContentUnion
+
+func (c sentToolResultContent) MarshalJSON() ([]byte, error) {
+	sent := make([]any, 0, len(c))
+	for _, b := range c {
+		dst, asJSONText, ok := toToolResultBlock(b)
+		if !ok {
+			continue
+		}
+		if asJSONText {
+			sent = append(sent, b)
+			continue
+		}
+		sent = append(sent, dst)
 	}
-	return r.postCall(ctx, call, blocks)
+	return json.Marshal(sent)
 }
 
 // textOnlyResult wraps s as a single text tool-result block.
@@ -1168,25 +1261,32 @@ func textOnlyResult(s string) []BetaToolResultBlockParamContentUnion {
 func toToolResultContent(blocks []BetaToolResultBlockParamContentUnion) []BetaManagedAgentsUserToolResultEventParamsContentUnion {
 	out := make([]BetaManagedAgentsUserToolResultEventParamsContentUnion, 0, len(blocks))
 	for _, b := range blocks {
-		raw, err := json.Marshal(b)
-		if err != nil || len(raw) == 0 || string(raw) == "null" {
-			continue
-		}
-		var dst BetaManagedAgentsUserToolResultEventParamsContentUnion
-		if json.Unmarshal(raw, &dst) == nil && roundTripComplete(&dst) {
-			// The Sessions API rejects empty text blocks; a tool that
-			// succeeds silently must still produce a postable result.
-			if dst.OfText != nil && dst.OfText.Text == "" {
-				dst.OfText.Text = "(no output)"
-			}
+		if dst, _, ok := toToolResultBlock(b); ok {
 			out = append(out, dst)
-			continue
 		}
-		out = append(out, BetaManagedAgentsUserToolResultEventParamsContentUnion{
-			OfText: &BetaManagedAgentsTextBlockParam{Text: string(raw)},
-		})
 	}
 	return out
+}
+
+// toToolResultBlock converts one block as toToolResultContent does. asJSONText
+// says that dst is the text block that holds the block's raw JSON, and ok is
+// false for a block that encodes to nothing, which the event leaves out.
+func toToolResultBlock(b BetaToolResultBlockParamContentUnion) (dst BetaManagedAgentsUserToolResultEventParamsContentUnion, asJSONText, ok bool) {
+	raw, err := json.Marshal(b)
+	if err != nil || len(raw) == 0 || string(raw) == "null" {
+		return dst, false, false
+	}
+	if json.Unmarshal(raw, &dst) == nil && roundTripComplete(&dst) {
+		// The Sessions API rejects empty text blocks; a tool that
+		// succeeds silently must still produce a postable result.
+		if dst.OfText != nil && dst.OfText.Text == "" {
+			dst.OfText.Text = "(no output)"
+		}
+		return dst, false, true
+	}
+	return BetaManagedAgentsUserToolResultEventParamsContentUnion{
+		OfText: &BetaManagedAgentsTextBlockParam{Text: string(raw)},
+	}, true, true
 }
 
 // roundTripComplete reports whether dst decoded into a variant whose required
@@ -1224,11 +1324,11 @@ func toCustomToolResultContent(blocks []BetaToolResultBlockParamContentUnion) []
 
 // postCall builds the matching result event for call — user.custom_tool_result
 // when call.Custom, otherwise user.tool_result — from the tool's result blocks,
-// sends it, and records the event on call.Result / call.CustomResult and the
+// sends it with sendOpts, and records the event on call.Result / call.CustomResult and the
 // send outcome on call.Posted. The tool-use id is marked answered ONLY when
 // the result post actually succeeds: a failed post leaves the call unanswered
 // so the next reconcile re-dispatches it instead of silently dropping it.
-func (r *SessionToolRunner) postCall(ctx context.Context, call DispatchedToolCall, blocks []BetaToolResultBlockParamContentUnion) DispatchedToolCall {
+func (r *SessionToolRunner) postCall(ctx context.Context, call DispatchedToolCall, blocks []BetaToolResultBlockParamContentUnion, sendOpts []option.RequestOption) DispatchedToolCall {
 	var event BetaManagedAgentsEventParamsUnion
 	if call.Custom {
 		call.CustomResult = BetaManagedAgentsUserCustomToolResultEventParams{
@@ -1247,7 +1347,7 @@ func (r *SessionToolRunner) postCall(ctx context.Context, call DispatchedToolCal
 		}
 		event = BetaManagedAgentsEventParamsUnion{OfUserToolResult: &call.Result}
 	}
-	call.Posted = r.sendResult(ctx, event, call.ToolUseID)
+	call.Posted = r.sendResult(ctx, event, call.ToolUseID, sendOpts)
 	if call.Posted {
 		r.markAnswered(call.ToolUseID)
 	}
@@ -1260,7 +1360,7 @@ func (r *SessionToolRunner) postCall(ctx context.Context, call DispatchedToolCal
 // each failure, so a lease TTL learned mid-retry applies) has elapsed since the
 // first attempt; a permanent 4xx or ctx cancellation short-circuits and returns
 // false.
-func (r *SessionToolRunner) sendResult(ctx context.Context, event BetaManagedAgentsEventParamsUnion, toolUseID string) bool {
+func (r *SessionToolRunner) sendResult(ctx context.Context, event BetaManagedAgentsEventParamsUnion, toolUseID string, sendOpts []option.RequestOption) bool {
 	params := BetaSessionEventSendParams{
 		Events: []BetaManagedAgentsEventParamsUnion{event},
 	}
@@ -1268,7 +1368,7 @@ func (r *SessionToolRunner) sendResult(ctx context.Context, event BetaManagedAge
 	backoff := sessionRunnerSendBackoffStart
 	for attempt := 1; ; attempt++ {
 		sendCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), r.sendTimeout())
-		_, err := r.eventService.Send(sendCtx, r.sessionID, params, r.reqOpts...)
+		_, err := r.eventService.Send(sendCtx, r.sessionID, params, sendOpts...)
 		cancel()
 		if err == nil {
 			return true
@@ -1323,6 +1423,32 @@ func (r *SessionToolRunner) isAnswered(id string) bool {
 	defer r.mu.Unlock()
 	_, ok := r.answered[id]
 	return ok
+}
+
+// sessionThreadStatusEventPrefix starts the type of every event that reports the
+// status of a Session thread: session.thread_status_running, _idle and the rest.
+const sessionThreadStatusEventPrefix = "session.thread_status_"
+
+// notePrimaryThread keeps the thread ID of the first thread status event as the
+// primary thread's. The caller passes the events in the order of the Session's
+// event log, from its start.
+func (r *SessionToolRunner) notePrimaryThread(eventType, sessionThreadID string) {
+	if sessionThreadID == "" || !strings.HasPrefix(eventType, sessionThreadStatusEventPrefix) {
+		return
+	}
+	r.mu.Lock()
+	if r.primaryThreadID == "" {
+		r.primaryThreadID = sessionThreadID
+	}
+	r.mu.Unlock()
+}
+
+// primaryThread returns the ID of the Session's primary thread, or "" when the
+// runner has not learned it.
+func (r *SessionToolRunner) primaryThread() string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.primaryThreadID
 }
 
 // routeToolEvent enqueues p for dispatch, honoring its evaluated permission.

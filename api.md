@@ -2638,6 +2638,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaSpendLimitRBACGroupScope">BetaSpendLimitRBACGroupScope</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaSpendLimitScopedAPIKeyActor">BetaSpendLimitScopedAPIKeyActor</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaSpendLimitSeatTierScope">BetaSpendLimitSeatTierScope</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaSpendLimitUsageTierScope">BetaSpendLimitUsageTierScope</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaSpendLimitUserActor">BetaSpendLimitUserActor</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaSpendLimitUserScope">BetaSpendLimitUserScope</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaSpendLimitWorkspaceScope">BetaSpendLimitWorkspaceScope</a>

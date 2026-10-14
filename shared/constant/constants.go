@@ -74,6 +74,7 @@ type BillingError string                            // Always "billing_error"
 type Browser string                                 // Always "browser"
 type BrowserState string                            // Always "browser_state"
 type BrowserToolset20260801 string                  // Always "browser_toolset_20260801"
+type Caller string                                  // Always "caller"
 type Canceled string                                // Always "canceled"
 type CharLocation string                            // Always "char_location"
 type CitationsDelta string                          // Always "citations_delta"
@@ -147,6 +148,7 @@ type Error string                                   // Always "error"
 type Errored string                                 // Always "errored"
 type Event string                                   // Always "event"
 type Except string                                  // Always "except"
+type Exclude string                                 // Always "exclude"
 type Expired string                                 // Always "expired"
 type ExplicitURL string                             // Always "explicit_url"
 type ExternalKey string                             // Always "external_key"
@@ -170,10 +172,12 @@ type Grep string                                    // Always "grep"
 type HoldKey string                                 // Always "hold_key"
 type Hover string                                   // Always "hover"
 type Image string                                   // Always "image"
+type Include string                                 // Always "include"
 type Inline string                                  // Always "inline"
 type InputJSONDelta string                          // Always "input_json_delta"
 type InputTokens string                             // Always "input_tokens"
 type Insert string                                  // Always "insert"
+type InvalidAddress string                          // Always "invalid_address"
 type InvalidRequestError string                     // Always "invalid_request_error"
 type Invite string                                  // Always "invite"
 type InviteDeleted string                           // Always "invite_deleted"
@@ -248,6 +252,7 @@ type ReadNetwork string                             // Always "read_network"
 type ReadPage string                                // Always "read_page"
 type RedactedThinking string                        // Always "redacted_thinking"
 type Redeemed string                                // Always "redeemed"
+type Redirect string                                // Always "redirect"
 type Ref string                                     // Always "ref"
 type Refusal string                                 // Always "refusal"
 type Rename string                                  // Always "rename"
@@ -303,9 +308,14 @@ type StrReplaceBasedEditTool string                 // Always "str_replace_based
 type StrReplaceEditor string                        // Always "str_replace_editor"
 type Succeeded string                               // Always "succeeded"
 type Summarize string                               // Always "summarize"
+type SustainedFailure string                        // Always "sustained_failure"
 type SwitchTab string                               // Always "switch_tab"
 type SystemChanged string                           // Always "system_changed"
 type TabOpened string                               // Always "tab_opened"
+type TelemetryDestination string                    // Always "telemetry_destination"
+type TelemetryDestinationDeleted string             // Always "telemetry_destination_deleted"
+type TelemetryDestinationWorkspace string           // Always "telemetry_destination_workspace"
+type TelemetryDestinationWorkspaceDeleted string    // Always "telemetry_destination_workspace_deleted"
 type Text string                                    // Always "text"
 type TextDelta string                               // Always "text_delta"
 type TextEditor20241022 string                      // Always "text_editor_20241022"
@@ -449,6 +459,7 @@ func (c BillingError) Default() BillingError                     { return "billi
 func (c Browser) Default() Browser                               { return "browser" }
 func (c BrowserState) Default() BrowserState                     { return "browser_state" }
 func (c BrowserToolset20260801) Default() BrowserToolset20260801 { return "browser_toolset_20260801" }
+func (c Caller) Default() Caller                                 { return "caller" }
 func (c Canceled) Default() Canceled                             { return "canceled" }
 func (c CharLocation) Default() CharLocation                     { return "char_location" }
 func (c CitationsDelta) Default() CitationsDelta                 { return "citations_delta" }
@@ -530,6 +541,7 @@ func (c Error) Default() Error                                 { return "error" 
 func (c Errored) Default() Errored                             { return "errored" }
 func (c Event) Default() Event                                 { return "event" }
 func (c Except) Default() Except                               { return "except" }
+func (c Exclude) Default() Exclude                             { return "exclude" }
 func (c Expired) Default() Expired                             { return "expired" }
 func (c ExplicitURL) Default() ExplicitURL                     { return "explicit_url" }
 func (c ExternalKey) Default() ExternalKey                     { return "external_key" }
@@ -557,10 +569,12 @@ func (c Grep) Default() Grep                                 { return "grep" }
 func (c HoldKey) Default() HoldKey                           { return "hold_key" }
 func (c Hover) Default() Hover                               { return "hover" }
 func (c Image) Default() Image                               { return "image" }
+func (c Include) Default() Include                           { return "include" }
 func (c Inline) Default() Inline                             { return "inline" }
 func (c InputJSONDelta) Default() InputJSONDelta             { return "input_json_delta" }
 func (c InputTokens) Default() InputTokens                   { return "input_tokens" }
 func (c Insert) Default() Insert                             { return "insert" }
+func (c InvalidAddress) Default() InvalidAddress             { return "invalid_address" }
 func (c InvalidRequestError) Default() InvalidRequestError   { return "invalid_request_error" }
 func (c Invite) Default() Invite                             { return "invite" }
 func (c InviteDeleted) Default() InviteDeleted               { return "invite_deleted" }
@@ -643,6 +657,7 @@ func (c ReadNetwork) Default() ReadNetwork                       { return "read_
 func (c ReadPage) Default() ReadPage                             { return "read_page" }
 func (c RedactedThinking) Default() RedactedThinking             { return "redacted_thinking" }
 func (c Redeemed) Default() Redeemed                             { return "redeemed" }
+func (c Redirect) Default() Redirect                             { return "redirect" }
 func (c Ref) Default() Ref                                       { return "ref" }
 func (c Refusal) Default() Refusal                               { return "refusal" }
 func (c Rename) Default() Rename                                 { return "rename" }
@@ -721,12 +736,23 @@ func (c StrReplace) Default() StrReplace { return "str_replace" }
 func (c StrReplaceBasedEditTool) Default() StrReplaceBasedEditTool {
 	return "str_replace_based_edit_tool"
 }
-func (c StrReplaceEditor) Default() StrReplaceEditor     { return "str_replace_editor" }
-func (c Succeeded) Default() Succeeded                   { return "succeeded" }
-func (c Summarize) Default() Summarize                   { return "summarize" }
-func (c SwitchTab) Default() SwitchTab                   { return "switch_tab" }
-func (c SystemChanged) Default() SystemChanged           { return "system_changed" }
-func (c TabOpened) Default() TabOpened                   { return "tab_opened" }
+func (c StrReplaceEditor) Default() StrReplaceEditor         { return "str_replace_editor" }
+func (c Succeeded) Default() Succeeded                       { return "succeeded" }
+func (c Summarize) Default() Summarize                       { return "summarize" }
+func (c SustainedFailure) Default() SustainedFailure         { return "sustained_failure" }
+func (c SwitchTab) Default() SwitchTab                       { return "switch_tab" }
+func (c SystemChanged) Default() SystemChanged               { return "system_changed" }
+func (c TabOpened) Default() TabOpened                       { return "tab_opened" }
+func (c TelemetryDestination) Default() TelemetryDestination { return "telemetry_destination" }
+func (c TelemetryDestinationDeleted) Default() TelemetryDestinationDeleted {
+	return "telemetry_destination_deleted"
+}
+func (c TelemetryDestinationWorkspace) Default() TelemetryDestinationWorkspace {
+	return "telemetry_destination_workspace"
+}
+func (c TelemetryDestinationWorkspaceDeleted) Default() TelemetryDestinationWorkspaceDeleted {
+	return "telemetry_destination_workspace_deleted"
+}
 func (c Text) Default() Text                             { return "text" }
 func (c TextDelta) Default() TextDelta                   { return "text_delta" }
 func (c TextEditor20241022) Default() TextEditor20241022 { return "text_editor_20241022" }
@@ -892,6 +918,7 @@ func (c BillingError) MarshalJSON() ([]byte, error)                         { re
 func (c Browser) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c BrowserState) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c BrowserToolset20260801) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c Caller) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Canceled) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c CharLocation) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c CitationsDelta) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
@@ -965,6 +992,7 @@ func (c Error) MarshalJSON() ([]byte, error)                                { re
 func (c Errored) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Event) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Except) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c Exclude) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Expired) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c ExplicitURL) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c ExternalKey) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
@@ -988,10 +1016,12 @@ func (c Grep) MarshalJSON() ([]byte, error)                                 { re
 func (c HoldKey) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Hover) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Image) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
+func (c Include) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Inline) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c InputJSONDelta) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c InputTokens) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Insert) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c InvalidAddress) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c InvalidRequestError) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Invite) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c InviteDeleted) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
@@ -1066,6 +1096,7 @@ func (c ReadNetwork) MarshalJSON() ([]byte, error)                          { re
 func (c ReadPage) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c RedactedThinking) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Redeemed) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c Redirect) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Ref) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
 func (c Refusal) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Rename) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
@@ -1121,9 +1152,14 @@ func (c StrReplaceBasedEditTool) MarshalJSON() ([]byte, error)              { re
 func (c StrReplaceEditor) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Succeeded) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Summarize) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c SustainedFailure) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c SwitchTab) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c SystemChanged) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c TabOpened) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c TelemetryDestination) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c TelemetryDestinationDeleted) MarshalJSON() ([]byte, error)          { return marshalString(c) }
+func (c TelemetryDestinationWorkspace) MarshalJSON() ([]byte, error)        { return marshalString(c) }
+func (c TelemetryDestinationWorkspaceDeleted) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c Text) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c TextDelta) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c TextEditor20241022) MarshalJSON() ([]byte, error)                   { return marshalString(c) }

@@ -19,22 +19,23 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewBetaOrganizationService] method instead.
 type BetaOrganizationService struct {
-	Options            []option.RequestOption
-	APIKeys            BetaOrganizationAPIKeyService
-	ExternalKeys       BetaOrganizationExternalKeyService
-	Federation         BetaOrganizationFederationService
-	Invites            BetaOrganizationInviteService
-	ServiceAccounts    BetaOrganizationServiceAccountService
-	Users              BetaOrganizationUserService
-	Workspaces         BetaOrganizationWorkspaceService
-	RateLimits         BetaOrganizationRateLimitService
-	ComplianceSettings BetaOrganizationComplianceSettingService
-	Analytics          BetaOrganizationAnalyticsService
-	SpendLimits        BetaOrganizationSpendLimitService
-	RBACGroups         BetaOrganizationRBACGroupService
-	RBACRoles          BetaOrganizationRBACRoleService
-	Plugins            BetaOrganizationPluginService
-	PluginMarketplaces BetaOrganizationPluginMarketplaceService
+	Options               []option.RequestOption
+	APIKeys               BetaOrganizationAPIKeyService
+	ExternalKeys          BetaOrganizationExternalKeyService
+	Federation            BetaOrganizationFederationService
+	Invites               BetaOrganizationInviteService
+	ServiceAccounts       BetaOrganizationServiceAccountService
+	Users                 BetaOrganizationUserService
+	Workspaces            BetaOrganizationWorkspaceService
+	RateLimits            BetaOrganizationRateLimitService
+	ComplianceSettings    BetaOrganizationComplianceSettingService
+	Analytics             BetaOrganizationAnalyticsService
+	SpendLimits           BetaOrganizationSpendLimitService
+	RBACGroups            BetaOrganizationRBACGroupService
+	RBACRoles             BetaOrganizationRBACRoleService
+	Plugins               BetaOrganizationPluginService
+	PluginMarketplaces    BetaOrganizationPluginMarketplaceService
+	TelemetryDestinations BetaOrganizationTelemetryDestinationService
 }
 
 // NewBetaOrganizationService generates a new service that applies the given
@@ -58,6 +59,7 @@ func NewBetaOrganizationService(opts ...option.RequestOption) (r BetaOrganizatio
 	r.RBACRoles = NewBetaOrganizationRBACRoleService(opts...)
 	r.Plugins = NewBetaOrganizationPluginService(opts...)
 	r.PluginMarketplaces = NewBetaOrganizationPluginMarketplaceService(opts...)
+	r.TelemetryDestinations = NewBetaOrganizationTelemetryDestinationService(opts...)
 	return
 }
 

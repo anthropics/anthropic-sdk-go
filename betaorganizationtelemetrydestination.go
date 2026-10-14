@@ -213,6 +213,37 @@ func (r *BetaOrganizationTelemetryDestinationService) Delete(ctx context.Context
 	return res, err
 }
 
+// Send one test span, named `anthropic.test`, to the destination with its
+// registered headers, once and without retries, and report the destination's
+// answer. The response is 200 whether or not the destination answered with a 2xx
+// status: its `result` has the type `success`, or the type `failure` and the
+// reason in `error`. The destination's configuration, `state` and
+// `delivery_health` do not change. A disabled destination can be tested too. Wait
+// 10 seconds between tests of one destination; a request that comes sooner may be
+// answered with status 429.
+func (r *BetaOrganizationTelemetryDestinationService) Test(ctx context.Context, destinationID string, body BetaOrganizationTelemetryDestinationTestParams, opts ...option.RequestOption) (res *BetaTelemetryDestinationTest, err error) {
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
+	}
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "telemetry-destinations-2026-08-11")}, opts...)
+	if destinationID == "" {
+		err = errors.New("missing required destination_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/test?beta=true", url.PathEscape(destinationID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.test", "/v1/organizations/telemetry_destinations/{destination_id}/test"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
+	return res, err
+}
+
 // Confirmation that a destination was deleted.
 type BetaDeletedTelemetryDestination struct {
 	// ID of the deleted destination (`tdst_...`).
@@ -731,6 +762,133 @@ func init() {
 	)
 }
 
+// The result of one test span sent to a destination.
+type BetaTelemetryDestinationTest struct {
+	// How the test went: `success` when the destination answered with a 2xx status,
+	// else `failure` with the reason.
+	Result BetaTelemetryDestinationTestResultUnion `json:"result" api:"required"`
+	Type   constant.TelemetryDestinationTest       `json:"type" default:"telemetry_destination_test"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Result      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaTelemetryDestinationTest) RawJSON() string { return r.JSON.raw }
+func (r *BetaTelemetryDestinationTest) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The test span was not delivered.
+type BetaTelemetryDestinationTestFailure struct {
+	// A message that describes why the test span was not delivered, including the HTTP
+	// status code when the destination returned one. Examples:
+	// `HTTP error (status 403)`, `timeout`, `TLS failure`. It has the same form as the
+	// destination's `delivery_health.last_error` and never contains the destination's
+	// response body, any header value, a network address, or TLS details.
+	Error string           `json:"error" api:"required"`
+	Type  constant.Failure `json:"type" default:"failure"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Error       respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaTelemetryDestinationTestFailure) RawJSON() string { return r.JSON.raw }
+func (r *BetaTelemetryDestinationTestFailure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaTelemetryDestinationTestResultUnion contains all possible properties and
+// values from [BetaTelemetryDestinationTestSuccess],
+// [BetaTelemetryDestinationTestFailure].
+//
+// Use the [BetaTelemetryDestinationTestResultUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaTelemetryDestinationTestResultUnion struct {
+	// Any of "success", "failure".
+	Type string `json:"type"`
+	// This field is from variant [BetaTelemetryDestinationTestFailure].
+	Error string `json:"error"`
+	JSON  struct {
+		Type  respjson.Field
+		Error respjson.Field
+		raw   string
+	} `json:"-"`
+}
+
+// anyBetaTelemetryDestinationTestResult is implemented by each variant of
+// [BetaTelemetryDestinationTestResultUnion] to add type safety for the return type
+// of [BetaTelemetryDestinationTestResultUnion.AsAny]
+type anyBetaTelemetryDestinationTestResult interface {
+	implBetaTelemetryDestinationTestResultUnion()
+}
+
+func (BetaTelemetryDestinationTestSuccess) implBetaTelemetryDestinationTestResultUnion() {}
+func (BetaTelemetryDestinationTestFailure) implBetaTelemetryDestinationTestResultUnion() {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaTelemetryDestinationTestResultUnion.AsAny().(type) {
+//	case anthropic.BetaTelemetryDestinationTestSuccess:
+//	case anthropic.BetaTelemetryDestinationTestFailure:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaTelemetryDestinationTestResultUnion) AsAny() anyBetaTelemetryDestinationTestResult {
+	switch u.Type {
+	case "success":
+		return u.AsSuccess()
+	case "failure":
+		return u.AsFailure()
+	}
+	return nil
+}
+
+func (u BetaTelemetryDestinationTestResultUnion) AsSuccess() (v BetaTelemetryDestinationTestSuccess) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaTelemetryDestinationTestResultUnion) AsFailure() (v BetaTelemetryDestinationTestFailure) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaTelemetryDestinationTestResultUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaTelemetryDestinationTestResultUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The destination answered the test span with a 2xx status.
+type BetaTelemetryDestinationTestSuccess struct {
+	Type constant.Success `json:"type" default:"success"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaTelemetryDestinationTestSuccess) RawJSON() string { return r.JSON.raw }
+func (r *BetaTelemetryDestinationTestSuccess) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // A telemetry destination's settings for the traces it receives.
 type BetaTelemetryDestinationTraces struct {
 	// What the exported spans contain.
@@ -1230,6 +1388,12 @@ func (r BetaOrganizationTelemetryDestinationListParams) URLQuery() (v url.Values
 }
 
 type BetaOrganizationTelemetryDestinationDeleteParams struct {
+	// Optional header to specify the beta version(s) you want to use.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
+	paramObj
+}
+
+type BetaOrganizationTelemetryDestinationTestParams struct {
 	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj

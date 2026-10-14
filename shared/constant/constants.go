@@ -154,6 +154,7 @@ type ExplicitURL string                             // Always "explicit_url"
 type ExternalKey string                             // Always "external_key"
 type ExternalKeyDeleted string                      // Always "external_key_deleted"
 type ExternalKeyValidation string                   // Always "external_key_validation"
+type Failure string                                 // Always "failure"
 type Fallback string                                // Always "fallback"
 type FallbackMessage string                         // Always "fallback_message"
 type FederationIssuer string                        // Always "federation_issuer"
@@ -307,6 +308,7 @@ type StrReplace string                              // Always "str_replace"
 type StrReplaceBasedEditTool string                 // Always "str_replace_based_edit_tool"
 type StrReplaceEditor string                        // Always "str_replace_editor"
 type Succeeded string                               // Always "succeeded"
+type Success string                                 // Always "success"
 type Summarize string                               // Always "summarize"
 type SustainedFailure string                        // Always "sustained_failure"
 type SwitchTab string                               // Always "switch_tab"
@@ -314,6 +316,7 @@ type SystemChanged string                           // Always "system_changed"
 type TabOpened string                               // Always "tab_opened"
 type TelemetryDestination string                    // Always "telemetry_destination"
 type TelemetryDestinationDeleted string             // Always "telemetry_destination_deleted"
+type TelemetryDestinationTest string                // Always "telemetry_destination_test"
 type TelemetryDestinationWorkspace string           // Always "telemetry_destination_workspace"
 type TelemetryDestinationWorkspaceDeleted string    // Always "telemetry_destination_workspace_deleted"
 type Text string                                    // Always "text"
@@ -547,6 +550,7 @@ func (c ExplicitURL) Default() ExplicitURL                     { return "explici
 func (c ExternalKey) Default() ExternalKey                     { return "external_key" }
 func (c ExternalKeyDeleted) Default() ExternalKeyDeleted       { return "external_key_deleted" }
 func (c ExternalKeyValidation) Default() ExternalKeyValidation { return "external_key_validation" }
+func (c Failure) Default() Failure                             { return "failure" }
 func (c Fallback) Default() Fallback                           { return "fallback" }
 func (c FallbackMessage) Default() FallbackMessage             { return "fallback_message" }
 func (c FederationIssuer) Default() FederationIssuer           { return "federation_issuer" }
@@ -738,6 +742,7 @@ func (c StrReplaceBasedEditTool) Default() StrReplaceBasedEditTool {
 }
 func (c StrReplaceEditor) Default() StrReplaceEditor         { return "str_replace_editor" }
 func (c Succeeded) Default() Succeeded                       { return "succeeded" }
+func (c Success) Default() Success                           { return "success" }
 func (c Summarize) Default() Summarize                       { return "summarize" }
 func (c SustainedFailure) Default() SustainedFailure         { return "sustained_failure" }
 func (c SwitchTab) Default() SwitchTab                       { return "switch_tab" }
@@ -746,6 +751,9 @@ func (c TabOpened) Default() TabOpened                       { return "tab_opene
 func (c TelemetryDestination) Default() TelemetryDestination { return "telemetry_destination" }
 func (c TelemetryDestinationDeleted) Default() TelemetryDestinationDeleted {
 	return "telemetry_destination_deleted"
+}
+func (c TelemetryDestinationTest) Default() TelemetryDestinationTest {
+	return "telemetry_destination_test"
 }
 func (c TelemetryDestinationWorkspace) Default() TelemetryDestinationWorkspace {
 	return "telemetry_destination_workspace"
@@ -998,6 +1006,7 @@ func (c ExplicitURL) MarshalJSON() ([]byte, error)                          { re
 func (c ExternalKey) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c ExternalKeyDeleted) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c ExternalKeyValidation) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c Failure) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Fallback) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c FallbackMessage) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c FederationIssuer) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
@@ -1151,6 +1160,7 @@ func (c StrReplace) MarshalJSON() ([]byte, error)                           { re
 func (c StrReplaceBasedEditTool) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c StrReplaceEditor) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Succeeded) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c Success) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Summarize) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c SustainedFailure) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c SwitchTab) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
@@ -1158,6 +1168,7 @@ func (c SystemChanged) MarshalJSON() ([]byte, error)                        { re
 func (c TabOpened) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c TelemetryDestination) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c TelemetryDestinationDeleted) MarshalJSON() ([]byte, error)          { return marshalString(c) }
+func (c TelemetryDestinationTest) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c TelemetryDestinationWorkspace) MarshalJSON() ([]byte, error)        { return marshalString(c) }
 func (c TelemetryDestinationWorkspaceDeleted) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c Text) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }

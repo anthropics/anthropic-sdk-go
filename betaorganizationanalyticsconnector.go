@@ -48,6 +48,8 @@ func (r *BetaOrganizationAnalyticsConnectorService) List(ctx context.Context, qu
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/analytics/connectors?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.connectors.list", "/v1/organizations/analytics/connectors", "date", "ending_date", "filter", "group_by", "limit", "order", "order_by", "page", "starting_date"))
+	opts = append(opts, requestconfig.WithSpanContentQuery("filter"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err

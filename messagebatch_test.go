@@ -48,7 +48,7 @@ func TestMessageBatchNewWithOptionalParams(t *testing.T) {
 					}},
 					Role: anthropic.MessageParamRoleUser,
 				}},
-				Model: anthropic.ModelClaudeOpus5,
+				Model: anthropic.ModelClaudeOpus5_5,
 				CacheControl: anthropic.CacheControlEphemeralParam{
 					TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 				},

@@ -29,7 +29,7 @@ Or explicitly add the dependency:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/anthropics/anthropic-sdk-go@v1.80.0'
+go get -u 'github.com/anthropics/anthropic-sdk-go@v1.81.0'
 ```
 
 <!-- x-release-please-end -->
@@ -64,6 +64,24 @@ func main() {
 	fmt.Printf("%+v\n", message.Content)
 }
 ```
+
+## OpenTelemetry
+
+The SDK reports each API call as an OpenTelemetry span when your application has registered a tracer provider.
+No client option is needed for that.
+The spans carry no content of requests or responses unless you set `option.WithOpenTelemetryTracesContentMode(option.OpenTelemetryContentModeContent)` or `ANTHROPIC_OPEN_TELEMETRY_TRACES_CONTENT_MODE=content`.
+A span then holds at most 750,000 bytes of content, and has `anthropic.content.truncated` when content was cut or left out to fit; `option.WithOpenTelemetryTracesMaxContentBytes(n)` or `ANTHROPIC_OPEN_TELEMETRY_TRACES_MAX_CONTENT_BYTES=n` sets another maximum.
+Each request carries the trace context of its span in the headers of your registered propagator; `option.WithOpenTelemetryPropagation(false)` or `ANTHROPIC_OPEN_TELEMETRY_PROPAGATION=false` leaves them out, for an application whose HTTP client instrumentation already sends them.
+
+```go
+client := anthropic.NewClient(option.WithTracerProvider(provider)) // a provider other than the registered one
+quiet := anthropic.NewClient(option.WithoutOpenTelemetry())        // no spans; ANTHROPIC_OPEN_TELEMETRY=false does the same
+
+client.Messages.New(ctx, params, option.WithOpenTelemetryConversationID(conversationID)) // sets gen_ai.conversation.id
+```
+
+`WithTracerProvider`, `WithOpenTelemetryPropagation`, `WithoutOpenTelemetry`, `WithOpenTelemetryTraces`, `WithOpenTelemetryTracesContentMode`, and `WithOpenTelemetryTracesMaxContentBytes` are client options.
+Go has one request option type, so a method call accepts them too; passed that way, they apply to that call only.
 
 ## Requirements
 

@@ -59,6 +59,7 @@ func (r *OrganizationFederationRuleWorkspaceService) List(ctx context.Context, f
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces", url.PathEscape(federationRuleID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.workspaces.list", "/v1/organizations/federation_rules/{federation_rule_id}/workspaces", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", federationRuleID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -108,6 +109,7 @@ func (r *OrganizationFederationRuleWorkspaceService) Add(ctx context.Context, fe
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces", url.PathEscape(federationRuleID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.workspaces.add", "/v1/organizations/federation_rules/{federation_rule_id}/workspaces"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", federationRuleID), requestconfig.WithSpanCreatedID("anthropic.organization.federation_rule.workspace.id", &res, func(created *FederationRuleWorkspace) string { return created.WorkspaceID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -133,6 +135,7 @@ func (r *OrganizationFederationRuleWorkspaceService) Remove(ctx context.Context,
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces/%s", url.PathEscape(body.FederationRuleID), url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.workspaces.remove", "/v1/organizations/federation_rules/{federation_rule_id}/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", body.FederationRuleID), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

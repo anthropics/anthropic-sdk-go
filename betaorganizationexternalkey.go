@@ -12,6 +12,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
@@ -43,6 +44,7 @@ func NewBetaOrganizationExternalKeyService(opts ...option.RequestOption) (r Beta
 func (r *BetaOrganizationExternalKeyService) New(ctx context.Context, body BetaOrganizationExternalKeyNewParams, opts ...option.RequestOption) (res *BetaExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/external_keys?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.create", "/v1/organizations/external_keys"), requestconfig.WithSpanCreatedID("anthropic.organization.external_key.id", &res, func(created *BetaExternalKey) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -55,6 +57,7 @@ func (r *BetaOrganizationExternalKeyService) Get(ctx context.Context, externalKe
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/external_keys/%s?beta=true", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.retrieve", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -71,6 +74,7 @@ func (r *BetaOrganizationExternalKeyService) Update(ctx context.Context, externa
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/external_keys/%s?beta=true", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.update", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -84,6 +88,7 @@ func (r *BetaOrganizationExternalKeyService) List(ctx context.Context, query Bet
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/external_keys?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.list", "/v1/organizations/external_keys", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -114,6 +119,7 @@ func (r *BetaOrganizationExternalKeyService) Delete(ctx context.Context, externa
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/external_keys/%s?beta=true", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.delete", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -131,6 +137,7 @@ func (r *BetaOrganizationExternalKeyService) Validate(ctx context.Context, exter
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/external_keys/%s/validate?beta=true", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.validate", "/v1/organizations/external_keys/{external_key_id}/validate"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -692,11 +699,11 @@ func (u BetaOrganizationExternalKeyNewParamsProviderConfigUnion) GetClientID() *
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaOrganizationExternalKeyNewParamsProviderConfigUnion) GetType() *string {
 	if vt := u.OfAWS; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfGCP; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAzure; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -833,11 +840,11 @@ func (u BetaOrganizationExternalKeyUpdateParamsProviderConfigUnion) GetClientID(
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaOrganizationExternalKeyUpdateParamsProviderConfigUnion) GetType() *string {
 	if vt := u.OfAWS; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfGCP; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAzure; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

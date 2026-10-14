@@ -58,6 +58,7 @@ func (r *MessageBatchService) New(ctx context.Context, params MessageBatchNewPar
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/batches"
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.create", "/v1/messages/batches"), messageBatchesCreateSpan(len(params.Requests)), requestconfig.WithSpanCreatedID("anthropic.message.batch.id", &res, func(created *MessageBatch) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -78,6 +79,7 @@ func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, qu
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.retrieve", "/v1/messages/batches/{message_batch_id}"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -95,6 +97,7 @@ func (r *MessageBatchService) List(ctx context.Context, params MessageBatchListP
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/messages/batches"
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.list", "/v1/messages/batches", "after_id", "before_id", "limit"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -133,6 +136,7 @@ func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string,
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.delete", "/v1/messages/batches/{message_batch_id}"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -159,6 +163,7 @@ func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string,
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/cancel", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.cancel", "/v1/messages/batches/{message_batch_id}/cancel"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -186,6 +191,7 @@ func (r *MessageBatchService) ResultsStreaming(ctx context.Context, messageBatch
 		return jsonl.NewStream[MessageBatchIndividualResponse](nil, err)
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/results", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.results", "/v1/messages/batches/{message_batch_id}/results"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
 	return jsonl.NewStream[MessageBatchIndividualResponse](raw, err)
 }
@@ -592,7 +598,10 @@ type MessageBatchNewParamsRequestParams struct {
 	//
 	// If the final message uses the `assistant` role, the response content will
 	// continue immediately from the content in that message. This can be used to
-	// constrain part of the model's response.
+	// constrain part of the model's response. This is called prefill. On models that
+	// don't support prefill, creating a message that ends with a partial `assistant`
+	// response returns a 400 error. See
+	// [Prefill not supported](https://platform.claude.com/docs/en/api/errors#prefill-not-supported).
 	//
 	// Example with a single `user` message:
 	//
@@ -610,7 +619,8 @@ type MessageBatchNewParamsRequestParams struct {
 	// ]
 	// ```
 	//
-	// Example with a partially-filled response from Claude:
+	// Example with a partially-filled response from Claude, for models that support
+	// prefill:
 	//
 	// ```json
 	// [
@@ -735,15 +745,16 @@ type MessageBatchNewParamsRequestParams struct {
 	// as specifying a particular goal or role. See our
 	// [guide to system prompts](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices#give-claude-a-role).
 	System []TextBlockParam `json:"system,omitzero"`
-	// Configuration for enabling Claude's extended thinking.
+	// Configuration for Claude's thinking.
 	//
-	// When enabled, responses include `thinking` content blocks showing Claude's
-	// thinking process before the final answer. Requires a minimum budget of 1,024
-	// tokens and counts towards your `max_tokens` limit.
+	// With `{"type": "adaptive"}`, Claude decides when and how much to think. With
+	// `{"type": "enabled"}` (manual extended thinking), you set a `budget_tokens` of
+	// at least 1,024. Thinking tokens count toward your `max_tokens` limit.
 	//
-	// See
-	// [extended thinking](https://platform.claude.com/docs/en/build-with-claude/extended-thinking)
-	// for details.
+	// Which `type` values are accepted, and what happens when you omit `thinking`,
+	// depend on the model. See
+	// [thinking](https://platform.claude.com/docs/en/build-with-claude/thinking#configuring-thinking)
+	// for each model's behavior.
 	Thinking ThinkingConfigParamUnion `json:"thinking,omitzero"`
 	// How the model should use the provided tools. The model can use a specific tool,
 	// any available tool, decide by itself, or not use tools at all.

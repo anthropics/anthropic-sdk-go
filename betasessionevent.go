@@ -64,6 +64,7 @@ func (r *BetaSessionEventService) List(ctx context.Context, sessionID string, pa
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.events.list", "/v1/sessions/{session_id}/events", "created_at[gt]", "created_at[gte]", "created_at[lt]", "created_at[lte]", "limit", "order", "page", "types"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -103,6 +104,7 @@ func (r *BetaSessionEventService) Send(ctx context.Context, sessionID string, pa
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.events.send", "/v1/sessions/{session_id}/events"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -133,6 +135,7 @@ func (r *BetaSessionEventService) StreamEvents(ctx context.Context, sessionID st
 		return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](nil, err)
 	}
 	path := fmt.Sprintf("v1/sessions/%s/events/stream?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.events.stream", "/v1/sessions/{session_id}/events/stream", "event_deltas"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &raw, opts...)
 	return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](ssestream.NewDecoder(raw), err)
 }
@@ -277,7 +280,9 @@ func (r *BetaManagedAgentsAgentAutoEvaluatedPermissionDeny) UnmarshalJSON(data [
 }
 
 // Event emitted when the agent calls a custom tool. The session goes idle until
-// the client sends a `user.custom_tool_result` event with the result.
+// the client sends a `user.custom_tool_result` event with the result. The client
+// can send it as soon as this event arrives, without waiting for
+// `session.status_idle`.
 type BetaManagedAgentsAgentCustomToolUseEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
@@ -2010,6 +2015,7 @@ func init() {
 func BetaManagedAgentsEventParamsOfUserMessage(content []BetaManagedAgentsUserMessageEventParamsContentUnion) BetaManagedAgentsEventParamsUnion {
 	var userMessage BetaManagedAgentsUserMessageEventParams
 	userMessage.Content = content
+	userMessage.Type = BetaManagedAgentsUserMessageEventParamsTypeUserMessage
 	return BetaManagedAgentsEventParamsUnion{OfUserMessage: &userMessage}
 }
 
@@ -2030,6 +2036,7 @@ func BetaManagedAgentsEventParamsOfUserToolConfirmation(result BetaManagedAgents
 func BetaManagedAgentsEventParamsOfUserCustomToolResult(customToolUseID string) BetaManagedAgentsEventParamsUnion {
 	var userCustomToolResult BetaManagedAgentsUserCustomToolResultEventParams
 	userCustomToolResult.CustomToolUseID = customToolUseID
+	userCustomToolResult.Type = BetaManagedAgentsUserCustomToolResultEventParamsTypeUserCustomToolResult
 	return BetaManagedAgentsEventParamsUnion{OfUserCustomToolResult: &userCustomToolResult}
 }
 
@@ -2051,12 +2058,14 @@ func BetaManagedAgentsEventParamsOfUserDefineOutcome[
 func BetaManagedAgentsEventParamsOfUserToolResult(toolUseID string) BetaManagedAgentsEventParamsUnion {
 	var userToolResult BetaManagedAgentsUserToolResultEventParams
 	userToolResult.ToolUseID = toolUseID
+	userToolResult.Type = BetaManagedAgentsUserToolResultEventParamsTypeUserToolResult
 	return BetaManagedAgentsEventParamsUnion{OfUserToolResult: &userToolResult}
 }
 
 func BetaManagedAgentsEventParamsOfSystemMessage(content []BetaManagedAgentsSystemContentBlockParam) BetaManagedAgentsEventParamsUnion {
 	var systemMessage BetaManagedAgentsSystemMessageEventParams
 	systemMessage.Content = content
+	systemMessage.Type = BetaManagedAgentsSystemMessageEventParamsTypeSystemMessage
 	return BetaManagedAgentsEventParamsUnion{OfSystemMessage: &systemMessage}
 }
 
@@ -7731,8 +7740,8 @@ func (r *BetaManagedAgentsURLImageSourceParam) UnmarshalJSON(data []byte) error 
 type BetaManagedAgentsUserCustomToolResultEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
-	// The id of the `agent.custom_tool_use` event this result corresponds to, which
-	// can be found in the last `session.status_idle`
+	// The id of the `agent.custom_tool_use` event this result corresponds to. It is
+	// also listed in the last `session.status_idle`
 	// [event's](https://platform.claude.com/docs/en/api/beta/sessions/events/list#beta_managed_agents_session_requires_action.event_ids)
 	// `stop_reason.event_ids` field.
 	CustomToolUseID string `json:"custom_tool_use_id" api:"required"`
@@ -7911,8 +7920,8 @@ func (r *BetaManagedAgentsUserCustomToolResultEventContentUnionSource) Unmarshal
 //
 // The properties CustomToolUseID, Type are required.
 type BetaManagedAgentsUserCustomToolResultEventParams struct {
-	// The id of the `agent.custom_tool_use` event this result corresponds to, which
-	// can be found in the last `session.status_idle`
+	// The id of the `agent.custom_tool_use` event this result corresponds to. It is
+	// also listed in the last `session.status_idle`
 	// [event's](https://platform.claude.com/docs/en/api/beta/sessions/events/list#beta_managed_agents_session_requires_action.event_ids)
 	// `stop_reason.event_ids` field.
 	CustomToolUseID string `json:"custom_tool_use_id" api:"required"`

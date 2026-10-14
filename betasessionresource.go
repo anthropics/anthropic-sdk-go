@@ -66,6 +66,7 @@ func (r *BetaSessionResourceService) Get(ctx context.Context, resourceID string,
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/resources/%s?beta=true", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.retrieve", "/v1/sessions/{session_id}/resources/{resource_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.resource.id", resourceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -96,6 +97,7 @@ func (r *BetaSessionResourceService) Update(ctx context.Context, resourceID stri
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/resources/%s?beta=true", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.update", "/v1/sessions/{session_id}/resources/{resource_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.resource.id", resourceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -123,6 +125,7 @@ func (r *BetaSessionResourceService) List(ctx context.Context, sessionID string,
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/resources?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.list", "/v1/sessions/{session_id}/resources", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -166,6 +169,7 @@ func (r *BetaSessionResourceService) Delete(ctx context.Context, resourceID stri
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/resources/%s?beta=true", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.delete", "/v1/sessions/{session_id}/resources/{resource_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.resource.id", resourceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -192,6 +196,7 @@ func (r *BetaSessionResourceService) Add(ctx context.Context, sessionID string, 
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/resources?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.add", "/v1/sessions/{session_id}/resources"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID), requestconfig.WithSpanCreatedID("anthropic.session.resource.id", &res, func(created *BetaManagedAgentsFileResource) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

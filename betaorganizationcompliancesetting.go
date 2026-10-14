@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
@@ -42,6 +43,7 @@ func NewBetaOrganizationComplianceSettingService(opts ...option.RequestOption) (
 func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/compliance_settings?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.compliance_settings.retrieve", "/v1/organizations/compliance_settings"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -62,6 +64,7 @@ func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts
 func (r *BetaOrganizationComplianceSettingService) Update(ctx context.Context, body BetaOrganizationComplianceSettingUpdateParams, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/compliance_settings?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.compliance_settings.update", "/v1/organizations/compliance_settings"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -249,9 +252,9 @@ func (u *BetaComplianceSettingsStateParamUnion) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaComplianceSettingsStateParamUnion) GetType() *string {
 	if vt := u.OfEnabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDisabled; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

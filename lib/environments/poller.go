@@ -25,12 +25,18 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
+	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
+	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // bearerReqOpts returns the auth-only per-request options every
@@ -209,6 +215,12 @@ type WorkPollerOptions struct {
 // [WorkPollerOptions.AutoStop] is off. Poll, Ack and Stop are all authorized
 // with the environment key.
 //
+// The poller emits an OpenTelemetry span, anthropic.environment.work, for each
+// work item: from when a poll returns the item until the next Next or Close. It
+// is a child of the span in the context that the poller was made with, so the
+// polls are its siblings, and a root span when that context has none. The
+// client's OpenTelemetry options and RequestOptions apply to the span.
+//
 // A WorkPoller is NOT safe for concurrent use. All methods must be called
 // from a single goroutine. Always pair construction with a Close, ideally
 // via defer, so the final yielded work item is reliably stopped.
@@ -240,6 +252,12 @@ type WorkPoller struct {
 	discards    int    // consecutive unprocessable items, for discard backoff
 	closed      bool
 	autoStop    bool
+
+	// workCtx is the context to handle the current work item with: ctx, with
+	// workSpan, the item's span. workSpan is nil when the spans are off, and
+	// once it has ended.
+	workCtx  context.Context
+	workSpan trace.Span
 
 	idle idleLog
 	// now is the clock for idle logging and emptyPollWait the base wait between
@@ -274,6 +292,7 @@ func NewWorkPoller(ctx context.Context, client anthropic.Client, opts WorkPoller
 		opts:          opts,
 		log:           log,
 		autoStop:      opts.AutoStop.Or(true),
+		workCtx:       ctx,
 		now:           time.Now,
 		emptyPollWait: time.Second,
 	}
@@ -296,6 +315,7 @@ func NewWorkPoller(ctx context.Context, client anthropic.Client, opts WorkPoller
 // and polling continues.
 func (p *WorkPoller) Next() bool {
 	p.runPendingStop()
+	p.finishWork(nil)
 	if p.err != nil || p.closed {
 		return false
 	}
@@ -390,11 +410,13 @@ func (p *WorkPoller) Next() bool {
 		}
 		p.idle.onClaim()
 
+		p.startWorkSpan(work, reqOpts)
+
 		log := p.log.With(slog.String("work_id", work.ID),
 			slog.String("work_type", string(work.Data.Type)))
 
 		if _, err := p.client.Beta.Environments.Work.Ack(
-			p.ctx,
+			p.workCtx,
 			work.ID,
 			anthropic.BetaEnvironmentWorkAckParams{
 				EnvironmentID: p.opts.EnvironmentID,
@@ -405,7 +427,7 @@ func (p *WorkPoller) Next() bool {
 			// leaving it dangling, and back off before polling again.
 			log.ErrorContext(p.ctx, "ack failed, discarding work item",
 				slog.Any("error", err))
-			p.discardUnprocessable(work, reqOpts, log)
+			p.discardUnprocessable(work, err, reqOpts, log)
 			continue
 		}
 		log.InfoContext(p.ctx, "claimed work")
@@ -413,7 +435,7 @@ func (p *WorkPoller) Next() bool {
 		p.discards = 0
 		p.current = work
 		if p.autoStop {
-			p.pendingStop = p.makeStopClosure(work.ID, work.EnvironmentID, reqOpts, log)
+			p.pendingStop = p.makeStopClosure(p.workCtx, work.ID, work.EnvironmentID, reqOpts, log)
 		}
 		return true
 	}
@@ -423,6 +445,40 @@ func (p *WorkPoller) Next() bool {
 // returned true and before the next Next call.
 func (p *WorkPoller) Current() *anthropic.BetaSelfHostedWork {
 	return p.current
+}
+
+// startWorkSpan starts the span of work, which a poll just returned, with the
+// OpenTelemetry options of the requests that the poller sends with reqOpts.
+func (p *WorkPoller) startWorkSpan(work *anthropic.BetaSelfHostedWork, reqOpts []option.RequestOption) {
+	p.workCtx = p.ctx
+	// The options apply to an empty JSON request as they do to the poller's requests.
+	cfg, err := requestconfig.NewRequestConfig(p.ctx, http.MethodPost, "", []byte("{}"), nil, slices.Concat(p.client.Options, reqOpts)...)
+	if err != nil {
+		return
+	}
+	p.workCtx, p.workSpan = telemetry.StartEnvironmentWorkSpan(p.ctx, cfg.OpenTelemetry.Options, work.EnvironmentID, work.ID, work.Data.ID)
+}
+
+// finishWork ends the span of the current work item: nil is OK and err fails it.
+// The status stays unset when err is a cancellation or the poller's context was
+// canceled first. It does nothing without an open span.
+func (p *WorkPoller) finishWork(err error) {
+	span := p.workSpan
+	if span == nil {
+		return
+	}
+	p.workSpan = nil
+	tracing.Guard(func() {
+		defer span.End()
+		switch {
+		case p.ctx.Err() != nil:
+			// Stopped before the item was finished with: no status.
+		case err != nil:
+			tracing.SetErrorStatus(span, err, "")
+		default:
+			span.SetStatus(codes.Ok, "")
+		}
+	})
 }
 
 // Err returns the first non-retryable error, or nil if iteration ended
@@ -442,6 +498,7 @@ func (p *WorkPoller) Close() error {
 	}
 	p.closed = true
 	p.runPendingStop()
+	p.finishWork(nil)
 	return nil
 }
 
@@ -475,10 +532,11 @@ func (p *WorkPoller) runPendingStop() {
 	stop()
 }
 
-func (p *WorkPoller) makeStopClosure(workID, envID string, reqOpts []option.RequestOption, log *slog.Logger) func() {
+func (p *WorkPoller) makeStopClosure(workCtx context.Context, workID, envID string, reqOpts []option.RequestOption, log *slog.Logger) func() {
 	return func() {
-		// Fresh context so a cancelled caller ctx doesn't skip the Stop.
-		stopCtx, cancel := context.WithTimeout(context.Background(), stopTimeout)
+		// Not canceled with the caller's ctx, so that a canceled ctx doesn't
+		// skip the Stop, and still inside the item's span.
+		stopCtx, cancel := context.WithTimeout(context.WithoutCancel(workCtx), stopTimeout)
 		defer cancel()
 		stopErr := stopWork(stopCtx, p.client, workID,
 			anthropic.BetaEnvironmentWorkStopParams{EnvironmentID: envID},
@@ -519,11 +577,12 @@ func stopWork(ctx context.Context, client anthropic.Client, workID string, param
 }
 
 // discardUnprocessable best-effort force-stops a claimed work item the poller
-// cannot hand to a consumer — its ack failed — so the item does not dangle
-// and get redelivered, then backs off before the next poll so a persistently
-// bad item cannot hot-loop the poller. reqOpts carries the environment key.
-func (p *WorkPoller) discardUnprocessable(work *anthropic.BetaSelfHostedWork, reqOpts []option.RequestOption, log *slog.Logger) {
-	stopCtx, cancel := context.WithTimeout(context.Background(), stopTimeout)
+// cannot hand to a consumer — its ack failed with ackErr — so the item does not
+// dangle and get redelivered, then backs off before the next poll so a
+// persistently bad item cannot hot-loop the poller. reqOpts carries the
+// environment key.
+func (p *WorkPoller) discardUnprocessable(work *anthropic.BetaSelfHostedWork, ackErr error, reqOpts []option.RequestOption, log *slog.Logger) {
+	stopCtx, cancel := context.WithTimeout(context.WithoutCancel(p.workCtx), stopTimeout)
 	defer cancel()
 	if err := stopWork(stopCtx, p.client, work.ID,
 		anthropic.BetaEnvironmentWorkStopParams{
@@ -537,6 +596,7 @@ func (p *WorkPoller) discardUnprocessable(work *anthropic.BetaSelfHostedWork, re
 		log.WarnContext(p.ctx, "force-stop of unprocessable work item failed",
 			slog.Any("error", err))
 	}
+	p.finishWork(ackErr)
 
 	p.discards++
 	base := backoff(p.discards)

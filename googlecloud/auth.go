@@ -11,6 +11,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
+	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
@@ -99,7 +100,7 @@ func createClientOptions(ctx context.Context, cfg ClientConfig) ([]option.Reques
 		resolved.BaseURL = deriveBaseURL(resolved.Project, resolved.Location, resolved.WorkspaceID)
 	}
 
-	opts := []option.RequestOption{option.WithBaseURL(resolved.BaseURL)}
+	opts := []option.RequestOption{option.WithBaseURL(resolved.BaseURL), requestconfig.WithOpenTelemetryPlatform("googlecloud")}
 
 	if resolved.SkipAuth {
 		return opts, nil

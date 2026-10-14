@@ -15,6 +15,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
+	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
@@ -93,6 +94,7 @@ func NewClient(ctx context.Context, cfg ClientConfig, opts ...option.RequestOpti
 	if err != nil {
 		return nil, err
 	}
+	opts = append(opts, requestconfig.WithOpenTelemetryPlatform("aws"))
 
 	// We intentionally do not call anthropic.DefaultClientOptions() here.
 	// The AWS client resolves its own base URL, auth, and workspace ID — the

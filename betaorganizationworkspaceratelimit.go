@@ -58,6 +58,7 @@ func (r *BetaOrganizationWorkspaceRateLimitService) List(ctx context.Context, wo
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/workspaces/%s/rate_limits?beta=true", url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.rate_limits.list", "/v1/organizations/workspaces/{workspace_id}/rate_limits", "group_type", "include_inherited", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err

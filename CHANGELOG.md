@@ -6,6 +6,41 @@
 
 * **middleware:** preserve serving-hop usage iterations and relabel only the final sampling iteration during streaming refusal fallback.
 
+## [1.81.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.80.0...v1.81.0) (2026-10-14)
+
+### Features
+
+* **api:** add execution_identity to Managed Agents agents
+* **api:** add organization_type_not_supported error to spend limit lists
+* **api:** add telemetry destination test endpoint
+* **api:** add telemetry destinations to the Admin API
+* **client:** add OpenTelemetry spans for API calls
+* **client:** add OpenTelemetry tracing: each API call, stream and tool run is a span, on by default once the application has registered a tracer provider, and without the content of requests and responses unless `option.WithOpenTelemetryTracesContentMode` asks for it. Each request carries its span's trace context (`traceparent`) unless `option.WithOpenTelemetryPropagation(false)` or `ANTHROPIC_OPEN_TELEMETRY_PROPAGATION=false` leaves it out, and `option.WithoutOpenTelemetry()` or `ANTHROPIC_OPEN_TELEMETRY=false` turns all of it off. Adds the dependency `go.opentelemetry.io/otel`, v1.33.0 or later
+
+
+### Bug Fixes
+
+* **api:** rename telemetry destination test response model
+* **client:** return a constant's value from a param union's getter
+* **client:** skip comment-only blocks when decoding event streams
+* **client:** treat proxy-authorization as a sensitive header
+* set the required type field in union param constructor helpers
+
+
+### Chores
+
+* **docs:** correct prefill, thinking, fallback and model descriptions
+* **docs:** document the scope required to assign the managed role
+* **docs:** update model examples
+* **internal:** narrow the tripwire test rule in the contributor guides
+* **tests:** stop listing the stream event types in the accumulator test
+
+
+### Documentation
+
+* **api:** clarify when custom tool results can be sent
+* **api:** say is_enabled is always true for user spend limits
+
 ## [1.80.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.79.1...v1.80.0) (2026-10-09)
 
 ### Features

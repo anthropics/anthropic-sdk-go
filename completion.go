@@ -64,6 +64,7 @@ func (r *CompletionService) New(ctx context.Context, params CompletionNewParams,
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/complete"
+	opts = append(opts, requestconfig.WithSpan("anthropic.completions.create", "/v1/complete"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -102,6 +103,7 @@ func (r *CompletionService) NewStreaming(ctx context.Context, params CompletionN
 	opts = slices.Concat(r.Options, opts)
 	opts = append(opts, option.WithJSONSet("stream", true))
 	path := "v1/complete"
+	opts = append(opts, requestconfig.WithSpan("anthropic.completions.create", "/v1/complete"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &raw, opts...)
 	return ssestream.NewStream[Completion](ssestream.NewDecoder(raw), err)
 }

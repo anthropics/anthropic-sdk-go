@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	anthropic "github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -73,6 +74,7 @@ func NewBetaTools(tools []*mcpsdk.Tool, session *mcpsdk.ClientSession) ([]anthro
 }
 
 type betaTool struct {
+	telemetry.MadeByMCPHelper
 	tool    *mcpsdk.Tool
 	session *mcpsdk.ClientSession
 	schema  anthropic.BetaToolInputSchemaParam

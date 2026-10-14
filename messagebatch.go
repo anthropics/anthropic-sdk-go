@@ -709,6 +709,11 @@ type MessageBatchNewParamsRequestParams struct {
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// Container identifier for reuse across requests.
 	Container MessageCreateParamsContainerUnion `json:"container,omitzero"`
+	// The inference speed mode for this request. `"fast"` enables high
+	// output-tokens-per-second inference.
+	//
+	// Any of "standard", "fast".
+	Speed string `json:"speed,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -851,6 +856,9 @@ func (r *MessageBatchNewParamsRequestParams) UnmarshalJSON(data []byte) error {
 func init() {
 	apijson.RegisterFieldValidator[MessageBatchNewParamsRequestParams](
 		"service_tier", "auto", "standard_only",
+	)
+	apijson.RegisterFieldValidator[MessageBatchNewParamsRequestParams](
+		"speed", "standard", "fast",
 	)
 }
 

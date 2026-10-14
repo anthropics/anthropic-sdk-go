@@ -78,6 +78,7 @@ func TestMessageBatchNewWithOptionalParams(t *testing.T) {
 					},
 				},
 				ServiceTier:   "auto",
+				Speed:         "standard",
 				StopSequences: []string{"string"},
 				Stream:        anthropic.Bool(false),
 				System: []anthropic.TextBlockParam{{

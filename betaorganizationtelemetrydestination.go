@@ -221,7 +221,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Delete(ctx context.Context
 // `delivery_health` do not change. A disabled destination can be tested too. Wait
 // 10 seconds between tests of one destination; a request that comes sooner may be
 // answered with status 429.
-func (r *BetaOrganizationTelemetryDestinationService) Test(ctx context.Context, destinationID string, body BetaOrganizationTelemetryDestinationTestParams, opts ...option.RequestOption) (res *BetaTelemetryDestinationTest, err error) {
+func (r *BetaOrganizationTelemetryDestinationService) Test(ctx context.Context, destinationID string, body BetaOrganizationTelemetryDestinationTestParams, opts ...option.RequestOption) (res *BetaTelemetryDestinationTestResponse, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
 		for i, v := range body.Betas {
@@ -762,27 +762,6 @@ func init() {
 	)
 }
 
-// The result of one test span sent to a destination.
-type BetaTelemetryDestinationTest struct {
-	// How the test went: `success` when the destination answered with a 2xx status,
-	// else `failure` with the reason.
-	Result BetaTelemetryDestinationTestResultUnion `json:"result" api:"required"`
-	Type   constant.TelemetryDestinationTest       `json:"type" default:"telemetry_destination_test"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Result      respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaTelemetryDestinationTest) RawJSON() string { return r.JSON.raw }
-func (r *BetaTelemetryDestinationTest) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // The test span was not delivered.
 type BetaTelemetryDestinationTestFailure struct {
 	// A message that describes why the test span was not delivered, including the HTTP
@@ -804,6 +783,27 @@ type BetaTelemetryDestinationTestFailure struct {
 // Returns the unmodified JSON received from the API
 func (r BetaTelemetryDestinationTestFailure) RawJSON() string { return r.JSON.raw }
 func (r *BetaTelemetryDestinationTestFailure) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The result of one test span sent to a destination.
+type BetaTelemetryDestinationTestResponse struct {
+	// How the test went: `success` when the destination answered with a 2xx status,
+	// else `failure` with the reason.
+	Result BetaTelemetryDestinationTestResultUnion `json:"result" api:"required"`
+	Type   constant.TelemetryDestinationTest       `json:"type" default:"telemetry_destination_test"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Result      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaTelemetryDestinationTestResponse) RawJSON() string { return r.JSON.raw }
+func (r *BetaTelemetryDestinationTestResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

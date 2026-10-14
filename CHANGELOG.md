@@ -14,6 +14,7 @@
 
 ### Bug Fixes
 
+* **api:** rename telemetry destination test response model
 * **client:** return a constant's value from a param union's getter
 * **client:** skip comment-only blocks when decoding event streams
 * **client:** treat proxy-authorization as a sensitive header

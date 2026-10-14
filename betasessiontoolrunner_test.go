@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -19,6 +20,9 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel/codes"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
 // ---------------------------------------------------------------------------
@@ -371,6 +375,603 @@ func TestSessionToolRunner_DispatchesCustomTool(t *testing.T) {
 	require.Equal(t, int32(1), lookup.runs.Load())
 	require.Equal(t, int32(1), sent.Load())
 	require.NoError(t, r.Close())
+}
+
+// An agent-toolset tool (agent.tool_use) runs in an anthropic.tool_use span,
+// an application-defined tool (agent.custom_tool_use) in an
+// anthropic.custom_tool_use span.
+func TestSessionToolRunner_ToolSpansAreNamedByToolKind(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, []string{
+			sseLine("agent.tool_use", toolUseEvt("evt_b", "read", map[string]any{})),
+			sseLine("agent.custom_tool_use", customToolUseEvt("evt_c", "get_weather", map[string]any{})),
+		}, true)
+	}
+	server.HandleSend = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+	recorded := tracetest.NewSpanRecorder()
+	client := NewClient(
+		option.WithBaseURL(server.server.URL),
+		option.WithAPIKey("test-key"),
+		option.WithMaxRetries(0),
+		option.WithTracerProvider(sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorded))),
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, client, []BetaTool{&stubBetaTool{name: "read"}, &stubBetaTool{name: "get_weather"}}, 500*time.Millisecond)
+	for range 2 {
+		require.True(t, r.Next())
+	}
+	require.NoError(t, r.Close())
+
+	ids, descriptions := map[string]string{}, map[string]string{}
+	for _, s := range recorded.Ended() {
+		for _, kv := range s.Attributes() {
+			if kv.Key == "gen_ai.tool.call.id" {
+				ids[s.Name()] = kv.Value.AsString()
+				require.Equal(t, codes.Ok, s.Status().Code, s.Name())
+			}
+			if kv.Key == "gen_ai.tool.description" {
+				descriptions[s.Name()] = kv.Value.AsString()
+			}
+		}
+	}
+	require.Equal(t, map[string]string{"anthropic.tool_use read": "evt_b", "anthropic.custom_tool_use get_weather": "evt_c"}, ids)
+	// The description in the definition that the runner has for each tool.
+	require.Equal(t, map[string]string{"anthropic.tool_use read": "read", "anthropic.custom_tool_use get_weather": "get_weather"}, descriptions)
+}
+
+// In content mode a tool span has the content of the result event that the
+// runner sends, for an error result too.
+func TestSessionToolRunner_ToolSpansHaveTheResultContent(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, []string{
+			sseLine("agent.tool_use", toolUseEvt("evt_b", "read", map[string]any{})),
+			sseLine("agent.custom_tool_use", customToolUseEvt("evt_c", "get_weather", map[string]any{})),
+		}, true)
+	}
+	server.HandleSend = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+	recorded := tracetest.NewSpanRecorder()
+	client := NewClient(
+		option.WithBaseURL(server.server.URL),
+		option.WithAPIKey("test-key"),
+		option.WithMaxRetries(0),
+		option.WithTracerProvider(sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorded))),
+		option.WithOpenTelemetryTracesContentMode(option.OpenTelemetryContentModeContent),
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	failing := &stubBetaTool{name: "get_weather", run: func(context.Context, json.RawMessage) (string, bool) { return "no forecast", true }}
+	// The runner sends a placeholder in place of an empty text block.
+	silent := &stubBetaTool{name: "read", run: func(context.Context, json.RawMessage) (string, bool) { return "", false }}
+	r := newShortIdleRunner(t, ctx, client, []BetaTool{silent, failing}, 500*time.Millisecond)
+	for range 2 {
+		require.True(t, r.Next())
+	}
+	require.NoError(t, r.Close())
+
+	contents := map[string]string{}
+	for _, s := range recorded.Ended() {
+		for _, kv := range s.Attributes() {
+			require.NotEqual(t, "gen_ai.tool.call.result", string(kv.Key), s.Name())
+			if kv.Key == "anthropic.tool_result.content" {
+				contents[s.Name()] = kv.Value.AsString()
+			}
+		}
+	}
+	require.Len(t, contents, 2)
+	require.JSONEq(t, `[{"type":"text","text":"(no output)"}]`, contents["anthropic.tool_use read"])
+	require.JSONEq(t, `[{"type":"text","text":"no forecast"}]`, contents["anthropic.custom_tool_use get_weather"])
+}
+
+// blocksBetaTool returns blocks as its result.
+type blocksBetaTool struct {
+	stubBetaTool
+	blocks []BetaToolResultBlockParamContentUnion
+}
+
+func (b *blocksBetaTool) Execute(context.Context, json.RawMessage) ([]BetaToolResultBlockParamContentUnion, error) {
+	return b.blocks, nil
+}
+
+// The runner sends a block that the result event cannot hold as the text of its
+// JSON. The span has the block's type only, as it does for the Messages tool
+// runner, and not that text, which holds the block's data.
+func TestSessionToolRunner_ToolSpansHaveOnlyTheTypeOfABlockSentAsItsJSON(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, []string{sseLine("agent.tool_use", toolUseEvt("evt_b", "read", map[string]any{}))}, true)
+	}
+	server.HandleSend = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+	recorded := tracetest.NewSpanRecorder()
+	client := NewClient(
+		option.WithBaseURL(server.server.URL),
+		option.WithAPIKey("test-key"),
+		option.WithMaxRetries(0),
+		option.WithTracerProvider(sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorded))),
+		option.WithOpenTelemetryTracesContentMode(option.OpenTelemetryContentModeContent),
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	const data = "c2Nhbm5lZCBwYWdlIGJ5dGVz"
+	read := &blocksBetaTool{stubBetaTool: stubBetaTool{name: "read"}, blocks: []BetaToolResultBlockParamContentUnion{
+		{OfText: &BetaTextBlockParam{Text: "page 1"}},
+		{OfDocument: &BetaRequestDocumentBlockParam{Source: BetaRequestDocumentBlockSourceUnionParam{
+			OfContent: &BetaContentBlockSourceParam{Content: BetaContentBlockSourceContentUnionParam{OfString: param.NewOpt(data)}},
+		}}},
+		{OfToolReference: &BetaToolReferenceBlockParam{ToolName: "weather"}},
+	}}
+	r := newShortIdleRunner(t, ctx, client, []BetaTool{read}, 500*time.Millisecond)
+	require.True(t, r.Next())
+	sent := r.Current().Result.Content
+	require.NoError(t, r.Close())
+
+	require.Len(t, sent, 3)
+	require.NotNil(t, sent[1].OfText)
+	require.Contains(t, sent[1].OfText.Text, data, "the event still has the block as its JSON")
+
+	var content string
+	for _, s := range recorded.Ended() {
+		for _, kv := range s.Attributes() {
+			if kv.Key == "anthropic.tool_result.content" {
+				content = kv.Value.AsString()
+			}
+		}
+	}
+	require.NotContains(t, content, data)
+	require.JSONEq(t, `[{"type":"text","text":"page 1"},{"type":"document"},{"type":"tool_reference"}]`, content)
+}
+
+// A result over the size limit of a span's content loses blocks from its end,
+// and the span says so.
+func TestSessionToolRunner_ToolSpansKeepTheResultContentWithinTheSizeLimit(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, []string{sseLine("agent.tool_use", toolUseEvt("evt_b", "read", map[string]any{"path": "big.txt"}))}, true)
+	}
+	server.HandleSend = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+	recorded := tracetest.NewSpanRecorder()
+	client := NewClient(
+		option.WithBaseURL(server.server.URL),
+		option.WithAPIKey("test-key"),
+		option.WithMaxRetries(0),
+		option.WithTracerProvider(sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorded))),
+		option.WithOpenTelemetryTracesContentMode(option.OpenTelemetryContentModeContent),
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	big := &stubBetaTool{name: "read", run: func(context.Context, json.RawMessage) (string, bool) { return strings.Repeat("x", 2<<20), false }}
+	r := newShortIdleRunner(t, ctx, client, []BetaTool{big}, 500*time.Millisecond)
+	require.True(t, r.Next())
+	require.NoError(t, r.Close())
+
+	got := map[string]any{}
+	for _, s := range recorded.Ended() {
+		if s.Name() != "anthropic.tool_use read" {
+			continue
+		}
+		for _, kv := range s.Attributes() {
+			got[string(kv.Key)] = kv.Value.AsInterface()
+		}
+	}
+	require.Equal(t, `{"path":"big.txt"}`, got["gen_ai.tool.call.arguments"])
+	require.Equal(t, `[]`, got["anthropic.tool_result.content"])
+	require.Equal(t, true, got["anthropic.content.truncated"])
+}
+
+// sessionToolSpanIDs returns the conversation, Session and thread IDs of each
+// tool span in recorded, by span name, and the conversation ID on the span of
+// the request that sends each tool's result, which the runner sends before it
+// runs the next tool. A span without a conversation ID has nil there.
+func sessionToolSpanIDs(recorded *tracetest.SpanRecorder) (tools map[string]map[string]any, sent map[string]any) {
+	keys := []string{"gen_ai.conversation.id", "anthropic.session.id", "anthropic.session.thread.id"}
+	tools, sent = map[string]map[string]any{}, map[string]any{}
+	tool := ""
+	for _, s := range recorded.Ended() {
+		if s.Name() == "anthropic.sessions.events.send" {
+			sent[tool] = nil
+			for _, kv := range s.Attributes() {
+				if kv.Key == "gen_ai.conversation.id" {
+					sent[tool] = kv.Value.AsString()
+				}
+			}
+		}
+		if !strings.Contains(s.Name(), "tool_use ") {
+			continue
+		}
+		tool = s.Name()
+		ids := map[string]any{}
+		for _, kv := range s.Attributes() {
+			if slices.Contains(keys, string(kv.Key)) {
+				ids[string(kv.Key)] = kv.Value.AsString()
+			}
+		}
+		tools[s.Name()] = ids
+	}
+	return tools, sent
+}
+
+func TestSessionToolRunner_ToolSpansHaveTheSessionThreadAndConversationIDs(t *testing.T) {
+	for name, test := range map[string]struct {
+		opts             []option.RequestOption
+		wantConversation any
+	}{
+		"conversation ID set":   {[]option.RequestOption{option.WithOpenTelemetryConversationID("conv_1")}, "conv_1"},
+		"conversation ID unset": {nil, nil},
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				inThread := toolUseEvt("evt_t", "read", map[string]any{})
+				inThread["session_thread_id"] = "sthr_1"
+				customInThread := customToolUseEvt("evt_u", "get_weather", map[string]any{})
+				customInThread["session_thread_id"] = "sthr_2"
+				primaryWithNull := customToolUseEvt("evt_n", "get_time", map[string]any{})
+				primaryWithNull["session_thread_id"] = nil
+				streamWriter(w, r, []string{
+					sseLine("agent.tool_use", toolUseEvt("evt_p", "list", map[string]any{})),
+					sseLine("agent.tool_use", inThread),
+					sseLine("agent.custom_tool_use", customInThread),
+					sseLine("agent.custom_tool_use", primaryWithNull),
+				}, true)
+			}
+			server.HandleSend = func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(sendOK()))
+			}
+			recorded := tracetest.NewSpanRecorder()
+			client := NewClient(
+				option.WithBaseURL(server.server.URL),
+				option.WithAPIKey("test-key"),
+				option.WithMaxRetries(0),
+				option.WithTracerProvider(sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorded))),
+			)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			maxIdle := 500 * time.Millisecond
+			tools := []BetaTool{&stubBetaTool{name: "list"}, &stubBetaTool{name: "read"}, &stubBetaTool{name: "get_weather"}, &stubBetaTool{name: "get_time"}}
+			r := client.Beta.Sessions.Events.NewToolRunner(ctx, "sesn_test", SessionToolRunnerOptions{
+				Tools:          tools,
+				MaxIdle:        &maxIdle,
+				Logger:         sessionRunnerSilentLogger,
+				RequestOptions: test.opts,
+			})
+			for range len(tools) {
+				require.True(t, r.Next())
+			}
+			require.NoError(t, r.Close())
+
+			got, gotSent := sessionToolSpanIDs(recorded)
+			want := map[string]map[string]any{
+				// An event of the primary thread has no session_thread_id, or a null one.
+				"anthropic.tool_use list":               {"anthropic.session.id": "sesn_test"},
+				"anthropic.custom_tool_use get_time":    {"anthropic.session.id": "sesn_test"},
+				"anthropic.tool_use read":               {"anthropic.session.id": "sesn_test", "anthropic.session.thread.id": "sthr_1"},
+				"anthropic.custom_tool_use get_weather": {"anthropic.session.id": "sesn_test", "anthropic.session.thread.id": "sthr_2"},
+			}
+			// The conversation ID is the application's, or else the thread ID of the
+			// event, and absent for an event of the primary thread when the runner has
+			// seen no status event of that thread: on the tool's span and on the span
+			// of the request that sends its result.
+			wantSent := map[string]any{}
+			for tool, ids := range want {
+				if test.wantConversation != nil {
+					ids["gen_ai.conversation.id"] = test.wantConversation
+				} else if threadID, ok := ids["anthropic.session.thread.id"]; ok {
+					ids["gen_ai.conversation.id"] = threadID
+				}
+				wantSent[tool] = ids["gen_ai.conversation.id"]
+			}
+			require.Equal(t, want, got)
+			require.Equal(t, wantSent, gotSent)
+		})
+	}
+}
+
+// threadEvt is a session.thread_created or session.thread_status_* event of the
+// thread threadID, which runs the agent agentName.
+func threadEvt(id, eventType, threadID, agentName string) map[string]any {
+	ev := plainEvt(id, eventType)
+	ev["session_thread_id"] = threadID
+	ev["agent_name"] = agentName
+	return ev
+}
+
+// threadIdleRequiresActionEvt is the session.thread_status_idle of a thread that
+// waits for the results of the listed tool calls.
+func threadIdleRequiresActionEvt(id, threadID, agentName string, eventIDs ...string) map[string]any {
+	ev := threadEvt(id, "session.thread_status_idle", threadID, agentName)
+	ev["stop_reason"] = map[string]any{"type": "requires_action", "event_ids": eventIDs}
+	return ev
+}
+
+func userMessageEvt(id, text string) map[string]any {
+	ev := plainEvt(id, "user.message")
+	ev["content"] = []any{map[string]any{"type": "text", "text": text}}
+	return ev
+}
+
+// eventList is the body of an events list response with events as its only page.
+func eventList(events ...map[string]any) string {
+	if len(events) == 0 {
+		return emptyEventList()
+	}
+	body, _ := json.Marshal(map[string]any{
+		"data":     events,
+		"first_id": events[0]["id"], "has_more": false, "last_id": events[len(events)-1]["id"],
+	})
+	return string(body)
+}
+
+func sseLines(events ...map[string]any) []string {
+	lines := make([]string, 0, len(events))
+	for _, ev := range events {
+		lines = append(lines, sseLine(ev["type"].(string), ev))
+	}
+	return lines
+}
+
+// recordSessionRequests makes server keep the method and URI of each request
+// that reaches its three handlers, which the test has set. A request for any
+// other path fails the test.
+func recordSessionRequests(server *sessionEventsServer) (requests func() []string) {
+	var mu sync.Mutex
+	var seen []string
+	record := func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			mu.Lock()
+			seen = append(seen, r.Method+" "+r.URL.RequestURI())
+			mu.Unlock()
+			next(w, r)
+		}
+	}
+	server.HandleStream = record(server.HandleStream)
+	server.HandleList = record(server.HandleList)
+	server.HandleSend = record(server.HandleSend)
+	return func() []string {
+		mu.Lock()
+		defer mu.Unlock()
+		sorted := slices.Clone(seen)
+		sort.Strings(sorted)
+		return sorted
+	}
+}
+
+// The requests of a Sessions tool runner: it opens the stream, lists the events,
+// and sends the result of each tool.
+const (
+	sessionRunnerStreamRequest = "GET /v1/sessions/sesn_test/events/stream?beta=true"
+	sessionRunnerListRequest   = "GET /v1/sessions/sesn_test/events?beta=true&limit=1000&order=asc"
+	sessionRunnerSendRequest   = "POST /v1/sessions/sesn_test/events?beta=true"
+)
+
+// An event of the Session's primary thread has no session_thread_id. The first
+// thread status event of the Session's event log is the primary thread's, and
+// the runner takes the thread ID of that event as the conversation ID of the
+// primary thread's tool calls, from the events that it reads anyway.
+func TestSessionToolRunner_PrimaryThreadToolSpansHaveTheThreadIDAsTheirConversationID(t *testing.T) {
+	// A turn of the primary thread, as the Session's event log has it.
+	primaryTurn := []map[string]any{
+		plainEvt("evt_r", "session.status_running"),
+		threadEvt("evt_tr", "session.thread_status_running", "sthr_primary", "lead"),
+		userMessageEvt("evt_m", "What time is it?"),
+	}
+	primaryTool := customToolUseEvt("evt_c", "get_time", map[string]any{})
+	waitsForPrimaryTool := []map[string]any{
+		threadIdleRequiresActionEvt("evt_ti", "sthr_primary", "lead", "evt_c"),
+		idleRequiresActionEvt("evt_i", "evt_c"),
+	}
+	// A thread that the primary thread made, and a tool call of it. Its status
+	// events are the last ones before the primary thread's tool call.
+	childTool := toolUseEvt("evt_t", "read", map[string]any{})
+	childTool["session_thread_id"] = "sthr_child"
+	childThread := []map[string]any{
+		threadEvt("evt_cc", "session.thread_created", "sthr_child", "researcher"),
+		threadEvt("evt_cr", "session.thread_status_running", "sthr_child", "researcher"),
+		childTool,
+		threadIdleRequiresActionEvt("evt_ci", "sthr_child", "researcher", "evt_t"),
+	}
+	primaryOnly := map[string]map[string]any{
+		"anthropic.custom_tool_use get_time": {"anthropic.session.id": "sesn_test", "gen_ai.conversation.id": "sthr_primary"},
+	}
+	withChild := map[string]map[string]any{
+		"anthropic.tool_use read":            {"anthropic.session.id": "sesn_test", "anthropic.session.thread.id": "sthr_child", "gen_ai.conversation.id": "sthr_child"},
+		"anthropic.custom_tool_use get_time": {"anthropic.session.id": "sesn_test", "gen_ai.conversation.id": "sthr_primary"},
+	}
+
+	for name, test := range map[string]struct {
+		history, stream []map[string]any
+		opts            []option.RequestOption
+		want            map[string]map[string]any
+	}{
+		"the primary thread's status event is in the history": {
+			history: slices.Concat(primaryTurn, []map[string]any{primaryTool}, waitsForPrimaryTool),
+			want:    primaryOnly,
+		},
+		"the primary thread's status event is on the live stream": {
+			stream: slices.Concat(primaryTurn, []map[string]any{primaryTool}, waitsForPrimaryTool),
+			want:   primaryOnly,
+		},
+		"another thread's events follow in the history and on the live stream": {
+			history: slices.Concat(primaryTurn, childThread[:2]),
+			stream:  append(slices.Clone(childThread[2:]), primaryTool),
+			want:    withChild,
+		},
+		"another thread's events follow on the live stream": {
+			stream: append(slices.Concat(primaryTurn, childThread), primaryTool),
+			want:   withChild,
+		},
+		"the application's conversation ID wins": {
+			history: primaryTurn,
+			stream:  append(slices.Clone(childThread), primaryTool),
+			opts:    []option.RequestOption{option.WithOpenTelemetryConversationID("conv_1")},
+			want: map[string]map[string]any{
+				"anthropic.tool_use read":            {"anthropic.session.id": "sesn_test", "anthropic.session.thread.id": "sthr_child", "gen_ai.conversation.id": "conv_1"},
+				"anthropic.custom_tool_use get_time": {"anthropic.session.id": "sesn_test", "gen_ai.conversation.id": "conv_1"},
+			},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				streamWriter(w, r, sseLines(test.stream...), true)
+			}
+			server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(eventList(test.history...)))
+			}
+			server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(sendOK()))
+			}
+			requests := recordSessionRequests(server)
+			recorded := tracetest.NewSpanRecorder()
+			client := NewClient(
+				option.WithBaseURL(server.server.URL),
+				option.WithAPIKey("test-key"),
+				option.WithMaxRetries(0),
+				option.WithTracerProvider(sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorded))),
+			)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			maxIdle := 500 * time.Millisecond
+			r := client.Beta.Sessions.Events.NewToolRunner(ctx, "sesn_test", SessionToolRunnerOptions{
+				Tools:          []BetaTool{&stubBetaTool{name: "read"}, &stubBetaTool{name: "get_time"}},
+				MaxIdle:        &maxIdle,
+				Logger:         sessionRunnerSilentLogger,
+				RequestOptions: test.opts,
+			})
+			for range len(test.want) {
+				require.True(t, r.Next())
+				require.True(t, r.Current().Posted)
+			}
+			require.NoError(t, r.Close())
+
+			got, gotSent := sessionToolSpanIDs(recorded)
+			require.Equal(t, test.want, got)
+			// The request that sends a tool's result has the conversation ID of the tool's span.
+			wantSent := map[string]any{}
+			for tool, ids := range test.want {
+				wantSent[tool] = ids["gen_ai.conversation.id"]
+			}
+			require.Equal(t, wantSent, gotSent)
+
+			// The runner makes the requests that it makes without tracing, and no other.
+			wantRequests := []string{sessionRunnerListRequest, sessionRunnerStreamRequest}
+			for range len(test.want) {
+				wantRequests = append(wantRequests, sessionRunnerSendRequest)
+			}
+			sort.Strings(wantRequests)
+			require.Equal(t, wantRequests, requests())
+		})
+	}
+}
+
+// A runner whose history read failed carries on with the live stream, which can
+// start after the primary thread's first status event: the first status event of
+// the stream can be of another thread. The runner then leaves the conversation ID
+// off the primary thread's tool calls, until a history read succeeds.
+func TestSessionToolRunner_PrimaryThreadIDIsNotTakenFromTheLiveStreamAfterAFailedHistoryRead(t *testing.T) {
+	firstTool := customToolUseEvt("evt_a", "get_time", map[string]any{})
+	secondTool := customToolUseEvt("evt_b", "get_date", map[string]any{})
+	childRuns := threadEvt("evt_cr", "session.thread_status_running", "sthr_child", "researcher")
+
+	server := newSessionEventsServer(t)
+	var streams atomic.Int32
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		if streams.Add(1) == 1 {
+			// The stream starts in the middle of a turn, and then drops.
+			streamWriter(w, r, sseLines(childRuns, firstTool), false)
+			return
+		}
+		streamWriter(w, r, nil, true)
+	}
+	firstToolDone := make(chan struct{})
+	var lists atomic.Int32
+	server.HandleList = func(w http.ResponseWriter, r *http.Request) {
+		if lists.Add(1) == 1 {
+			http.Error(w, "unavailable", http.StatusInternalServerError)
+			return
+		}
+		// The runner reads the history again when it opens the stream again. Hold it
+		// until the first tool has run, so that the tool ran without the history.
+		select {
+		case <-firstToolDone:
+		case <-r.Context().Done():
+			return
+		}
+		firstResult := plainEvt("evt_ar", "user.custom_tool_result")
+		firstResult["custom_tool_use_id"] = "evt_a"
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(eventList(
+			plainEvt("evt_r", "session.status_running"),
+			threadEvt("evt_tr", "session.thread_status_running", "sthr_primary", "lead"),
+			userMessageEvt("evt_m", "What time is it?"),
+			threadEvt("evt_cc", "session.thread_created", "sthr_child", "researcher"),
+			childRuns,
+			firstTool,
+			firstResult,
+			secondTool,
+		)))
+	}
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+	requests := recordSessionRequests(server)
+	recorded := tracetest.NewSpanRecorder()
+	client := NewClient(
+		option.WithBaseURL(server.server.URL),
+		option.WithAPIKey("test-key"),
+		option.WithMaxRetries(0),
+		option.WithTracerProvider(sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorded))),
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, client, []BetaTool{&stubBetaTool{name: "get_time"}, &stubBetaTool{name: "get_date"}}, 0)
+	require.True(t, r.Next())
+	require.Equal(t, "evt_a", r.Current().ToolUseID)
+	require.True(t, r.Current().Posted, "the runner keeps working without the history")
+	close(firstToolDone)
+	require.True(t, r.Next())
+	require.Equal(t, "evt_b", r.Current().ToolUseID)
+	require.NoError(t, r.Close())
+
+	got, gotSent := sessionToolSpanIDs(recorded)
+	require.Equal(t, map[string]map[string]any{
+		"anthropic.custom_tool_use get_time": {"anthropic.session.id": "sesn_test"},
+		"anthropic.custom_tool_use get_date": {"anthropic.session.id": "sesn_test", "gen_ai.conversation.id": "sthr_primary"},
+	}, got)
+	require.Equal(t, map[string]any{
+		"anthropic.custom_tool_use get_time": nil,
+		"anthropic.custom_tool_use get_date": "sthr_primary",
+	}, gotSent)
+	wantRequests := []string{
+		sessionRunnerStreamRequest, sessionRunnerListRequest, sessionRunnerSendRequest,
+		sessionRunnerStreamRequest, sessionRunnerListRequest, sessionRunnerSendRequest,
+	}
+	sort.Strings(wantRequests)
+	require.Equal(t, wantRequests, requests())
 }
 
 func TestSessionToolRunner_DispatchesBuiltinAndCustom(t *testing.T) {

@@ -9,12 +9,14 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	awssdk "github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"go.opentelemetry.io/otel"
 
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
@@ -196,6 +198,33 @@ func BuildAWSConfig(ctx context.Context, cfg ClientConfig, region string) (awssd
 	return awsCfg, nil
 }
 
+// SignHTTP signs r as signer.SignHTTP does, but leaves the trace context headers
+// out of the signature: traceparent, tracestate, baggage, and the fields of the
+// registered OpenTelemetry propagator. They stay on the request. An HTTP client
+// instrumentation may replace them with those of its own span after the request
+// is signed, and a signature that covered them would then no longer match. The
+// signer cannot be told to skip a header, so they are taken off the request
+// while it signs.
+func SignHTTP(ctx context.Context, signer *v4.Signer, creds awssdk.Credentials, r *http.Request, payloadHash, service, region string, signingTime time.Time) error {
+	unsigned := map[string]bool{"traceparent": true, "tracestate": true, "baggage": true}
+	for _, field := range otel.GetTextMapPropagator().Fields() {
+		unsigned[strings.ToLower(field)] = true
+	}
+	held := http.Header{}
+	for name, values := range r.Header {
+		if unsigned[strings.ToLower(name)] {
+			held[name] = values
+			delete(r.Header, name)
+		}
+	}
+	defer func() {
+		for name, values := range held {
+			r.Header[name] = values
+		}
+	}()
+	return signer.SignHTTP(ctx, creds, r, payloadHash, service, region, signingTime)
+}
+
 // SigV4Middleware returns an HTTP middleware that signs requests using AWS SigV4
 // with the given service name.
 func SigV4Middleware(signer *v4.Signer, cfg awssdk.Config, serviceName string) option.Middleware {
@@ -229,7 +258,7 @@ func SigV4Middleware(signer *v4.Signer, cfg awssdk.Config, serviceName string) o
 		}
 
 		hash := sha256.Sum256(body)
-		if err = signer.SignHTTP(ctx, creds, r, hex.EncodeToString(hash[:]), serviceName, cfg.Region, time.Now()); err != nil {
+		if err = SignHTTP(ctx, signer, creds, r, hex.EncodeToString(hash[:]), serviceName, cfg.Region, time.Now()); err != nil {
 			return nil, fmt.Errorf("failed to sign request: %w", err)
 		}
 

@@ -7,6 +7,7 @@
 * **api:** add execution_identity to Managed Agents agents
 * **api:** add organization_type_not_supported error to spend limit lists
 * **client:** add OpenTelemetry spans for API calls
+* **client:** add OpenTelemetry tracing: each API call, stream and tool run is a span, on by default once the application has registered a tracer provider, and without the content of requests and responses unless `option.WithOpenTelemetryTracesContentMode` asks for it. Each request carries its span's trace context (`traceparent`) unless `option.WithOpenTelemetryPropagation(false)` or `ANTHROPIC_OPEN_TELEMETRY_PROPAGATION=false` leaves it out, and `option.WithoutOpenTelemetry()` or `ANTHROPIC_OPEN_TELEMETRY=false` turns all of it off. Adds the dependency `go.opentelemetry.io/otel`, v1.33.0 or later
 
 
 ### Bug Fixes

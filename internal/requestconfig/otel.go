@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"slices"
 
+	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
 	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -139,6 +140,7 @@ func (cfg *RequestConfig) sendInSpan() (err error) {
 	// The attempts run inside the span, so that the application's HTTP
 	// instrumentation parents their spans to it.
 	err = cfg.send(trace.ContextWithSpan(ctx, call.Span), call)
+	tracing.Guard(func() { telemetry.SetAPICallAttributes(call) })
 	if err == nil && cfg.OpenTelemetry.spanCreatedID != nil {
 		tracing.Guard(func() {
 			if id, ok := cfg.OpenTelemetry.spanCreatedID(); ok {
@@ -165,7 +167,7 @@ func (cfg *RequestConfig) sendInSpan() (err error) {
 // spanStartAttributes returns the attributes that the span of the call starts
 // with. They are made only once the spans are known to be on.
 func (cfg *RequestConfig) spanStartAttributes() []attribute.KeyValue {
-	attrs := slices.Concat(tracing.ServerAttributes(cfg.BaseURL), tracing.RequestAttributes(cfg.Request.Method, cfg.OpenTelemetry.SpanRoute), cfg.OpenTelemetry.SpanAttributes)
+	attrs := slices.Concat(telemetry.APICallAttributes(cfg.OpenTelemetry.Options, cfg.OpenTelemetry.SpanAttributes), tracing.ServerAttributes(cfg.BaseURL), tracing.RequestAttributes(cfg.Request.Method, cfg.OpenTelemetry.SpanRoute), cfg.OpenTelemetry.SpanAttributes)
 	if start := cfg.OpenTelemetry.spanRecorder.StartAttributes; start != nil {
 		tracing.Guard(func() { attrs = append(attrs, start(cfg.Request.Header)...) })
 	}

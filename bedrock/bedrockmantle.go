@@ -91,6 +91,8 @@ func NewMantleClient(ctx context.Context, cfg MantleClientConfig, opts ...option
 	if err != nil {
 		return nil, err
 	}
+	// Mantle is an endpoint of Amazon Bedrock.
+	opts = append(opts, withPlatform)
 
 	return &MantleClient{
 		Options:  opts,

@@ -65,7 +65,7 @@ func (r *BetaSessionService) New(ctx context.Context, params BetaSessionNewParam
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	path := "v1/sessions?beta=true"
-	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.create", "/v1/sessions"), requestconfig.WithSpanCreatedID("anthropic.session.id", &res, func(created *BetaManagedAgentsSession) string { return created.ID }))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.create", "/v1/sessions"), sessionsCreateSpan(params, &res), requestconfig.WithSpanCreatedID("anthropic.session.id", &res, func(created *BetaManagedAgentsSession) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

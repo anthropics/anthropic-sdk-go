@@ -1,12 +1,28 @@
 package tracing
 
 import (
+	"errors"
 	"net/url"
 	"reflect"
+	"strings"
 	"testing"
 
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 )
+
+func TestHandleRecoveredReportsToTheErrorHandler(t *testing.T) {
+	var handled []error
+	otel.SetErrorHandler(otel.ErrorHandlerFunc(func(err error) { handled = append(handled, err) }))
+
+	cause := errors.New("boom")
+	HandleRecovered(nil)
+	HandleRecovered(cause)
+	HandleRecovered("not an error")
+	if len(handled) != 2 || !errors.Is(handled[0], cause) || !strings.Contains(handled[1].Error(), "not an error") {
+		t.Errorf("the error handler got %v, want the recovered error and the recovered value", handled)
+	}
+}
 
 func TestDefinedQuery(t *testing.T) {
 	defined := []string{"created_at[gte]", "ids", "limit", "page"}

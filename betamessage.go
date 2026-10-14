@@ -79,7 +79,7 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 	opts = append(opts, option.WithRequestTimeout(timeout))
 
 	path := "v1/messages?beta=true"
-	opts = append(opts, requestconfig.WithSpan("anthropic.messages.create", "/v1/messages"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.create", "/v1/messages"), betaMessagesCreateSpan(params, &res))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 	opts = append(opts, option.WithJSONSet("stream", true))
 	path := "v1/messages?beta=true"
-	opts = append(opts, requestconfig.WithSpan("anthropic.messages.create", "/v1/messages"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.create", "/v1/messages"), betaMessagesCreateSpan(params, nil))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &raw, opts...)
 	return ssestream.NewStream[BetaRawMessageStreamEventUnion](ssestream.NewDecoder(raw), err)
 }
@@ -158,7 +158,7 @@ func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessage
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens?beta=true"
-	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"), countTokensSpan(string(params.Model), &res, func(count *BetaMessageTokensCount) int64 { return count.InputTokens }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

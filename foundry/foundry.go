@@ -24,6 +24,7 @@ import (
 	"os"
 
 	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
@@ -128,8 +129,8 @@ func createClientOptions(cfg ClientConfig, userOpts []option.RequestOption) ([]o
 	}
 
 	// Stops anthropic.NewClient(client.Options...) from adding first-party credentials.
-	opts := make([]option.RequestOption, 0, len(userOpts)+3)
-	opts = append(opts, option.WithoutEnvironmentDefaults(), option.WithBaseURL(resolved.BaseURL))
+	opts := make([]option.RequestOption, 0, len(userOpts)+4)
+	opts = append(opts, option.WithoutEnvironmentDefaults(), option.WithBaseURL(resolved.BaseURL), requestconfig.WithOpenTelemetryPlatform("foundry"))
 	if resolved.AzureADTokenProvider == nil {
 		opts = append(opts, option.WithAPIKey(resolved.APIKey))
 	}

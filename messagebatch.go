@@ -58,7 +58,7 @@ func (r *MessageBatchService) New(ctx context.Context, params MessageBatchNewPar
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/batches"
-	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.create", "/v1/messages/batches"), requestconfig.WithSpanCreatedID("anthropic.message.batch.id", &res, func(created *MessageBatch) string { return created.ID }))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.create", "/v1/messages/batches"), messageBatchesCreateSpan(len(params.Requests)), requestconfig.WithSpanCreatedID("anthropic.message.batch.id", &res, func(created *MessageBatch) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

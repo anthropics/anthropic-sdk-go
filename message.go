@@ -70,7 +70,7 @@ func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts 
 	opts = append(opts, option.WithRequestTimeout(timeout))
 
 	path := "v1/messages"
-	opts = append(opts, requestconfig.WithSpan("anthropic.messages.create", "/v1/messages"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.create", "/v1/messages"), messagesCreateSpan(params, &res))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -100,7 +100,7 @@ func (r *MessageService) NewStreaming(ctx context.Context, params MessageNewPara
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 	opts = append(opts, option.WithJSONSet("stream", true))
 	path := "v1/messages"
-	opts = append(opts, requestconfig.WithSpan("anthropic.messages.create", "/v1/messages"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.create", "/v1/messages"), messagesCreateSpan(params, nil))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &raw, opts...)
 	return ssestream.NewStream[MessageStreamEventUnion](ssestream.NewDecoder(raw), err)
 }
@@ -121,7 +121,7 @@ func (r *MessageService) CountTokens(ctx context.Context, params MessageCountTok
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens"
-	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"), countTokensSpan(string(params.Model), &res, func(count *MessageTokensCount) int64 { return count.InputTokens }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

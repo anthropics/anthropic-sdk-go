@@ -20,6 +20,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/internal"
 	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
 	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
+	"github.com/tidwall/gjson"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -47,9 +48,10 @@ const (
 )
 
 // DefaultMaxContentBytes is how many bytes the content attributes of one span
-// hold at most, where removing message parts can bring them under it, when no
-// option and no environment variable sets a maximum. Sizes are string lengths,
-// which in Go are the bytes of the serialised values.
+// hold at most, apart from the emptied lists and messages that stay when their
+// content is removed, when no option and no environment variable sets a
+// maximum. Sizes are string lengths, which in Go are the bytes of the
+// serialized values.
 const DefaultMaxContentBytes = 750_000
 
 // Options are the OpenTelemetry options of a client or a request.
@@ -63,6 +65,12 @@ type Options struct {
 	// TracerProvider creates the spans, in place of the provider registered
 	// with the OpenTelemetry API, when it is not nil.
 	TracerProvider trace.TracerProvider
+	// ProviderName is the gen_ai.provider.name of the spans when a third-party
+	// platform serves the API. The platform's client options set it.
+	ProviderName string
+	// ConversationID is the gen_ai.conversation.id of the spans, which links the
+	// calls of one conversation. The SDK does not send it to the API.
+	ConversationID string
 	// Platform is the last part of the name of the instrumentation scope of the
 	// spans when the client of a third-party platform makes the calls: the name of
 	// the client's package, such as bedrock. The platform's client options set it.
@@ -286,7 +294,8 @@ func RecordSentRequest(call *APICall, u *url.URL, queryParams, endpointContentQu
 }
 
 // contentQueryParams are the query parameters that an endpoint defines whose
-// value is content.
+// value is content: email and path_prefix filter like a search, and
+// expected_content_sha256 comes from stored content.
 var contentQueryParams = []string{"email", "expected_content_sha256", "path_prefix"}
 
 // definedQuery returns what a span records of rawQuery, a query string without
@@ -329,7 +338,7 @@ func InjectTraceHeaders(call *APICall, req *http.Request) {
 // with err, or call.Response arrived and its body was decoded. The span gets
 // http.response.status_code when a response arrived, http.request.resend_count
 // when the SDK sent the request again, and its status: ERROR with
-// error.type when the call failed, none when the application cancelled the
+// error.type when the call failed, none when the application canceled the
 // context, and OK otherwise. The span of a body that the application has yet to
 // read ends through [EndAPICallSpanWhenBodyEnds] instead.
 //
@@ -392,7 +401,7 @@ type StreamObserver struct {
 	// that has none. A stream that the server ends after its last event was read
 	// to the end, and one that it ends before was cut short, which fails the span
 	// with api_error. A stream that the application closes before the server ends
-	// it was cancelled, even after its last event. A stream without a last event
+	// it was canceled, even after its last event. A stream without a last event
 	// is never read to the end: when the server ends it, the span ends with no
 	// status.
 	LastEvent string
@@ -540,7 +549,7 @@ func (d *eventDecoder) Close() error {
 }
 
 // SetErrorStatus gives span the status of an operation that failed with err:
-// ERROR, with error.type set to typ, or else derived from err. A cancelled
+// ERROR, with error.type set to typ, or else derived from err. A canceled
 // context is the application's doing, not a failure, and sets no status.
 func SetErrorStatus(span trace.Span, err error, typ string) {
 	if errors.Is(err, context.Canceled) {
@@ -553,11 +562,24 @@ func SetErrorStatus(span trace.Span, err error, typ string) {
 	span.SetAttributes(ErrorTypeKey.String(typ))
 }
 
-// errorType returns the error.type of an operation that failed with err.
+// errorType returns the error.type of an operation that failed with err. An
+// error response, or the error event of a stream, has the type of its error
+// envelope when the API sent one, and an error response has its status code otherwise.
 func errorType(err error) string {
 	var apiErr *apierror.Error
-	if errors.As(err, &apiErr) && apiErr.StatusCode >= 400 {
-		return strconv.Itoa(apiErr.StatusCode)
+	if errors.As(err, &apiErr) {
+		if errType := apiErr.Type(); errType != "" {
+			return string(errType)
+		}
+		if apiErr.StatusCode >= 400 {
+			return strconv.Itoa(apiErr.StatusCode)
+		}
+	}
+	var eventErr *EventError
+	if errors.As(err, &eventErr) {
+		if errType := gjson.GetBytes(eventErr.Data, "error.type").String(); errType != "" {
+			return errType
+		}
 	}
 	if errors.Is(err, context.DeadlineExceeded) {
 		return "client_timeout_error"

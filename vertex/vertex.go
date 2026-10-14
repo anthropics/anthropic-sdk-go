@@ -13,6 +13,7 @@ import (
 	"google.golang.org/api/transport"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
 	sdkoption "github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -106,6 +107,7 @@ func WithCredentials(ctx context.Context, region string, projectID string, creds
 	}
 
 	return sdkoption.Join(sdkoption.WithoutEnvironmentDefaults(), requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+		rc.OpenTelemetry.ProviderName, rc.OpenTelemetry.Platform = telemetry.ProviderVertex, "vertex"
 		client := defaultClient
 		if rc.HTTPClient != nil && rc.HTTPClient != http.DefaultClient {
 			client = authorizeClient(rc.HTTPClient, creds)

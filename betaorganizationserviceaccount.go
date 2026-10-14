@@ -67,6 +67,7 @@ func (r *BetaOrganizationServiceAccountService) New(ctx context.Context, params 
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/service_accounts?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.create", "/v1/organizations/service_accounts"), requestconfig.WithSpanCreatedID("anthropic.organization.service_account.id", &res, func(created *BetaServiceAccount) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -94,6 +95,7 @@ func (r *BetaOrganizationServiceAccountService) Get(ctx context.Context, service
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/service_accounts/%s?beta=true", url.PathEscape(serviceAccountID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.retrieve", "/v1/organizations/service_accounts/{service_account_id}"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -126,6 +128,7 @@ func (r *BetaOrganizationServiceAccountService) Update(ctx context.Context, serv
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/service_accounts/%s?beta=true", url.PathEscape(serviceAccountID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.update", "/v1/organizations/service_accounts/{service_account_id}"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -155,6 +158,7 @@ func (r *BetaOrganizationServiceAccountService) List(ctx context.Context, params
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/service_accounts?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.list", "/v1/organizations/service_accounts", "include_archived", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -209,6 +213,7 @@ func (r *BetaOrganizationServiceAccountService) Archive(ctx context.Context, ser
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/service_accounts/%s/archive?beta=true", url.PathEscape(serviceAccountID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.archive", "/v1/organizations/service_accounts/{service_account_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

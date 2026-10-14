@@ -43,6 +43,7 @@ func NewOrganizationComplianceSettingService(opts ...option.RequestOption) (r Or
 func (r *OrganizationComplianceSettingService) Get(ctx context.Context, opts ...option.RequestOption) (res *OrganizationComplianceSettings, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/compliance_settings"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.compliance_settings.retrieve", "/v1/organizations/compliance_settings"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -63,6 +64,7 @@ func (r *OrganizationComplianceSettingService) Get(ctx context.Context, opts ...
 func (r *OrganizationComplianceSettingService) Update(ctx context.Context, body OrganizationComplianceSettingUpdateParams, opts ...option.RequestOption) (res *OrganizationComplianceSettings, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/compliance_settings"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.compliance_settings.update", "/v1/organizations/compliance_settings"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }

@@ -47,6 +47,7 @@ func NewBetaOrganizationInviteService(opts ...option.RequestOption) (r BetaOrgan
 func (r *BetaOrganizationInviteService) New(ctx context.Context, body BetaOrganizationInviteNewParams, opts ...option.RequestOption) (res *BetaOrganizationInvite, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/invites?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.invites.create", "/v1/organizations/invites"), requestconfig.WithSpanCreatedID("anthropic.organization.invite.id", &res, func(created *BetaOrganizationInvite) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -59,6 +60,7 @@ func (r *BetaOrganizationInviteService) Get(ctx context.Context, inviteID string
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/invites/%s?beta=true", url.PathEscape(inviteID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.invites.retrieve", "/v1/organizations/invites/{invite_id}"), requestconfig.WithSpanAttribute("anthropic.organization.invite.id", inviteID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -69,6 +71,7 @@ func (r *BetaOrganizationInviteService) List(ctx context.Context, query BetaOrga
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/invites?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.invites.list", "/v1/organizations/invites", "after_id", "before_id", "email", "limit", "roles", "statuses"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -94,6 +97,7 @@ func (r *BetaOrganizationInviteService) Delete(ctx context.Context, inviteID str
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/invites/%s?beta=true", url.PathEscape(inviteID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.invites.delete", "/v1/organizations/invites/{invite_id}"), requestconfig.WithSpanAttribute("anthropic.organization.invite.id", inviteID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

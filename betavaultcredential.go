@@ -61,6 +61,7 @@ func (r *BetaVaultCredentialService) New(ctx context.Context, vaultID string, pa
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/vaults/%s/credentials?beta=true", url.PathEscape(vaultID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.credentials.create", "/v1/vaults/{vault_id}/credentials"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID), requestconfig.WithSpanCreatedID("anthropic.vault.credential.id", &res, func(created *BetaManagedAgentsCredential) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -91,6 +92,7 @@ func (r *BetaVaultCredentialService) Get(ctx context.Context, credentialID strin
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.credentials.retrieve", "/v1/vaults/{vault_id}/credentials/{credential_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", params.VaultID), requestconfig.WithSpanAttribute("anthropic.vault.credential.id", credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -121,6 +123,7 @@ func (r *BetaVaultCredentialService) Update(ctx context.Context, credentialID st
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.credentials.update", "/v1/vaults/{vault_id}/credentials/{credential_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", params.VaultID), requestconfig.WithSpanAttribute("anthropic.vault.credential.id", credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -148,6 +151,7 @@ func (r *BetaVaultCredentialService) List(ctx context.Context, vaultID string, p
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/vaults/%s/credentials?beta=true", url.PathEscape(vaultID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.credentials.list", "/v1/vaults/{vault_id}/credentials", "include_archived", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -191,6 +195,7 @@ func (r *BetaVaultCredentialService) Delete(ctx context.Context, credentialID st
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/vaults/%s/credentials/%s?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.credentials.delete", "/v1/vaults/{vault_id}/credentials/{credential_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", params.VaultID), requestconfig.WithSpanAttribute("anthropic.vault.credential.id", credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -221,6 +226,7 @@ func (r *BetaVaultCredentialService) Archive(ctx context.Context, credentialID s
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/vaults/%s/credentials/%s/archive?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.credentials.archive", "/v1/vaults/{vault_id}/credentials/{credential_id}/archive"), requestconfig.WithSpanAttribute("anthropic.vault.id", params.VaultID), requestconfig.WithSpanAttribute("anthropic.vault.credential.id", credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -251,6 +257,7 @@ func (r *BetaVaultCredentialService) MCPOAuthValidate(ctx context.Context, crede
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/vaults/%s/credentials/%s/mcp_oauth_validate?beta=true", url.PathEscape(params.VaultID), url.PathEscape(credentialID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.credentials.mcp_oauth_validate", "/v1/vaults/{vault_id}/credentials/{credential_id}/mcp_oauth_validate"), requestconfig.WithSpanAttribute("anthropic.vault.id", params.VaultID), requestconfig.WithSpanAttribute("anthropic.vault.credential.id", credentialID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

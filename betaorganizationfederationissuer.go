@@ -70,6 +70,7 @@ func (r *BetaOrganizationFederationIssuerService) New(ctx context.Context, param
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/federation_issuers?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.create", "/v1/organizations/federation_issuers"), requestconfig.WithSpanCreatedID("anthropic.organization.federation_issuer.id", &res, func(created *BetaFederationIssuer) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -97,6 +98,7 @@ func (r *BetaOrganizationFederationIssuerService) Get(ctx context.Context, feder
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/federation_issuers/%s?beta=true", url.PathEscape(federationIssuerID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.retrieve", "/v1/organizations/federation_issuers/{federation_issuer_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -130,6 +132,7 @@ func (r *BetaOrganizationFederationIssuerService) Update(ctx context.Context, fe
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/federation_issuers/%s?beta=true", url.PathEscape(federationIssuerID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.update", "/v1/organizations/federation_issuers/{federation_issuer_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -157,6 +160,7 @@ func (r *BetaOrganizationFederationIssuerService) List(ctx context.Context, para
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/federation_issuers?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.list", "/v1/organizations/federation_issuers", "include_archived", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -209,6 +213,7 @@ func (r *BetaOrganizationFederationIssuerService) Archive(ctx context.Context, f
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/federation_issuers/%s/archive?beta=true", url.PathEscape(federationIssuerID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.archive", "/v1/organizations/federation_issuers/{federation_issuer_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

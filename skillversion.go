@@ -53,6 +53,7 @@ func (r *SkillVersionService) New(ctx context.Context, skillID string, params Sk
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions", url.PathEscape(skillID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.create", "/v1/skills/{skill_id}/versions"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID), requestconfig.WithSpanCreatedID("anthropic.skill.version.id", &res, func(created *SkillVersion) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -72,6 +73,7 @@ func (r *SkillVersionService) Get(ctx context.Context, version string, params Sk
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions/%s", url.PathEscape(params.SkillID), url.PathEscape(version))
+	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.retrieve", "/v1/skills/{skill_id}/versions/{version}"), requestconfig.WithSpanAttribute("anthropic.skill.id", params.SkillID), requestconfig.WithSpanAttribute("anthropic.skill.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -89,6 +91,7 @@ func (r *SkillVersionService) List(ctx context.Context, skillID string, params S
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions", url.PathEscape(skillID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.list", "/v1/skills/{skill_id}/versions", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -121,6 +124,7 @@ func (r *SkillVersionService) Delete(ctx context.Context, version string, params
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions/%s", url.PathEscape(params.SkillID), url.PathEscape(version))
+	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.delete", "/v1/skills/{skill_id}/versions/{version}"), requestconfig.WithSpanAttribute("anthropic.skill.id", params.SkillID), requestconfig.WithSpanAttribute("anthropic.skill.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

@@ -58,6 +58,7 @@ type Attached string                                // Always "attached"
 type AuthenticationError string                     // Always "authentication_error"
 type Auto string                                    // Always "auto"
 type AWS string                                     // Always "aws"
+type AWSRole string                                 // Always "aws_role"
 type Azure string                                   // Always "azure"
 type Base64 string                                  // Always "base64"
 type Bash string                                    // Always "bash"
@@ -424,6 +425,7 @@ func (c Attached) Default() Attached                             { return "attac
 func (c AuthenticationError) Default() AuthenticationError       { return "authentication_error" }
 func (c Auto) Default() Auto                                     { return "auto" }
 func (c AWS) Default() AWS                                       { return "aws" }
+func (c AWSRole) Default() AWSRole                               { return "aws_role" }
 func (c Azure) Default() Azure                                   { return "azure" }
 func (c Base64) Default() Base64                                 { return "base64" }
 func (c Bash) Default() Bash                                     { return "bash" }
@@ -874,6 +876,7 @@ func (c Attached) MarshalJSON() ([]byte, error)                             { re
 func (c AuthenticationError) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Auto) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c AWS) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
+func (c AWSRole) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Azure) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Base64) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Bash) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }

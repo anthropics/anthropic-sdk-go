@@ -20,6 +20,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiform"
 	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
 )
 
 func getDefaultHeaders() map[string]string {
@@ -222,6 +223,7 @@ type RequestConfig struct {
 	APIKey         string
 	AuthToken      string
 	WebhookKey     string
+	OpenTelemetry  OpenTelemetryConfig
 	// If ResponseBodyInto not nil, then we will attempt to deserialize into
 	// ResponseBodyInto. If Destination is a []byte, then it will return the body as
 	// is.
@@ -500,10 +502,14 @@ func (cfg *RequestConfig) prepare() (err error) {
 }
 
 // handler returns what sends one attempt: the HTTP client, wrapped in the middlewares.
-func (cfg *RequestConfig) handler() middlewareNext {
+// The span of call, unless call is nil, records the request that reaches the client.
+func (cfg *RequestConfig) handler(call *tracing.APICall) middlewareNext {
 	handler := cfg.HTTPClient.Do
 	if cfg.CustomHTTPDoer != nil {
 		handler = cfg.CustomHTTPDoer.Do
+	}
+	if call != nil {
+		handler = tracedDoer(call, cfg.OpenTelemetry.SpanQueryParams, cfg.OpenTelemetry.SpanContentQueryParams, handler)
 	}
 	for i := len(cfg.Middlewares) - 1; i >= 0; i -= 1 {
 		handler = applyMiddleware(cfg.Middlewares[i], handler)
@@ -537,7 +543,17 @@ func (cfg *RequestConfig) Execute() (err error) {
 	if err := cfg.prepare(); err != nil {
 		return err
 	}
-	handler := cfg.handler()
+
+	return cfg.sendInSpan()
+}
+
+// send sends the request in ctx, with retries, and decodes the response into
+// cfg.ResponseBodyInto. It records each attempt on call, unless call is nil.
+func (cfg *RequestConfig) send(ctx context.Context, call *tracing.APICall) (err error) {
+	handler := cfg.handler(call)
+	if call != nil {
+		handler = tracedHandler(call, handler)
+	}
 
 	// Don't send the current retry count in the headers if the caller modified the header defaults.
 	shouldSendRetryCount := cfg.Request.Header.Get("X-Stainless-Retry-Count") == "0"
@@ -546,7 +562,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 	var cancel context.CancelFunc
 	for retryCount := 0; ; retryCount += 1 {
 		// callerCtx spans every attempt; ctx additionally carries this attempt's RequestTimeout, if any.
-		callerCtx := cfg.Request.Context()
+		callerCtx := ctx
 		ctx := callerCtx
 		// Release the previous attempt's timer before starting a new attempt.
 		if cancel != nil {
@@ -588,6 +604,10 @@ func (cfg *RequestConfig) Execute() (err error) {
 			closeBody(res)
 			res, err, readErr = nil, ctxErr, nil
 			retry = shouldRetry(cfg.Request, nil)
+			// The attempt has no response any more, so its span has no status code.
+			if call != nil {
+				call.Response = nil
+			}
 		}
 		if readErr != nil {
 			// The response stays, for its status and headers.
@@ -733,6 +753,7 @@ func (cfg *RequestConfig) Clone(ctx context.Context) *RequestConfig {
 		APIKey:         cfg.APIKey,
 		AuthToken:      cfg.AuthToken,
 		WebhookKey:     cfg.WebhookKey,
+		OpenTelemetry:  cfg.OpenTelemetry.clone(),
 	}
 
 	return new

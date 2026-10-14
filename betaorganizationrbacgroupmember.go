@@ -50,6 +50,7 @@ func (r *BetaOrganizationRBACGroupMemberService) List(ctx context.Context, rbacG
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members?beta=true", url.PathEscape(rbacGroupID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.members.list", "/v1/organizations/rbac_groups/{rbac_group_id}/members", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -81,6 +82,7 @@ func (r *BetaOrganizationRBACGroupMemberService) Add(ctx context.Context, rbacGr
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members?beta=true", url.PathEscape(rbacGroupID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.members.add", "/v1/organizations/rbac_groups/{rbac_group_id}/members"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID), requestconfig.WithSpanCreatedID("anthropic.organization.rbac_group.member.id", &res, func(created *BetaRBACGroupMember) string { return created.UserID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -101,6 +103,7 @@ func (r *BetaOrganizationRBACGroupMemberService) Remove(ctx context.Context, use
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members/%s?beta=true", url.PathEscape(body.RBACGroupID), url.PathEscape(userID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.members.remove", "/v1/organizations/rbac_groups/{rbac_group_id}/members/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", body.RBACGroupID), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.member.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

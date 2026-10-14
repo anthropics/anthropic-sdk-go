@@ -51,6 +51,7 @@ func (r *SkillService) New(ctx context.Context, params SkillNewParams, opts ...o
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/skills"
+	opts = append(opts, requestconfig.WithSpan("anthropic.skills.create", "/v1/skills"), requestconfig.WithSpanCreatedID("anthropic.skill.id", &res, func(created *Skill) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -66,6 +67,7 @@ func (r *SkillService) Get(ctx context.Context, skillID string, query SkillGetPa
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s", url.PathEscape(skillID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.skills.retrieve", "/v1/skills/{skill_id}"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -79,6 +81,7 @@ func (r *SkillService) List(ctx context.Context, params SkillListParams, opts ..
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/skills"
+	opts = append(opts, requestconfig.WithSpan("anthropic.skills.list", "/v1/skills", "limit", "page", "source"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -107,6 +110,7 @@ func (r *SkillService) Delete(ctx context.Context, skillID string, body SkillDel
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/skills/%s", url.PathEscape(skillID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.skills.delete", "/v1/skills/{skill_id}"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }

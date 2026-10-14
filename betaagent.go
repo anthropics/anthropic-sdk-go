@@ -61,6 +61,7 @@ func (r *BetaAgentService) New(ctx context.Context, params BetaAgentNewParams, o
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	path := "v1/agents?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.agents.create", "/v1/agents"), requestconfig.WithSpanCreatedID("gen_ai.agent.id", &res, func(created *BetaManagedAgentsAgent) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -87,6 +88,7 @@ func (r *BetaAgentService) Get(ctx context.Context, agentID string, params BetaA
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/agents/%s?beta=true", url.PathEscape(agentID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.agents.retrieve", "/v1/agents/{agent_id}", "version"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
 }
@@ -113,6 +115,7 @@ func (r *BetaAgentService) Update(ctx context.Context, agentID string, params Be
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/agents/%s?beta=true", url.PathEscape(agentID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.agents.update", "/v1/agents/{agent_id}"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -136,6 +139,7 @@ func (r *BetaAgentService) List(ctx context.Context, params BetaAgentListParams,
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/agents?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.agents.list", "/v1/agents", "created_at[gte]", "created_at[lte]", "include_archived", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -175,6 +179,7 @@ func (r *BetaAgentService) Archive(ctx context.Context, agentID string, body Bet
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/agents/%s/archive?beta=true", url.PathEscape(agentID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.agents.archive", "/v1/agents/{agent_id}/archive"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -213,10 +218,13 @@ type BetaManagedAgentsAgent struct {
 	// When the agent was archived. Null if not archived.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
 	// A timestamp in RFC 3339 format
-	CreatedAt   time.Time                                 `json:"created_at" api:"required" format:"date-time"`
-	Description string                                    `json:"description" api:"required"`
-	MCPServers  []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
-	Metadata    map[string]string                         `json:"metadata" api:"required"`
+	CreatedAt   time.Time `json:"created_at" api:"required" format:"date-time"`
+	Description string    `json:"description" api:"required"`
+	// Execution principal for runs of this agent. Always present;
+	// `{"type": "service_account"}` when runs carry no customer-named principal.
+	ExecutionIdentity BetaManagedAgentsExecutionIdentityUnion   `json:"execution_identity" api:"required"`
+	MCPServers        []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
+	Metadata          map[string]string                         `json:"metadata" api:"required"`
 	// Model identifier and configuration.
 	Model BetaManagedAgentsModelConfig `json:"model" api:"required"`
 	// Multiagent orchestration configuration. Null when the agent is single-threaded.
@@ -234,23 +242,24 @@ type BetaManagedAgentsAgent struct {
 	Version int64 `json:"version" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
-		ArchivedAt  respjson.Field
-		CreatedAt   respjson.Field
-		Description respjson.Field
-		MCPServers  respjson.Field
-		Metadata    respjson.Field
-		Model       respjson.Field
-		Multiagent  respjson.Field
-		Name        respjson.Field
-		Skills      respjson.Field
-		System      respjson.Field
-		Tools       respjson.Field
-		Type        respjson.Field
-		UpdatedAt   respjson.Field
-		Version     respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		ID                respjson.Field
+		ArchivedAt        respjson.Field
+		CreatedAt         respjson.Field
+		Description       respjson.Field
+		ExecutionIdentity respjson.Field
+		MCPServers        respjson.Field
+		Metadata          respjson.Field
+		Model             respjson.Field
+		Multiagent        respjson.Field
+		Name              respjson.Field
+		Skills            respjson.Field
+		System            respjson.Field
+		Tools             respjson.Field
+		Type              respjson.Field
+		UpdatedAt         respjson.Field
+		Version           respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -1507,6 +1516,46 @@ func (r *BetaManagedAgentsAutoPolicyParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// An AWS IAM role principal as returned in API responses.
+type BetaManagedAgentsAWSRoleExecutionIdentity struct {
+	// The IAM role's ARN.
+	RoleARN string           `json:"role_arn" api:"required"`
+	Type    constant.AWSRole `json:"type" default:"aws_role"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		RoleARN     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsAWSRoleExecutionIdentity) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsAWSRoleExecutionIdentity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// An AWS IAM role principal.
+//
+// The properties RoleARN, Type are required.
+type BetaManagedAgentsAWSRoleExecutionIdentityParams struct {
+	// The IAM role's ARN, e.g. "arn:aws:iam::123456789012:role/my-agent-runner".
+	// Maximum 2048 characters.
+	RoleARN string `json:"role_arn" api:"required"`
+	// This field can be elided, and will marshal its zero value as "aws_role".
+	Type constant.AWSRole `json:"type" default:"aws_role"`
+	paramObj
+}
+
+func (r BetaManagedAgentsAWSRoleExecutionIdentityParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsAWSRoleExecutionIdentityParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsAWSRoleExecutionIdentityParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Configuration for the bash tool.
 type BetaManagedAgentsBashToolConfig struct {
 	Enabled bool          `json:"enabled" api:"required"`
@@ -2290,6 +2339,129 @@ func (r BetaManagedAgentsEffortXhighParam) MarshalJSON() (data []byte, err error
 }
 func (r *BetaManagedAgentsEffortXhighParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsExecutionIdentityUnion contains all possible properties and
+// values from [BetaManagedAgentsAWSRoleExecutionIdentity],
+// [BetaManagedAgentsServiceAccountExecutionIdentity].
+//
+// Use the [BetaManagedAgentsExecutionIdentityUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsExecutionIdentityUnion struct {
+	// This field is from variant [BetaManagedAgentsAWSRoleExecutionIdentity].
+	RoleARN string `json:"role_arn"`
+	// Any of "aws_role", "service_account".
+	Type string `json:"type"`
+	JSON struct {
+		RoleARN respjson.Field
+		Type    respjson.Field
+		raw     string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsExecutionIdentity is implemented by each variant of
+// [BetaManagedAgentsExecutionIdentityUnion] to add type safety for the return type
+// of [BetaManagedAgentsExecutionIdentityUnion.AsAny]
+type anyBetaManagedAgentsExecutionIdentity interface {
+	implBetaManagedAgentsExecutionIdentityUnion()
+}
+
+func (BetaManagedAgentsAWSRoleExecutionIdentity) implBetaManagedAgentsExecutionIdentityUnion() {}
+func (BetaManagedAgentsServiceAccountExecutionIdentity) implBetaManagedAgentsExecutionIdentityUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsExecutionIdentityUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsAWSRoleExecutionIdentity:
+//	case anthropic.BetaManagedAgentsServiceAccountExecutionIdentity:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsExecutionIdentityUnion) AsAny() anyBetaManagedAgentsExecutionIdentity {
+	switch u.Type {
+	case "aws_role":
+		return u.AsAWSRole()
+	case "service_account":
+		return u.AsServiceAccount()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsExecutionIdentityUnion) AsAWSRole() (v BetaManagedAgentsAWSRoleExecutionIdentity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsExecutionIdentityUnion) AsServiceAccount() (v BetaManagedAgentsServiceAccountExecutionIdentity) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsExecutionIdentityUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsExecutionIdentityUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func BetaManagedAgentsExecutionIdentityParamsOfAWSRole(roleARN string) BetaManagedAgentsExecutionIdentityParamsUnion {
+	var awsRole BetaManagedAgentsAWSRoleExecutionIdentityParams
+	awsRole.RoleARN = roleARN
+	return BetaManagedAgentsExecutionIdentityParamsUnion{OfAWSRole: &awsRole}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaManagedAgentsExecutionIdentityParamsUnion struct {
+	OfAWSRole        *BetaManagedAgentsAWSRoleExecutionIdentityParams        `json:",omitzero,inline"`
+	OfServiceAccount *BetaManagedAgentsServiceAccountExecutionIdentityParams `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaManagedAgentsExecutionIdentityParamsUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAWSRole, u.OfServiceAccount)
+}
+func (u *BetaManagedAgentsExecutionIdentityParamsUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaManagedAgentsExecutionIdentityParamsUnion) asAny() any {
+	if !param.IsOmitted(u.OfAWSRole) {
+		return u.OfAWSRole
+	} else if !param.IsOmitted(u.OfServiceAccount) {
+		return u.OfServiceAccount
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsExecutionIdentityParamsUnion) GetRoleARN() *string {
+	if vt := u.OfAWSRole; vt != nil {
+		return &vt.RoleARN
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaManagedAgentsExecutionIdentityParamsUnion) GetType() *string {
+	if vt := u.OfAWSRole; vt != nil {
+		return paramutil.AddrOrDefault(vt.Type)
+	} else if vt := u.OfServiceAccount; vt != nil {
+		return paramutil.AddrOrDefault(vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaManagedAgentsExecutionIdentityParamsUnion](
+		"type",
+		apijson.Discriminator[BetaManagedAgentsAWSRoleExecutionIdentityParams]("aws_role"),
+		apijson.Discriminator[BetaManagedAgentsServiceAccountExecutionIdentityParams]("service_account"),
+	)
 }
 
 // Configuration for the glob tool.
@@ -4661,13 +4833,58 @@ const (
 	BetaManagedAgentsReadToolConfigParamsTypeRead BetaManagedAgentsReadToolConfigParamsType = "read"
 )
 
+// The Anthropic-managed service account as returned in API responses.
+type BetaManagedAgentsServiceAccountExecutionIdentity struct {
+	Type constant.ServiceAccount `json:"type" default:"service_account"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaManagedAgentsServiceAccountExecutionIdentity) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsServiceAccountExecutionIdentity) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewBetaManagedAgentsServiceAccountExecutionIdentityParams() BetaManagedAgentsServiceAccountExecutionIdentityParams {
+	return BetaManagedAgentsServiceAccountExecutionIdentityParams{
+		Type: "service_account",
+	}
+}
+
+// The Anthropic-managed service account — the default execution principal. Carries
+// no identifier.
+//
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsServiceAccountExecutionIdentityParams].
+type BetaManagedAgentsServiceAccountExecutionIdentityParams struct {
+	Type constant.ServiceAccount `json:"type" default:"service_account"`
+	paramObj
+}
+
+func (r BetaManagedAgentsServiceAccountExecutionIdentityParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaManagedAgentsServiceAccountExecutionIdentityParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaManagedAgentsServiceAccountExecutionIdentityParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Resolved `agent` definition for a single `session_thread`. Snapshot of the agent
 // at thread creation time. The multiagent roster is not repeated here; read it
 // from `Session.agent`.
 type BetaManagedAgentsSessionThreadAgent struct {
-	ID          string                                    `json:"id" api:"required"`
-	Description string                                    `json:"description" api:"required"`
-	MCPServers  []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
+	ID          string `json:"id" api:"required"`
+	Description string `json:"description" api:"required"`
+	// Execution principal snapshotted from the agent at session creation. Always
+	// present; `{"type": "service_account"}` when runs carry no customer-named
+	// principal.
+	ExecutionIdentity BetaManagedAgentsExecutionIdentityUnion   `json:"execution_identity" api:"required"`
+	MCPServers        []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
 	// Model identifier and configuration.
 	Model  BetaManagedAgentsModelConfig                    `json:"model" api:"required"`
 	Name   string                                          `json:"name" api:"required"`
@@ -4679,18 +4896,19 @@ type BetaManagedAgentsSessionThreadAgent struct {
 	Version int64                                   `json:"version" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
-		Description respjson.Field
-		MCPServers  respjson.Field
-		Model       respjson.Field
-		Name        respjson.Field
-		Skills      respjson.Field
-		System      respjson.Field
-		Tools       respjson.Field
-		Type        respjson.Field
-		Version     respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		ID                respjson.Field
+		Description       respjson.Field
+		ExecutionIdentity respjson.Field
+		MCPServers        respjson.Field
+		Model             respjson.Field
+		Name              respjson.Field
+		Skills            respjson.Field
+		System            respjson.Field
+		Tools             respjson.Field
+		Type              respjson.Field
+		Version           respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -6407,6 +6625,9 @@ type BetaAgentNewParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Execution principal for runs of this agent. Omitting it, sending null, or
+	// sending `{"type": "service_account"}` stores the default.
+	ExecutionIdentity BetaManagedAgentsExecutionIdentityParamsUnion `json:"execution_identity,omitzero"`
 	// MCP servers this agent connects to. Maximum 20. Names must be unique within the
 	// array. Every server must be referenced by an `mcp_toolset` in `tools`;
 	// unreferenced servers are rejected. See the
@@ -6677,6 +6898,9 @@ type BetaAgentUpdateParams struct {
 	// send empty array or null to clear. Maximum of 256 tools across all toolsets
 	// allowed.
 	Tools []BetaAgentUpdateParamsToolUnion `json:"tools,omitzero"`
+	// Execution principal for runs of this agent. Full replacement. Omit to preserve;
+	// send null or `{"type": "service_account"}` to restore the default.
+	ExecutionIdentity BetaManagedAgentsExecutionIdentityParamsUnion `json:"execution_identity,omitzero"`
 	// Model identifier. Accepts the
 	// [model string](https://platform.claude.com/docs/en/about-claude/models/overview#latest-models-comparison),
 	// e.g. `claude-opus-5-5`, or a `model_config` object for additional configuration

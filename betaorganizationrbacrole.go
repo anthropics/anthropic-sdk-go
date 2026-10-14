@@ -50,6 +50,7 @@ func (r *BetaOrganizationRBACRoleService) Get(ctx context.Context, rbacRoleID st
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/rbac_roles/%s?beta=true", url.PathEscape(rbacRoleID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_roles.retrieve", "/v1/organizations/rbac_roles/{rbac_role_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_role.id", rbacRoleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -62,6 +63,7 @@ func (r *BetaOrganizationRBACRoleService) List(ctx context.Context, query BetaOr
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/rbac_roles?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_roles.list", "/v1/organizations/rbac_roles", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err

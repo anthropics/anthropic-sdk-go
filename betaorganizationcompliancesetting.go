@@ -43,6 +43,7 @@ func NewBetaOrganizationComplianceSettingService(opts ...option.RequestOption) (
 func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/compliance_settings?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.compliance_settings.retrieve", "/v1/organizations/compliance_settings"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -63,6 +64,7 @@ func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts
 func (r *BetaOrganizationComplianceSettingService) Update(ctx context.Context, body BetaOrganizationComplianceSettingUpdateParams, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/compliance_settings?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.compliance_settings.update", "/v1/organizations/compliance_settings"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }

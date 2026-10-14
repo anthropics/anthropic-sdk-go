@@ -69,6 +69,7 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
 	path := "v1/messages/batches?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.create", "/v1/messages/batches"), requestconfig.WithSpanCreatedID("anthropic.message.batch.id", &res, func(created *BetaMessageBatch) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -100,6 +101,7 @@ func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.retrieve", "/v1/messages/batches/{message_batch_id}"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -127,6 +129,7 @@ func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBa
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/messages/batches?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.list", "/v1/messages/batches", "after_id", "before_id", "limit"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -176,6 +179,7 @@ func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID str
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.delete", "/v1/messages/batches/{message_batch_id}"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -213,6 +217,7 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/cancel?beta=true", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.cancel", "/v1/messages/batches/{message_batch_id}/cancel"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -250,6 +255,7 @@ func (r *BetaMessageBatchService) ResultsStreaming(ctx context.Context, messageB
 		return jsonl.NewStream[BetaMessageBatchIndividualResponse](nil, err)
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/results?beta=true", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.results", "/v1/messages/batches/{message_batch_id}/results"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
 	return jsonl.NewStream[BetaMessageBatchIndividualResponse](raw, err)
 }

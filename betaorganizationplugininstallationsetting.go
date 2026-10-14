@@ -77,6 +77,7 @@ func (r *BetaOrganizationPluginInstallationSettingService) List(ctx context.Cont
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/plugins/%s/installation_settings?beta=true", url.PathEscape(pluginID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.installation_settings.list", "/v1/organizations/plugins/{plugin_id}/installation_settings", "limit", "organization_id", "page", "target_type"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -159,6 +160,7 @@ func (r *BetaOrganizationPluginInstallationSettingService) Remove(ctx context.Co
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/plugins/%s/installation_settings/%s?beta=true", url.PathEscape(params.PluginID), url.PathEscape(target))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.installation_settings.remove", "/v1/organizations/plugins/{plugin_id}/installation_settings/{target}"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", params.PluginID), requestconfig.WithSpanAttribute("anthropic.organization.plugin.installation_setting.id", target))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -207,6 +209,7 @@ func (r *BetaOrganizationPluginInstallationSettingService) Set(ctx context.Conte
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/plugins/%s/installation_settings/%s?beta=true", url.PathEscape(params.PluginID), url.PathEscape(target))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.installation_settings.set", "/v1/organizations/plugins/{plugin_id}/installation_settings/{target}"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", params.PluginID), requestconfig.WithSpanAttribute("anthropic.organization.plugin.installation_setting.id", target))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

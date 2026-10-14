@@ -67,6 +67,7 @@ func (r *BetaDreamService) New(ctx context.Context, params BetaDreamNewParams, o
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "dreaming-2026-04-21")}, opts...)
 	path := "v1/dreams?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.create", "/v1/dreams"), requestconfig.WithSpanCreatedID("anthropic.dream.id", &res, func(created *BetaDream) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -99,6 +100,7 @@ func (r *BetaDreamService) Get(ctx context.Context, dreamID string, query BetaDr
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/dreams/%s?beta=true", url.PathEscape(dreamID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.retrieve", "/v1/dreams/{dream_id}"), requestconfig.WithSpanAttribute("anthropic.dream.id", dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -128,6 +130,7 @@ func (r *BetaDreamService) List(ctx context.Context, params BetaDreamListParams,
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "dreaming-2026-04-21"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/dreams?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.list", "/v1/dreams", "created_at[gt]", "created_at[lt]", "include_archived", "limit", "page", "statuses"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -182,6 +185,7 @@ func (r *BetaDreamService) Archive(ctx context.Context, dreamID string, body Bet
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/dreams/%s/archive?beta=true", url.PathEscape(dreamID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.archive", "/v1/dreams/{dream_id}/archive"), requestconfig.WithSpanAttribute("anthropic.dream.id", dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -217,6 +221,7 @@ func (r *BetaDreamService) Cancel(ctx context.Context, dreamID string, body Beta
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/dreams/%s/cancel?beta=true", url.PathEscape(dreamID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.cancel", "/v1/dreams/{dream_id}/cancel"), requestconfig.WithSpanAttribute("anthropic.dream.id", dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

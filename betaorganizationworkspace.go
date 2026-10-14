@@ -60,6 +60,7 @@ func (r *BetaOrganizationWorkspaceService) New(ctx context.Context, params BetaO
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/workspaces?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.create", "/v1/organizations/workspaces"), requestconfig.WithSpanCreatedID("anthropic.organization.workspace.id", &res, func(created *BetaWorkspace) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -72,6 +73,7 @@ func (r *BetaOrganizationWorkspaceService) Get(ctx context.Context, workspaceID 
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/workspaces/%s?beta=true", url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.retrieve", "/v1/organizations/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -84,6 +86,7 @@ func (r *BetaOrganizationWorkspaceService) Update(ctx context.Context, workspace
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/workspaces/%s?beta=true", url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.update", "/v1/organizations/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
@@ -94,6 +97,7 @@ func (r *BetaOrganizationWorkspaceService) List(ctx context.Context, query BetaO
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/workspaces?beta=true"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.list", "/v1/organizations/workspaces", "after_id", "before_id", "include_archived", "include_default", "limit"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -119,6 +123,7 @@ func (r *BetaOrganizationWorkspaceService) Archive(ctx context.Context, workspac
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive?beta=true", url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.archive", "/v1/organizations/workspaces/{workspace_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }

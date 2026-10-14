@@ -25,14 +25,24 @@ func NewDecoder(res *http.Response) Decoder {
 		return nil
 	}
 
+	body := res.Body
+	// The span of a traced API call follows the decoded events, below, instead of the body.
+	traced, isTraced := body.(tracedBody)
+	if isTraced {
+		body = traced.Unwrap()
+	}
+
 	var decoder Decoder
 	contentType := res.Header.Get("content-type")
 	if t, ok := decoderTypes[contentType]; ok {
-		decoder = t(res.Body)
+		decoder = t(body)
 	} else {
-		scn := bufio.NewScanner(res.Body)
+		scn := bufio.NewScanner(body)
 		scn.Buffer(nil, bufio.MaxScanTokenSize<<9)
-		decoder = &eventStreamDecoder{rc: res.Body, scn: scn}
+		decoder = &eventStreamDecoder{rc: body, scn: scn}
+	}
+	if isTraced {
+		decoder = traced.TraceEvents(decoder)
 	}
 
 	// richDecoder needs the http request to provide helpful errors
@@ -43,6 +53,33 @@ func NewDecoder(res *http.Response) Decoder {
 	}
 
 	return decoder
+}
+
+// tracedBody is the response body of an API call that has an OpenTelemetry
+// span: a *ResponseBody of package internal/tracing, which this package cannot import.
+type tracedBody interface {
+	// Unwrap returns the body to decode. Reading it leaves the span open.
+	Unwrap() io.ReadCloser
+	// TraceEvents returns the decoder to use in place of decoder, so that the
+	// span follows the decoded events.
+	TraceEvents(decoder Decoder) Decoder
+}
+
+// tracedDecoder is the decoder that TraceEvents of a [tracedBody] returns. A
+// [Stream] shows it what each event was decoded into, so that the span does not
+// decode the event again.
+type tracedDecoder interface {
+	// TraceDecoded sees a pointer to the value that the current event was decoded
+	// into. The next event overwrites the value.
+	TraceDecoded(event any)
+}
+
+func asTracedDecoder(decoder Decoder) tracedDecoder {
+	if rich, ok := decoder.(richErrorDecoder); ok {
+		decoder = rich.Decoder
+	}
+	traced, _ := decoder.(tracedDecoder)
+	return traced
 }
 
 // richErrorDecoder wraps a Decoder and carries the original [*http.Response]
@@ -174,12 +211,14 @@ type Stream[T any] struct {
 	decoder Decoder
 	cur     T
 	err     error
+	traced  tracedDecoder
 }
 
 func NewStream[T any](decoder Decoder, err error) *Stream[T] {
 	return &Stream[T]{
 		decoder: decoder,
 		err:     err,
+		traced:  asTracedDecoder(decoder),
 	}
 }
 
@@ -210,6 +249,9 @@ func (s *Stream[T]) Next() bool {
 				s.cur = prev
 				return false
 			}
+			if s.traced != nil {
+				s.traced.TraceDecoded(&s.cur)
+			}
 			return true
 		case "message_start", "message_delta", "message_stop", "content_block_start", "content_block_delta", "content_block_stop", "message", "user.message", "user.interrupt", "user.tool_confirmation", "user.custom_tool_result", "user.tool_result", "agent.message", "agent.thinking", "agent.tool_use", "agent.tool_result", "agent.mcp_tool_use", "agent.mcp_tool_result", "agent.custom_tool_use", "agent.thread_context_compacted", "session.status_running", "session.status_idle", "session.status_rescheduled", "session.status_terminated", "session.error", "session.deleted", "session.updated", "span.model_request_start", "span.model_request_end", "span.outcome_evaluation_start", "span.outcome_evaluation_ongoing", "span.outcome_evaluation_end", "user.define_outcome", "agent.thread_message_received", "agent.thread_message_sent", "agent.session_thread_message_received", "agent.session_thread_message_sent", "session.thread_created", "session.thread_status_created", "session.thread_status_running", "session.thread_status_idle", "session.thread_status_rescheduled", "session.thread_status_terminated", "event_start", "event_delta", "system.message", "workflow_run.created", "workflow_run.status_running", "workflow_run.status_idle", "workflow_run.status_ended", "workflow_run.error", "workflow_run.phase_started", "workflow_run.phase_ended":
 			prev := s.cur
@@ -219,6 +261,9 @@ func (s *Stream[T]) Next() bool {
 			if s.err != nil {
 				s.cur = prev
 				return false
+			}
+			if s.traced != nil {
+				s.traced.TraceDecoded(&s.cur)
 			}
 			return true
 		case "ping":

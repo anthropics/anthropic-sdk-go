@@ -58,6 +58,7 @@ func (r *MessageBatchService) New(ctx context.Context, params MessageBatchNewPar
 	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/batches"
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.create", "/v1/messages/batches"), requestconfig.WithSpanCreatedID("anthropic.message.batch.id", &res, func(created *MessageBatch) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -78,6 +79,7 @@ func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, qu
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.retrieve", "/v1/messages/batches/{message_batch_id}"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -95,6 +97,7 @@ func (r *MessageBatchService) List(ctx context.Context, params MessageBatchListP
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/messages/batches"
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.list", "/v1/messages/batches", "after_id", "before_id", "limit"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -133,6 +136,7 @@ func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string,
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.delete", "/v1/messages/batches/{message_batch_id}"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -159,6 +163,7 @@ func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string,
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/cancel", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.cancel", "/v1/messages/batches/{message_batch_id}/cancel"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -186,6 +191,7 @@ func (r *MessageBatchService) ResultsStreaming(ctx context.Context, messageBatch
 		return jsonl.NewStream[MessageBatchIndividualResponse](nil, err)
 	}
 	path := fmt.Sprintf("v1/messages/batches/%s/results", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.results", "/v1/messages/batches/{message_batch_id}/results"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
 	return jsonl.NewStream[MessageBatchIndividualResponse](raw, err)
 }

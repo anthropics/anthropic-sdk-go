@@ -1284,7 +1284,8 @@ type BetaOrganizationTelemetryDestinationNewParams struct {
 	// The settings for the traces that the destination receives. If you leave it out,
 	// every setting takes its default.
 	Traces BetaTelemetryDestinationTracesParams `json:"traces,omitzero"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `telemetry-destinations-2026-08-11`
+	// in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -1298,7 +1299,8 @@ func (r *BetaOrganizationTelemetryDestinationNewParams) UnmarshalJSON(data []byt
 }
 
 type BetaOrganizationTelemetryDestinationGetParams struct {
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `telemetry-destinations-2026-08-11`
+	// in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -1345,7 +1347,8 @@ type BetaOrganizationTelemetryDestinationUpdateParams struct {
 	// the destination's list has more than 750 workspaces. Remove workspaces one at a
 	// time until 750 or fewer remain, then send the update again.
 	Workspaces BetaTelemetryDestinationWorkspacesParamsUnion `json:"workspaces,omitzero"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `telemetry-destinations-2026-08-11`
+	// in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -1373,7 +1376,8 @@ type BetaOrganizationTelemetryDestinationListParams struct {
 	// match. An ID that isn't the ID of one of the organization's workspaces doesn't
 	// match any destination, not even one whose type is `all`.
 	WorkspaceIDs []string `query:"workspace_ids,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `telemetry-destinations-2026-08-11`
+	// in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -1388,13 +1392,15 @@ func (r BetaOrganizationTelemetryDestinationListParams) URLQuery() (v url.Values
 }
 
 type BetaOrganizationTelemetryDestinationDeleteParams struct {
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `telemetry-destinations-2026-08-11`
+	// in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 
 type BetaOrganizationTelemetryDestinationTestParams struct {
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `telemetry-destinations-2026-08-11`
+	// in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }

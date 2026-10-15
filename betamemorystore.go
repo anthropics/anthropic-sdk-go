@@ -316,7 +316,8 @@ type BetaMemoryStoreNewParams struct {
 	// belongs to). Up to 16 pairs; keys 1–64 characters; values up to 512 characters.
 	// Not visible to the agent.
 	Metadata map[string]string `json:"metadata,omitzero"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -337,7 +338,8 @@ type BetaMemoryStoreGetParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -361,7 +363,8 @@ type BetaMemoryStoreUpdateParams struct {
 	// Omit the field to preserve. The stored bag is limited to 16 keys (up to 64 chars
 	// each) with values up to 512 chars.
 	Metadata map[string]string `json:"metadata,omitzero"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -397,7 +400,8 @@ type BetaMemoryStoreListParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -419,7 +423,8 @@ type BetaMemoryStoreDeleteParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -432,7 +437,8 @@ type BetaMemoryStoreArchiveParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }

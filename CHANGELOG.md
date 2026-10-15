@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.82.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.81.0...v1.82.0) (2026-10-14)
+## [1.82.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.81.0...v1.82.0) (2026-10-15)
 
 ### Features
 
@@ -11,6 +11,11 @@
 ### Chores
 
 * **ci:** speed up breaking change detection
+
+
+### Documentation
+
+* **api:** note that some models need a beta header to use speed
 
 ## [1.81.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.80.0...v1.81.0) (2026-10-14)
 

@@ -8,6 +8,7 @@ import (
 	"io"
 	"maps"
 	"net/http"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -31,6 +32,7 @@ type scriptedTransport struct {
 	bodies    []map[string]any
 	betas     [][]string
 	helpers   [][]string
+	closed    []*bool // whether each response's body was closed
 }
 
 func (s *scriptedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -54,11 +56,24 @@ func (s *scriptedTransport) RoundTrip(req *http.Request) (*http.Response, error)
 		maps.Copy(header, s.headers[0])
 		s.headers = s.headers[1:]
 	}
+	closed := new(bool)
+	s.closed = append(s.closed, closed)
 	return &http.Response{
 		StatusCode: status,
 		Header:     header,
-		Body:       io.NopCloser(strings.NewReader(next)),
+		Body:       trackedBody{strings.NewReader(next), closed},
 	}, nil
+}
+
+// trackedBody records that it was closed.
+type trackedBody struct {
+	io.Reader
+	closed *bool
+}
+
+func (b trackedBody) Close() error {
+	*b.closed = true
+	return nil
 }
 
 func (s *scriptedTransport) models() []string {
@@ -1266,4 +1281,237 @@ func TestRefusalFallbackMiddlewarePrependsFallbackBlockWhenMiddlewareArmedTheBet
 	require.Len(t, message.Content, 2)
 	assert.Equal(t, "fallback", string(message.Content[0].Type))
 	assert.Equal(t, "served", message.Content[1].Text)
+}
+
+const hopRejection = `{"type": "error", "error": {"type": "api_error", "message": "rejected"}}`
+
+const absent = "<absent>"
+
+// speedKeys lists the speed each request body carried, absent for a body
+// without the key.
+func speedKeys(bodies []map[string]any) []any {
+	speeds := make([]any, len(bodies))
+	for i, body := range bodies {
+		speeds[i] = absent
+		if speed, ok := body["speed"]; ok {
+			speeds[i] = speed
+		}
+	}
+	return speeds
+}
+
+// hopShape is what the resends of one entry can shed from its body.
+type hopShape struct {
+	speed          any
+	token, prefill bool
+}
+
+func hopShapes(bodies []map[string]any) []hopShape {
+	shapes := make([]hopShape, len(bodies))
+	for i, speed := range speedKeys(bodies) {
+		_, token := bodies[i]["fallback_credit_token"]
+		messages := bodies[i]["messages"].([]any)
+		last := messages[len(messages)-1].(map[string]any)
+		shapes[i] = hopShape{speed: speed, token: token, prefill: last["role"] == "assistant"}
+	}
+	return shapes
+}
+
+func withoutSpeed(body map[string]any) map[string]any {
+	trimmed := maps.Clone(body)
+	delete(trimmed, "speed")
+	return trimmed
+}
+
+func TestRefusalFallbackMiddlewareResendsARateLimitedFastHopWithoutSpeed(t *testing.T) {
+	for _, status := range []int{429, 529} {
+		t.Run(fmt.Sprint(status), func(t *testing.T) {
+			client, transport := fallbackTestClient(t,
+				[]string{refusalResponse("primary-model", "credit-token"), hopRejection, messageResponse("fallback-model")},
+				betafallback.BetaRefusalFallbackMiddleware(
+					[]anthropic.BetaFallbackParam{{Model: "fallback-model", MaxTokens: anthropic.Int(2048)}},
+				),
+			)
+			transport.statuses = []int{http.StatusOK, status, http.StatusOK}
+			params := fallbackTestParams
+			params.Speed = anthropic.BetaMessageNewParamsSpeedFast
+
+			message, err := client.Beta.Messages.New(context.Background(), params)
+
+			require.NoError(t, err)
+			require.Len(t, message.Content, 1)
+			assert.Equal(t, anthropic.Model("fallback-model"), message.Content[0].AsFallback().To.Model)
+			require.Len(t, transport.bodies, 3)
+			assert.Equal(t, "fast", transport.bodies[1]["speed"])
+			assert.Equal(t, creditTokenBody("credit-token"), transport.bodies[1]["fallback_credit_token"])
+			assert.Equal(t, withoutSpeed(transport.bodies[1]), transport.bodies[2])
+			assert.True(t, *transport.closed[1], "the rejected response's body is closed")
+		})
+	}
+}
+
+// keptSpeedTests script the statuses that the requests to a one-entry chain's
+// fallback get, after the primary refused with a credit token, and the speed
+// each of those requests must carry.
+var keptSpeedTests = []struct {
+	name        string
+	speed       anthropic.BetaMessageNewParamsSpeed
+	entrySpeed  anthropic.BetaFallbackParamSpeed
+	hopStatuses []int
+	wantSpeeds  []any
+}{
+	{"an entry with speed fast opts out", "fast", "fast", []int{429}, []any{"fast"}},
+	{"a request without speed", "", "", []int{429}, []any{absent}},
+	{"a standard request", "standard", "", []int{429}, []any{"standard"}},
+	{"500", "fast", "", []int{500}, []any{"fast"}},
+	{"400 only sheds the credit token", "fast", "", []int{400, 400}, []any{"fast", "fast"}},
+}
+
+func TestRefusalFallbackMiddlewareKeepsSpeedOnOtherFailedHops(t *testing.T) {
+	for _, test := range keptSpeedTests {
+		t.Run(test.name, func(t *testing.T) {
+			client, transport := fallbackTestClient(t,
+				append([]string{refusalResponse("primary-model", "credit-token")},
+					slices.Repeat([]string{hopRejection}, len(test.hopStatuses))...),
+				betafallback.BetaRefusalFallbackMiddleware(
+					[]anthropic.BetaFallbackParam{{Model: "fallback-model", Speed: test.entrySpeed}},
+				),
+			)
+			transport.statuses = append([]int{http.StatusOK}, test.hopStatuses...)
+			params := fallbackTestParams
+			params.Speed = test.speed
+
+			_, err := client.Beta.Messages.New(context.Background(), params)
+
+			var apierr *anthropic.Error
+			require.ErrorAs(t, err, &apierr)
+			assert.Equal(t, test.hopStatuses[0], apierr.StatusCode)
+			assert.Equal(t, test.wantSpeeds, speedKeys(transport.bodies[1:]))
+		})
+	}
+}
+
+func TestRefusalFallbackMiddlewareSurfacesARejectedFastHopResend(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{refusalResponse("primary-model", "credit-token"), hopRejection, hopRejection},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{Model: "fallback-1"}, {Model: "fallback-2"}},
+		),
+	)
+	transport.statuses = []int{http.StatusOK, http.StatusTooManyRequests, http.StatusTooManyRequests}
+	params := fallbackTestParams
+	params.Speed = anthropic.BetaMessageNewParamsSpeedFast
+
+	_, err := client.Beta.Messages.New(context.Background(), params)
+
+	var apierr *anthropic.Error
+	require.ErrorAs(t, err, &apierr)
+	assert.Equal(t, http.StatusTooManyRequests, apierr.StatusCode)
+	assert.Equal(t, []string{"primary-model", "fallback-1", "fallback-1"}, transport.models())
+	assert.Equal(t, []any{"fast", absent}, speedKeys(transport.bodies[1:]))
+}
+
+func TestRefusalFallbackMiddlewareDropsSpeedOncePerEntry(t *testing.T) {
+	for _, test := range []struct {
+		name        string
+		hopStatuses []int
+		want        []hopShape
+	}{
+		{"429 then 400", []int{429, 400, 200}, []hopShape{
+			{speed: "fast", token: true},
+			{speed: absent, token: true},
+			{speed: absent},
+		}},
+		{"400 then 429", []int{400, 429, 200}, []hopShape{
+			{speed: "fast", token: true},
+			{speed: "fast"},
+			{speed: absent},
+		}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			client, transport := fallbackTestClient(t,
+				[]string{refusalResponse("primary-model", "credit-token"), hopRejection, hopRejection, messageResponse("fallback-model")},
+				betafallback.BetaRefusalFallbackMiddleware(
+					[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
+				),
+			)
+			transport.statuses = append([]int{http.StatusOK}, test.hopStatuses...)
+			params := fallbackTestParams
+			params.Speed = anthropic.BetaMessageNewParamsSpeedFast
+
+			message, err := client.Beta.Messages.New(context.Background(), params)
+
+			require.NoError(t, err)
+			assert.Equal(t, anthropic.Model("fallback-model"), message.Model)
+			assert.Equal(t, test.want, hopShapes(transport.bodies[1:]))
+		})
+	}
+}
+
+func TestRefusalFallbackMiddlewareStartsTheNextEntryFastAgain(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{
+			refusalResponse("primary-model", "token-1"),
+			hopRejection,
+			refusalResponse("fallback-1", "token-2"),
+			messageResponse("fallback-2"),
+		},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{Model: "fallback-1"}, {Model: "fallback-2"}},
+		),
+	)
+	transport.statuses = []int{http.StatusOK, http.StatusTooManyRequests, http.StatusOK, http.StatusOK}
+	params := fallbackTestParams
+	params.Speed = anthropic.BetaMessageNewParamsSpeedFast
+
+	message, err := client.Beta.Messages.New(context.Background(), params)
+
+	require.NoError(t, err)
+	assert.Equal(t, anthropic.Model("fallback-2"), message.Model)
+	assert.Equal(t, []string{"primary-model", "fallback-1", "fallback-1", "fallback-2"}, transport.models())
+	assert.Equal(t, []any{"fast", absent, "fast"}, speedKeys(transport.bodies[1:]))
+}
+
+func TestRefusalFallbackMiddlewareResendsARateLimitedFastPinnedRequestWithoutSpeed(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{hopRejection, messageResponse("fallback-model")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
+		),
+	)
+	transport.statuses = []int{http.StatusTooManyRequests, http.StatusOK}
+	state := &betafallback.BetaFallbackState{}
+	state.SetIndex(0)
+	params := fallbackTestParams
+	params.Speed = anthropic.BetaMessageNewParamsSpeedFast
+
+	message, err := client.Beta.Messages.New(context.Background(), params,
+		betafallback.WithBetaFallbackState(state))
+
+	require.NoError(t, err)
+	assert.Equal(t, anthropic.Model("fallback-model"), message.Model)
+	require.Len(t, transport.bodies, 2)
+	assert.Equal(t, "fallback-model", transport.bodies[0]["model"])
+	assert.Equal(t, "fast", transport.bodies[0]["speed"])
+	assert.Equal(t, withoutSpeed(transport.bodies[0]), transport.bodies[1])
+	assert.True(t, *transport.closed[0], "the rejected response's body is closed")
+}
+
+func TestRefusalFallbackMiddlewareLeavesARateLimitedFastPrimaryAlone(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{hopRejection},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
+		),
+	)
+	transport.statuses = []int{http.StatusTooManyRequests}
+	params := fallbackTestParams
+	params.Speed = anthropic.BetaMessageNewParamsSpeedFast
+
+	_, err := client.Beta.Messages.New(context.Background(), params)
+
+	var apierr *anthropic.Error
+	require.ErrorAs(t, err, &apierr)
+	assert.Equal(t, http.StatusTooManyRequests, apierr.StatusCode)
+	assert.Equal(t, []any{"fast"}, speedKeys(transport.bodies))
 }

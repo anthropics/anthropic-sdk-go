@@ -95,6 +95,9 @@ func WithBetaFallbackState(state *BetaFallbackState) option.RequestOption {
 // object survives (a null output_config removes it whole). Overrides never
 // carry from one hop to the next. A between_tools thinking config is sent to
 // a fallback as disabled unless the fallback sets thinking itself.
+// A request with speed "fast" that falls back to an entry with no speed, and
+// is rejected with a 429 or 529, is retried once on that entry without speed;
+// set speed "fast" on the entry to keep it fast-only.
 // An exhausted chain returns the last refusal as a normal response;
 // an empty chain disables the middleware.
 //
@@ -203,19 +206,22 @@ func BetaRefusalFallbackMiddleware(fallbacks []anthropic.BetaFallbackParam) opti
 		// rejects; trim them before sending.
 		orig = trimHistory(body, orig)
 
-		attemptRequest := func(body []byte) *http.Request {
+		send := func(body []byte) (*http.Response, error) {
 			r := requestWithBody(req, body)
 			ensureFallbackCreditBeta(r.Header)
-			return r
+			return next(r)
 		}
 
 		attempt := orig
+		var res *http.Response
 		if index >= 0 {
 			if attempt, _, err = mergeFallback(body, fallbacks[index], ""); err != nil {
 				return nil, err
 			}
+			res, err = sendHop(send, fallbacks[index], attempt, new(bool))
+		} else {
+			res, err = send(attempt)
 		}
-		res, err := next(attemptRequest(attempt))
 
 		// Seams mirror the streaming splice's block shape: one fallback
 		// boundary block per retried hop, prepended to the served message's
@@ -242,11 +248,11 @@ func BetaRefusalFallbackMiddleware(fallbacks []anthropic.BetaFallbackParam) opti
 			}
 			seams = append(seams, seam{from: fromModel, to: string(fallback.Model), category: category})
 			fromModel = string(fallback.Model)
-			var tokenSent bool
+			var tokenSent, speedDropped bool
 			if attempt, tokenSent, err = mergeFallback(body, fallback, creditToken); err != nil {
 				return nil, err
 			}
-			res, err = next(attemptRequest(attempt))
+			res, err = sendHop(send, fallback, attempt, &speedDropped)
 
 			// A rejected redemption recovers with one tokenless resend.
 			if err == nil && tokenSent && res.StatusCode == http.StatusBadRequest {
@@ -254,7 +260,7 @@ func BetaRefusalFallbackMiddleware(fallbacks []anthropic.BetaFallbackParam) opti
 				if attempt, _, err = mergeFallback(body, fallback, ""); err != nil {
 					return nil, err
 				}
-				res, err = next(attemptRequest(attempt))
+				res, err = sendHop(send, fallback, attempt, &speedDropped)
 			}
 		}
 		if err == nil && len(seams) > 0 {
@@ -429,6 +435,36 @@ func hasFallbackCreditBeta(h http.Header) bool {
 	}
 	return false
 }
+
+// sendHop sends payload, a body merged from fallback. A fast payload rejected
+// with a 429 or 529 is resent once without speed, unless fallback set the
+// speed itself; speedDropped then keeps speed off that entry's later payloads.
+func sendHop(send func([]byte) (*http.Response, error), fallback anthropic.BetaFallbackParam, payload []byte, speedDropped *bool) (*http.Response, error) {
+	if !*speedDropped {
+		res, err := send(payload)
+		if err != nil || (res.StatusCode != http.StatusTooManyRequests && res.StatusCode != statusOverloaded) {
+			return res, err
+		}
+		if gjson.GetBytes(payload, "speed").String() != string(anthropic.BetaMessageNewParamsSpeedFast) {
+			return res, nil
+		}
+		overrides, err := json.Marshal(fallback)
+		if err != nil || gjson.GetBytes(overrides, "speed").Exists() {
+			return res, nil
+		}
+		*speedDropped = true
+		res.Body.Close()
+	}
+	// Removed, not set to "standard": a model without fast mode rejects any
+	// explicit speed.
+	if trimmed, err := sjson.DeleteBytes(payload, "speed"); err == nil {
+		payload = trimmed
+	}
+	return send(payload)
+}
+
+// statusOverloaded is the API's overloaded_error status.
+const statusOverloaded = 529
 
 // mergeFallback overlays fallback's fields and the credit token onto the
 // original body, reporting whether the token was included. The body stays a

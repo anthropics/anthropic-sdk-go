@@ -806,7 +806,7 @@ func (a *tracedAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Path == "/cards/card_1/events" {
 		w.Header().Set("Content-Type", "text/event-stream")
-		fmt.Fprint(w, "event: completion\ndata: {\"message\":\"a\"}\n\nevent: completion\ndata: {\"message\":\"b\"}\n\n")
+		fmt.Fprint(w, "event: card\ndata: {\"message\":\"a\"}\n\nevent: card\ndata: {\"message\":\"b\"}\n\n")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

@@ -20,8 +20,9 @@
 * **api:** add organization_type_not_supported error to spend limit lists
 * **api:** add telemetry destination test endpoint
 * **api:** add telemetry destinations to the Admin API
-* **client:** add OpenTelemetry spans for API calls
-* **client:** add OpenTelemetry tracing: each API call, stream and tool run is a span, on by default once the application has registered a tracer provider, and without the content of requests and responses unless `option.WithOpenTelemetryTracesContentMode` asks for it. Each request carries its span's trace context (`traceparent`) unless `option.WithOpenTelemetryPropagation(false)` or `ANTHROPIC_OPEN_TELEMETRY_PROPAGATION=false` leaves it out, and `option.WithoutOpenTelemetry()` or `ANTHROPIC_OPEN_TELEMETRY=false` turns all of it off. Adds the dependency `go.opentelemetry.io/otel`, v1.33.0 or later
+* **client:** add native support for OpenTelemetry tracing
+
+  If your app registers a global tracer provider, the SDK will create spans with it after upgrading, and they'll be exported with the rest of your traces. Requests will also get trace context headers from the global propagator. To disable, pass `option.WithoutOpenTelemetry()` to the client or set `ANTHROPIC_OPEN_TELEMETRY=false`. Learn more in the [documentation](https://platform.claude.com/docs/en/manage-claude/opentelemetry/sdk).
 
 
 ### Bug Fixes

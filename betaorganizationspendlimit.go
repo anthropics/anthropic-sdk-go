@@ -107,8 +107,9 @@ func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, 
 // For a Claude Enterprise organization, this deletes a per-user override, and the
 // member falls back to any inherited spend limit at that period. Its seat-tier,
 // group, and organization-level rows cannot be deleted via this endpoint. A Claude
-// Console organization deletes its organization and workspace limits. Deleting
-// them through the API is in an early access preview.
+// Console organization deletes its organization and workspace limits, but not its
+// `usage_tier` limit. Deleting organization and workspace limits through the API
+// is in an early access preview.
 func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLimitID string, opts ...option.RequestOption) (res *BetaOrganizationSpendLimitDeleteResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if spendLimitID == "" {
@@ -200,14 +201,15 @@ func (r *BetaSpendLimit) UnmarshalJSON(data []byte) error {
 // BetaSpendLimitScopeUnion contains all possible properties and values from
 // [BetaSpendLimitUserScope], [BetaSpendLimitSeatTierScope],
 // [BetaSpendLimitRBACGroupScope], [BetaSpendLimitOrganizationServiceScope],
-// [BetaSpendLimitOrganizationScope], [BetaSpendLimitWorkspaceScope].
+// [BetaSpendLimitOrganizationScope], [BetaSpendLimitWorkspaceScope],
+// [BetaSpendLimitUsageTierScope].
 //
 // Use the [BetaSpendLimitScopeUnion.AsAny] method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaSpendLimitScopeUnion struct {
 	// Any of "user", "seat_tier", "rbac_group", "organization_service",
-	// "organization", "workspace".
+	// "organization", "workspace", "usage_tier".
 	Type string `json:"type"`
 	// This field is from variant [BetaSpendLimitUserScope].
 	UserID string `json:"user_id"`
@@ -243,6 +245,7 @@ func (BetaSpendLimitRBACGroupScope) implBetaSpendLimitScopeUnion()           {}
 func (BetaSpendLimitOrganizationServiceScope) implBetaSpendLimitScopeUnion() {}
 func (BetaSpendLimitOrganizationScope) implBetaSpendLimitScopeUnion()        {}
 func (BetaSpendLimitWorkspaceScope) implBetaSpendLimitScopeUnion()           {}
+func (BetaSpendLimitUsageTierScope) implBetaSpendLimitScopeUnion()           {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -253,6 +256,7 @@ func (BetaSpendLimitWorkspaceScope) implBetaSpendLimitScopeUnion()           {}
 //	case anthropic.BetaSpendLimitOrganizationServiceScope:
 //	case anthropic.BetaSpendLimitOrganizationScope:
 //	case anthropic.BetaSpendLimitWorkspaceScope:
+//	case anthropic.BetaSpendLimitUsageTierScope:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -270,6 +274,8 @@ func (u BetaSpendLimitScopeUnion) AsAny() anyBetaSpendLimitScope {
 		return u.AsOrganization()
 	case "workspace":
 		return u.AsWorkspace()
+	case "usage_tier":
+		return u.AsUsageTier()
 	}
 	return nil
 }
@@ -300,6 +306,11 @@ func (u BetaSpendLimitScopeUnion) AsOrganization() (v BetaSpendLimitOrganization
 }
 
 func (u BetaSpendLimitScopeUnion) AsWorkspace() (v BetaSpendLimitWorkspaceScope) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaSpendLimitScopeUnion) AsUsageTier() (v BetaSpendLimitUsageTierScope) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -436,6 +447,27 @@ type BetaSpendLimitSeatTierScope struct {
 // Returns the unmodified JSON received from the API
 func (r BetaSpendLimitSeatTierScope) RawJSON() string { return r.JSON.raw }
 func (r *BetaSpendLimitSeatTierScope) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Scope of the monthly spend cap Anthropic sets for a Claude Console organization
+// from its usage tier, or a higher cap Anthropic granted the organization.
+// Read-only; its `created_at` and `updated_at` are the organization's creation
+// time, so `amount` can change while `updated_at` stays the same.
+type BetaSpendLimitUsageTierScope struct {
+	// Scope type. Always `usage_tier` for this scope.
+	Type constant.UsageTier `json:"type" default:"usage_tier"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaSpendLimitUsageTierScope) RawJSON() string { return r.JSON.raw }
+func (r *BetaSpendLimitUsageTierScope) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -699,14 +731,15 @@ func (r *BetaSpendSummaryActorUnion) UnmarshalJSON(data []byte) error {
 // BetaSpendSummaryScopeUnion contains all possible properties and values from
 // [BetaSpendLimitUserScope], [BetaSpendLimitSeatTierScope],
 // [BetaSpendLimitRBACGroupScope], [BetaSpendLimitOrganizationServiceScope],
-// [BetaSpendLimitOrganizationScope], [BetaSpendLimitWorkspaceScope].
+// [BetaSpendLimitOrganizationScope], [BetaSpendLimitWorkspaceScope],
+// [BetaSpendLimitUsageTierScope].
 //
 // Use the [BetaSpendSummaryScopeUnion.AsAny] method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaSpendSummaryScopeUnion struct {
 	// Any of "user", "seat_tier", "rbac_group", "organization_service",
-	// "organization", "workspace".
+	// "organization", "workspace", "usage_tier".
 	Type string `json:"type"`
 	// This field is from variant [BetaSpendLimitUserScope].
 	UserID string `json:"user_id"`
@@ -742,6 +775,7 @@ func (BetaSpendLimitRBACGroupScope) implBetaSpendSummaryScopeUnion()           {
 func (BetaSpendLimitOrganizationServiceScope) implBetaSpendSummaryScopeUnion() {}
 func (BetaSpendLimitOrganizationScope) implBetaSpendSummaryScopeUnion()        {}
 func (BetaSpendLimitWorkspaceScope) implBetaSpendSummaryScopeUnion()           {}
+func (BetaSpendLimitUsageTierScope) implBetaSpendSummaryScopeUnion()           {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -752,6 +786,7 @@ func (BetaSpendLimitWorkspaceScope) implBetaSpendSummaryScopeUnion()           {
 //	case anthropic.BetaSpendLimitOrganizationServiceScope:
 //	case anthropic.BetaSpendLimitOrganizationScope:
 //	case anthropic.BetaSpendLimitWorkspaceScope:
+//	case anthropic.BetaSpendLimitUsageTierScope:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -769,6 +804,8 @@ func (u BetaSpendSummaryScopeUnion) AsAny() anyBetaSpendSummaryScope {
 		return u.AsOrganization()
 	case "workspace":
 		return u.AsWorkspace()
+	case "usage_tier":
+		return u.AsUsageTier()
 	}
 	return nil
 }
@@ -803,6 +840,11 @@ func (u BetaSpendSummaryScopeUnion) AsWorkspace() (v BetaSpendLimitWorkspaceScop
 	return
 }
 
+func (u BetaSpendSummaryScopeUnion) AsUsageTier() (v BetaSpendLimitUsageTierScope) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaSpendSummaryScopeUnion) RawJSON() string { return u.JSON.raw }
 
@@ -813,14 +855,15 @@ func (r *BetaSpendSummaryScopeUnion) UnmarshalJSON(data []byte) error {
 // BetaSpendSummarySourceUnion contains all possible properties and values from
 // [BetaSpendLimitUserScope], [BetaSpendLimitSeatTierScope],
 // [BetaSpendLimitRBACGroupScope], [BetaSpendLimitOrganizationServiceScope],
-// [BetaSpendLimitOrganizationScope], [BetaSpendLimitWorkspaceScope].
+// [BetaSpendLimitOrganizationScope], [BetaSpendLimitWorkspaceScope],
+// [BetaSpendLimitUsageTierScope].
 //
 // Use the [BetaSpendSummarySourceUnion.AsAny] method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaSpendSummarySourceUnion struct {
 	// Any of "user", "seat_tier", "rbac_group", "organization_service",
-	// "organization", "workspace".
+	// "organization", "workspace", "usage_tier".
 	Type string `json:"type"`
 	// This field is from variant [BetaSpendLimitUserScope].
 	UserID string `json:"user_id"`
@@ -856,6 +899,7 @@ func (BetaSpendLimitRBACGroupScope) implBetaSpendSummarySourceUnion()           
 func (BetaSpendLimitOrganizationServiceScope) implBetaSpendSummarySourceUnion() {}
 func (BetaSpendLimitOrganizationScope) implBetaSpendSummarySourceUnion()        {}
 func (BetaSpendLimitWorkspaceScope) implBetaSpendSummarySourceUnion()           {}
+func (BetaSpendLimitUsageTierScope) implBetaSpendSummarySourceUnion()           {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -866,6 +910,7 @@ func (BetaSpendLimitWorkspaceScope) implBetaSpendSummarySourceUnion()           
 //	case anthropic.BetaSpendLimitOrganizationServiceScope:
 //	case anthropic.BetaSpendLimitOrganizationScope:
 //	case anthropic.BetaSpendLimitWorkspaceScope:
+//	case anthropic.BetaSpendLimitUsageTierScope:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -883,6 +928,8 @@ func (u BetaSpendSummarySourceUnion) AsAny() anyBetaSpendSummarySource {
 		return u.AsOrganization()
 	case "workspace":
 		return u.AsWorkspace()
+	case "usage_tier":
+		return u.AsUsageTier()
 	}
 	return nil
 }
@@ -913,6 +960,11 @@ func (u BetaSpendSummarySourceUnion) AsOrganization() (v BetaSpendLimitOrganizat
 }
 
 func (u BetaSpendSummarySourceUnion) AsWorkspace() (v BetaSpendLimitWorkspaceScope) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaSpendSummarySourceUnion) AsUsageTier() (v BetaSpendLimitUsageTierScope) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }

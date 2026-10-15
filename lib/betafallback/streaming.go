@@ -61,15 +61,18 @@ func handleStreaming(
 
 	chainStart := 0
 	attempt := orig
+	var res *http.Response
+	var err error
 	if state != nil && state.Index() >= 0 {
-		var err error
-		if attempt, _, err = mergeFallback(body, fallbacks[state.Index()], ""); err != nil {
+		entry := fallbacks[state.Index()]
+		if attempt, _, err = mergeFallback(body, entry, ""); err != nil {
 			return nil, err
 		}
 		chainStart = state.Index() + 1
+		res, err = sendHop(send, entry, attempt, new(bool))
+	} else {
+		res, err = send(attempt)
 	}
-
-	res, err := send(attempt)
 	if err != nil || !isEventStream(res) {
 		// Errors and non-SSE responses surface verbatim; there is no refusal
 		// to act on.
@@ -231,6 +234,8 @@ type streamSplicer struct {
 	// lastHopStatus is the HTTP status of the most recent failed hop
 	// attempt, 0 for transport errors.
 	lastHopStatus int
+	// speedDropped is sendHop's record for the entry being tried.
+	speedDropped bool
 }
 
 func (s *streamSplicer) Read(p []byte) (int, error) {
@@ -668,6 +673,7 @@ func (s *streamSplicer) openNextHop() {
 		if s.state != nil {
 			s.state.SetIndex(index)
 		}
+		s.speedDropped = false
 		res, err := s.tryHop(entry, s.token, s.continuation)
 		if err != nil {
 			s.finish(err)
@@ -731,7 +737,7 @@ func (s *streamSplicer) tryHop(entry anthropic.BetaFallbackParam, token string, 
 	if err != nil {
 		return nil, err
 	}
-	res, err := s.send(payload)
+	res, err := sendHop(s.send, entry, payload, &s.speedDropped)
 	if err != nil {
 		s.lastHopStatus = 0
 		return nil, nil

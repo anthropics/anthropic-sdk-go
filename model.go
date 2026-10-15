@@ -393,20 +393,30 @@ type ThinkingTypes struct {
 	// Whether the model accepts thinking with type 'adaptive' (the model decides
 	// whether and how much to think).
 	Adaptive CapabilitySupport `json:"adaptive" api:"required"`
+	// Whether the model accepts thinking with type 'between_tools' (thinking turned
+	// off, and any short progress updates the model writes between tool calls come
+	// back as thinking blocks). False exactly when a request that sends it gets a 400
+	// from this model. A request that sends 'between_tools' can still be rejected for
+	// another reason, such as an effort level the model does not allow with thinking
+	// off.
+	BetweenTools CapabilitySupport `json:"between_tools" api:"required"`
 	// Whether the model accepts thinking with type 'disabled' (thinking turned off).
 	// False exactly when a request that sends it gets a 400 from this model. True on a
-	// model that does not support thinking.
+	// model that does not support thinking. A request that sends 'disabled' can still
+	// be rejected for another reason, such as an effort level the model does not allow
+	// with thinking off.
 	Disabled CapabilitySupport `json:"disabled" api:"required"`
 	// Whether the model accepts thinking with type 'enabled' (extended thinking with a
 	// caller-set `budget_tokens`).
 	Enabled CapabilitySupport `json:"enabled" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Adaptive    respjson.Field
-		Disabled    respjson.Field
-		Enabled     respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Adaptive     respjson.Field
+		BetweenTools respjson.Field
+		Disabled     respjson.Field
+		Enabled      respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
 	} `json:"-"`
 }
 

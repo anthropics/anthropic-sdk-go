@@ -524,7 +524,8 @@ type BetaUserProfileNewParams struct {
 	// keys up to 64 characters and values up to 512 characters. Values must be
 	// non-empty strings.
 	Metadata map[string]string `json:"metadata,omitzero"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `user-profiles-2026-03-24`,
+	// `user-profiles-2026-08-18`, or `user-profiles-2026-09-04` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -560,7 +561,8 @@ type BetaUserProfileGetParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `user-profiles-2026-03-24`,
+	// `user-profiles-2026-08-18`, or `user-profiles-2026-09-04` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -601,7 +603,8 @@ type BetaUserProfileUpdateParams struct {
 	// provided are left unchanged. Maximum 16 keys, with keys up to 64 characters and
 	// values up to 512 characters.
 	Metadata map[string]string `json:"metadata,omitzero"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `user-profiles-2026-03-24`,
+	// `user-profiles-2026-08-18`, or `user-profiles-2026-09-04` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -651,7 +654,8 @@ type BetaUserProfileListParams struct {
 	//
 	// Any of "created_at", "name".
 	OrderBy BetaUserProfileListParamsOrderBy `query:"order_by,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `user-profiles-2026-03-24`,
+	// `user-profiles-2026-08-18`, or `user-profiles-2026-09-04` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -698,7 +702,8 @@ type BetaUserProfileNewEnrollmentURLParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `user-profiles-2026-03-24`,
+	// `user-profiles-2026-08-18`, or `user-profiles-2026-09-04` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }

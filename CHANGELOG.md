@@ -12,6 +12,11 @@
 * **client:** close the response body of calls that discard the response
 * **client:** treat x-amz-security-token as a sensitive header
 
+
+### Chores
+
+* **docs:** correct plugin manifest_version and reach descriptions
+
 ## [1.82.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.81.0...v1.82.0) (2026-10-15)
 
 ### Features

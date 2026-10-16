@@ -499,7 +499,8 @@ type BetaMemoryStoreMemoryNewParams struct {
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -539,7 +540,8 @@ type BetaMemoryStoreMemoryGetParams struct {
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -586,7 +588,8 @@ type BetaMemoryStoreMemoryUpdateParams struct {
 	// `memory_precondition_failed_error` (HTTP 409). When omitted, the update is
 	// unconditional.
 	Precondition BetaManagedAgentsPreconditionParam `json:"precondition,omitzero"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -637,7 +640,8 @@ type BetaMemoryStoreMemoryListParams struct {
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -667,7 +671,8 @@ type BetaMemoryStoreMemoryDeleteParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }

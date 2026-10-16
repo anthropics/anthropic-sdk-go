@@ -10,6 +10,7 @@ import (
 	"go/token"
 	"io"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -32,6 +33,7 @@ type sseTransport struct {
 	betas        [][]string
 	methods      []string
 	paths        []string
+	closed       []*bool // whether each response's body was closed
 }
 
 func (s *sseTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -56,10 +58,12 @@ func (s *sseTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		contentType = s.contentTypes[0]
 		s.contentTypes = s.contentTypes[1:]
 	}
+	closed := new(bool)
+	s.closed = append(s.closed, closed)
 	return &http.Response{
 		StatusCode: status,
 		Header:     http.Header{"Content-Type": []string{contentType}},
-		Body:       io.NopCloser(strings.NewReader(next)),
+		Body:       trackedBody{strings.NewReader(next), closed},
 		Request:    req,
 	}, nil
 }
@@ -756,4 +760,152 @@ func TestStreamingFallbackRedirectsThroughAPlatformTransform(t *testing.T) {
 	require.Len(t, transport.bodies, 2)
 	_, hasModel := transport.bodies[1]["model"]
 	assert.False(t, hasModel, "the transform moved the model out of the body")
+}
+
+func TestStreamingResendsARateLimitedFastHopWithoutSpeed(t *testing.T) {
+	for _, status := range []int{429, 529} {
+		t.Run(fmt.Sprint(status), func(t *testing.T) {
+			transport := &sseTransport{
+				responses: []string{refusalStream("primary-model", tokenWithClaim), hopRejection, servedStream("fallback-model")},
+				statuses:  []int{http.StatusOK, status, http.StatusOK},
+			}
+			client := streamingFallbackClient(t, transport,
+				[]anthropic.BetaFallbackParam{{Model: "fallback-model", MaxTokens: anthropic.Int(2048)}})
+			params := fallbackTestParams
+			params.Speed = anthropic.BetaMessageNewParamsSpeedFast
+
+			msg, _, _ := collectStream(t, client, context.Background(), params)
+
+			assert.Equal(t, anthropic.BetaStopReasonEndTurn, msg.StopReason)
+			require.Len(t, msg.Content, 3)
+			assert.Equal(t, anthropic.Model("fallback-model"), msg.Content[1].AsFallback().To.Model)
+			require.Len(t, transport.bodies, 3)
+			assert.Equal(t, "fast", transport.bodies[1]["speed"])
+			assert.Equal(t, creditTokenBody("credit-token-a"), transport.bodies[1]["fallback_credit_token"])
+			assert.Len(t, transport.bodies[1]["messages"].([]any), 2, "the claim rides on the hop")
+			assert.Equal(t, withoutSpeed(transport.bodies[1]), transport.bodies[2])
+			assert.True(t, *transport.closed[1], "the rejected response's body is closed")
+		})
+	}
+}
+
+func TestStreamingKeepsSpeedOnOtherFailedHops(t *testing.T) {
+	for _, test := range keptSpeedTests {
+		t.Run(test.name, func(t *testing.T) {
+			transport := &sseTransport{
+				responses: append([]string{refusalStream("primary-model", tokenNoClaim)},
+					slices.Repeat([]string{hopRejection}, len(test.hopStatuses))...),
+				statuses: append([]int{http.StatusOK}, test.hopStatuses...),
+			}
+			client := streamingFallbackClient(t, transport,
+				[]anthropic.BetaFallbackParam{{Model: "fallback-model", Speed: test.entrySpeed}})
+			params := fallbackTestParams
+			params.Speed = test.speed
+
+			msg, _, _ := collectStream(t, client, context.Background(), params)
+
+			assert.Equal(t, anthropic.BetaStopReasonRefusal, msg.StopReason)
+			assert.Equal(t, test.wantSpeeds, speedKeys(transport.bodies[1:]))
+		})
+	}
+}
+
+func TestStreamingDropsSpeedOncePerEntry(t *testing.T) {
+	for _, test := range []struct {
+		name        string
+		hopStatuses []int
+		want        []hopShape
+	}{
+		{"429 then 400", []int{429, 400, 200}, []hopShape{
+			{speed: "fast", token: true, prefill: true},
+			{speed: absent, token: true, prefill: true},
+			{speed: absent, token: true},
+		}},
+		{"429 then 400 twice", []int{429, 400, 400, 200}, []hopShape{
+			{speed: "fast", token: true, prefill: true},
+			{speed: absent, token: true, prefill: true},
+			{speed: absent, token: true},
+			{speed: absent},
+		}},
+		{"400 then 429", []int{400, 429, 200}, []hopShape{
+			{speed: "fast", token: true, prefill: true},
+			{speed: "fast", token: true},
+			{speed: absent, token: true},
+		}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			rejections := slices.Repeat([]string{hopRejection}, len(test.hopStatuses)-1)
+			transport := &sseTransport{
+				responses: slices.Concat([]string{refusalStream("primary-model", tokenWithClaim)}, rejections, []string{servedStream("fallback-model")}),
+				statuses:  append([]int{http.StatusOK}, test.hopStatuses...),
+			}
+			client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-model"}})
+			params := fallbackTestParams
+			params.Speed = anthropic.BetaMessageNewParamsSpeedFast
+
+			msg, _, _ := collectStream(t, client, context.Background(), params)
+
+			assert.Equal(t, anthropic.BetaStopReasonEndTurn, msg.StopReason)
+			assert.Equal(t, test.want, hopShapes(transport.bodies[1:]))
+		})
+	}
+}
+
+func TestStreamingRejectedFastHopResendSkipsToTheNextEntry(t *testing.T) {
+	transport := &sseTransport{
+		responses: []string{refusalStream("primary-model", tokenNoClaim), hopRejection, hopRejection, servedStream("fallback-2")},
+		statuses:  []int{http.StatusOK, http.StatusTooManyRequests, http.StatusTooManyRequests, http.StatusOK},
+	}
+	client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-1"}, {Model: "fallback-2"}})
+	params := fallbackTestParams
+	params.Speed = anthropic.BetaMessageNewParamsSpeedFast
+
+	msg, _, _ := collectStream(t, client, context.Background(), params)
+
+	assert.Equal(t, anthropic.BetaStopReasonEndTurn, msg.StopReason)
+	require.Len(t, transport.bodies, 4)
+	assert.Equal(t, "fallback-1", transport.bodies[2]["model"])
+	assert.Equal(t, "fallback-2", transport.bodies[3]["model"])
+	assert.Equal(t, []any{"fast", absent, "fast"}, speedKeys(transport.bodies[1:]), "the next entry starts fast again")
+}
+
+func TestStreamingResendsARateLimitedFastPinnedRequestWithoutSpeed(t *testing.T) {
+	transport := &sseTransport{
+		responses: []string{hopRejection, servedStream("fallback-model")},
+		statuses:  []int{http.StatusTooManyRequests, http.StatusOK},
+	}
+	client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-model"}})
+	state := &betafallback.BetaFallbackState{}
+	state.SetIndex(0)
+	params := fallbackTestParams
+	params.Speed = anthropic.BetaMessageNewParamsSpeedFast
+
+	msg, _, _ := collectStream(t, client, context.Background(), params,
+		betafallback.WithBetaFallbackState(state))
+
+	assert.Equal(t, anthropic.BetaStopReasonEndTurn, msg.StopReason)
+	require.Len(t, transport.bodies, 2)
+	assert.Equal(t, "fallback-model", transport.bodies[0]["model"])
+	assert.Equal(t, "fast", transport.bodies[0]["speed"])
+	assert.Equal(t, withoutSpeed(transport.bodies[0]), transport.bodies[1])
+	assert.True(t, *transport.closed[0], "the rejected response's body is closed")
+}
+
+func TestStreamingLeavesARateLimitedFastPrimaryAlone(t *testing.T) {
+	transport := &sseTransport{
+		responses: []string{hopRejection},
+		statuses:  []int{http.StatusTooManyRequests},
+	}
+	client := streamingFallbackClient(t, transport, []anthropic.BetaFallbackParam{{Model: "fallback-model"}})
+	params := fallbackTestParams
+	params.Speed = anthropic.BetaMessageNewParamsSpeedFast
+
+	stream := client.Beta.Messages.NewStreaming(context.Background(), params)
+	for stream.Next() {
+	}
+
+	var apierr *anthropic.Error
+	require.ErrorAs(t, stream.Err(), &apierr)
+	assert.Equal(t, http.StatusTooManyRequests, apierr.StatusCode)
+	assert.Equal(t, []any{"fast"}, speedKeys(transport.bodies))
 }

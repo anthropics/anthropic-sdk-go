@@ -364,6 +364,7 @@ type Unavailable string                             // Always "unavailable"
 type UnknownError string                            // Always "unknown_error"
 type Unrestricted string                            // Always "unrestricted"
 type URL string                                     // Always "url"
+type UsageTier string                               // Always "usage_tier"
 type User string                                    // Always "user"
 type UserActor string                               // Always "user_actor"
 type UserDeleted string                             // Always "user_deleted"
@@ -822,6 +823,7 @@ func (c Unavailable) Default() Unavailable             { return "unavailable" }
 func (c UnknownError) Default() UnknownError           { return "unknown_error" }
 func (c Unrestricted) Default() Unrestricted           { return "unrestricted" }
 func (c URL) Default() URL                             { return "url" }
+func (c UsageTier) Default() UsageTier                 { return "usage_tier" }
 func (c User) Default() User                           { return "user" }
 func (c UserActor) Default() UserActor                 { return "user_actor" }
 func (c UserDeleted) Default() UserDeleted             { return "user_deleted" }
@@ -1220,6 +1222,7 @@ func (c Unavailable) MarshalJSON() ([]byte, error)                       { retur
 func (c UnknownError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Unrestricted) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c URL) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c UsageTier) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c User) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c UserActor) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c UserDeleted) MarshalJSON() ([]byte, error)                       { return marshalString(c) }

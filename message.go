@@ -16219,6 +16219,10 @@ type Usage struct {
 	//
 	// Any of "standard", "priority", "batch".
 	ServiceTier UsageServiceTier `json:"service_tier" api:"required"`
+	// The inference speed mode used for this request.
+	//
+	// Any of "standard", "fast".
+	Speed UsageSpeed `json:"speed" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CacheCreation            respjson.Field
@@ -16230,6 +16234,7 @@ type Usage struct {
 		OutputTokensDetails      respjson.Field
 		ServerToolUse            respjson.Field
 		ServiceTier              respjson.Field
+		Speed                    respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`
@@ -16248,6 +16253,14 @@ const (
 	UsageServiceTierStandard UsageServiceTier = "standard"
 	UsageServiceTierPriority UsageServiceTier = "priority"
 	UsageServiceTierBatch    UsageServiceTier = "batch"
+)
+
+// The inference speed mode used for this request.
+type UsageSpeed string
+
+const (
+	UsageSpeedStandard UsageSpeed = "standard"
+	UsageSpeedFast     UsageSpeed = "fast"
 )
 
 // The property Type is required.
@@ -17800,6 +17813,16 @@ type MessageNewParams struct {
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// Container identifier for reuse across requests.
 	Container MessageCreateParamsContainerUnion `json:"container,omitzero"`
+	// The inference speed mode for this request. `"fast"` enables high
+	// output-tokens-per-second inference.
+	//
+	// Some models require the `fast-mode-2026-02-01` beta header for any `speed`
+	// value. See
+	// [fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode) for
+	// which models.
+	//
+	// Any of "standard", "fast".
+	Speed MessageNewParamsSpeed `json:"speed,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -17952,6 +17975,20 @@ const (
 	MessageNewParamsServiceTierStandardOnly MessageNewParamsServiceTier = "standard_only"
 )
 
+// The inference speed mode for this request. `"fast"` enables high
+// output-tokens-per-second inference.
+//
+// Some models require the `fast-mode-2026-02-01` beta header for any `speed`
+// value. See
+// [fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode) for
+// which models.
+type MessageNewParamsSpeed string
+
+const (
+	MessageNewParamsSpeedStandard MessageNewParamsSpeed = "standard"
+	MessageNewParamsSpeedFast     MessageNewParamsSpeed = "fast"
+)
+
 type MessageCountTokensParams struct {
 	// Input messages.
 	//
@@ -18039,6 +18076,16 @@ type MessageCountTokensParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// The inference speed mode for this request. `"fast"` enables high
+	// output-tokens-per-second inference.
+	//
+	// Some models require the `fast-mode-2026-02-01` beta header for any `speed`
+	// value. See
+	// [fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode) for
+	// which models.
+	//
+	// Any of "standard", "fast".
+	Speed MessageCountTokensParamsSpeed `json:"speed,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl CacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -18152,6 +18199,20 @@ func (r MessageCountTokensParams) MarshalJSON() (data []byte, err error) {
 func (r *MessageCountTokensParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// The inference speed mode for this request. `"fast"` enables high
+// output-tokens-per-second inference.
+//
+// Some models require the `fast-mode-2026-02-01` beta header for any `speed`
+// value. See
+// [fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode) for
+// which models.
+type MessageCountTokensParamsSpeed string
+
+const (
+	MessageCountTokensParamsSpeedStandard MessageCountTokensParamsSpeed = "standard"
+	MessageCountTokensParamsSpeedFast     MessageCountTokensParamsSpeed = "fast"
+)
 
 // Only one field can be non-zero.
 //

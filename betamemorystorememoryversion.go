@@ -464,7 +464,8 @@ type BetaMemoryStoreMemoryVersionGetParams struct {
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -518,7 +519,8 @@ type BetaMemoryStoreMemoryVersionListParams struct {
 	//
 	// Any of "basic", "full".
 	View BetaManagedAgentsMemoryView `query:"view,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -542,7 +544,8 @@ type BetaMemoryStoreMemoryVersionRedactParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `agent-memory-2026-07-22` or
+	// `managed-agents-2026-04-01` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }

@@ -25726,6 +25726,11 @@ type BetaMessageNewParams struct {
 	// The inference speed mode for this request. `"fast"` enables high
 	// output-tokens-per-second inference.
 	//
+	// Some models require the `fast-mode-2026-02-01` beta header for any `speed`
+	// value. See
+	// [fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode) for
+	// which models.
+	//
 	// Any of "standard", "fast".
 	Speed BetaMessageNewParamsSpeed `json:"speed,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
@@ -25957,6 +25962,11 @@ const (
 
 // The inference speed mode for this request. `"fast"` enables high
 // output-tokens-per-second inference.
+//
+// Some models require the `fast-mode-2026-02-01` beta header for any `speed`
+// value. See
+// [fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode) for
+// which models.
 type BetaMessageNewParamsSpeed string
 
 const (
@@ -26053,6 +26063,11 @@ type BetaMessageCountTokensParams struct {
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
 	// The inference speed mode for this request. `"fast"` enables high
 	// output-tokens-per-second inference.
+	//
+	// Some models require the `fast-mode-2026-02-01` beta header for any `speed`
+	// value. See
+	// [fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode) for
+	// which models.
 	//
 	// Any of "standard", "fast".
 	Speed BetaMessageCountTokensParamsSpeed `json:"speed,omitzero"`
@@ -26197,6 +26212,11 @@ func (r *BetaMessageCountTokensParams) UnmarshalJSON(data []byte) error {
 
 // The inference speed mode for this request. `"fast"` enables high
 // output-tokens-per-second inference.
+//
+// Some models require the `fast-mode-2026-02-01` beta header for any `speed`
+// value. See
+// [fast mode](https://platform.claude.com/docs/en/build-with-claude/fast-mode) for
+// which models.
 type BetaMessageCountTokensParamsSpeed string
 
 const (

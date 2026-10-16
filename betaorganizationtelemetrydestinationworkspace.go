@@ -230,7 +230,8 @@ type BetaOrganizationTelemetryDestinationWorkspaceListParams struct {
 	// Opaque cursor from a previous response's `next_page`. Leave it out to get the
 	// first page.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `telemetry-destinations-2026-08-11`
+	// in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -247,7 +248,8 @@ func (r BetaOrganizationTelemetryDestinationWorkspaceListParams) URLQuery() (v u
 type BetaOrganizationTelemetryDestinationWorkspaceAddParams struct {
 	// ID of the destination (`tdst_...`).
 	DestinationID string `path:"destination_id" api:"required" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `telemetry-destinations-2026-08-11`
+	// in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -255,7 +257,8 @@ type BetaOrganizationTelemetryDestinationWorkspaceAddParams struct {
 type BetaOrganizationTelemetryDestinationWorkspaceRemoveParams struct {
 	// ID of the destination (`tdst_...`).
 	DestinationID string `path:"destination_id" api:"required" json:"-"`
-	// Optional header to specify the beta version(s) you want to use.
+	// This endpoint is in beta: requests must send `telemetry-destinations-2026-08-11`
+	// in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }

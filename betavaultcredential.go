@@ -838,7 +838,8 @@ type BetaManagedAgentsMCPOAuthAuthResponse struct {
 	MCPServerURL string `json:"mcp_server_url" api:"required"`
 	// Any of "mcp_oauth".
 	Type BetaManagedAgentsMCPOAuthAuthResponseType `json:"type" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When the credential's access token expires, in RFC 3339. Absent if the expiry
+	// isn't known.
 	ExpiresAt time.Time `json:"expires_at" api:"nullable" format:"date-time"`
 	// Refresh token configuration, if the credential supports token refresh.
 	Refresh BetaManagedAgentsMCPOAuthRefreshResponse `json:"refresh" api:"nullable"`
@@ -875,7 +876,9 @@ type BetaManagedAgentsMCPOAuthCreateParams struct {
 	MCPServerURL string `json:"mcp_server_url" api:"required"`
 	// Any of "mcp_oauth".
 	Type BetaManagedAgentsMCPOAuthCreateParamsType `json:"type,omitzero" api:"required"`
-	// A timestamp in RFC 3339 format
+	// When `access_token` expires, in RFC 3339.
+	//
+	// Must be in the future.
 	ExpiresAt param.Opt[time.Time] `json:"expires_at,omitzero" format:"date-time"`
 	// Refresh token configuration, if the credential supports token refresh.
 	Refresh BetaManagedAgentsMCPOAuthRefreshParams `json:"refresh,omitzero"`
@@ -1170,7 +1173,13 @@ type BetaManagedAgentsMCPOAuthUpdateParams struct {
 	Type BetaManagedAgentsMCPOAuthUpdateParamsType `json:"type,omitzero" api:"required"`
 	// Updated OAuth access token.
 	AccessToken param.Opt[string] `json:"access_token,omitzero"`
-	// A timestamp in RFC 3339 format
+	// When the credential's access token expires, in RFC 3339. Leave it out to keep
+	// the stored expiry.
+	//
+	// If you send a new `access_token`, send its `expires_at` too, or the new token
+	// keeps the old expiry.
+	//
+	// Must be in the future.
 	ExpiresAt param.Opt[time.Time] `json:"expires_at,omitzero" format:"date-time"`
 	// Updated refresh token configuration.
 	Refresh BetaManagedAgentsMCPOAuthRefreshUpdateParams `json:"refresh,omitzero"`

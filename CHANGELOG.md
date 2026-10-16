@@ -1,10 +1,15 @@
 # Changelog
 
-## [1.83.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.82.0...v1.83.0) (2026-10-15)
+## [1.83.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.82.0...v1.83.0) (2026-10-16)
 
 ### Features
 
 * **client:** yield server-sent events with unrecognized event names
+
+
+### Bug Fixes
+
+* **client:** close the response body of calls that discard the response
 
 ## [1.82.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.81.0...v1.82.0) (2026-10-15)
 

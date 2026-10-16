@@ -1234,3 +1234,87 @@ type readerFunc func([]byte) (int, error)
 
 func (f readerFunc) Read(p []byte) (int, error) { return f(p) }
 func (f readerFunc) Close() error               { return nil }
+
+const bodyEvent = "{}\n"
+
+// bodyServer answers a request with one event and leaves the response open. A request whose
+// connection goes away is reported on gone.
+type bodyServer struct {
+	*httptest.Server
+	t    *testing.T
+	opts []option.RequestOption
+	gone chan struct{}
+}
+
+func newBodyServer(t *testing.T, http2 bool, opts ...option.RequestOption) *bodyServer {
+	s := &bodyServer{t: t, opts: opts, gone: make(chan struct{}, 1)}
+	s.Server = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.WriteString(w, bodyEvent)
+		w.(http.Flusher).Flush()
+		<-r.Context().Done()
+		s.gone <- struct{}{}
+	}))
+	s.EnableHTTP2 = http2
+	s.StartTLS()
+	t.Cleanup(func() {
+		s.CloseClientConnections()
+		s.Close()
+	})
+	return s
+}
+
+// get makes a request whose response goes into res.
+func (s *bodyServer) get(res any, opts ...option.RequestOption) {
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithBaseURL(s.URL),
+		option.WithHTTPClient(s.Client()),
+	)
+	if err := client.Get(context.Background(), "events", nil, res, append(opts, s.opts...)...); err != nil {
+		s.t.Fatal(err)
+	}
+}
+
+func eachBodyServer(t *testing.T, test func(t *testing.T, s *bodyServer)) {
+	for name, http2 := range map[string]bool{"HTTP/1.1": false, "HTTP/2": true} {
+		t.Run(name, func(t *testing.T) {
+			test(t, newBodyServer(t, http2))
+		})
+		t.Run(name+" with a request timeout", func(t *testing.T) {
+			test(t, newBodyServer(t, http2, option.WithRequestTimeout(time.Minute)))
+		})
+	}
+}
+
+func TestResponseBodyIsClosedIfNothingTakesTheResponse(t *testing.T) {
+	eachBodyServer(t, func(t *testing.T, s *bodyServer) {
+		s.get(nil)
+		select {
+		case <-s.gone:
+		case <-time.After(5 * time.Second):
+			t.Fatal("the body was not closed")
+		}
+	})
+}
+
+func TestResponseBodyStaysOpenForWhatTakesTheResponse(t *testing.T) {
+	for name, get := range map[string]func(s *bodyServer, res **http.Response){
+		"a raw destination": func(s *bodyServer, res **http.Response) {
+			s.get(res)
+		},
+		"WithResponseInto": func(s *bodyServer, res **http.Response) {
+			s.get(nil, option.WithResponseInto(res))
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			eachBodyServer(t, func(t *testing.T, s *bodyServer) {
+				var res *http.Response
+				get(s, &res)
+				defer res.Body.Close()
+				if _, err := io.ReadFull(res.Body, make([]byte, len(bodyEvent))); err != nil {
+					t.Fatalf("the body could not be read: %v", err)
+				}
+			})
+		})
+	}
+}

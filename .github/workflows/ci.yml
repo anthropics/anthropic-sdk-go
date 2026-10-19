@@ -61,6 +61,11 @@ jobs:
 
       - name: Setup go
         uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        env:
+          # Run setup-go's own go commands on the installed Go. Otherwise a newer
+          # toolchain named in go.mod is downloaded before the cache is restored, and
+          # the restore fails on the downloaded files. Later steps do switch to it.
+          GOTOOLCHAIN: local
         with:
           go-version-file: ./go.mod
 
@@ -76,6 +81,11 @@ jobs:
 
       - name: Setup go
         uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        env:
+          # Run setup-go's own go commands on the installed Go. Otherwise a newer
+          # toolchain named in go.mod is downloaded before the cache is restored, and
+          # the restore fails on the downloaded files. Later steps do switch to it.
+          GOTOOLCHAIN: local
         with:
           go-version-file: ./go.mod
 
@@ -106,6 +116,11 @@ jobs:
 
       - name: Setup go
         uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        env:
+          # Run setup-go's own go commands on the installed Go. Otherwise a newer
+          # toolchain named in go.mod is downloaded before the cache is restored, and
+          # the restore fails on the downloaded files. Later steps do switch to it.
+          GOTOOLCHAIN: local
         with:
           go-version-file: ./go.mod
 

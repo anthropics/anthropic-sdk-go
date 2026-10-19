@@ -17,6 +17,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
 	"github.com/anthropics/anthropic-sdk-go/packages/param"
 	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/shared/constant"
 )
 
 // BetaUserProfileService contains methods and other services that help with
@@ -26,7 +27,8 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewBetaUserProfileService] method instead.
 type BetaUserProfileService struct {
-	Options []option.RequestOption
+	Options    []option.RequestOption
+	ActionURLs BetaUserProfileActionURLService
 }
 
 // NewBetaUserProfileService generates a new service that applies the given options
@@ -35,6 +37,7 @@ type BetaUserProfileService struct {
 func NewBetaUserProfileService(opts ...option.RequestOption) (r BetaUserProfileService) {
 	r = BetaUserProfileService{}
 	r.Options = opts
+	r.ActionURLs = NewBetaUserProfileActionURLService(opts...)
 	return
 }
 
@@ -152,6 +155,33 @@ func (r *BetaUserProfileService) ListAutoPaging(ctx context.Context, params Beta
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
+// Delete User Profile
+func (r *BetaUserProfileService) Delete(ctx context.Context, userProfileID string, body BetaUserProfileDeleteParams, opts ...option.RequestOption) (res *BetaDeletedUserProfile, err error) {
+	if len(body.Betas) > 0 {
+		headerValues := make([]string, len(body.Betas))
+		for i, v := range body.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
+	}
+	if !param.IsOmitted(body.WorkspaceID) {
+		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
+	}
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "user-profiles-2026-08-18")}, opts...)
+	if userProfileID == "" {
+		err = errors.New("missing required user_profile_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/user_profiles/%s?beta=true", url.PathEscape(userProfileID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.delete", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
+	return res, err
+}
+
 // Create Enrollment URL
 func (r *BetaUserProfileService) NewEnrollmentURL(ctx context.Context, userProfileID string, body BetaUserProfileNewEnrollmentURLParams, opts ...option.RequestOption) (res *BetaUserProfileEnrollmentURL, err error) {
 	if len(body.Betas) > 0 {
@@ -179,6 +209,26 @@ func (r *BetaUserProfileService) NewEnrollmentURL(ctx context.Context, userProfi
 	return res, err
 }
 
+type BetaDeletedUserProfile struct {
+	// Identifier of the deleted user profile, prefixed `uprof_`.
+	ID string `json:"id" api:"required"`
+	// Object type. Always `user_profile_deleted`.
+	Type constant.UserProfileDeleted `json:"type" default:"user_profile_deleted"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaDeletedUserProfile) RawJSON() string { return r.JSON.raw }
+func (r *BetaDeletedUserProfile) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // A record of an entity that the platform serves through the API, such as an
 // end-user of the platform's product or a company that the platform resells Claude
 // access to.
@@ -194,6 +244,11 @@ type BetaUserProfile struct {
 	// Arbitrary key-value metadata. Maximum 16 pairs, keys up to 64 chars, values up
 	// to 512 chars.
 	Metadata map[string]string `json:"metadata" api:"required"`
+	// Real-world name of the entity this profile represents (company or individual).
+	// For a company the platform resells Claude access to (`access_type`
+	// `passthrough`) this is that company's name. `null` until the platform supplies
+	// one.
+	Name string `json:"name" api:"required"`
 	// Trust grants for this profile, keyed by grant name. Key omitted when no grant is
 	// active or in flight.
 	TrustGrants map[string]BetaUserProfileTrustGrant `json:"trust_grants" api:"required"`
@@ -201,40 +256,40 @@ type BetaUserProfile struct {
 	//
 	// Any of "user_profile".
 	Type BetaUserProfileType `json:"type" api:"required"`
-	// When this user profile was last modified, in RFC 3339 format. Trust-grant status
-	// changes also bump this timestamp.
+	// When this user profile was last modified, in RFC 3339 format. It normally also
+	// updates shortly after Anthropic gives the profile an approval or withdraws one.
+	// Other changes to the statuses that Anthropic reports do not always update it, so
+	// read the status itself rather than watching this timestamp.
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// How the platform uses the API for this entity: `application` (default) or
-	// `passthrough`. Present under the `user-profiles-2026-08-18` and later beta
-	// headers.
+	// `passthrough`. Absent under the legacy `user-profiles-2026-03-24` beta header.
 	//
 	// Any of "application", "passthrough".
 	AccessType BetaUserProfileAccessType `json:"access_type"`
-	// Platform's own identifier for this user. Not enforced unique. Present under the
-	// `user-profiles-2026-03-24` and `user-profiles-2026-08-18` beta headers; under
-	// `user-profiles-2026-09-04` the value is `external_user_details.reference_id`.
+	// Platform's own identifier for this user. Not enforced unique. Legacy field,
+	// present only under the `user-profiles-2026-03-24` and `user-profiles-2026-08-18`
+	// beta headers; without one of them, the value is
+	// `external_user_details.reference_id`.
 	ExternalID string `json:"external_id" api:"nullable"`
 	// Details about the entity this profile represents, as the platform states them;
-	// not verified by Anthropic. Present under the `user-profiles-2026-09-04` beta
-	// header, with every field present and `null` until the platform supplies a value;
-	// the earlier beta headers serve `reference_id` as the top-level `external_id`,
-	// and `user-profiles-2026-08-18` serves `onboarded_at` as
+	// not verified by Anthropic. Every field is present, `null` until the platform
+	// supplies a value. Absent under the legacy `user-profiles-2026-03-24` and
+	// `user-profiles-2026-08-18` beta headers, which serve `reference_id` as the
+	// top-level `external_id` and, under `user-profiles-2026-08-18`, `onboarded_at` as
 	// `external_user_onboarded_at`.
 	ExternalUserDetails BetaUserProfileExternalUserDetails `json:"external_user_details"`
 	// When the entity this profile represents opened its account with the platform, as
 	// stated by the platform, in RFC 3339 format (UTC). `null` until the platform
-	// supplies one. Present under the `user-profiles-2026-08-18` beta header; under
-	// `user-profiles-2026-09-04` the value is `external_user_details.onboarded_at`.
+	// supplies one. Legacy field, present only under the `user-profiles-2026-08-18`
+	// beta header; without a legacy header, the value is
+	// `external_user_details.onboarded_at`.
 	ExternalUserOnboardedAt time.Time `json:"external_user_onboarded_at" api:"nullable" format:"date-time"`
-	// Real-world name of the entity this profile represents (company or individual).
-	// For a company the platform resells Claude access to (`access_type`
-	// `passthrough`) this is that company's name.
-	Name string `json:"name" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                      respjson.Field
 		CreatedAt               respjson.Field
 		Metadata                respjson.Field
+		Name                    respjson.Field
 		TrustGrants             respjson.Field
 		Type                    respjson.Field
 		UpdatedAt               respjson.Field
@@ -242,7 +297,6 @@ type BetaUserProfile struct {
 		ExternalID              respjson.Field
 		ExternalUserDetails     respjson.Field
 		ExternalUserOnboardedAt respjson.Field
-		Name                    respjson.Field
 		ExtraFields             map[string]respjson.Field
 		raw                     string
 	} `json:"-"`
@@ -262,8 +316,7 @@ const (
 )
 
 // How the platform uses the API for this entity: `application` (default) or
-// `passthrough`. Present under the `user-profiles-2026-08-18` and later beta
-// headers.
+// `passthrough`. Absent under the legacy `user-profiles-2026-03-24` beta header.
 type BetaUserProfileAccessType string
 
 const (
@@ -276,7 +329,7 @@ const (
 )
 
 // A URL to give to the entity that a user profile represents, so that the entity
-// can enroll for a trust grant.
+// can enroll in a program.
 type BetaUserProfileEnrollmentURL struct {
 	// When this enrollment URL expires, in RFC 3339 format.
 	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
@@ -486,9 +539,9 @@ const (
 
 type BetaUserProfileNewParams struct {
 	// Platform's own identifier for this user. Not enforced unique. Maximum 255
-	// characters. Accepted under the `user-profiles-2026-03-24` and
-	// `user-profiles-2026-08-18` beta headers; under `user-profiles-2026-09-04` send
-	// `external_user_details.reference_id` instead.
+	// characters. Legacy field, accepted only under the `user-profiles-2026-03-24` and
+	// `user-profiles-2026-08-18` beta headers; without one of them, send
+	// `external_user_details.reference_id`.
 	ExternalID param.Opt[string] `json:"external_id,omitzero"`
 	// Optional for all profiles. Real-world name of the entity this profile represents
 	// (company or individual); for a company the platform resells Claude access to
@@ -498,9 +551,9 @@ type BetaUserProfileNewParams struct {
 	// When the entity this profile represents opened its account with the platform, in
 	// RFC 3339 format: for an `application` profile, when the end-user signed up; for
 	// a `passthrough` profile, when the company became the platform's customer. Must
-	// be a complete timestamp no more than 1 minute in the future. Optional. Accepted
-	// under the `user-profiles-2026-08-18` beta header; under
-	// `user-profiles-2026-09-04` send `external_user_details.onboarded_at` instead.
+	// be a complete timestamp no more than 1 minute in the future. Optional. Legacy
+	// field, accepted only under the `user-profiles-2026-08-18` beta header; without a
+	// legacy header, send `external_user_details.onboarded_at`.
 	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
@@ -517,15 +570,16 @@ type BetaUserProfileNewParams struct {
 	// Any of "application", "passthrough".
 	AccessType BetaUserProfileNewParamsAccessType `json:"access_type,omitzero"`
 	// Details about the entity this profile represents, as the platform states them.
-	// Every field is optional. Accepted under the `user-profiles-2026-09-04` beta
-	// header only.
+	// Every field is optional. Not accepted under the legacy
+	// `user-profiles-2026-03-24` and `user-profiles-2026-08-18` beta headers, which
+	// take the top-level `external_id` (and, under `user-profiles-2026-08-18`,
+	// `external_user_onboarded_at`) instead.
 	ExternalUserDetails BetaUserProfileExternalUserDetailsParams `json:"external_user_details,omitzero"`
 	// Free-form key-value data to attach to this user profile. Maximum 16 keys, with
 	// keys up to 64 characters and values up to 512 characters. Values must be
 	// non-empty strings.
 	Metadata map[string]string `json:"metadata,omitzero"`
-	// This endpoint is in beta: requests must send `user-profiles-2026-03-24`,
-	// `user-profiles-2026-08-18`, or `user-profiles-2026-09-04` in this header.
+	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -561,26 +615,25 @@ type BetaUserProfileGetParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// This endpoint is in beta: requests must send `user-profiles-2026-03-24`,
-	// `user-profiles-2026-08-18`, or `user-profiles-2026-09-04` in this header.
+	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 
 type BetaUserProfileUpdateParams struct {
 	// If present, replaces the stored external_id. Omit to leave unchanged. Maximum
-	// 255 characters. Accepted under the `user-profiles-2026-03-24` and
-	// `user-profiles-2026-08-18` beta headers; under `user-profiles-2026-09-04` send
-	// `external_user_details.reference_id` instead.
+	// 255 characters. Legacy field, accepted only under the `user-profiles-2026-03-24`
+	// and `user-profiles-2026-08-18` beta headers; without one of them, send
+	// `external_user_details.reference_id`.
 	ExternalID param.Opt[string] `json:"external_id,omitzero"`
 	// If present, replaces the stored name. Omit to leave unchanged. Maximum 255
 	// characters.
 	Name param.Opt[string] `json:"name,omitzero"`
 	// If present, replaces the stored account creation time. Omit to leave unchanged;
 	// once set, the value cannot be cleared and `null` is rejected. Must be a complete
-	// RFC 3339 timestamp no more than 1 minute in the future. Accepted under the
-	// `user-profiles-2026-08-18` beta header; under `user-profiles-2026-09-04` send
-	// `external_user_details.onboarded_at` instead.
+	// RFC 3339 timestamp no more than 1 minute in the future. Legacy field, accepted
+	// only under the `user-profiles-2026-08-18` beta header; without a legacy header,
+	// send `external_user_details.onboarded_at`.
 	ExternalUserOnboardedAt param.Opt[time.Time] `json:"external_user_onboarded_at,omitzero" format:"date-time"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
@@ -595,16 +648,16 @@ type BetaUserProfileUpdateParams struct {
 	AccessType BetaUserProfileUpdateParamsAccessType `json:"access_type,omitzero"`
 	// Details about the entity this profile represents, as the platform states them.
 	// Each field sent replaces the stored value; omit a field to leave it unchanged.
-	// Once set, a value cannot be cleared and `null` is rejected. Accepted under the
-	// `user-profiles-2026-09-04` beta header only.
+	// Once set, a value cannot be cleared and `null` is rejected. Not accepted under
+	// the legacy `user-profiles-2026-03-24` and `user-profiles-2026-08-18` beta
+	// headers.
 	ExternalUserDetails BetaUserProfileExternalUserDetailsParams `json:"external_user_details,omitzero"`
 	// Key-value pairs to merge into the stored metadata. Keys provided overwrite
 	// existing values. To remove a key, set its value to an empty string. Keys not
 	// provided are left unchanged. Maximum 16 keys, with keys up to 64 characters and
 	// values up to 512 characters.
 	Metadata map[string]string `json:"metadata,omitzero"`
-	// This endpoint is in beta: requests must send `user-profiles-2026-03-24`,
-	// `user-profiles-2026-08-18`, or `user-profiles-2026-09-04` in this header.
+	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -654,8 +707,7 @@ type BetaUserProfileListParams struct {
 	//
 	// Any of "created_at", "name".
 	OrderBy BetaUserProfileListParamsOrderBy `query:"order_by,omitzero" json:"-"`
-	// This endpoint is in beta: requests must send `user-profiles-2026-03-24`,
-	// `user-profiles-2026-08-18`, or `user-profiles-2026-09-04` in this header.
+	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
@@ -694,6 +746,19 @@ const (
 	BetaUserProfileListParamsOrderByName BetaUserProfileListParamsOrderBy = "name"
 )
 
+type BetaUserProfileDeleteParams struct {
+	// Optional header to select the Workspace for this request. The value is a
+	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+	//
+	// Only needed for credentials that can act on more than one Workspace. A
+	// credential that belongs to a specific Workspace may omit it; if sent, it must
+	// match that Workspace.
+	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Optional header to specify the beta version(s) you want to use.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
+	paramObj
+}
+
 type BetaUserProfileNewEnrollmentURLParams struct {
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
@@ -702,8 +767,7 @@ type BetaUserProfileNewEnrollmentURLParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
-	// This endpoint is in beta: requests must send `user-profiles-2026-03-24`,
-	// `user-profiles-2026-08-18`, or `user-profiles-2026-09-04` in this header.
+	// Optional header to specify the beta version(s) you want to use.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }

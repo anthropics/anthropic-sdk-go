@@ -76,7 +76,8 @@ func (r *OrganizationRateLimitService) ListAutoPaging(ctx context.Context, query
 
 type OrganizationRateLimit struct {
 	// Identifier of this rate-limit entry. It is stable within the organization and
-	// differs between organizations; the group's own identifier is `group.id`.
+	// differs between organizations; the group's own identifier is `group.id`. Pass it
+	// as `rate_limit_id` to set a workspace's overrides for this group.
 	ID string `json:"id" api:"required"`
 	// The rate-limit group this entry's limits apply to. Its `type` equals
 	// `group_type`.

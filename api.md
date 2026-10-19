@@ -727,6 +727,11 @@ Methods:
 
 ### RateLimits
 
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WorkspaceRateLimitType">WorkspaceRateLimitType</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WorkspaceRateLimitUpdateValueParam">WorkspaceRateLimitUpdateValueParam</a>
+
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WorkspaceRateLimit">WorkspaceRateLimit</a>
@@ -736,6 +741,7 @@ Response Types:
 
 Methods:
 
+- <code title="post /v1/organizations/workspaces/{workspace_id}/rate_limits/{rate_limit_id}">client.Organization.Workspaces.RateLimits.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#OrganizationWorkspaceRateLimitService.Update">Update</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, rateLimitID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#OrganizationWorkspaceRateLimitUpdateParams">OrganizationWorkspaceRateLimitUpdateParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WorkspaceRateLimit">WorkspaceRateLimit</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="get /v1/organizations/workspaces/{workspace_id}/rate_limits">client.Organization.Workspaces.RateLimits.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#OrganizationWorkspaceRateLimitService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#OrganizationWorkspaceRateLimitListParams">OrganizationWorkspaceRateLimitListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#WorkspaceRateLimit">WorkspaceRateLimit</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 ### Members
@@ -2480,6 +2486,11 @@ Methods:
 
 #### RateLimits
 
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWorkspaceRateLimitType">BetaWorkspaceRateLimitType</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWorkspaceRateLimitUpdateValueParam">BetaWorkspaceRateLimitUpdateValueParam</a>
+
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWorkspaceRateLimit">BetaWorkspaceRateLimit</a>
@@ -2489,6 +2500,7 @@ Response Types:
 
 Methods:
 
+- <code title="post /v1/organizations/workspaces/{workspace_id}/rate_limits/{rate_limit_id}?beta=true">client.Beta.Organization.Workspaces.RateLimits.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationWorkspaceRateLimitService.Update">Update</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, rateLimitID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationWorkspaceRateLimitUpdateParams">BetaOrganizationWorkspaceRateLimitUpdateParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWorkspaceRateLimit">BetaWorkspaceRateLimit</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="get /v1/organizations/workspaces/{workspace_id}/rate_limits?beta=true">client.Beta.Organization.Workspaces.RateLimits.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationWorkspaceRateLimitService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaOrganizationWorkspaceRateLimitListParams">BetaOrganizationWorkspaceRateLimitListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#BetaWorkspaceRateLimit">BetaWorkspaceRateLimit</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 #### Members

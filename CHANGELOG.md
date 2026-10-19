@@ -18,6 +18,7 @@
 * **ci:** fix Go cache restore when go.mod sets a newer toolchain
 * **docs:** add credential expiry descriptions to the Managed Agents API reference
 * **docs:** correct plugin manifest_version and reach descriptions
+* **docs:** improve Managed Agents memory store descriptions
 * **docs:** improve Managed Agents vault and credential descriptions
 
 ## [1.82.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.81.0...v1.82.0) (2026-10-15)

@@ -3849,6 +3849,13 @@ func (r *CacheCreation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for a request whose `messages` differ from the previous
+// request's in an earlier entry, instead of only having entries appended. The
+// `model`, `system`, and `tools` match.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type CacheMissMessagesChanged struct {
 	// Approximate number of input tokens that would have been read from cache had the
 	// prefix matched the previous request.
@@ -3869,6 +3876,12 @@ func (r *CacheMissMessagesChanged) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for a request whose `model` or `speed` differs from the
+// previous request's.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type CacheMissModelChanged struct {
 	// Approximate number of input tokens that would have been read from cache had the
 	// prefix matched the previous request.
@@ -3889,6 +3902,14 @@ func (r *CacheMissModelChanged) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for when the API doesn't have a stored record of the
+// request that `diagnostics.previous_message_id` references.
+//
+// This doesn't mean that this request changed.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type CacheMissPreviousMessageNotFound struct {
 	Type constant.PreviousMessageNotFound `json:"type" default:"previous_message_not_found"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -4005,6 +4026,12 @@ func (r *CacheMissReasonUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for a request whose `system` differs from the previous
+// request's.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type CacheMissSystemChanged struct {
 	// Approximate number of input tokens that would have been read from cache had the
 	// prefix matched the previous request.
@@ -4025,6 +4052,12 @@ func (r *CacheMissSystemChanged) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for a request whose `tools` differ from the previous
+// request's, for example because tools were added, removed, or reordered.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type CacheMissToolsChanged struct {
 	// Approximate number of input tokens that would have been read from cache had the
 	// prefix matched the previous request.
@@ -4045,6 +4078,16 @@ func (r *CacheMissToolsChanged) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for when the API can't give a diagnosis. The request
+// itself was processed normally.
+//
+// This includes a request whose `model`, `system`, and `tools` match the previous
+// request's but whose other prompt-affecting parameters, such as `thinking` or
+// `tool_choice`, differ.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type CacheMissUnavailable struct {
 	Type constant.Unavailable `json:"type" default:"unavailable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].

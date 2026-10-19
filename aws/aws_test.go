@@ -17,6 +17,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
+	"github.com/anthropics/anthropic-sdk-go/option"
 )
 
 func makeStaticConfig(region string) awssdk.Config {
@@ -594,5 +595,151 @@ func TestAWSMiddlewareBodyReplayed(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("middleware failed: %v", err)
+	}
+}
+
+// --- User profiles ---
+
+func TestUserProfilesCRUD(t *testing.T) {
+	ctx := context.Background()
+	tests := []struct {
+		name       string
+		send       func(client *Client) error
+		wantMethod string
+		wantPath   string
+	}{
+		{
+			name: "create",
+			send: func(client *Client) error {
+				_, err := client.UserProfiles.New(ctx, anthropic.UserProfileNewParams{Name: anthropic.String("Example")})
+				return err
+			},
+			wantMethod: http.MethodPost,
+			wantPath:   "/v1/user_profiles",
+		},
+		{
+			name: "get",
+			send: func(client *Client) error {
+				_, err := client.UserProfiles.Get(ctx, "uprof_1", anthropic.UserProfileGetParams{})
+				return err
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/v1/user_profiles/uprof_1",
+		},
+		{
+			name: "update",
+			send: func(client *Client) error {
+				_, err := client.UserProfiles.Update(ctx, "uprof_1", anthropic.UserProfileUpdateParams{Name: anthropic.String("Example")})
+				return err
+			},
+			wantMethod: http.MethodPost,
+			wantPath:   "/v1/user_profiles/uprof_1",
+		},
+		{
+			name: "list",
+			send: func(client *Client) error {
+				_, err := client.UserProfiles.List(ctx, anthropic.UserProfileListParams{})
+				return err
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/v1/user_profiles",
+		},
+		{
+			name: "delete",
+			send: func(client *Client) error {
+				_, err := client.UserProfiles.Delete(ctx, "uprof_1", anthropic.UserProfileDeleteParams{})
+				return err
+			},
+			wantMethod: http.MethodDelete,
+			wantPath:   "/v1/user_profiles/uprof_1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var gotMethod, gotPath string
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				gotMethod, gotPath = r.Method, r.URL.Path
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte(`{}`))
+			}))
+			t.Cleanup(server.Close)
+
+			client, err := NewClient(ctx, ClientConfig{APIKey: "test-key", WorkspaceID: "ws-123", BaseURL: server.URL})
+			if err != nil {
+				t.Fatalf("NewClient failed: %v", err)
+			}
+			if err := tt.send(client); err != nil {
+				t.Fatalf("request failed: %v", err)
+			}
+			if gotMethod != tt.wantMethod || gotPath != tt.wantPath {
+				t.Errorf("got %s %s, want %s %s", gotMethod, gotPath, tt.wantMethod, tt.wantPath)
+			}
+		})
+	}
+}
+
+func TestUserProfileIDHeader(t *testing.T) {
+	client, captured := newTestClient(t, ClientConfig{APIKey: "test-key", WorkspaceID: "ws-123"})
+
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:         "claude-sonnet-4-6-20250514",
+		MaxTokens:     1,
+		Messages:      []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))},
+		UserProfileID: anthropic.String("uprof_1"),
+	})
+	if err != nil {
+		t.Fatalf("request failed: %v", err)
+	}
+	if got := captured.Headers.Get("anthropic-user-profile-id"); got != "uprof_1" {
+		t.Errorf("anthropic-user-profile-id = %q, want %q", got, "uprof_1")
+	}
+}
+
+func TestUserProfileActionURLsAreRejected(t *testing.T) {
+	ctx := context.Background()
+	tests := []struct {
+		name string
+		send func(client *Client) error
+	}{
+		{
+			name: "stable",
+			send: func(client *Client) error {
+				_, err := client.UserProfiles.ActionURLs.New(ctx, "uprof_1", anthropic.UserProfileActionURLNewParams{
+					Action: anthropic.UserProfileActionUnionParam{OfEnrollEndUser: &anthropic.UserProfileEnrollEndUserActionParam{}},
+				})
+				return err
+			},
+		},
+		{
+			name: "beta",
+			send: func(client *Client) error {
+				_, err := client.Beta.UserProfiles.ActionURLs.New(ctx, "uprof_1", anthropic.BetaUserProfileActionURLNewParams{
+					Action: anthropic.BetaUserProfileActionUnionParam{OfEnrollEndUser: &anthropic.BetaUserProfileEnrollEndUserActionParam{}},
+				})
+				return err
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			requests := 0
+			server := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { requests++ }))
+			t.Cleanup(server.Close)
+
+			client, err := NewClient(ctx, ClientConfig{APIKey: "test-key", WorkspaceID: "ws-123", BaseURL: server.URL}, option.WithMaxRetries(0))
+			if err != nil {
+				t.Fatalf("NewClient failed: %v", err)
+			}
+
+			err = tt.send(client)
+			if err == nil || !strings.Contains(err.Error(), "does not serve user profile action URLs") {
+				t.Errorf("expected the action URLs error, got %v", err)
+			}
+			if requests != 0 {
+				t.Errorf("expected no request to be sent, got %d", requests)
+			}
+		})
 	}
 }

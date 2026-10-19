@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -242,6 +243,10 @@ var withPlatform = requestconfig.RequestOptionFunc(func(rc *requestconfig.Reques
 // invalidates the SigV4 signature, so body- or header-mutating middleware
 // must be registered before this option.
 //
+// Amazon Bedrock does not serve the User Profiles API, so a request to it
+// returns an error instead of being sent. A user profile ID on a Messages
+// request is sent as usual.
+//
 // The returned option is an [option.Join] of [option.WithoutEnvironmentDefaults]
 // and the Bedrock configuration, so a client constructed with it skips the
 // SDK's first-party credential autoload entirely: environment credentials
@@ -288,6 +293,10 @@ func resolveAuth(cfg aws.Config) aws.Config {
 
 func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 	return func(r *http.Request, next option.MiddlewareNext) (res *http.Response, err error) {
+		if strings.Contains(r.URL.Path, "/v1/user_profiles") {
+			return nil, errors.New("bedrock: Amazon Bedrock does not serve the User Profiles API; manage user profiles with a first-party client")
+		}
+
 		var body []byte
 		if r.Body != nil {
 			body, err = io.ReadAll(r.Body)

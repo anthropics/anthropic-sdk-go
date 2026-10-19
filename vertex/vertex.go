@@ -3,9 +3,11 @@ package vertex
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -81,6 +83,10 @@ func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes
 // settings (Timeout, CheckRedirect, Jar) are preserved. Passed after this
 // option, it replaces the Vertex-configured client entirely.
 //
+// Vertex AI does not serve the User Profiles API, so a request to it returns an
+// error instead of being sent. A user profile ID on a Messages request is sent
+// as usual.
+//
 // The returned option is an [sdkoption.Join] of
 // [sdkoption.WithoutEnvironmentDefaults] and the Vertex configuration, so a
 // client constructed with it skips the SDK's first-party credential autoload
@@ -140,6 +146,10 @@ func authorizeClient(client *http.Client, creds *google.Credentials) *http.Clien
 
 func vertexMiddleware(region, projectID string) sdkoption.Middleware {
 	return func(r *http.Request, next sdkoption.MiddlewareNext) (*http.Response, error) {
+		if strings.Contains(r.URL.Path, "/v1/user_profiles") {
+			return nil, errors.New("vertex: Vertex AI does not serve the User Profiles API; manage user profiles with a first-party client")
+		}
+
 		if r.Body != nil {
 			body, err := io.ReadAll(r.Body)
 			if err != nil {

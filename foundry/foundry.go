@@ -64,11 +64,12 @@ type ClientConfig struct {
 type Client struct {
 	// Options includes [option.WithoutEnvironmentDefaults], so passing it to
 	// anthropic.NewClient does not pick up first-party credentials.
-	Options  []option.RequestOption
-	Messages anthropic.MessageService
-	Files    anthropic.FileService
-	Skills   anthropic.SkillService
-	Beta     anthropic.BetaService
+	Options      []option.RequestOption
+	Messages     anthropic.MessageService
+	Files        anthropic.FileService
+	Skills       anthropic.SkillService
+	UserProfiles anthropic.UserProfileService
+	Beta         anthropic.BetaService
 }
 
 // NewClient returns a client for cfg. It never reads the first-party
@@ -80,11 +81,12 @@ func NewClient(cfg ClientConfig, opts ...option.RequestOption) (*Client, error) 
 		return nil, err
 	}
 	return &Client{
-		Options:  options,
-		Messages: anthropic.NewMessageService(options...),
-		Files:    anthropic.NewFileService(options...),
-		Skills:   anthropic.NewSkillService(options...),
-		Beta:     anthropic.NewBetaService(options...),
+		Options:      options,
+		Messages:     anthropic.NewMessageService(options...),
+		Files:        anthropic.NewFileService(options...),
+		Skills:       anthropic.NewSkillService(options...),
+		UserProfiles: anthropic.NewUserProfileService(options...),
+		Beta:         anthropic.NewBetaService(options...),
 	}, nil
 }
 

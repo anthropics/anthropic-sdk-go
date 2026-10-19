@@ -4,11 +4,12 @@
 //
 // This is distinct from the older [github.com/anthropics/anthropic-sdk-go/vertex]
 // package, which targets the :rawPredict publisher-model API (publisher
-// model IDs, messages only). This client speaks the full first-party Anthropic
-// API: requests pass through the gateway unchanged — standard /v1/* paths,
-// standard model names, the complete API surface.
+// model IDs, messages only). This client speaks the first-party Anthropic API:
+// requests pass through the gateway unchanged — standard /v1/* paths and
+// standard model names.
 //
-// The deprecated text Completions API is intentionally not exposed.
+// The deprecated text Completions API is intentionally not exposed, and the
+// gateway does not serve the User Profiles API.
 package googlecloud
 
 import (
@@ -68,8 +69,8 @@ type ClientConfig struct {
 }
 
 // Client provides access to the Anthropic API via the Google Cloud gateway. It
-// mirrors the surface of [anthropic.Client]; the gateway proxies the entire
-// first-party API. The deprecated Completions service is intentionally omitted.
+// mirrors the surface of [anthropic.Client], without the deprecated Completions
+// service and without UserProfiles, which the gateway does not serve.
 type Client struct {
 	Options  []option.RequestOption
 	Messages anthropic.MessageService

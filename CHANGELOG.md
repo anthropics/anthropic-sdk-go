@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.83.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.83.0...v1.83.1) (2026-10-20)
+
+### Chores
+
+* **ci:** run the changelog check on a standard runner
+
 ## [1.83.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.82.0...v1.83.0) (2026-10-20)
 
 ### Features

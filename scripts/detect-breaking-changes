@@ -102,6 +102,7 @@ TEST_PATHS=(
 	betaorganizationpluginmarketplace_test.go
 	betaorganizationtelemetrydestination_test.go
 	betaorganizationtelemetrydestinationworkspace_test.go
+	betaorganizationwebhook_test.go
 	usage_test.go
 	paginationauto_test.go
 	paginationmanual_test.go

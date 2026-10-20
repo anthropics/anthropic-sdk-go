@@ -527,7 +527,9 @@ func (r *UnwrapWebhookEvent) UnmarshalJSON(data []byte) error {
 // [BetaWebhookMemoryStoreCreatedEventData],
 // [BetaWebhookMemoryStoreArchivedEventData],
 // [BetaWebhookMemoryStoreDeletedEventData],
-// [BetaWebhookSessionBudgetReachedEventData].
+// [BetaWebhookSessionBudgetReachedEventData],
+// [BetaWebhookUserProfileEnforcementActionOpenedEventData],
+// [BetaWebhookUserProfileEnforcementActionResolvedEventData].
 //
 // Use the [BetaWebhookEventDataUnion.AsAny] method to switch on the variant.
 //
@@ -549,19 +551,23 @@ type BetaWebhookEventDataUnion struct {
 	// "deployment.archived", "deployment_run.started", "deployment.deleted",
 	// "deployment_run.succeeded", "environment.created", "environment.updated",
 	// "environment.archived", "environment.deleted", "memory_store.created",
-	// "memory_store.archived", "memory_store.deleted", "session.budget_reached".
-	Type            string `json:"type"`
-	WorkspaceID     string `json:"workspace_id"`
-	SessionThreadID string `json:"session_thread_id"`
-	VaultID         string `json:"vault_id"`
-	JSON            struct {
-		ID              respjson.Field
-		OrganizationID  respjson.Field
-		Type            respjson.Field
-		WorkspaceID     respjson.Field
-		SessionThreadID respjson.Field
-		VaultID         respjson.Field
-		raw             string
+	// "memory_store.archived", "memory_store.deleted", "session.budget_reached",
+	// "user_profile.enforcement_action_opened",
+	// "user_profile.enforcement_action_resolved".
+	Type                string `json:"type"`
+	WorkspaceID         string `json:"workspace_id"`
+	SessionThreadID     string `json:"session_thread_id"`
+	VaultID             string `json:"vault_id"`
+	EnforcementActionID string `json:"enforcement_action_id"`
+	JSON                struct {
+		ID                  respjson.Field
+		OrganizationID      respjson.Field
+		Type                respjson.Field
+		WorkspaceID         respjson.Field
+		SessionThreadID     respjson.Field
+		VaultID             respjson.Field
+		EnforcementActionID respjson.Field
+		raw                 string
 	} `json:"-"`
 }
 
@@ -572,50 +578,52 @@ type anyBetaWebhookEventData interface {
 	implBetaWebhookEventDataUnion()
 }
 
-func (BetaWebhookSessionCreatedEventData) implBetaWebhookEventDataUnion()                {}
-func (BetaWebhookSessionPendingEventData) implBetaWebhookEventDataUnion()                {}
-func (BetaWebhookSessionRunningEventData) implBetaWebhookEventDataUnion()                {}
-func (BetaWebhookSessionIdledEventData) implBetaWebhookEventDataUnion()                  {}
-func (BetaWebhookSessionRequiresActionEventData) implBetaWebhookEventDataUnion()         {}
-func (BetaWebhookSessionArchivedEventData) implBetaWebhookEventDataUnion()               {}
-func (BetaWebhookSessionDeletedEventData) implBetaWebhookEventDataUnion()                {}
-func (BetaWebhookSessionStatusRescheduledEventData) implBetaWebhookEventDataUnion()      {}
-func (BetaWebhookSessionStatusRunStartedEventData) implBetaWebhookEventDataUnion()       {}
-func (BetaWebhookSessionStatusIdledEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookSessionStatusTerminatedEventData) implBetaWebhookEventDataUnion()       {}
-func (BetaWebhookSessionThreadCreatedEventData) implBetaWebhookEventDataUnion()          {}
-func (BetaWebhookSessionThreadIdledEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookSessionThreadTerminatedEventData) implBetaWebhookEventDataUnion()       {}
-func (BetaWebhookSessionOutcomeEvaluationEndedEventData) implBetaWebhookEventDataUnion() {}
-func (BetaWebhookVaultCreatedEventData) implBetaWebhookEventDataUnion()                  {}
-func (BetaWebhookVaultArchivedEventData) implBetaWebhookEventDataUnion()                 {}
-func (BetaWebhookVaultDeletedEventData) implBetaWebhookEventDataUnion()                  {}
-func (BetaWebhookVaultCredentialCreatedEventData) implBetaWebhookEventDataUnion()        {}
-func (BetaWebhookVaultCredentialArchivedEventData) implBetaWebhookEventDataUnion()       {}
-func (BetaWebhookVaultCredentialDeletedEventData) implBetaWebhookEventDataUnion()        {}
-func (BetaWebhookVaultCredentialRefreshFailedEventData) implBetaWebhookEventDataUnion()  {}
-func (BetaWebhookSessionUpdatedEventData) implBetaWebhookEventDataUnion()                {}
-func (BetaWebhookAgentCreatedEventData) implBetaWebhookEventDataUnion()                  {}
-func (BetaWebhookAgentArchivedEventData) implBetaWebhookEventDataUnion()                 {}
-func (BetaWebhookAgentDeletedEventData) implBetaWebhookEventDataUnion()                  {}
-func (BetaWebhookDeploymentPausedEventData) implBetaWebhookEventDataUnion()              {}
-func (BetaWebhookDeploymentRunFailedEventData) implBetaWebhookEventDataUnion()           {}
-func (BetaWebhookDeploymentCreatedEventData) implBetaWebhookEventDataUnion()             {}
-func (BetaWebhookDeploymentUpdatedEventData) implBetaWebhookEventDataUnion()             {}
-func (BetaWebhookDeploymentUnpausedEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookAgentUpdatedEventData) implBetaWebhookEventDataUnion()                  {}
-func (BetaWebhookDeploymentArchivedEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookDeploymentRunStartedEventData) implBetaWebhookEventDataUnion()          {}
-func (BetaWebhookDeploymentDeletedEventData) implBetaWebhookEventDataUnion()             {}
-func (BetaWebhookDeploymentRunSucceededEventData) implBetaWebhookEventDataUnion()        {}
-func (BetaWebhookEnvironmentCreatedEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookEnvironmentUpdatedEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookEnvironmentArchivedEventData) implBetaWebhookEventDataUnion()           {}
-func (BetaWebhookEnvironmentDeletedEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookMemoryStoreCreatedEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookMemoryStoreArchivedEventData) implBetaWebhookEventDataUnion()           {}
-func (BetaWebhookMemoryStoreDeletedEventData) implBetaWebhookEventDataUnion()            {}
-func (BetaWebhookSessionBudgetReachedEventData) implBetaWebhookEventDataUnion()          {}
+func (BetaWebhookSessionCreatedEventData) implBetaWebhookEventDataUnion()                       {}
+func (BetaWebhookSessionPendingEventData) implBetaWebhookEventDataUnion()                       {}
+func (BetaWebhookSessionRunningEventData) implBetaWebhookEventDataUnion()                       {}
+func (BetaWebhookSessionIdledEventData) implBetaWebhookEventDataUnion()                         {}
+func (BetaWebhookSessionRequiresActionEventData) implBetaWebhookEventDataUnion()                {}
+func (BetaWebhookSessionArchivedEventData) implBetaWebhookEventDataUnion()                      {}
+func (BetaWebhookSessionDeletedEventData) implBetaWebhookEventDataUnion()                       {}
+func (BetaWebhookSessionStatusRescheduledEventData) implBetaWebhookEventDataUnion()             {}
+func (BetaWebhookSessionStatusRunStartedEventData) implBetaWebhookEventDataUnion()              {}
+func (BetaWebhookSessionStatusIdledEventData) implBetaWebhookEventDataUnion()                   {}
+func (BetaWebhookSessionStatusTerminatedEventData) implBetaWebhookEventDataUnion()              {}
+func (BetaWebhookSessionThreadCreatedEventData) implBetaWebhookEventDataUnion()                 {}
+func (BetaWebhookSessionThreadIdledEventData) implBetaWebhookEventDataUnion()                   {}
+func (BetaWebhookSessionThreadTerminatedEventData) implBetaWebhookEventDataUnion()              {}
+func (BetaWebhookSessionOutcomeEvaluationEndedEventData) implBetaWebhookEventDataUnion()        {}
+func (BetaWebhookVaultCreatedEventData) implBetaWebhookEventDataUnion()                         {}
+func (BetaWebhookVaultArchivedEventData) implBetaWebhookEventDataUnion()                        {}
+func (BetaWebhookVaultDeletedEventData) implBetaWebhookEventDataUnion()                         {}
+func (BetaWebhookVaultCredentialCreatedEventData) implBetaWebhookEventDataUnion()               {}
+func (BetaWebhookVaultCredentialArchivedEventData) implBetaWebhookEventDataUnion()              {}
+func (BetaWebhookVaultCredentialDeletedEventData) implBetaWebhookEventDataUnion()               {}
+func (BetaWebhookVaultCredentialRefreshFailedEventData) implBetaWebhookEventDataUnion()         {}
+func (BetaWebhookSessionUpdatedEventData) implBetaWebhookEventDataUnion()                       {}
+func (BetaWebhookAgentCreatedEventData) implBetaWebhookEventDataUnion()                         {}
+func (BetaWebhookAgentArchivedEventData) implBetaWebhookEventDataUnion()                        {}
+func (BetaWebhookAgentDeletedEventData) implBetaWebhookEventDataUnion()                         {}
+func (BetaWebhookDeploymentPausedEventData) implBetaWebhookEventDataUnion()                     {}
+func (BetaWebhookDeploymentRunFailedEventData) implBetaWebhookEventDataUnion()                  {}
+func (BetaWebhookDeploymentCreatedEventData) implBetaWebhookEventDataUnion()                    {}
+func (BetaWebhookDeploymentUpdatedEventData) implBetaWebhookEventDataUnion()                    {}
+func (BetaWebhookDeploymentUnpausedEventData) implBetaWebhookEventDataUnion()                   {}
+func (BetaWebhookAgentUpdatedEventData) implBetaWebhookEventDataUnion()                         {}
+func (BetaWebhookDeploymentArchivedEventData) implBetaWebhookEventDataUnion()                   {}
+func (BetaWebhookDeploymentRunStartedEventData) implBetaWebhookEventDataUnion()                 {}
+func (BetaWebhookDeploymentDeletedEventData) implBetaWebhookEventDataUnion()                    {}
+func (BetaWebhookDeploymentRunSucceededEventData) implBetaWebhookEventDataUnion()               {}
+func (BetaWebhookEnvironmentCreatedEventData) implBetaWebhookEventDataUnion()                   {}
+func (BetaWebhookEnvironmentUpdatedEventData) implBetaWebhookEventDataUnion()                   {}
+func (BetaWebhookEnvironmentArchivedEventData) implBetaWebhookEventDataUnion()                  {}
+func (BetaWebhookEnvironmentDeletedEventData) implBetaWebhookEventDataUnion()                   {}
+func (BetaWebhookMemoryStoreCreatedEventData) implBetaWebhookEventDataUnion()                   {}
+func (BetaWebhookMemoryStoreArchivedEventData) implBetaWebhookEventDataUnion()                  {}
+func (BetaWebhookMemoryStoreDeletedEventData) implBetaWebhookEventDataUnion()                   {}
+func (BetaWebhookSessionBudgetReachedEventData) implBetaWebhookEventDataUnion()                 {}
+func (BetaWebhookUserProfileEnforcementActionOpenedEventData) implBetaWebhookEventDataUnion()   {}
+func (BetaWebhookUserProfileEnforcementActionResolvedEventData) implBetaWebhookEventDataUnion() {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -664,6 +672,8 @@ func (BetaWebhookSessionBudgetReachedEventData) implBetaWebhookEventDataUnion() 
 //	case anthropic.BetaWebhookMemoryStoreArchivedEventData:
 //	case anthropic.BetaWebhookMemoryStoreDeletedEventData:
 //	case anthropic.BetaWebhookSessionBudgetReachedEventData:
+//	case anthropic.BetaWebhookUserProfileEnforcementActionOpenedEventData:
+//	case anthropic.BetaWebhookUserProfileEnforcementActionResolvedEventData:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -757,6 +767,10 @@ func (u BetaWebhookEventDataUnion) AsAny() anyBetaWebhookEventData {
 		return u.AsMemoryStoreDeleted()
 	case "session.budget_reached":
 		return u.AsSessionBudgetReached()
+	case "user_profile.enforcement_action_opened":
+		return u.AsUserProfileEnforcementActionOpened()
+	case "user_profile.enforcement_action_resolved":
+		return u.AsUserProfileEnforcementActionResolved()
 	}
 	return nil
 }
@@ -977,6 +991,16 @@ func (u BetaWebhookEventDataUnion) AsMemoryStoreDeleted() (v BetaWebhookMemorySt
 }
 
 func (u BetaWebhookEventDataUnion) AsSessionBudgetReached() (v BetaWebhookSessionBudgetReachedEventData) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWebhookEventDataUnion) AsUserProfileEnforcementActionOpened() (v BetaWebhookUserProfileEnforcementActionOpenedEventData) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWebhookEventDataUnion) AsUserProfileEnforcementActionResolved() (v BetaWebhookUserProfileEnforcementActionResolvedEventData) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1454,6 +1478,54 @@ type BetaWebhookSessionUpdatedEventData struct {
 // Returns the unmodified JSON received from the API
 func (r BetaWebhookSessionUpdatedEventData) RawJSON() string { return r.JSON.raw }
 func (r *BetaWebhookSessionUpdatedEventData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaWebhookUserProfileEnforcementActionOpenedEventData struct {
+	// ID of the user profile the enforcement action is on.
+	ID string `json:"id" api:"required"`
+	// ID (`enac_...`) of the enforcement action that was opened or resolved.
+	EnforcementActionID string                                      `json:"enforcement_action_id" api:"required"`
+	OrganizationID      string                                      `json:"organization_id" api:"required"`
+	Type                constant.UserProfileEnforcementActionOpened `json:"type" default:"user_profile.enforcement_action_opened"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID                  respjson.Field
+		EnforcementActionID respjson.Field
+		OrganizationID      respjson.Field
+		Type                respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWebhookUserProfileEnforcementActionOpenedEventData) RawJSON() string { return r.JSON.raw }
+func (r *BetaWebhookUserProfileEnforcementActionOpenedEventData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaWebhookUserProfileEnforcementActionResolvedEventData struct {
+	// ID of the user profile the enforcement action is on.
+	ID string `json:"id" api:"required"`
+	// ID (`enac_...`) of the enforcement action that was opened or resolved.
+	EnforcementActionID string                                        `json:"enforcement_action_id" api:"required"`
+	OrganizationID      string                                        `json:"organization_id" api:"required"`
+	Type                constant.UserProfileEnforcementActionResolved `json:"type" default:"user_profile.enforcement_action_resolved"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID                  respjson.Field
+		EnforcementActionID respjson.Field
+		OrganizationID      respjson.Field
+		Type                respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWebhookUserProfileEnforcementActionResolvedEventData) RawJSON() string { return r.JSON.raw }
+func (r *BetaWebhookUserProfileEnforcementActionResolvedEventData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

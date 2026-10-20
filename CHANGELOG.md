@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.84.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.83.0...v1.84.0) (2026-10-20)
+
+### Features
+
+* **api:** add org webhook endpoints and user profile enforcement events
+
+
+### Chores
+
+* **ci:** run the changelog check on a standard runner
+
 ## [1.83.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.82.0...v1.83.0) (2026-10-20)
 
 ### Features
@@ -66,6 +77,7 @@
 * **client:** return a constant's value from a param union's getter
 * **client:** skip comment-only blocks when decoding event streams
 * **client:** treat proxy-authorization as a sensitive header
+* **sessions:** settle tool calls invalidated by a processed session-wide interrupt
 * set the required type field in union param constructor helpers
 
 

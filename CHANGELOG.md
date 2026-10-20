@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.84.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.84.0...v1.84.1) (2026-10-20)
+
+### Documentation
+
+* **api:** remove outdated system role note from messages description
+
 ## [1.84.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.83.0...v1.84.0) (2026-10-20)
 
 ### Features

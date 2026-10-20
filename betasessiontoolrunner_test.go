@@ -2428,3 +2428,388 @@ func TestIdleClock_DisarmWinsAgainstPendingArmApply(t *testing.T) {
 			"iteration %d: countdown left armed after a disarm — the pending-arm apply raced past it", i)
 	}
 }
+
+// ===== session-wide interrupts =====
+//
+// A processed user.interrupt with no session_thread_id invalidates every tool
+// call processed at or before it, and the server rejects results for those
+// calls. Their tool_use events stay in history with no result, so the runner
+// must treat them as answered rather than dispatch them again on each
+// reconcile.
+
+// interruptEvt builds a user.interrupt event. An empty processedAt leaves it
+// queued (processed_at null); an empty threadID makes it session-wide.
+func interruptEvt(id, processedAt, threadID string) map[string]any {
+	ev := map[string]any{"type": "user.interrupt", "id": id, "processed_at": nil}
+	if processedAt != "" {
+		ev["processed_at"] = processedAt
+	}
+	if threadID != "" {
+		ev["session_thread_id"] = threadID
+	}
+	return ev
+}
+
+// processedAt sets ev's processed_at and returns ev.
+func processedAt(ev map[string]any, ts string) map[string]any {
+	ev["processed_at"] = ts
+	return ev
+}
+
+// Reconcile path: history holds a tool_use a processed session-wide interrupt
+// invalidated, and the server rejects any result for it. The runner must not
+// run it on any reconnect. The interrupt is listed first because history is
+// ordered by created_at, so the cutoff must come from processed_at, not list
+// order. A call processed after the cutoff still runs once, and queued or
+// thread-targeted interrupts invalidate nothing.
+func TestSessionToolRunner_ProcessedInterruptSettlesStaleToolCalls(t *testing.T) {
+	server := newSessionEventsServer(t)
+
+	var streamConns atomic.Int32
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		// Close the first few connections at once so the runner reconnects
+		// and reconciles several times.
+		streamWriter(w, r, nil, streamConns.Add(1) > 3)
+	}
+
+	var lists atomic.Int32
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		lists.Add(1)
+		body, _ := json.Marshal(map[string]any{
+			"data": []any{
+				interruptEvt("evt_int", "2026-05-11T12:00:05Z", ""),
+				processedAt(toolUseEvt("evt_stale", "stale", map[string]any{}), "2026-05-11T12:00:00Z"),
+				processedAt(toolUseEvt("evt_after", "fresh", map[string]any{}), "2026-05-11T12:00:10Z"),
+				interruptEvt("evt_int_queued", "", ""),
+				interruptEvt("evt_int_thread", "2026-05-11T12:00:30Z", "sthr_other"),
+			},
+			"has_more": false, "first_id": "evt_int", "last_id": "evt_int_thread",
+		})
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(body)
+	}
+
+	var staleSends, freshSends atomic.Int32
+	server.HandleSend = func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		if strings.Contains(string(body), "evt_stale") {
+			// The server rejects a result for an interrupted call.
+			staleSends.Add(1)
+			http.Error(w, "tool call was interrupted", http.StatusBadRequest)
+			return
+		}
+		freshSends.Add(1)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+
+	stale := &stubBetaTool{name: "stale"}
+	fresh := &stubBetaTool{name: "fresh"}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{stale, fresh}, 0)
+
+	var yielded []string
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for r.Next() {
+			yielded = append(yielded, r.Current().ToolUseID)
+		}
+	}()
+	require.Eventually(t, func() bool { return lists.Load() >= 3 }, 5*time.Second, 10*time.Millisecond,
+		"the runner must keep reconnecting and reconciling")
+	cancel()
+	<-done
+	require.NoError(t, r.Close())
+
+	require.Equal(t, int32(0), stale.runs.Load(), "a call invalidated by a processed session-wide interrupt must never run")
+	require.Equal(t, int32(0), staleSends.Load(), "no result may be posted for an interrupted call")
+	require.Equal(t, int32(1), fresh.runs.Load(), "a call processed after the interrupt runs exactly once")
+	require.Equal(t, int32(1), freshSends.Load())
+	require.Equal(t, []string{"evt_after"}, yielded)
+}
+
+// Live path: a session-wide interrupt that arrives while a call is executing
+// cancels the tool's context, and the runner posts no result.
+func TestSessionToolRunner_InterruptCancelsRunningTool(t *testing.T) {
+	started := make(chan struct{})
+	var startOnce sync.Once
+
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+		flusher := w.(http.Flusher)
+		_, _ = w.Write([]byte(sseLine("agent.tool_use",
+			processedAt(toolUseEvt("evt_1", "slow", map[string]any{}), "2026-05-11T12:00:00Z"))))
+		flusher.Flush()
+		select {
+		case <-started:
+		case <-r.Context().Done():
+			return
+		}
+		_, _ = w.Write([]byte(sseLine("user.interrupt", interruptEvt("evt_int", "2026-05-11T12:00:05Z", ""))))
+		flusher.Flush()
+		<-r.Context().Done()
+	}
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		t.Error("a result was posted for an interrupted call")
+		http.Error(w, "tool call was interrupted", http.StatusBadRequest)
+	}
+
+	var toolErr atomic.Value
+	slow := &stubBetaTool{name: "slow", run: func(ctx context.Context, _ json.RawMessage) (string, bool) {
+		startOnce.Do(func() { close(started) })
+		select {
+		case <-ctx.Done():
+			toolErr.Store(ctx.Err())
+		case <-time.After(3 * time.Second):
+		}
+		return "finished", false
+	}}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{slow}, 0)
+
+	require.True(t, r.Next(), "the interrupted call is still yielded: %v", r.Err())
+	call := r.Current()
+	require.Equal(t, "evt_1", call.ToolUseID)
+	require.False(t, call.Posted, "nothing is posted for an interrupted call")
+	require.Empty(t, call.Result.ToolUseID, "no result event is built for an interrupted call")
+	err, _ := toolErr.Load().(error)
+	require.ErrorIs(t, err, context.Canceled, "the running tool's context must be cancelled by the interrupt")
+	require.NoError(t, r.Close())
+}
+
+// The span of a tool run that an interrupt stopped still ends. The run was
+// stopped, not failed, so its status stays unset and it has no result
+// content, as for a run the application canceled.
+func TestSessionToolRunner_InterruptedToolRunEndsItsSpanUnset(t *testing.T) {
+	started := make(chan struct{})
+	var startOnce sync.Once
+
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+		flusher := w.(http.Flusher)
+		_, _ = w.Write([]byte(sseLine("agent.tool_use",
+			processedAt(toolUseEvt("evt_1", "slow", map[string]any{"q": "x"}), "2026-05-11T12:00:00Z"))))
+		flusher.Flush()
+		select {
+		case <-started:
+		case <-r.Context().Done():
+			return
+		}
+		_, _ = w.Write([]byte(sseLine("user.interrupt", interruptEvt("evt_int", "2026-05-11T12:00:05Z", ""))))
+		flusher.Flush()
+		<-r.Context().Done()
+	}
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		t.Error("a result was posted for an interrupted call")
+		http.Error(w, "tool call was interrupted", http.StatusBadRequest)
+	}
+	recorded := tracetest.NewSpanRecorder()
+	client := NewClient(
+		option.WithBaseURL(server.server.URL),
+		option.WithAPIKey("test-key"),
+		option.WithMaxRetries(0),
+		option.WithTracerProvider(sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorded))),
+		option.WithOpenTelemetryTracesContentMode(option.OpenTelemetryContentModeContent),
+	)
+
+	slow := &stubBetaTool{name: "slow", run: func(ctx context.Context, _ json.RawMessage) (string, bool) {
+		startOnce.Do(func() { close(started) })
+		select {
+		case <-ctx.Done():
+		case <-time.After(3 * time.Second):
+		}
+		return "finished", false
+	}}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, client, []BetaTool{slow}, 0)
+
+	require.True(t, r.Next(), "the interrupted call is still yielded: %v", r.Err())
+	require.False(t, r.Current().Posted, "nothing is posted for an interrupted call")
+	require.NoError(t, r.Close())
+
+	var span sdktrace.ReadOnlySpan
+	for _, s := range recorded.Ended() {
+		if s.Name() == "anthropic.tool_use slow" {
+			span = s
+		}
+	}
+	require.NotNil(t, span, "the interrupted run's span must end")
+	require.Equal(t, codes.Unset, span.Status().Code, "an interrupted run is stopped, not failed")
+	attrs := map[string]string{}
+	for _, kv := range span.Attributes() {
+		attrs[string(kv.Key)] = kv.Value.Emit()
+	}
+	require.Equal(t, "evt_1", attrs["gen_ai.tool.call.id"])
+	require.Equal(t, `{"q":"x"}`, attrs["gen_ai.tool.call.arguments"], "the input is still recorded")
+	require.NotContains(t, attrs, "anthropic.tool_result.content", "no result was made of the interrupted run")
+	require.NotContains(t, attrs, "error.type")
+}
+
+// An interrupt also settles a call held for confirmation. Releasing the hold
+// lets the end_turn idle that follows start the countdown, so the runner
+// stops.
+func TestSessionToolRunner_InterruptReleasesHeldCall(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, []string{
+			sseLine("agent.tool_use", processedAt(askToolUseEvt("tu", "echo", map[string]any{}, "ask"), "2026-05-11T12:00:00Z")),
+			sseLine("user.interrupt", interruptEvt("evt_int", "2026-05-11T12:00:05Z", "")),
+			sseLine("session.status_idle", processedAt(idleEndTurnEvt("evt_idle"), "2026-05-11T12:00:06Z")),
+		}, true)
+	}
+	server.HandleSend = func(http.ResponseWriter, *http.Request) { t.Error("an interrupted held call posted a result") }
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 150*time.Millisecond)
+
+	for r.Next() {
+		t.Fatalf("unexpected yield for an interrupted held call: %+v", r.Current())
+	}
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout, "the interrupt must release the hold so the runner can stop")
+	require.Equal(t, int32(0), echo.runs.Load())
+	require.NoError(t, r.Close())
+}
+
+// An interrupt after the end_turn idle must not cancel the pending countdown:
+// it starts no agent work, and once it releases the held call the runner can
+// stop. Runs the same history on the live stream and through reconcile, where
+// the interrupt is the last listed event.
+func TestSessionToolRunner_InterruptAfterEndTurnLetsRunnerStop(t *testing.T) {
+	history := []map[string]any{
+		processedAt(askToolUseEvt("tu", "echo", map[string]any{}, "ask"), "2026-05-11T12:00:00Z"),
+		processedAt(idleEndTurnEvt("evt_idle"), "2026-05-11T12:00:01Z"),
+		interruptEvt("evt_int", "2026-05-11T12:00:05Z", ""),
+	}
+	for _, tc := range []struct {
+		name      string
+		reconcile bool
+	}{
+		{name: "live stream"},
+		{name: "reconcile", reconcile: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				var events []string
+				if !tc.reconcile {
+					for _, ev := range history {
+						events = append(events, sseLine(ev["type"].(string), ev))
+					}
+				}
+				streamWriter(w, r, events, true)
+			}
+			if tc.reconcile {
+				server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+					body, _ := json.Marshal(map[string]any{
+						"data": history, "has_more": false, "first_id": "tu", "last_id": "evt_int",
+					})
+					w.Header().Set("Content-Type", "application/json")
+					_, _ = w.Write(body)
+				}
+			}
+			server.HandleSend = func(http.ResponseWriter, *http.Request) { t.Error("an interrupted held call posted a result") }
+
+			echo := &stubBetaTool{name: "echo"}
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 150*time.Millisecond)
+
+			for r.Next() {
+				t.Fatalf("unexpected yield for an interrupted held call: %+v", r.Current())
+			}
+			require.ErrorIs(t, r.Err(), ErrIdleTimeout, "the interrupt after end_turn must not cancel the owed countdown")
+			require.Equal(t, int32(0), echo.runs.Load())
+			require.NoError(t, r.Close())
+		})
+	}
+}
+
+// Reconcile flavor of TestSessionToolRunner_DenyAfterEndTurnResumesIdle: a
+// deny listed after the end_turn idle resolves the held call in place, and the
+// end_turn before it still arms the countdown.
+func TestSessionToolRunner_ReconcileDenyAfterEndTurnLetsRunnerStop(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) { streamWriter(w, r, nil, true) }
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		body, _ := json.Marshal(map[string]any{
+			"data": []any{
+				askToolUseEvt("tu", "echo", map[string]any{}, "ask"),
+				idleEndTurnEvt("evt_idle"),
+				toolConfirmationEvt("tu", "deny"),
+			},
+			"has_more": false, "first_id": "tu", "last_id": "evt_conf_tu",
+		})
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(body)
+	}
+	server.HandleSend = func(http.ResponseWriter, *http.Request) { t.Error("a denied call posted a result") }
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 150*time.Millisecond)
+
+	var yielded []DispatchedToolCall
+	for r.Next() {
+		yielded = append(yielded, r.Current())
+	}
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout, "the end_turn before the deny must arm the countdown")
+	require.Len(t, yielded, 1)
+	require.Equal(t, "deny", yielded[0].Confirmation)
+	require.Equal(t, int32(0), echo.runs.Load())
+}
+
+// The held call and its end_turn arrive live, then the stream drops. After
+// the reconnect only the interrupt is still in the listed window. Settling the
+// held call there must apply the pending arm, not lose it to reconcile's
+// disarm.
+func TestSessionToolRunner_ReconcileInterruptForCallMissingFromHistoryLetsRunnerStop(t *testing.T) {
+	server := newSessionEventsServer(t)
+	var streamConns atomic.Int32
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		if streamConns.Add(1) == 1 {
+			streamWriter(w, r, []string{
+				sseLine("agent.tool_use", processedAt(askToolUseEvt("tu", "echo", map[string]any{}, "ask"), "2026-05-11T12:00:00Z")),
+				sseLine("session.status_idle", processedAt(idleEndTurnEvt("evt_idle"), "2026-05-11T12:00:01Z")),
+			}, false)
+			return
+		}
+		streamWriter(w, r, nil, true)
+	}
+	var lists atomic.Int32
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if lists.Add(1) >= 2 {
+			body, _ := json.Marshal(map[string]any{
+				"data":     []any{interruptEvt("evt_int", "2026-05-11T12:00:05Z", "")},
+				"has_more": false, "first_id": "evt_int", "last_id": "evt_int",
+			})
+			_, _ = w.Write(body)
+			return
+		}
+		_, _ = w.Write([]byte(emptyEventList()))
+	}
+	server.HandleSend = func(http.ResponseWriter, *http.Request) { t.Error("an interrupted held call posted a result") }
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 150*time.Millisecond)
+
+	for r.Next() {
+		t.Fatalf("unexpected yield for an interrupted held call: %+v", r.Current())
+	}
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout, "settling the held call must apply the pending arm")
+	require.Equal(t, int32(0), echo.runs.Load())
+	require.NoError(t, r.Close())
+}

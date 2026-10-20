@@ -66,6 +66,7 @@
 * **client:** return a constant's value from a param union's getter
 * **client:** skip comment-only blocks when decoding event streams
 * **client:** treat proxy-authorization as a sensitive header
+* **sessions:** settle tool calls invalidated by a processed session-wide interrupt
 * set the required type field in union param constructor helpers
 
 

@@ -40,7 +40,7 @@ func NewBetaVaultService(opts ...option.RequestOption) (r BetaVaultService) {
 	return
 }
 
-// Create Vault
+// Create a Vault
 func (r *BetaVaultService) New(ctx context.Context, params BetaVaultNewParams, opts ...option.RequestOption) (res *BetaManagedAgentsVault, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -63,7 +63,7 @@ func (r *BetaVaultService) New(ctx context.Context, params BetaVaultNewParams, o
 	return res, err
 }
 
-// Get Vault
+// Retrieve a Vault
 func (r *BetaVaultService) Get(ctx context.Context, vaultID string, query BetaVaultGetParams, opts ...option.RequestOption) (res *BetaManagedAgentsVault, err error) {
 	if len(query.Betas) > 0 {
 		headerValues := make([]string, len(query.Betas))
@@ -90,7 +90,7 @@ func (r *BetaVaultService) Get(ctx context.Context, vaultID string, query BetaVa
 	return res, err
 }
 
-// Update Vault
+// Update a Vault
 func (r *BetaVaultService) Update(ctx context.Context, vaultID string, params BetaVaultUpdateParams, opts ...option.RequestOption) (res *BetaManagedAgentsVault, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -154,7 +154,7 @@ func (r *BetaVaultService) ListAutoPaging(ctx context.Context, params BetaVaultL
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
-// Delete Vault
+// Delete a Vault
 func (r *BetaVaultService) Delete(ctx context.Context, vaultID string, body BetaVaultDeleteParams, opts ...option.RequestOption) (res *BetaManagedAgentsDeletedVault, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -181,7 +181,7 @@ func (r *BetaVaultService) Delete(ctx context.Context, vaultID string, body Beta
 	return res, err
 }
 
-// Archive Vault
+// Archive a Vault
 func (r *BetaVaultService) Archive(ctx context.Context, vaultID string, body BetaVaultArchiveParams, opts ...option.RequestOption) (res *BetaManagedAgentsVault, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -210,7 +210,7 @@ func (r *BetaVaultService) Archive(ctx context.Context, vaultID string, body Bet
 
 // Confirmation of a deleted vault.
 type BetaManagedAgentsDeletedVault struct {
-	// Unique identifier of the deleted vault.
+	// The unique ID of the deleted vault (`vlt_...`).
 	ID string `json:"id" api:"required"`
 	// Any of "vault_deleted".
 	Type BetaManagedAgentsDeletedVaultType `json:"type" api:"required"`
@@ -237,7 +237,7 @@ const (
 
 // A vault that stores credentials for use by agents during sessions.
 type BetaManagedAgentsVault struct {
-	// Unique identifier for the vault.
+	// The unique ID of the vault (`vlt_...`).
 	ID string `json:"id" api:"required"`
 	// When the vault was archived. Null if not archived.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
@@ -346,11 +346,13 @@ func (r *BetaVaultUpdateParams) UnmarshalJSON(data []byte) error {
 }
 
 type BetaVaultListParams struct {
-	// Whether to include archived vaults in the results.
+	// Whether to include archived vaults in the results. Defaults to `false`.
 	IncludeArchived param.Opt[bool] `query:"include_archived,omitzero" json:"-"`
 	// Maximum number of vaults to return per page. Defaults to 20, maximum 100.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Opaque pagination token from a previous `list_vaults` response.
+	// The `next_page` value from a previous
+	// [List Vaults](https://platform.claude.com/docs/en/api/beta/vaults/list)
+	// response, to get the next page. Leave it out to get the first page.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).

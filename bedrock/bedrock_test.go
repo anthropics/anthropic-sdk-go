@@ -933,3 +933,128 @@ func TestBedrockNonJSONBodyPassesThroughUntouched(t *testing.T) {
 		t.Errorf("Expected SigV4 Authorization on the wire, got %q", wireAuth)
 	}
 }
+
+func newUserProfileTestClient(t *testing.T, handler http.HandlerFunc) anthropic.Client {
+	t.Helper()
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+
+	return anthropic.NewClient(
+		WithConfig(makeStaticAWSConfig("us-east-1")),
+		option.WithBaseURL(server.URL),
+		option.WithMaxRetries(0),
+	)
+}
+
+func TestBedrockRejectsUserProfilesAPI(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name string
+		send func(client anthropic.Client) error
+	}{
+		{
+			name: "create",
+			send: func(client anthropic.Client) error {
+				_, err := client.UserProfiles.New(ctx, anthropic.UserProfileNewParams{Name: anthropic.String("Example")})
+				return err
+			},
+		},
+		{
+			name: "get",
+			send: func(client anthropic.Client) error {
+				_, err := client.UserProfiles.Get(ctx, "uprof_1", anthropic.UserProfileGetParams{})
+				return err
+			},
+		},
+		{
+			name: "action URLs",
+			send: func(client anthropic.Client) error {
+				_, err := client.UserProfiles.ActionURLs.New(ctx, "uprof_1", anthropic.UserProfileActionURLNewParams{
+					Action: anthropic.UserProfileActionUnionParam{OfEnrollEndUser: &anthropic.UserProfileEnrollEndUserActionParam{}},
+				})
+				return err
+			},
+		},
+		{
+			name: "beta create",
+			send: func(client anthropic.Client) error {
+				_, err := client.Beta.UserProfiles.New(ctx, anthropic.BetaUserProfileNewParams{})
+				return err
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			requests := 0
+			client := newUserProfileTestClient(t, func(http.ResponseWriter, *http.Request) { requests++ })
+
+			err := tt.send(client)
+			if err == nil || !strings.Contains(err.Error(), "does not serve the User Profiles API") {
+				t.Errorf("expected the User Profiles API error, got %v", err)
+			}
+			if requests != 0 {
+				t.Errorf("expected no request to be sent, got %d", requests)
+			}
+		})
+	}
+}
+
+func TestBedrockSendsUserProfileIDHeader(t *testing.T) {
+	ctx := context.Background()
+	messages := []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))}
+	betaMessages := []anthropic.BetaMessageParam{anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("hi"))}
+	const model = "claude-sonnet-4-6-20250514"
+
+	tests := []struct {
+		name string
+		send func(client anthropic.Client) error
+	}{
+		{
+			name: "messages",
+			send: func(client anthropic.Client) error {
+				_, err := client.Messages.New(ctx, anthropic.MessageNewParams{
+					Model: model, MaxTokens: 1, Messages: messages, UserProfileID: anthropic.String("uprof_1"),
+				})
+				return err
+			},
+		},
+		{
+			name: "beta messages",
+			send: func(client anthropic.Client) error {
+				_, err := client.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
+					Model: model, MaxTokens: 1, Messages: betaMessages, UserProfileID: anthropic.String("uprof_1"),
+				})
+				return err
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var gotPath, gotHeader, gotBody string
+			client := newUserProfileTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+				body, _ := io.ReadAll(r.Body)
+				gotPath, gotHeader, gotBody = r.URL.Path, r.Header.Get("anthropic-user-profile-id"), string(body)
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte(`{}`))
+			})
+
+			if err := tt.send(client); err != nil {
+				t.Fatalf("request failed: %v", err)
+			}
+			if want := "/model/" + model + "/invoke"; gotPath != want {
+				t.Errorf("path = %q, want %q", gotPath, want)
+			}
+			if gotHeader != "uprof_1" {
+				t.Errorf("anthropic-user-profile-id = %q, want %q", gotHeader, "uprof_1")
+			}
+			if strings.Contains(gotBody, "user_profile_id") {
+				t.Errorf("expected no user_profile_id in the body, got %s", gotBody)
+			}
+		})
+	}
+}

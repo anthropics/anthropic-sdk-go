@@ -100,7 +100,7 @@ func (r *Error) DumpResponse(body bool) []byte {
 	return out
 }
 
-var sensitiveHeaders = []string{"authorization", "proxy-authorization", "api-key", "x-api-key", "cookie", "set-cookie"}
+var sensitiveHeaders = []string{"authorization", "proxy-authorization", "api-key", "x-api-key", "x-amz-security-token", "cookie", "set-cookie"}
 
 // RedactHeaders returns headers with every value of each sensitive header
 // replaced by "***", without modifying headers. The result may be headers

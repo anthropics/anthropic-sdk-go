@@ -39,6 +39,32 @@ func NewBetaOrganizationWorkspaceRateLimitService(opts ...option.RequestOption) 
 	return
 }
 
+// Set or clear rate-limit overrides for one rate-limit group in a workspace.
+//
+// Only the limiter types named in `limits` change: an integer `value` sets that
+// type's override and `null` clears it. Types not named keep their current value.
+// A value above the organization's own limit is stored, but the organization limit
+// still applies, so the lower of the two is enforced.
+//
+// Returns the targeted group's entry with this request applied, in the shape
+// `GET /v1/organizations/workspaces/{workspace_id}/rate_limits` returns. Changes
+// take effect within about an hour.
+func (r *BetaOrganizationWorkspaceRateLimitService) Update(ctx context.Context, rateLimitID string, params BetaOrganizationWorkspaceRateLimitUpdateParams, opts ...option.RequestOption) (res *BetaWorkspaceRateLimit, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if params.WorkspaceID == "" {
+		err = errors.New("missing required workspace_id parameter")
+		return nil, err
+	}
+	if rateLimitID == "" {
+		err = errors.New("missing required rate_limit_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/rate_limits/%s?beta=true", url.PathEscape(params.WorkspaceID), url.PathEscape(rateLimitID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.rate_limits.update", "/v1/organizations/workspaces/{workspace_id}/rate_limits/{rate_limit_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", params.WorkspaceID), requestconfig.WithSpanAttribute("anthropic.organization.workspace.rate_limit.id", rateLimitID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
+	return res, err
+}
+
 // List a workspace's rate limits.
 //
 // By default, returns only the groups and limiter types that have a
@@ -272,6 +298,44 @@ func (r *BetaWorkspaceRateLimitOrganizationSource) UnmarshalJSON(data []byte) er
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Rate limiter type.
+type BetaWorkspaceRateLimitType string
+
+const (
+	BetaWorkspaceRateLimitTypeFastItpmca                     BetaWorkspaceRateLimitType = "fast_itpmca"
+	BetaWorkspaceRateLimitTypeFastOtpm                       BetaWorkspaceRateLimitType = "fast_otpm"
+	BetaWorkspaceRateLimitTypeInputTokensPerMinute           BetaWorkspaceRateLimitType = "input_tokens_per_minute"
+	BetaWorkspaceRateLimitTypeInputTokensPerMinuteCacheAware BetaWorkspaceRateLimitType = "input_tokens_per_minute_cache_aware"
+	BetaWorkspaceRateLimitTypeOutputTokensPerMinute          BetaWorkspaceRateLimitType = "output_tokens_per_minute"
+	BetaWorkspaceRateLimitTypeRequestsPerMinute              BetaWorkspaceRateLimitType = "requests_per_minute"
+	BetaWorkspaceRateLimitTypeTokensPerDay                   BetaWorkspaceRateLimitType = "tokens_per_day"
+	BetaWorkspaceRateLimitTypeTokensPerMinute                BetaWorkspaceRateLimitType = "tokens_per_minute"
+	BetaWorkspaceRateLimitTypeToolUsesPerSecond              BetaWorkspaceRateLimitType = "tool_uses_per_second"
+)
+
+// The properties Type, Value are required.
+type BetaWorkspaceRateLimitUpdateValueParam struct {
+	// New limit value. Set to null to clear the workspace override and fall back to
+	// the organization limit.
+	Value param.Opt[int64] `json:"value,omitzero" api:"required"`
+	// Rate limiter type.
+	//
+	// Any of "fast_itpmca", "fast_otpm", "input_tokens_per_minute",
+	// "input_tokens_per_minute_cache_aware", "output_tokens_per_minute",
+	// "requests_per_minute", "tokens_per_day", "tokens_per_minute",
+	// "tool_uses_per_second".
+	Type BetaWorkspaceRateLimitType `json:"type,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaWorkspaceRateLimitUpdateValueParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWorkspaceRateLimitUpdateValueParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaWorkspaceRateLimitUpdateValueParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaWorkspaceRateLimitValue struct {
 	// The organization-level value for the same limiter type, for reference. `null`
 	// when the organization has no limit configured for this limiter type.
@@ -378,6 +442,22 @@ type BetaWorkspaceRateLimitWorkspaceSource struct {
 // Returns the unmodified JSON received from the API
 func (r BetaWorkspaceRateLimitWorkspaceSource) RawJSON() string { return r.JSON.raw }
 func (r *BetaWorkspaceRateLimitWorkspaceSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaOrganizationWorkspaceRateLimitUpdateParams struct {
+	// The ID of the workspace.
+	WorkspaceID string `path:"workspace_id" api:"required" json:"-"`
+	// Limits to set or clear. Unspecified limit types are unchanged.
+	Limits []BetaWorkspaceRateLimitUpdateValueParam `json:"limits,omitzero" api:"required"`
+	paramObj
+}
+
+func (r BetaOrganizationWorkspaceRateLimitUpdateParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaOrganizationWorkspaceRateLimitUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaOrganizationWorkspaceRateLimitUpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

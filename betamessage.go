@@ -5630,6 +5630,13 @@ func (r *BetaCacheCreation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for a request whose `messages` differ from the previous
+// request's in an earlier entry, instead of only having entries appended. The
+// `model`, `system`, and `tools` match.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type BetaCacheMissMessagesChanged struct {
 	// Approximate number of input tokens that would have been read from cache had the
 	// prefix matched the previous request.
@@ -5650,6 +5657,12 @@ func (r *BetaCacheMissMessagesChanged) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for a request whose `model` or `speed` differs from the
+// previous request's.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type BetaCacheMissModelChanged struct {
 	// Approximate number of input tokens that would have been read from cache had the
 	// prefix matched the previous request.
@@ -5670,6 +5683,14 @@ func (r *BetaCacheMissModelChanged) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for when the API doesn't have a stored record of the
+// request that `diagnostics.previous_message_id` references.
+//
+// This doesn't mean that this request changed.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type BetaCacheMissPreviousMessageNotFound struct {
 	Type constant.PreviousMessageNotFound `json:"type" default:"previous_message_not_found"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -5787,6 +5808,12 @@ func (r *BetaCacheMissReasonUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for a request whose `system` differs from the previous
+// request's.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type BetaCacheMissSystemChanged struct {
 	// Approximate number of input tokens that would have been read from cache had the
 	// prefix matched the previous request.
@@ -5807,6 +5834,12 @@ func (r *BetaCacheMissSystemChanged) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for a request whose `tools` differ from the previous
+// request's, for example because tools were added, removed, or reordered.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type BetaCacheMissToolsChanged struct {
 	// Approximate number of input tokens that would have been read from cache had the
 	// prefix matched the previous request.
@@ -5827,6 +5860,16 @@ func (r *BetaCacheMissToolsChanged) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A `cache_miss_reason` for when the API can't give a diagnosis. The request
+// itself was processed normally.
+//
+// This includes a request whose `model`, `system`, and `tools` match the previous
+// request's but whose other prompt-affecting parameters, such as `thinking` or
+// `tool_choice`, differ.
+//
+// See the
+// [cache diagnostics guide](https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics#cache-miss-reason-types)
+// to learn what to change for each reason.
 type BetaCacheMissUnavailable struct {
 	Type constant.Unavailable `json:"type" default:"unavailable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -12655,17 +12698,61 @@ type BetaFallbackParam struct {
 	//
 	// See [models](https://docs.anthropic.com/en/docs/models-overview) for additional
 	// details and options.
-	Model     Model            `json:"model,omitzero" api:"required"`
+	Model Model `json:"model,omitzero" api:"required"`
+	// The `max_tokens` for the fallback attempt that uses this `fallbacks` entry's
+	// `model`, in place of the request's `max_tokens`. If you leave it out or set it
+	// to `null`, the attempt uses the request's `max_tokens`.
+	//
+	// See the
+	// [refusals and fallback guide](https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback#naming-your-own-fallback-models)
+	// to learn more about fallback entries.
 	MaxTokens param.Opt[int64] `json:"max_tokens,omitzero"`
-	// Inference speed mode. `fast` provides significantly faster output token
-	// generation at premium pricing. Not all models support `fast`; invalid
-	// combinations are rejected at create time.
+	// The inference speed mode for the fallback attempt that uses this `fallbacks`
+	// entry's `model`. If you leave it out, the attempt runs at `fast` speed only when
+	// the request sets `speed` to `fast` and your organization can use fast mode on
+	// `model`.
+	//
+	// Otherwise, or when you set this field to `null`, the attempt runs at `standard`
+	// speed.
+	//
+	// These rules apply with the `server-side-fallback-2026-07-01` beta header.
 	//
 	// Any of "standard", "fast".
-	Speed        BetaFallbackParamSpeed         `json:"speed,omitzero"`
-	Thinking     BetaFallbackParamThinkingUnion `json:"thinking,omitzero"`
-	OutputConfig BetaOutputConfigParam          `json:"output_config,omitzero"`
-	ExtraFields  map[string]any                 `json:"-" api:"extrafields"`
+	Speed BetaFallbackParamSpeed `json:"speed,omitzero"`
+	// The thinking configuration for the fallback attempt that uses this `fallbacks`
+	// entry's `model`. If you leave it out, the attempt uses the request's `thinking`
+	// when `model` supports that thinking `type`.
+	//
+	// If you leave it out and the request's thinking `type` is `between_tools` but
+	// `model` doesn't support `between_tools`, the attempt uses `disabled` if `model`
+	// supports it. Otherwise, if `model` doesn't support the request's thinking
+	// `type`, if the request doesn't set `thinking`, or if you set this field to
+	// `null`, the attempt uses the thinking `type` that `model` uses when a request
+	// leaves out `thinking`. The request's `thinking.display` still applies where
+	// `model` allows it.
+	//
+	// These rules apply with the `server-side-fallback-2026-07-01` beta header.
+	Thinking BetaFallbackParamThinkingUnion `json:"thinking,omitzero"`
+	// Output parameters for the fallback attempt that uses this `fallbacks` entry's
+	// `model`, combined with the request's `output_config` one field at a time.
+	//
+	// - `format`: If you leave it out, the attempt uses the request's `format`. If you
+	//   set it to `null`, the attempt runs without a format.
+	// - `effort`: If you leave it out, the attempt uses the request's `effort` when
+	//   `model` supports that level with the attempt's `thinking`. If the request
+	//   doesn't set `effort`, if `model` doesn't support the level, or if you set
+	//   `effort` to `null`, the attempt runs at the default effort of `model`.
+	// - `task_budget`: If you leave it out, the attempt uses the request's
+	//   `task_budget` when `model` accepts a task budget of that size. If the request
+	//   doesn't set `task_budget`, if `model` doesn't accept it, or if you set
+	//   `task_budget` to `null`, the attempt runs without a task budget.
+	//
+	// Set `output_config` to `null` to run the attempt without a format or a task
+	// budget, at the default effort of `model`.
+	//
+	// These rules apply with the `server-side-fallback-2026-07-01` beta header.
+	OutputConfig BetaOutputConfigParam `json:"output_config,omitzero"`
+	ExtraFields  map[string]any        `json:"-" api:"extrafields"`
 	paramObj
 }
 
@@ -12677,9 +12764,15 @@ func (r *BetaFallbackParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Inference speed mode. `fast` provides significantly faster output token
-// generation at premium pricing. Not all models support `fast`; invalid
-// combinations are rejected at create time.
+// The inference speed mode for the fallback attempt that uses this `fallbacks`
+// entry's `model`. If you leave it out, the attempt runs at `fast` speed only when
+// the request sets `speed` to `fast` and your organization can use fast mode on
+// `model`.
+//
+// Otherwise, or when you set this field to `null`, the attempt runs at `standard`
+// speed.
+//
+// These rules apply with the `server-side-fallback-2026-07-01` beta header.
 type BetaFallbackParamSpeed string
 
 const (
@@ -25683,7 +25776,7 @@ type BetaMessageNewParams struct {
 	// Recommended for advanced use cases only.
 	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// The user profile ID to attribute this request to. Use when acting on behalf of a
-	// party other than your organization. Requires the `user-profiles` beta header.
+	// party other than your organization.
 	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
@@ -26052,7 +26145,7 @@ type BetaMessageCountTokensParams struct {
 	// details and options.
 	Model Model `json:"model,omitzero" api:"required"`
 	// The user profile ID to attribute this request to. Use when acting on behalf of a
-	// party other than your organization. Requires the `user-profiles` beta header.
+	// party other than your organization.
 	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).

@@ -445,3 +445,97 @@ func TestCallerOptionsCanOverrideHeaders(t *testing.T) {
 		t.Errorf("x-custom = %q, want 1", got)
 	}
 }
+
+// --- User profiles ---
+
+func TestUserProfilesCRUD(t *testing.T) {
+	ctx := context.Background()
+	tests := []struct {
+		name       string
+		send       func(client *Client) error
+		wantMethod string
+		wantPath   string
+	}{
+		{
+			name: "create",
+			send: func(client *Client) error {
+				_, err := client.UserProfiles.New(ctx, anthropic.UserProfileNewParams{Name: anthropic.String("Example")})
+				return err
+			},
+			wantMethod: http.MethodPost,
+			wantPath:   "/anthropic/v1/user_profiles",
+		},
+		{
+			name: "get",
+			send: func(client *Client) error {
+				_, err := client.UserProfiles.Get(ctx, "uprof_1", anthropic.UserProfileGetParams{})
+				return err
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/anthropic/v1/user_profiles/uprof_1",
+		},
+		{
+			name: "update",
+			send: func(client *Client) error {
+				_, err := client.UserProfiles.Update(ctx, "uprof_1", anthropic.UserProfileUpdateParams{Name: anthropic.String("Example")})
+				return err
+			},
+			wantMethod: http.MethodPost,
+			wantPath:   "/anthropic/v1/user_profiles/uprof_1",
+		},
+		{
+			name: "list",
+			send: func(client *Client) error {
+				_, err := client.UserProfiles.List(ctx, anthropic.UserProfileListParams{})
+				return err
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/anthropic/v1/user_profiles",
+		},
+		{
+			name: "delete",
+			send: func(client *Client) error {
+				_, err := client.UserProfiles.Delete(ctx, "uprof_1", anthropic.UserProfileDeleteParams{})
+				return err
+			},
+			wantMethod: http.MethodDelete,
+			wantPath:   "/anthropic/v1/user_profiles/uprof_1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			clearEnv(t)
+			server, requests := newServer(t)
+
+			if err := tt.send(newTestClient(t, server, ClientConfig{APIKey: "test-key"})); err != nil {
+				t.Fatalf("request failed: %v", err)
+			}
+
+			request := onlyRequest(t, requests)
+			if request.Method != tt.wantMethod || request.Path != tt.wantPath {
+				t.Errorf("got %s %s, want %s %s", request.Method, request.Path, tt.wantMethod, tt.wantPath)
+			}
+		})
+	}
+}
+
+func TestUserProfileIDHeader(t *testing.T) {
+	clearEnv(t)
+	server, requests := newServer(t)
+	client := newTestClient(t, server, ClientConfig{APIKey: "test-key"})
+
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:         "claude-sonnet-4-5",
+		MaxTokens:     1,
+		Messages:      []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))},
+		UserProfileID: anthropic.String("uprof_1"),
+	})
+	if err != nil {
+		t.Fatalf("Messages.New: %v", err)
+	}
+
+	if got := onlyRequest(t, requests).Headers.Get("anthropic-user-profile-id"); got != "uprof_1" {
+		t.Errorf("anthropic-user-profile-id = %q, want %q", got, "uprof_1")
+	}
+}

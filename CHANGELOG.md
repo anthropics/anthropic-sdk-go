@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.83.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.82.0...v1.83.0) (2026-10-20)
+
+### Features
+
+* **api:** add data_refreshed_at and has_more to analytics report pages
+* **api:** add workspace rate-limit updates to the Admin API
+* **api:** make User Profiles generally available
+* **client:** yield server-sent events with unrecognized event names
+* **google-cloud:** use the v1 endpoints and add the organization endpoint
+
+
+### Bug Fixes
+
+* **client:** close the response body of calls that discard the response
+* **client:** treat x-amz-security-token as a sensitive header
+
+
+### Chores
+
+* **ci:** fix Go cache restore when go.mod sets a newer toolchain
+* **ci:** skip the changelog check on draft pull requests
+* **docs:** add credential expiry descriptions to the Managed Agents API reference
+* **docs:** add Messages API request descriptions
+* **docs:** correct plugin manifest_version and reach descriptions
+* **docs:** improve Managed Agents memory store descriptions
+* **docs:** improve Managed Agents vault and credential descriptions
+
 ## [1.82.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.81.0...v1.82.0) (2026-10-15)
 
 ### Features

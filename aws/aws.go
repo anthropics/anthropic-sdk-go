@@ -11,7 +11,11 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
+	"slices"
+	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
@@ -63,14 +67,19 @@ type ClientConfig struct {
 }
 
 // Client provides access to the Anthropic API via the AWS gateway.
+//
+// The gateway serves user profiles but not their action URLs, so
+// UserProfiles.ActionURLs and Beta.UserProfiles.ActionURLs return an error
+// instead of sending the request.
 type Client struct {
-	Options     []option.RequestOption
-	Completions anthropic.CompletionService
-	Messages    anthropic.MessageService
-	Models      anthropic.ModelService
-	Files       anthropic.FileService
-	Skills      anthropic.SkillService
-	Beta        anthropic.BetaService
+	Options      []option.RequestOption
+	Completions  anthropic.CompletionService
+	Messages     anthropic.MessageService
+	Models       anthropic.ModelService
+	Files        anthropic.FileService
+	Skills       anthropic.SkillService
+	UserProfiles anthropic.UserProfileService
+	Beta         anthropic.BetaService
 }
 
 // NewClient creates a new AWS gateway client with the given configuration.
@@ -90,6 +99,8 @@ type Client struct {
 //  4. ANTHROPIC_AWS_API_KEY env var (x-api-key header)
 //  5. Default AWS credential chain (SigV4)
 func NewClient(ctx context.Context, cfg ClientConfig, opts ...option.RequestOption) (*Client, error) {
+	opts = slices.Concat(opts, []option.RequestOption{option.WithMiddleware(rejectUserProfileActionURLs)})
+
 	opts, err := awsauth.CreateClientOptions(ctx, toInternalConfig(cfg), awsResolveParams(), opts...)
 	if err != nil {
 		return nil, err
@@ -101,14 +112,22 @@ func NewClient(ctx context.Context, cfg ClientConfig, opts ...option.RequestOpti
 	// base SDK defaults (ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL) do not apply.
 
 	return &Client{
-		Options:     opts,
-		Completions: anthropic.NewCompletionService(opts...),
-		Messages:    anthropic.NewMessageService(opts...),
-		Models:      anthropic.NewModelService(opts...),
-		Files:       anthropic.NewFileService(opts...),
-		Skills:      anthropic.NewSkillService(opts...),
-		Beta:        anthropic.NewBetaService(opts...),
+		Options:      opts,
+		Completions:  anthropic.NewCompletionService(opts...),
+		Messages:     anthropic.NewMessageService(opts...),
+		Models:       anthropic.NewModelService(opts...),
+		Files:        anthropic.NewFileService(opts...),
+		Skills:       anthropic.NewSkillService(opts...),
+		UserProfiles: anthropic.NewUserProfileService(opts...),
+		Beta:         anthropic.NewBetaService(opts...),
 	}, nil
+}
+
+func rejectUserProfileActionURLs(r *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+	if strings.Contains(r.URL.Path, "/v1/user_profiles/") && strings.HasSuffix(r.URL.Path, "/action_urls") {
+		return nil, errors.New("aws: the AWS gateway does not serve user profile action URLs; create them with a first-party client")
+	}
+	return next(r)
 }
 
 func awsResolveParams() awsauth.ResolveParams {

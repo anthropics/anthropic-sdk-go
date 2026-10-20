@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -27,19 +28,28 @@ const (
 // cloudPlatformScope is the OAuth2 scope required to call the gateway.
 const cloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
 
+// locationURLTemplate is the gateway URL of a location, which both base URLs
+// extend. %[1]s is the project, %[2]s the location.
+const locationURLTemplate = "https://claude.googleapis.com/v1/projects/%[1]s/locations/%[2]s"
+
 // baseURLTemplate is the gateway base URL; override via BaseURL if needed.
-// %[1]s is the project, %[2]s the location, %[3]s the workspace ID.
-const baseURLTemplate = "https://claude.googleapis.com/v1alpha/projects/%[1]s/locations/%[2]s/workspaces/%[3]s/invoke"
+// %[3]s is the workspace ID.
+const baseURLTemplate = locationURLTemplate + "/workspaces/%[3]s/invoke"
+
+// organizationBaseURLTemplate is the gateway base URL of organization-level
+// routes, which are served outside any workspace.
+const organizationBaseURLTemplate = locationURLTemplate + "/claudeOrganization/invoke"
+
+// organizationPathPrefix is the path prefix of organization-level routes.
+const organizationPathPrefix = "/v1/organizations/"
 
 // defaultLocation is the location used when none is configured; the gateway
 // should always be addressed via the global region.
 const defaultLocation = "global"
 
-// resolveConfig applies environment-variable fallbacks and derives the base URL
-// when a project is known. It does not touch the network; ADC-based project
-// backfill happens in createClientOptions. Location defaults to "global" when
-// not configured. The workspace ID is embedded in the derived base URL, so it
-// is required unless SkipAuth is set together with an explicit BaseURL.
+// resolveConfig applies environment-variable fallbacks. It does not touch the
+// network; ADC-based project backfill happens in createClientOptions. Location
+// defaults to "global" when not configured.
 func resolveConfig(cfg ClientConfig) (ClientConfig, error) {
 	cfg.Project = firstNonEmpty(cfg.Project, os.Getenv(envProject), os.Getenv("GOOGLE_CLOUD_PROJECT"))
 	cfg.Location = firstNonEmpty(cfg.Location, os.Getenv(envLocation), defaultLocation)
@@ -50,22 +60,12 @@ func resolveConfig(cfg ClientConfig) (ClientConfig, error) {
 		return cfg, fmt.Errorf("googlecloud: SkipAuth and TokenSource are mutually exclusive; set one or the other")
 	}
 
-	// The workspace ID is required unless SkipAuth is set together with an
-	// explicit BaseURL (no URL to derive).
-	if cfg.WorkspaceID == "" && !(cfg.SkipAuth && cfg.BaseURL != "") {
-		return cfg, fmt.Errorf("googlecloud: no workspace ID found; set WorkspaceID or the %s environment variable", envWorkspaceID)
-	}
-
-	if cfg.BaseURL == "" && cfg.Project != "" {
-		cfg.BaseURL = deriveBaseURL(cfg.Project, cfg.Location, cfg.WorkspaceID)
-	}
-
 	return cfg, nil
 }
 
 // createClientOptions resolves configuration and returns the request options that
 // configure an Anthropic client for the Google Cloud gateway: the base URL
-// (which embeds the workspace ID) and a Google bearer-token middleware.
+// (explicit, or derived per request) and a Google bearer-token middleware.
 func createClientOptions(ctx context.Context, cfg ClientConfig) ([]option.RequestOption, error) {
 	resolved, err := resolveConfig(cfg)
 	if err != nil {
@@ -73,7 +73,7 @@ func createClientOptions(ctx context.Context, cfg ClientConfig) ([]option.Reques
 	}
 
 	// Resolve credentials first: ADC also yields a project we can use to backfill
-	// both an unset Project and the derived base URL.
+	// both an unset Project and the derived base URLs.
 	var ts oauth2.TokenSource
 	if !resolved.SkipAuth {
 		ts = resolved.TokenSource
@@ -93,14 +93,17 @@ func createClientOptions(ctx context.Context, cfg ClientConfig) ([]option.Reques
 		ts = oauth2.ReuseTokenSource(nil, ts)
 	}
 
-	if resolved.BaseURL == "" {
-		if resolved.Project == "" {
-			return nil, fmt.Errorf("googlecloud: no project found; set Project, set the %s environment variable, or configure application default credentials with a project", envProject)
-		}
-		resolved.BaseURL = deriveBaseURL(resolved.Project, resolved.Location, resolved.WorkspaceID)
+	var baseURL option.RequestOption
+	switch {
+	case resolved.BaseURL != "":
+		baseURL = option.WithBaseURL(resolved.BaseURL)
+	case resolved.Project != "":
+		baseURL = withDerivedBaseURL(resolved.Project, resolved.Location, resolved.WorkspaceID)
+	default:
+		return nil, fmt.Errorf("googlecloud: no project found; set Project, set the %s environment variable, or configure application default credentials with a project", envProject)
 	}
 
-	opts := []option.RequestOption{option.WithBaseURL(resolved.BaseURL), requestconfig.WithOpenTelemetryPlatform("googlecloud")}
+	opts := []option.RequestOption{baseURL, requestconfig.WithOpenTelemetryPlatform("googlecloud")}
 
 	if resolved.SkipAuth {
 		return opts, nil
@@ -126,6 +129,43 @@ func bearerMiddleware(ts oauth2.TokenSource) option.Middleware {
 		}
 		return next(r)
 	}
+}
+
+// withDerivedBaseURL picks the base URL of each request by its path: the
+// organization endpoint for organization-level routes, the workspace endpoint
+// for every other route. A base URL set by a later option takes every route.
+func withDerivedBaseURL(project, location, workspaceID string) option.RequestOption {
+	organization := option.WithBaseURL(fmt.Sprintf(organizationBaseURLTemplate, project, location))
+	workspace := option.WithBaseURL(deriveBaseURL(project, location, workspaceID))
+
+	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+		if isOrganizationPath(r.Request.URL.Path) {
+			return r.Apply(organization)
+		}
+		if err := r.Apply(workspace); err != nil {
+			return err
+		}
+		if workspaceID != "" {
+			return nil
+		}
+
+		// Options that follow this one can still replace the base URL, so the
+		// missing workspace ID is reported from a middleware, which runs after
+		// all of them and before the request is sent.
+		derived := r.BaseURL
+		return r.Apply(option.WithMiddleware(func(req *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+			if r.BaseURL == derived {
+				return nil, fmt.Errorf("googlecloud: no workspace ID found; set WorkspaceID or the %s environment variable", envWorkspaceID)
+			}
+			return next(req)
+		}))
+	})
+}
+
+// isOrganizationPath reports whether path is an organization-level route.
+// Request paths are relative to the base URL, so they carry no leading slash.
+func isOrganizationPath(path string) bool {
+	return strings.HasPrefix("/"+strings.TrimLeft(path, "/"), organizationPathPrefix)
 }
 
 func deriveBaseURL(project, location, workspaceID string) string {

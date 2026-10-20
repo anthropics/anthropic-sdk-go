@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"golang.org/x/oauth2"
@@ -13,7 +12,7 @@ import (
 
 // --- resolveConfig ---
 
-func TestResolveDerivesBaseURLFromLocationAndProject(t *testing.T) {
+func TestResolveLeavesDerivedBaseURLUnset(t *testing.T) {
 	clearEnv(t)
 	rc, err := resolveConfig(ClientConfig{
 		Project:     "my-project",
@@ -23,9 +22,8 @@ func TestResolveDerivesBaseURLFromLocationAndProject(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	want := "https://claude.googleapis.com/v1alpha/projects/my-project/locations/us-central1/workspaces/wrkspc_123/invoke"
-	if rc.BaseURL != want {
-		t.Errorf("derived base URL = %q, want %q", rc.BaseURL, want)
+	if rc.BaseURL != "" {
+		t.Errorf("base URL = %q, want empty (derived per request)", rc.BaseURL)
 	}
 }
 
@@ -40,10 +38,6 @@ func TestResolveLocationDefaultsToGlobal(t *testing.T) {
 	}
 	if rc.Location != "global" {
 		t.Errorf("location = %q, want default %q", rc.Location, "global")
-	}
-	want := "https://claude.googleapis.com/v1alpha/projects/my-project/locations/global/workspaces/wrkspc_123/invoke"
-	if rc.BaseURL != want {
-		t.Errorf("derived base URL = %q, want %q", rc.BaseURL, want)
 	}
 }
 
@@ -89,10 +83,6 @@ func TestResolveLocationFromEnv(t *testing.T) {
 	}
 	if rc.Location != "europe-west4" {
 		t.Errorf("location = %q, want env value", rc.Location)
-	}
-	want := "https://claude.googleapis.com/v1alpha/projects/my-project/locations/europe-west4/workspaces/wrkspc_123/invoke"
-	if rc.BaseURL != want {
-		t.Errorf("derived base URL = %q, want %q", rc.BaseURL, want)
 	}
 }
 
@@ -166,13 +156,22 @@ func TestResolveWorkspaceFromEnv(t *testing.T) {
 	}
 }
 
-func TestResolveRequiresWorkspace(t *testing.T) {
+func TestResolveNeedsNoWorkspace(t *testing.T) {
 	clearEnv(t)
-	_, err := resolveConfig(ClientConfig{
-		BaseURL: "https://proxy.example.com",
-	})
-	if err == nil {
-		t.Fatal("expected error when WorkspaceID is missing")
+	for name, cfg := range map[string]ClientConfig{
+		"explicit base URL":              {BaseURL: "https://proxy.example.com"},
+		"derived base URL":               {Project: "my-project"},
+		"derived base URL with SkipAuth": {Project: "my-project", SkipAuth: true},
+	} {
+		t.Run(name, func(t *testing.T) {
+			rc, err := resolveConfig(cfg)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if rc.WorkspaceID != "" {
+				t.Errorf("workspace = %q, want empty", rc.WorkspaceID)
+			}
+		})
 	}
 }
 
@@ -184,40 +183,6 @@ func TestResolveSkipAuthWithExplicitBaseURLNeedsNoWorkspace(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("unexpected error with SkipAuth: %v", err)
-	}
-}
-
-func TestResolveSkipAuthDerivationStillRequiresWorkspace(t *testing.T) {
-	clearEnv(t)
-	// The workspace ID is part of the derived base URL, so SkipAuth alone no
-	// longer waives it — only an explicit BaseURL does.
-	_, err := resolveConfig(ClientConfig{
-		Project:  "my-project",
-		SkipAuth: true,
-	})
-	if err == nil {
-		t.Fatal("expected error when SkipAuth derivation has no WorkspaceID")
-	}
-	for _, want := range []string{"WorkspaceID", envWorkspaceID} {
-		if !strings.Contains(err.Error(), want) {
-			t.Errorf("error = %q, want mention of %q", err, want)
-		}
-	}
-}
-
-func TestResolveSkipAuthDerivesURLWithWorkspace(t *testing.T) {
-	clearEnv(t)
-	rc, err := resolveConfig(ClientConfig{
-		Project:     "my-project",
-		WorkspaceID: "wrkspc_123",
-		SkipAuth:    true,
-	})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	want := "https://claude.googleapis.com/v1alpha/projects/my-project/locations/global/workspaces/wrkspc_123/invoke"
-	if rc.BaseURL != want {
-		t.Errorf("derived base URL = %q, want %q", rc.BaseURL, want)
 	}
 }
 
@@ -241,10 +206,13 @@ func TestResolveEmptyEnvTreatedAsUnset(t *testing.T) {
 	t.Setenv(envBaseURL, "")
 	t.Setenv("GOOGLE_CLOUD_PROJECT", "")
 
-	t.Run("workspace still required", func(t *testing.T) {
-		_, err := resolveConfig(ClientConfig{BaseURL: "https://proxy.example.com"})
-		if err == nil {
-			t.Fatal("expected workspace-required error when env workspace is empty")
+	t.Run("workspace not satisfied by empty env", func(t *testing.T) {
+		rc, err := resolveConfig(ClientConfig{BaseURL: "https://proxy.example.com"})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if rc.WorkspaceID != "" {
+			t.Errorf("WorkspaceID = %q, want empty (env was empty)", rc.WorkspaceID)
 		}
 	})
 	t.Run("project not satisfied by empty env", func(t *testing.T) {
@@ -261,8 +229,8 @@ func TestResolveEmptyEnvTreatedAsUnset(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if rc.BaseURL == "" {
-			t.Error("BaseURL = empty, want derived (empty env must not short-circuit derivation)")
+		if rc.BaseURL != "" {
+			t.Errorf("BaseURL = %q, want empty (empty env must not short-circuit derivation)", rc.BaseURL)
 		}
 	})
 }
@@ -318,6 +286,26 @@ func TestADCFallbackInvalidCredentialsSurfacesError(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("expected ADC load error when GOOGLE_APPLICATION_CREDENTIALS is invalid")
+	}
+}
+
+// --- isOrganizationPath ---
+
+func TestIsOrganizationPath(t *testing.T) {
+	for path, want := range map[string]bool{
+		"v1/organizations/workspaces":        true,
+		"/v1/organizations/workspaces":       true,
+		"v1/organizations/me":                true,
+		"v1/organizations/workspaces/w/keys": true,
+		"v1/organizations":                   false,
+		"v1/organizationsettings":            false,
+		"v1/messages":                        false,
+		"v1/compliance/activities":           false,
+		"v1/files/v1/organizations/x":        false,
+	} {
+		if got := isOrganizationPath(path); got != want {
+			t.Errorf("isOrganizationPath(%q) = %v, want %v", path, got, want)
+		}
 	}
 }
 

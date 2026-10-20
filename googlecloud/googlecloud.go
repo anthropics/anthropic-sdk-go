@@ -42,18 +42,19 @@ type ClientConfig struct {
 	//  3. "global"
 	Location string
 
-	// WorkspaceID is the Anthropic workspace ID. Required: resolved by
-	// precedence
+	// WorkspaceID is the Anthropic workspace ID. Resolved by precedence:
 	//  1. ClientConfig.WorkspaceID
 	//  2. The ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID environment variable
 	//
-	// [NewClient] returns an error when neither is set, unless SkipAuth is true
-	// and BaseURL is set explicitly.
+	// Required when the base URL is derived, except by organization-level
+	// routes (paths under /v1/organizations), which are sent to the project's
+	// organization endpoint. A request that needs a workspace ID and has none
+	// fails before it is sent.
 	WorkspaceID string
 
-	// BaseURL overrides the default gateway base URL. Resolved by precedence:
-	// ClientConfig.BaseURL > ANTHROPIC_GOOGLE_CLOUD_BASE_URL env > derived from
-	// project, location, and workspace ID.
+	// BaseURL overrides the default gateway base URL for every route. Resolved
+	// by precedence: ClientConfig.BaseURL > ANTHROPIC_GOOGLE_CLOUD_BASE_URL env >
+	// derived from project, location, and workspace ID.
 	BaseURL string
 
 	// TokenSource overrides Application Default Credentials for authentication.
@@ -62,9 +63,8 @@ type ClientConfig struct {
 
 	// SkipAuth skips authentication, for when a gateway or proxy handles
 	// authentication upstream. No token is attached when SkipAuth is set.
-	// A workspace ID is still needed to derive the base URL —
-	// set BaseURL explicitly to construct without one. Mutually exclusive with
-	// TokenSource — setting both is a construction-time error.
+	// Mutually exclusive with TokenSource — setting both is a
+	// construction-time error.
 	SkipAuth bool
 }
 
@@ -72,12 +72,13 @@ type ClientConfig struct {
 // mirrors the surface of [anthropic.Client], without the deprecated Completions
 // service and without UserProfiles, which the gateway does not serve.
 type Client struct {
-	Options  []option.RequestOption
-	Messages anthropic.MessageService
-	Models   anthropic.ModelService
-	Files    anthropic.FileService
-	Skills   anthropic.SkillService
-	Beta     anthropic.BetaService
+	Options      []option.RequestOption
+	Messages     anthropic.MessageService
+	Models       anthropic.ModelService
+	Files        anthropic.FileService
+	Skills       anthropic.SkillService
+	Organization anthropic.OrganizationService
+	Beta         anthropic.BetaService
 }
 
 // NewClient creates a new Claude Platform on Google Cloud client with the given
@@ -101,11 +102,12 @@ func NewClient(ctx context.Context, cfg ClientConfig) (*Client, error) {
 	// SDK defaults (ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL) do not apply.
 
 	return &Client{
-		Options:  opts,
-		Messages: anthropic.NewMessageService(opts...),
-		Models:   anthropic.NewModelService(opts...),
-		Files:    anthropic.NewFileService(opts...),
-		Skills:   anthropic.NewSkillService(opts...),
-		Beta:     anthropic.NewBetaService(opts...),
+		Options:      opts,
+		Messages:     anthropic.NewMessageService(opts...),
+		Models:       anthropic.NewModelService(opts...),
+		Files:        anthropic.NewFileService(opts...),
+		Skills:       anthropic.NewSkillService(opts...),
+		Organization: anthropic.NewOrganizationService(opts...),
+		Beta:         anthropic.NewBetaService(opts...),
 	}, nil
 }

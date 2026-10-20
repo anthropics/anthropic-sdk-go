@@ -272,12 +272,18 @@ type BetaPluginVersion struct {
 	Description string `json:"description" api:"required"`
 	// The manifest's display name; null when it declares none.
 	DisplayName string `json:"display_name" api:"required"`
-	// The version string the manifest declares; null when it declares none.
+	// The manifest's `version`, normalized for display: one leading `v` or `V` is
+	// dropped, and the result is returned only if it is 1 to 64 characters, starts
+	// with a digit, and uses only ASCII letters, digits, `.`, `+`, and `-`; otherwise
+	// `null`. For example, `"v1.4.0"` is returned as `"1.4.0"`, and `"latest"` as
+	// `null`. For a synchronized plugin, the `version` of its `marketplace.json` entry
+	// can take the place of the manifest's `version`. It is also `null` for a version
+	// stored before claude.ai began recording this field (August 2026).
 	ManifestVersion string `json:"manifest_version" api:"required"`
 	// The Plugin's ID.
 	PluginID string `json:"plugin_id" api:"required"`
-	// How far the version reaches: `remote`, `privileged` or `contained`, as on the
-	// Plugin; null when not classifiable.
+	// How far the version reaches: `remote`, `privileged`, `contained`, or `null`, as
+	// defined on the Plugin's `reach`.
 	//
 	// Any of "contained", "privileged", "remote".
 	Reach BetaPluginVersionReach `json:"reach" api:"required"`
@@ -379,8 +385,8 @@ func (r *BetaPluginVersionCreatedByUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// How far the version reaches: `remote`, `privileged` or `contained`, as on the
-// Plugin; null when not classifiable.
+// How far the version reaches: `remote`, `privileged`, `contained`, or `null`, as
+// defined on the Plugin's `reach`.
 type BetaPluginVersionReach string
 
 const (

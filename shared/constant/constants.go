@@ -138,6 +138,7 @@ type DownloadStarted string                         // Always "download_started"
 type Edit string                                    // Always "edit"
 type Enabled string                                 // Always "enabled"
 type EncryptedCodeExecutionResult string            // Always "encrypted_code_execution_result"
+type EnrollEndUser string                           // Always "enroll_end_user"
 type Environment string                             // Always "environment"
 type EnvironmentArchived string                     // Always "environment.archived"
 type EnvironmentCreated string                      // Always "environment.created"
@@ -368,6 +369,9 @@ type UsageTier string                               // Always "usage_tier"
 type User string                                    // Always "user"
 type UserActor string                               // Always "user_actor"
 type UserDeleted string                             // Always "user_deleted"
+type UserProfile string                             // Always "user_profile"
+type UserProfileActionURL string                    // Always "user_profile_action_url"
+type UserProfileDeleted string                      // Always "user_profile_deleted"
 type VaultCredentialArchived string                 // Always "vault_credential.archived"
 type VaultCredentialCreated string                  // Always "vault_credential.created"
 type VaultCredentialDeleted string                  // Always "vault_credential.deleted"
@@ -535,6 +539,7 @@ func (c Enabled) Default() Enabled                               { return "enabl
 func (c EncryptedCodeExecutionResult) Default() EncryptedCodeExecutionResult {
 	return "encrypted_code_execution_result"
 }
+func (c EnrollEndUser) Default() EnrollEndUser                 { return "enroll_end_user" }
 func (c Environment) Default() Environment                     { return "environment" }
 func (c EnvironmentArchived) Default() EnvironmentArchived     { return "environment.archived" }
 func (c EnvironmentCreated) Default() EnvironmentCreated       { return "environment.created" }
@@ -810,23 +815,26 @@ func (c ToolSearchToolResultError) Default() ToolSearchToolResultError {
 func (c ToolSearchToolSearchResult) Default() ToolSearchToolSearchResult {
 	return "tool_search_tool_search_result"
 }
-func (c ToolUse) Default() ToolUse                     { return "tool_use" }
-func (c ToolUses) Default() ToolUses                   { return "tool_uses" }
-func (c ToolsChanged) Default() ToolsChanged           { return "tools_changed" }
-func (c TripleClick) Default() TripleClick             { return "triple_click" }
-func (c Tunnel) Default() Tunnel                       { return "tunnel" }
-func (c TunnelCertificate) Default() TunnelCertificate { return "tunnel_certificate" }
-func (c TunnelToken) Default() TunnelToken             { return "tunnel_token" }
-func (c Type) Default() Type                           { return "type" }
-func (c Unattached) Default() Unattached               { return "unattached" }
-func (c Unavailable) Default() Unavailable             { return "unavailable" }
-func (c UnknownError) Default() UnknownError           { return "unknown_error" }
-func (c Unrestricted) Default() Unrestricted           { return "unrestricted" }
-func (c URL) Default() URL                             { return "url" }
-func (c UsageTier) Default() UsageTier                 { return "usage_tier" }
-func (c User) Default() User                           { return "user" }
-func (c UserActor) Default() UserActor                 { return "user_actor" }
-func (c UserDeleted) Default() UserDeleted             { return "user_deleted" }
+func (c ToolUse) Default() ToolUse                           { return "tool_use" }
+func (c ToolUses) Default() ToolUses                         { return "tool_uses" }
+func (c ToolsChanged) Default() ToolsChanged                 { return "tools_changed" }
+func (c TripleClick) Default() TripleClick                   { return "triple_click" }
+func (c Tunnel) Default() Tunnel                             { return "tunnel" }
+func (c TunnelCertificate) Default() TunnelCertificate       { return "tunnel_certificate" }
+func (c TunnelToken) Default() TunnelToken                   { return "tunnel_token" }
+func (c Type) Default() Type                                 { return "type" }
+func (c Unattached) Default() Unattached                     { return "unattached" }
+func (c Unavailable) Default() Unavailable                   { return "unavailable" }
+func (c UnknownError) Default() UnknownError                 { return "unknown_error" }
+func (c Unrestricted) Default() Unrestricted                 { return "unrestricted" }
+func (c URL) Default() URL                                   { return "url" }
+func (c UsageTier) Default() UsageTier                       { return "usage_tier" }
+func (c User) Default() User                                 { return "user" }
+func (c UserActor) Default() UserActor                       { return "user_actor" }
+func (c UserDeleted) Default() UserDeleted                   { return "user_deleted" }
+func (c UserProfile) Default() UserProfile                   { return "user_profile" }
+func (c UserProfileActionURL) Default() UserProfileActionURL { return "user_profile_action_url" }
+func (c UserProfileDeleted) Default() UserProfileDeleted     { return "user_profile_deleted" }
 func (c VaultCredentialArchived) Default() VaultCredentialArchived {
 	return "vault_credential.archived"
 }
@@ -992,6 +1000,7 @@ func (c DownloadStarted) MarshalJSON() ([]byte, error)                      { re
 func (c Edit) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Enabled) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c EncryptedCodeExecutionResult) MarshalJSON() ([]byte, error)         { return marshalString(c) }
+func (c EnrollEndUser) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Environment) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c EnvironmentArchived) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c EnvironmentCreated) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
@@ -1226,6 +1235,9 @@ func (c UsageTier) MarshalJSON() ([]byte, error)                         { retur
 func (c User) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c UserActor) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c UserDeleted) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c UserProfile) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c UserProfileActionURL) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c UserProfileDeleted) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c VaultCredentialArchived) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c VaultCredentialCreated) MarshalJSON() ([]byte, error)            { return marshalString(c) }
 func (c VaultCredentialDeleted) MarshalJSON() ([]byte, error)            { return marshalString(c) }

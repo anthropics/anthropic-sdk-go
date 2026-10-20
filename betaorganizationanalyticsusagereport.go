@@ -40,7 +40,7 @@ func NewBetaOrganizationAnalyticsUsageReportService(opts ...option.RequestOption
 // product, model, context window, inference region, or speed. Available to
 // organizations on a Claude Enterprise plan. Requires an API key with the
 // `read:analytics` scope.
-func (r *BetaOrganizationAnalyticsUsageReportService) List(ctx context.Context, query BetaOrganizationAnalyticsUsageReportListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaAnalyticsUsageReportTimeBucket], err error) {
+func (r *BetaOrganizationAnalyticsUsageReportService) List(ctx context.Context, query BetaOrganizationAnalyticsUsageReportListParams, opts ...option.RequestOption) (res *pagination.ReportPageCursor[BetaAnalyticsUsageReportTimeBucket], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -64,8 +64,8 @@ func (r *BetaOrganizationAnalyticsUsageReportService) List(ctx context.Context, 
 // product, model, context window, inference region, or speed. Available to
 // organizations on a Claude Enterprise plan. Requires an API key with the
 // `read:analytics` scope.
-func (r *BetaOrganizationAnalyticsUsageReportService) ListAutoPaging(ctx context.Context, query BetaOrganizationAnalyticsUsageReportListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaAnalyticsUsageReportTimeBucket] {
-	return pagination.NewPageCursorAutoPager(r.List(ctx, query, opts...))
+func (r *BetaOrganizationAnalyticsUsageReportService) ListAutoPaging(ctx context.Context, query BetaOrganizationAnalyticsUsageReportListParams, opts ...option.RequestOption) *pagination.ReportPageCursorAutoPager[BetaAnalyticsUsageReportTimeBucket] {
+	return pagination.NewReportPageCursorAutoPager(r.List(ctx, query, opts...))
 }
 
 type BetaOrganizationAnalyticsUsageReportListParams struct {

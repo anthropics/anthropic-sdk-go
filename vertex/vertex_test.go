@@ -474,3 +474,164 @@ func TestVertexNonJSONBodyPassesThroughUntouched(t *testing.T) {
 		t.Errorf("Expected Content-Type %q on the wire, got %q", "application/octet-stream", wireContentType)
 	}
 }
+
+func newUserProfileTestClient(t *testing.T, handler http.HandlerFunc) anthropic.Client {
+	t.Helper()
+	t.Setenv("ANTHROPIC_API_KEY", "")
+
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+
+	creds := &google.Credentials{
+		TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: "fake"}),
+	}
+	return anthropic.NewClient(
+		WithCredentials(context.Background(), "us-central1", "test-project", creds),
+		sdkoption.WithBaseURL(server.URL),
+		sdkoption.WithMaxRetries(0),
+	)
+}
+
+func TestUserProfileIDHeader(t *testing.T) {
+	ctx := context.Background()
+	messages := []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))}
+	betaMessages := []anthropic.BetaMessageParam{anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("hi"))}
+	const model = "claude-3-sonnet"
+
+	tests := []struct {
+		name     string
+		send     func(client anthropic.Client) error
+		wantPath string
+	}{
+		{
+			name: "messages",
+			send: func(client anthropic.Client) error {
+				_, err := client.Messages.New(ctx, anthropic.MessageNewParams{
+					Model: model, MaxTokens: 1, Messages: messages, UserProfileID: anthropic.String("uprof_1"),
+				})
+				return err
+			},
+			wantPath: "/v1/projects/test-project/locations/us-central1/publishers/anthropic/models/claude-3-sonnet:rawPredict",
+		},
+		{
+			name: "beta messages",
+			send: func(client anthropic.Client) error {
+				_, err := client.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
+					Model: model, MaxTokens: 1, Messages: betaMessages, UserProfileID: anthropic.String("uprof_1"),
+				})
+				return err
+			},
+			wantPath: "/v1/projects/test-project/locations/us-central1/publishers/anthropic/models/claude-3-sonnet:rawPredict",
+		},
+		{
+			name: "count tokens",
+			send: func(client anthropic.Client) error {
+				_, err := client.Messages.CountTokens(ctx, anthropic.MessageCountTokensParams{
+					Model: model, Messages: messages, UserProfileID: anthropic.String("uprof_1"),
+				})
+				return err
+			},
+			wantPath: "/v1/projects/test-project/locations/us-central1/publishers/anthropic/models/count-tokens:rawPredict",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var gotPath, gotHeader, gotBody string
+			client := newUserProfileTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+				body, _ := io.ReadAll(r.Body)
+				gotPath, gotHeader, gotBody = r.URL.Path, r.Header.Get("anthropic-user-profile-id"), string(body)
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte(`{}`))
+			})
+
+			if err := tt.send(client); err != nil {
+				t.Fatalf("request failed: %v", err)
+			}
+			if gotPath != tt.wantPath {
+				t.Errorf("path = %q, want %q", gotPath, tt.wantPath)
+			}
+			if gotHeader != "uprof_1" {
+				t.Errorf("anthropic-user-profile-id = %q, want %q", gotHeader, "uprof_1")
+			}
+			if strings.Contains(gotBody, "user_profile_id") {
+				t.Errorf("expected no user_profile_id in the body, got %s", gotBody)
+			}
+		})
+	}
+}
+
+func TestUserProfilesAPIIsRejected(t *testing.T) {
+	ctx := context.Background()
+	tests := []struct {
+		name string
+		send func(client anthropic.Client) error
+	}{
+		{
+			name: "create",
+			send: func(client anthropic.Client) error {
+				_, err := client.UserProfiles.New(ctx, anthropic.UserProfileNewParams{Name: anthropic.String("Example")})
+				return err
+			},
+		},
+		{
+			name: "get",
+			send: func(client anthropic.Client) error {
+				_, err := client.UserProfiles.Get(ctx, "uprof_1", anthropic.UserProfileGetParams{})
+				return err
+			},
+		},
+		{
+			name: "update",
+			send: func(client anthropic.Client) error {
+				_, err := client.UserProfiles.Update(ctx, "uprof_1", anthropic.UserProfileUpdateParams{Name: anthropic.String("Example")})
+				return err
+			},
+		},
+		{
+			name: "list",
+			send: func(client anthropic.Client) error {
+				_, err := client.UserProfiles.List(ctx, anthropic.UserProfileListParams{})
+				return err
+			},
+		},
+		{
+			name: "delete",
+			send: func(client anthropic.Client) error {
+				_, err := client.UserProfiles.Delete(ctx, "uprof_1", anthropic.UserProfileDeleteParams{})
+				return err
+			},
+		},
+		{
+			name: "action URLs",
+			send: func(client anthropic.Client) error {
+				_, err := client.UserProfiles.ActionURLs.New(ctx, "uprof_1", anthropic.UserProfileActionURLNewParams{
+					Action: anthropic.UserProfileActionUnionParam{OfEnrollEndUser: &anthropic.UserProfileEnrollEndUserActionParam{}},
+				})
+				return err
+			},
+		},
+		{
+			name: "beta create",
+			send: func(client anthropic.Client) error {
+				_, err := client.Beta.UserProfiles.New(ctx, anthropic.BetaUserProfileNewParams{})
+				return err
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			requests := 0
+			client := newUserProfileTestClient(t, func(http.ResponseWriter, *http.Request) { requests++ })
+
+			err := tt.send(client)
+			if err == nil || !strings.Contains(err.Error(), "does not serve the User Profiles API") {
+				t.Errorf("expected the User Profiles error, got %v", err)
+			}
+			if requests != 0 {
+				t.Errorf("expected no request to be sent, got %d", requests)
+			}
+		})
+	}
+}

@@ -330,7 +330,7 @@ func TestOpenTelemetryPlatformClientsHaveAScopeAndAURLOfTheirOwn(t *testing.T) {
 		},
 		"googlecloud": {
 			scope: "com.anthropic.sdk.go.googlecloud",
-			url:   "https://claude.googleapis.com/v1alpha/projects/project/locations/global/workspaces/wrkspc_1/invoke/v1/messages",
+			url:   "https://claude.googleapis.com/v1/projects/project/locations/global/workspaces/wrkspc_1/invoke/v1/messages",
 			send: func(t *testing.T, opts ...option.RequestOption) error {
 				client, err := googlecloud.NewClient(ctx, googlecloud.ClientConfig{
 					Project: "project", WorkspaceID: "wrkspc_1", TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: "token"}),

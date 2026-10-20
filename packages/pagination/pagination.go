@@ -3,6 +3,7 @@ package pagination
 import (
 	"iter"
 	"net/http"
+	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
@@ -489,6 +490,130 @@ func (r *BidirectionalPageCursorAutoPager[T]) Index() int {
 }
 
 func (r *BidirectionalPageCursorAutoPager[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for r.Next() {
+			if !yield(r.Current()) {
+				break
+			}
+		}
+	}
+}
+
+type ReportPageCursor[T any] struct {
+	Data            []T       `json:"data"`
+	NextPage        string    `json:"next_page" api:"nullable"`
+	HasMore         bool      `json:"has_more"`
+	DataRefreshedAt time.Time `json:"data_refreshed_at" api:"nullable" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Data            respjson.Field
+		NextPage        respjson.Field
+		HasMore         respjson.Field
+		DataRefreshedAt respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+	cfg *requestconfig.RequestConfig
+	res *http.Response
+}
+
+// Returns the unmodified JSON received from the API
+func (r ReportPageCursor[T]) RawJSON() string { return r.JSON.raw }
+func (r *ReportPageCursor[T]) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// GetNextPage returns the next page as defined by this pagination style. When
+// there is no next page, this function will return a 'nil' for the page value, but
+// will not return an error
+func (r *ReportPageCursor[T]) GetNextPage() (res *ReportPageCursor[T], err error) {
+	if r.JSON.HasMore.Valid() && r.HasMore == false {
+		return nil, nil
+	}
+	next := r.NextPage
+	if len(next) == 0 {
+		return nil, nil
+	}
+	cfg := r.cfg.Clone(r.cfg.Context)
+	err = cfg.Apply(option.WithQuery("page", next))
+	if err != nil {
+		return nil, err
+	}
+	var raw *http.Response
+	cfg.ResponseInto = &raw
+	cfg.ResponseBodyInto = &res
+	err = cfg.Execute()
+	if err != nil {
+		return nil, err
+	}
+	res.SetPageConfig(cfg, raw)
+	return res, nil
+}
+
+func (r *ReportPageCursor[T]) SetPageConfig(cfg *requestconfig.RequestConfig, res *http.Response) {
+	if r == nil {
+		r = &ReportPageCursor[T]{}
+	}
+	r.cfg = cfg
+	r.res = res
+}
+
+type ReportPageCursorAutoPager[T any] struct {
+	page *ReportPageCursor[T]
+	cur  T
+	idx  int
+	run  int
+	err  error
+	paramObj
+}
+
+func NewReportPageCursorAutoPager[T any](page *ReportPageCursor[T], err error) *ReportPageCursorAutoPager[T] {
+	return &ReportPageCursorAutoPager[T]{
+		page: page,
+		err:  err,
+	}
+}
+
+func (r *ReportPageCursorAutoPager[T]) Next() bool {
+	if r.page == nil {
+		return false
+	}
+	if r.idx >= len(r.page.Data) {
+		r.idx = 0
+		r.page, r.err = r.page.GetNextPage()
+		if r.err != nil || r.page == nil {
+			return false
+		}
+	}
+	// if the API returned empty data then keep iterating
+	// until we either get more data or there are no more pages
+	// to fetch
+	for len(r.page.Data) == 0 {
+		r.idx = 0
+		r.page, r.err = r.page.GetNextPage()
+		if r.err != nil || r.page == nil {
+			return false
+		}
+	}
+	r.cur = r.page.Data[r.idx]
+	r.run += 1
+	r.idx += 1
+	return true
+}
+
+func (r *ReportPageCursorAutoPager[T]) Current() T {
+	return r.cur
+}
+
+func (r *ReportPageCursorAutoPager[T]) Err() error {
+	return r.err
+}
+
+func (r *ReportPageCursorAutoPager[T]) Index() int {
+	return r.run
+}
+
+func (r *ReportPageCursorAutoPager[T]) All() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for r.Next() {
 			if !yield(r.Current()) {

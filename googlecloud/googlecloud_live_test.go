@@ -120,4 +120,52 @@ func TestLiveGoogleCloud(t *testing.T) {
 		}
 		t.Logf("error: status=%d %v", apierr.StatusCode, apierr)
 	})
+
+	t.Run("organization", func(t *testing.T) {
+		workspaceID := os.Getenv("ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID")
+		workspace, err := client.Organization.Workspaces.Get(ctx, workspaceID)
+		if err != nil {
+			t.Fatalf("Organization.Workspaces.Get failed: %v", err)
+		}
+		if workspace.ID != workspaceID {
+			t.Errorf("workspace ID = %q, want %q", workspace.ID, workspaceID)
+		}
+	})
+
+	t.Run("managed_agents", func(t *testing.T) {
+		agent, err := client.Beta.Agents.New(ctx, anthropic.BetaAgentNewParams{
+			Model: anthropic.BetaManagedAgentsModelConfigParams{ID: model},
+			Name:  "sdk-live-test",
+		})
+		if err != nil {
+			t.Fatalf("Beta.Agents.New failed: %v", err)
+		}
+		t.Cleanup(func() {
+			archived, err := client.Beta.Agents.Archive(ctx, agent.ID, anthropic.BetaAgentArchiveParams{})
+			if err != nil {
+				t.Fatalf("Beta.Agents.Archive failed: %v", err)
+			}
+			if archived.ArchivedAt.IsZero() {
+				t.Error("expected archived agent to have archived_at set")
+			}
+		})
+
+		retrieved, err := client.Beta.Agents.Get(ctx, agent.ID, anthropic.BetaAgentGetParams{})
+		if err != nil {
+			t.Fatalf("Beta.Agents.Get failed: %v", err)
+		}
+		if retrieved.ID != agent.ID {
+			t.Errorf("agent ID = %q, want %q", retrieved.ID, agent.ID)
+		}
+
+		page, err := client.Beta.Agents.List(ctx, anthropic.BetaAgentListParams{
+			Limit: anthropic.Int(1),
+		})
+		if err != nil {
+			t.Fatalf("Beta.Agents.List failed: %v", err)
+		}
+		if len(page.Data) == 0 {
+			t.Error("expected at least one agent")
+		}
+	})
 }

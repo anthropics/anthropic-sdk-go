@@ -581,9 +581,9 @@ type BetaMessageBatchNewParams struct {
 	// a Message.
 	Requests []BetaMessageBatchNewParamsRequest `json:"requests,omitzero" api:"required"`
 	// The user profile ID to attribute the requests in this batch to. Use when acting
-	// on behalf of a party other than your organization. Requires the `user-profiles`
-	// beta header. Applies to every request in the batch; an individual request whose
-	// `user_profile_id` body field conflicts with this header is errored.
+	// on behalf of a party other than your organization. Applies to every request in
+	// the batch; an individual request whose `user_profile_id` body field conflicts
+	// with this header is errored.
 	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`
 	// Optional header to select the Workspace for this request. The value is a
 	// Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).

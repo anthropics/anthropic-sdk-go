@@ -42,7 +42,7 @@ func NewBetaOrganizationAnalyticsUserCostReportService(opts ...option.RequestOpt
 // the bucketed `/v1/organizations/analytics/cost_report` endpoint. Available to
 // organizations on a Claude Enterprise plan. Requires an API key with the
 // `read:analytics` scope.
-func (r *BetaOrganizationAnalyticsUserCostReportService) List(ctx context.Context, query BetaOrganizationAnalyticsUserCostReportListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaAnalyticsCostUsersItem], err error) {
+func (r *BetaOrganizationAnalyticsUserCostReportService) List(ctx context.Context, query BetaOrganizationAnalyticsUserCostReportListParams, opts ...option.RequestOption) (res *pagination.ReportPageCursor[BetaAnalyticsCostUsersItem], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -68,8 +68,8 @@ func (r *BetaOrganizationAnalyticsUserCostReportService) List(ctx context.Contex
 // the bucketed `/v1/organizations/analytics/cost_report` endpoint. Available to
 // organizations on a Claude Enterprise plan. Requires an API key with the
 // `read:analytics` scope.
-func (r *BetaOrganizationAnalyticsUserCostReportService) ListAutoPaging(ctx context.Context, query BetaOrganizationAnalyticsUserCostReportListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaAnalyticsCostUsersItem] {
-	return pagination.NewPageCursorAutoPager(r.List(ctx, query, opts...))
+func (r *BetaOrganizationAnalyticsUserCostReportService) ListAutoPaging(ctx context.Context, query BetaOrganizationAnalyticsUserCostReportListParams, opts ...option.RequestOption) *pagination.ReportPageCursorAutoPager[BetaAnalyticsCostUsersItem] {
+	return pagination.NewReportPageCursorAutoPager(r.List(ctx, query, opts...))
 }
 
 type BetaOrganizationAnalyticsUserCostReportListParams struct {

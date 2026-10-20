@@ -534,7 +534,7 @@ func (cfg *RequestConfig) readsBody(res *http.Response) bool {
 //     that could not be read), once no retry is left: the error is returned;
 //   - a response that is not retried, with an error status: an APIError is returned;
 //   - a response that is not retried, for a raw or absent destination: the caller gets the
-//     response with its body unread;
+//     response with its body unread, or the body is closed if nothing takes the response;
 //   - a response that is not retried, for any other destination: the body is decoded into it.
 //
 // A response that is retried is closed unread. The body of a response that ends the call is
@@ -650,6 +650,10 @@ func (cfg *RequestConfig) send(ctx context.Context, call *tracing.APICall) (err 
 		return err
 	case res.StatusCode >= 400:
 		return cfg.apiError(res)
+	case cfg.ResponseBodyInto == nil && cfg.ResponseInto == nil:
+		// Nothing takes the response, so nothing else could close its body and free the connection.
+		closeBody(res)
+		return nil
 	case !cfg.readsBody(res):
 		// Whoever reads the body needs the cancel func from the context to observe request
 		// timeouts, so it goes into the body.

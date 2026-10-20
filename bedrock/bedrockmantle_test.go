@@ -3,16 +3,22 @@ package bedrock
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	awssdk "github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/tidwall/gjson"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
@@ -529,5 +535,310 @@ func TestMantleDoesNotLeakAnthropicAPIKey(t *testing.T) {
 	// Authorization header should be SigV4, not Bearer
 	if auth := captured.Headers.Get("Authorization"); !strings.HasPrefix(auth, "AWS4-HMAC-SHA256") {
 		t.Errorf("expected SigV4 Authorization header, got %q", auth)
+	}
+}
+
+// --- User profile ID tests ---
+
+type mantleWireRequest struct {
+	Path    string
+	Query   string
+	Headers http.Header
+	Body    []byte
+}
+
+// newMantleWireServer answers Messages requests and records each request as it
+// arrived, body included.
+func newMantleWireServer(t *testing.T) (*httptest.Server, *mantleWireRequest) {
+	t.Helper()
+	var wire mantleWireRequest
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Errorf("failed to read wire body: %v", err)
+		}
+		wire = mantleWireRequest{Path: r.URL.Path, Query: r.URL.RawQuery, Headers: r.Header.Clone(), Body: body}
+
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/count_tokens"):
+			w.Header().Set("Content-Type", "application/json")
+			io.WriteString(w, `{"input_tokens":1}`)
+		case strings.HasSuffix(r.URL.Path, "/batches"):
+			w.Header().Set("Content-Type", "application/json")
+			io.WriteString(w, `{"id":"msgbatch_test","type":"message_batch","processing_status":"in_progress"}`)
+		case gjson.GetBytes(body, "stream").Bool():
+			w.Header().Set("Content-Type", "text/event-stream")
+			io.WriteString(w, "event: message_stop\ndata: {\"type\":\"message_stop\"}\n\n")
+		default:
+			writeMessagesResponse(w)
+		}
+	}))
+	t.Cleanup(server.Close)
+	return server, &wire
+}
+
+func TestMantleUserProfileID(t *testing.T) {
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+	t.Setenv("ANTHROPIC_AWS_API_KEY", "")
+
+	messages := []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))}
+	betaMessages := []anthropic.BetaMessageParam{anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("hi"))}
+	const model = "claude-sonnet-4-6-20250514"
+
+	tests := []struct {
+		name       string
+		send       func(ctx context.Context, client *MantleClient) error
+		wantPath   string
+		wantQuery  string
+		wantBody   string // the body's user_profile_id; "" when the field must be absent
+		wantHeader string
+	}{
+		{
+			name: "messages",
+			send: func(ctx context.Context, client *MantleClient) error {
+				_, err := client.Messages.New(ctx, anthropic.MessageNewParams{
+					Model: model, MaxTokens: 1, Messages: messages, UserProfileID: anthropic.String("uprof_1"),
+				})
+				return err
+			},
+			wantPath: "/v1/messages",
+			wantBody: "uprof_1",
+		},
+		{
+			name: "beta messages",
+			send: func(ctx context.Context, client *MantleClient) error {
+				_, err := client.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
+					Model: model, MaxTokens: 1, Messages: betaMessages, UserProfileID: anthropic.String("uprof_1"),
+				})
+				return err
+			},
+			wantPath:  "/v1/messages",
+			wantQuery: "beta=true",
+			wantBody:  "uprof_1",
+		},
+		{
+			name: "streaming",
+			send: func(ctx context.Context, client *MantleClient) error {
+				stream := client.Messages.NewStreaming(ctx, anthropic.MessageNewParams{
+					Model: model, MaxTokens: 1, Messages: messages, UserProfileID: anthropic.String("uprof_1"),
+				})
+				for stream.Next() {
+				}
+				return stream.Err()
+			},
+			wantPath: "/v1/messages",
+			wantBody: "uprof_1",
+		},
+		{
+			name: "beta streaming",
+			send: func(ctx context.Context, client *MantleClient) error {
+				stream := client.Beta.Messages.NewStreaming(ctx, anthropic.BetaMessageNewParams{
+					Model: model, MaxTokens: 1, Messages: betaMessages, UserProfileID: anthropic.String("uprof_1"),
+				})
+				for stream.Next() {
+				}
+				return stream.Err()
+			},
+			wantPath:  "/v1/messages",
+			wantQuery: "beta=true",
+			wantBody:  "uprof_1",
+		},
+		{
+			name: "header set by the caller",
+			send: func(ctx context.Context, client *MantleClient) error {
+				_, err := client.Messages.New(ctx, anthropic.MessageNewParams{
+					Model: model, MaxTokens: 1, Messages: messages,
+				}, option.WithHeader("anthropic-user-profile-id", "uprof_1"))
+				return err
+			},
+			wantPath: "/v1/messages",
+			wantBody: "uprof_1",
+		},
+		{
+			name: "body value set by the caller wins",
+			send: func(ctx context.Context, client *MantleClient) error {
+				_, err := client.Messages.New(ctx, anthropic.MessageNewParams{
+					Model: model, MaxTokens: 1, Messages: messages, UserProfileID: anthropic.String("uprof_1"),
+				}, option.WithJSONSet("user_profile_id", "uprof_caller"))
+				return err
+			},
+			wantPath: "/v1/messages",
+			wantBody: "uprof_caller",
+		},
+		{
+			name: "no profile ID",
+			send: func(ctx context.Context, client *MantleClient) error {
+				_, err := client.Messages.New(ctx, anthropic.MessageNewParams{
+					Model: model, MaxTokens: 1, Messages: messages,
+				})
+				return err
+			},
+			wantPath: "/v1/messages",
+		},
+		{
+			name: "body that is not a JSON object",
+			send: func(ctx context.Context, client *MantleClient) error {
+				_, err := client.Messages.New(ctx, anthropic.MessageNewParams{
+					Model: model, MaxTokens: 1, Messages: messages, UserProfileID: anthropic.String("uprof_1"),
+				}, option.WithRequestBody("application/json", []byte(`["not an object"]`)))
+				return err
+			},
+			wantPath:   "/v1/messages",
+			wantHeader: "uprof_1",
+		},
+		{
+			name: "count tokens",
+			send: func(ctx context.Context, client *MantleClient) error {
+				_, err := client.Messages.CountTokens(ctx, anthropic.MessageCountTokensParams{
+					Model: model, Messages: messages, UserProfileID: anthropic.String("uprof_1"),
+				})
+				return err
+			},
+			wantPath: "/v1/messages/count_tokens",
+			wantBody: "uprof_1",
+		},
+		{
+			name: "beta count tokens",
+			send: func(ctx context.Context, client *MantleClient) error {
+				_, err := client.Beta.Messages.CountTokens(ctx, anthropic.BetaMessageCountTokensParams{
+					Model: model, Messages: betaMessages, UserProfileID: anthropic.String("uprof_1"),
+				})
+				return err
+			},
+			wantPath:  "/v1/messages/count_tokens",
+			wantQuery: "beta=true",
+			wantBody:  "uprof_1",
+		},
+		{
+			name: "batches",
+			send: func(ctx context.Context, client *MantleClient) error {
+				_, err := client.Messages.Batches.New(ctx, anthropic.MessageBatchNewParams{
+					Requests: []anthropic.MessageBatchNewParamsRequest{{
+						CustomID: "request-1",
+						Params:   anthropic.MessageBatchNewParamsRequestParams{Model: model, MaxTokens: 1, Messages: messages},
+					}},
+					UserProfileID: anthropic.String("uprof_1"),
+				})
+				return err
+			},
+			wantPath:   "/v1/messages/batches",
+			wantHeader: "uprof_1",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server, wire := newMantleWireServer(t)
+			client, err := NewMantleClient(context.Background(), MantleClientConfig{
+				APIKey:  "test-key",
+				BaseURL: server.URL,
+			})
+			if err != nil {
+				t.Fatalf("NewMantleClient failed: %v", err)
+			}
+
+			if err := test.send(context.Background(), client); err != nil {
+				t.Fatalf("request failed: %v", err)
+			}
+
+			if wire.Path != test.wantPath || wire.Query != test.wantQuery {
+				t.Errorf("request went to %s?%s, want %s?%s", wire.Path, wire.Query, test.wantPath, test.wantQuery)
+			}
+			if got := wire.Headers.Get("anthropic-user-profile-id"); got != test.wantHeader {
+				t.Errorf("anthropic-user-profile-id header is %q, want %q", got, test.wantHeader)
+			}
+			field := gjson.GetBytes(wire.Body, "user_profile_id")
+			if field.Exists() != (test.wantBody != "") || field.String() != test.wantBody {
+				t.Errorf("body user_profile_id is %s, want %q; body: %s", field.Raw, test.wantBody, wire.Body)
+			}
+			if got := wire.Headers.Get("Content-Length"); got != strconv.Itoa(len(wire.Body)) {
+				t.Errorf("Content-Length is %s for a body of %d bytes", got, len(wire.Body))
+			}
+		})
+	}
+}
+
+// TestMantleUserProfileIDIsSigned verifies that the SigV4 signature covers the
+// request as sent: the body that carries the profile ID, and no profile header.
+func TestMantleUserProfileIDIsSigned(t *testing.T) {
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+	t.Setenv("ANTHROPIC_AWS_API_KEY", "")
+	t.Setenv("ANTHROPIC_API_KEY", "")
+
+	server, wire := newMantleWireServer(t)
+	client, err := NewMantleClient(context.Background(), MantleClientConfig{
+		BaseURL:            server.URL,
+		AWSRegion:          "us-east-1",
+		AWSAccessKey:       "test-access-key",
+		AWSSecretAccessKey: "test-secret-key",
+	})
+	if err != nil {
+		t.Fatalf("NewMantleClient failed: %v", err)
+	}
+
+	_, err = client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:         "claude-sonnet-4-6-20250514",
+		MaxTokens:     1,
+		Messages:      []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))},
+		UserProfileID: anthropic.String("uprof_1"),
+	})
+	if err != nil {
+		t.Fatalf("request failed: %v", err)
+	}
+
+	if got := gjson.GetBytes(wire.Body, "user_profile_id").String(); got != "uprof_1" {
+		t.Errorf("body user_profile_id is %q, want %q; body: %s", got, "uprof_1", wire.Body)
+	}
+	if got := wire.Headers.Get("anthropic-user-profile-id"); got != "" {
+		t.Errorf("anthropic-user-profile-id header is %q, want none", got)
+	}
+
+	// Sign the request as it arrived, with the same key and time, and expect
+	// the Authorization header it came with.
+	auth := wire.Headers.Get("Authorization")
+	_, signedHeaders, found := strings.Cut(auth, "SignedHeaders=")
+	if !found {
+		t.Fatalf("expected a SigV4 Authorization header, got %q", auth)
+	}
+	signedHeaders, _, _ = strings.Cut(signedHeaders, ",")
+
+	resigned, err := http.NewRequest(http.MethodPost, server.URL+wire.Path, bytes.NewReader(wire.Body))
+	if err != nil {
+		t.Fatalf("failed to build request: %v", err)
+	}
+	for _, name := range strings.Split(signedHeaders, ";") {
+		if name != "host" && name != "content-length" {
+			resigned.Header[http.CanonicalHeaderKey(name)] = wire.Headers.Values(name)
+		}
+	}
+	signingTime, err := time.Parse("20060102T150405Z", wire.Headers.Get("X-Amz-Date"))
+	if err != nil {
+		t.Fatalf("failed to parse X-Amz-Date: %v", err)
+	}
+	creds, err := makeStaticAWSConfig("us-east-1").Credentials.Retrieve(context.Background())
+	if err != nil {
+		t.Fatalf("failed to retrieve credentials: %v", err)
+	}
+	hash := sha256.Sum256(wire.Body)
+	err = awsauth.SignHTTP(context.Background(), v4.NewSigner(), creds, resigned, hex.EncodeToString(hash[:]), mantleServiceName, "us-east-1", signingTime)
+	if err != nil {
+		t.Fatalf("failed to sign: %v", err)
+	}
+	if got := resigned.Header.Get("Authorization"); got != auth {
+		t.Errorf("signature does not cover the request as sent:\n sent: %s\n want: %s", auth, got)
+	}
+}
+
+// Mantle serves only the Messages API, so a user profiles service must not appear on either surface.
+func TestMantleClientExposesOnlyMessages(t *testing.T) {
+	for _, service := range []any{MantleClient{}, MantleBetaService{}} {
+		serviceType := reflect.TypeOf(service)
+		for i := range serviceType.NumField() {
+			switch name := serviceType.Field(i).Name; name {
+			case "Options", "Messages", "Beta":
+			default:
+				t.Errorf("%s has unexpected service %s", serviceType.Name(), name)
+			}
+		}
 	}
 }

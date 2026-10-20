@@ -1,8 +1,16 @@
 package bedrock
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"slices"
+	"strings"
+
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
@@ -84,6 +92,8 @@ type MantleBetaService struct {
 //  4. AWS_BEARER_TOKEN_BEDROCK env var, then ANTHROPIC_AWS_API_KEY (x-api-key header)
 //  5. Default AWS credential chain (SigV4)
 func NewMantleClient(ctx context.Context, cfg MantleClientConfig, opts ...option.RequestOption) (*MantleClient, error) {
+	opts = slices.Concat(opts, []option.RequestOption{option.WithMiddleware(mantleUserProfileMiddleware)})
+
 	// We intentionally do not call anthropic.DefaultClientOptions() here.
 	// The Mantle client resolves its own base URL, auth, and workspace ID — the
 	// base SDK defaults (ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL) do not apply.
@@ -102,6 +112,42 @@ func NewMantleClient(ctx context.Context, cfg MantleClientConfig, opts ...option
 			Messages: anthropic.NewBetaMessageService(opts...),
 		},
 	}, nil
+}
+
+// Mantle reads the user profile ID from the request body and does not pass the header through.
+func mantleUserProfileMiddleware(r *http.Request, next option.MiddlewareNext) (*http.Response, error) {
+	profileID := r.Header.Get("anthropic-user-profile-id")
+	path := strings.TrimSuffix(r.URL.Path, "/count_tokens")
+	if profileID == "" || r.Body == nil || r.Method != http.MethodPost || !strings.HasSuffix(path, "/v1/messages") {
+		return next(r)
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+	r.Body.Close()
+
+	if gjson.ValidBytes(body) && gjson.ParseBytes(body).IsObject() {
+		updated := body
+		if !gjson.GetBytes(body, "user_profile_id").Exists() {
+			updated, err = sjson.SetBytes(body, "user_profile_id", profileID)
+		}
+		if err == nil {
+			body = updated
+			r.Header.Del("anthropic-user-profile-id")
+		}
+	}
+
+	reader := bytes.NewReader(body)
+	r.Body = io.NopCloser(reader)
+	r.GetBody = func() (io.ReadCloser, error) {
+		_, err := reader.Seek(0, 0)
+		return io.NopCloser(reader), err
+	}
+	r.ContentLength = int64(len(body))
+
+	return next(r)
 }
 
 func mantleResolveParams() awsauth.ResolveParams {

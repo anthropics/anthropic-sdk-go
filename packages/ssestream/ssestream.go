@@ -240,33 +240,9 @@ func (s *Stream[T]) Next() bool {
 
 	for s.decoder.Next() {
 		switch s.decoder.Event().Type {
-		case "completion":
-			prev := s.cur
-			var zero T
-			s.cur = zero // decode in place; a fresh local would escape and allocate per event
-			s.err = json.Unmarshal(s.decoder.Event().Data, &s.cur)
-			if s.err != nil {
-				s.cur = prev
-				return false
-			}
-			if s.traced != nil {
-				s.traced.TraceDecoded(&s.cur)
-			}
-			return true
-		case "message_start", "message_delta", "message_stop", "content_block_start", "content_block_delta", "content_block_stop", "message", "user.message", "user.interrupt", "user.tool_confirmation", "user.custom_tool_result", "user.tool_result", "agent.message", "agent.thinking", "agent.tool_use", "agent.tool_result", "agent.mcp_tool_use", "agent.mcp_tool_result", "agent.custom_tool_use", "agent.thread_context_compacted", "session.status_running", "session.status_idle", "session.status_rescheduled", "session.status_terminated", "session.error", "session.deleted", "session.updated", "span.model_request_start", "span.model_request_end", "span.outcome_evaluation_start", "span.outcome_evaluation_ongoing", "span.outcome_evaluation_end", "user.define_outcome", "agent.thread_message_received", "agent.thread_message_sent", "agent.session_thread_message_received", "agent.session_thread_message_sent", "session.thread_created", "session.thread_status_created", "session.thread_status_running", "session.thread_status_idle", "session.thread_status_rescheduled", "session.thread_status_terminated", "event_start", "event_delta", "system.message", "workflow_run.created", "workflow_run.status_running", "workflow_run.status_idle", "workflow_run.status_ended", "workflow_run.error", "workflow_run.phase_started", "workflow_run.phase_ended":
-			prev := s.cur
-			var zero T
-			s.cur = zero // decode in place; a fresh local would escape and allocate per event
-			s.err = json.Unmarshal(s.decoder.Event().Data, &s.cur)
-			if s.err != nil {
-				s.cur = prev
-				return false
-			}
-			if s.traced != nil {
-				s.traced.TraceDecoded(&s.cur)
-			}
-			return true
 		case "ping":
+			continue
+		case "":
 			continue
 		case "error":
 			data := s.decoder.Event().Data
@@ -277,6 +253,23 @@ func (s *Stream[T]) Next() bool {
 			}
 			return false
 		}
+
+		if len(bytes.TrimSuffix(s.decoder.Event().Data, []byte("\n"))) == 0 {
+			continue
+		}
+
+		prev := s.cur
+		var zero T
+		s.cur = zero // decode in place; a fresh local would escape and allocate per event
+		s.err = json.Unmarshal(s.decoder.Event().Data, &s.cur)
+		if s.err != nil {
+			s.cur = prev
+			return false
+		}
+		if s.traced != nil {
+			s.traced.TraceDecoded(&s.cur)
+		}
+		return true
 	}
 
 	// decoder.Next() may be false because of an error

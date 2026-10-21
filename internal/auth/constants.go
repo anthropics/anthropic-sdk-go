@@ -3,7 +3,7 @@ package auth
 import (
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
 )
 
 // OAuth wire-contract constants live in the public config package so the

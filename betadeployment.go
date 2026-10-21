@@ -11,13 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaDeploymentService contains methods and other services that help with
@@ -263,8 +265,7 @@ func (r *BetaDeploymentService) Unpause(ctx context.Context, deploymentID string
 
 // The deployment's agent was archived.
 type BetaManagedAgentsAgentArchivedDeploymentPausedReasonError struct {
-	// Any of "agent_archived_error".
-	Type BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.AgentArchivedError `json:"type" default:"agent_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -280,12 +281,6 @@ func (r BetaManagedAgentsAgentArchivedDeploymentPausedReasonError) RawJSON() str
 func (r *BetaManagedAgentsAgentArchivedDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorTypeAgentArchivedError BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorType = "agent_archived_error"
-)
 
 // A deployment is a configured instance of an agent — it binds the agent to
 // everything needed to run it autonomously: an environment, credentials, initial
@@ -324,8 +319,7 @@ type BetaManagedAgentsDeployment struct {
 	//
 	// Any of "active", "paused".
 	Status BetaManagedAgentsDeploymentStatus `json:"status" api:"required"`
-	// Any of "deployment".
-	Type BetaManagedAgentsDeploymentType `json:"type" api:"required"`
+	Type   constant.Deployment               `json:"type" default:"deployment"`
 	// Time the deployment was last updated.
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// Vault IDs supplying stored credentials for sessions created from this
@@ -363,12 +357,6 @@ func (r BetaManagedAgentsDeployment) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsDeployment) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsDeploymentType string
-
-const (
-	BetaManagedAgentsDeploymentTypeDeployment BetaManagedAgentsDeploymentType = "deployment"
-)
 
 // BetaManagedAgentsDeploymentInitialEventUnion contains all possible properties
 // and values from [BetaManagedAgentsDeploymentUserMessageEvent],
@@ -492,13 +480,12 @@ func (r *BetaManagedAgentsDeploymentInitialEventUnionContent) UnmarshalJSON(data
 func BetaManagedAgentsDeploymentInitialEventParamsOfUserMessage(content []BetaManagedAgentsUserMessageEventParamsContentUnion) BetaManagedAgentsDeploymentInitialEventParamsUnion {
 	var userMessage BetaManagedAgentsUserMessageEventParams
 	userMessage.Content = content
-	userMessage.Type = BetaManagedAgentsUserMessageEventParamsTypeUserMessage
 	return BetaManagedAgentsDeploymentInitialEventParamsUnion{OfUserMessage: &userMessage}
 }
 
 func BetaManagedAgentsDeploymentInitialEventParamsOfUserDefineOutcome[
 	T BetaManagedAgentsFileRubricParams | BetaManagedAgentsTextRubricParams,
-](description string, rubric T, type_ BetaManagedAgentsUserDefineOutcomeEventParamsType) BetaManagedAgentsDeploymentInitialEventParamsUnion {
+](description string, rubric T) BetaManagedAgentsDeploymentInitialEventParamsUnion {
 	var userDefineOutcome BetaManagedAgentsUserDefineOutcomeEventParams
 	userDefineOutcome.Description = description
 	switch v := any(rubric).(type) {
@@ -507,14 +494,12 @@ func BetaManagedAgentsDeploymentInitialEventParamsOfUserDefineOutcome[
 	case BetaManagedAgentsTextRubricParams:
 		userDefineOutcome.Rubric.OfText = &v
 	}
-	userDefineOutcome.Type = type_
 	return BetaManagedAgentsDeploymentInitialEventParamsUnion{OfUserDefineOutcome: &userDefineOutcome}
 }
 
 func BetaManagedAgentsDeploymentInitialEventParamsOfSystemMessage(content []BetaManagedAgentsSystemContentBlockParam) BetaManagedAgentsDeploymentInitialEventParamsUnion {
 	var systemMessage BetaManagedAgentsSystemMessageEventParams
 	systemMessage.Content = content
-	systemMessage.Type = BetaManagedAgentsSystemMessageEventParamsTypeSystemMessage
 	return BetaManagedAgentsDeploymentInitialEventParamsUnion{OfSystemMessage: &systemMessage}
 }
 
@@ -573,11 +558,11 @@ func (u BetaManagedAgentsDeploymentInitialEventParamsUnion) GetMaxIterations() *
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsDeploymentInitialEventParamsUnion) GetType() *string {
 	if vt := u.OfUserMessage; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfUserDefineOutcome; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfSystemMessage; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -905,8 +890,7 @@ const (
 type BetaManagedAgentsDeploymentSystemMessageEvent struct {
 	// System content blocks to append. Text-only.
 	Content []BetaManagedAgentsSystemContentBlock `json:"content" api:"required"`
-	// Any of "system.message".
-	Type BetaManagedAgentsDeploymentSystemMessageEventType `json:"type" api:"required"`
+	Type    constant.SystemMessage                `json:"type" default:"system.message"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -922,20 +906,13 @@ func (r *BetaManagedAgentsDeploymentSystemMessageEvent) UnmarshalJSON(data []byt
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsDeploymentSystemMessageEventType string
-
-const (
-	BetaManagedAgentsDeploymentSystemMessageEventTypeSystemMessage BetaManagedAgentsDeploymentSystemMessageEventType = "system.message"
-)
-
 // An outcome the agent should work toward. The agent begins work on receipt.
 type BetaManagedAgentsDeploymentUserDefineOutcomeEvent struct {
 	// What the agent should produce. This is the task specification.
 	Description string `json:"description" api:"required"`
 	// How to grade the outcome. Text or file reference.
 	Rubric BetaManagedAgentsDeploymentUserDefineOutcomeEventRubricUnion `json:"rubric" api:"required"`
-	// Any of "user.define_outcome".
-	Type BetaManagedAgentsDeploymentUserDefineOutcomeEventType `json:"type" api:"required"`
+	Type   constant.UserDefineOutcome                                   `json:"type" default:"user.define_outcome"`
 	// Eval→revision cycles before giving up. Default 3, max 20.
 	MaxIterations int64 `json:"max_iterations" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -1028,18 +1005,11 @@ func (r *BetaManagedAgentsDeploymentUserDefineOutcomeEventRubricUnion) Unmarshal
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsDeploymentUserDefineOutcomeEventType string
-
-const (
-	BetaManagedAgentsDeploymentUserDefineOutcomeEventTypeUserDefineOutcome BetaManagedAgentsDeploymentUserDefineOutcomeEventType = "user.define_outcome"
-)
-
 // A user message sent to the session.
 type BetaManagedAgentsDeploymentUserMessageEvent struct {
 	// Array of content blocks for the user message.
 	Content []BetaManagedAgentsDeploymentUserMessageEventContentUnion `json:"content" api:"required"`
-	// Any of "user.message".
-	Type BetaManagedAgentsDeploymentUserMessageEventType `json:"type" api:"required"`
+	Type    constant.UserMessage                                      `json:"type" default:"user.message"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -1177,16 +1147,9 @@ func (r *BetaManagedAgentsDeploymentUserMessageEventContentUnionSource) Unmarsha
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsDeploymentUserMessageEventType string
-
-const (
-	BetaManagedAgentsDeploymentUserMessageEventTypeUserMessage BetaManagedAgentsDeploymentUserMessageEventType = "user.message"
-)
-
 // The deployment's environment was archived.
 type BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError struct {
-	// Any of "environment_archived_error".
-	Type BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.EnvironmentArchivedError `json:"type" default:"environment_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1203,16 +1166,9 @@ func (r *BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError) Unmars
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorTypeEnvironmentArchivedError BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorType = "environment_archived_error"
-)
-
 // The deployment's environment no longer exists.
 type BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError struct {
-	// Any of "environment_not_found_error".
-	Type BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.EnvironmentNotFoundError `json:"type" default:"environment_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1229,18 +1185,11 @@ func (r *BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError) Unmars
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorTypeEnvironmentNotFoundError BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorType = "environment_not_found_error"
-)
-
 // A scheduled fire recorded a failed run whose error auto-pauses the deployment.
 type BetaManagedAgentsErrorDeploymentPausedReason struct {
 	// The failed run's error.
 	Error BetaManagedAgentsDeploymentPausedReasonErrorUnion `json:"error" api:"required"`
-	// Any of "error".
-	Type BetaManagedAgentsErrorDeploymentPausedReasonType `json:"type" api:"required"`
+	Type  constant.Error                                    `json:"type" default:"error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -1256,16 +1205,9 @@ func (r *BetaManagedAgentsErrorDeploymentPausedReason) UnmarshalJSON(data []byte
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsErrorDeploymentPausedReasonType string
-
-const (
-	BetaManagedAgentsErrorDeploymentPausedReasonTypeError BetaManagedAgentsErrorDeploymentPausedReasonType = "error"
-)
-
 // A file resource referenced by the deployment no longer exists.
 type BetaManagedAgentsFileNotFoundDeploymentPausedReasonError struct {
-	// Any of "file_not_found_error".
-	Type BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.FileNotFoundError `json:"type" default:"file_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1280,18 +1222,11 @@ func (r *BetaManagedAgentsFileNotFoundDeploymentPausedReasonError) UnmarshalJSON
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorTypeFileNotFoundError BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorType = "file_not_found_error"
-)
-
 // A file mounted into each session's container.
 type BetaManagedAgentsFileResourceConfig struct {
 	// ID of a previously uploaded file.
-	FileID string `json:"file_id" api:"required"`
-	// Any of "file".
-	Type BetaManagedAgentsFileResourceConfigType `json:"type" api:"required"`
+	FileID string        `json:"file_id" api:"required"`
+	Type   constant.File `json:"type" default:"file"`
 	// Mount path in the container. Defaults to `/mnt/session/uploads/<file_id>`.
 	MountPath string `json:"mount_path" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -1310,17 +1245,10 @@ func (r *BetaManagedAgentsFileResourceConfig) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsFileResourceConfigType string
-
-const (
-	BetaManagedAgentsFileResourceConfigTypeFile BetaManagedAgentsFileResourceConfigType = "file"
-)
-
 // A GitHub repository mounted into each session's container. The authorization
 // token is write-only and never returned.
 type BetaManagedAgentsGitHubRepositoryResourceConfig struct {
-	// Any of "github_repository".
-	Type BetaManagedAgentsGitHubRepositoryResourceConfigType `json:"type" api:"required"`
+	Type constant.GitHubRepository `json:"type" default:"github_repository"`
 	// Github URL of the repository
 	URL string `json:"url" api:"required"`
 	// Branch or commit to check out. Defaults to the repository's default branch.
@@ -1343,12 +1271,6 @@ func (r BetaManagedAgentsGitHubRepositoryResourceConfig) RawJSON() string { retu
 func (r *BetaManagedAgentsGitHubRepositoryResourceConfig) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsGitHubRepositoryResourceConfigType string
-
-const (
-	BetaManagedAgentsGitHubRepositoryResourceConfigTypeGitHubRepository BetaManagedAgentsGitHubRepositoryResourceConfigType = "github_repository"
-)
 
 // BetaManagedAgentsGitHubRepositoryResourceConfigCheckoutUnion contains all
 // possible properties and values from [BetaManagedAgentsBranchCheckout],
@@ -1425,8 +1347,7 @@ func (r *BetaManagedAgentsGitHubRepositoryResourceConfigCheckoutUnion) Unmarshal
 
 // The caller invoked the pause endpoint on the deployment.
 type BetaManagedAgentsManualDeploymentPausedReason struct {
-	// Any of "manual".
-	Type BetaManagedAgentsManualDeploymentPausedReasonType `json:"type" api:"required"`
+	Type constant.Manual `json:"type" default:"manual"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1441,17 +1362,10 @@ func (r *BetaManagedAgentsManualDeploymentPausedReason) UnmarshalJSON(data []byt
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsManualDeploymentPausedReasonType string
-
-const (
-	BetaManagedAgentsManualDeploymentPausedReasonTypeManual BetaManagedAgentsManualDeploymentPausedReasonType = "manual"
-)
-
 // An MCP server host used by the deployment's agent is blocked by the
 // environment's network policy.
 type BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError struct {
-	// Any of "mcp_egress_blocked_error".
-	Type BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.MCPEgressBlockedError `json:"type" default:"mcp_egress_blocked_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1468,16 +1382,9 @@ func (r *BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError) Unmarshal
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorTypeMCPEgressBlockedError BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorType = "mcp_egress_blocked_error"
-)
-
 // A memory store referenced by the deployment is archived.
 type BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError struct {
-	// Any of "memory_store_archived_error".
-	Type BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.MemoryStoreArchivedError `json:"type" default:"memory_store_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1494,19 +1401,12 @@ func (r *BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError) Unmars
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorTypeMemoryStoreArchivedError BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorType = "memory_store_archived_error"
-)
-
 // A memory store attached to each session created from this deployment.
 type BetaManagedAgentsMemoryStoreResourceConfig struct {
 	// The memory store ID (memstore\_...). Must belong to the caller's organization
 	// and workspace.
-	MemoryStoreID string `json:"memory_store_id" api:"required"`
-	// Any of "memory_store".
-	Type BetaManagedAgentsMemoryStoreResourceConfigType `json:"type" api:"required"`
+	MemoryStoreID string               `json:"memory_store_id" api:"required"`
+	Type          constant.MemoryStore `json:"type" default:"memory_store"`
 	// Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts
 	// the store as a read-only filesystem.
 	//
@@ -1532,12 +1432,6 @@ func (r *BetaManagedAgentsMemoryStoreResourceConfig) UnmarshalJSON(data []byte) 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsMemoryStoreResourceConfigType string
-
-const (
-	BetaManagedAgentsMemoryStoreResourceConfigTypeMemoryStore BetaManagedAgentsMemoryStoreResourceConfigType = "memory_store"
-)
-
 // Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts
 // the store as a read-only filesystem.
 type BetaManagedAgentsMemoryStoreResourceConfigAccess string
@@ -1549,8 +1443,7 @@ const (
 
 // The deployment's organization is disabled.
 type BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError struct {
-	// Any of "organization_disabled_error".
-	Type BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.OrganizationDisabledError `json:"type" default:"organization_disabled_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1567,12 +1460,6 @@ func (r *BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError) Unmar
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorTypeOrganizationDisabledError BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorType = "organization_disabled_error"
-)
-
 // A recurring schedule with computed runtime timestamps. Discriminated union —
 // only cron is supported currently.
 type BetaManagedAgentsSchedule struct {
@@ -1583,9 +1470,8 @@ type BetaManagedAgentsSchedule struct {
 	// (@daily).
 	Expression string `json:"expression" api:"required"`
 	// IANA timezone identifier (e.g., "America/Los_Angeles", "UTC").
-	Timezone string `json:"timezone" api:"required"`
-	// Any of "cron".
-	Type BetaManagedAgentsScheduleType `json:"type" api:"required"`
+	Timezone string        `json:"timezone" api:"required"`
+	Type     constant.Cron `json:"type" default:"cron"`
 	// Time the most recent scheduled run actually started. Null until one completes;
 	// preserved after the deployment is archived. Manual runs do not update this.
 	LastRunAt time.Time `json:"last_run_at" api:"nullable" format:"date-time"`
@@ -1613,12 +1499,6 @@ func (r *BetaManagedAgentsSchedule) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsScheduleType string
-
-const (
-	BetaManagedAgentsScheduleTypeCron BetaManagedAgentsScheduleType = "cron"
-)
-
 // A recurring schedule. Discriminated union — only cron is supported currently.
 //
 // The properties Expression, Timezone, Type are required.
@@ -1632,8 +1512,8 @@ type BetaManagedAgentsScheduleParams struct {
 	// Required. IANA timezone identifier (e.g., "America/Los_Angeles", "UTC").
 	// Validated against the IANA timezone database.
 	Timezone string `json:"timezone" api:"required"`
-	// Any of "cron".
-	Type BetaManagedAgentsScheduleParamsType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "cron".
+	Type constant.Cron `json:"type" default:"cron"`
 	paramObj
 }
 
@@ -1645,17 +1525,10 @@ func (r *BetaManagedAgentsScheduleParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsScheduleParamsType string
-
-const (
-	BetaManagedAgentsScheduleParamsTypeCron BetaManagedAgentsScheduleParamsType = "cron"
-)
-
 // The deployment configures resources, but its environment is self-hosted and
 // cannot mount them.
 type BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError struct {
-	// Any of "self_hosted_resources_unsupported_error".
-	Type BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.SelfHostedResourcesUnsupportedError `json:"type" default:"self_hosted_resources_unsupported_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1671,12 +1544,6 @@ func (r BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErr
 func (r *BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorTypeSelfHostedResourcesUnsupportedError BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorType = "self_hosted_resources_unsupported_error"
-)
 
 // BetaManagedAgentsSessionResourceConfigUnion contains all possible properties and
 // values from [BetaManagedAgentsGitHubRepositoryResourceConfig],
@@ -1773,8 +1640,7 @@ func (r *BetaManagedAgentsSessionResourceConfigUnion) UnmarshalJSON(data []byte)
 
 // A referenced resource no longer exists and its kind was not reported.
 type BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError struct {
-	// Any of "session_resource_not_found_error".
-	Type BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.SessionResourceNotFoundError `json:"type" default:"session_resource_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1791,16 +1657,9 @@ func (r *BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError) Un
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorTypeSessionResourceNotFoundError BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorType = "session_resource_not_found_error"
-)
-
 // A skill referenced by the deployment's agent no longer exists.
 type BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError struct {
-	// Any of "skill_not_found_error".
-	Type BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.SkillNotFoundError `json:"type" default:"skill_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1817,17 +1676,10 @@ func (r *BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError) UnmarshalJSO
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorTypeSkillNotFoundError BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorType = "skill_not_found_error"
-)
-
 // An unrecognized error auto-paused the deployment. A fallback variant; matches a
 // run whose `error.type` is `unknown_error`.
 type BetaManagedAgentsUnknownDeploymentPausedReasonError struct {
-	// Any of "unknown_error".
-	Type BetaManagedAgentsUnknownDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.UnknownError `json:"type" default:"unknown_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1842,16 +1694,9 @@ func (r *BetaManagedAgentsUnknownDeploymentPausedReasonError) UnmarshalJSON(data
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsUnknownDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsUnknownDeploymentPausedReasonErrorTypeUnknownError BetaManagedAgentsUnknownDeploymentPausedReasonErrorType = "unknown_error"
-)
-
 // A vault referenced by the deployment is archived.
 type BetaManagedAgentsVaultArchivedDeploymentPausedReasonError struct {
-	// Any of "vault_archived_error".
-	Type BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.VaultArchivedError `json:"type" default:"vault_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1868,16 +1713,9 @@ func (r *BetaManagedAgentsVaultArchivedDeploymentPausedReasonError) UnmarshalJSO
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorTypeVaultArchivedError BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorType = "vault_archived_error"
-)
-
 // A vault referenced by the deployment no longer exists.
 type BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError struct {
-	// Any of "vault_not_found_error".
-	Type BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.VaultNotFoundError `json:"type" default:"vault_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1894,16 +1732,9 @@ func (r *BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError) UnmarshalJSO
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorTypeVaultNotFoundError BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorType = "vault_not_found_error"
-)
-
 // The deployment's workspace was archived.
 type BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError struct {
-	// Any of "workspace_archived_error".
-	Type BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorType `json:"type" api:"required"`
+	Type constant.WorkspaceArchivedError `json:"type" default:"workspace_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1919,12 +1750,6 @@ func (r BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError) RawJSON()
 func (r *BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorType string
-
-const (
-	BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorTypeWorkspaceArchivedError BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorType = "workspace_archived_error"
-)
 
 type BetaDeploymentNewParams struct {
 	// Agent to deploy. Accepts the `agent` ID string, which pins the latest version,
@@ -2092,11 +1917,11 @@ func (u BetaDeploymentNewParamsResourceUnion) GetInstructions() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaDeploymentNewParamsResourceUnion) GetType() *string {
 	if vt := u.OfGitHubRepository; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfFile; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfMemoryStore; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -2300,11 +2125,11 @@ func (u BetaDeploymentUpdateParamsResourceUnion) GetInstructions() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaDeploymentUpdateParamsResourceUnion) GetType() *string {
 	if vt := u.OfGitHubRepository; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfFile; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfMemoryStore; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

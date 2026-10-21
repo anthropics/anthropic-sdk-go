@@ -11,15 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaAgentService contains methods and other services that help with interacting
@@ -188,9 +188,8 @@ func (r *BetaAgentService) Archive(ctx context.Context, agentID string, body Bet
 // mid-turn.
 type BetaManagedAgentsAdvisor struct {
 	// The advisor model id.
-	Model string `json:"model" api:"required"`
-	// Any of "advisor".
-	Type BetaManagedAgentsAdvisorType `json:"type" api:"required"`
+	Model string           `json:"model" api:"required"`
+	Type  constant.Advisor `json:"type" default:"advisor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Model       respjson.Field
@@ -205,12 +204,6 @@ func (r BetaManagedAgentsAdvisor) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsAdvisor) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsAdvisorType string
-
-const (
-	BetaManagedAgentsAdvisorTypeAdvisor BetaManagedAgentsAdvisorType = "advisor"
-)
 
 // A Managed Agents `agent`.
 type BetaManagedAgentsAgent struct {
@@ -233,8 +226,7 @@ type BetaManagedAgentsAgent struct {
 	Skills     []BetaManagedAgentsAgentSkillUnion `json:"skills" api:"required"`
 	System     string                             `json:"system" api:"required"`
 	Tools      []BetaManagedAgentsAgentToolUnion  `json:"tools" api:"required"`
-	// Any of "agent".
-	Type BetaManagedAgentsAgentType `json:"type" api:"required"`
+	Type       constant.Agent                     `json:"type" default:"agent"`
 	// A timestamp in RFC 3339 format
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// The agent's current version. Starts at 1 and increments when the agent is
@@ -494,18 +486,11 @@ func (r *BetaManagedAgentsAgentToolUnionDefaultConfigPermissionPolicy) Unmarshal
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsAgentType string
-
-const (
-	BetaManagedAgentsAgentTypeAgent BetaManagedAgentsAgentType = "agent"
-)
-
 // A resolved agent reference with a concrete version.
 type BetaManagedAgentsAgentReference struct {
-	ID string `json:"id" api:"required"`
-	// Any of "agent".
-	Type    BetaManagedAgentsAgentReferenceType `json:"type" api:"required"`
-	Version int64                               `json:"version" api:"required"`
+	ID      string         `json:"id" api:"required"`
+	Type    constant.Agent `json:"type" default:"agent"`
+	Version int64          `json:"version" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -521,12 +506,6 @@ func (r BetaManagedAgentsAgentReference) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsAgentReference) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsAgentReferenceType string
-
-const (
-	BetaManagedAgentsAgentReferenceTypeAgent BetaManagedAgentsAgentReferenceType = "agent"
-)
 
 // BetaManagedAgentsAgentToolConfigUnion contains all possible properties and
 // values from [BetaManagedAgentsBashToolConfig],
@@ -1080,9 +1059,9 @@ func (u *BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion) 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion) GetType() *string {
 	if vt := u.OfAlwaysAllow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
 		return paramutil.AddrOrDefault(vt.Type)
 	}
@@ -1102,8 +1081,7 @@ type BetaManagedAgentsAgentToolset20260401 struct {
 	Configs []BetaManagedAgentsAgentToolConfigUnion `json:"configs" api:"required"`
 	// Resolved default configuration for agent tools.
 	DefaultConfig BetaManagedAgentsAgentToolsetDefaultConfig `json:"default_config" api:"required"`
-	// Any of "agent_toolset_20260401".
-	Type BetaManagedAgentsAgentToolset20260401Type `json:"type" api:"required"`
+	Type          constant.AgentToolset20260401              `json:"type" default:"agent_toolset_20260401"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Configs       respjson.Field
@@ -1119,12 +1097,6 @@ func (r BetaManagedAgentsAgentToolset20260401) RawJSON() string { return r.JSON.
 func (r *BetaManagedAgentsAgentToolset20260401) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsAgentToolset20260401Type string
-
-const (
-	BetaManagedAgentsAgentToolset20260401TypeAgentToolset20260401 BetaManagedAgentsAgentToolset20260401Type = "agent_toolset_20260401"
-)
 
 // Input payload for the `bash` tool of the `agent_toolset_20260401` toolset. All
 // fields are optional; a normal invocation supplies `command`, while
@@ -1235,12 +1207,13 @@ func (r *BetaManagedAgentsAgentToolset20260401GrepInput) UnmarshalJSON(data []by
 //
 // The property Type is required.
 type BetaManagedAgentsAgentToolset20260401Params struct {
-	// Any of "agent_toolset_20260401".
-	Type BetaManagedAgentsAgentToolset20260401ParamsType `json:"type,omitzero" api:"required"`
 	// Per-tool configuration overrides.
 	Configs []BetaManagedAgentsAgentToolConfigParamsUnion `json:"configs,omitzero"`
 	// Default configuration applied to all tools in this set.
 	DefaultConfig BetaManagedAgentsAgentToolsetDefaultConfigParams `json:"default_config,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "agent_toolset_20260401".
+	Type constant.AgentToolset20260401 `json:"type" default:"agent_toolset_20260401"`
 	paramObj
 }
 
@@ -1251,12 +1224,6 @@ func (r BetaManagedAgentsAgentToolset20260401Params) MarshalJSON() (data []byte,
 func (r *BetaManagedAgentsAgentToolset20260401Params) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsAgentToolset20260401ParamsType string
-
-const (
-	BetaManagedAgentsAgentToolset20260401ParamsTypeAgentToolset20260401 BetaManagedAgentsAgentToolset20260401ParamsType = "agent_toolset_20260401"
-)
 
 // Input payload for the `read` tool. Reads file contents relative to the runner's
 // working directory (or absolute when the runner permits).
@@ -1305,8 +1272,7 @@ func (r *BetaManagedAgentsAgentToolset20260401WriteInput) UnmarshalJSON(data []b
 
 // Tool calls are automatically approved without user confirmation.
 type BetaManagedAgentsAlwaysAllowPolicy struct {
-	// Any of "always_allow".
-	Type BetaManagedAgentsAlwaysAllowPolicyType `json:"type" api:"required"`
+	Type constant.AlwaysAllow `json:"type" default:"always_allow"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1331,18 +1297,18 @@ func (r BetaManagedAgentsAlwaysAllowPolicy) ToParam() BetaManagedAgentsAlwaysAll
 	return param.Override[BetaManagedAgentsAlwaysAllowPolicyParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsAlwaysAllowPolicyType string
-
-const (
-	BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow BetaManagedAgentsAlwaysAllowPolicyType = "always_allow"
-)
+func NewBetaManagedAgentsAlwaysAllowPolicyParam() BetaManagedAgentsAlwaysAllowPolicyParam {
+	return BetaManagedAgentsAlwaysAllowPolicyParam{
+		Type: "always_allow",
+	}
+}
 
 // Tool calls are automatically approved without user confirmation.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsAlwaysAllowPolicyParam].
 type BetaManagedAgentsAlwaysAllowPolicyParam struct {
-	// Any of "always_allow".
-	Type BetaManagedAgentsAlwaysAllowPolicyType `json:"type,omitzero" api:"required"`
+	Type constant.AlwaysAllow `json:"type" default:"always_allow"`
 	paramObj
 }
 
@@ -1356,8 +1322,7 @@ func (r *BetaManagedAgentsAlwaysAllowPolicyParam) UnmarshalJSON(data []byte) err
 
 // Tool calls require user confirmation before execution.
 type BetaManagedAgentsAlwaysAskPolicy struct {
-	// Any of "always_ask".
-	Type BetaManagedAgentsAlwaysAskPolicyType `json:"type" api:"required"`
+	Type constant.AlwaysAsk `json:"type" default:"always_ask"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1382,18 +1347,18 @@ func (r BetaManagedAgentsAlwaysAskPolicy) ToParam() BetaManagedAgentsAlwaysAskPo
 	return param.Override[BetaManagedAgentsAlwaysAskPolicyParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsAlwaysAskPolicyType string
-
-const (
-	BetaManagedAgentsAlwaysAskPolicyTypeAlwaysAsk BetaManagedAgentsAlwaysAskPolicyType = "always_ask"
-)
+func NewBetaManagedAgentsAlwaysAskPolicyParam() BetaManagedAgentsAlwaysAskPolicyParam {
+	return BetaManagedAgentsAlwaysAskPolicyParam{
+		Type: "always_ask",
+	}
+}
 
 // Tool calls require user confirmation before execution.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsAlwaysAskPolicyParam].
 type BetaManagedAgentsAlwaysAskPolicyParam struct {
-	// Any of "always_ask".
-	Type BetaManagedAgentsAlwaysAskPolicyType `json:"type,omitzero" api:"required"`
+	Type constant.AlwaysAsk `json:"type" default:"always_ask"`
 	paramObj
 }
 
@@ -1407,10 +1372,9 @@ func (r *BetaManagedAgentsAlwaysAskPolicyParam) UnmarshalJSON(data []byte) error
 
 // A resolved Anthropic-managed skill.
 type BetaManagedAgentsAnthropicSkill struct {
-	SkillID string `json:"skill_id" api:"required"`
-	// Any of "anthropic".
-	Type    BetaManagedAgentsAnthropicSkillType `json:"type" api:"required"`
-	Version string                              `json:"version" api:"required"`
+	SkillID string             `json:"skill_id" api:"required"`
+	Type    constant.Anthropic `json:"type" default:"anthropic"`
+	Version string             `json:"version" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		SkillID     respjson.Field
@@ -1427,22 +1391,16 @@ func (r *BetaManagedAgentsAnthropicSkill) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsAnthropicSkillType string
-
-const (
-	BetaManagedAgentsAnthropicSkillTypeAnthropic BetaManagedAgentsAnthropicSkillType = "anthropic"
-)
-
 // An Anthropic-managed skill.
 //
 // The properties SkillID, Type are required.
 type BetaManagedAgentsAnthropicSkillParams struct {
 	// Identifier of the Anthropic skill (e.g., "xlsx").
 	SkillID string `json:"skill_id" api:"required"`
-	// Any of "anthropic".
-	Type BetaManagedAgentsAnthropicSkillParamsType `json:"type,omitzero" api:"required"`
 	// Version to pin. Defaults to latest if omitted.
 	Version param.Opt[string] `json:"version,omitzero"`
+	// This field can be elided, and will marshal its zero value as "anthropic".
+	Type constant.Anthropic `json:"type" default:"anthropic"`
 	paramObj
 }
 
@@ -1453,12 +1411,6 @@ func (r BetaManagedAgentsAnthropicSkillParams) MarshalJSON() (data []byte, err e
 func (r *BetaManagedAgentsAnthropicSkillParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsAnthropicSkillParamsType string
-
-const (
-	BetaManagedAgentsAnthropicSkillParamsTypeAnthropic BetaManagedAgentsAnthropicSkillParamsType = "anthropic"
-)
 
 // The server decides each tool call individually: it judges, from the tool, its
 // input, and the session content so far, whether the call is safe to execute or
@@ -1711,9 +1663,9 @@ func (u *BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion) asAny() any
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion) GetType() *string {
 	if vt := u.OfAlwaysAllow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
 		return paramutil.AddrOrDefault(vt.Type)
 	}
@@ -1737,10 +1689,9 @@ const (
 
 // A resolved user-created custom skill.
 type BetaManagedAgentsCustomSkill struct {
-	SkillID string `json:"skill_id" api:"required"`
-	// Any of "custom".
-	Type    BetaManagedAgentsCustomSkillType `json:"type" api:"required"`
-	Version string                           `json:"version" api:"required"`
+	SkillID string          `json:"skill_id" api:"required"`
+	Type    constant.Custom `json:"type" default:"custom"`
+	Version string          `json:"version" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		SkillID     respjson.Field
@@ -1757,22 +1708,16 @@ func (r *BetaManagedAgentsCustomSkill) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsCustomSkillType string
-
-const (
-	BetaManagedAgentsCustomSkillTypeCustom BetaManagedAgentsCustomSkillType = "custom"
-)
-
 // A user-created custom skill.
 //
 // The properties SkillID, Type are required.
 type BetaManagedAgentsCustomSkillParams struct {
 	// Tagged ID of the custom skill (e.g., "skill_01XJ5...").
 	SkillID string `json:"skill_id" api:"required"`
-	// Any of "custom".
-	Type BetaManagedAgentsCustomSkillParamsType `json:"type,omitzero" api:"required"`
 	// Version to pin. Defaults to latest if omitted.
 	Version param.Opt[string] `json:"version,omitzero"`
+	// This field can be elided, and will marshal its zero value as "custom".
+	Type constant.Custom `json:"type" default:"custom"`
 	paramObj
 }
 
@@ -1784,20 +1729,13 @@ func (r *BetaManagedAgentsCustomSkillParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsCustomSkillParamsType string
-
-const (
-	BetaManagedAgentsCustomSkillParamsTypeCustom BetaManagedAgentsCustomSkillParamsType = "custom"
-)
-
 // A custom tool as returned in API responses.
 type BetaManagedAgentsCustomTool struct {
 	Description string `json:"description" api:"required"`
 	// JSON Schema for custom tool input parameters.
 	InputSchema BetaManagedAgentsCustomToolInputSchema `json:"input_schema" api:"required"`
 	Name        string                                 `json:"name" api:"required"`
-	// Any of "custom".
-	Type BetaManagedAgentsCustomToolType `json:"type" api:"required"`
+	Type        constant.Custom                        `json:"type" default:"custom"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Description respjson.Field
@@ -1814,12 +1752,6 @@ func (r BetaManagedAgentsCustomTool) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsCustomTool) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsCustomToolType string
-
-const (
-	BetaManagedAgentsCustomToolTypeCustom BetaManagedAgentsCustomToolType = "custom"
-)
 
 // JSON Schema for custom tool input parameters.
 type BetaManagedAgentsCustomToolInputSchema struct {
@@ -1888,8 +1820,8 @@ type BetaManagedAgentsCustomToolParams struct {
 	// Unique name for the tool. 1-128 characters; letters, digits, underscores, and
 	// hyphens.
 	Name string `json:"name" api:"required"`
-	// Any of "custom".
-	Type BetaManagedAgentsCustomToolParamsType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "custom".
+	Type constant.Custom `json:"type" default:"custom"`
 	paramObj
 }
 
@@ -1900,12 +1832,6 @@ func (r BetaManagedAgentsCustomToolParams) MarshalJSON() (data []byte, err error
 func (r *BetaManagedAgentsCustomToolParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsCustomToolParamsType string
-
-const (
-	BetaManagedAgentsCustomToolParamsTypeCustom BetaManagedAgentsCustomToolParamsType = "custom"
-)
 
 // Configuration for the edit tool.
 type BetaManagedAgentsEditToolConfig struct {
@@ -2062,9 +1988,9 @@ func (u *BetaManagedAgentsEditToolConfigParamsPermissionPolicyUnion) asAny() any
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsEditToolConfigParamsPermissionPolicyUnion) GetType() *string {
 	if vt := u.OfAlwaysAllow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
 		return paramutil.AddrOrDefault(vt.Type)
 	}
@@ -2088,8 +2014,7 @@ const (
 
 // High effort. Favors reasoning depth.
 type BetaManagedAgentsEffortHigh struct {
-	// Any of "high".
-	Type BetaManagedAgentsEffortHighType `json:"type" api:"required"`
+	Type constant.High `json:"type" default:"high"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -2114,18 +2039,18 @@ func (r BetaManagedAgentsEffortHigh) ToParam() BetaManagedAgentsEffortHighParam 
 	return param.Override[BetaManagedAgentsEffortHighParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsEffortHighType string
-
-const (
-	BetaManagedAgentsEffortHighTypeHigh BetaManagedAgentsEffortHighType = "high"
-)
+func NewBetaManagedAgentsEffortHighParam() BetaManagedAgentsEffortHighParam {
+	return BetaManagedAgentsEffortHighParam{
+		Type: "high",
+	}
+}
 
 // High effort. Favors reasoning depth.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsEffortHighParam].
 type BetaManagedAgentsEffortHighParam struct {
-	// Any of "high".
-	Type BetaManagedAgentsEffortHighType `json:"type,omitzero" api:"required"`
+	Type constant.High `json:"type" default:"high"`
 	paramObj
 }
 
@@ -2139,8 +2064,7 @@ func (r *BetaManagedAgentsEffortHighParam) UnmarshalJSON(data []byte) error {
 
 // Low effort. Favors latency over reasoning depth.
 type BetaManagedAgentsEffortLow struct {
-	// Any of "low".
-	Type BetaManagedAgentsEffortLowType `json:"type" api:"required"`
+	Type constant.Low `json:"type" default:"low"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -2165,18 +2089,18 @@ func (r BetaManagedAgentsEffortLow) ToParam() BetaManagedAgentsEffortLowParam {
 	return param.Override[BetaManagedAgentsEffortLowParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsEffortLowType string
-
-const (
-	BetaManagedAgentsEffortLowTypeLow BetaManagedAgentsEffortLowType = "low"
-)
+func NewBetaManagedAgentsEffortLowParam() BetaManagedAgentsEffortLowParam {
+	return BetaManagedAgentsEffortLowParam{
+		Type: "low",
+	}
+}
 
 // Low effort. Favors latency over reasoning depth.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsEffortLowParam].
 type BetaManagedAgentsEffortLowParam struct {
-	// Any of "low".
-	Type BetaManagedAgentsEffortLowType `json:"type,omitzero" api:"required"`
+	Type constant.Low `json:"type" default:"low"`
 	paramObj
 }
 
@@ -2190,8 +2114,7 @@ func (r *BetaManagedAgentsEffortLowParam) UnmarshalJSON(data []byte) error {
 
 // Maximum effort. Favors reasoning depth over latency.
 type BetaManagedAgentsEffortMax struct {
-	// Any of "max".
-	Type BetaManagedAgentsEffortMaxType `json:"type" api:"required"`
+	Type constant.Max `json:"type" default:"max"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -2216,18 +2139,18 @@ func (r BetaManagedAgentsEffortMax) ToParam() BetaManagedAgentsEffortMaxParam {
 	return param.Override[BetaManagedAgentsEffortMaxParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsEffortMaxType string
-
-const (
-	BetaManagedAgentsEffortMaxTypeMax BetaManagedAgentsEffortMaxType = "max"
-)
+func NewBetaManagedAgentsEffortMaxParam() BetaManagedAgentsEffortMaxParam {
+	return BetaManagedAgentsEffortMaxParam{
+		Type: "max",
+	}
+}
 
 // Maximum effort. Favors reasoning depth over latency.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsEffortMaxParam].
 type BetaManagedAgentsEffortMaxParam struct {
-	// Any of "max".
-	Type BetaManagedAgentsEffortMaxType `json:"type,omitzero" api:"required"`
+	Type constant.Max `json:"type" default:"max"`
 	paramObj
 }
 
@@ -2241,8 +2164,7 @@ func (r *BetaManagedAgentsEffortMaxParam) UnmarshalJSON(data []byte) error {
 
 // Medium effort. Balances latency and reasoning depth.
 type BetaManagedAgentsEffortMedium struct {
-	// Any of "medium".
-	Type BetaManagedAgentsEffortMediumType `json:"type" api:"required"`
+	Type constant.Medium `json:"type" default:"medium"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -2267,18 +2189,18 @@ func (r BetaManagedAgentsEffortMedium) ToParam() BetaManagedAgentsEffortMediumPa
 	return param.Override[BetaManagedAgentsEffortMediumParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsEffortMediumType string
-
-const (
-	BetaManagedAgentsEffortMediumTypeMedium BetaManagedAgentsEffortMediumType = "medium"
-)
+func NewBetaManagedAgentsEffortMediumParam() BetaManagedAgentsEffortMediumParam {
+	return BetaManagedAgentsEffortMediumParam{
+		Type: "medium",
+	}
+}
 
 // Medium effort. Balances latency and reasoning depth.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsEffortMediumParam].
 type BetaManagedAgentsEffortMediumParam struct {
-	// Any of "medium".
-	Type BetaManagedAgentsEffortMediumType `json:"type,omitzero" api:"required"`
+	Type constant.Medium `json:"type" default:"medium"`
 	paramObj
 }
 
@@ -2292,8 +2214,7 @@ func (r *BetaManagedAgentsEffortMediumParam) UnmarshalJSON(data []byte) error {
 
 // Extra-high effort. Not all models accept this level.
 type BetaManagedAgentsEffortXhigh struct {
-	// Any of "xhigh".
-	Type BetaManagedAgentsEffortXhighType `json:"type" api:"required"`
+	Type constant.Xhigh `json:"type" default:"xhigh"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -2318,18 +2239,18 @@ func (r BetaManagedAgentsEffortXhigh) ToParam() BetaManagedAgentsEffortXhighPara
 	return param.Override[BetaManagedAgentsEffortXhighParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsEffortXhighType string
-
-const (
-	BetaManagedAgentsEffortXhighTypeXhigh BetaManagedAgentsEffortXhighType = "xhigh"
-)
+func NewBetaManagedAgentsEffortXhighParam() BetaManagedAgentsEffortXhighParam {
+	return BetaManagedAgentsEffortXhighParam{
+		Type: "xhigh",
+	}
+}
 
 // Extra-high effort. Not all models accept this level.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsEffortXhighParam].
 type BetaManagedAgentsEffortXhighParam struct {
-	// Any of "xhigh".
-	Type BetaManagedAgentsEffortXhighType `json:"type,omitzero" api:"required"`
+	Type constant.Xhigh `json:"type" default:"xhigh"`
 	paramObj
 }
 
@@ -2619,9 +2540,9 @@ func (u *BetaManagedAgentsGlobToolConfigParamsPermissionPolicyUnion) asAny() any
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsGlobToolConfigParamsPermissionPolicyUnion) GetType() *string {
 	if vt := u.OfAlwaysAllow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
 		return paramutil.AddrOrDefault(vt.Type)
 	}
@@ -2798,9 +2719,9 @@ func (u *BetaManagedAgentsGrepToolConfigParamsPermissionPolicyUnion) asAny() any
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsGrepToolConfigParamsPermissionPolicyUnion) GetType() *string {
 	if vt := u.OfAlwaysAllow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
 		return paramutil.AddrOrDefault(vt.Type)
 	}
@@ -2824,10 +2745,9 @@ const (
 
 // URL-based MCP server connection as returned in API responses.
 type BetaManagedAgentsMCPServerURLDefinition struct {
-	Name string `json:"name" api:"required"`
-	// Any of "url".
-	Type BetaManagedAgentsMCPServerURLDefinitionType `json:"type" api:"required"`
-	URL  string                                      `json:"url" api:"required"`
+	Name string       `json:"name" api:"required"`
+	Type constant.URL `json:"type" default:"url"`
+	URL  string       `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Name        respjson.Field
@@ -2843,12 +2763,6 @@ func (r BetaManagedAgentsMCPServerURLDefinition) RawJSON() string { return r.JSO
 func (r *BetaManagedAgentsMCPServerURLDefinition) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMCPServerURLDefinitionType string
-
-const (
-	BetaManagedAgentsMCPServerURLDefinitionTypeURL BetaManagedAgentsMCPServerURLDefinitionType = "url"
-)
 
 // Resolved configuration for a specific MCP tool.
 type BetaManagedAgentsMCPToolConfig struct {
@@ -2995,9 +2909,9 @@ func (u *BetaManagedAgentsMCPToolConfigParamsPermissionPolicyUnion) asAny() any 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsMCPToolConfigParamsPermissionPolicyUnion) GetType() *string {
 	if vt := u.OfAlwaysAllow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
 		return paramutil.AddrOrDefault(vt.Type)
 	}
@@ -3018,8 +2932,7 @@ type BetaManagedAgentsMCPToolset struct {
 	// Resolved default configuration for all tools from an MCP server.
 	DefaultConfig BetaManagedAgentsMCPToolsetDefaultConfig `json:"default_config" api:"required"`
 	MCPServerName string                                   `json:"mcp_server_name" api:"required"`
-	// Any of "mcp_toolset".
-	Type BetaManagedAgentsMCPToolsetType `json:"type" api:"required"`
+	Type          constant.MCPToolset                      `json:"type" default:"mcp_toolset"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Configs       respjson.Field
@@ -3036,12 +2949,6 @@ func (r BetaManagedAgentsMCPToolset) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsMCPToolset) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMCPToolsetType string
-
-const (
-	BetaManagedAgentsMCPToolsetTypeMCPToolset BetaManagedAgentsMCPToolsetType = "mcp_toolset"
-)
 
 // Resolved default configuration for all tools from an MCP server.
 type BetaManagedAgentsMCPToolsetDefaultConfig struct {
@@ -3188,9 +3095,9 @@ func (u *BetaManagedAgentsMCPToolsetDefaultConfigParamsPermissionPolicyUnion) as
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsMCPToolsetDefaultConfigParamsPermissionPolicyUnion) GetType() *string {
 	if vt := u.OfAlwaysAllow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
 		return paramutil.AddrOrDefault(vt.Type)
 	}
@@ -3213,12 +3120,12 @@ type BetaManagedAgentsMCPToolsetParams struct {
 	// Name of the MCP server. Must match a server name from the mcp_servers array.
 	// 1-255 characters.
 	MCPServerName string `json:"mcp_server_name" api:"required"`
-	// Any of "mcp_toolset".
-	Type BetaManagedAgentsMCPToolsetParamsType `json:"type,omitzero" api:"required"`
 	// Per-tool configuration overrides.
 	Configs []BetaManagedAgentsMCPToolConfigParams `json:"configs,omitzero"`
 	// Default configuration for all tools from this server.
 	DefaultConfig BetaManagedAgentsMCPToolsetDefaultConfigParams `json:"default_config,omitzero"`
+	// This field can be elided, and will marshal its zero value as "mcp_toolset".
+	Type constant.MCPToolset `json:"type" default:"mcp_toolset"`
 	paramObj
 }
 
@@ -3229,12 +3136,6 @@ func (r BetaManagedAgentsMCPToolsetParams) MarshalJSON() (data []byte, err error
 func (r *BetaManagedAgentsMCPToolsetParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMCPToolsetParamsType string
-
-const (
-	BetaManagedAgentsMCPToolsetParamsTypeMCPToolset BetaManagedAgentsMCPToolsetParamsType = "mcp_toolset"
-)
 
 // The model that will power your agent.
 //
@@ -3505,15 +3406,15 @@ func (u *BetaManagedAgentsModelConfigParamsEffortUnion) asAny() any {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsModelConfigParamsEffortUnion) GetType() *string {
 	if vt := u.OfBetaManagedAgentsEffortLow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfBetaManagedAgentsEffortMedium; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfBetaManagedAgentsEffortHigh; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfBetaManagedAgentsEffortXhigh; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfBetaManagedAgentsEffortMax; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -3751,8 +3652,7 @@ type BetaManagedAgentsMultiagentCoordinator struct {
 	// Agents the coordinator may spawn as session threads, each resolved to a specific
 	// version.
 	Agents []BetaManagedAgentsMultiagentCoordinatorAgentUnion `json:"agents" api:"required"`
-	// Any of "coordinator".
-	Type BetaManagedAgentsMultiagentCoordinatorType `json:"type" api:"required"`
+	Type   constant.Coordinator                               `json:"type" default:"coordinator"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Agents      respjson.Field
@@ -3839,12 +3739,6 @@ func (r *BetaManagedAgentsMultiagentCoordinatorAgentUnion) UnmarshalJSON(data []
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsMultiagentCoordinatorType string
-
-const (
-	BetaManagedAgentsMultiagentCoordinatorTypeCoordinator BetaManagedAgentsMultiagentCoordinatorType = "coordinator"
-)
-
 // A coordinator topology: the session's primary thread orchestrates work by
 // spawning session threads, each running an agent drawn from the `agents` roster.
 //
@@ -3857,8 +3751,8 @@ type BetaManagedAgentsMultiagentCoordinatorParams struct {
 	// Referenced agents must exist, must not be archived, and must not themselves have
 	// `multiagent` set (depth limit 1).
 	Agents []BetaManagedAgentsMultiagentRosterEntryParamsUnion `json:"agents,omitzero" api:"required"`
-	// Any of "coordinator".
-	Type BetaManagedAgentsMultiagentCoordinatorParamsType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "coordinator".
+	Type constant.Coordinator `json:"type" default:"coordinator"`
 	paramObj
 }
 
@@ -3869,12 +3763,6 @@ func (r BetaManagedAgentsMultiagentCoordinatorParams) MarshalJSON() (data []byte
 func (r *BetaManagedAgentsMultiagentCoordinatorParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMultiagentCoordinatorParamsType string
-
-const (
-	BetaManagedAgentsMultiagentCoordinatorParamsTypeCoordinator BetaManagedAgentsMultiagentCoordinatorParamsType = "coordinator"
-)
 
 // BetaManagedAgentsMultiagentInlineAgentsUnion contains all possible properties
 // and values from [BetaManagedAgentsMultiagentInlineAgentsEnabled],
@@ -4063,17 +3951,10 @@ func init() {
 	)
 }
 
-func BetaManagedAgentsMultiagentPredefinedAgentParamsOfBetaManagedAgentsAgents(id string, type_ BetaManagedAgentsAgentParamsType) BetaManagedAgentsMultiagentPredefinedAgentParamsUnion {
+func BetaManagedAgentsMultiagentPredefinedAgentParamsOfBetaManagedAgentsAgents(id string) BetaManagedAgentsMultiagentPredefinedAgentParamsUnion {
 	var variant BetaManagedAgentsAgentParams
 	variant.ID = id
-	variant.Type = type_
 	return BetaManagedAgentsMultiagentPredefinedAgentParamsUnion{OfBetaManagedAgentsAgents: &variant}
-}
-
-func BetaManagedAgentsMultiagentPredefinedAgentParamsOfBetaManagedAgentsMultiagentSelfs(type_ BetaManagedAgentsMultiagentSelfParamsType) BetaManagedAgentsMultiagentPredefinedAgentParamsUnion {
-	var variant BetaManagedAgentsMultiagentSelfParams
-	variant.Type = type_
-	return BetaManagedAgentsMultiagentPredefinedAgentParamsUnion{OfBetaManagedAgentsMultiagentSelfs: &variant}
 }
 
 // Only one field can be non-zero.
@@ -4123,20 +4004,26 @@ func (u BetaManagedAgentsMultiagentPredefinedAgentParamsUnion) GetVersion() *int
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsMultiagentPredefinedAgentParamsUnion) GetType() *string {
 	if vt := u.OfBetaManagedAgentsAgents; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfBetaManagedAgentsMultiagentSelfs; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
+}
+
+func NewBetaManagedAgentsMultiagentSelfParams() BetaManagedAgentsMultiagentSelfParams {
+	return BetaManagedAgentsMultiagentSelfParams{
+		Type: "self",
+	}
 }
 
 // Sentinel roster entry meaning "the agent that owns this configuration". Resolved
 // server-side to a concrete agent reference.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsMultiagentSelfParams].
 type BetaManagedAgentsMultiagentSelfParams struct {
-	// Any of "self".
-	Type BetaManagedAgentsMultiagentSelfParamsType `json:"type,omitzero" api:"required"`
+	Type constant.Self `json:"type" default:"self"`
 	paramObj
 }
 
@@ -4147,12 +4034,6 @@ func (r BetaManagedAgentsMultiagentSelfParams) MarshalJSON() (data []byte, err e
 func (r *BetaManagedAgentsMultiagentSelfParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMultiagentSelfParamsType string
-
-const (
-	BetaManagedAgentsMultiagentSelfParamsTypeSelf BetaManagedAgentsMultiagentSelfParamsType = "self"
-)
 
 // BetaManagedAgentsMultiagentSubagentsUnion contains all possible properties and
 // values from [BetaManagedAgentsMultiagentSubagentsEnabled],
@@ -4809,9 +4690,9 @@ func (u *BetaManagedAgentsReadToolConfigParamsPermissionPolicyUnion) asAny() any
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsReadToolConfigParamsPermissionPolicyUnion) GetType() *string {
 	if vt := u.OfAlwaysAllow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
 		return paramutil.AddrOrDefault(vt.Type)
 	}
@@ -4886,14 +4767,13 @@ type BetaManagedAgentsSessionThreadAgent struct {
 	ExecutionIdentity BetaManagedAgentsExecutionIdentityUnion   `json:"execution_identity" api:"required"`
 	MCPServers        []BetaManagedAgentsMCPServerURLDefinition `json:"mcp_servers" api:"required"`
 	// Model identifier and configuration.
-	Model  BetaManagedAgentsModelConfig                    `json:"model" api:"required"`
-	Name   string                                          `json:"name" api:"required"`
-	Skills []BetaManagedAgentsSessionThreadAgentSkillUnion `json:"skills" api:"required"`
-	System string                                          `json:"system" api:"required"`
-	Tools  []BetaManagedAgentsSessionThreadAgentToolUnion  `json:"tools" api:"required"`
-	// Any of "agent".
-	Type    BetaManagedAgentsSessionThreadAgentType `json:"type" api:"required"`
-	Version int64                                   `json:"version" api:"required"`
+	Model   BetaManagedAgentsModelConfig                    `json:"model" api:"required"`
+	Name    string                                          `json:"name" api:"required"`
+	Skills  []BetaManagedAgentsSessionThreadAgentSkillUnion `json:"skills" api:"required"`
+	System  string                                          `json:"system" api:"required"`
+	Tools   []BetaManagedAgentsSessionThreadAgentToolUnion  `json:"tools" api:"required"`
+	Type    constant.Agent                                  `json:"type" default:"agent"`
+	Version int64                                           `json:"version" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                respjson.Field
@@ -5147,23 +5027,15 @@ func (r *BetaManagedAgentsSessionThreadAgentToolUnionDefaultConfigPermissionPoli
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionThreadAgentType string
-
-const (
-	BetaManagedAgentsSessionThreadAgentTypeAgent BetaManagedAgentsSessionThreadAgentType = "agent"
-)
-
 func BetaManagedAgentsSkillParamsOfAnthropic(skillID string) BetaManagedAgentsSkillParamsUnion {
 	var anthropic BetaManagedAgentsAnthropicSkillParams
 	anthropic.SkillID = skillID
-	anthropic.Type = BetaManagedAgentsAnthropicSkillParamsTypeAnthropic
 	return BetaManagedAgentsSkillParamsUnion{OfAnthropic: &anthropic}
 }
 
 func BetaManagedAgentsSkillParamsOfCustom(skillID string) BetaManagedAgentsSkillParamsUnion {
 	var custom BetaManagedAgentsCustomSkillParams
 	custom.SkillID = skillID
-	custom.Type = BetaManagedAgentsCustomSkillParamsTypeCustom
 	return BetaManagedAgentsSkillParamsUnion{OfCustom: &custom}
 }
 
@@ -5205,9 +5077,9 @@ func (u BetaManagedAgentsSkillParamsUnion) GetSkillID() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsSkillParamsUnion) GetType() *string {
 	if vt := u.OfAnthropic; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCustom; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -5237,10 +5109,10 @@ type BetaManagedAgentsURLMCPServerParams struct {
 	// Unique name for this server, referenced by mcp_toolset configurations. 1-255
 	// characters.
 	Name string `json:"name" api:"required"`
-	// Any of "url".
-	Type BetaManagedAgentsURLMCPServerParamsType `json:"type,omitzero" api:"required"`
 	// Endpoint URL for the MCP server.
 	URL string `json:"url" api:"required"`
+	// This field can be elided, and will marshal its zero value as "url".
+	Type constant.URL `json:"type" default:"url"`
 	paramObj
 }
 
@@ -5251,12 +5123,6 @@ func (r BetaManagedAgentsURLMCPServerParams) MarshalJSON() (data []byte, err err
 func (r *BetaManagedAgentsURLMCPServerParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsURLMCPServerParamsType string
-
-const (
-	BetaManagedAgentsURLMCPServerParamsTypeURL BetaManagedAgentsURLMCPServerParamsType = "url"
-)
 
 // Approximate user location for search result localization.
 type BetaManagedAgentsUserLocation struct {
@@ -5506,9 +5372,9 @@ func (u *BetaManagedAgentsWebFetchToolConfigParamsPermissionPolicyUnion) asAny()
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsWebFetchToolConfigParamsPermissionPolicyUnion) GetType() *string {
 	if vt := u.OfAlwaysAllow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
 		return paramutil.AddrOrDefault(vt.Type)
 	}
@@ -6403,9 +6269,9 @@ func (u *BetaManagedAgentsWebSearchToolConfigParamsPermissionPolicyUnion) asAny(
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsWebSearchToolConfigParamsPermissionPolicyUnion) GetType() *string {
 	if vt := u.OfAlwaysAllow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
 		return paramutil.AddrOrDefault(vt.Type)
 	}
@@ -6582,9 +6448,9 @@ func (u *BetaManagedAgentsWriteToolConfigParamsPermissionPolicyUnion) asAny() an
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsWriteToolConfigParamsPermissionPolicyUnion) GetType() *string {
 	if vt := u.OfAlwaysAllow; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAlwaysAsk; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfAuto; vt != nil {
 		return paramutil.AddrOrDefault(vt.Type)
 	}
@@ -6720,11 +6586,11 @@ func (u BetaAgentNewParamsToolUnion) GetName() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaAgentNewParamsToolUnion) GetType() *string {
 	if vt := u.OfAgentToolset20260401; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfMCPToolset; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCustom; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -6988,11 +6854,11 @@ func (u BetaAgentUpdateParamsToolUnion) GetName() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaAgentUpdateParamsToolUnion) GetType() *string {
 	if vt := u.OfAgentToolset20260401; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfMCPToolset; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfCustom; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaSessionEventListWithOptionalParams(t *testing.T) {
@@ -70,10 +70,8 @@ func TestBetaSessionEventSendWithOptionalParams(t *testing.T) {
 					Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{{
 						OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 							Text: "Where is my order #1234?",
-							Type: anthropic.BetaManagedAgentsTextBlockTypeText,
 						},
 					}},
-					Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 				},
 			}},
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},

@@ -11,15 +11,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/ssestream"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaSessionEventService contains methods and other services that help with
@@ -291,9 +292,8 @@ type BetaManagedAgentsAgentCustomToolUseEvent struct {
 	// Name of the custom tool being called.
 	Name string `json:"name" api:"required"`
 	// Timestamp when this tool use was processed.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "agent.custom_tool_use".
-	Type BetaManagedAgentsAgentCustomToolUseEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                   `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.AgentCustomToolUse `json:"type" default:"agent.custom_tool_use"`
 	// When set, this event was cross-posted from a subagent's thread to surface its
 	// custom tool use on the primary thread's stream. Empty on the thread's own
 	// events. Informational only: the server routes the matching
@@ -319,12 +319,6 @@ func (r *BetaManagedAgentsAgentCustomToolUseEvent) UnmarshalJSON(data []byte) er
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsAgentCustomToolUseEventType string
-
-const (
-	BetaManagedAgentsAgentCustomToolUseEventTypeAgentCustomToolUse BetaManagedAgentsAgentCustomToolUseEventType = "agent.custom_tool_use"
-)
-
 type BetaManagedAgentsAgentEvaluatedPermission string
 
 const (
@@ -340,9 +334,8 @@ type BetaManagedAgentsAgentMCPToolResultEvent struct {
 	// The id of the `agent.mcp_tool_use` event this result corresponds to.
 	MCPToolUseID string `json:"mcp_tool_use_id" api:"required"`
 	// Timestamp when this event was processed.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "agent.mcp_tool_result".
-	Type BetaManagedAgentsAgentMCPToolResultEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                   `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.AgentMCPToolResult `json:"type" default:"agent.mcp_tool_result"`
 	// The result content returned by the tool.
 	Content []BetaManagedAgentsAgentMCPToolResultEventContentUnion `json:"content"`
 	// Whether the tool execution resulted in an error.
@@ -365,12 +358,6 @@ func (r BetaManagedAgentsAgentMCPToolResultEvent) RawJSON() string { return r.JS
 func (r *BetaManagedAgentsAgentMCPToolResultEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsAgentMCPToolResultEventType string
-
-const (
-	BetaManagedAgentsAgentMCPToolResultEventTypeAgentMCPToolResult BetaManagedAgentsAgentMCPToolResultEventType = "agent.mcp_tool_result"
-)
 
 // BetaManagedAgentsAgentMCPToolResultEventContentUnion contains all possible
 // properties and values from [BetaManagedAgentsTextBlock],
@@ -517,9 +504,8 @@ type BetaManagedAgentsAgentMCPToolUseEvent struct {
 	// Name of the MCP tool being used.
 	Name string `json:"name" api:"required"`
 	// Timestamp when this event was processed.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "agent.mcp_tool_use".
-	Type BetaManagedAgentsAgentMCPToolUseEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.AgentMCPToolUse `json:"type" default:"agent.mcp_tool_use"`
 	// The evaluated permission policy for this tool invocation.
 	//
 	// Any of "allow", "ask", "deny".
@@ -559,12 +545,6 @@ func (r *BetaManagedAgentsAgentMCPToolUseEvent) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsAgentMCPToolUseEventType string
-
-const (
-	BetaManagedAgentsAgentMCPToolUseEventTypeAgentMCPToolUse BetaManagedAgentsAgentMCPToolUseEventType = "agent.mcp_tool_use"
-)
-
 // An agent response event in the session conversation.
 type BetaManagedAgentsAgentMessageEvent struct {
 	// Unique identifier for this event.
@@ -572,9 +552,8 @@ type BetaManagedAgentsAgentMessageEvent struct {
 	// Array of text blocks comprising the agent response.
 	Content []BetaManagedAgentsAgentMessageEventContentUnion `json:"content" api:"required"`
 	// Timestamp when this response was generated.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "agent.message".
-	Type BetaManagedAgentsAgentMessageEventType `json:"type" api:"required"`
+	ProcessedAt time.Time             `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.AgentMessage `json:"type" default:"agent.message"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -656,21 +635,14 @@ func (r *BetaManagedAgentsAgentMessageEventContentUnion) UnmarshalJSON(data []by
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsAgentMessageEventType string
-
-const (
-	BetaManagedAgentsAgentMessageEventTypeAgentMessage BetaManagedAgentsAgentMessageEventType = "agent.message"
-)
-
 // Indicates the agent is making forward progress via extended thinking. A progress
 // signal, not a content carrier.
 type BetaManagedAgentsAgentThinkingEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// Timestamp when this thinking was produced.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "agent.thinking".
-	Type BetaManagedAgentsAgentThinkingEventType `json:"type" api:"required"`
+	ProcessedAt time.Time              `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.AgentThinking `json:"type" default:"agent.thinking"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -687,20 +659,13 @@ func (r *BetaManagedAgentsAgentThinkingEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsAgentThinkingEventType string
-
-const (
-	BetaManagedAgentsAgentThinkingEventTypeAgentThinking BetaManagedAgentsAgentThinkingEventType = "agent.thinking"
-)
-
 // Indicates that context compaction (summarization) occurred during the session.
 type BetaManagedAgentsAgentThreadContextCompactedEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// Timestamp when compaction was processed.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "agent.thread_context_compacted".
-	Type BetaManagedAgentsAgentThreadContextCompactedEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                            `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.AgentThreadContextCompacted `json:"type" default:"agent.thread_context_compacted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -717,12 +682,6 @@ func (r *BetaManagedAgentsAgentThreadContextCompactedEvent) UnmarshalJSON(data [
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsAgentThreadContextCompactedEventType string
-
-const (
-	BetaManagedAgentsAgentThreadContextCompactedEventTypeAgentThreadContextCompacted BetaManagedAgentsAgentThreadContextCompactedEventType = "agent.thread_context_compacted"
-)
-
 // Delivery event written to the target thread's input stream when an
 // agent-to-agent message arrives.
 type BetaManagedAgentsAgentThreadMessageReceivedEvent struct {
@@ -733,9 +692,8 @@ type BetaManagedAgentsAgentThreadMessageReceivedEvent struct {
 	// Public `sthr_` ID of the thread that sent the message.
 	FromSessionThreadID string `json:"from_session_thread_id" api:"required"`
 	// Timestamp when the message was received.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "agent.thread_message_received".
-	Type BetaManagedAgentsAgentThreadMessageReceivedEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                           `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.AgentThreadMessageReceived `json:"type" default:"agent.thread_message_received"`
 	// Name of the callable agent this message came from. Absent when received from the
 	// primary agent.
 	FromAgentName string `json:"from_agent_name" api:"nullable"`
@@ -887,12 +845,6 @@ func (r *BetaManagedAgentsAgentThreadMessageReceivedEventContentUnionSource) Unm
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsAgentThreadMessageReceivedEventType string
-
-const (
-	BetaManagedAgentsAgentThreadMessageReceivedEventTypeAgentThreadMessageReceived BetaManagedAgentsAgentThreadMessageReceivedEventType = "agent.thread_message_received"
-)
-
 // Observability event emitted to the sender's output stream when an agent-to-agent
 // message is sent.
 type BetaManagedAgentsAgentThreadMessageSentEvent struct {
@@ -903,9 +855,8 @@ type BetaManagedAgentsAgentThreadMessageSentEvent struct {
 	// Timestamp when the message was sent.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public `sthr_` ID of the thread the message was sent to.
-	ToSessionThreadID string `json:"to_session_thread_id" api:"required"`
-	// Any of "agent.thread_message_sent".
-	Type BetaManagedAgentsAgentThreadMessageSentEventType `json:"type" api:"required"`
+	ToSessionThreadID string                          `json:"to_session_thread_id" api:"required"`
+	Type              constant.AgentThreadMessageSent `json:"type" default:"agent.thread_message_sent"`
 	// Name of the callable agent this message was sent to. Absent when sent to the
 	// primary agent.
 	ToAgentName string `json:"to_agent_name" api:"nullable"`
@@ -1052,12 +1003,6 @@ func (r *BetaManagedAgentsAgentThreadMessageSentEventContentUnionSource) Unmarsh
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsAgentThreadMessageSentEventType string
-
-const (
-	BetaManagedAgentsAgentThreadMessageSentEventTypeAgentThreadMessageSent BetaManagedAgentsAgentThreadMessageSentEventType = "agent.thread_message_sent"
-)
-
 // BetaManagedAgentsAgentToolEvaluationUnion contains all possible properties and
 // values from [BetaManagedAgentsAgentToolEvaluationAlwaysAllow],
 // [BetaManagedAgentsAgentToolEvaluationAlwaysAsk],
@@ -1199,9 +1144,8 @@ type BetaManagedAgentsAgentToolResultEvent struct {
 	// Timestamp when this event was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// The id of the `agent.tool_use` event this result corresponds to.
-	ToolUseID string `json:"tool_use_id" api:"required"`
-	// Any of "agent.tool_result".
-	Type BetaManagedAgentsAgentToolResultEventType `json:"type" api:"required"`
+	ToolUseID string                   `json:"tool_use_id" api:"required"`
+	Type      constant.AgentToolResult `json:"type" default:"agent.tool_result"`
 	// The result content returned by the tool.
 	Content []BetaManagedAgentsAgentToolResultEventContentUnion `json:"content"`
 	// Whether the tool execution resulted in an error.
@@ -1224,12 +1168,6 @@ func (r BetaManagedAgentsAgentToolResultEvent) RawJSON() string { return r.JSON.
 func (r *BetaManagedAgentsAgentToolResultEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsAgentToolResultEventType string
-
-const (
-	BetaManagedAgentsAgentToolResultEventTypeAgentToolResult BetaManagedAgentsAgentToolResultEventType = "agent.tool_result"
-)
 
 // BetaManagedAgentsAgentToolResultEventContentUnion contains all possible
 // properties and values from [BetaManagedAgentsTextBlock],
@@ -1372,9 +1310,8 @@ type BetaManagedAgentsAgentToolUseEvent struct {
 	// Name of the agent tool being used.
 	Name string `json:"name" api:"required"`
 	// Timestamp when this event was processed.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "agent.tool_use".
-	Type BetaManagedAgentsAgentToolUseEventType `json:"type" api:"required"`
+	ProcessedAt time.Time             `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.AgentToolUse `json:"type" default:"agent.tool_use"`
 	// The evaluated permission policy for this tool invocation.
 	//
 	// Any of "allow", "ask", "deny".
@@ -1414,20 +1351,13 @@ func (r *BetaManagedAgentsAgentToolUseEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsAgentToolUseEventType string
-
-const (
-	BetaManagedAgentsAgentToolUseEventTypeAgentToolUse BetaManagedAgentsAgentToolUseEventType = "agent.tool_use"
-)
-
 // Base64-encoded document data.
 type BetaManagedAgentsBase64DocumentSource struct {
 	// Base64-encoded document data.
 	Data string `json:"data" api:"required"`
 	// MIME type of the document (e.g., "application/pdf").
-	MediaType string `json:"media_type" api:"required"`
-	// Any of "base64".
-	Type BetaManagedAgentsBase64DocumentSourceType `json:"type" api:"required"`
+	MediaType string          `json:"media_type" api:"required"`
+	Type      constant.Base64 `json:"type" default:"base64"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
@@ -1454,12 +1384,6 @@ func (r BetaManagedAgentsBase64DocumentSource) ToParam() BetaManagedAgentsBase64
 	return param.Override[BetaManagedAgentsBase64DocumentSourceParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsBase64DocumentSourceType string
-
-const (
-	BetaManagedAgentsBase64DocumentSourceTypeBase64 BetaManagedAgentsBase64DocumentSourceType = "base64"
-)
-
 // Base64-encoded document data.
 //
 // The properties Data, MediaType, Type are required.
@@ -1468,8 +1392,8 @@ type BetaManagedAgentsBase64DocumentSourceParam struct {
 	Data string `json:"data" api:"required"`
 	// MIME type of the document (e.g., "application/pdf").
 	MediaType string `json:"media_type" api:"required"`
-	// Any of "base64".
-	Type BetaManagedAgentsBase64DocumentSourceType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "base64".
+	Type constant.Base64 `json:"type" default:"base64"`
 	paramObj
 }
 
@@ -1487,9 +1411,8 @@ type BetaManagedAgentsBase64ImageSource struct {
 	Data string `json:"data" api:"required"`
 	// MIME type of the image (e.g., "image/png", "image/jpeg", "image/gif",
 	// "image/webp").
-	MediaType string `json:"media_type" api:"required"`
-	// Any of "base64".
-	Type BetaManagedAgentsBase64ImageSourceType `json:"type" api:"required"`
+	MediaType string          `json:"media_type" api:"required"`
+	Type      constant.Base64 `json:"type" default:"base64"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
@@ -1516,12 +1439,6 @@ func (r BetaManagedAgentsBase64ImageSource) ToParam() BetaManagedAgentsBase64Ima
 	return param.Override[BetaManagedAgentsBase64ImageSourceParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsBase64ImageSourceType string
-
-const (
-	BetaManagedAgentsBase64ImageSourceTypeBase64 BetaManagedAgentsBase64ImageSourceType = "base64"
-)
-
 // Base64-encoded image data.
 //
 // The properties Data, MediaType, Type are required.
@@ -1531,8 +1448,8 @@ type BetaManagedAgentsBase64ImageSourceParam struct {
 	// MIME type of the image (e.g., "image/png", "image/jpeg", "image/gif",
 	// "image/webp").
 	MediaType string `json:"media_type" api:"required"`
-	// Any of "base64".
-	Type BetaManagedAgentsBase64ImageSourceType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "base64".
+	Type constant.Base64 `json:"type" default:"base64"`
 	paramObj
 }
 
@@ -1552,8 +1469,7 @@ type BetaManagedAgentsBillingError struct {
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
 	RetryStatus BetaManagedAgentsBillingErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	// Any of "billing_error".
-	Type BetaManagedAgentsBillingErrorType `json:"type" api:"required"`
+	Type        constant.BillingError                         `json:"type" default:"billing_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1641,12 +1557,6 @@ func (r *BetaManagedAgentsBillingErrorRetryStatusUnion) UnmarshalJSON(data []byt
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsBillingErrorType string
-
-const (
-	BetaManagedAgentsBillingErrorTypeBillingError BetaManagedAgentsBillingErrorType = "billing_error"
-)
-
 // An `environment_variable` credential's `auth.networking.allowed_hosts` includes
 // a host the environment's network policy does not permit.
 type BetaManagedAgentsCredentialHostUnreachableError struct {
@@ -1656,8 +1566,7 @@ type BetaManagedAgentsCredentialHostUnreachableError struct {
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
 	RetryStatus BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	// Any of "credential_host_unreachable_error".
-	Type BetaManagedAgentsCredentialHostUnreachableErrorType `json:"type" api:"required"`
+	Type        constant.CredentialHostUnreachableError                         `json:"type" default:"credential_host_unreachable_error"`
 	// ID of the vault containing the affected credential.
 	VaultID string `json:"vault_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -1756,19 +1665,12 @@ func (r *BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion) Unmars
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsCredentialHostUnreachableErrorType string
-
-const (
-	BetaManagedAgentsCredentialHostUnreachableErrorTypeCredentialHostUnreachableError BetaManagedAgentsCredentialHostUnreachableErrorType = "credential_host_unreachable_error"
-)
-
 // Document content, either specified directly as base64 data, as text, or as a
 // reference via a URL.
 type BetaManagedAgentsDocumentBlock struct {
 	// The source of the document data.
 	Source BetaManagedAgentsDocumentBlockSourceUnion `json:"source" api:"required"`
-	// Any of "document".
-	Type BetaManagedAgentsDocumentBlockType `json:"type" api:"required"`
+	Type   constant.Document                         `json:"type" default:"document"`
 	// Additional context about the document for the model.
 	Context string `json:"context" api:"nullable"`
 	// The title of the document.
@@ -1891,12 +1793,6 @@ func (r *BetaManagedAgentsDocumentBlockSourceUnion) UnmarshalJSON(data []byte) e
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsDocumentBlockType string
-
-const (
-	BetaManagedAgentsDocumentBlockTypeDocument BetaManagedAgentsDocumentBlockType = "document"
-)
-
 // Document content, either specified directly as base64 data, as text, or as a
 // reference via a URL.
 //
@@ -1904,12 +1800,12 @@ const (
 type BetaManagedAgentsDocumentBlockParam struct {
 	// The source of the document data.
 	Source BetaManagedAgentsDocumentBlockSourceUnionParam `json:"source,omitzero" api:"required"`
-	// Any of "document".
-	Type BetaManagedAgentsDocumentBlockType `json:"type,omitzero" api:"required"`
 	// Additional context about the document for the model.
 	Context param.Opt[string] `json:"context,omitzero"`
 	// The title of the document.
 	Title param.Opt[string] `json:"title,omitzero"`
+	// This field can be elided, and will marshal its zero value as "document".
+	Type constant.Document `json:"type" default:"document"`
 	paramObj
 }
 
@@ -1983,7 +1879,7 @@ func (u BetaManagedAgentsDocumentBlockSourceUnionParam) GetMediaType() *string {
 	if vt := u.OfBase64; vt != nil {
 		return (*string)(&vt.MediaType)
 	} else if vt := u.OfText; vt != nil {
-		return (*string)(&vt.MediaType)
+		return paramutil.AddrOrDefault(vt.MediaType)
 	}
 	return nil
 }
@@ -1991,13 +1887,13 @@ func (u BetaManagedAgentsDocumentBlockSourceUnionParam) GetMediaType() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsDocumentBlockSourceUnionParam) GetType() *string {
 	if vt := u.OfBase64; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfText; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfURL; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfFile; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -2015,34 +1911,25 @@ func init() {
 func BetaManagedAgentsEventParamsOfUserMessage(content []BetaManagedAgentsUserMessageEventParamsContentUnion) BetaManagedAgentsEventParamsUnion {
 	var userMessage BetaManagedAgentsUserMessageEventParams
 	userMessage.Content = content
-	userMessage.Type = BetaManagedAgentsUserMessageEventParamsTypeUserMessage
 	return BetaManagedAgentsEventParamsUnion{OfUserMessage: &userMessage}
 }
 
-func BetaManagedAgentsEventParamsOfUserInterrupt(type_ BetaManagedAgentsUserInterruptEventParamsType) BetaManagedAgentsEventParamsUnion {
-	var userInterrupt BetaManagedAgentsUserInterruptEventParams
-	userInterrupt.Type = type_
-	return BetaManagedAgentsEventParamsUnion{OfUserInterrupt: &userInterrupt}
-}
-
-func BetaManagedAgentsEventParamsOfUserToolConfirmation(result BetaManagedAgentsUserToolConfirmationEventParamsResult, toolUseID string, type_ BetaManagedAgentsUserToolConfirmationEventParamsType) BetaManagedAgentsEventParamsUnion {
+func BetaManagedAgentsEventParamsOfUserToolConfirmation(result BetaManagedAgentsUserToolConfirmationEventParamsResult, toolUseID string) BetaManagedAgentsEventParamsUnion {
 	var userToolConfirmation BetaManagedAgentsUserToolConfirmationEventParams
 	userToolConfirmation.Result = result
 	userToolConfirmation.ToolUseID = toolUseID
-	userToolConfirmation.Type = type_
 	return BetaManagedAgentsEventParamsUnion{OfUserToolConfirmation: &userToolConfirmation}
 }
 
 func BetaManagedAgentsEventParamsOfUserCustomToolResult(customToolUseID string) BetaManagedAgentsEventParamsUnion {
 	var userCustomToolResult BetaManagedAgentsUserCustomToolResultEventParams
 	userCustomToolResult.CustomToolUseID = customToolUseID
-	userCustomToolResult.Type = BetaManagedAgentsUserCustomToolResultEventParamsTypeUserCustomToolResult
 	return BetaManagedAgentsEventParamsUnion{OfUserCustomToolResult: &userCustomToolResult}
 }
 
 func BetaManagedAgentsEventParamsOfUserDefineOutcome[
 	T BetaManagedAgentsFileRubricParams | BetaManagedAgentsTextRubricParams,
-](description string, rubric T, type_ BetaManagedAgentsUserDefineOutcomeEventParamsType) BetaManagedAgentsEventParamsUnion {
+](description string, rubric T) BetaManagedAgentsEventParamsUnion {
 	var userDefineOutcome BetaManagedAgentsUserDefineOutcomeEventParams
 	userDefineOutcome.Description = description
 	switch v := any(rubric).(type) {
@@ -2051,21 +1938,18 @@ func BetaManagedAgentsEventParamsOfUserDefineOutcome[
 	case BetaManagedAgentsTextRubricParams:
 		userDefineOutcome.Rubric.OfText = &v
 	}
-	userDefineOutcome.Type = type_
 	return BetaManagedAgentsEventParamsUnion{OfUserDefineOutcome: &userDefineOutcome}
 }
 
 func BetaManagedAgentsEventParamsOfUserToolResult(toolUseID string) BetaManagedAgentsEventParamsUnion {
 	var userToolResult BetaManagedAgentsUserToolResultEventParams
 	userToolResult.ToolUseID = toolUseID
-	userToolResult.Type = BetaManagedAgentsUserToolResultEventParamsTypeUserToolResult
 	return BetaManagedAgentsEventParamsUnion{OfUserToolResult: &userToolResult}
 }
 
 func BetaManagedAgentsEventParamsOfSystemMessage(content []BetaManagedAgentsSystemContentBlockParam) BetaManagedAgentsEventParamsUnion {
 	var systemMessage BetaManagedAgentsSystemMessageEventParams
 	systemMessage.Content = content
-	systemMessage.Type = BetaManagedAgentsSystemMessageEventParamsTypeSystemMessage
 	return BetaManagedAgentsEventParamsUnion{OfSystemMessage: &systemMessage}
 }
 
@@ -2174,19 +2058,19 @@ func (u BetaManagedAgentsEventParamsUnion) GetMaxIterations() *int64 {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsEventParamsUnion) GetType() *string {
 	if vt := u.OfUserMessage; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfUserInterrupt; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfUserToolConfirmation; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfUserCustomToolResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfUserDefineOutcome; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfUserToolResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfSystemMessage; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -2262,9 +2146,8 @@ func init() {
 // Document referenced by file ID.
 type BetaManagedAgentsFileDocumentSource struct {
 	// ID of a previously uploaded file.
-	FileID string `json:"file_id" api:"required"`
-	// Any of "file".
-	Type BetaManagedAgentsFileDocumentSourceType `json:"type" api:"required"`
+	FileID string        `json:"file_id" api:"required"`
+	Type   constant.File `json:"type" default:"file"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		FileID      respjson.Field
@@ -2290,20 +2173,14 @@ func (r BetaManagedAgentsFileDocumentSource) ToParam() BetaManagedAgentsFileDocu
 	return param.Override[BetaManagedAgentsFileDocumentSourceParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsFileDocumentSourceType string
-
-const (
-	BetaManagedAgentsFileDocumentSourceTypeFile BetaManagedAgentsFileDocumentSourceType = "file"
-)
-
 // Document referenced by file ID.
 //
 // The properties FileID, Type are required.
 type BetaManagedAgentsFileDocumentSourceParam struct {
 	// ID of a previously uploaded file.
 	FileID string `json:"file_id" api:"required"`
-	// Any of "file".
-	Type BetaManagedAgentsFileDocumentSourceType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "file".
+	Type constant.File `json:"type" default:"file"`
 	paramObj
 }
 
@@ -2318,9 +2195,8 @@ func (r *BetaManagedAgentsFileDocumentSourceParam) UnmarshalJSON(data []byte) er
 // Image referenced by file ID.
 type BetaManagedAgentsFileImageSource struct {
 	// ID of a previously uploaded file.
-	FileID string `json:"file_id" api:"required"`
-	// Any of "file".
-	Type BetaManagedAgentsFileImageSourceType `json:"type" api:"required"`
+	FileID string        `json:"file_id" api:"required"`
+	Type   constant.File `json:"type" default:"file"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		FileID      respjson.Field
@@ -2346,20 +2222,14 @@ func (r BetaManagedAgentsFileImageSource) ToParam() BetaManagedAgentsFileImageSo
 	return param.Override[BetaManagedAgentsFileImageSourceParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsFileImageSourceType string
-
-const (
-	BetaManagedAgentsFileImageSourceTypeFile BetaManagedAgentsFileImageSourceType = "file"
-)
-
 // Image referenced by file ID.
 //
 // The properties FileID, Type are required.
 type BetaManagedAgentsFileImageSourceParam struct {
 	// ID of a previously uploaded file.
 	FileID string `json:"file_id" api:"required"`
-	// Any of "file".
-	Type BetaManagedAgentsFileImageSourceType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "file".
+	Type constant.File `json:"type" default:"file"`
 	paramObj
 }
 
@@ -2374,9 +2244,8 @@ func (r *BetaManagedAgentsFileImageSourceParam) UnmarshalJSON(data []byte) error
 // Rubric referenced by a file uploaded via the Files API.
 type BetaManagedAgentsFileRubric struct {
 	// ID of the rubric file.
-	FileID string `json:"file_id" api:"required"`
-	// Any of "file".
-	Type BetaManagedAgentsFileRubricType `json:"type" api:"required"`
+	FileID string        `json:"file_id" api:"required"`
+	Type   constant.File `json:"type" default:"file"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		FileID      respjson.Field
@@ -2392,20 +2261,14 @@ func (r *BetaManagedAgentsFileRubric) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsFileRubricType string
-
-const (
-	BetaManagedAgentsFileRubricTypeFile BetaManagedAgentsFileRubricType = "file"
-)
-
 // Rubric referenced by a file uploaded via the Files API.
 //
 // The properties FileID, Type are required.
 type BetaManagedAgentsFileRubricParams struct {
 	// ID of the rubric file.
 	FileID string `json:"file_id" api:"required"`
-	// Any of "file".
-	Type BetaManagedAgentsFileRubricParamsType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "file".
+	Type constant.File `json:"type" default:"file"`
 	paramObj
 }
 
@@ -2417,18 +2280,11 @@ func (r *BetaManagedAgentsFileRubricParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsFileRubricParamsType string
-
-const (
-	BetaManagedAgentsFileRubricParamsTypeFile BetaManagedAgentsFileRubricParamsType = "file"
-)
-
 // Image content specified directly as base64 data or as a reference via a URL.
 type BetaManagedAgentsImageBlock struct {
 	// The source of the image data.
 	Source BetaManagedAgentsImageBlockSourceUnion `json:"source" api:"required"`
-	// Any of "image".
-	Type BetaManagedAgentsImageBlockType `json:"type" api:"required"`
+	Type   constant.Image                         `json:"type" default:"image"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Source      respjson.Field
@@ -2537,20 +2393,14 @@ func (r *BetaManagedAgentsImageBlockSourceUnion) UnmarshalJSON(data []byte) erro
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsImageBlockType string
-
-const (
-	BetaManagedAgentsImageBlockTypeImage BetaManagedAgentsImageBlockType = "image"
-)
-
 // Image content specified directly as base64 data or as a reference via a URL.
 //
 // The properties Source, Type are required.
 type BetaManagedAgentsImageBlockParam struct {
 	// The source of the image data.
 	Source BetaManagedAgentsImageBlockSourceUnionParam `json:"source,omitzero" api:"required"`
-	// Any of "image".
-	Type BetaManagedAgentsImageBlockType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "image".
+	Type constant.Image `json:"type" default:"image"`
 	paramObj
 }
 
@@ -2625,11 +2475,11 @@ func (u BetaManagedAgentsImageBlockSourceUnionParam) GetFileID() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsImageBlockSourceUnionParam) GetType() *string {
 	if vt := u.OfBase64; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfURL; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfFile; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -2673,8 +2523,7 @@ type BetaManagedAgentsMCPAuthenticationFailedError struct {
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
 	RetryStatus BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	// Any of "mcp_authentication_failed_error".
-	Type BetaManagedAgentsMCPAuthenticationFailedErrorType `json:"type" api:"required"`
+	Type        constant.MCPAuthenticationFailedError                         `json:"type" default:"mcp_authentication_failed_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		MCPServerName respjson.Field
@@ -2769,12 +2618,6 @@ func (r *BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion) Unmarsha
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsMCPAuthenticationFailedErrorType string
-
-const (
-	BetaManagedAgentsMCPAuthenticationFailedErrorTypeMCPAuthenticationFailedError BetaManagedAgentsMCPAuthenticationFailedErrorType = "mcp_authentication_failed_error"
-)
-
 // Failed to connect to an MCP server.
 type BetaManagedAgentsMCPConnectionFailedError struct {
 	// Name of the MCP server that failed to connect.
@@ -2783,8 +2626,7 @@ type BetaManagedAgentsMCPConnectionFailedError struct {
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
 	RetryStatus BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	// Any of "mcp_connection_failed_error".
-	Type BetaManagedAgentsMCPConnectionFailedErrorType `json:"type" api:"required"`
+	Type        constant.MCPConnectionFailedError                         `json:"type" default:"mcp_connection_failed_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		MCPServerName respjson.Field
@@ -2879,12 +2721,6 @@ func (r *BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion) UnmarshalJSO
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsMCPConnectionFailedErrorType string
-
-const (
-	BetaManagedAgentsMCPConnectionFailedErrorTypeMCPConnectionFailedError BetaManagedAgentsMCPConnectionFailedErrorType = "mcp_connection_failed_error"
-)
-
 // The model is currently overloaded. Emitted after automatic retries are
 // exhausted.
 type BetaManagedAgentsModelOverloadedError struct {
@@ -2892,8 +2728,7 @@ type BetaManagedAgentsModelOverloadedError struct {
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
 	RetryStatus BetaManagedAgentsModelOverloadedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	// Any of "model_overloaded_error".
-	Type BetaManagedAgentsModelOverloadedErrorType `json:"type" api:"required"`
+	Type        constant.ModelOverloadedError                         `json:"type" default:"model_overloaded_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -2985,20 +2820,13 @@ func (r *BetaManagedAgentsModelOverloadedErrorRetryStatusUnion) UnmarshalJSON(da
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsModelOverloadedErrorType string
-
-const (
-	BetaManagedAgentsModelOverloadedErrorTypeModelOverloadedError BetaManagedAgentsModelOverloadedErrorType = "model_overloaded_error"
-)
-
 // The model request was rate-limited.
 type BetaManagedAgentsModelRateLimitedError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
 	RetryStatus BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	// Any of "model_rate_limited_error".
-	Type BetaManagedAgentsModelRateLimitedErrorType `json:"type" api:"required"`
+	Type        constant.ModelRateLimitedError                         `json:"type" default:"model_rate_limited_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -3090,20 +2918,13 @@ func (r *BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion) UnmarshalJSON(d
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsModelRateLimitedErrorType string
-
-const (
-	BetaManagedAgentsModelRateLimitedErrorTypeModelRateLimitedError BetaManagedAgentsModelRateLimitedErrorType = "model_rate_limited_error"
-)
-
 // A model request failed for a reason other than overload or rate-limiting.
 type BetaManagedAgentsModelRequestFailedError struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
 	RetryStatus BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	// Any of "model_request_failed_error".
-	Type BetaManagedAgentsModelRequestFailedErrorType `json:"type" api:"required"`
+	Type        constant.ModelRequestFailedError                         `json:"type" default:"model_request_failed_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -3195,22 +3016,13 @@ func (r *BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion) UnmarshalJSON
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsModelRequestFailedErrorType string
-
-const (
-	BetaManagedAgentsModelRequestFailedErrorTypeModelRequestFailedError BetaManagedAgentsModelRequestFailedErrorType = "model_request_failed_error"
-)
-
 // Plain text document content.
 type BetaManagedAgentsPlainTextDocumentSource struct {
 	// The plain text content.
 	Data string `json:"data" api:"required"`
 	// MIME type of the text content. Must be "text/plain".
-	//
-	// Any of "text/plain".
-	MediaType BetaManagedAgentsPlainTextDocumentSourceMediaType `json:"media_type" api:"required"`
-	// Any of "text".
-	Type BetaManagedAgentsPlainTextDocumentSourceType `json:"type" api:"required"`
+	MediaType constant.TextPlain `json:"media_type" default:"text/plain"`
+	Type      constant.Text      `json:"type" default:"text"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Data        respjson.Field
@@ -3237,19 +3049,6 @@ func (r BetaManagedAgentsPlainTextDocumentSource) ToParam() BetaManagedAgentsPla
 	return param.Override[BetaManagedAgentsPlainTextDocumentSourceParam](json.RawMessage(r.RawJSON()))
 }
 
-// MIME type of the text content. Must be "text/plain".
-type BetaManagedAgentsPlainTextDocumentSourceMediaType string
-
-const (
-	BetaManagedAgentsPlainTextDocumentSourceMediaTypeTextPlain BetaManagedAgentsPlainTextDocumentSourceMediaType = "text/plain"
-)
-
-type BetaManagedAgentsPlainTextDocumentSourceType string
-
-const (
-	BetaManagedAgentsPlainTextDocumentSourceTypeText BetaManagedAgentsPlainTextDocumentSourceType = "text"
-)
-
 // Plain text document content.
 //
 // The properties Data, MediaType, Type are required.
@@ -3258,10 +3057,10 @@ type BetaManagedAgentsPlainTextDocumentSourceParam struct {
 	Data string `json:"data" api:"required"`
 	// MIME type of the text content. Must be "text/plain".
 	//
-	// Any of "text/plain".
-	MediaType BetaManagedAgentsPlainTextDocumentSourceMediaType `json:"media_type,omitzero" api:"required"`
-	// Any of "text".
-	Type BetaManagedAgentsPlainTextDocumentSourceType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "text/plain".
+	MediaType constant.TextPlain `json:"media_type" default:"text/plain"`
+	// This field can be elided, and will marshal its zero value as "text".
+	Type constant.Text `json:"type" default:"text"`
 	paramObj
 }
 
@@ -3296,8 +3095,7 @@ func (r *BetaManagedAgentsProgramWorkflowRunError) UnmarshalJSON(data []byte) er
 
 // Placeholder for content withheld by Anthropic model policy.
 type BetaManagedAgentsRedactedBlock struct {
-	// Any of "redacted".
-	Type BetaManagedAgentsRedactedBlockType `json:"type" api:"required"`
+	Type constant.Redacted `json:"type" default:"redacted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -3322,18 +3120,18 @@ func (r BetaManagedAgentsRedactedBlock) ToParam() BetaManagedAgentsRedactedBlock
 	return param.Override[BetaManagedAgentsRedactedBlockParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsRedactedBlockType string
-
-const (
-	BetaManagedAgentsRedactedBlockTypeRedacted BetaManagedAgentsRedactedBlockType = "redacted"
-)
+func NewBetaManagedAgentsRedactedBlockParam() BetaManagedAgentsRedactedBlockParam {
+	return BetaManagedAgentsRedactedBlockParam{
+		Type: "redacted",
+	}
+}
 
 // Placeholder for content withheld by Anthropic model policy.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsRedactedBlockParam].
 type BetaManagedAgentsRedactedBlockParam struct {
-	// Any of "redacted".
-	Type BetaManagedAgentsRedactedBlockType `json:"type,omitzero" api:"required"`
+	Type constant.Redacted `json:"type" default:"redacted"`
 	paramObj
 }
 
@@ -3868,8 +3666,7 @@ func (r *BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) UnmarshalJSON
 // This turn is dead; queued inputs are flushed and the session returns to idle.
 // Client may send a new prompt.
 type BetaManagedAgentsRetryStatusExhausted struct {
-	// Any of "exhausted".
-	Type BetaManagedAgentsRetryStatusExhaustedType `json:"type" api:"required"`
+	Type constant.Exhausted `json:"type" default:"exhausted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -3884,18 +3681,11 @@ func (r *BetaManagedAgentsRetryStatusExhausted) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsRetryStatusExhaustedType string
-
-const (
-	BetaManagedAgentsRetryStatusExhaustedTypeExhausted BetaManagedAgentsRetryStatusExhaustedType = "exhausted"
-)
-
 // The server is retrying automatically. Client should wait; the same error type
 // may fire again as retrying, then once as exhausted when the retry budget runs
 // out.
 type BetaManagedAgentsRetryStatusRetrying struct {
-	// Any of "retrying".
-	Type BetaManagedAgentsRetryStatusRetryingType `json:"type" api:"required"`
+	Type constant.Retrying `json:"type" default:"retrying"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -3910,17 +3700,10 @@ func (r *BetaManagedAgentsRetryStatusRetrying) UnmarshalJSON(data []byte) error 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsRetryStatusRetryingType string
-
-const (
-	BetaManagedAgentsRetryStatusRetryingTypeRetrying BetaManagedAgentsRetryStatusRetryingType = "retrying"
-)
-
 // The session encountered a terminal error and will transition to `terminated`
 // state.
 type BetaManagedAgentsRetryStatusTerminal struct {
-	// Any of "terminal".
-	Type BetaManagedAgentsRetryStatusTerminalType `json:"type" api:"required"`
+	Type constant.Terminal `json:"type" default:"terminal"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -3935,12 +3718,6 @@ func (r *BetaManagedAgentsRetryStatusTerminal) UnmarshalJSON(data []byte) error 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsRetryStatusTerminalType string
-
-const (
-	BetaManagedAgentsRetryStatusTerminalTypeTerminal BetaManagedAgentsRetryStatusTerminalType = "terminal"
-)
-
 // A block containing a web search result.
 type BetaManagedAgentsSearchResultBlock struct {
 	// Citation settings for this search result.
@@ -3950,9 +3727,8 @@ type BetaManagedAgentsSearchResultBlock struct {
 	// The URL source of the search result.
 	Source string `json:"source" api:"required"`
 	// The title of the search result.
-	Title string `json:"title" api:"required"`
-	// Any of "search_result".
-	Type BetaManagedAgentsSearchResultBlockType `json:"type" api:"required"`
+	Title string                `json:"title" api:"required"`
+	Type  constant.SearchResult `json:"type" default:"search_result"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Citations   respjson.Field
@@ -3981,12 +3757,6 @@ func (r BetaManagedAgentsSearchResultBlock) ToParam() BetaManagedAgentsSearchRes
 	return param.Override[BetaManagedAgentsSearchResultBlockParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsSearchResultBlockType string
-
-const (
-	BetaManagedAgentsSearchResultBlockTypeSearchResult BetaManagedAgentsSearchResultBlockType = "search_result"
-)
-
 // A block containing a web search result.
 //
 // The properties Citations, Content, Source, Title, Type are required.
@@ -3999,8 +3769,8 @@ type BetaManagedAgentsSearchResultBlockParam struct {
 	Source string `json:"source" api:"required"`
 	// The title of the search result.
 	Title string `json:"title" api:"required"`
-	// Any of "search_result".
-	Type BetaManagedAgentsSearchResultBlockType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "search_result".
+	Type constant.SearchResult `json:"type" default:"search_result"`
 	paramObj
 }
 
@@ -4060,9 +3830,8 @@ func (r *BetaManagedAgentsSearchResultCitationsParam) UnmarshalJSON(data []byte)
 // Text content within a search result.
 type BetaManagedAgentsSearchResultContent struct {
 	// The text content.
-	Text string `json:"text" api:"required"`
-	// Any of "text".
-	Type BetaManagedAgentsSearchResultContentType `json:"type" api:"required"`
+	Text string        `json:"text" api:"required"`
+	Type constant.Text `json:"type" default:"text"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Text        respjson.Field
@@ -4088,20 +3857,14 @@ func (r BetaManagedAgentsSearchResultContent) ToParam() BetaManagedAgentsSearchR
 	return param.Override[BetaManagedAgentsSearchResultContentParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsSearchResultContentType string
-
-const (
-	BetaManagedAgentsSearchResultContentTypeText BetaManagedAgentsSearchResultContentType = "text"
-)
-
 // Text content within a search result.
 //
 // The properties Text, Type are required.
 type BetaManagedAgentsSearchResultContentParam struct {
 	// The text content.
 	Text string `json:"text" api:"required"`
-	// Any of "text".
-	Type BetaManagedAgentsSearchResultContentType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "text".
+	Type constant.Text `json:"type" default:"text"`
 	paramObj
 }
 
@@ -4325,8 +4088,7 @@ func (r *BetaManagedAgentsSendSessionEventsDataUnionContent) UnmarshalJSON(data 
 // measure). Raise the budget to continue — or, if raising is rejected because a
 // model has no list price, remove the budget.
 type BetaManagedAgentsSessionBudgetReached struct {
-	// Any of "budget_reached".
-	Type BetaManagedAgentsSessionBudgetReachedType `json:"type" api:"required"`
+	Type constant.BudgetReached `json:"type" default:"budget_reached"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -4341,21 +4103,14 @@ func (r *BetaManagedAgentsSessionBudgetReached) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionBudgetReachedType string
-
-const (
-	BetaManagedAgentsSessionBudgetReachedTypeBudgetReached BetaManagedAgentsSessionBudgetReachedType = "budget_reached"
-)
-
 // Emitted when a session has been deleted. Terminates any active event stream — no
 // further events will be emitted for this session.
 type BetaManagedAgentsSessionDeletedEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// Timestamp when the session was deleted.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "session.deleted".
-	Type BetaManagedAgentsSessionDeletedEventType `json:"type" api:"required"`
+	ProcessedAt time.Time               `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.SessionDeleted `json:"type" default:"session.deleted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -4372,16 +4127,9 @@ func (r *BetaManagedAgentsSessionDeletedEvent) UnmarshalJSON(data []byte) error 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionDeletedEventType string
-
-const (
-	BetaManagedAgentsSessionDeletedEventTypeSessionDeleted BetaManagedAgentsSessionDeletedEventType = "session.deleted"
-)
-
 // The agent completed its turn naturally and is ready for the next user message.
 type BetaManagedAgentsSessionEndTurn struct {
-	// Any of "end_turn".
-	Type BetaManagedAgentsSessionEndTurnType `json:"type" api:"required"`
+	Type constant.EndTurn `json:"type" default:"end_turn"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -4396,21 +4144,14 @@ func (r *BetaManagedAgentsSessionEndTurn) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionEndTurnType string
-
-const (
-	BetaManagedAgentsSessionEndTurnTypeEndTurn BetaManagedAgentsSessionEndTurnType = "end_turn"
-)
-
 // An error event indicating a problem occurred during session execution.
 type BetaManagedAgentsSessionErrorEvent struct {
 	// Unique identifier for this event.
 	ID    string                                       `json:"id" api:"required"`
 	Error BetaManagedAgentsSessionErrorEventErrorUnion `json:"error" api:"required"`
 	// Timestamp when the error occurred.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "session.error".
-	Type BetaManagedAgentsSessionErrorEventType `json:"type" api:"required"`
+	ProcessedAt time.Time             `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.SessionError `json:"type" default:"session.error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -4653,12 +4394,6 @@ type BetaManagedAgentsSessionErrorEventErrorUnionRetryStatus struct {
 func (r *BetaManagedAgentsSessionErrorEventErrorUnionRetryStatus) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsSessionErrorEventType string
-
-const (
-	BetaManagedAgentsSessionErrorEventTypeSessionError BetaManagedAgentsSessionErrorEventType = "session.error"
-)
 
 // BetaManagedAgentsSessionEventUnion contains all possible properties and values
 // from [BetaManagedAgentsUserMessageEvent], [BetaManagedAgentsUserInterruptEvent],
@@ -5591,9 +5326,8 @@ const (
 type BetaManagedAgentsSessionRequiresAction struct {
 	// The ids of events the agent is blocked on. Resolving fewer than all re-emits
 	// `session.status_idle` with the remainder.
-	EventIDs []string `json:"event_ids" api:"required"`
-	// Any of "requires_action".
-	Type BetaManagedAgentsSessionRequiresActionType `json:"type" api:"required"`
+	EventIDs []string                `json:"event_ids" api:"required"`
+	Type     constant.RequiresAction `json:"type" default:"requires_action"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		EventIDs    respjson.Field
@@ -5609,17 +5343,10 @@ func (r *BetaManagedAgentsSessionRequiresAction) UnmarshalJSON(data []byte) erro
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionRequiresActionType string
-
-const (
-	BetaManagedAgentsSessionRequiresActionTypeRequiresAction BetaManagedAgentsSessionRequiresActionType = "requires_action"
-)
-
 // The turn ended because repeated errors exhausted the retry budget or an error
 // escalated to `retry_status: 'exhausted'`.
 type BetaManagedAgentsSessionRetriesExhausted struct {
-	// Any of "retries_exhausted".
-	Type BetaManagedAgentsSessionRetriesExhaustedType `json:"type" api:"required"`
+	Type constant.RetriesExhausted `json:"type" default:"retries_exhausted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -5634,12 +5361,6 @@ func (r *BetaManagedAgentsSessionRetriesExhausted) UnmarshalJSON(data []byte) er
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionRetriesExhaustedType string
-
-const (
-	BetaManagedAgentsSessionRetriesExhaustedTypeRetriesExhausted BetaManagedAgentsSessionRetriesExhaustedType = "retries_exhausted"
-)
-
 // Indicates the agent has paused and is awaiting user input.
 type BetaManagedAgentsSessionStatusIdleEvent struct {
 	// Unique identifier for this event.
@@ -5650,8 +5371,7 @@ type BetaManagedAgentsSessionStatusIdleEvent struct {
 	// nothing more to report.
 	StopDetails BetaManagedAgentsSessionRefusalStopDetails             `json:"stop_details" api:"required"`
 	StopReason  BetaManagedAgentsSessionStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
-	// Any of "session.status_idle".
-	Type BetaManagedAgentsSessionStatusIdleEventType `json:"type" api:"required"`
+	Type        constant.SessionStatusIdle                             `json:"type" default:"session.status_idle"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -5769,21 +5489,14 @@ func (r *BetaManagedAgentsSessionStatusIdleEventStopReasonUnion) UnmarshalJSON(d
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionStatusIdleEventType string
-
-const (
-	BetaManagedAgentsSessionStatusIdleEventTypeSessionStatusIdle BetaManagedAgentsSessionStatusIdleEventType = "session.status_idle"
-)
-
 // Indicates the session is recovering from an error state and is rescheduled for
 // execution.
 type BetaManagedAgentsSessionStatusRescheduledEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// Timestamp of status change.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "session.status_rescheduled".
-	Type BetaManagedAgentsSessionStatusRescheduledEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                         `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.SessionStatusRescheduled `json:"type" default:"session.status_rescheduled"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -5800,20 +5513,13 @@ func (r *BetaManagedAgentsSessionStatusRescheduledEvent) UnmarshalJSON(data []by
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionStatusRescheduledEventType string
-
-const (
-	BetaManagedAgentsSessionStatusRescheduledEventTypeSessionStatusRescheduled BetaManagedAgentsSessionStatusRescheduledEventType = "session.status_rescheduled"
-)
-
 // Indicates the session is actively running and the agent is working.
 type BetaManagedAgentsSessionStatusRunningEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// Timestamp of status change.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "session.status_running".
-	Type BetaManagedAgentsSessionStatusRunningEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                     `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.SessionStatusRunning `json:"type" default:"session.status_running"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -5830,20 +5536,13 @@ func (r *BetaManagedAgentsSessionStatusRunningEvent) UnmarshalJSON(data []byte) 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionStatusRunningEventType string
-
-const (
-	BetaManagedAgentsSessionStatusRunningEventTypeSessionStatusRunning BetaManagedAgentsSessionStatusRunningEventType = "session.status_running"
-)
-
 // Indicates the session has terminated, either due to an error or completion.
 type BetaManagedAgentsSessionStatusTerminatedEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// Timestamp of status change.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "session.status_terminated".
-	Type BetaManagedAgentsSessionStatusTerminatedEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                        `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.SessionStatusTerminated `json:"type" default:"session.status_terminated"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -5860,12 +5559,6 @@ func (r *BetaManagedAgentsSessionStatusTerminatedEvent) UnmarshalJSON(data []byt
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionStatusTerminatedEventType string
-
-const (
-	BetaManagedAgentsSessionStatusTerminatedEventTypeSessionStatusTerminated BetaManagedAgentsSessionStatusTerminatedEventType = "session.status_terminated"
-)
-
 // Emitted when a child thread is created. Written to the parent thread's output
 // stream so clients observing the session see child creation.
 type BetaManagedAgentsSessionThreadCreatedEvent struct {
@@ -5876,9 +5569,8 @@ type BetaManagedAgentsSessionThreadCreatedEvent struct {
 	// Timestamp when the thread was created.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public `sthr_` ID of the newly created thread.
-	SessionThreadID string `json:"session_thread_id" api:"required"`
-	// Any of "session.thread_created".
-	Type BetaManagedAgentsSessionThreadCreatedEventType `json:"type" api:"required"`
+	SessionThreadID string                        `json:"session_thread_id" api:"required"`
+	Type            constant.SessionThreadCreated `json:"type" default:"session.thread_created"`
 	// Identifier of the workflow run that created the thread, or `null` for any other
 	// thread.
 	WorkflowRunID string `json:"workflow_run_id" api:"required"`
@@ -5901,12 +5593,6 @@ func (r *BetaManagedAgentsSessionThreadCreatedEvent) UnmarshalJSON(data []byte) 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionThreadCreatedEventType string
-
-const (
-	BetaManagedAgentsSessionThreadCreatedEventTypeSessionThreadCreated BetaManagedAgentsSessionThreadCreatedEventType = "session.thread_created"
-)
-
 // A session thread has yielded and is awaiting input. Emitted on the thread's own
 // stream and cross-posted to the primary stream for child threads.
 type BetaManagedAgentsSessionThreadStatusIdleEvent struct {
@@ -5922,8 +5608,7 @@ type BetaManagedAgentsSessionThreadStatusIdleEvent struct {
 	// nothing more to report.
 	StopDetails BetaManagedAgentsSessionRefusalStopDetails                   `json:"stop_details" api:"required"`
 	StopReason  BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion `json:"stop_reason" api:"required"`
-	// Any of "session.thread_status_idle".
-	Type BetaManagedAgentsSessionThreadStatusIdleEventType `json:"type" api:"required"`
+	Type        constant.SessionThreadStatusIdle                             `json:"type" default:"session.thread_status_idle"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID              respjson.Field
@@ -6047,12 +5732,6 @@ func (r *BetaManagedAgentsSessionThreadStatusIdleEventStopReasonUnion) Unmarshal
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionThreadStatusIdleEventType string
-
-const (
-	BetaManagedAgentsSessionThreadStatusIdleEventTypeSessionThreadStatusIdle BetaManagedAgentsSessionThreadStatusIdleEventType = "session.thread_status_idle"
-)
-
 // A session thread hit a transient error and is retrying automatically. Emitted on
 // the thread's own stream and cross-posted to the primary stream for child
 // threads.
@@ -6064,9 +5743,8 @@ type BetaManagedAgentsSessionThreadStatusRescheduledEvent struct {
 	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public sthr\_ ID of the thread that is retrying.
-	SessionThreadID string `json:"session_thread_id" api:"required"`
-	// Any of "session.thread_status_rescheduled".
-	Type BetaManagedAgentsSessionThreadStatusRescheduledEventType `json:"type" api:"required"`
+	SessionThreadID string                                  `json:"session_thread_id" api:"required"`
+	Type            constant.SessionThreadStatusRescheduled `json:"type" default:"session.thread_status_rescheduled"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID              respjson.Field
@@ -6085,12 +5763,6 @@ func (r *BetaManagedAgentsSessionThreadStatusRescheduledEvent) UnmarshalJSON(dat
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionThreadStatusRescheduledEventType string
-
-const (
-	BetaManagedAgentsSessionThreadStatusRescheduledEventTypeSessionThreadStatusRescheduled BetaManagedAgentsSessionThreadStatusRescheduledEventType = "session.thread_status_rescheduled"
-)
-
 // A session thread has begun executing. Emitted on the thread's own stream and
 // cross-posted to the primary stream for child threads.
 type BetaManagedAgentsSessionThreadStatusRunningEvent struct {
@@ -6101,9 +5773,8 @@ type BetaManagedAgentsSessionThreadStatusRunningEvent struct {
 	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public sthr\_ ID of the thread that started running.
-	SessionThreadID string `json:"session_thread_id" api:"required"`
-	// Any of "session.thread_status_running".
-	Type BetaManagedAgentsSessionThreadStatusRunningEventType `json:"type" api:"required"`
+	SessionThreadID string                              `json:"session_thread_id" api:"required"`
+	Type            constant.SessionThreadStatusRunning `json:"type" default:"session.thread_status_running"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID              respjson.Field
@@ -6122,12 +5793,6 @@ func (r *BetaManagedAgentsSessionThreadStatusRunningEvent) UnmarshalJSON(data []
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionThreadStatusRunningEventType string
-
-const (
-	BetaManagedAgentsSessionThreadStatusRunningEventTypeSessionThreadStatusRunning BetaManagedAgentsSessionThreadStatusRunningEventType = "session.thread_status_running"
-)
-
 // A session thread has terminated and will accept no further input. Emitted on the
 // thread's own stream and cross-posted to the primary stream for child threads.
 type BetaManagedAgentsSessionThreadStatusTerminatedEvent struct {
@@ -6138,9 +5803,8 @@ type BetaManagedAgentsSessionThreadStatusTerminatedEvent struct {
 	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
 	// Public sthr\_ ID of the thread that terminated.
-	SessionThreadID string `json:"session_thread_id" api:"required"`
-	// Any of "session.thread_status_terminated".
-	Type BetaManagedAgentsSessionThreadStatusTerminatedEventType `json:"type" api:"required"`
+	SessionThreadID string                                 `json:"session_thread_id" api:"required"`
+	Type            constant.SessionThreadStatusTerminated `json:"type" default:"session.thread_status_terminated"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID              respjson.Field
@@ -6158,12 +5822,6 @@ func (r BetaManagedAgentsSessionThreadStatusTerminatedEvent) RawJSON() string { 
 func (r *BetaManagedAgentsSessionThreadStatusTerminatedEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsSessionThreadStatusTerminatedEventType string
-
-const (
-	BetaManagedAgentsSessionThreadStatusTerminatedEventTypeSessionThreadStatusTerminated BetaManagedAgentsSessionThreadStatusTerminatedEventType = "session.thread_status_terminated"
-)
 
 // Point-in-time snapshot of a session's cumulative usage.
 type BetaManagedAgentsSessionUsageSnapshot struct {
@@ -6215,9 +5873,8 @@ type BetaManagedAgentsSpanModelRequestEndEvent struct {
 	// Token usage for this model request.
 	ModelUsage BetaManagedAgentsSpanModelUsage `json:"model_usage" api:"required"`
 	// Timestamp when the model request completed.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "span.model_request_end".
-	Type BetaManagedAgentsSpanModelRequestEndEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                    `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.SpanModelRequestEnd `json:"type" default:"span.model_request_end"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID                  respjson.Field
@@ -6237,20 +5894,13 @@ func (r *BetaManagedAgentsSpanModelRequestEndEvent) UnmarshalJSON(data []byte) e
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSpanModelRequestEndEventType string
-
-const (
-	BetaManagedAgentsSpanModelRequestEndEventTypeSpanModelRequestEnd BetaManagedAgentsSpanModelRequestEndEventType = "span.model_request_end"
-)
-
 // Emitted when a model request is initiated by the agent.
 type BetaManagedAgentsSpanModelRequestStartEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// Timestamp when the model request started.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "span.model_request_start".
-	Type BetaManagedAgentsSpanModelRequestStartEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                      `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.SpanModelRequestStart `json:"type" default:"span.model_request_start"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -6266,12 +5916,6 @@ func (r BetaManagedAgentsSpanModelRequestStartEvent) RawJSON() string { return r
 func (r *BetaManagedAgentsSpanModelRequestStartEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsSpanModelRequestStartEventType string
-
-const (
-	BetaManagedAgentsSpanModelRequestStartEventTypeSpanModelRequestStart BetaManagedAgentsSpanModelRequestStartEventType = "span.model_request_start"
-)
 
 // Token usage for a single model request.
 type BetaManagedAgentsSpanModelUsage struct {
@@ -6341,9 +5985,8 @@ type BetaManagedAgentsSpanOutcomeEvaluationEndEvent struct {
 	// further evaluation runs. 'failed': grader determined the rubric does not apply
 	// to the deliverables. 'interrupted': user sent an interrupt while evaluation was
 	// in progress.
-	Result string `json:"result" api:"required"`
-	// Any of "span.outcome_evaluation_end".
-	Type BetaManagedAgentsSpanOutcomeEvaluationEndEventType `json:"type" api:"required"`
+	Result string                            `json:"result" api:"required"`
+	Type   constant.SpanOutcomeEvaluationEnd `json:"type" default:"span.outcome_evaluation_end"`
 	// Aggregate token usage for this evaluation cycle. Sums across all grader model
 	// requests within the cycle.
 	Usage BetaManagedAgentsSpanModelUsage `json:"usage" api:"required"`
@@ -6369,12 +6012,6 @@ func (r *BetaManagedAgentsSpanOutcomeEvaluationEndEvent) UnmarshalJSON(data []by
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSpanOutcomeEvaluationEndEventType string
-
-const (
-	BetaManagedAgentsSpanOutcomeEvaluationEndEventTypeSpanOutcomeEvaluationEnd BetaManagedAgentsSpanOutcomeEvaluationEndEventType = "span.outcome_evaluation_end"
-)
-
 // Periodic heartbeat emitted while an outcome evaluation cycle is in progress.
 // Distinguishes 'evaluation is actively running' from 'evaluation is stuck'
 // between the corresponding `span.outcome_evaluation_start` and
@@ -6388,9 +6025,8 @@ type BetaManagedAgentsSpanOutcomeEvaluationOngoingEvent struct {
 	// The `outc_` ID of the outcome being evaluated.
 	OutcomeID string `json:"outcome_id" api:"required"`
 	// Timestamp when this heartbeat was emitted.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "span.outcome_evaluation_ongoing".
-	Type BetaManagedAgentsSpanOutcomeEvaluationOngoingEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                             `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.SpanOutcomeEvaluationOngoing `json:"type" default:"span.outcome_evaluation_ongoing"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -6409,12 +6045,6 @@ func (r *BetaManagedAgentsSpanOutcomeEvaluationOngoingEvent) UnmarshalJSON(data 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSpanOutcomeEvaluationOngoingEventType string
-
-const (
-	BetaManagedAgentsSpanOutcomeEvaluationOngoingEventTypeSpanOutcomeEvaluationOngoing BetaManagedAgentsSpanOutcomeEvaluationOngoingEventType = "span.outcome_evaluation_ongoing"
-)
-
 // Emitted when an outcome evaluation cycle begins.
 type BetaManagedAgentsSpanOutcomeEvaluationStartEvent struct {
 	// Unique identifier for this event.
@@ -6425,9 +6055,8 @@ type BetaManagedAgentsSpanOutcomeEvaluationStartEvent struct {
 	// The `outc_` ID of the outcome being evaluated.
 	OutcomeID string `json:"outcome_id" api:"required"`
 	// Timestamp when outcome evaluation started.
-	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Any of "span.outcome_evaluation_start".
-	Type BetaManagedAgentsSpanOutcomeEvaluationStartEventType `json:"type" api:"required"`
+	ProcessedAt time.Time                           `json:"processed_at" api:"required" format:"date-time"`
+	Type        constant.SpanOutcomeEvaluationStart `json:"type" default:"span.outcome_evaluation_start"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -6445,12 +6074,6 @@ func (r BetaManagedAgentsSpanOutcomeEvaluationStartEvent) RawJSON() string { ret
 func (r *BetaManagedAgentsSpanOutcomeEvaluationStartEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsSpanOutcomeEvaluationStartEventType string
-
-const (
-	BetaManagedAgentsSpanOutcomeEvaluationStartEventTypeSpanOutcomeEvaluationStart BetaManagedAgentsSpanOutcomeEvaluationStartEventType = "span.outcome_evaluation_start"
-)
 
 // BetaManagedAgentsStreamSessionEventsUnion contains all possible properties and
 // values from [BetaManagedAgentsUserMessageEvent],
@@ -7330,8 +6953,8 @@ func (r *BetaManagedAgentsStreamSessionEventsUnionUsage) UnmarshalJSON(data []by
 type BetaManagedAgentsSystemMessageEventParams struct {
 	// System content blocks to append. Text-only.
 	Content []BetaManagedAgentsSystemContentBlockParam `json:"content,omitzero" api:"required"`
-	// Any of "system.message".
-	Type BetaManagedAgentsSystemMessageEventParamsType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "system.message".
+	Type constant.SystemMessage `json:"type" default:"system.message"`
 	paramObj
 }
 
@@ -7343,18 +6966,11 @@ func (r *BetaManagedAgentsSystemMessageEventParams) UnmarshalJSON(data []byte) e
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSystemMessageEventParamsType string
-
-const (
-	BetaManagedAgentsSystemMessageEventParamsTypeSystemMessage BetaManagedAgentsSystemMessageEventParamsType = "system.message"
-)
-
 // Regular text content.
 type BetaManagedAgentsTextBlock struct {
 	// The text content.
-	Text string `json:"text" api:"required"`
-	// Any of "text".
-	Type BetaManagedAgentsTextBlockType `json:"type" api:"required"`
+	Text string        `json:"text" api:"required"`
+	Type constant.Text `json:"type" default:"text"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Text        respjson.Field
@@ -7380,20 +6996,14 @@ func (r BetaManagedAgentsTextBlock) ToParam() BetaManagedAgentsTextBlockParam {
 	return param.Override[BetaManagedAgentsTextBlockParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsTextBlockType string
-
-const (
-	BetaManagedAgentsTextBlockTypeText BetaManagedAgentsTextBlockType = "text"
-)
-
 // Regular text content.
 //
 // The properties Text, Type are required.
 type BetaManagedAgentsTextBlockParam struct {
 	// The text content.
 	Text string `json:"text" api:"required"`
-	// Any of "text".
-	Type BetaManagedAgentsTextBlockType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "text".
+	Type constant.Text `json:"type" default:"text"`
 	paramObj
 }
 
@@ -7408,9 +7018,8 @@ func (r *BetaManagedAgentsTextBlockParam) UnmarshalJSON(data []byte) error {
 // Rubric content provided inline as text.
 type BetaManagedAgentsTextRubric struct {
 	// Rubric content. Plain text or markdown — the grader treats it as freeform text.
-	Content string `json:"content" api:"required"`
-	// Any of "text".
-	Type BetaManagedAgentsTextRubricType `json:"type" api:"required"`
+	Content string        `json:"content" api:"required"`
+	Type    constant.Text `json:"type" default:"text"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Content     respjson.Field
@@ -7426,12 +7035,6 @@ func (r *BetaManagedAgentsTextRubric) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsTextRubricType string
-
-const (
-	BetaManagedAgentsTextRubricTypeText BetaManagedAgentsTextRubricType = "text"
-)
-
 // Rubric content provided inline as text.
 //
 // The properties Content, Type are required.
@@ -7439,8 +7042,8 @@ type BetaManagedAgentsTextRubricParams struct {
 	// Rubric content. Plain text or markdown — the grader treats it as freeform text.
 	// Maximum 262144 characters.
 	Content string `json:"content" api:"required"`
-	// Any of "text".
-	Type BetaManagedAgentsTextRubricParamsType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "text".
+	Type constant.Text `json:"type" default:"text"`
 	paramObj
 }
 
@@ -7451,12 +7054,6 @@ func (r BetaManagedAgentsTextRubricParams) MarshalJSON() (data []byte, err error
 func (r *BetaManagedAgentsTextRubricParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsTextRubricParamsType string
-
-const (
-	BetaManagedAgentsTextRubricParamsTypeText BetaManagedAgentsTextRubricParamsType = "text"
-)
 
 // The run exceeded the limit on the number of threads that a run can create.
 type BetaManagedAgentsThreadLimitWorkflowRunError struct {
@@ -7508,8 +7105,7 @@ type BetaManagedAgentsUnknownError struct {
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
 	RetryStatus BetaManagedAgentsUnknownErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	// Any of "unknown_error".
-	Type BetaManagedAgentsUnknownErrorType `json:"type" api:"required"`
+	Type        constant.UnknownError                         `json:"type" default:"unknown_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -7597,12 +7193,6 @@ func (r *BetaManagedAgentsUnknownErrorRetryStatusUnion) UnmarshalJSON(data []byt
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsUnknownErrorType string
-
-const (
-	BetaManagedAgentsUnknownErrorTypeUnknownError BetaManagedAgentsUnknownErrorType = "unknown_error"
-)
-
 // A failure that has no type of its own.
 type BetaManagedAgentsUnknownWorkflowRunError struct {
 	// Short explanation written by the server. It never contains content from the run
@@ -7626,8 +7216,7 @@ func (r *BetaManagedAgentsUnknownWorkflowRunError) UnmarshalJSON(data []byte) er
 
 // Document referenced by URL.
 type BetaManagedAgentsURLDocumentSource struct {
-	// Any of "url".
-	Type BetaManagedAgentsURLDocumentSourceType `json:"type" api:"required"`
+	Type constant.URL `json:"type" default:"url"`
 	// URL of the document to fetch.
 	URL string `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -7655,20 +7244,14 @@ func (r BetaManagedAgentsURLDocumentSource) ToParam() BetaManagedAgentsURLDocume
 	return param.Override[BetaManagedAgentsURLDocumentSourceParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsURLDocumentSourceType string
-
-const (
-	BetaManagedAgentsURLDocumentSourceTypeURL BetaManagedAgentsURLDocumentSourceType = "url"
-)
-
 // Document referenced by URL.
 //
 // The properties Type, URL are required.
 type BetaManagedAgentsURLDocumentSourceParam struct {
-	// Any of "url".
-	Type BetaManagedAgentsURLDocumentSourceType `json:"type,omitzero" api:"required"`
 	// URL of the document to fetch.
 	URL string `json:"url" api:"required"`
+	// This field can be elided, and will marshal its zero value as "url".
+	Type constant.URL `json:"type" default:"url"`
 	paramObj
 }
 
@@ -7682,8 +7265,7 @@ func (r *BetaManagedAgentsURLDocumentSourceParam) UnmarshalJSON(data []byte) err
 
 // Image referenced by URL.
 type BetaManagedAgentsURLImageSource struct {
-	// Any of "url".
-	Type BetaManagedAgentsURLImageSourceType `json:"type" api:"required"`
+	Type constant.URL `json:"type" default:"url"`
 	// URL of the image to fetch.
 	URL string `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -7711,20 +7293,14 @@ func (r BetaManagedAgentsURLImageSource) ToParam() BetaManagedAgentsURLImageSour
 	return param.Override[BetaManagedAgentsURLImageSourceParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaManagedAgentsURLImageSourceType string
-
-const (
-	BetaManagedAgentsURLImageSourceTypeURL BetaManagedAgentsURLImageSourceType = "url"
-)
-
 // Image referenced by URL.
 //
 // The properties Type, URL are required.
 type BetaManagedAgentsURLImageSourceParam struct {
-	// Any of "url".
-	Type BetaManagedAgentsURLImageSourceType `json:"type,omitzero" api:"required"`
 	// URL of the image to fetch.
 	URL string `json:"url" api:"required"`
+	// This field can be elided, and will marshal its zero value as "url".
+	Type constant.URL `json:"type" default:"url"`
 	paramObj
 }
 
@@ -7744,9 +7320,8 @@ type BetaManagedAgentsUserCustomToolResultEvent struct {
 	// also listed in the last `session.status_idle`
 	// [event's](https://platform.claude.com/docs/en/api/beta/sessions/events/list#beta_managed_agents_session_requires_action.event_ids)
 	// `stop_reason.event_ids` field.
-	CustomToolUseID string `json:"custom_tool_use_id" api:"required"`
-	// Any of "user.custom_tool_result".
-	Type BetaManagedAgentsUserCustomToolResultEventType `json:"type" api:"required"`
+	CustomToolUseID string                        `json:"custom_tool_use_id" api:"required"`
+	Type            constant.UserCustomToolResult `json:"type" default:"user.custom_tool_result"`
 	// The result content returned by the tool.
 	Content []BetaManagedAgentsUserCustomToolResultEventContentUnion `json:"content"`
 	// Whether the tool execution resulted in an error.
@@ -7775,12 +7350,6 @@ func (r BetaManagedAgentsUserCustomToolResultEvent) RawJSON() string { return r.
 func (r *BetaManagedAgentsUserCustomToolResultEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsUserCustomToolResultEventType string
-
-const (
-	BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult BetaManagedAgentsUserCustomToolResultEventType = "user.custom_tool_result"
-)
 
 // BetaManagedAgentsUserCustomToolResultEventContentUnion contains all possible
 // properties and values from [BetaManagedAgentsTextBlock],
@@ -7925,12 +7494,13 @@ type BetaManagedAgentsUserCustomToolResultEventParams struct {
 	// [event's](https://platform.claude.com/docs/en/api/beta/sessions/events/list#beta_managed_agents_session_requires_action.event_ids)
 	// `stop_reason.event_ids` field.
 	CustomToolUseID string `json:"custom_tool_use_id" api:"required"`
-	// Any of "user.custom_tool_result".
-	Type BetaManagedAgentsUserCustomToolResultEventParamsType `json:"type,omitzero" api:"required"`
 	// Whether the tool execution resulted in an error.
 	IsError param.Opt[bool] `json:"is_error,omitzero"`
 	// The result content returned by the tool.
 	Content []BetaManagedAgentsUserCustomToolResultEventParamsContentUnion `json:"content,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "user.custom_tool_result".
+	Type constant.UserCustomToolResult `json:"type" default:"user.custom_tool_result"`
 	paramObj
 }
 
@@ -7941,12 +7511,6 @@ func (r BetaManagedAgentsUserCustomToolResultEventParams) MarshalJSON() (data []
 func (r *BetaManagedAgentsUserCustomToolResultEventParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsUserCustomToolResultEventParamsType string
-
-const (
-	BetaManagedAgentsUserCustomToolResultEventParamsTypeUserCustomToolResult BetaManagedAgentsUserCustomToolResultEventParamsType = "user.custom_tool_result"
-)
 
 // Only one field can be non-zero.
 //
@@ -8014,13 +7578,13 @@ func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetContent
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsUserCustomToolResultEventParamsContentUnion) GetType() *string {
 	if vt := u.OfText; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfImage; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDocument; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfSearchResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -8156,8 +7720,7 @@ type BetaManagedAgentsUserDefineOutcomeEvent struct {
 	// How to grade the outcome. File rubrics are currently resolved to their text
 	// content; clients should handle both variants.
 	Rubric BetaManagedAgentsUserDefineOutcomeEventRubricUnion `json:"rubric" api:"required"`
-	// Any of "user.define_outcome".
-	Type BetaManagedAgentsUserDefineOutcomeEventType `json:"type" api:"required"`
+	Type   constant.UserDefineOutcome                         `json:"type" default:"user.define_outcome"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID            respjson.Field
@@ -8246,12 +7809,6 @@ func (r *BetaManagedAgentsUserDefineOutcomeEventRubricUnion) UnmarshalJSON(data 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsUserDefineOutcomeEventType string
-
-const (
-	BetaManagedAgentsUserDefineOutcomeEventTypeUserDefineOutcome BetaManagedAgentsUserDefineOutcomeEventType = "user.define_outcome"
-)
-
 // Parameters for defining an outcome the agent should work toward. The agent
 // begins work on receipt.
 //
@@ -8261,10 +7818,11 @@ type BetaManagedAgentsUserDefineOutcomeEventParams struct {
 	Description string `json:"description" api:"required"`
 	// How to grade the outcome. Text or file reference.
 	Rubric BetaManagedAgentsUserDefineOutcomeEventParamsRubricUnion `json:"rubric,omitzero" api:"required"`
-	// Any of "user.define_outcome".
-	Type BetaManagedAgentsUserDefineOutcomeEventParamsType `json:"type,omitzero" api:"required"`
 	// Eval→revision cycles before giving up. Default 3, max 20.
 	MaxIterations param.Opt[int64] `json:"max_iterations,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "user.define_outcome".
+	Type constant.UserDefineOutcome `json:"type" default:"user.define_outcome"`
 	paramObj
 }
 
@@ -8320,9 +7878,9 @@ func (u BetaManagedAgentsUserDefineOutcomeEventParamsRubricUnion) GetContent() *
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsUserDefineOutcomeEventParamsRubricUnion) GetType() *string {
 	if vt := u.OfFile; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfText; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -8335,18 +7893,11 @@ func init() {
 	)
 }
 
-type BetaManagedAgentsUserDefineOutcomeEventParamsType string
-
-const (
-	BetaManagedAgentsUserDefineOutcomeEventParamsTypeUserDefineOutcome BetaManagedAgentsUserDefineOutcomeEventParamsType = "user.define_outcome"
-)
-
 // An interrupt event that pauses agent execution and returns control to the user.
 type BetaManagedAgentsUserInterruptEvent struct {
 	// Unique identifier for this event.
-	ID string `json:"id" api:"required"`
-	// Any of "user.interrupt".
-	Type BetaManagedAgentsUserInterruptEventType `json:"type" api:"required"`
+	ID   string                 `json:"id" api:"required"`
+	Type constant.UserInterrupt `json:"type" default:"user.interrupt"`
 	// Timestamp when the interrupt was processed.
 	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
 	// If absent, interrupts every non-archived thread in a multiagent session (or the
@@ -8370,22 +7921,16 @@ func (r *BetaManagedAgentsUserInterruptEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsUserInterruptEventType string
-
-const (
-	BetaManagedAgentsUserInterruptEventTypeUserInterrupt BetaManagedAgentsUserInterruptEventType = "user.interrupt"
-)
-
 // Parameters for sending an interrupt to pause the agent.
 //
 // The property Type is required.
 type BetaManagedAgentsUserInterruptEventParams struct {
-	// Any of "user.interrupt".
-	Type BetaManagedAgentsUserInterruptEventParamsType `json:"type,omitzero" api:"required"`
 	// If absent, interrupts every non-archived thread in a multiagent session (or the
 	// primary alone in a single-agent session). If present, interrupts only the named
 	// thread.
 	SessionThreadID param.Opt[string] `json:"session_thread_id,omitzero"`
+	// This field can be elided, and will marshal its zero value as "user.interrupt".
+	Type constant.UserInterrupt `json:"type" default:"user.interrupt"`
 	paramObj
 }
 
@@ -8397,20 +7942,13 @@ func (r *BetaManagedAgentsUserInterruptEventParams) UnmarshalJSON(data []byte) e
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsUserInterruptEventParamsType string
-
-const (
-	BetaManagedAgentsUserInterruptEventParamsTypeUserInterrupt BetaManagedAgentsUserInterruptEventParamsType = "user.interrupt"
-)
-
 // A user message event in the session conversation.
 type BetaManagedAgentsUserMessageEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// Array of content blocks comprising the user message.
 	Content []BetaManagedAgentsUserMessageEventContentUnion `json:"content" api:"required"`
-	// Any of "user.message".
-	Type BetaManagedAgentsUserMessageEventType `json:"type" api:"required"`
+	Type    constant.UserMessage                            `json:"type" default:"user.message"`
 	// Timestamp when the agent finished processing this message.
 	ProcessedAt time.Time `json:"processed_at" api:"nullable" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -8550,20 +8088,14 @@ func (r *BetaManagedAgentsUserMessageEventContentUnionSource) UnmarshalJSON(data
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsUserMessageEventType string
-
-const (
-	BetaManagedAgentsUserMessageEventTypeUserMessage BetaManagedAgentsUserMessageEventType = "user.message"
-)
-
 // Parameters for sending a user message to the session.
 //
 // The properties Content, Type are required.
 type BetaManagedAgentsUserMessageEventParams struct {
 	// Array of content blocks for the user message.
 	Content []BetaManagedAgentsUserMessageEventParamsContentUnion `json:"content,omitzero" api:"required"`
-	// Any of "user.message".
-	Type BetaManagedAgentsUserMessageEventParamsType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "user.message".
+	Type constant.UserMessage `json:"type" default:"user.message"`
 	paramObj
 }
 
@@ -8633,13 +8165,13 @@ func (u BetaManagedAgentsUserMessageEventParamsContentUnion) GetTitle() *string 
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsUserMessageEventParamsContentUnion) GetType() *string {
 	if vt := u.OfText; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfImage; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDocument; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfRedacted; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -8745,12 +8277,6 @@ func init() {
 	)
 }
 
-type BetaManagedAgentsUserMessageEventParamsType string
-
-const (
-	BetaManagedAgentsUserMessageEventParamsTypeUserMessage BetaManagedAgentsUserMessageEventParamsType = "user.message"
-)
-
 // A tool confirmation event that approves or denies a pending tool execution.
 type BetaManagedAgentsUserToolConfirmationEvent struct {
 	// Unique identifier for this event.
@@ -8763,9 +8289,8 @@ type BetaManagedAgentsUserToolConfirmationEvent struct {
 	// corresponds to, which can be found in the last `session.status_idle`
 	// [event's](https://platform.claude.com/docs/en/api/beta/sessions/events/list#beta_managed_agents_session_requires_action.event_ids)
 	// `stop_reason.event_ids` field.
-	ToolUseID string `json:"tool_use_id" api:"required"`
-	// Any of "user.tool_confirmation".
-	Type BetaManagedAgentsUserToolConfirmationEventType `json:"type" api:"required"`
+	ToolUseID string                        `json:"tool_use_id" api:"required"`
+	Type      constant.UserToolConfirmation `json:"type" default:"user.tool_confirmation"`
 	// Optional message providing context for a 'deny' decision. Only allowed when
 	// result is 'deny'.
 	DenyMessage string `json:"deny_message" api:"nullable"`
@@ -8802,12 +8327,6 @@ const (
 	BetaManagedAgentsUserToolConfirmationEventResultDeny  BetaManagedAgentsUserToolConfirmationEventResult = "deny"
 )
 
-type BetaManagedAgentsUserToolConfirmationEventType string
-
-const (
-	BetaManagedAgentsUserToolConfirmationEventTypeUserToolConfirmation BetaManagedAgentsUserToolConfirmationEventType = "user.tool_confirmation"
-)
-
 // Parameters for confirming or denying a tool execution request.
 //
 // The properties Result, ToolUseID, Type are required.
@@ -8821,11 +8340,12 @@ type BetaManagedAgentsUserToolConfirmationEventParams struct {
 	// [event's](https://platform.claude.com/docs/en/api/beta/sessions/events/list#beta_managed_agents_session_requires_action.event_ids)
 	// `stop_reason.event_ids` field.
 	ToolUseID string `json:"tool_use_id" api:"required"`
-	// Any of "user.tool_confirmation".
-	Type BetaManagedAgentsUserToolConfirmationEventParamsType `json:"type,omitzero" api:"required"`
 	// Optional message providing context for a 'deny' decision. Only allowed when
 	// result is 'deny'.
 	DenyMessage param.Opt[string] `json:"deny_message,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "user.tool_confirmation".
+	Type constant.UserToolConfirmation `json:"type" default:"user.tool_confirmation"`
 	paramObj
 }
 
@@ -8845,12 +8365,6 @@ const (
 	BetaManagedAgentsUserToolConfirmationEventParamsResultDeny  BetaManagedAgentsUserToolConfirmationEventParamsResult = "deny"
 )
 
-type BetaManagedAgentsUserToolConfirmationEventParamsType string
-
-const (
-	BetaManagedAgentsUserToolConfirmationEventParamsTypeUserToolConfirmation BetaManagedAgentsUserToolConfirmationEventParamsType = "user.tool_confirmation"
-)
-
 // Parameters for providing the result of an agent-toolset tool execution. Only
 // valid on `self_hosted` environments, where sandbox-routed tools are executed by
 // the client rather than the server.
@@ -8862,12 +8376,12 @@ type BetaManagedAgentsUserToolResultEventParams struct {
 	// [event's](https://platform.claude.com/docs/en/api/beta/sessions/events/list#beta_managed_agents_session_requires_action.event_ids)
 	// `stop_reason.event_ids` field.
 	ToolUseID string `json:"tool_use_id" api:"required"`
-	// Any of "user.tool_result".
-	Type BetaManagedAgentsUserToolResultEventParamsType `json:"type,omitzero" api:"required"`
 	// Whether the tool execution resulted in an error.
 	IsError param.Opt[bool] `json:"is_error,omitzero"`
 	// The result content returned by the tool.
 	Content []BetaManagedAgentsUserToolResultEventParamsContentUnion `json:"content,omitzero"`
+	// This field can be elided, and will marshal its zero value as "user.tool_result".
+	Type constant.UserToolResult `json:"type" default:"user.tool_result"`
 	paramObj
 }
 
@@ -8878,12 +8392,6 @@ func (r BetaManagedAgentsUserToolResultEventParams) MarshalJSON() (data []byte, 
 func (r *BetaManagedAgentsUserToolResultEventParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsUserToolResultEventParamsType string
-
-const (
-	BetaManagedAgentsUserToolResultEventParamsTypeUserToolResult BetaManagedAgentsUserToolResultEventParamsType = "user.tool_result"
-)
 
 // Only one field can be non-zero.
 //
@@ -8951,13 +8459,13 @@ func (u BetaManagedAgentsUserToolResultEventParamsContentUnion) GetContent() []B
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsUserToolResultEventParamsContentUnion) GetType() *string {
 	if vt := u.OfText; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfImage; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfDocument; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfSearchResult; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

@@ -10,13 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaMemoryStoreService contains methods and other services that help with
@@ -214,9 +215,8 @@ func (r *BetaMemoryStoreService) Archive(ctx context.Context, memoryStoreID stri
 type BetaManagedAgentsDeletedMemoryStore struct {
 	// ID of the deleted memory store (a `memstore_...` identifier). The store and all
 	// its memories and versions are no longer retrievable.
-	ID string `json:"id" api:"required"`
-	// Any of "memory_store_deleted".
-	Type BetaManagedAgentsDeletedMemoryStoreType `json:"type" api:"required"`
+	ID   string                                  `json:"id" api:"required"`
+	Type constant.MemoryStoreDeletedResponseType `json:"type" default:"memory_store_deleted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -231,12 +231,6 @@ func (r BetaManagedAgentsDeletedMemoryStore) RawJSON() string { return r.JSON.ra
 func (r *BetaManagedAgentsDeletedMemoryStore) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsDeletedMemoryStoreType string
-
-const (
-	BetaManagedAgentsDeletedMemoryStoreTypeMemoryStoreDeleted BetaManagedAgentsDeletedMemoryStoreType = "memory_store_deleted"
-)
 
 // A `memory_store`: a named container for agent memories, scoped to a workspace.
 // Attach a store to a session via `resources[]` to mount it as a directory the
@@ -269,9 +263,8 @@ type BetaManagedAgentsMemoryStore struct {
 	Metadata map[string]string `json:"metadata" api:"required"`
 	// Human-readable name for the store. 1–255 characters. The store's mount-path slug
 	// under `/mnt/memory/` is derived from this name.
-	Name string `json:"name" api:"required"`
-	// Any of "memory_store".
-	Type BetaManagedAgentsMemoryStoreType `json:"type" api:"required"`
+	Name string               `json:"name" api:"required"`
+	Type constant.MemoryStore `json:"type" default:"memory_store"`
 	// When the memory store was last changed, in RFC 3339.
 	//
 	// Changing its `name`, `description`, or `metadata` updates it. Archiving the
@@ -297,12 +290,6 @@ func (r BetaManagedAgentsMemoryStore) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsMemoryStore) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMemoryStoreType string
-
-const (
-	BetaManagedAgentsMemoryStoreTypeMemoryStore BetaManagedAgentsMemoryStoreType = "memory_store"
-)
 
 type BetaMemoryStoreNewParams struct {
 	// The name of the memory store, 1 to 255 characters long, without control

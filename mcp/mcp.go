@@ -16,8 +16,8 @@ import (
 	"net/url"
 	"strings"
 
-	anthropic "github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
+	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/telemetry"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -191,14 +191,21 @@ func ToMessage(msg *mcpsdk.PromptMessage) (anthropic.BetaMessageParam, error) {
 	if err != nil {
 		return anthropic.BetaMessageParam{}, err
 	}
-	return anthropic.BetaMessageParam{
-		Role: anthropic.BetaMessageParamRole(msg.Role),
-		Content: []anthropic.BetaContentBlockParamUnion{{
-			OfText:     block.OfText,
-			OfImage:    block.OfImage,
-			OfDocument: block.OfDocument,
-		}},
-	}, nil
+	content := []anthropic.BetaContentBlockParamUnion{{
+		OfText:     block.OfText,
+		OfImage:    block.OfImage,
+		OfDocument: block.OfDocument,
+	}}
+	switch msg.Role {
+	case "user":
+		return anthropic.NewBetaUserMessage(content...), nil
+	case "assistant":
+		return anthropic.BetaMessageParam{OfAssistant: &anthropic.BetaAssistantMessageParam{Content: content}}, nil
+	default:
+		return anthropic.BetaMessageParam{}, &UnsupportedValueError{
+			fmt.Sprintf("unsupported MCP role: %q", msg.Role),
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------

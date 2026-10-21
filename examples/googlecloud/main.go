@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/googlecloud"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/googlecloud"
 )
 
 // Claude Platform on Google Cloud: the full first-party Anthropic API served

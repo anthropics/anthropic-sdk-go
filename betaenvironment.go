@@ -10,15 +10,15 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaEnvironmentService contains methods and other services that help with
@@ -526,9 +526,7 @@ type BetaEnvironmentDeleteResponse struct {
 	// Environment identifier
 	ID string `json:"id" api:"required"`
 	// The type of response
-	//
-	// Any of "environment_deleted".
-	Type BetaEnvironmentDeleteResponseType `json:"type" api:"required"`
+	Type constant.EnvironmentDeletedResponseType `json:"type" default:"environment_deleted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -543,13 +541,6 @@ func (r BetaEnvironmentDeleteResponse) RawJSON() string { return r.JSON.raw }
 func (r *BetaEnvironmentDeleteResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// The type of response
-type BetaEnvironmentDeleteResponseType string
-
-const (
-	BetaEnvironmentDeleteResponseTypeEnvironmentDeleted BetaEnvironmentDeleteResponseType = "environment_deleted"
-)
 
 // Limited network access.
 type BetaLimitedNetwork struct {

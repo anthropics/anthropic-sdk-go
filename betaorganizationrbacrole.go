@@ -9,14 +9,14 @@ import (
 	"slices"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationRBACRoleService contains methods and other services that help
@@ -92,11 +92,6 @@ type BetaRBACRole struct {
 	// from the label claude.ai shows, and Anthropic may change the name. To keep a
 	// lasting reference to a role, store its `id`.
 	DisplayName string `json:"display_name" api:"required"`
-	// Deprecated: use `display_name` instead. Name of the RBAC Role; always the same
-	// value as `display_name`.
-	//
-	// Deprecated: Use `display_name` instead; `name` always has the same value.
-	Name string `json:"name" api:"required"`
 	// Object type.
 	//
 	// For RBAC Roles, this is always `"rbac_role"`.
@@ -108,7 +103,6 @@ type BetaRBACRole struct {
 		ID          respjson.Field
 		CreatedAt   respjson.Field
 		DisplayName respjson.Field
-		Name        respjson.Field
 		Type        respjson.Field
 		UpdatedAt   respjson.Field
 		ExtraFields map[string]respjson.Field

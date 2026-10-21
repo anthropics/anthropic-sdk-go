@@ -11,13 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaVaultCredentialService contains methods and other services that help with
@@ -274,9 +276,8 @@ type BetaManagedAgentsCredential struct {
 	// A timestamp in RFC 3339 format
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Arbitrary key-value metadata attached to the credential.
-	Metadata map[string]string `json:"metadata" api:"required"`
-	// Any of "vault_credential".
-	Type BetaManagedAgentsCredentialType `json:"type" api:"required"`
+	Metadata map[string]string        `json:"metadata" api:"required"`
+	Type     constant.VaultCredential `json:"type" default:"vault_credential"`
 	// A timestamp in RFC 3339 format
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// Identifier of the vault this credential belongs to.
@@ -394,22 +395,9 @@ func (r *BetaManagedAgentsCredentialAuthUnion) UnmarshalJSON(data []byte) error 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsCredentialType string
-
-const (
-	BetaManagedAgentsCredentialTypeVaultCredential BetaManagedAgentsCredentialType = "vault_credential"
-)
-
-func BetaManagedAgentsCredentialNetworkingParamsOfUnrestricted(type_ BetaManagedAgentsUnrestrictedCredentialNetworkingParamsType) BetaManagedAgentsCredentialNetworkingParamsUnion {
-	var unrestricted BetaManagedAgentsUnrestrictedCredentialNetworkingParams
-	unrestricted.Type = type_
-	return BetaManagedAgentsCredentialNetworkingParamsUnion{OfUnrestricted: &unrestricted}
-}
-
 func BetaManagedAgentsCredentialNetworkingParamsOfLimited(allowedHosts []string) BetaManagedAgentsCredentialNetworkingParamsUnion {
 	var limited BetaManagedAgentsLimitedCredentialNetworkingParams
 	limited.AllowedHosts = allowedHosts
-	limited.Type = BetaManagedAgentsLimitedCredentialNetworkingParamsTypeLimited
 	return BetaManagedAgentsCredentialNetworkingParamsUnion{OfLimited: &limited}
 }
 
@@ -449,9 +437,9 @@ func (u BetaManagedAgentsCredentialNetworkingParamsUnion) GetAllowedHosts() []st
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsCredentialNetworkingParamsUnion) GetType() *string {
 	if vt := u.OfUnrestricted; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfLimited; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -480,8 +468,7 @@ type BetaManagedAgentsCredentialValidation struct {
 	//
 	// Any of "valid", "invalid", "unknown".
 	Status BetaManagedAgentsCredentialValidationStatus `json:"status" api:"required"`
-	// Any of "vault_credential_validation".
-	Type BetaManagedAgentsCredentialValidationType `json:"type" api:"required"`
+	Type   constant.VaultCredentialValidation          `json:"type" default:"vault_credential_validation"`
 	// When the validation probe was performed.
 	ValidatedAt time.Time `json:"validated_at" api:"required" format:"date-time"`
 	// Identifier of the vault containing the credential.
@@ -507,12 +494,6 @@ func (r *BetaManagedAgentsCredentialValidation) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsCredentialValidationType string
-
-const (
-	BetaManagedAgentsCredentialValidationTypeVaultCredentialValidation BetaManagedAgentsCredentialValidationType = "vault_credential_validation"
-)
-
 // Overall verdict of a credential validation probe.
 type BetaManagedAgentsCredentialValidationStatus string
 
@@ -532,9 +513,8 @@ const (
 // Confirmation of a deleted credential.
 type BetaManagedAgentsDeletedCredential struct {
 	// The unique ID of the deleted credential (`vcrd_...`).
-	ID string `json:"id" api:"required"`
-	// Any of "vault_credential_deleted".
-	Type BetaManagedAgentsDeletedCredentialType `json:"type" api:"required"`
+	ID   string                                      `json:"id" api:"required"`
+	Type constant.VaultCredentialDeletedResponseType `json:"type" default:"vault_credential_deleted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -550,12 +530,6 @@ func (r *BetaManagedAgentsDeletedCredential) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsDeletedCredentialType string
-
-const (
-	BetaManagedAgentsDeletedCredentialTypeVaultCredentialDeleted BetaManagedAgentsDeletedCredentialType = "vault_credential_deleted"
-)
-
 // Environment variable credential details. The secret value is never returned.
 type BetaManagedAgentsEnvironmentVariableAuthResponse struct {
 	// Where in the outbound request the secret value is substituted.
@@ -563,9 +537,8 @@ type BetaManagedAgentsEnvironmentVariableAuthResponse struct {
 	// Outbound hosts the secret value is substituted on.
 	Networking BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion `json:"networking" api:"required"`
 	// Name of the environment variable.
-	SecretName string `json:"secret_name" api:"required"`
-	// Any of "environment_variable".
-	Type BetaManagedAgentsEnvironmentVariableAuthResponseType `json:"type" api:"required"`
+	SecretName string                       `json:"secret_name" api:"required"`
+	Type       constant.EnvironmentVariable `json:"type" default:"environment_variable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		InjectionLocation respjson.Field
@@ -656,12 +629,6 @@ func (r *BetaManagedAgentsEnvironmentVariableAuthResponseNetworkingUnion) Unmars
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsEnvironmentVariableAuthResponseType string
-
-const (
-	BetaManagedAgentsEnvironmentVariableAuthResponseTypeEnvironmentVariable BetaManagedAgentsEnvironmentVariableAuthResponseType = "environment_variable"
-)
-
 // Parameters for creating an environment variable credential.
 //
 // The properties Networking, SecretName, SecretValue, Type are required.
@@ -673,10 +640,11 @@ type BetaManagedAgentsEnvironmentVariableCreateParams struct {
 	// The secret to substitute into the agent's outbound requests. It's write-only and
 	// never returned in responses.
 	SecretValue string `json:"secret_value" api:"required"`
-	// Any of "environment_variable".
-	Type BetaManagedAgentsEnvironmentVariableCreateParamsType `json:"type,omitzero" api:"required"`
 	// Where in the outbound request the secret value may be substituted.
 	InjectionLocation BetaManagedAgentsInjectionLocationParams `json:"injection_location,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "environment_variable".
+	Type constant.EnvironmentVariable `json:"type" default:"environment_variable"`
 	paramObj
 }
 
@@ -688,25 +656,20 @@ func (r *BetaManagedAgentsEnvironmentVariableCreateParams) UnmarshalJSON(data []
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsEnvironmentVariableCreateParamsType string
-
-const (
-	BetaManagedAgentsEnvironmentVariableCreateParamsTypeEnvironmentVariable BetaManagedAgentsEnvironmentVariableCreateParamsType = "environment_variable"
-)
-
 // Parameters for updating an environment variable credential. `secret_name` is
 // immutable.
 //
 // The property Type is required.
 type BetaManagedAgentsEnvironmentVariableUpdateParams struct {
-	// Any of "environment_variable".
-	Type BetaManagedAgentsEnvironmentVariableUpdateParamsType `json:"type,omitzero" api:"required"`
 	// The new secret value to replace the stored one.
 	SecretValue param.Opt[string] `json:"secret_value,omitzero"`
 	// Updated injection location.
 	InjectionLocation BetaManagedAgentsInjectionLocationUpdateParams `json:"injection_location,omitzero"`
 	// The new networking scope, which replaces the stored one as a whole.
 	Networking BetaManagedAgentsCredentialNetworkingParamsUnion `json:"networking,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "environment_variable".
+	Type constant.EnvironmentVariable `json:"type" default:"environment_variable"`
 	paramObj
 }
 
@@ -717,12 +680,6 @@ func (r BetaManagedAgentsEnvironmentVariableUpdateParams) MarshalJSON() (data []
 func (r *BetaManagedAgentsEnvironmentVariableUpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsEnvironmentVariableUpdateParamsType string
-
-const (
-	BetaManagedAgentsEnvironmentVariableUpdateParamsTypeEnvironmentVariable BetaManagedAgentsEnvironmentVariableUpdateParamsType = "environment_variable"
-)
 
 // Where in the outbound request the secret value may be substituted.
 type BetaManagedAgentsInjectionLocationParams struct {
@@ -797,8 +754,8 @@ type BetaManagedAgentsLimitedCredentialNetworkingParams struct {
 	// (`192.0.2.1`), or a `*.` wildcard (`*.example.com`). URLs, ports, paths, and
 	// IPv6 addresses aren't accepted. The list can have up to 16 entries.
 	AllowedHosts []string `json:"allowed_hosts,omitzero" api:"required"`
-	// Any of "limited".
-	Type BetaManagedAgentsLimitedCredentialNetworkingParamsType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "limited".
+	Type constant.Limited `json:"type" default:"limited"`
 	paramObj
 }
 
@@ -810,12 +767,6 @@ func (r *BetaManagedAgentsLimitedCredentialNetworkingParams) UnmarshalJSON(data 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsLimitedCredentialNetworkingParamsType string
-
-const (
-	BetaManagedAgentsLimitedCredentialNetworkingParamsTypeLimited BetaManagedAgentsLimitedCredentialNetworkingParamsType = "limited"
-)
-
 // The secret is substituted only on requests to the listed hosts.
 type BetaManagedAgentsLimitedCredentialNetworkingResponse struct {
 	// The destination hosts of the outbound requests that the credential's secret is
@@ -823,9 +774,8 @@ type BetaManagedAgentsLimitedCredentialNetworkingResponse struct {
 	//
 	// An entry matches the request host exactly. An entry such as `*.example.com`
 	// matches any subdomain of `example.com` but not `example.com` itself.
-	AllowedHosts []string `json:"allowed_hosts" api:"required"`
-	// Any of "limited".
-	Type BetaManagedAgentsLimitedCredentialNetworkingResponseType `json:"type" api:"required"`
+	AllowedHosts []string         `json:"allowed_hosts" api:"required"`
+	Type         constant.Limited `json:"type" default:"limited"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		AllowedHosts respjson.Field
@@ -841,18 +791,11 @@ func (r *BetaManagedAgentsLimitedCredentialNetworkingResponse) UnmarshalJSON(dat
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsLimitedCredentialNetworkingResponseType string
-
-const (
-	BetaManagedAgentsLimitedCredentialNetworkingResponseTypeLimited BetaManagedAgentsLimitedCredentialNetworkingResponseType = "limited"
-)
-
 // OAuth credential details for an MCP server.
 type BetaManagedAgentsMCPOAuthAuthResponse struct {
 	// URL of the MCP server this credential authenticates against.
-	MCPServerURL string `json:"mcp_server_url" api:"required"`
-	// Any of "mcp_oauth".
-	Type BetaManagedAgentsMCPOAuthAuthResponseType `json:"type" api:"required"`
+	MCPServerURL string            `json:"mcp_server_url" api:"required"`
+	Type         constant.MCPOAuth `json:"type" default:"mcp_oauth"`
 	// When the credential's access token expires, in RFC 3339. Absent if the expiry
 	// isn't known.
 	ExpiresAt time.Time `json:"expires_at" api:"nullable" format:"date-time"`
@@ -875,12 +818,6 @@ func (r *BetaManagedAgentsMCPOAuthAuthResponse) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsMCPOAuthAuthResponseType string
-
-const (
-	BetaManagedAgentsMCPOAuthAuthResponseTypeMCPOAuth BetaManagedAgentsMCPOAuthAuthResponseType = "mcp_oauth"
-)
-
 // Parameters for creating an MCP OAuth credential.
 //
 // The properties AccessToken, MCPServerURL, Type are required.
@@ -889,14 +826,14 @@ type BetaManagedAgentsMCPOAuthCreateParams struct {
 	AccessToken string `json:"access_token" api:"required"`
 	// URL of the MCP server this credential authenticates against.
 	MCPServerURL string `json:"mcp_server_url" api:"required"`
-	// Any of "mcp_oauth".
-	Type BetaManagedAgentsMCPOAuthCreateParamsType `json:"type,omitzero" api:"required"`
 	// When `access_token` expires, in RFC 3339.
 	//
 	// Must be in the future.
 	ExpiresAt param.Opt[time.Time] `json:"expires_at,omitzero" format:"date-time"`
 	// Refresh token configuration, if the credential supports token refresh.
 	Refresh BetaManagedAgentsMCPOAuthRefreshParams `json:"refresh,omitzero"`
+	// This field can be elided, and will marshal its zero value as "mcp_oauth".
+	Type constant.MCPOAuth `json:"type" default:"mcp_oauth"`
 	paramObj
 }
 
@@ -907,12 +844,6 @@ func (r BetaManagedAgentsMCPOAuthCreateParams) MarshalJSON() (data []byte, err e
 func (r *BetaManagedAgentsMCPOAuthCreateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMCPOAuthCreateParamsType string
-
-const (
-	BetaManagedAgentsMCPOAuthCreateParamsTypeMCPOAuth BetaManagedAgentsMCPOAuthCreateParamsType = "mcp_oauth"
-)
 
 // OAuth refresh token parameters for creating a credential with refresh support.
 //
@@ -974,11 +905,11 @@ func (u *BetaManagedAgentsMCPOAuthRefreshParamsTokenEndpointAuthUnion) asAny() a
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsMCPOAuthRefreshParamsTokenEndpointAuthUnion) GetType() *string {
 	if vt := u.OfNone; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfClientSecretBasic; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfClientSecretPost; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -1157,9 +1088,9 @@ func (u *BetaManagedAgentsMCPOAuthRefreshUpdateParamsTokenEndpointAuthUnion) asA
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaManagedAgentsMCPOAuthRefreshUpdateParamsTokenEndpointAuthUnion) GetType() *string {
 	if vt := u.OfClientSecretBasic; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfClientSecretPost; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -1187,8 +1118,6 @@ func init() {
 //
 // The property Type is required.
 type BetaManagedAgentsMCPOAuthUpdateParams struct {
-	// Any of "mcp_oauth".
-	Type BetaManagedAgentsMCPOAuthUpdateParamsType `json:"type,omitzero" api:"required"`
 	// The new OAuth access token to replace the stored one.
 	AccessToken param.Opt[string] `json:"access_token,omitzero"`
 	// When the credential's access token expires, in RFC 3339. Leave it out to keep
@@ -1201,6 +1130,8 @@ type BetaManagedAgentsMCPOAuthUpdateParams struct {
 	ExpiresAt param.Opt[time.Time] `json:"expires_at,omitzero" format:"date-time"`
 	// Updated refresh token configuration.
 	Refresh BetaManagedAgentsMCPOAuthRefreshUpdateParams `json:"refresh,omitzero"`
+	// This field can be elided, and will marshal its zero value as "mcp_oauth".
+	Type constant.MCPOAuth `json:"type" default:"mcp_oauth"`
 	paramObj
 }
 
@@ -1211,12 +1142,6 @@ func (r BetaManagedAgentsMCPOAuthUpdateParams) MarshalJSON() (data []byte, err e
 func (r *BetaManagedAgentsMCPOAuthUpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMCPOAuthUpdateParamsType string
-
-const (
-	BetaManagedAgentsMCPOAuthUpdateParamsTypeMCPOAuth BetaManagedAgentsMCPOAuthUpdateParamsType = "mcp_oauth"
-)
 
 // The failing step of an MCP validation probe.
 type BetaManagedAgentsMCPProbe struct {
@@ -1309,9 +1234,8 @@ const (
 // Static bearer token credential details for an MCP server.
 type BetaManagedAgentsStaticBearerAuthResponse struct {
 	// URL of the MCP server this credential authenticates against.
-	MCPServerURL string `json:"mcp_server_url" api:"required"`
-	// Any of "static_bearer".
-	Type BetaManagedAgentsStaticBearerAuthResponseType `json:"type" api:"required"`
+	MCPServerURL string                `json:"mcp_server_url" api:"required"`
+	Type         constant.StaticBearer `json:"type" default:"static_bearer"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		MCPServerURL respjson.Field
@@ -1327,12 +1251,6 @@ func (r *BetaManagedAgentsStaticBearerAuthResponse) UnmarshalJSON(data []byte) e
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsStaticBearerAuthResponseType string
-
-const (
-	BetaManagedAgentsStaticBearerAuthResponseTypeStaticBearer BetaManagedAgentsStaticBearerAuthResponseType = "static_bearer"
-)
-
 // Parameters for creating a static bearer token credential.
 //
 // The properties Token, MCPServerURL, Type are required.
@@ -1342,8 +1260,8 @@ type BetaManagedAgentsStaticBearerCreateParams struct {
 	Token string `json:"token" api:"required"`
 	// URL of the MCP server this credential authenticates against.
 	MCPServerURL string `json:"mcp_server_url" api:"required"`
-	// Any of "static_bearer".
-	Type BetaManagedAgentsStaticBearerCreateParamsType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "static_bearer".
+	Type constant.StaticBearer `json:"type" default:"static_bearer"`
 	paramObj
 }
 
@@ -1355,21 +1273,15 @@ func (r *BetaManagedAgentsStaticBearerCreateParams) UnmarshalJSON(data []byte) e
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsStaticBearerCreateParamsType string
-
-const (
-	BetaManagedAgentsStaticBearerCreateParamsTypeStaticBearer BetaManagedAgentsStaticBearerCreateParamsType = "static_bearer"
-)
-
 // Parameters for updating a static bearer token credential. The `mcp_server_url`
 // is immutable.
 //
 // The property Type is required.
 type BetaManagedAgentsStaticBearerUpdateParams struct {
-	// Any of "static_bearer".
-	Type BetaManagedAgentsStaticBearerUpdateParamsType `json:"type,omitzero" api:"required"`
 	// The new static bearer token to replace the stored one.
 	Token param.Opt[string] `json:"token,omitzero"`
+	// This field can be elided, and will marshal its zero value as "static_bearer".
+	Type constant.StaticBearer `json:"type" default:"static_bearer"`
 	paramObj
 }
 
@@ -1381,12 +1293,6 @@ func (r *BetaManagedAgentsStaticBearerUpdateParams) UnmarshalJSON(data []byte) e
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsStaticBearerUpdateParamsType string
-
-const (
-	BetaManagedAgentsStaticBearerUpdateParamsTypeStaticBearer BetaManagedAgentsStaticBearerUpdateParamsType = "static_bearer"
-)
-
 // Token endpoint uses HTTP Basic authentication with client credentials.
 //
 // The properties ClientSecret, Type are required.
@@ -1394,8 +1300,9 @@ type BetaManagedAgentsTokenEndpointAuthBasicParam struct {
 	// The OAuth client secret, sent to `token_endpoint` with HTTP Basic
 	// authentication.
 	ClientSecret string `json:"client_secret" api:"required"`
-	// Any of "client_secret_basic".
-	Type BetaManagedAgentsTokenEndpointAuthBasicParamType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as
+	// "client_secret_basic".
+	Type constant.ClientSecretBasic `json:"type" default:"client_secret_basic"`
 	paramObj
 }
 
@@ -1407,16 +1314,9 @@ func (r *BetaManagedAgentsTokenEndpointAuthBasicParam) UnmarshalJSON(data []byte
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsTokenEndpointAuthBasicParamType string
-
-const (
-	BetaManagedAgentsTokenEndpointAuthBasicParamTypeClientSecretBasic BetaManagedAgentsTokenEndpointAuthBasicParamType = "client_secret_basic"
-)
-
 // Token endpoint uses HTTP Basic authentication with client credentials.
 type BetaManagedAgentsTokenEndpointAuthBasicResponse struct {
-	// Any of "client_secret_basic".
-	Type BetaManagedAgentsTokenEndpointAuthBasicResponseType `json:"type" api:"required"`
+	Type constant.ClientSecretBasic `json:"type" default:"client_secret_basic"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1431,24 +1331,19 @@ func (r *BetaManagedAgentsTokenEndpointAuthBasicResponse) UnmarshalJSON(data []b
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsTokenEndpointAuthBasicResponseType string
-
-const (
-	BetaManagedAgentsTokenEndpointAuthBasicResponseTypeClientSecretBasic BetaManagedAgentsTokenEndpointAuthBasicResponseType = "client_secret_basic"
-)
-
 // Updated HTTP Basic authentication parameters for the token endpoint.
 //
 // The property Type is required.
 type BetaManagedAgentsTokenEndpointAuthBasicUpdateParam struct {
-	// Any of "client_secret_basic".
-	Type BetaManagedAgentsTokenEndpointAuthBasicUpdateParamType `json:"type,omitzero" api:"required"`
 	// A new OAuth client secret to replace the stored one.
 	//
 	// The credential must already use `client_secret_basic` or `client_secret_post`.
 	// It keeps its current `token_endpoint_auth` type, even if the `type` sent with
 	// this secret is the other one.
 	ClientSecret param.Opt[string] `json:"client_secret,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "client_secret_basic".
+	Type constant.ClientSecretBasic `json:"type" default:"client_secret_basic"`
 	paramObj
 }
 
@@ -1460,18 +1355,18 @@ func (r *BetaManagedAgentsTokenEndpointAuthBasicUpdateParam) UnmarshalJSON(data 
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsTokenEndpointAuthBasicUpdateParamType string
-
-const (
-	BetaManagedAgentsTokenEndpointAuthBasicUpdateParamTypeClientSecretBasic BetaManagedAgentsTokenEndpointAuthBasicUpdateParamType = "client_secret_basic"
-)
+func NewBetaManagedAgentsTokenEndpointAuthNoneParam() BetaManagedAgentsTokenEndpointAuthNoneParam {
+	return BetaManagedAgentsTokenEndpointAuthNoneParam{
+		Type: "none",
+	}
+}
 
 // Token endpoint requires no client authentication.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsTokenEndpointAuthNoneParam].
 type BetaManagedAgentsTokenEndpointAuthNoneParam struct {
-	// Any of "none".
-	Type BetaManagedAgentsTokenEndpointAuthNoneParamType `json:"type,omitzero" api:"required"`
+	Type constant.None `json:"type" default:"none"`
 	paramObj
 }
 
@@ -1483,16 +1378,9 @@ func (r *BetaManagedAgentsTokenEndpointAuthNoneParam) UnmarshalJSON(data []byte)
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsTokenEndpointAuthNoneParamType string
-
-const (
-	BetaManagedAgentsTokenEndpointAuthNoneParamTypeNone BetaManagedAgentsTokenEndpointAuthNoneParamType = "none"
-)
-
 // Token endpoint requires no client authentication.
 type BetaManagedAgentsTokenEndpointAuthNoneResponse struct {
-	// Any of "none".
-	Type BetaManagedAgentsTokenEndpointAuthNoneResponseType `json:"type" api:"required"`
+	Type constant.None `json:"type" default:"none"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1507,20 +1395,15 @@ func (r *BetaManagedAgentsTokenEndpointAuthNoneResponse) UnmarshalJSON(data []by
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsTokenEndpointAuthNoneResponseType string
-
-const (
-	BetaManagedAgentsTokenEndpointAuthNoneResponseTypeNone BetaManagedAgentsTokenEndpointAuthNoneResponseType = "none"
-)
-
 // Token endpoint uses POST body authentication with client credentials.
 //
 // The properties ClientSecret, Type are required.
 type BetaManagedAgentsTokenEndpointAuthPostParam struct {
 	// The OAuth client secret, sent to `token_endpoint` in the POST body.
 	ClientSecret string `json:"client_secret" api:"required"`
-	// Any of "client_secret_post".
-	Type BetaManagedAgentsTokenEndpointAuthPostParamType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as
+	// "client_secret_post".
+	Type constant.ClientSecretPost `json:"type" default:"client_secret_post"`
 	paramObj
 }
 
@@ -1532,16 +1415,9 @@ func (r *BetaManagedAgentsTokenEndpointAuthPostParam) UnmarshalJSON(data []byte)
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsTokenEndpointAuthPostParamType string
-
-const (
-	BetaManagedAgentsTokenEndpointAuthPostParamTypeClientSecretPost BetaManagedAgentsTokenEndpointAuthPostParamType = "client_secret_post"
-)
-
 // Token endpoint uses POST body authentication with client credentials.
 type BetaManagedAgentsTokenEndpointAuthPostResponse struct {
-	// Any of "client_secret_post".
-	Type BetaManagedAgentsTokenEndpointAuthPostResponseType `json:"type" api:"required"`
+	Type constant.ClientSecretPost `json:"type" default:"client_secret_post"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1556,24 +1432,19 @@ func (r *BetaManagedAgentsTokenEndpointAuthPostResponse) UnmarshalJSON(data []by
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsTokenEndpointAuthPostResponseType string
-
-const (
-	BetaManagedAgentsTokenEndpointAuthPostResponseTypeClientSecretPost BetaManagedAgentsTokenEndpointAuthPostResponseType = "client_secret_post"
-)
-
 // Updated POST body authentication parameters for the token endpoint.
 //
 // The property Type is required.
 type BetaManagedAgentsTokenEndpointAuthPostUpdateParam struct {
-	// Any of "client_secret_post".
-	Type BetaManagedAgentsTokenEndpointAuthPostUpdateParamType `json:"type,omitzero" api:"required"`
 	// A new OAuth client secret to replace the stored one.
 	//
 	// The credential must already use `client_secret_basic` or `client_secret_post`.
 	// It keeps its current `token_endpoint_auth` type, even if the `type` sent with
 	// this secret is the other one.
 	ClientSecret param.Opt[string] `json:"client_secret,omitzero"`
+	// This field can be elided, and will marshal its zero value as
+	// "client_secret_post".
+	Type constant.ClientSecretPost `json:"type" default:"client_secret_post"`
 	paramObj
 }
 
@@ -1585,20 +1456,20 @@ func (r *BetaManagedAgentsTokenEndpointAuthPostUpdateParam) UnmarshalJSON(data [
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsTokenEndpointAuthPostUpdateParamType string
-
-const (
-	BetaManagedAgentsTokenEndpointAuthPostUpdateParamTypeClientSecretPost BetaManagedAgentsTokenEndpointAuthPostUpdateParamType = "client_secret_post"
-)
+func NewBetaManagedAgentsUnrestrictedCredentialNetworkingParams() BetaManagedAgentsUnrestrictedCredentialNetworkingParams {
+	return BetaManagedAgentsUnrestrictedCredentialNetworkingParams{
+		Type: "unrestricted",
+	}
+}
 
 // Substitute the secret on any host the session's Environment network policy
 // permits egress to. The Environment's network policy is the only boundary on
 // where the secret can reach.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaManagedAgentsUnrestrictedCredentialNetworkingParams].
 type BetaManagedAgentsUnrestrictedCredentialNetworkingParams struct {
-	// Any of "unrestricted".
-	Type BetaManagedAgentsUnrestrictedCredentialNetworkingParamsType `json:"type,omitzero" api:"required"`
+	Type constant.Unrestricted `json:"type" default:"unrestricted"`
 	paramObj
 }
 
@@ -1610,17 +1481,10 @@ func (r *BetaManagedAgentsUnrestrictedCredentialNetworkingParams) UnmarshalJSON(
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsUnrestrictedCredentialNetworkingParamsType string
-
-const (
-	BetaManagedAgentsUnrestrictedCredentialNetworkingParamsTypeUnrestricted BetaManagedAgentsUnrestrictedCredentialNetworkingParamsType = "unrestricted"
-)
-
 // The secret is substituted on any host the session's Environment network policy
 // permits egress to.
 type BetaManagedAgentsUnrestrictedCredentialNetworkingResponse struct {
-	// Any of "unrestricted".
-	Type BetaManagedAgentsUnrestrictedCredentialNetworkingResponseType `json:"type" api:"required"`
+	Type constant.Unrestricted `json:"type" default:"unrestricted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -1636,12 +1500,6 @@ func (r BetaManagedAgentsUnrestrictedCredentialNetworkingResponse) RawJSON() str
 func (r *BetaManagedAgentsUnrestrictedCredentialNetworkingResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsUnrestrictedCredentialNetworkingResponseType string
-
-const (
-	BetaManagedAgentsUnrestrictedCredentialNetworkingResponseTypeUnrestricted BetaManagedAgentsUnrestrictedCredentialNetworkingResponseType = "unrestricted"
-)
 
 type BetaVaultCredentialNewParams struct {
 	// Authentication configuration for the credential.
@@ -1777,11 +1635,11 @@ func (u BetaVaultCredentialNewParamsAuthUnion) GetMCPServerURL() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaVaultCredentialNewParamsAuthUnion) GetType() *string {
 	if vt := u.OfMCPOAuth; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfStaticBearer; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfEnvironmentVariable; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -1930,11 +1788,11 @@ func (u BetaVaultCredentialUpdateParamsAuthUnion) GetSecretValue() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaVaultCredentialUpdateParamsAuthUnion) GetType() *string {
 	if vt := u.OfMCPOAuth; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfStaticBearer; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfEnvironmentVariable; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }

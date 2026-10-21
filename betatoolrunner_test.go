@@ -16,7 +16,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
@@ -62,7 +62,10 @@ func runToToolResults(t *testing.T, runner *BetaToolRunner) []*BetaToolResultBlo
 	}
 	var results []*BetaToolResultBlockParam
 	for _, msg := range runner.Messages() {
-		for _, c := range msg.Content {
+		if msg.OfUser == nil {
+			continue
+		}
+		for _, c := range msg.OfUser.Content {
 			if c.OfToolResult != nil {
 				results = append(results, c.OfToolResult)
 			}
@@ -81,7 +84,7 @@ func toolResultJSON(t *testing.T, block *BetaToolResultBlockParam) string {
 }
 
 func systemToolChange(block BetaContentBlockParamUnion) BetaMessageParam {
-	return BetaMessageParam{Role: BetaMessageParamRoleSystem, Content: []BetaContentBlockParamUnion{block}}
+	return BetaMessageParam{OfSystem: &BetaSystemMessageParam{Content: []BetaSystemMessageParamContentUnion{{OfToolAddition: block.OfToolAddition, OfToolRemoval: block.OfToolRemoval}}}}
 }
 
 func weatherRef() BetaToolChangeToolReferenceParam {
@@ -208,6 +211,74 @@ func TestBetaToolRunner_ToolRemoval_AppendMessagesBeforeCall(t *testing.T) {
 	requireToolNotFound(t, runToToolResults(t, runner))
 	if got := weather.runs.Load(); got != 0 {
 		t.Fatalf("removed tool must not execute, ran %d times", got)
+	}
+}
+
+// A Role set by hand goes out as given, so a user or assistant variant that
+// says "system" is a system message and its tool_removal must be honored.
+func TestBetaToolRunner_ToolRemoval_SystemRoleOnAnotherVariant(t *testing.T) {
+	content := []BetaContentBlockParamUnion{NewBetaToolRemovalBlock(weatherRef())}
+	for name, message := range map[string]BetaMessageParam{
+		"user":      {OfUser: &BetaUserMessageParam{Role: "system", Content: content}},
+		"assistant": {OfAssistant: &BetaAssistantMessageParam{Role: "system", Content: content}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			weather := &stubBetaTool{name: "weather"}
+			requireToolNotFound(t, runToToolResults(t, newWeatherRunner(t, weather, message)))
+			if got := weather.runs.Load(); got != 0 {
+				t.Fatalf("removed tool must not execute, ran %d times", got)
+			}
+		})
+	}
+
+	// In a message that goes out as "user" the block changes nothing.
+	weather := &stubBetaTool{name: "weather"}
+	runToToolResults(t, newWeatherRunner(t, weather, NewBetaUserMessage(content...)))
+	if got := weather.runs.Load(); got != 1 {
+		t.Fatalf("tool should run once, ran %d times", got)
+	}
+}
+
+// Editing a message returned by Messages must not undo a tool_removal in the
+// runner's own history.
+func TestBetaToolRunner_ToolRemoval_MessagesCopyMutation(t *testing.T) {
+	weather := &stubBetaTool{name: "weather"}
+	runner := newWeatherRunner(t, weather, systemToolChange(NewBetaToolRemovalBlock(weatherRef())))
+	runner.Messages()[0].OfSystem.Content = nil
+
+	requireToolNotFound(t, runToToolResults(t, runner))
+	if got := weather.runs.Load(); got != 0 {
+		t.Fatalf("removed tool must not execute, ran %d times", got)
+	}
+}
+
+// Messages and availableToolNames name the variants of BetaMessageParam by hand,
+// so each variant goes through both as a system message that removes a tool.
+func TestBetaToolRunner_EveryMessageVariantIsHandled(t *testing.T) {
+	union := reflect.TypeFor[BetaMessageParam]()
+	for i := range union.NumField() {
+		field := union.Field(i)
+		if !strings.HasPrefix(field.Name, "Of") {
+			continue
+		}
+		t.Run(field.Name, func(t *testing.T) {
+			variant := reflect.New(field.Type.Elem())
+			variant.Elem().FieldByName("Role").SetString("system")
+			content := variant.Elem().FieldByName("Content")
+			block := reflect.New(content.Type().Elem()).Elem()
+			block.FieldByName("OfToolRemoval").Set(reflect.ValueOf(NewBetaToolRemovalBlock(weatherRef()).OfToolRemoval))
+			content.Set(reflect.Append(content, block))
+			var message BetaMessageParam
+			reflect.ValueOf(&message).Elem().Field(i).Set(variant)
+
+			runner := newWeatherRunner(t, &stubBetaTool{name: "weather"}, message)
+			if reflect.ValueOf(runner.Messages()[0]).Field(i).Pointer() == variant.Pointer() {
+				t.Errorf("Messages returns the runner's own BetaMessageParam.%s: copy it in betaToolRunnerBase.Messages", field.Name)
+			}
+			if _, ok := runner.availableToolNames()["weather"]; ok {
+				t.Errorf("a tool_removal in BetaMessageParam.%s is ignored: read it in betaToolRunnerBase.availableToolNames", field.Name)
+			}
+		})
 	}
 }
 
@@ -682,17 +753,20 @@ func TestBetaToolRunner_RemoveTools_HoldsOnceTheRemovalIsTrimmed(t *testing.T) {
 			r.RemoveTools(stubs.tool("weather"))
 		case calledTool(message) == "time":
 			r.Params.Messages = slices.DeleteFunc(r.Params.Messages, func(m BetaMessageParam) bool {
-				return m.Role == BetaMessageParamRoleSystem
+				return m.OfSystem != nil
 			})
 		}
 	})
 
 	var results []string
 	for _, message := range runner.Messages() {
-		if message.Role == BetaMessageParamRoleSystem {
+		if message.OfSystem != nil {
 			t.Fatalf("the tool_removal should be gone from the history, got %+v", message)
 		}
-		for _, block := range message.Content {
+		if message.OfUser == nil {
+			continue
+		}
+		for _, block := range message.OfUser.Content {
 			if block.OfToolResult != nil {
 				results = append(results, toolResultJSON(t, block.OfToolResult))
 			}
@@ -2014,8 +2088,8 @@ func TestBetaToolRunnerStreaming_CompactBeforeNextTurn_MessagesReplacedWhileComp
 			if runner.Err() != got {
 				t.Fatalf("Err() = %v, want %v", runner.Err(), got)
 			}
-			if role := runner.Messages()[0].Role; role != BetaMessageParamRoleUser {
-				t.Fatalf("the caller's messages should be kept, first role = %q", role)
+			if first := runner.Messages()[0]; first.OfUser == nil {
+				t.Fatalf("the caller's messages should be kept, first message = %+v", first)
 			}
 		})
 	}

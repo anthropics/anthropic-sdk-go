@@ -10,14 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaUserProfileService contains methods and other services that help with
@@ -253,9 +253,7 @@ type BetaUserProfile struct {
 	// active or in flight.
 	TrustGrants map[string]BetaUserProfileTrustGrant `json:"trust_grants" api:"required"`
 	// Object type. Always `user_profile`.
-	//
-	// Any of "user_profile".
-	Type BetaUserProfileType `json:"type" api:"required"`
+	Type constant.UserProfile `json:"type" default:"user_profile"`
 	// When this user profile was last modified, in RFC 3339 format. It normally also
 	// updates shortly after Anthropic gives the profile an approval or withdraws one.
 	// Other changes to the statuses that Anthropic reports do not always update it, so
@@ -308,13 +306,6 @@ func (r *BetaUserProfile) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Object type. Always `user_profile`.
-type BetaUserProfileType string
-
-const (
-	BetaUserProfileTypeUserProfile BetaUserProfileType = "user_profile"
-)
-
 // How the platform uses the API for this entity: `application` (default) or
 // `passthrough`. Absent under the legacy `user-profiles-2026-03-24` beta header.
 type BetaUserProfileAccessType string
@@ -334,9 +325,7 @@ type BetaUserProfileEnrollmentURL struct {
 	// When this enrollment URL expires, in RFC 3339 format.
 	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
 	// Object type. Always `enrollment_url`.
-	//
-	// Any of "enrollment_url".
-	Type BetaUserProfileEnrollmentURLType `json:"type" api:"required"`
+	Type constant.EnrollmentURL `json:"type" default:"enrollment_url"`
 	// Enrollment URL to send to the end user. Valid until `expires_at`.
 	URL string `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -354,13 +343,6 @@ func (r BetaUserProfileEnrollmentURL) RawJSON() string { return r.JSON.raw }
 func (r *BetaUserProfileEnrollmentURL) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Object type. Always `enrollment_url`.
-type BetaUserProfileEnrollmentURLType string
-
-const (
-	BetaUserProfileEnrollmentURLTypeEnrollmentURL BetaUserProfileEnrollmentURLType = "enrollment_url"
-)
 
 // Details about the entity this profile represents, as the platform states them.
 // Anthropic does not verify them. Every field is present, `null` until the

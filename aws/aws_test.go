@@ -15,9 +15,9 @@ import (
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/awsauth"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func makeStaticConfig(region string) awssdk.Config {
@@ -168,14 +168,14 @@ func TestAPIKeyModeHeaders(t *testing.T) {
 	})
 	sendTestRequest(t, client)
 
-	if got := captured.Headers.Get("X-Api-Key"); got != "my-api-key" {
-		t.Errorf("expected x-api-key %q, got %q", "my-api-key", got)
+	if got := captured.Headers.Get("Authorization"); got != "Bearer my-api-key" {
+		t.Errorf("expected Authorization %q, got %q", "Bearer my-api-key", got)
 	}
 	if got := captured.Headers.Get("Anthropic-Workspace-Id"); got != "ws-123" {
 		t.Errorf("expected anthropic-workspace-id %q, got %q", "ws-123", got)
 	}
-	if captured.Headers.Get("Authorization") != "" {
-		t.Error("expected no Authorization header in API key mode")
+	if got := captured.Headers.Get("X-Api-Key"); got != "" {
+		t.Errorf("expected no x-api-key header, got %q", got)
 	}
 }
 
@@ -189,8 +189,8 @@ func TestAPIKeyFromEnvHeaders(t *testing.T) {
 	})
 	sendTestRequest(t, client)
 
-	if got := captured.Headers.Get("X-Api-Key"); got != "env-api-key" {
-		t.Errorf("expected x-api-key %q, got %q", "env-api-key", got)
+	if got := captured.Headers.Get("Authorization"); got != "Bearer env-api-key" {
+		t.Errorf("expected Authorization %q, got %q", "Bearer env-api-key", got)
 	}
 }
 
@@ -204,8 +204,8 @@ func TestExplicitAPIKeyOverridesEnv(t *testing.T) {
 	})
 	sendTestRequest(t, client)
 
-	if got := captured.Headers.Get("X-Api-Key"); got != "explicit-key" {
-		t.Errorf("expected x-api-key %q, got %q", "explicit-key", got)
+	if got := captured.Headers.Get("Authorization"); got != "Bearer explicit-key" {
+		t.Errorf("expected Authorization %q, got %q", "Bearer explicit-key", got)
 	}
 }
 
@@ -374,7 +374,7 @@ func TestSkipAuthNoWorkspaceRequired(t *testing.T) {
 func TestSkipAuthNoAuthHeaders(t *testing.T) {
 	t.Setenv("ANTHROPIC_AWS_WORKSPACE_ID", "")
 	t.Setenv("ANTHROPIC_AWS_API_KEY", "")
-	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("ANTHROPIC_API_KEY", "should-not-appear")
 
 	client, captured := newTestClient(t, ClientConfig{
 		SkipAuth: true,

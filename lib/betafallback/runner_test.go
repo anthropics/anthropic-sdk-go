@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/lib/betafallback"
-	"github.com/anthropics/anthropic-sdk-go/toolrunner"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/lib/betafallback"
+	"github.com/anthropics/anthropic-sdk-go/v2/toolrunner"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

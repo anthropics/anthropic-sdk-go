@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apierror"
 )
 
 // WithDebugLog logs the HTTP request and response content.

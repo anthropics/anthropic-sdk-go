@@ -12,12 +12,12 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
-	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/stainlessheader"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/telemetry"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -62,7 +62,7 @@ type betaToolRunnerBase struct {
 	// is built, or until that request fails. CompactBeforeNextTurn does nothing
 	// meanwhile: there is nothing new to summarize.
 	compacting         bool
-	pendingToolChanges []BetaContentBlockParamUnion
+	pendingToolChanges []BetaSystemMessageParamContentUnion
 
 	// telemetry configures the OpenTelemetry spans of the current loop.
 	telemetry tracing.Options
@@ -184,7 +184,9 @@ func (b *betaToolRunnerBase) AddToolParams(tools ...BetaToolUnionParam) {
 }
 
 func (b *betaToolRunnerBase) queueToolAddition(definition BetaToolUnionParam) {
-	b.pendingToolChanges = append(b.pendingToolChanges, NewBetaToolAdditionBlock(BetaToolChangeToolDefinitionParam{Definition: definition}))
+	b.pendingToolChanges = append(b.pendingToolChanges, BetaSystemMessageParamContentUnion{OfToolAddition: &BetaRequestToolAdditionBlockParam{
+		Tool: BetaRequestToolAdditionBlockToolUnionParam{OfToolDefinition: &BetaToolChangeToolDefinitionParam{Definition: definition}},
+	}})
 }
 
 // RemoveTools takes tools away from the model without changing Params.Tools.
@@ -204,7 +206,9 @@ func (b *betaToolRunnerBase) RemoveTools(tools ...BetaTool) {
 func (b *betaToolRunnerBase) RemoveToolsByNames(names ...string) {
 	for _, name := range names {
 		delete(b.toolMap, name)
-		b.pendingToolChanges = append(b.pendingToolChanges, NewBetaToolRemovalBlock(BetaToolChangeToolReferenceParam{Name: name}))
+		b.pendingToolChanges = append(b.pendingToolChanges, BetaSystemMessageParamContentUnion{OfToolRemoval: &BetaRequestToolRemovalBlockParam{
+			Tool: BetaRequestToolRemovalBlockToolUnionParam{OfToolReference: &BetaToolChangeToolReferenceParam{Name: name}},
+		}})
 	}
 }
 
@@ -214,7 +218,7 @@ func (b *betaToolRunnerBase) flushToolChanges() {
 	if len(b.pendingToolChanges) == 0 || (b.lastMessage != nil && b.lastMessage.StopReason == BetaStopReasonPauseTurn) {
 		return
 	}
-	b.Params.Messages = append(b.Params.Messages, BetaMessageParam{Role: BetaMessageParamRoleSystem, Content: b.pendingToolChanges})
+	b.Params.Messages = append(b.Params.Messages, BetaMessageParam{OfSystem: &BetaSystemMessageParam{Content: b.pendingToolChanges}})
 	b.pendingToolChanges = nil
 }
 
@@ -236,6 +240,17 @@ func (b *betaToolRunnerBase) AppendMessages(messages ...BetaMessageParam) {
 func (b *betaToolRunnerBase) Messages() []BetaMessageParam {
 	result := make([]BetaMessageParam, len(b.Params.Messages))
 	copy(result, b.Params.Messages)
+	// Each element points at its message, so the message is copied as well.
+	for i, message := range result {
+		switch {
+		case message.OfUser != nil:
+			result[i].OfUser = Ptr(*message.OfUser)
+		case message.OfAssistant != nil:
+			result[i].OfAssistant = Ptr(*message.OfAssistant)
+		case message.OfSystem != nil:
+			result[i].OfSystem = Ptr(*message.OfSystem)
+		}
+	}
 	return result
 }
 
@@ -470,11 +485,20 @@ func (b *betaToolRunnerBase) availableToolNames() map[string]struct{} {
 		available[name] = struct{}{}
 	}
 	for _, message := range b.Params.Messages {
-		if message.Role != BetaMessageParamRoleSystem {
+		if message.OfSystem != nil {
+			for _, block := range message.OfSystem.Content {
+				applyToolChange(block, available)
+			}
 			continue
 		}
-		for _, block := range message.Content {
-			applyToolChange(block, available)
+		// A Role set by hand goes out as given, so another variant can be a
+		// system message too.
+		content, ok := message.GetContent().AsAny().(*[]BetaContentBlockParamUnion)
+		if !ok || *message.GetRole() != "system" {
+			continue
+		}
+		for _, block := range *content {
+			applyToolChange(BetaSystemMessageParamContentUnion{OfToolAddition: block.OfToolAddition, OfToolRemoval: block.OfToolRemoval}, available)
 		}
 	}
 	for _, block := range b.pendingToolChanges {
@@ -487,7 +511,7 @@ func (b *betaToolRunnerBase) availableToolNames() map[string]struct{} {
 // tool-name set. The populated Of* variant is the discriminator; every other
 // block type, including ones added after this SDK was generated, leaves the
 // set untouched.
-func applyToolChange(block BetaContentBlockParamUnion, available map[string]struct{}) {
+func applyToolChange(block BetaSystemMessageParamContentUnion, available map[string]struct{}) {
 	switch {
 	case block.OfToolRemoval != nil:
 		if name, ok := removalRefName(block.OfToolRemoval.Tool); ok {

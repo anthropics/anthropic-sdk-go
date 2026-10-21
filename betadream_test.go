@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaDreamNewWithOptionalParams(t *testing.T) {
@@ -28,7 +28,6 @@ func TestBetaDreamNewWithOptionalParams(t *testing.T) {
 		Inputs: []anthropic.BetaDreamInputUnionParam{{
 			OfMemoryStore: &anthropic.BetaDreamMemoryStoreInputParam{
 				MemoryStoreID: "x",
-				Type:          anthropic.BetaDreamMemoryStoreInputTypeMemoryStore,
 			},
 		}},
 		Model: anthropic.BetaDreamNewParamsModelUnion{
@@ -36,9 +35,7 @@ func TestBetaDreamNewWithOptionalParams(t *testing.T) {
 		},
 		Instructions: anthropic.String("x"),
 		OutputBehavior: anthropic.BetaOutputBehaviorUnionParam{
-			OfCreateNew: &anthropic.BetaOutputBehaviorCreateNewParam{
-				Type: anthropic.BetaOutputBehaviorCreateNewTypeCreateNew,
-			},
+			OfCreateNew: &anthropic.BetaOutputBehaviorCreateNewParam{},
 		},
 		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),

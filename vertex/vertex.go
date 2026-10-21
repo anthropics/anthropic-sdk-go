@@ -14,14 +14,12 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
-	sdkoption "github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/telemetry"
+	sdkoption "github.com/anthropics/anthropic-sdk-go/v2/option"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
-
-const DefaultVersion = "vertex-2023-10-16"
 
 // cloudPlatformScope is the OAuth2 scope used when the caller provides none.
 // External-account (workload identity federation) credentials fail to mint
@@ -150,6 +148,10 @@ func vertexMiddleware(region, projectID string) sdkoption.Middleware {
 			return nil, errors.New("vertex: Vertex AI does not serve the User Profiles API; manage user profiles with a first-party client")
 		}
 
+		// Vertex takes the API version from the body.
+		version := r.Header.Get("anthropic-version")
+		r.Header.Del("anthropic-version")
+
 		if r.Body != nil {
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
@@ -161,8 +163,8 @@ func vertexMiddleware(region, projectID string) sdkoption.Middleware {
 			// JSON body carries fields to inject or strip.
 			isJSON := gjson.ValidBytes(body)
 
-			if isJSON && !gjson.GetBytes(body, "anthropic_version").Exists() {
-				body, _ = sjson.SetBytes(body, "anthropic_version", DefaultVersion)
+			if isJSON && version != "" && !gjson.GetBytes(body, "anthropic_version").Exists() {
+				body, _ = sjson.SetBytes(body, "anthropic_version", version)
 			}
 
 			if isJSON && r.URL.Path == "/v1/messages" && r.Method == http.MethodPost {

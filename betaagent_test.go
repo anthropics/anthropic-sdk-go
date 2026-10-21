@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaAgentNewWithOptionalParams(t *testing.T) {
@@ -42,7 +42,6 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 		},
 		MCPServers: []anthropic.BetaManagedAgentsURLMCPServerParams{{
 			Name: "example-mcp",
-			Type: anthropic.BetaManagedAgentsURLMCPServerParamsTypeURL,
 			URL:  "https://example-server.modelcontextprotocol.io/sse",
 		}},
 		Metadata: map[string]string{
@@ -53,31 +52,24 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 				Agents: []anthropic.BetaManagedAgentsMultiagentRosterEntryParamsUnion{{
 					OfString: anthropic.String("agent_011CZkYqphY8vELVzwCUpqiQ"),
 				}, {
-					OfBetaManagedAgentsMultiagentSelfs: &anthropic.BetaManagedAgentsMultiagentSelfParams{
-						Type: anthropic.BetaManagedAgentsMultiagentSelfParamsTypeSelf,
-					},
+					OfBetaManagedAgentsMultiagentSelfs: &anthropic.BetaManagedAgentsMultiagentSelfParams{},
 				}},
-				Type: anthropic.BetaManagedAgentsMultiagentCoordinatorParamsTypeCoordinator,
 			},
 		},
 		Skills: []anthropic.BetaManagedAgentsSkillParamsUnion{{
 			OfAnthropic: &anthropic.BetaManagedAgentsAnthropicSkillParams{
 				SkillID: "xlsx",
-				Type:    anthropic.BetaManagedAgentsAnthropicSkillParamsTypeAnthropic,
 				Version: anthropic.String("1"),
 			},
 		}},
 		System: anthropic.String("You are a general-purpose agent that can research, write code, run commands, and use connected tools to complete the user's task end to end."),
 		Tools: []anthropic.BetaAgentNewParamsToolUnion{{
 			OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{
-				Type: anthropic.BetaManagedAgentsAgentToolset20260401ParamsTypeAgentToolset20260401,
 				Configs: []anthropic.BetaManagedAgentsAgentToolConfigParamsUnion{{
 					OfBash: &anthropic.BetaManagedAgentsBashToolConfigParams{
 						Enabled: anthropic.Bool(true),
 						PermissionPolicy: anthropic.BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion{
-							OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
-								Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
-							},
+							OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{},
 						},
 						Type: anthropic.BetaManagedAgentsBashToolConfigParamsTypeBash,
 					},
@@ -85,9 +77,7 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 				DefaultConfig: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParams{
 					Enabled: anthropic.Bool(true),
 					PermissionPolicy: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion{
-						OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
-							Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
-						},
+						OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{},
 					},
 				},
 			},
@@ -158,7 +148,6 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 			},
 			MCPServers: []anthropic.BetaManagedAgentsURLMCPServerParams{{
 				Name: "example-mcp",
-				Type: anthropic.BetaManagedAgentsURLMCPServerParamsTypeURL,
 				URL:  "https://example-server.modelcontextprotocol.io/sse",
 			}},
 			Metadata: map[string]string{
@@ -177,32 +166,25 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 					Agents: []anthropic.BetaManagedAgentsMultiagentRosterEntryParamsUnion{{
 						OfString: anthropic.String("agent_011CZkYqphY8vELVzwCUpqiQ"),
 					}, {
-						OfBetaManagedAgentsMultiagentSelfs: &anthropic.BetaManagedAgentsMultiagentSelfParams{
-							Type: anthropic.BetaManagedAgentsMultiagentSelfParamsTypeSelf,
-						},
+						OfBetaManagedAgentsMultiagentSelfs: &anthropic.BetaManagedAgentsMultiagentSelfParams{},
 					}},
-					Type: anthropic.BetaManagedAgentsMultiagentCoordinatorParamsTypeCoordinator,
 				},
 			},
 			Name: anthropic.String("name"),
 			Skills: []anthropic.BetaManagedAgentsSkillParamsUnion{{
 				OfAnthropic: &anthropic.BetaManagedAgentsAnthropicSkillParams{
 					SkillID: "xlsx",
-					Type:    anthropic.BetaManagedAgentsAnthropicSkillParamsTypeAnthropic,
 					Version: anthropic.String("1"),
 				},
 			}},
 			System: anthropic.String("You are a general-purpose agent that can research, write code, run commands, and use connected tools to complete the user's task end to end."),
 			Tools: []anthropic.BetaAgentUpdateParamsToolUnion{{
 				OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{
-					Type: anthropic.BetaManagedAgentsAgentToolset20260401ParamsTypeAgentToolset20260401,
 					Configs: []anthropic.BetaManagedAgentsAgentToolConfigParamsUnion{{
 						OfBash: &anthropic.BetaManagedAgentsBashToolConfigParams{
 							Enabled: anthropic.Bool(true),
 							PermissionPolicy: anthropic.BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion{
-								OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
-									Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
-								},
+								OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{},
 							},
 							Type: anthropic.BetaManagedAgentsBashToolConfigParamsTypeBash,
 						},
@@ -210,9 +192,7 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 					DefaultConfig: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParams{
 						Enabled: anthropic.Bool(true),
 						PermissionPolicy: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion{
-							OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
-								Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
-							},
+							OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{},
 						},
 					},
 				},

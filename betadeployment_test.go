@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
@@ -34,10 +34,8 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 				Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{{
 					OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 						Text: "Where is my order #1234?",
-						Type: anthropic.BetaManagedAgentsTextBlockTypeText,
 					},
 				}},
-				Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 			},
 		}},
 		Name: "x",
@@ -46,7 +44,6 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 				Amount:   "2500",
 				Currency: anthropic.BetaCurrencyUSD,
 			},
-			Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
 		},
 		Description: anthropic.String("description"),
 		Metadata: map[string]string{
@@ -55,14 +52,12 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 		Resources: []anthropic.BetaDeploymentNewParamsResourceUnion{{
 			OfFile: &anthropic.BetaManagedAgentsFileResourceParams{
 				FileID:    "file_011CNha8iCJcU1wXNR6q4V8w",
-				Type:      anthropic.BetaManagedAgentsFileResourceParamsTypeFile,
 				MountPath: anthropic.String("/uploads/receipt.pdf"),
 			},
 		}},
 		Schedule: anthropic.BetaManagedAgentsScheduleParams{
 			Expression: "0 9 * * 1-5",
 			Timezone:   "America/Los_Angeles",
-			Type:       anthropic.BetaManagedAgentsScheduleParamsTypeCron,
 		},
 		VaultIDs:    []string{"string"},
 		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
@@ -130,7 +125,6 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 					Amount:   "2500",
 					Currency: anthropic.BetaCurrencyUSD,
 				},
-				Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
 			},
 			Description:   anthropic.String("description"),
 			EnvironmentID: anthropic.String("environment_id"),
@@ -139,10 +133,8 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 					Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{{
 						OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 							Text: "Where is my order #1234?",
-							Type: anthropic.BetaManagedAgentsTextBlockTypeText,
 						},
 					}},
-					Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 				},
 			}},
 			Metadata: map[string]string{
@@ -152,14 +144,12 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 			Resources: []anthropic.BetaDeploymentUpdateParamsResourceUnion{{
 				OfFile: &anthropic.BetaManagedAgentsFileResourceParams{
 					FileID:    "file_011CNha8iCJcU1wXNR6q4V8w",
-					Type:      anthropic.BetaManagedAgentsFileResourceParamsTypeFile,
 					MountPath: anthropic.String("/uploads/receipt.pdf"),
 				},
 			}},
 			Schedule: anthropic.BetaManagedAgentsScheduleParams{
 				Expression: "0 9 * * 1-5",
 				Timezone:   "America/Los_Angeles",
-				Type:       anthropic.BetaManagedAgentsScheduleParamsTypeCron,
 			},
 			VaultIDs:    []string{"string"},
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},

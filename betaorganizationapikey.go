@@ -10,14 +10,14 @@ import (
 	"slices"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationAPIKeyService contains methods and other services that help with
@@ -122,13 +122,6 @@ type BetaAPIKey struct {
 	//
 	// For API Keys, this is always `"api_key"`.
 	Type constant.APIKey `json:"type" default:"api_key"`
-	// Deprecated: use `scope` instead. ID of the Workspace associated with the API
-	// key, or `null` if the API key belongs to the default Workspace. Also `null` for
-	// a principal-bound API key that has no Workspace; `scope` tells the two apart.
-	//
-	// Deprecated: Use `scope` instead. `workspace_id` is `null` both for an API key in
-	// the default Workspace and for a principal-bound API key that has no Workspace.
-	WorkspaceID string `json:"workspace_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID             respjson.Field
@@ -141,7 +134,6 @@ type BetaAPIKey struct {
 		Scope          respjson.Field
 		Status         respjson.Field
 		Type           respjson.Field
-		WorkspaceID    respjson.Field
 		ExtraFields    map[string]respjson.Field
 		raw            string
 	} `json:"-"`
@@ -382,9 +374,8 @@ func (r *BetaAPIKeyUserActor) UnmarshalJSON(data []byte) error {
 type BetaAPIKeyWorkspaceScope struct {
 	// Scope type. Always `"workspace"`: the API key belongs to one Workspace.
 	Type constant.Workspace `json:"type" default:"workspace"`
-	// ID of the Workspace the API key belongs to. Unlike the deprecated top-level
-	// `workspace_id`, this is the Workspace's real ID even for the organization's
-	// default Workspace.
+	// ID of the Workspace the API key belongs to, including when it is the
+	// organization's default Workspace.
 	WorkspaceID string `json:"workspace_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {

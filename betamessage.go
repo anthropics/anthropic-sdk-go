@@ -9,14 +9,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/ssestream"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaMessageService contains methods and other services that help with
@@ -643,6 +643,22 @@ func (r BetaAllThinkingTurnsParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *BetaAllThinkingTurnsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Content, Role are required.
+type BetaAssistantMessageParam struct {
+	Content []BetaContentBlockParamUnion `json:"content,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "assistant".
+	Role constant.Assistant `json:"role" default:"assistant"`
+	paramObj
+}
+
+func (r BetaAssistantMessageParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaAssistantMessageParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaAssistantMessageParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -14388,77 +14404,116 @@ func (r *BetaMessageIterationUsage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties Content, Role are required.
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
 type BetaMessageParam struct {
-	Content []BetaContentBlockParamUnion `json:"content,omitzero" api:"required"`
-	// Any of "user", "assistant", "system".
-	Role BetaMessageParamRole `json:"role,omitzero" api:"required"`
-	// How long this system message's text stays in front of the model. `"never"` (the
-	// default) renders it on every request that includes it. `"next_user_message"`
-	// renders it only for the user turn it follows: once a later `role: "user"`
-	// message exists in `messages` the message stays in the array (send it unchanged)
-	// but is no longer shown to the model. Only permitted on `role: "system"`
-	// messages.
-	//
-	// Any of "next_user_message", "never".
-	ClearAt BetaMessageParamClearAt `json:"clear_at,omitzero"`
-	// Per-message output configuration on a role:"system" input message.
-	//
-	// Fields here apply per-turn; `format` remains top-level only. An empty `{}` is
-	// accepted on a message that carries content; a message with neither content nor
-	// output_config fields is rejected.
-	OutputConfig BetaSystemMessageOutputConfigParam `json:"output_config,omitzero"`
-	paramObj
+	OfUser      *BetaUserMessageParam      `json:",omitzero,inline"`
+	OfAssistant *BetaAssistantMessageParam `json:",omitzero,inline"`
+	OfSystem    *BetaSystemMessageParam    `json:",omitzero,inline"`
+	paramUnion
 }
 
 func NewBetaUserMessage(blocks ...BetaContentBlockParamUnion) BetaMessageParam {
-	return BetaMessageParam{
-		Role:    BetaMessageParamRoleUser,
+	return BetaMessageParam{OfUser: &BetaUserMessageParam{
 		Content: blocks,
-	}
+	}}
 }
 
 // NewBetaSystemMessage builds a role:"system" message carrying a per-message
-// output config. `content` is required on the wire, so nil becomes an empty slice.
-func NewBetaSystemMessage(outputConfig BetaSystemMessageOutputConfigParam, blocks ...BetaContentBlockParamUnion) BetaMessageParam {
+// output config. With no blocks, `content` is sent as an empty array.
+func NewBetaSystemMessage(outputConfig BetaSystemMessageOutputConfigParam, blocks ...BetaSystemMessageParamContentUnion) BetaMessageParam {
 	if blocks == nil {
-		blocks = []BetaContentBlockParamUnion{}
+		blocks = []BetaSystemMessageParamContentUnion{}
 	}
-	return BetaMessageParam{
-		Role:         BetaMessageParamRoleSystem,
+	return BetaMessageParam{OfSystem: &BetaSystemMessageParam{
 		Content:      blocks,
 		OutputConfig: outputConfig,
+	}}
+}
+
+func (u BetaMessageParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfUser, u.OfAssistant, u.OfSystem)
+}
+func (u *BetaMessageParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaMessageParam) asAny() any {
+	if !param.IsOmitted(u.OfUser) {
+		return u.OfUser
+	} else if !param.IsOmitted(u.OfAssistant) {
+		return u.OfAssistant
+	} else if !param.IsOmitted(u.OfSystem) {
+		return u.OfSystem
 	}
+	return nil
 }
 
-func (r BetaMessageParam) MarshalJSON() (data []byte, err error) {
-	type shadow BetaMessageParam
-	return param.MarshalObject(r, (*shadow)(&r))
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageParam) GetClearAt() *string {
+	if vt := u.OfSystem; vt != nil {
+		return (*string)(&vt.ClearAt)
+	}
+	return nil
 }
-func (r *BetaMessageParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageParam) GetOutputConfig() *BetaSystemMessageOutputConfigParam {
+	if vt := u.OfSystem; vt != nil {
+		return &vt.OutputConfig
+	}
+	return nil
 }
 
-type BetaMessageParamRole string
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageParam) GetRole() *string {
+	if vt := u.OfUser; vt != nil {
+		return paramutil.AddrOrDefault(vt.Role)
+	} else if vt := u.OfAssistant; vt != nil {
+		return paramutil.AddrOrDefault(vt.Role)
+	} else if vt := u.OfSystem; vt != nil {
+		return paramutil.AddrOrDefault(vt.Role)
+	}
+	return nil
+}
 
-const (
-	BetaMessageParamRoleUser      BetaMessageParamRole = "user"
-	BetaMessageParamRoleAssistant BetaMessageParamRole = "assistant"
-	BetaMessageParamRoleSystem    BetaMessageParamRole = "system"
-)
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u BetaMessageParam) GetContent() (res betaMessageParamContent) {
+	if vt := u.OfUser; vt != nil {
+		res.any = &vt.Content
+	} else if vt := u.OfAssistant; vt != nil {
+		res.any = &vt.Content
+	} else if vt := u.OfSystem; vt != nil {
+		res.any = &vt.Content
+	}
+	return
+}
 
-// How long this system message's text stays in front of the model. `"never"` (the
-// default) renders it on every request that includes it. `"next_user_message"`
-// renders it only for the user turn it follows: once a later `role: "user"`
-// message exists in `messages` the message stays in the array (send it unchanged)
-// but is no longer shown to the model. Only permitted on `role: "system"`
-// messages.
-type BetaMessageParamClearAt string
+// Can have the runtime types [_[]BetaContentBlockParamUnion],
+// [_[]BetaSystemMessageParamContentUnion]
+type betaMessageParamContent struct{ any }
 
-const (
-	BetaMessageParamClearAtNextUserMessage BetaMessageParamClearAt = "next_user_message"
-	BetaMessageParamClearAtNever           BetaMessageParamClearAt = "never"
-)
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *[]anthropic.BetaContentBlockParamUnion:
+//	case *[]anthropic.BetaSystemMessageParamContentUnion:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u betaMessageParamContent) AsAny() any { return u.any }
+
+func init() {
+	apijson.RegisterUnion[BetaMessageParam](
+		"role",
+		apijson.Discriminator[BetaUserMessageParam]("user"),
+		apijson.Discriminator[BetaAssistantMessageParam]("assistant"),
+		apijson.Discriminator[BetaSystemMessageParam]("system"),
+	)
+}
 
 type BetaMessageTokensCount struct {
 	// Information about context management applied to the message.
@@ -17634,6 +17689,198 @@ const (
 	BetaSystemMessageOutputConfigEffortXhigh  BetaSystemMessageOutputConfigEffort = "xhigh"
 	BetaSystemMessageOutputConfigEffortMax    BetaSystemMessageOutputConfigEffort = "max"
 )
+
+// The property Role is required.
+type BetaSystemMessageParam struct {
+	// How long this system message's text stays in front of the model. `"never"` (the
+	// default) renders it on every request that includes it. `"next_user_message"`
+	// renders it only for the user turn it follows: once a later `role: "user"`
+	// message exists in `messages` the message stays in the array (send it unchanged)
+	// but is no longer shown to the model. Only permitted on `role: "system"`
+	// messages.
+	//
+	// Any of "next_user_message", "never".
+	ClearAt BetaSystemMessageParamClearAt        `json:"clear_at,omitzero"`
+	Content []BetaSystemMessageParamContentUnion `json:"content,omitzero"`
+	// Per-message output configuration on a role:"system" input message.
+	//
+	// Fields here apply per-turn; `format` remains top-level only. An empty `{}` is
+	// accepted on a message that carries content; a message with neither content nor
+	// output_config fields is rejected.
+	OutputConfig BetaSystemMessageOutputConfigParam `json:"output_config,omitzero"`
+	// This field can be elided, and will marshal its zero value as "system".
+	Role constant.System `json:"role" default:"system"`
+	paramObj
+}
+
+func (r BetaSystemMessageParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaSystemMessageParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaSystemMessageParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// How long this system message's text stays in front of the model. `"never"` (the
+// default) renders it on every request that includes it. `"next_user_message"`
+// renders it only for the user turn it follows: once a later `role: "user"`
+// message exists in `messages` the message stays in the array (send it unchanged)
+// but is no longer shown to the model. Only permitted on `role: "system"`
+// messages.
+type BetaSystemMessageParamClearAt string
+
+const (
+	BetaSystemMessageParamClearAtNextUserMessage BetaSystemMessageParamClearAt = "next_user_message"
+	BetaSystemMessageParamClearAtNever           BetaSystemMessageParamClearAt = "never"
+)
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaSystemMessageParamContentUnion struct {
+	OfText         *BetaTextBlockParam                `json:",omitzero,inline"`
+	OfToolAddition *BetaRequestToolAdditionBlockParam `json:",omitzero,inline"`
+	OfToolRemoval  *BetaRequestToolRemovalBlockParam  `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaSystemMessageParamContentUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfText, u.OfToolAddition, u.OfToolRemoval)
+}
+func (u *BetaSystemMessageParamContentUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaSystemMessageParamContentUnion) asAny() any {
+	if !param.IsOmitted(u.OfText) {
+		return u.OfText
+	} else if !param.IsOmitted(u.OfToolAddition) {
+		return u.OfToolAddition
+	} else if !param.IsOmitted(u.OfToolRemoval) {
+		return u.OfToolRemoval
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaSystemMessageParamContentUnion) GetText() *string {
+	if vt := u.OfText; vt != nil {
+		return &vt.Text
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaSystemMessageParamContentUnion) GetCitations() []BetaTextCitationParamUnion {
+	if vt := u.OfText; vt != nil {
+		return vt.Citations
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaSystemMessageParamContentUnion) GetType() *string {
+	if vt := u.OfText; vt != nil {
+		return paramutil.AddrOrDefault(vt.Type)
+	} else if vt := u.OfToolAddition; vt != nil {
+		return paramutil.AddrOrDefault(vt.Type)
+	} else if vt := u.OfToolRemoval; vt != nil {
+		return paramutil.AddrOrDefault(vt.Type)
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's CacheControl property, if present.
+func (u BetaSystemMessageParamContentUnion) GetCacheControl() *BetaCacheControlEphemeralParam {
+	if vt := u.OfText; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfToolAddition; vt != nil {
+		return &vt.CacheControl
+	} else if vt := u.OfToolRemoval; vt != nil {
+		return &vt.CacheControl
+	}
+	return nil
+}
+
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u BetaSystemMessageParamContentUnion) GetTool() (res betaSystemMessageParamContentUnionTool) {
+	if vt := u.OfToolAddition; vt != nil {
+		res.any = vt.Tool.asAny()
+	} else if vt := u.OfToolRemoval; vt != nil {
+		res.any = vt.Tool.asAny()
+	}
+	return
+}
+
+// Can have the runtime types [*BetaToolChangeToolReferenceParam],
+// [*BetaToolChangeMCPToolReferenceParam],
+// [*BetaToolChangeMCPToolsetReferenceParam], [*BetaToolChangeToolDefinitionParam]
+type betaSystemMessageParamContentUnionTool struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *anthropic.BetaToolChangeToolReferenceParam:
+//	case *anthropic.BetaToolChangeMCPToolReferenceParam:
+//	case *anthropic.BetaToolChangeMCPToolsetReferenceParam:
+//	case *anthropic.BetaToolChangeToolDefinitionParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u betaSystemMessageParamContentUnionTool) AsAny() any { return u.any }
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaSystemMessageParamContentUnionTool) GetDefinition() *BetaToolUnionParam {
+	switch vt := u.any.(type) {
+	case *BetaRequestToolAdditionBlockToolUnionParam:
+		return vt.GetDefinition()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaSystemMessageParamContentUnionTool) GetName() *string {
+	switch vt := u.any.(type) {
+	case *BetaRequestToolAdditionBlockToolUnionParam:
+		return vt.GetName()
+	case *BetaRequestToolRemovalBlockToolUnionParam:
+		return vt.GetName()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaSystemMessageParamContentUnionTool) GetType() *string {
+	switch vt := u.any.(type) {
+	case *BetaRequestToolAdditionBlockToolUnionParam:
+		return vt.GetType()
+	case *BetaRequestToolRemovalBlockToolUnionParam:
+		return vt.GetType()
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u betaSystemMessageParamContentUnionTool) GetServerName() *string {
+	switch vt := u.any.(type) {
+	case *BetaRequestToolAdditionBlockToolUnionParam:
+		return vt.GetServerName()
+	case *BetaRequestToolRemovalBlockToolUnionParam:
+		return vt.GetServerName()
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaSystemMessageParamContentUnion](
+		"type",
+		apijson.Discriminator[BetaTextBlockParam]("text"),
+		apijson.Discriminator[BetaRequestToolAdditionBlockParam]("tool_addition"),
+		apijson.Discriminator[BetaRequestToolRemovalBlockParam]("tool_removal"),
+	)
+}
 
 type BetaTextBlock struct {
 	// Citations supporting the text block.
@@ -23374,6 +23621,22 @@ func (r *BetaUserLocationParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Content, Role are required.
+type BetaUserMessageParam struct {
+	Content []BetaContentBlockParamUnion `json:"content,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "user".
+	Role constant.User `json:"role" default:"user"`
+	paramObj
+}
+
+func (r BetaUserMessageParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaUserMessageParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaUserMessageParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaWebFetchBlock struct {
 	Content BetaDocumentBlock `json:"content" api:"required"`
 	// ISO 8601 timestamp when the content was retrieved
@@ -25738,8 +26001,7 @@ type BetaMessageNewParams struct {
 	//
 	// Note that if you want to include a
 	// [system prompt](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices#give-claude-a-role),
-	// you can use the top-level `system` parameter — there is no `"system"` role for
-	// input messages in the Messages API.
+	// you can use the top-level `system` parameter.
 	//
 	// There is a limit of 100,000 messages in a single request.
 	Messages []BetaMessageParam `json:"messages,omitzero" api:"required"`
@@ -25751,30 +26013,6 @@ type BetaMessageNewParams struct {
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
-	// Amount of randomness injected into the response.
-	//
-	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`
-	// for analytical / multiple choice, and closer to `1.0` for creative and
-	// generative tasks.
-	//
-	// Note that even with `temperature` of `0.0`, the results will not be fully
-	// deterministic.
-	Temperature param.Opt[float64] `json:"temperature,omitzero"`
-	// Only sample from the top K options for each subsequent token.
-	//
-	// Used to remove "long tail" low probability responses.
-	// [Learn more technical details here](https://towardsdatascience.com/how-to-sample-from-language-models-682bceb97277).
-	//
-	// Recommended for advanced use cases only.
-	TopK param.Opt[int64] `json:"top_k,omitzero"`
-	// Use nucleus sampling.
-	//
-	// In nucleus sampling, we compute the cumulative distribution over all the options
-	// for each subsequent token in decreasing probability order and cut it off once it
-	// reaches a particular probability specified by `top_p`.
-	//
-	// Recommended for advanced use cases only.
-	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// The user profile ID to attribute this request to. Use when acting on behalf of a
 	// party other than your organization.
 	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`
@@ -26134,8 +26372,7 @@ type BetaMessageCountTokensParams struct {
 	//
 	// Note that if you want to include a
 	// [system prompt](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices#give-claude-a-role),
-	// you can use the top-level `system` parameter — there is no `"system"` role for
-	// input messages in the Messages API.
+	// you can use the top-level `system` parameter.
 	//
 	// There is a limit of 100,000 messages in a single request.
 	Messages []BetaMessageParam `json:"messages,omitzero" api:"required"`

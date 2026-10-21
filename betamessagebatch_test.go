@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
@@ -30,27 +30,24 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 			Params: anthropic.BetaMessageBatchNewParamsRequestParams{
 				MaxTokens: 1024,
 				Messages: []anthropic.BetaMessageParam{{
-					Content: []anthropic.BetaContentBlockParamUnion{{
-						OfText: &anthropic.BetaTextBlockParam{
-							Text: "x",
-							CacheControl: anthropic.BetaCacheControlEphemeralParam{
-								TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
-							},
-							Citations: []anthropic.BetaTextCitationParamUnion{{
-								OfCharLocation: &anthropic.BetaCitationCharLocationParam{
-									CitedText:      "The grass is green. The sky is blue.",
-									DocumentIndex:  0,
-									DocumentTitle:  anthropic.String("x"),
-									EndCharIndex:   0,
-									StartCharIndex: 0,
+					OfUser: &anthropic.BetaUserMessageParam{
+						Content: []anthropic.BetaContentBlockParamUnion{{
+							OfText: &anthropic.BetaTextBlockParam{
+								Text: "x",
+								CacheControl: anthropic.BetaCacheControlEphemeralParam{
+									TTL: anthropic.BetaCacheControlEphemeralTTLTTL5m,
 								},
-							}},
-						},
-					}},
-					Role:    anthropic.BetaMessageParamRoleUser,
-					ClearAt: anthropic.BetaMessageParamClearAtNextUserMessage,
-					OutputConfig: anthropic.BetaSystemMessageOutputConfigParam{
-						Effort: anthropic.BetaSystemMessageOutputConfigEffortLow,
+								Citations: []anthropic.BetaTextCitationParamUnion{{
+									OfCharLocation: &anthropic.BetaCitationCharLocationParam{
+										CitedText:      "The grass is green. The sky is blue.",
+										DocumentIndex:  0,
+										DocumentTitle:  anthropic.String("x"),
+										EndCharIndex:   0,
+										StartCharIndex: 0,
+									},
+								}},
+							},
+						}},
 					},
 				}},
 				Model: anthropic.ModelClaudeOpus5_5,
@@ -151,7 +148,6 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						},
 					}},
 				}},
-				Temperature: anthropic.Float(1),
 				Thinking: anthropic.BetaThinkingConfigParamUnion{
 					OfAdaptive: &anthropic.BetaThinkingConfigAdaptiveParam{
 						BlockBinding: anthropic.BetaThinkingBlockBindingParam{
@@ -189,8 +185,6 @@ func TestBetaMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type:   anthropic.BetaToolTypeCustom,
 					},
 				}},
-				TopK: anthropic.Int(5),
-				TopP: anthropic.Float(0.7),
 			},
 		}},
 		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},

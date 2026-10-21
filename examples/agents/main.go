@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/v2"
 )
 
 func main() {
@@ -38,8 +38,7 @@ func main() {
 		EnvironmentID: environment.ID,
 		Agent: anthropic.BetaSessionNewParamsAgentUnion{
 			OfBetaManagedAgentsAgents: &anthropic.BetaManagedAgentsAgentParams{
-				ID:   agent.ID,
-				Type: anthropic.BetaManagedAgentsAgentParamsTypeAgent,
+				ID: agent.ID,
 			},
 		},
 	})
@@ -53,12 +52,10 @@ func main() {
 		Events: []anthropic.BetaManagedAgentsEventParamsUnion{
 			{
 				OfUserMessage: &anthropic.BetaManagedAgentsUserMessageEventParams{
-					Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 					Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{
 						{
 							OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 								Text: "Hello Claude!",
-								Type: anthropic.BetaManagedAgentsTextBlockTypeText,
 							},
 						},
 					},

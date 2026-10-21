@@ -6,8 +6,8 @@ import (
 
 	"github.com/tidwall/sjson"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 )
 
 // Accumulate builds up the Message incrementally from a MessageStreamEvent. The Message then can be used as
@@ -309,14 +309,14 @@ func (variant BetaMCPToolListingBlock) toParamUnion() BetaContentBlockParamUnion
 }
 
 func (r BetaMessage) ToParam() BetaMessageParam {
-	var p BetaMessageParam
-	p.Role = BetaMessageParamRole(r.Role)
+	var p BetaAssistantMessageParam
+	p.Role = r.Role
 	p.Content = make([]BetaContentBlockParamUnion, len(r.Content))
 	for i, c := range r.Content {
 		contentParams := c.ToParam()
 		p.Content[i] = contentParams
 	}
-	return p
+	return BetaMessageParam{OfAssistant: &p}
 }
 
 func (r BetaRedactedThinkingBlock) ToParam() BetaRedactedThinkingBlockParam {

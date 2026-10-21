@@ -2,7 +2,7 @@
 
 <!-- x-release-please-start-version -->
 
-<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go"><img src="https://pkg.go.dev/badge/github.com/anthropics/anthropic-sdk-go.svg" alt="Go Reference"></a>
+<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2"><img src="https://pkg.go.dev/badge/github.com/anthropics/anthropic-sdk-go/v2.svg" alt="Go Reference"></a>
 
 <!-- x-release-please-end -->
 
@@ -18,7 +18,7 @@ Full documentation is available at **[platform.claude.com/docs/en/api/sdks/go](h
 
 ```go
 import (
-	"github.com/anthropics/anthropic-sdk-go" // imported as anthropic
+	"github.com/anthropics/anthropic-sdk-go/v2" // imported as anthropic
 )
 ```
 
@@ -29,7 +29,7 @@ Or explicitly add the dependency:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/anthropics/anthropic-sdk-go@v1.84.0'
+go get -u 'github.com/anthropics/anthropic-sdk-go/v2@v1.84.0'
 ```
 
 <!-- x-release-please-end -->
@@ -43,8 +43,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func main() {
@@ -85,7 +85,7 @@ Go has one request option type, so a method call accepts them too; passed that w
 
 ## Requirements
 
-Go 1.24+
+Go 1.25+
 
 ## Contributing
 
@@ -93,4 +93,4 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for details. Versions released before the change from the MIT License, and third-party contributions merged before it, remain under the MIT License. See [LICENSE-MIT](LICENSE-MIT).

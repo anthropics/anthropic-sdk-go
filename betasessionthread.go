@@ -11,14 +11,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaSessionThreadService contains methods and other services that help with
@@ -434,8 +434,7 @@ type BetaManagedAgentsSessionThread struct {
 	//
 	// Any of "running", "idle", "rescheduling", "terminated".
 	Status BetaManagedAgentsSessionThreadStatus `json:"status" api:"required"`
-	// Any of "session_thread".
-	Type BetaManagedAgentsSessionThreadType `json:"type" api:"required"`
+	Type   constant.SessionThread               `json:"type" default:"session_thread"`
 	// When the thread was last updated.
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// Cumulative token usage for this thread. Null until the thread's first idle
@@ -660,12 +659,6 @@ type BetaManagedAgentsSessionThreadAgentUnionTools struct {
 func (r *BetaManagedAgentsSessionThreadAgentUnionTools) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsSessionThreadType string
-
-const (
-	BetaManagedAgentsSessionThreadTypeSessionThread BetaManagedAgentsSessionThreadType = "session_thread"
-)
 
 // Timing statistics for a session thread.
 type BetaManagedAgentsSessionThreadStats struct {

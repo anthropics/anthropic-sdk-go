@@ -9,14 +9,14 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationWorkspaceRateLimitService contains methods and other services
@@ -112,26 +112,15 @@ func (r *BetaOrganizationWorkspaceRateLimitService) ListAutoPaging(ctx context.C
 }
 
 type BetaWorkspaceRateLimit struct {
-	// The rate-limit group this entry's limits apply to. Its `type` equals
-	// `group_type`.
+	// The rate-limit group this entry's limits apply to.
 	Group BetaWorkspaceRateLimitGroupUnion `json:"group" api:"required"`
-	// Deprecated: use `group.type` instead. The kind of rate-limit group this entry
-	// represents. `model_group` entries apply to a family of models (listed in
-	// `models`); other values apply to an API-surface category and have `models` set
-	// to `null`. Always equal to `group.type`.
-	//
-	// Any of "batch", "files", "model_group", "skills", "token_count", "web_search".
-	//
-	// Deprecated: Use `group.type` instead. `group_type` is still returned and always
-	// equals `group.type`.
-	GroupType BetaWorkspaceRateLimitGroupType `json:"group_type" api:"required"`
 	// The workspace's limiter values for this group. By default only the limiter types
 	// with a workspace-level override are listed. With `include_inherited` set to
 	// `true`, the limiter types the workspace inherits from the organization are
 	// listed too, each marked by `source`.
 	Limits []BetaWorkspaceRateLimitValue `json:"limits" api:"required"`
 	// Model names this entry's limits apply to, including aliases. `null` when
-	// `group_type` is not `"model_group"`.
+	// `group.type` is not `"model_group"`.
 	Models []string `json:"models" api:"required"`
 	// The `id` of the organization's RateLimit entry this entry applies to.
 	RateLimitID string `json:"rate_limit_id" api:"required"`
@@ -142,7 +131,6 @@ type BetaWorkspaceRateLimit struct {
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Group       respjson.Field
-		GroupType   respjson.Field
 		Limits      respjson.Field
 		Models      respjson.Field
 		RateLimitID respjson.Field
@@ -264,21 +252,6 @@ func (u BetaWorkspaceRateLimitGroupUnion) RawJSON() string { return u.JSON.raw }
 func (r *BetaWorkspaceRateLimitGroupUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Deprecated: use `group.type` instead. The kind of rate-limit group this entry
-// represents. `model_group` entries apply to a family of models (listed in
-// `models`); other values apply to an API-surface category and have `models` set
-// to `null`. Always equal to `group.type`.
-type BetaWorkspaceRateLimitGroupType string
-
-const (
-	BetaWorkspaceRateLimitGroupTypeBatch      BetaWorkspaceRateLimitGroupType = "batch"
-	BetaWorkspaceRateLimitGroupTypeFiles      BetaWorkspaceRateLimitGroupType = "files"
-	BetaWorkspaceRateLimitGroupTypeModelGroup BetaWorkspaceRateLimitGroupType = "model_group"
-	BetaWorkspaceRateLimitGroupTypeSkills     BetaWorkspaceRateLimitGroupType = "skills"
-	BetaWorkspaceRateLimitGroupTypeTokenCount BetaWorkspaceRateLimitGroupType = "token_count"
-	BetaWorkspaceRateLimitGroupTypeWebSearch  BetaWorkspaceRateLimitGroupType = "web_search"
-)
 
 type BetaWorkspaceRateLimitOrganizationSource struct {
 	// Always `organization`: no workspace-level override is stored, so the

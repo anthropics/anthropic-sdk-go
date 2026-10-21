@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
 )
 
 func writeCredentials(t *testing.T, path string, data map[string]any) {

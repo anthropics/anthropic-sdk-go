@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
 )
 
 func TestExchangeFederationAssertion_Success(t *testing.T) {

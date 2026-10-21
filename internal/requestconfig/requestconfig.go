@@ -16,11 +16,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal"
-	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiform"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apierror"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiform"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 )
 
 func getDefaultHeaders() map[string]string {
@@ -167,7 +167,7 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 	for k, v := range getDefaultHeaders() {
 		req.Header.Add(k, v)
 	}
-	req.Header.Set("anthropic-version", "2023-06-01")
+	req.Header.Set("anthropic-version", "2026-10-21")
 	for k, v := range getPlatformProperties() {
 		req.Header.Add(k, v)
 	}
@@ -179,6 +179,10 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 		Body:       reader,
 	}
 	cfg.ResponseBodyInto = dst
+	opts, err = resolveCredential(opts)
+	if err != nil {
+		return nil, err
+	}
 	err = cfg.Apply(opts...)
 	if err != nil {
 		return nil, err

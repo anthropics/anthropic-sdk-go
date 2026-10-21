@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go/mcp"
+	"github.com/anthropics/anthropic-sdk-go/v2/mcp"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -116,10 +116,10 @@ func TestToMessage_User(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if msg.Role != "user" {
-		t.Fatalf("expected role %q, got %q", "user", msg.Role)
+	if msg.OfUser == nil {
+		t.Fatalf("expected a user message, got %+v", msg)
 	}
-	if len(msg.Content) != 1 || msg.Content[0].OfText == nil {
+	if len(msg.OfUser.Content) != 1 || msg.OfUser.Content[0].OfText == nil {
 		t.Fatal("expected single text content block")
 	}
 }
@@ -132,8 +132,18 @@ func TestToMessage_Assistant(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if msg.Role != "assistant" {
-		t.Fatalf("expected role %q, got %q", "assistant", msg.Role)
+	if msg.OfAssistant == nil {
+		t.Fatalf("expected an assistant message, got %+v", msg)
+	}
+}
+
+func TestToMessage_UnsupportedRole(t *testing.T) {
+	_, err := mcp.ToMessage(&mcpsdk.PromptMessage{
+		Role:    "system",
+		Content: &mcpsdk.TextContent{Text: "hello"},
+	})
+	if err == nil {
+		t.Fatal("expected error for unsupported role")
 	}
 }
 

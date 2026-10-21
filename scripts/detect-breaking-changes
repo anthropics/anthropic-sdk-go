@@ -8,7 +8,6 @@ echo "==> Detecting breaking changes"
 
 TEST_PATHS=(
 	client_test.go
-	completion_test.go
 	message_test.go
 	messagebatch_test.go
 	model_test.go

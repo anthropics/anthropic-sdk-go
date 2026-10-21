@@ -1,7 +1,7 @@
 package anthropic
 
 import (
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 // BetaOrganizationAnalyticsAppService contains methods and other services that

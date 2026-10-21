@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/googlecloud"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/googlecloud"
 )
 
 // Live integration test for the Google Cloud client. Skipped unless ANTHROPIC_LIVE=1.

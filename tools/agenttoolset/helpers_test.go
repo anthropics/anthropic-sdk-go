@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	anthropic "github.com/anthropics/anthropic-sdk-go"
+	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
 )
 
 // runTool executes a BetaTool the way a session/Messages tool runner would and

@@ -15,8 +15,8 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func clearEnv(t *testing.T) {
@@ -87,9 +87,8 @@ func sendTestRequest(t *testing.T, client *Client) {
 // --- Service surface parity ---
 
 // excludedServices are anthropic.Client fields intentionally NOT mirrored here:
-// Completions is the deprecated text-completions API, and the gateway does not
-// serve UserProfiles endpoints.
-var excludedServices = map[string]bool{"Completions": true, "UserProfiles": true}
+// the gateway does not serve UserProfiles endpoints.
+var excludedServices = map[string]bool{"UserProfiles": true}
 
 func TestClientServicesMatchAnthropicClient(t *testing.T) {
 	gcType := reflect.TypeFor[Client]()
@@ -254,6 +253,9 @@ func TestDoesNotLeakAnthropicAPIKey(t *testing.T) {
 	})
 	sendTestRequest(t, client)
 
+	if got := captured.Headers.Values("Authorization"); len(got) != 1 || got[0] != "Bearer tok" {
+		t.Errorf("Authorization = %q, want exactly [%q] (TokenSource value, not ANTHROPIC_API_KEY)", got, "Bearer tok")
+	}
 	if got := captured.Headers.Get("X-Api-Key"); got != "" {
 		t.Errorf("expected no x-api-key header, got %q", got)
 	}

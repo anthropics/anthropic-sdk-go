@@ -85,7 +85,7 @@ Go has one request option type, so a method call accepts them too; passed that w
 
 ## Requirements
 
-Go 1.24+
+Go 1.25+
 
 ## Contributing
 

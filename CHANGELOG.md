@@ -12,6 +12,11 @@
 * **api:** add support for new API version 2026-10-21
 
 
+### Chores
+
+* require Go 1.25 or later
+
+
 ### Documentation
 
 * **api:** remove outdated system role note from messages description

@@ -222,6 +222,9 @@ type DispatchedToolCall struct {
 	// False on a permanent 4xx or exhausted retries, and also false — with no
 	// result event ever built — for a tool name this runner does not own when
 	// it deliberately posts nothing and leaves the id pending for its owner.
+	// An interrupted call is reported the same way: a session-wide
+	// user.interrupt cancelled it while it ran, and the server accepts no
+	// result for it.
 	Posted bool
 }
 
@@ -310,6 +313,13 @@ type SessionToolRunner struct {
 	mu       sync.Mutex
 	seen     map[string]struct{}
 	answered map[string]struct{}
+	// interruptCutoff is the latest processed_at seen on a session-wide
+	// user.interrupt. The server invalidates every tool call processed at or
+	// before it, so the runner marks those calls answered and never
+	// dispatches them. running is the call dispatchLoop is executing, kept so
+	// an interrupt can cancel it. Both are guarded by mu.
+	interruptCutoff time.Time
+	running         runningToolCall
 	// Confirmation gating (always_ask tools). `confirmationVerdicts` records
 	// every user.tool_confirmation verdict by tool_use_id (persistent for the
 	// run, like seen/answered). `awaitingConfirmation` holds the ask-gated tool
@@ -597,6 +607,22 @@ func (p pendingToolUse) sessionThreadID() string {
 	return p.toolUse.SessionThreadID
 }
 
+// processedAt returns the tool-use event's processed_at, which is compared
+// against interruptCutoff.
+func (p pendingToolUse) processedAt() time.Time {
+	if p.custom {
+		return p.customToolUse.ProcessedAt
+	}
+	return p.toolUse.ProcessedAt
+}
+
+// runningToolCall identifies the executing tool call by its processed_at and
+// holds the cancel func for its tool context.
+type runningToolCall struct {
+	processedAt time.Time
+	cancel      context.CancelFunc
+}
+
 // idleClock is the idle stop-countdown state. idleWatchdog reads it and
 // stops the runner once armedAt + maxIdle has elapsed.
 //
@@ -645,11 +671,13 @@ func endsTurn(eventType, stopReason string) bool {
 
 // noteEvent arms on an idle that ends the turn; disarms on anything else.
 //
-// user.tool_confirmation is neutral: it signals neither agent activity nor an
-// idle, and its effect on the clock flows through block/unblock instead —
-// disarming here would discard the pending arm the verdict is about to settle.
+// user.tool_confirmation and user.interrupt are neutral: neither is agent
+// activity or an idle. They affect the clock only by releasing held calls
+// through unblock, and disarming here would drop the pending arm that unblock
+// is about to apply.
 func (c *idleClock) noteEvent(eventType, stopReason string) {
-	if eventType == "user.tool_confirmation" {
+	if eventType == "user.tool_confirmation" ||
+		eventType == string(BetaManagedAgentsUserInterruptEventTypeUserInterrupt) {
 		return
 	}
 	if endsTurn(eventType, stopReason) {
@@ -752,6 +780,13 @@ func (c *idleClock) snapshot() time.Time {
 	return c.armedAt
 }
 
+// countdownOwed reports whether an idle countdown is running or pending.
+func (c *idleClock) countdownOwed() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return !c.armedAt.IsZero() || c.armPending
+}
+
 // streamLoop tails the live SSE stream with reconnect backoff. On each
 // (re)connect it opens the stream FIRST and only then reconciles full history,
 // so a tool_use the server emits during the reconcile window lands on the
@@ -818,6 +853,9 @@ func (r *SessionToolRunner) streamLoop(ctx context.Context, out chan<- pendingTo
 				}
 			case "user.tool_confirmation":
 				r.noteConfirmation(ctx, out, ev.ToolUseID, string(ev.AsUserToolConfirmation().Result))
+			case string(BetaManagedAgentsUserInterruptEventTypeUserInterrupt):
+				r.noteInterrupt(ev.ProcessedAt, ev.SessionThreadID)
+				r.releaseInterruptedHolds()
 			case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
 				r.markAnswered(ev.ToolUseID)
 			case string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult):
@@ -875,7 +913,11 @@ func jitterDuration(d time.Duration) time.Duration {
 // running stream loop does not also enqueue it — but the enqueue decision is
 // gated on `answered`, NOT `seen`: a tool_use whose result post previously
 // FAILED was never marked answered, so it is re-dispatched on the next
-// reconcile instead of being silently dropped.
+// reconcile instead of being silently dropped. The exception is a call a
+// session-wide user.interrupt invalidated. History is ordered by created_at,
+// and an interrupt is processed after it is created, so it can be listed
+// before calls it invalidates. The cutoff is therefore taken from the whole
+// listing before any call is routed.
 //
 // Returns ErrSessionTerminated if the listed history contains a
 // session.status_terminated or session.deleted event — the live stream
@@ -883,7 +925,10 @@ func jitterDuration(d time.Duration) time.Duration {
 // this check streamLoop would reconnect forever against a dead session.
 func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToolUse) error {
 	var pending []pendingToolUse
-	lastEndedTurn := false
+	// Seed from the live clock, so a turn-ending idle the stream already saw
+	// still counts when the listing holds only neutral events or none, as when
+	// that idle fell outside the listed window.
+	lastEndedTurn := r.idle.countdownOwed()
 	pager := r.eventService.ListAutoPaging(ctx, r.sessionID,
 		BetaSessionEventListParams{
 			Limit: param.NewOpt(int64(1000)),
@@ -911,6 +956,8 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 			if !r.isAnswered(ev.ToolUseID) {
 				r.confirmationVerdicts[ev.ToolUseID] = string(ev.AsUserToolConfirmation().Result)
 			}
+		case string(BetaManagedAgentsUserInterruptEventTypeUserInterrupt):
+			r.noteInterrupt(ev.ProcessedAt, ev.SessionThreadID)
 		case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
 			r.markAnswered(ev.ToolUseID)
 		case string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult):
@@ -924,9 +971,11 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 			r.log.Info("reconcile: session already terminated", slog.String("type", ev.Type))
 			return ErrSessionTerminated
 		}
-		// Neutral here as in idleClock.noteEvent: a verdict is neither agent
-		// activity nor an idle.
-		if ev.Type != "user.tool_confirmation" {
+		// Neutral here as in idleClock.noteEvent: a verdict or an interrupt is
+		// neither agent activity nor an idle, so a turn-ending idle before it
+		// still counts.
+		if ev.Type != "user.tool_confirmation" &&
+			ev.Type != string(BetaManagedAgentsUserInterruptEventTypeUserInterrupt) {
 			lastEndedTurn = endsTurn(ev.Type, ev.StopReason.Type)
 		}
 	}
@@ -935,6 +984,7 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 		r.log.Warn("reconcile list failed", slog.Any("error", err))
 		return nil
 	}
+	r.releaseInterruptedHolds()
 	var unanswered []pendingToolUse
 	for _, p := range pending {
 		if !r.isAnswered(p.id()) {
@@ -997,9 +1047,9 @@ func (r *SessionToolRunner) outstanding(unanswered []pendingToolUse) []pendingTo
 // resulting DispatchedToolCall to r.results.
 //
 // Each call is unblocked once it is fully disposed of — executed, or moot
-// because it was answered elsewhere — retiring the idle-clock blocker
-// applyVerdict took on a user-approved call. unblock is a no-op for a call
-// that was never gated.
+// because it was answered elsewhere or interrupted — retiring the idle-clock
+// blocker applyVerdict took on a user-approved call. unblock is a no-op for a
+// call that was never gated.
 func (r *SessionToolRunner) dispatchLoop(ctx context.Context, in <-chan pendingToolUse) error {
 	for {
 		select {
@@ -1011,11 +1061,12 @@ func (r *SessionToolRunner) dispatchLoop(ctx context.Context, in <-chan pendingT
 			}
 			// Retire the blocker only once the call is fully disposed of —
 			// executed and surfaced, or moot because it was answered
-			// elsewhere. Surfacing can block on a full results buffer, and
-			// the countdown must not start while the call is still queued.
+			// elsewhere or interrupted while queued. Surfacing can block on
+			// a full results buffer, and the countdown must not start while
+			// the call is still queued.
 			func() {
 				defer r.idle.unblock(p.id())
-				if r.isAnswered(p.id()) {
+				if r.isAnswered(p.id()) || r.settleIfInterrupted(p) {
 					return
 				}
 				r.surfaceCall(r.execute(ctx, p))
@@ -1200,8 +1251,18 @@ func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) Dispa
 		}
 		// A Session event has no toolset_name.
 		toolCtx, span := telemetry.StartToolUseSpan(toolCtx, r.telemetry, toolSpanName(tool, !p.custom), name, "", tool.Description, id, resourceIDs...)
+		r.setRunning(p.processedAt(), cancel)
 		out, runErr := tool.Execute(toolCtx, rawInput)
+		r.setRunning(time.Time{}, nil)
 		cancel()
+		if r.settleIfInterrupted(p) {
+			// An interrupt invalidated this call while it ran. The server
+			// would reject a result with a permanent 4xx, so post nothing. The
+			// run was stopped, not failed: its span ends as a canceled run's.
+			log.Info("tool call interrupted; not posting a result")
+			telemetry.EndToolUseSpan(ctx, span, r.telemetry, rawInput, nil, context.Canceled)
+			return call
+		}
 		switch {
 		case errors.Is(toolCtx.Err(), context.DeadlineExceeded):
 			call.IsError = true
@@ -1425,6 +1486,74 @@ func (r *SessionToolRunner) isAnswered(id string) bool {
 	return ok
 }
 
+// noteInterrupt raises interruptCutoff to a session-wide interrupt's
+// processed_at and cancels the running tool if the new cutoff covers it. An
+// interrupt that is still queued (no processed_at) or that targets one session
+// thread is ignored.
+func (r *SessionToolRunner) noteInterrupt(processedAt time.Time, sessionThreadID string) {
+	if processedAt.IsZero() || sessionThreadID != "" {
+		return
+	}
+	r.mu.Lock()
+	if processedAt.After(r.interruptCutoff) {
+		r.interruptCutoff = processedAt
+	}
+	var cancel context.CancelFunc
+	if r.running.cancel != nil && r.interruptedLocked(r.running.processedAt) {
+		cancel = r.running.cancel
+	}
+	r.mu.Unlock()
+	if cancel != nil {
+		cancel()
+	}
+}
+
+// interruptedLocked reports whether a tool call with the given processed_at
+// is at or before interruptCutoff. The caller must hold r.mu.
+func (r *SessionToolRunner) interruptedLocked(processedAt time.Time) bool {
+	return !r.interruptCutoff.IsZero() && !processedAt.IsZero() && !processedAt.After(r.interruptCutoff)
+}
+
+// settleIfInterrupted reports whether an interrupt invalidated p. If so, it
+// marks p answered so it is never dispatched: the server will not accept a
+// result for it.
+func (r *SessionToolRunner) settleIfInterrupted(p pendingToolUse) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if !r.interruptedLocked(p.processedAt()) {
+		return false
+	}
+	r.answered[p.id()] = struct{}{}
+	return true
+}
+
+// setRunning records the tool call dispatchLoop is executing; a nil cancel
+// clears it. A call an interrupt already covers is cancelled immediately,
+// which closes the gap between dispatchLoop's check and the tool starting.
+func (r *SessionToolRunner) setRunning(processedAt time.Time, cancel context.CancelFunc) {
+	r.mu.Lock()
+	r.running = runningToolCall{processedAt: processedAt, cancel: cancel}
+	interrupted := cancel != nil && r.interruptedLocked(processedAt)
+	r.mu.Unlock()
+	if interrupted {
+		cancel()
+	}
+}
+
+// releaseInterruptedHolds drops every held call an interrupt invalidated and
+// retires its idle-clock blocker. Like all awaitingConfirmation access, it
+// runs on the stream goroutine.
+func (r *SessionToolRunner) releaseInterruptedHolds() {
+	for id, held := range r.awaitingConfirmation {
+		if r.settleIfInterrupted(held) {
+			delete(r.awaitingConfirmation, id)
+			r.idle.unblock(id)
+			r.log.Info("held tool call interrupted; releasing",
+				slog.String("tool", held.name()), slog.String("tool_use_id", id))
+		}
+	}
+}
+
 // sessionThreadStatusEventPrefix starts the type of every event that reports the
 // status of a Session thread: session.thread_status_running, _idle and the rest.
 const sessionThreadStatusEventPrefix = "session.thread_status_"
@@ -1457,6 +1586,9 @@ func (r *SessionToolRunner) primaryThread() string {
 // evaluated to "deny" is resolved as denied regardless of any recorded verdict.
 func (r *SessionToolRunner) routeToolEvent(ctx context.Context, out chan<- pendingToolUse, p pendingToolUse) {
 	id := p.id()
+	if r.settleIfInterrupted(p) {
+		return
+	}
 	// Only builtin agent.tool_use carries evaluated_permission today; if the
 	// field ever lands on agent.custom_tool_use the gate must keep failing
 	// closed rather than dispatch a gated call by event type.

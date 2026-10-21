@@ -36,6 +36,7 @@ type BetaOrganizationService struct {
 	Plugins               BetaOrganizationPluginService
 	PluginMarketplaces    BetaOrganizationPluginMarketplaceService
 	TelemetryDestinations BetaOrganizationTelemetryDestinationService
+	Webhooks              BetaOrganizationWebhookService
 }
 
 // NewBetaOrganizationService generates a new service that applies the given
@@ -60,6 +61,7 @@ func NewBetaOrganizationService(opts ...option.RequestOption) (r BetaOrganizatio
 	r.Plugins = NewBetaOrganizationPluginService(opts...)
 	r.PluginMarketplaces = NewBetaOrganizationPluginMarketplaceService(opts...)
 	r.TelemetryDestinations = NewBetaOrganizationTelemetryDestinationService(opts...)
+	r.Webhooks = NewBetaOrganizationWebhookService(opts...)
 	return
 }
 

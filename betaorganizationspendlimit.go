@@ -60,10 +60,12 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 
 // List the organization's spend limits.
 //
-// Limits are grouped by scope type, in the order `organization`, `seat_tier`,
+// A Claude Console organization's limits, including any read-only `usage_tier`
+// limit, come newest first. Listing them is in an early access preview. To request
+// access, contact your Anthropic account team. A Claude Enterprise organization's
+// limits are grouped by scope type, in the order `organization`, `seat_tier`,
 // `rbac_group`, `organization_service`, `user`; within a type they come in a fixed
-// order that is not creation order. Supported for Claude Enterprise organizations
-// only, not for Claude Console organizations.
+// order that is not creation order.
 func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSpendLimit], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -79,7 +81,7 @@ func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params Bet
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "spend-limit-reads-2026-09-26"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/spend_limits?beta=true"
-	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.list", "/v1/organizations/spend_limits", "limit", "page", "scope_type"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.list", "/v1/organizations/spend_limits", "limit", "page", "scope_type", "workspace_id"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -94,10 +96,12 @@ func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params Bet
 
 // List the organization's spend limits.
 //
-// Limits are grouped by scope type, in the order `organization`, `seat_tier`,
+// A Claude Console organization's limits, including any read-only `usage_tier`
+// limit, come newest first. Listing them is in an early access preview. To request
+// access, contact your Anthropic account team. A Claude Enterprise organization's
+// limits are grouped by scope type, in the order `organization`, `seat_tier`,
 // `rbac_group`, `organization_service`, `user`; within a type they come in a fixed
-// order that is not creation order. Supported for Claude Enterprise organizations
-// only, not for Claude Console organizations.
+// order that is not creation order.
 func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSpendLimit] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
@@ -997,12 +1001,17 @@ func (r *BetaOrganizationSpendLimitDeleteResponse) UnmarshalJSON(data []byte) er
 type BetaOrganizationSpendLimitListParams struct {
 	// Opaque cursor from a previous response's `next_page` field.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Return only the limits whose `scope.workspace_id` is this workspace
+	// (`wrkspc_...`). Claude Console organizations only; other organizations get a 400
+	// error.
+	WorkspaceID param.Opt[string] `query:"workspace_id,omitzero" json:"-"`
 	// Maximum number of limits per page. Defaults to `20`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
-	// Return only limits with these scope types. Omit for all.
+	// Return only limits with these scope types. Omit for all. A scope type that
+	// doesn't apply to the organization gets a 400 error.
 	//
 	// Any of "organization", "organization_service", "rbac_group", "seat_tier",
-	// "user", "workspace".
+	// "usage_tier", "user", "workspace".
 	ScopeType []string `query:"scope_type,omitzero" json:"-"`
 	// This endpoint is in beta: requests must send `spend-limit-reads-2026-09-26` in
 	// this header.

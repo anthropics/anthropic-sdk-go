@@ -1,6 +1,11 @@
 # Changelog
 
-## [1.84.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.84.0...v1.84.1) (2026-10-20)
+## [1.85.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.84.0...v1.85.0) (2026-10-21)
+
+### Features
+
+* **api:** add a workspace_id filter and the usage_tier scope type to list spend limits
+
 
 ### Documentation
 

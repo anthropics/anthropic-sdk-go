@@ -46,10 +46,11 @@ func TestBetaOrganizationSpendLimitListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Beta.Organization.SpendLimits.List(context.TODO(), anthropic.BetaOrganizationSpendLimitListParams{
-		Limit:     anthropic.Int(1),
-		Page:      anthropic.String("page"),
-		ScopeType: []string{"organization"},
-		Betas:     []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Limit:       anthropic.Int(1),
+		Page:        anthropic.String("page"),
+		ScopeType:   []string{"organization"},
+		WorkspaceID: anthropic.String("workspace_id"),
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

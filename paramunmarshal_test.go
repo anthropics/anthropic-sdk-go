@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/v2"
 )
 
 func TestParamUnmarshalNullAnyFieldDecodesToNil(t *testing.T) {
@@ -19,9 +19,12 @@ func TestParamUnmarshalNullAnyFieldDecodesToNil(t *testing.T) {
 	if err := json.Unmarshal([]byte(raw), &p); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	tu := p.Messages[0].Content[0].OfToolUse
+	if p.Messages[0].OfAssistant == nil {
+		t.Fatalf("assistant variant not selected, got %#v", p.Messages[0])
+	}
+	tu := p.Messages[0].OfAssistant.Content[0].OfToolUse
 	if tu == nil {
-		t.Fatalf("tool_use variant not selected, got %#v", p.Messages[0].Content[0])
+		t.Fatalf("tool_use variant not selected, got %#v", p.Messages[0].OfAssistant.Content[0])
 	}
 	if tu.Input != nil {
 		t.Errorf("input must decode to nil as encoding/json does, got %#v", tu.Input)
@@ -36,10 +39,14 @@ func TestParamUnmarshalUnknownFieldsIgnored(t *testing.T) {
 	if err := json.Unmarshal([]byte(raw), &p); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if p.Messages[0].Content[0].OfText == nil || p.Messages[0].Content[0].OfText.Text != "hi" {
-		t.Errorf("text block not decoded alongside unknown field, got %#v", p.Messages[0].Content[0])
+	if p.Messages[0].OfUser == nil {
+		t.Fatalf("user variant not selected, got %#v", p.Messages[0])
 	}
-	if len(p.ExtraFields()) != 0 || len(p.Messages[0].Content[0].OfText.ExtraFields()) != 0 {
+	block := p.Messages[0].OfUser.Content[0]
+	if block.OfText == nil || block.OfText.Text != "hi" {
+		t.Errorf("text block not decoded alongside unknown field, got %#v", block)
+	}
+	if len(p.ExtraFields()) != 0 || len(block.OfText.ExtraFields()) != 0 {
 		t.Errorf("unknown keys must not populate the SetExtraFields escape hatch")
 	}
 	out, err := json.Marshal(p)
@@ -150,8 +157,15 @@ func TestParamUnmarshalStringPromotion(t *testing.T) {
 	if err := json.Unmarshal([]byte(`{"role":"user","content":"hello"}`), &bm); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if len(bm.Content) != 1 || bm.Content[0].OfText == nil || bm.Content[0].OfText.Text != "hello" {
-		t.Errorf("beta content string not promoted, got %#v", bm.Content)
+	if bm.OfUser == nil || len(bm.OfUser.Content) != 1 || bm.OfUser.Content[0].OfText == nil || bm.OfUser.Content[0].OfText.Text != "hello" {
+		t.Errorf("beta content string not promoted, got %#v", bm)
+	}
+	var bs anthropic.BetaMessageParam
+	if err := json.Unmarshal([]byte(`{"role":"system","content":"be brief"}`), &bs); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if bs.OfSystem == nil || len(bs.OfSystem.Content) != 1 || bs.OfSystem.Content[0].OfText == nil || bs.OfSystem.Content[0].OfText.Text != "be brief" {
+		t.Errorf("beta system content string not promoted, got %#v", bs)
 	}
 }
 

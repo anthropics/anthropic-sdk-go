@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
 )
 
 func configFor(t *testing.T, base string) *requestconfig.RequestConfig {

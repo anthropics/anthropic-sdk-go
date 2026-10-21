@@ -23,8 +23,8 @@ import (
 	"github.com/aws/smithy-go/auth/bearer"
 	"github.com/tidwall/gjson"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBedrockURLEncoding(t *testing.T) {
@@ -618,10 +618,12 @@ func TestBedrockUserMiddlewareObservesAnthropicShape(t *testing.T) {
 	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
 
 	var wirePath, wireAuth string
+	var wireVersion []string
 	var wireBody map[string]any
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		wirePath = r.URL.Path
 		wireAuth = r.Header.Get("Authorization")
+		wireVersion = r.Header.Values("anthropic-version")
 		if err := json.NewDecoder(r.Body).Decode(&wireBody); err != nil {
 			t.Errorf("Failed to decode wire body: %v", err)
 		}
@@ -629,11 +631,12 @@ func TestBedrockUserMiddlewareObservesAnthropicShape(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	var observedPath, observedAuth string
+	var observedPath, observedAuth, observedVersion string
 	var observedBody map[string]any
 	spy := func(r *http.Request, next option.MiddlewareNext) (*http.Response, error) {
 		observedPath = r.URL.Path
 		observedAuth = r.Header.Get("Authorization")
+		observedVersion = r.Header.Get("anthropic-version")
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return nil, err
@@ -681,11 +684,68 @@ func TestBedrockUserMiddlewareObservesAnthropicShape(t *testing.T) {
 	if _, ok := wireBody["model"]; ok {
 		t.Error("Expected model to be removed from the wire body")
 	}
-	if wireBody["anthropic_version"] != DefaultVersion {
-		t.Errorf("Expected anthropic_version %q on the wire, got %v", DefaultVersion, wireBody["anthropic_version"])
+	if wireBody["anthropic_version"] != observedVersion {
+		t.Errorf("Expected anthropic_version %q on the wire, got %v", observedVersion, wireBody["anthropic_version"])
+	}
+	if len(wireVersion) != 0 {
+		t.Errorf("Expected no anthropic-version header on the wire, got %q", wireVersion)
 	}
 	if !strings.HasPrefix(wireAuth, "AWS4-HMAC-SHA256") {
 		t.Errorf("Expected SigV4 Authorization on the wire, got %q", wireAuth)
+	}
+}
+
+func TestBedrockBodyAPIVersion(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+
+	tests := map[string]struct {
+		option option.RequestOption
+		want   any
+	}{
+		"a header the caller set":     {option.WithHeader("anthropic-version", "2030-01-01"), "2030-01-01"},
+		"a header the caller removed": {option.WithHeaderDel("anthropic-version"), nil},
+		"a body value the caller set": {option.WithJSONSet("anthropic_version", "2030-01-02"), "2030-01-02"},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			var wireVersion []string
+			var wireBody map[string]any
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				wireVersion = r.Header.Values("anthropic-version")
+				if err := json.NewDecoder(r.Body).Decode(&wireBody); err != nil {
+					t.Errorf("Failed to decode wire body: %v", err)
+				}
+				writeMessagesResponse(w)
+			}))
+			t.Cleanup(server.Close)
+
+			client := anthropic.NewClient(
+				option.WithoutEnvironmentDefaults(),
+				WithConfig(makeStaticAWSConfig("us-east-1")),
+				option.WithBaseURL(server.URL),
+				test.option,
+			)
+
+			_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+				Model:     "claude-3-sonnet",
+				MaxTokens: 1,
+				Messages: []anthropic.MessageParam{
+					anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+				},
+			})
+			if err != nil {
+				t.Fatalf("Request failed: %v", err)
+			}
+
+			if wireBody["anthropic_version"] != test.want {
+				t.Errorf("Expected anthropic_version %v on the wire, got %v", test.want, wireBody["anthropic_version"])
+			}
+			if len(wireVersion) != 0 {
+				t.Errorf("Expected no anthropic-version header on the wire, got %q", wireVersion)
+			}
+		})
 	}
 }
 
@@ -931,6 +991,35 @@ func TestBedrockNonJSONBodyPassesThroughUntouched(t *testing.T) {
 	}
 	if !strings.HasPrefix(wireAuth, "AWS4-HMAC-SHA256") {
 		t.Errorf("Expected SigV4 Authorization on the wire, got %q", wireAuth)
+	}
+}
+
+func TestBedrockTextCompletionsPathNotRewritten(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
+
+	var wirePath string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		wirePath = r.URL.Path
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+	}))
+	t.Cleanup(server.Close)
+
+	client := anthropic.NewClient(
+		option.WithoutEnvironmentDefaults(),
+		WithConfig(makeStaticAWSConfig("us-east-1")),
+		option.WithBaseURL(server.URL),
+	)
+
+	var res map[string]any
+	err := client.Post(context.Background(), "/v1/complete", map[string]any{"model": "claude-3-sonnet"}, &res)
+	if err != nil {
+		t.Fatalf("Request failed: %v", err)
+	}
+
+	if wirePath != "/v1/complete" {
+		t.Errorf("Expected wire path %q, got %q", "/v1/complete", wirePath)
 	}
 }
 

@@ -7,14 +7,14 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // OrganizationRateLimitService contains methods and other services that help with
@@ -79,13 +79,12 @@ type OrganizationRateLimit struct {
 	// differs between organizations; the group's own identifier is `group.id`. Pass it
 	// as `rate_limit_id` to set a workspace's overrides for this group.
 	ID string `json:"id" api:"required"`
-	// The rate-limit group this entry's limits apply to. Its `type` equals
-	// `group_type`.
+	// The rate-limit group this entry's limits apply to.
 	Group OrganizationRateLimitGroupUnion `json:"group" api:"required"`
 	// The limiter values that apply to this group.
 	Limits []OrganizationRateLimitValue `json:"limits" api:"required"`
 	// Model names this entry's limits apply to, including aliases. `null` when
-	// `group_type` is not `"model_group"`.
+	// `group.type` is not `"model_group"`.
 	Models []string `json:"models" api:"required"`
 	// Object type. Always `rate_limit` for organization rate-limit entries.
 	Type constant.RateLimit `json:"type" default:"rate_limit"`

@@ -13,12 +13,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/sendwindow"
-	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
-	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/sendwindow"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/stainlessheader"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/telemetry"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/sync/errgroup"
 )
@@ -85,7 +86,7 @@ type SessionToolRunnerOptions struct {
 	// looks up each agent.tool_use and agent.custom_tool_use event's Name
 	// against this slice and routes to the matching tool. Use
 	// agenttoolset.BetaAgentToolset20260401(env) (from
-	// github.com/anthropics/anthropic-sdk-go/tools/agenttoolset) for the
+	// github.com/anthropics/anthropic-sdk-go/v2/tools/agenttoolset) for the
 	// standard agent_toolset_20260401 set; filter or extend the slice to
 	// customise. Tool lifetime — including Close on tools that implement
 	// io.Closer — is the caller's responsibility: the runner never closes
@@ -113,11 +114,8 @@ type SessionToolRunnerOptions struct {
 	// caller-supplied tag).
 	//
 	// Self-hosted-environment callers must pass the environment key here.
-	// option.WithAuthToken alone only ADDS an Authorization header — the
-	// parent client's WithAPIKey middleware still emits X-Api-Key on every
-	// request, so both creds would land on the wire and the server rejects
-	// the dual auth on the events stream. Pair the bearer with an explicit
-	// X-Api-Key delete:
+	// Pair it with an X-Api-Key delete, so that an X-Api-Key header set on the
+	// client doesn't land on the wire next to it:
 	//
 	//	RequestOptions: []option.RequestOption{
 	//		option.WithHeaderDel("X-Api-Key"),
@@ -237,7 +235,7 @@ type DispatchedToolCall struct {
 // via the events list endpoint, dispatch the registered tools, post results,
 // and the idle timeout.
 // Lease heartbeating, work claiming, and skill download are not its concern —
-// see [github.com/anthropics/anthropic-sdk-go/lib/environments.EnvironmentWorker]
+// see [github.com/anthropics/anthropic-sdk-go/v2/lib/environments.EnvironmentWorker]
 // for the full self-hosted runner composition.
 //
 // A SessionToolRunner is NOT safe for concurrent use. All methods must be
@@ -663,10 +661,10 @@ func newIdleClock(maxIdle time.Duration) *idleClock {
 // client resolves the events it names. Every other stop reason ends the turn,
 // including one newer than this SDK's types.
 func endsTurn(eventType, stopReason string) bool {
-	if eventType != string(BetaManagedAgentsSessionStatusIdleEventTypeSessionStatusIdle) {
+	if eventType != string(constant.ValueOf[constant.SessionStatusIdle]()) {
 		return false
 	}
-	return stopReason != string(BetaManagedAgentsSessionRequiresActionTypeRequiresAction)
+	return stopReason != string(constant.ValueOf[constant.RequiresAction]())
 }
 
 // noteEvent arms on an idle that ends the turn; disarms on anything else.
@@ -677,7 +675,7 @@ func endsTurn(eventType, stopReason string) bool {
 // is about to apply.
 func (c *idleClock) noteEvent(eventType, stopReason string) {
 	if eventType == "user.tool_confirmation" ||
-		eventType == string(BetaManagedAgentsUserInterruptEventTypeUserInterrupt) {
+		eventType == string(constant.ValueOf[constant.UserInterrupt]()) {
 		return
 	}
 	if endsTurn(eventType, stopReason) {
@@ -843,25 +841,24 @@ func (r *SessionToolRunner) streamLoop(ctx context.Context, out chan<- pendingTo
 				r.notePrimaryThread(ev.Type, ev.SessionThreadID)
 			}
 			switch ev.Type {
-			case string(BetaManagedAgentsAgentToolUseEventTypeAgentToolUse):
+			case string(constant.ValueOf[constant.AgentToolUse]()):
 				if r.markSeen(ev.ID) {
 					r.routeToolEvent(ctx, out, pendingToolUse{toolUse: ev.AsAgentToolUse()})
 				}
-			case string(BetaManagedAgentsAgentCustomToolUseEventTypeAgentCustomToolUse):
+			case string(constant.ValueOf[constant.AgentCustomToolUse]()):
 				if r.markSeen(ev.ID) {
 					r.routeToolEvent(ctx, out, pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse()})
 				}
 			case "user.tool_confirmation":
 				r.noteConfirmation(ctx, out, ev.ToolUseID, string(ev.AsUserToolConfirmation().Result))
-			case string(BetaManagedAgentsUserInterruptEventTypeUserInterrupt):
+			case string(constant.ValueOf[constant.UserInterrupt]()):
 				r.noteInterrupt(ev.ProcessedAt, ev.SessionThreadID)
 				r.releaseInterruptedHolds()
-			case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
+			case string(constant.ValueOf[constant.UserToolResult]()):
 				r.markAnswered(ev.ToolUseID)
-			case string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult):
+			case string(constant.ValueOf[constant.UserCustomToolResult]()):
 				r.markAnswered(ev.CustomToolUseID)
-			case string(BetaManagedAgentsSessionStatusTerminatedEventTypeSessionStatusTerminated),
-				string(BetaManagedAgentsSessionDeletedEventTypeSessionDeleted):
+			case string(constant.ValueOf[constant.SessionStatusTerminated]()), string(constant.ValueOf[constant.SessionDeleted]()):
 				r.log.Info("session terminated", slog.String("type", ev.Type))
 				sentinel = ErrSessionTerminated
 			}
@@ -942,10 +939,10 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 		// the log's first.
 		r.notePrimaryThread(ev.Type, ev.SessionThreadID)
 		switch ev.Type {
-		case string(BetaManagedAgentsAgentToolUseEventTypeAgentToolUse):
+		case string(constant.ValueOf[constant.AgentToolUse]()):
 			r.markSeen(ev.ID)
 			pending = append(pending, pendingToolUse{toolUse: ev.AsAgentToolUse()})
-		case string(BetaManagedAgentsAgentCustomToolUseEventTypeAgentCustomToolUse):
+		case string(constant.ValueOf[constant.AgentCustomToolUse]()):
 			r.markSeen(ev.ID)
 			pending = append(pending, pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse()})
 		case "user.tool_confirmation":
@@ -956,14 +953,13 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 			if !r.isAnswered(ev.ToolUseID) {
 				r.confirmationVerdicts[ev.ToolUseID] = string(ev.AsUserToolConfirmation().Result)
 			}
-		case string(BetaManagedAgentsUserInterruptEventTypeUserInterrupt):
+		case string(constant.ValueOf[constant.UserInterrupt]()):
 			r.noteInterrupt(ev.ProcessedAt, ev.SessionThreadID)
-		case string(BetaManagedAgentsUserToolResultEventTypeUserToolResult):
+		case string(constant.ValueOf[constant.UserToolResult]()):
 			r.markAnswered(ev.ToolUseID)
-		case string(BetaManagedAgentsUserCustomToolResultEventTypeUserCustomToolResult):
+		case string(constant.ValueOf[constant.UserCustomToolResult]()):
 			r.markAnswered(ev.CustomToolUseID)
-		case string(BetaManagedAgentsSessionStatusTerminatedEventTypeSessionStatusTerminated),
-			string(BetaManagedAgentsSessionDeletedEventTypeSessionDeleted):
+		case string(constant.ValueOf[constant.SessionStatusTerminated]()), string(constant.ValueOf[constant.SessionDeleted]()):
 			// The session is already over. Any pending tool_use we
 			// collected above can't be answered (the server won't accept
 			// results against a terminated session) and the live stream
@@ -975,7 +971,7 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 		// neither agent activity nor an idle, so a turn-ending idle before it
 		// still counts.
 		if ev.Type != "user.tool_confirmation" &&
-			ev.Type != string(BetaManagedAgentsUserInterruptEventTypeUserInterrupt) {
+			ev.Type != string(constant.ValueOf[constant.UserInterrupt]()) {
 			lastEndedTurn = endsTurn(ev.Type, ev.StopReason.Type)
 		}
 	}
@@ -1394,7 +1390,7 @@ func (r *SessionToolRunner) postCall(ctx context.Context, call DispatchedToolCal
 	if call.Custom {
 		call.CustomResult = BetaManagedAgentsUserCustomToolResultEventParams{
 			CustomToolUseID: call.ToolUseID,
-			Type:            BetaManagedAgentsUserCustomToolResultEventParamsTypeUserCustomToolResult,
+			Type:            constant.ValueOf[constant.UserCustomToolResult](),
 			IsError:         param.NewOpt(call.IsError),
 			Content:         toCustomToolResultContent(blocks),
 		}
@@ -1402,7 +1398,7 @@ func (r *SessionToolRunner) postCall(ctx context.Context, call DispatchedToolCal
 	} else {
 		call.Result = BetaManagedAgentsUserToolResultEventParams{
 			ToolUseID: call.ToolUseID,
-			Type:      BetaManagedAgentsUserToolResultEventParamsTypeUserToolResult,
+			Type:      constant.ValueOf[constant.UserToolResult](),
 			IsError:   param.NewOpt(call.IsError),
 			Content:   toToolResultContent(blocks),
 		}

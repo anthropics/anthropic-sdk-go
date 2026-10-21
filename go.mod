@@ -1,4 +1,4 @@
-module github.com/anthropics/anthropic-sdk-go
+module github.com/anthropics/anthropic-sdk-go/v2
 
 go 1.24
 

@@ -45,7 +45,7 @@ To use a local version of this library from source in another project, edit the 
 directive. This can be done through the CLI with the following:
 
 ```sh
-$ go mod edit -replace github.com/anthropics/anthropic-sdk-go=/path/to/anthropic-sdk-go
+$ go mod edit -replace github.com/anthropics/anthropic-sdk-go/v2=/path/to/anthropic-sdk-go
 ```
 
 ## Running tests
@@ -67,3 +67,7 @@ This library uses the standard gofmt code formatter:
 ```sh
 $ ./scripts/format
 ```
+
+## License
+
+By contributing to this repository, you agree that your contributions are licensed under the Apache License, Version 2.0 (see [LICENSE](LICENSE)).

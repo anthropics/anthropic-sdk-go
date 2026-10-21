@@ -4,7 +4,7 @@
 // same file, alias one of them:
 //
 //	import (
-//	    anthropicaws "github.com/anthropics/anthropic-sdk-go/aws"
+//	    anthropicaws "github.com/anthropics/anthropic-sdk-go/v2/aws"
 //	    awssdk "github.com/aws/aws-sdk-go-v2/aws"
 //	)
 package aws
@@ -17,17 +17,17 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/awsauth"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 const defaultServiceName = "aws-external-anthropic"
 
 // ClientConfig holds the configuration for creating an Anthropic AWS gateway client.
 type ClientConfig struct {
-	// APIKey is the Anthropic API key for x-api-key authentication.
+	// APIKey is the Anthropic API key, sent as an Authorization: Bearer header.
 	// Takes precedence over AWS credentials. When no AWS auth args are set, falls back
 	// to the ANTHROPIC_AWS_API_KEY environment variable before trying SigV4.
 	APIKey string
@@ -73,7 +73,6 @@ type ClientConfig struct {
 // instead of sending the request.
 type Client struct {
 	Options      []option.RequestOption
-	Completions  anthropic.CompletionService
 	Messages     anthropic.MessageService
 	Models       anthropic.ModelService
 	Files        anthropic.FileService
@@ -93,10 +92,10 @@ type Client struct {
 // after signing and must not mutate the request.
 //
 // Auth is resolved by precedence:
-//  1. APIKey arg (x-api-key header)
+//  1. APIKey arg (Authorization: Bearer header)
 //  2. AWSAccessKey + AWSSecretAccessKey args (SigV4)
 //  3. AWSProfile arg (SigV4 via provider chain)
-//  4. ANTHROPIC_AWS_API_KEY env var (x-api-key header)
+//  4. ANTHROPIC_AWS_API_KEY env var (Authorization: Bearer header)
 //  5. Default AWS credential chain (SigV4)
 func NewClient(ctx context.Context, cfg ClientConfig, opts ...option.RequestOption) (*Client, error) {
 	opts = slices.Concat(opts, []option.RequestOption{option.WithMiddleware(rejectUserProfileActionURLs)})
@@ -113,7 +112,6 @@ func NewClient(ctx context.Context, cfg ClientConfig, opts ...option.RequestOpti
 
 	return &Client{
 		Options:      opts,
-		Completions:  anthropic.NewCompletionService(opts...),
 		Messages:     anthropic.NewMessageService(opts...),
 		Models:       anthropic.NewModelService(opts...),
 		Files:        anthropic.NewFileService(opts...),

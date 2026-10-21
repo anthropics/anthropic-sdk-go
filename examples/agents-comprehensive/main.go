@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 )
 
 const (
@@ -51,7 +51,6 @@ func main() {
 		DisplayName: param.NewOpt("github-mcp"),
 		Auth: anthropic.BetaVaultCredentialNewParamsAuthUnion{
 			OfStaticBearer: &anthropic.BetaManagedAgentsStaticBearerCreateParams{
-				Type:         anthropic.BetaManagedAgentsStaticBearerCreateParamsTypeStaticBearer,
 				MCPServerURL: mcpServerURL,
 				Token:        githubToken,
 			},
@@ -87,26 +86,21 @@ func main() {
 		System: param.NewOpt("You are a helpful assistant."),
 		MCPServers: []anthropic.BetaManagedAgentsURLMCPServerParams{
 			{
-				Type: anthropic.BetaManagedAgentsURLMCPServerParamsTypeURL,
 				Name: mcpServerName,
 				URL:  mcpServerURL,
 			},
 		},
 		Tools: []anthropic.BetaAgentNewParamsToolUnion{
 			{
-				OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{
-					Type: anthropic.BetaManagedAgentsAgentToolset20260401ParamsTypeAgentToolset20260401,
-				},
+				OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{},
 			},
 			{
 				OfMCPToolset: &anthropic.BetaManagedAgentsMCPToolsetParams{
-					Type:          anthropic.BetaManagedAgentsMCPToolsetParamsTypeMCPToolset,
 					MCPServerName: mcpServerName,
 				},
 			},
 			{
 				OfCustom: &anthropic.BetaManagedAgentsCustomToolParams{
-					Type:        anthropic.BetaManagedAgentsCustomToolParamsTypeCustom,
 					Name:        "get_weather",
 					Description: "Look up the current weather for a city.",
 					InputSchema: anthropic.BetaManagedAgentsCustomToolInputSchemaParam{
@@ -128,13 +122,11 @@ func main() {
 		Skills: []anthropic.BetaManagedAgentsSkillParamsUnion{
 			{
 				OfCustom: &anthropic.BetaManagedAgentsCustomSkillParams{
-					Type:    anthropic.BetaManagedAgentsCustomSkillParamsTypeCustom,
 					SkillID: skill.ID,
 				},
 			},
 			{
 				OfAnthropic: &anthropic.BetaManagedAgentsAnthropicSkillParams{
-					Type:    anthropic.BetaManagedAgentsAnthropicSkillParamsTypeAnthropic,
 					SkillID: "xlsx",
 				},
 			},
@@ -161,7 +153,6 @@ func main() {
 		Agent: anthropic.BetaSessionNewParamsAgentUnion{
 			OfBetaManagedAgentsAgents: &anthropic.BetaManagedAgentsAgentParams{
 				ID:      agent.ID,
-				Type:    anthropic.BetaManagedAgentsAgentParamsTypeAgent,
 				Version: param.NewOpt(agent.Version),
 			},
 		},
@@ -178,12 +169,10 @@ func main() {
 		Events: []anthropic.BetaManagedAgentsEventParamsUnion{
 			{
 				OfUserMessage: &anthropic.BetaManagedAgentsUserMessageEventParams{
-					Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 					Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{
 						{
 							OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 								Text: prompt,
-								Type: anthropic.BetaManagedAgentsTextBlockTypeText,
 							},
 						},
 					},
@@ -206,13 +195,11 @@ func main() {
 				Events: []anthropic.BetaManagedAgentsEventParamsUnion{
 					{
 						OfUserCustomToolResult: &anthropic.BetaManagedAgentsUserCustomToolResultEventParams{
-							Type:            anthropic.BetaManagedAgentsUserCustomToolResultEventParamsTypeUserCustomToolResult,
 							CustomToolUseID: event.ID,
 							Content: []anthropic.BetaManagedAgentsUserCustomToolResultEventParamsContentUnion{
 								{
 									OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 										Text: `{"temperature_c": 14}`,
-										Type: anthropic.BetaManagedAgentsTextBlockTypeText,
 									},
 								},
 							},

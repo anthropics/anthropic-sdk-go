@@ -8,7 +8,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/v2"
 )
 
 // TestToParamExhaustive checks that ToParam keeps all the data of every content

@@ -15,10 +15,10 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/ssestream"
 )
 
 const contentResponseJSON = `{"id":"msg_1","type":"message","role":"assistant","model":"claude-served",
@@ -274,7 +274,7 @@ func TestOpenTelemetryServerAndMCPToolContent(t *testing.T) {
 	t.Run("an earlier turn in the request", func(t *testing.T) {
 		client, recorder := newTracedClient(t, respond(200, "application/json", messageJSON), content)
 		params := betaContentParams()
-		params.Messages = append(params.Messages, anthropic.BetaMessageParam{Role: anthropic.BetaMessageParamRoleAssistant, Content: []anthropic.BetaContentBlockParamUnion{
+		params.Messages = append(params.Messages, anthropic.BetaMessageParam{OfAssistant: &anthropic.BetaAssistantMessageParam{Content: []anthropic.BetaContentBlockParamUnion{
 			{OfServerToolUse: &anthropic.BetaServerToolUseBlockParam{ID: "srvtoolu_1", Name: anthropic.BetaServerToolUseBlockParamNameWebSearch, Input: map[string]any{"query": "weather"}}},
 			{OfWebSearchToolResult: &anthropic.BetaWebSearchToolResultBlockParam{ToolUseID: "srvtoolu_1", Content: anthropic.BetaWebSearchToolResultBlockParamContentUnion{
 				OfResultBlock: []anthropic.BetaWebSearchResultBlockParam{{URL: "https://example.com", Title: "Forecast", EncryptedContent: "opaque"}},
@@ -287,9 +287,9 @@ func TestOpenTelemetryServerAndMCPToolContent(t *testing.T) {
 			{OfToolUse: &anthropic.BetaToolUseBlockParam{ID: "toolu_1", Name: "screenshot", ToolsetName: anthropic.String("computer"), Input: map[string]any{}}},
 			{OfToolUse: &anthropic.BetaToolUseBlockParam{ID: "toolu_2", Name: "get_time", ToolsetName: param.Null[string](), Input: map[string]any{"zone": "UTC"}}},
 			{OfToolUse: &anthropic.BetaToolUseBlockParam{ID: "toolu_3", Name: "get_time", Input: map[string]any{"zone": "CET"}}},
-		}})
+		}}})
 		// Neither block has a toolset_name in the API.
-		assistant := params.Messages[len(params.Messages)-1].Content
+		assistant := params.Messages[len(params.Messages)-1].OfAssistant.Content
 		assistant[0].OfServerToolUse.SetExtraFields(map[string]any{"toolset_name": "computer"})
 		assistant[2].OfMCPToolUse.SetExtraFields(map[string]any{"toolset_name": "computer"})
 		if _, err := client.Beta.Messages.New(context.Background(), params); err != nil {

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 )
 
 func main() {
@@ -32,13 +32,10 @@ func main() {
 		Tools: []anthropic.BetaAgentNewParamsToolUnion{
 			{
 				OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{
-					Type: anthropic.BetaManagedAgentsAgentToolset20260401ParamsTypeAgentToolset20260401,
 					DefaultConfig: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParams{
 						Enabled: param.NewOpt(true),
 						PermissionPolicy: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion{
-							OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
-								Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
-							},
+							OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{},
 						},
 					},
 				},
@@ -71,14 +68,12 @@ func main() {
 		Agent: anthropic.BetaSessionNewParamsAgentUnion{
 			OfBetaManagedAgentsAgents: &anthropic.BetaManagedAgentsAgentParams{
 				ID:      agent.ID,
-				Type:    anthropic.BetaManagedAgentsAgentParamsTypeAgent,
 				Version: param.NewOpt(agent.Version),
 			},
 		},
 		Resources: []anthropic.BetaSessionNewParamsResourceUnion{
 			{
 				OfFile: &anthropic.BetaManagedAgentsFileResourceParams{
-					Type:      anthropic.BetaManagedAgentsFileResourceParamsTypeFile,
 					FileID:    file.ID,
 					MountPath: param.NewOpt("data.csv"),
 				},
@@ -96,12 +91,10 @@ func main() {
 		Events: []anthropic.BetaManagedAgentsEventParamsUnion{
 			{
 				OfUserMessage: &anthropic.BetaManagedAgentsUserMessageEventParams{
-					Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 					Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{
 						{
 							OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 								Text: "Read /uploads/data.csv and tell me the column names.",
-								Type: anthropic.BetaManagedAgentsTextBlockTypeText,
 							},
 						},
 					},

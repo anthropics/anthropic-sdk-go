@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
 )
 
 func TestDefaultDir_HonorsEnv(t *testing.T) {

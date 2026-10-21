@@ -7,7 +7,7 @@ package anthropic
 import (
 	"reflect"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
 
 	"github.com/tidwall/gjson"
 )
@@ -33,6 +33,9 @@ func init() {
 	})
 	registerStringPromotion[[]BetaContentBlockParamUnion](func(s string) BetaContentBlockParamUnion {
 		return BetaContentBlockParamUnion{OfText: &BetaTextBlockParam{Text: s}}
+	})
+	registerStringPromotion[[]BetaSystemMessageParamContentUnion](func(s string) BetaSystemMessageParamContentUnion {
+		return BetaSystemMessageParamContentUnion{OfText: &BetaTextBlockParam{Text: s}}
 	})
 	registerStringPromotion[[]BetaToolResultBlockParamContentUnion](func(s string) BetaToolResultBlockParamContentUnion {
 		return BetaToolResultBlockParamContentUnion{OfText: &BetaTextBlockParam{Text: s}}

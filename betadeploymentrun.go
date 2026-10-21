@@ -11,13 +11,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaDeploymentRunService contains methods and other services that help with
@@ -106,9 +107,8 @@ func (r *BetaDeploymentRunService) ListAutoPaging(ctx context.Context, params Be
 // The deployment's agent was archived.
 type BetaManagedAgentsAgentArchivedRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "agent_archived_error".
-	Type BetaManagedAgentsAgentArchivedRunErrorType `json:"type" api:"required"`
+	Message string                      `json:"message" api:"required"`
+	Type    constant.AgentArchivedError `json:"type" default:"agent_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -123,12 +123,6 @@ func (r BetaManagedAgentsAgentArchivedRunError) RawJSON() string { return r.JSON
 func (r *BetaManagedAgentsAgentArchivedRunError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsAgentArchivedRunErrorType string
-
-const (
-	BetaManagedAgentsAgentArchivedRunErrorTypeAgentArchivedError BetaManagedAgentsAgentArchivedRunErrorType = "agent_archived_error"
-)
 
 // A persistent, append-only record of a single deployment execution. Records
 // session creation success or failure — no session lifecycle tracking.
@@ -150,8 +144,7 @@ type BetaManagedAgentsDeploymentRun struct {
 	SessionID string `json:"session_id" api:"required"`
 	// What triggered this run and trigger-specific metadata.
 	TriggerContext BetaManagedAgentsTriggerContextUnion `json:"trigger_context" api:"required"`
-	// Any of "deployment_run".
-	Type BetaManagedAgentsDeploymentRunType `json:"type" api:"required"`
+	Type           constant.DeploymentRun               `json:"type" default:"deployment_run"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID             respjson.Field
@@ -386,18 +379,11 @@ func (r *BetaManagedAgentsDeploymentRunErrorUnion) UnmarshalJSON(data []byte) er
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsDeploymentRunType string
-
-const (
-	BetaManagedAgentsDeploymentRunTypeDeploymentRun BetaManagedAgentsDeploymentRunType = "deployment_run"
-)
-
 // The deployment's environment was archived.
 type BetaManagedAgentsEnvironmentArchivedRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "environment_archived_error".
-	Type BetaManagedAgentsEnvironmentArchivedRunErrorType `json:"type" api:"required"`
+	Message string                            `json:"message" api:"required"`
+	Type    constant.EnvironmentArchivedError `json:"type" default:"environment_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -413,18 +399,11 @@ func (r *BetaManagedAgentsEnvironmentArchivedRunError) UnmarshalJSON(data []byte
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsEnvironmentArchivedRunErrorType string
-
-const (
-	BetaManagedAgentsEnvironmentArchivedRunErrorTypeEnvironmentArchivedError BetaManagedAgentsEnvironmentArchivedRunErrorType = "environment_archived_error"
-)
-
 // The deployment's environment no longer exists.
 type BetaManagedAgentsEnvironmentNotFoundRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "environment_not_found_error".
-	Type BetaManagedAgentsEnvironmentNotFoundRunErrorType `json:"type" api:"required"`
+	Message string                            `json:"message" api:"required"`
+	Type    constant.EnvironmentNotFoundError `json:"type" default:"environment_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -440,18 +419,11 @@ func (r *BetaManagedAgentsEnvironmentNotFoundRunError) UnmarshalJSON(data []byte
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsEnvironmentNotFoundRunErrorType string
-
-const (
-	BetaManagedAgentsEnvironmentNotFoundRunErrorTypeEnvironmentNotFoundError BetaManagedAgentsEnvironmentNotFoundRunErrorType = "environment_not_found_error"
-)
-
 // A file resource referenced by the deployment no longer exists.
 type BetaManagedAgentsFileNotFoundRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "file_not_found_error".
-	Type BetaManagedAgentsFileNotFoundRunErrorType `json:"type" api:"required"`
+	Message string                     `json:"message" api:"required"`
+	Type    constant.FileNotFoundError `json:"type" default:"file_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -467,17 +439,10 @@ func (r *BetaManagedAgentsFileNotFoundRunError) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsFileNotFoundRunErrorType string
-
-const (
-	BetaManagedAgentsFileNotFoundRunErrorTypeFileNotFoundError BetaManagedAgentsFileNotFoundRunErrorType = "file_not_found_error"
-)
-
 // The run was started manually by creating a session directly against the
 // deployment.
 type BetaManagedAgentsManualTriggerContext struct {
-	// Any of "manual".
-	Type BetaManagedAgentsManualTriggerContextType `json:"type" api:"required"`
+	Type constant.Manual `json:"type" default:"manual"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -492,19 +457,12 @@ func (r *BetaManagedAgentsManualTriggerContext) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsManualTriggerContextType string
-
-const (
-	BetaManagedAgentsManualTriggerContextTypeManual BetaManagedAgentsManualTriggerContextType = "manual"
-)
-
 // An MCP server host used by the deployment's agent is blocked by the
 // environment's network policy.
 type BetaManagedAgentsMCPEgressBlockedRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "mcp_egress_blocked_error".
-	Type BetaManagedAgentsMCPEgressBlockedRunErrorType `json:"type" api:"required"`
+	Message string                         `json:"message" api:"required"`
+	Type    constant.MCPEgressBlockedError `json:"type" default:"mcp_egress_blocked_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -520,18 +478,11 @@ func (r *BetaManagedAgentsMCPEgressBlockedRunError) UnmarshalJSON(data []byte) e
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsMCPEgressBlockedRunErrorType string
-
-const (
-	BetaManagedAgentsMCPEgressBlockedRunErrorTypeMCPEgressBlockedError BetaManagedAgentsMCPEgressBlockedRunErrorType = "mcp_egress_blocked_error"
-)
-
 // A memory store referenced by the deployment is archived.
 type BetaManagedAgentsMemoryStoreArchivedRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "memory_store_archived_error".
-	Type BetaManagedAgentsMemoryStoreArchivedRunErrorType `json:"type" api:"required"`
+	Message string                            `json:"message" api:"required"`
+	Type    constant.MemoryStoreArchivedError `json:"type" default:"memory_store_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -547,18 +498,11 @@ func (r *BetaManagedAgentsMemoryStoreArchivedRunError) UnmarshalJSON(data []byte
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsMemoryStoreArchivedRunErrorType string
-
-const (
-	BetaManagedAgentsMemoryStoreArchivedRunErrorTypeMemoryStoreArchivedError BetaManagedAgentsMemoryStoreArchivedRunErrorType = "memory_store_archived_error"
-)
-
 // The deployment's organization is disabled.
 type BetaManagedAgentsOrganizationDisabledRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "organization_disabled_error".
-	Type BetaManagedAgentsOrganizationDisabledRunErrorType `json:"type" api:"required"`
+	Message string                             `json:"message" api:"required"`
+	Type    constant.OrganizationDisabledError `json:"type" default:"organization_disabled_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -574,20 +518,13 @@ func (r *BetaManagedAgentsOrganizationDisabledRunError) UnmarshalJSON(data []byt
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsOrganizationDisabledRunErrorType string
-
-const (
-	BetaManagedAgentsOrganizationDisabledRunErrorTypeOrganizationDisabledError BetaManagedAgentsOrganizationDisabledRunErrorType = "organization_disabled_error"
-)
-
 // The run was fired by the deployment's cron schedule.
 type BetaManagedAgentsScheduleTriggerContext struct {
 	// The UTC instant at which the cron expression matched in the configured timezone,
 	// before jitter is applied. At most one run is recorded per (`deployment_id`,
 	// `scheduled_at`) pair.
-	ScheduledAt time.Time `json:"scheduled_at" api:"required" format:"date-time"`
-	// Any of "schedule".
-	Type BetaManagedAgentsScheduleTriggerContextType `json:"type" api:"required"`
+	ScheduledAt time.Time         `json:"scheduled_at" api:"required" format:"date-time"`
+	Type        constant.Schedule `json:"type" default:"schedule"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ScheduledAt respjson.Field
@@ -603,19 +540,12 @@ func (r *BetaManagedAgentsScheduleTriggerContext) UnmarshalJSON(data []byte) err
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsScheduleTriggerContextType string
-
-const (
-	BetaManagedAgentsScheduleTriggerContextTypeSchedule BetaManagedAgentsScheduleTriggerContextType = "schedule"
-)
-
 // The deployment configures resources, but its environment is self-hosted and
 // cannot mount them.
 type BetaManagedAgentsSelfHostedResourcesUnsupportedRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "self_hosted_resources_unsupported_error".
-	Type BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorType `json:"type" api:"required"`
+	Message string                                       `json:"message" api:"required"`
+	Type    constant.SelfHostedResourcesUnsupportedError `json:"type" default:"self_hosted_resources_unsupported_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -631,18 +561,11 @@ func (r *BetaManagedAgentsSelfHostedResourcesUnsupportedRunError) UnmarshalJSON(
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorType string
-
-const (
-	BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorTypeSelfHostedResourcesUnsupportedError BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorType = "self_hosted_resources_unsupported_error"
-)
-
 // The session create request was rejected with a non-retryable validation error.
 type BetaManagedAgentsSessionCreationRejectedRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "session_creation_rejected_error".
-	Type BetaManagedAgentsSessionCreationRejectedRunErrorType `json:"type" api:"required"`
+	Message string                                `json:"message" api:"required"`
+	Type    constant.SessionCreationRejectedError `json:"type" default:"session_creation_rejected_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -658,19 +581,12 @@ func (r *BetaManagedAgentsSessionCreationRejectedRunError) UnmarshalJSON(data []
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionCreationRejectedRunErrorType string
-
-const (
-	BetaManagedAgentsSessionCreationRejectedRunErrorTypeSessionCreationRejectedError BetaManagedAgentsSessionCreationRejectedRunErrorType = "session_creation_rejected_error"
-)
-
 // Session creation was rejected due to rate limiting. The schedule keeps firing;
 // subsequent runs may succeed.
 type BetaManagedAgentsSessionRateLimitedRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "session_rate_limited_error".
-	Type BetaManagedAgentsSessionRateLimitedRunErrorType `json:"type" api:"required"`
+	Message string                           `json:"message" api:"required"`
+	Type    constant.SessionRateLimitedError `json:"type" default:"session_rate_limited_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -686,18 +602,11 @@ func (r *BetaManagedAgentsSessionRateLimitedRunError) UnmarshalJSON(data []byte)
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionRateLimitedRunErrorType string
-
-const (
-	BetaManagedAgentsSessionRateLimitedRunErrorTypeSessionRateLimitedError BetaManagedAgentsSessionRateLimitedRunErrorType = "session_rate_limited_error"
-)
-
 // A referenced resource no longer exists and its kind was not reported.
 type BetaManagedAgentsSessionResourceNotFoundRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "session_resource_not_found_error".
-	Type BetaManagedAgentsSessionResourceNotFoundRunErrorType `json:"type" api:"required"`
+	Message string                                `json:"message" api:"required"`
+	Type    constant.SessionResourceNotFoundError `json:"type" default:"session_resource_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -713,18 +622,11 @@ func (r *BetaManagedAgentsSessionResourceNotFoundRunError) UnmarshalJSON(data []
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionResourceNotFoundRunErrorType string
-
-const (
-	BetaManagedAgentsSessionResourceNotFoundRunErrorTypeSessionResourceNotFoundError BetaManagedAgentsSessionResourceNotFoundRunErrorType = "session_resource_not_found_error"
-)
-
 // A skill referenced by the deployment's agent no longer exists.
 type BetaManagedAgentsSkillNotFoundRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "skill_not_found_error".
-	Type BetaManagedAgentsSkillNotFoundRunErrorType `json:"type" api:"required"`
+	Message string                      `json:"message" api:"required"`
+	Type    constant.SkillNotFoundError `json:"type" default:"skill_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -739,12 +641,6 @@ func (r BetaManagedAgentsSkillNotFoundRunError) RawJSON() string { return r.JSON
 func (r *BetaManagedAgentsSkillNotFoundRunError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsSkillNotFoundRunErrorType string
-
-const (
-	BetaManagedAgentsSkillNotFoundRunErrorTypeSkillNotFoundError BetaManagedAgentsSkillNotFoundRunErrorType = "skill_not_found_error"
-)
 
 // BetaManagedAgentsTriggerContextUnion contains all possible properties and values
 // from [BetaManagedAgentsScheduleTriggerContext],
@@ -826,9 +722,8 @@ const (
 // clients that do not recognize a new error type can match on message alone.
 type BetaManagedAgentsUnknownRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "unknown_error".
-	Type BetaManagedAgentsUnknownRunErrorType `json:"type" api:"required"`
+	Message string                `json:"message" api:"required"`
+	Type    constant.UnknownError `json:"type" default:"unknown_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -844,18 +739,11 @@ func (r *BetaManagedAgentsUnknownRunError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsUnknownRunErrorType string
-
-const (
-	BetaManagedAgentsUnknownRunErrorTypeUnknownError BetaManagedAgentsUnknownRunErrorType = "unknown_error"
-)
-
 // A vault referenced by the deployment is archived.
 type BetaManagedAgentsVaultArchivedRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "vault_archived_error".
-	Type BetaManagedAgentsVaultArchivedRunErrorType `json:"type" api:"required"`
+	Message string                      `json:"message" api:"required"`
+	Type    constant.VaultArchivedError `json:"type" default:"vault_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -871,18 +759,11 @@ func (r *BetaManagedAgentsVaultArchivedRunError) UnmarshalJSON(data []byte) erro
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsVaultArchivedRunErrorType string
-
-const (
-	BetaManagedAgentsVaultArchivedRunErrorTypeVaultArchivedError BetaManagedAgentsVaultArchivedRunErrorType = "vault_archived_error"
-)
-
 // A vault referenced by the deployment no longer exists.
 type BetaManagedAgentsVaultNotFoundRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "vault_not_found_error".
-	Type BetaManagedAgentsVaultNotFoundRunErrorType `json:"type" api:"required"`
+	Message string                      `json:"message" api:"required"`
+	Type    constant.VaultNotFoundError `json:"type" default:"vault_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -898,18 +779,11 @@ func (r *BetaManagedAgentsVaultNotFoundRunError) UnmarshalJSON(data []byte) erro
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsVaultNotFoundRunErrorType string
-
-const (
-	BetaManagedAgentsVaultNotFoundRunErrorTypeVaultNotFoundError BetaManagedAgentsVaultNotFoundRunErrorType = "vault_not_found_error"
-)
-
 // The deployment's workspace was archived.
 type BetaManagedAgentsWorkspaceArchivedRunError struct {
 	// Human-readable error description.
-	Message string `json:"message" api:"required"`
-	// Any of "workspace_archived_error".
-	Type BetaManagedAgentsWorkspaceArchivedRunErrorType `json:"type" api:"required"`
+	Message string                          `json:"message" api:"required"`
+	Type    constant.WorkspaceArchivedError `json:"type" default:"workspace_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -924,12 +798,6 @@ func (r BetaManagedAgentsWorkspaceArchivedRunError) RawJSON() string { return r.
 func (r *BetaManagedAgentsWorkspaceArchivedRunError) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsWorkspaceArchivedRunErrorType string
-
-const (
-	BetaManagedAgentsWorkspaceArchivedRunErrorTypeWorkspaceArchivedError BetaManagedAgentsWorkspaceArchivedRunErrorType = "workspace_archived_error"
-)
 
 type BetaDeploymentRunGetParams struct {
 	// Optional header to select the Workspace for this request. The value is a

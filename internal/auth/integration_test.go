@@ -1,10 +1,8 @@
 package auth_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,10 +12,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/config"
-	"github.com/anthropics/anthropic-sdk-go/internal/auth"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 const successResponse = `{"id":"msg_1","type":"message","role":"assistant","content":[{"type":"text","text":"hi"}],"model":"claude-sonnet-4-20250514","stop_reason":"end_turn","usage":{"input_tokens":1,"output_tokens":1}}`
@@ -624,15 +621,15 @@ func TestIntegration_WithProfile_MissingProfileSurfacesError(t *testing.T) {
 	}
 }
 
-func TestIntegration_WithProfile_APIKeyPreemptsLoadError(t *testing.T) {
+func TestIntegration_WithProfile_RequestAPIKeyReplacesLoadError(t *testing.T) {
 	unsetEnv(t, "ANTHROPIC_API_KEY")
 	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
 	isolateAuthEnv(t)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		if got := r.Header.Get("X-Api-Key"); got != "sk-test-key" {
-			t.Errorf("got X-Api-Key %q, want %q", got, "sk-test-key")
+		if got := r.Header.Get("Authorization"); got != "Bearer sk-test-key" {
+			t.Errorf("got Authorization %q, want %q", got, "Bearer sk-test-key")
 		}
 		w.Write([]byte(successResponse))
 	}))
@@ -642,10 +639,9 @@ func TestIntegration_WithProfile_APIKeyPreemptsLoadError(t *testing.T) {
 		option.WithoutEnvironmentDefaults(),
 		option.WithBaseURL(server.URL),
 		option.WithProfile("does-not-exist"),
-		option.WithAPIKey("sk-test-key"),
 	)
-	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
-		t.Fatalf("WithAPIKey should preempt a broken WithProfile: %v", err)
+	if _, err := client.Messages.New(context.Background(), defaultParams, option.WithAPIKey("sk-test-key")); err != nil {
+		t.Fatalf("WithAPIKey on the request should replace a broken WithProfile: %v", err)
 	}
 }
 
@@ -740,7 +736,7 @@ func TestIntegration_NoCredentialsPartialFederation(t *testing.T) {
 func TestIntegration_AggregatedErrorNotShownWhenKeySet(t *testing.T) {
 	var sawHeader string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sawHeader = r.Header.Get("X-Api-Key")
+		sawHeader = r.Header.Get("Authorization")
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(successResponse))
 	}))
@@ -757,7 +753,7 @@ func TestIntegration_AggregatedErrorNotShownWhenKeySet(t *testing.T) {
 	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
 		t.Fatalf("expected success when API key is set: %v", err)
 	}
-	if sawHeader != "sk-test-key" {
+	if sawHeader != "Bearer sk-test-key" {
 		t.Fatalf("API key not forwarded: %q", sawHeader)
 	}
 }
@@ -786,217 +782,13 @@ func TestIntegration_APIKeyPrecedencePreserved(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if receivedHeaders.Get("Authorization") != "" {
-		t.Fatal("expected no Authorization header when using API key")
+	if got := receivedHeaders.Get("Authorization"); got != "Bearer sk-test-key" {
+		t.Fatalf("got Authorization %q, want %q", got, "Bearer sk-test-key")
 	}
-	if receivedHeaders.Get("X-Api-Key") != "sk-test-key" {
-		t.Fatalf("got X-Api-Key %q, want %q", receivedHeaders.Get("X-Api-Key"), "sk-test-key")
-	}
-}
-
-// TestIntegration_APIKeyWithProfileLogsWarning verifies that when a static
-// ANTHROPIC_API_KEY is passed alongside a profile config, the API key still
-// wins (per the spec's credential precedence) but the user gets a one-shot
-// warning so they can figure out why their profile's credentials are being
-// ignored.
-func TestIntegration_APIKeyWithProfileLogsWarning(t *testing.T) {
-	unsetEnv(t, "ANTHROPIC_API_KEY")
-	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
-	isolateAuthEnv(t)
-
-	var receivedHeaders http.Header
-	apiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		receivedHeaders = r.Header
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(successResponse))
-	}))
-	defer apiServer.Close()
-
-	dir := t.TempDir()
-	credPath := filepath.Join(dir, "credentials.json")
-	os.WriteFile(credPath, []byte(`{"type":"oauth_token","access_token":"profile-tok"}`), 0600)
-
-	var logMu sync.Mutex
-	var logBuf bytes.Buffer
-	log.SetOutput(writerFunc(func(p []byte) (int, error) {
-		logMu.Lock()
-		defer logMu.Unlock()
-		return logBuf.Write(p)
-	}))
-	t.Cleanup(func() { log.SetOutput(os.Stderr) })
-	readLog := func() string {
-		logMu.Lock()
-		defer logMu.Unlock()
-		return logBuf.String()
-	}
-
-	client := anthropic.NewClient(
-		option.WithBaseURL(apiServer.URL),
-		option.WithAPIKey("sk-test-key"),
-		option.WithConfig(&config.Config{
-			AuthenticationInfo: &config.AuthenticationInfo{
-				Type:            config.AuthenticationTypeUserOAuth,
-				CredentialsPath: credPath,
-				UserOAuth:       &config.UserOAuth{},
-			},
-		}),
-	)
-
-	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
-		t.Fatal(err)
-	}
-
-	if receivedHeaders.Get("X-Api-Key") != "sk-test-key" {
-		t.Fatalf("got X-Api-Key %q, want %q", receivedHeaders.Get("X-Api-Key"), "sk-test-key")
-	}
-	if receivedHeaders.Get("Authorization") == "Bearer profile-tok" {
-		t.Fatal("profile credential should not have won over static API key")
-	}
-
-	out := readLog()
-	if !strings.Contains(out, "ANTHROPIC_API_KEY") {
-		t.Fatalf("expected warning mentioning ANTHROPIC_API_KEY, got: %q", out)
-	}
-	if !strings.Contains(out, "profile") && !strings.Contains(out, "config") {
-		t.Fatalf("expected warning to mention the profile/config being shadowed, got: %q", out)
+	if got := receivedHeaders.Get("X-Api-Key"); got != "" {
+		t.Fatalf("expected no X-Api-Key header, got %q", got)
 	}
 }
-
-// TestIntegration_WithConfigQuiet_SuppressesShadowWarning verifies that
-// option.WithConfigQuiet behaves identically to WithConfig for credential
-// precedence (API key still wins) but does NOT emit the config-shadowed
-// warning, so callers with their own diagnostic don't double-warn.
-func TestIntegration_WithConfigQuiet_SuppressesShadowWarning(t *testing.T) {
-	unsetEnv(t, "ANTHROPIC_API_KEY")
-	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
-	isolateAuthEnv(t)
-
-	var receivedHeaders http.Header
-	apiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		receivedHeaders = r.Header
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(successResponse))
-	}))
-	defer apiServer.Close()
-
-	dir := t.TempDir()
-	credPath := filepath.Join(dir, "credentials.json")
-	os.WriteFile(credPath, []byte(`{"type":"oauth_token","access_token":"profile-tok"}`), 0600)
-
-	var logMu sync.Mutex
-	var logBuf bytes.Buffer
-	log.SetOutput(writerFunc(func(p []byte) (int, error) {
-		logMu.Lock()
-		defer logMu.Unlock()
-		return logBuf.Write(p)
-	}))
-	t.Cleanup(func() { log.SetOutput(os.Stderr) })
-
-	client := anthropic.NewClient(
-		option.WithBaseURL(apiServer.URL),
-		option.WithAPIKey("sk-test-key"),
-		option.WithConfigQuiet(&config.Config{
-			AuthenticationInfo: &config.AuthenticationInfo{
-				Type:            config.AuthenticationTypeUserOAuth,
-				CredentialsPath: credPath,
-				UserOAuth:       &config.UserOAuth{},
-			},
-		}),
-	)
-
-	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
-		t.Fatal(err)
-	}
-
-	if receivedHeaders.Get("X-Api-Key") != "sk-test-key" {
-		t.Fatalf("got X-Api-Key %q, want %q (API key precedence must be unchanged)",
-			receivedHeaders.Get("X-Api-Key"), "sk-test-key")
-	}
-
-	logMu.Lock()
-	out := logBuf.String()
-	logMu.Unlock()
-	if out != "" {
-		t.Fatalf("expected no log output from WithConfigQuiet, got: %q", out)
-	}
-}
-
-// TestIntegration_WithoutEnvironmentDefaults_NoAutoloadShadowWarning proves
-// that when the environment would otherwise autoload a profile (via
-// ANTHROPIC_PROFILE), passing option.WithoutEnvironmentDefaults() causes
-// NewClient to skip DefaultClientOptions entirely so no autoloaded
-// WithConfig is added — and therefore an explicit WithAPIKey produces zero
-// shadow warnings. This closes the gap WithConfigQuiet alone leaves: it
-// quiets the caller's own WithConfig but not the SDK's autoloaded one.
-func TestIntegration_WithoutEnvironmentDefaults_NoAutoloadShadowWarning(t *testing.T) {
-	unsetEnv(t, "ANTHROPIC_API_KEY")
-	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
-	isolateAuthEnv(t)
-	auth.ResetWarnOnceForTest()
-
-	// Stage a profile under ANTHROPIC_CONFIG_DIR and point ANTHROPIC_PROFILE
-	// at it so DefaultClientOptions, if invoked, would inject a WithConfig.
-	cfgDir := os.Getenv("ANTHROPIC_CONFIG_DIR")
-	credPath := config.ProfileCredentialsPath(cfgDir, "work")
-	if err := config.WriteCredentials(credPath, config.Credentials{AccessToken: "profile-tok"}); err != nil {
-		t.Fatal(err)
-	}
-	if err := config.SaveProfile(cfgDir, "work", &config.Config{
-		AuthenticationInfo: &config.AuthenticationInfo{
-			Type:            config.AuthenticationTypeUserOAuth,
-			CredentialsPath: credPath,
-			UserOAuth:       &config.UserOAuth{},
-		},
-	}); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("ANTHROPIC_PROFILE", "work")
-
-	var receivedHeaders http.Header
-	apiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		receivedHeaders = r.Header
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(successResponse))
-	}))
-	defer apiServer.Close()
-
-	var logMu sync.Mutex
-	var logBuf bytes.Buffer
-	log.SetOutput(writerFunc(func(p []byte) (int, error) {
-		logMu.Lock()
-		defer logMu.Unlock()
-		return logBuf.Write(p)
-	}))
-	t.Cleanup(func() { log.SetOutput(os.Stderr) })
-
-	client := anthropic.NewClient(
-		option.WithoutEnvironmentDefaults(),
-		option.WithBaseURL(apiServer.URL),
-		option.WithAPIKey("sk-test-key"),
-	)
-
-	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
-		t.Fatal(err)
-	}
-
-	if receivedHeaders.Get("X-Api-Key") != "sk-test-key" {
-		t.Fatalf("got X-Api-Key %q, want sk-test-key", receivedHeaders.Get("X-Api-Key"))
-	}
-	if receivedHeaders.Get("Authorization") != "" {
-		t.Fatalf("autoloaded profile credential leaked: Authorization=%q", receivedHeaders.Get("Authorization"))
-	}
-
-	logMu.Lock()
-	out := logBuf.String()
-	logMu.Unlock()
-	if out != "" {
-		t.Fatalf("expected zero log output with WithoutEnvironmentDefaults, got: %q", out)
-	}
-}
-
-type writerFunc func([]byte) (int, error)
-
-func (f writerFunc) Write(p []byte) (int, error) { return f(p) }
 
 // TestIntegration_SharedFederationOptionPerClientTransport verifies that a
 // single WithFederationTokenProvider option value shared across two clients
@@ -1308,10 +1100,10 @@ func TestDefaultClient_ExplicitProfileMissingFails(t *testing.T) {
 	}
 }
 
-// TestDefaultClient_ExplicitAPIKeyOverridesBrokenProfile verifies that a
-// caller-supplied option.WithAPIKey preempts the broken-profile error
-// from explicitProfileErrorOption. The user is asking for an explicit
-// credential override; the shell's ANTHROPIC_PROFILE should not strand them.
+// TestDefaultClient_ExplicitAPIKeyOverridesBrokenProfile verifies that
+// ANTHROPIC_PROFILE is not read when the caller supplies option.WithAPIKey.
+// The user is asking for an explicit credential; the shell's
+// ANTHROPIC_PROFILE should not strand them.
 func TestDefaultClient_ExplicitAPIKeyOverridesBrokenProfile(t *testing.T) {
 	unsetEnv(t, "ANTHROPIC_API_KEY")
 	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
@@ -1337,8 +1129,8 @@ func TestDefaultClient_ExplicitAPIKeyOverridesBrokenProfile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected explicit API key to override broken profile, got: %v", err)
 	}
-	if got := receivedHeaders.Get("X-Api-Key"); got != "sk-test-key" {
-		t.Errorf("X-Api-Key: got %q, want %q", got, "sk-test-key")
+	if got := receivedHeaders.Get("Authorization"); got != "Bearer sk-test-key" {
+		t.Errorf("Authorization: got %q, want %q", got, "Bearer sk-test-key")
 	}
 }
 
@@ -1374,74 +1166,6 @@ func TestDefaultClient_ExplicitAuthTokenOverridesBrokenProfile(t *testing.T) {
 	}
 }
 
-// TestIntegration_APIKeyShadowWarning_InvertedOrder locks in that the
-// shadow warning fires regardless of the order the caller passes
-// option.WithConfig and option.WithAPIKey. The earlier implementation
-// read r.APIKey at WithConfig's Apply time, which missed the case where
-// WithAPIKey was passed AFTER WithConfig in the arg list.
-func TestIntegration_APIKeyShadowWarning_InvertedOrder(t *testing.T) {
-	auth.ResetWarnOnceForTest()
-	unsetEnv(t, "ANTHROPIC_API_KEY")
-	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
-	isolateAuthEnv(t)
-
-	var receivedHeaders http.Header
-	apiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		receivedHeaders = r.Header
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(successResponse))
-	}))
-	defer apiServer.Close()
-
-	dir := t.TempDir()
-	credPath := filepath.Join(dir, "credentials.json")
-	os.WriteFile(credPath, []byte(`{"type":"oauth_token","access_token":"profile-tok"}`), 0600)
-
-	var logMu sync.Mutex
-	var logBuf bytes.Buffer
-	log.SetOutput(writerFunc(func(p []byte) (int, error) {
-		logMu.Lock()
-		defer logMu.Unlock()
-		return logBuf.Write(p)
-	}))
-	t.Cleanup(func() { log.SetOutput(os.Stderr) })
-	readLog := func() string {
-		logMu.Lock()
-		defer logMu.Unlock()
-		return logBuf.String()
-	}
-
-	// Note: WithConfig is passed BEFORE WithAPIKey. The warning must
-	// still fire because the final request-time state has both.
-	client := anthropic.NewClient(
-		option.WithBaseURL(apiServer.URL),
-		option.WithConfig(&config.Config{
-			AuthenticationInfo: &config.AuthenticationInfo{
-				Type:            config.AuthenticationTypeUserOAuth,
-				CredentialsPath: credPath,
-				UserOAuth:       &config.UserOAuth{},
-			},
-		}),
-		option.WithAPIKey("sk-test-key"),
-	)
-
-	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
-		t.Fatal(err)
-	}
-
-	if receivedHeaders.Get("X-Api-Key") != "sk-test-key" {
-		t.Fatalf("got X-Api-Key %q, want sk-test-key (API key should still win)", receivedHeaders.Get("X-Api-Key"))
-	}
-
-	out := readLog()
-	if !strings.Contains(out, "ANTHROPIC_API_KEY") {
-		t.Fatalf("expected warning mentioning ANTHROPIC_API_KEY regardless of option order, got: %q", out)
-	}
-	if !strings.Contains(out, "profile") && !strings.Contains(out, "config") {
-		t.Fatalf("expected warning to mention profile/config being shadowed, got: %q", out)
-	}
-}
-
 // brokenUserOAuthConfig returns a user_oauth Config whose CredentialsPath
 // points at a missing file under t.TempDir, so ResolveCredentials errors.
 // BaseURL is set so callers can assert it applies independently.
@@ -1457,13 +1181,12 @@ func brokenUserOAuthConfig(t *testing.T, baseURL string) *config.Config {
 	}
 }
 
-// TestWithConfig_ExplicitAPIKeyOverridesBrokenProfile verifies that a
-// WithAPIKey passed alongside a WithConfig whose credentials cannot be
-// resolved still authenticates the request — i.e. the resolution error is
-// deferred to a request-time middleware with tier-1 escape hatches, not
-// returned at option-Apply time where it would short-circuit later options.
-func TestWithConfig_ExplicitAPIKeyOverridesBrokenProfile(t *testing.T) {
-	auth.ResetWarnOnceForTest()
+// TestWithConfig_RequestAPIKeyReplacesBrokenProfile verifies that a
+// WithAPIKey passed on a request authenticates it when the client's
+// WithConfig has credentials that cannot be resolved — i.e. the resolution
+// error is deferred to a request-time middleware, not returned at
+// option-Apply time where it would short-circuit later options.
+func TestWithConfig_RequestAPIKeyReplacesBrokenProfile(t *testing.T) {
 	unsetEnv(t, "ANTHROPIC_API_KEY")
 	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
 	isolateAuthEnv(t)
@@ -1478,23 +1201,18 @@ func TestWithConfig_ExplicitAPIKeyOverridesBrokenProfile(t *testing.T) {
 
 	client := anthropic.NewClient(
 		option.WithConfig(brokenUserOAuthConfig(t, server.URL)),
-		option.WithAPIKey("sk-x"),
 	)
-	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
+	if _, err := client.Messages.New(context.Background(), defaultParams, option.WithAPIKey("sk-x")); err != nil {
 		t.Fatalf("expected request to succeed via WithAPIKey despite broken profile, got: %v", err)
 	}
-	if got := receivedHeaders.Get("X-Api-Key"); got != "sk-x" {
-		t.Fatalf("got X-Api-Key %q, want sk-x", got)
-	}
-	if receivedHeaders.Get("Authorization") != "" {
-		t.Fatalf("Authorization should not be set when X-Api-Key is, got %q", receivedHeaders.Get("Authorization"))
+	if got := receivedHeaders.Get("Authorization"); got != "Bearer sk-x" {
+		t.Fatalf("got Authorization %q, want Bearer sk-x", got)
 	}
 }
 
-// TestWithConfig_ExplicitAuthTokenOverridesBrokenProfile is the WithAuthToken
+// TestWithConfig_RequestAuthTokenReplacesBrokenProfile is the WithAuthToken
 // variant of the above.
-func TestWithConfig_ExplicitAuthTokenOverridesBrokenProfile(t *testing.T) {
-	auth.ResetWarnOnceForTest()
+func TestWithConfig_RequestAuthTokenReplacesBrokenProfile(t *testing.T) {
 	unsetEnv(t, "ANTHROPIC_API_KEY")
 	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
 	isolateAuthEnv(t)
@@ -1509,9 +1227,8 @@ func TestWithConfig_ExplicitAuthTokenOverridesBrokenProfile(t *testing.T) {
 
 	client := anthropic.NewClient(
 		option.WithConfig(brokenUserOAuthConfig(t, server.URL)),
-		option.WithAuthToken("tok-x"),
 	)
-	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
+	if _, err := client.Messages.New(context.Background(), defaultParams, option.WithAuthToken("tok-x")); err != nil {
 		t.Fatalf("expected request to succeed via WithAuthToken despite broken profile, got: %v", err)
 	}
 	if got := receivedHeaders.Get("Authorization"); got != "Bearer tok-x" {
@@ -1523,7 +1240,6 @@ func TestWithConfig_ExplicitAuthTokenOverridesBrokenProfile(t *testing.T) {
 // profile's BaseURL is honored regardless of credential-resolution outcome —
 // it's applied at option-Apply time, not gated behind ResolveCredentials.
 func TestWithConfig_BaseURLAppliesEvenWithBrokenCreds(t *testing.T) {
-	auth.ResetWarnOnceForTest()
 	unsetEnv(t, "ANTHROPIC_API_KEY")
 	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
 	isolateAuthEnv(t)
@@ -1539,9 +1255,8 @@ func TestWithConfig_BaseURLAppliesEvenWithBrokenCreds(t *testing.T) {
 	// No WithBaseURL — only the profile's BaseURL.
 	client := anthropic.NewClient(
 		option.WithConfig(brokenUserOAuthConfig(t, server.URL)),
-		option.WithAPIKey("sk-x"),
 	)
-	if _, err := client.Messages.New(context.Background(), defaultParams); err != nil {
+	if _, err := client.Messages.New(context.Background(), defaultParams, option.WithAPIKey("sk-x")); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if !hit.Load() {
@@ -1550,8 +1265,8 @@ func TestWithConfig_BaseURLAppliesEvenWithBrokenCreds(t *testing.T) {
 }
 
 // TestWithConfig_BrokenProfileNoOverrideStillFails verifies the negative:
-// when no tier-1 credential preempts the profile, the deferred resolution
-// error surfaces on the first request.
+// when no credential option on the request replaces the profile, the
+// deferred resolution error surfaces on the first request.
 func TestWithConfig_BrokenProfileNoOverrideStillFails(t *testing.T) {
 	unsetEnv(t, "ANTHROPIC_API_KEY")
 	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")

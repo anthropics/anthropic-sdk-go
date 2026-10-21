@@ -9,14 +9,14 @@ import (
 	"slices"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/ssestream"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 	"github.com/tidwall/gjson"
 )
 
@@ -124,6 +124,22 @@ func (r *MessageService) CountTokens(ctx context.Context, params MessageCountTok
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"), countTokensSpan(string(params.Model), &res, func(count *MessageTokensCount) int64 { return count.InputTokens }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
+}
+
+// The properties Content, Role are required.
+type AssistantMessageParam struct {
+	Content []ContentBlockParamUnion `json:"content,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "assistant".
+	Role constant.Assistant `json:"role" default:"assistant"`
+	paramObj
+}
+
+func (r AssistantMessageParam) MarshalJSON() (data []byte, err error) {
+	type shadow AssistantMessageParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *AssistantMessageParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Data, MediaType, Type are required.
@@ -10530,43 +10546,93 @@ func (r *MessageDeltaUsage) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties Content, Role are required.
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
 type MessageParam struct {
-	Content []ContentBlockParamUnion `json:"content,omitzero" api:"required"`
-	// Any of "user", "assistant", "system".
-	Role MessageParamRole `json:"role,omitzero" api:"required"`
-	paramObj
+	OfUser      *UserMessageParam      `json:",omitzero,inline"`
+	OfAssistant *AssistantMessageParam `json:",omitzero,inline"`
+	OfSystem    *SystemMessageParam    `json:",omitzero,inline"`
+	paramUnion
 }
 
 func NewUserMessage(blocks ...ContentBlockParamUnion) MessageParam {
-	return MessageParam{
-		Role:    MessageParamRoleUser,
+	return MessageParam{OfUser: &UserMessageParam{
 		Content: blocks,
-	}
+	}}
 }
 
 func NewAssistantMessage(blocks ...ContentBlockParamUnion) MessageParam {
-	return MessageParam{
-		Role:    MessageParamRoleAssistant,
+	return MessageParam{OfAssistant: &AssistantMessageParam{
 		Content: blocks,
+	}}
+}
+
+func (u MessageParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfUser, u.OfAssistant, u.OfSystem)
+}
+func (u *MessageParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *MessageParam) asAny() any {
+	if !param.IsOmitted(u.OfUser) {
+		return u.OfUser
+	} else if !param.IsOmitted(u.OfAssistant) {
+		return u.OfAssistant
+	} else if !param.IsOmitted(u.OfSystem) {
+		return u.OfSystem
 	}
+	return nil
 }
 
-func (r MessageParam) MarshalJSON() (data []byte, err error) {
-	type shadow MessageParam
-	return param.MarshalObject(r, (*shadow)(&r))
-}
-func (r *MessageParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
+// Returns a pointer to the underlying variant's property, if present.
+func (u MessageParam) GetRole() *string {
+	if vt := u.OfUser; vt != nil {
+		return paramutil.AddrOrDefault(vt.Role)
+	} else if vt := u.OfAssistant; vt != nil {
+		return paramutil.AddrOrDefault(vt.Role)
+	} else if vt := u.OfSystem; vt != nil {
+		return paramutil.AddrOrDefault(vt.Role)
+	}
+	return nil
 }
 
-type MessageParamRole string
+// Returns a subunion which exports methods to access subproperties
+//
+// Or use AsAny() to get the underlying value
+func (u MessageParam) GetContent() (res messageParamContent) {
+	if vt := u.OfUser; vt != nil {
+		res.any = &vt.Content
+	} else if vt := u.OfAssistant; vt != nil {
+		res.any = &vt.Content
+	} else if vt := u.OfSystem; vt != nil {
+		res.any = &vt.Content
+	}
+	return
+}
 
-const (
-	MessageParamRoleUser      MessageParamRole = "user"
-	MessageParamRoleAssistant MessageParamRole = "assistant"
-	MessageParamRoleSystem    MessageParamRole = "system"
-)
+// Can have the runtime types [_[]ContentBlockParamUnion], [_[]TextBlockParam]
+type messageParamContent struct{ any }
+
+// Use the following switch statement to get the type of the union:
+//
+//	switch u.AsAny().(type) {
+//	case *[]anthropic.ContentBlockParamUnion:
+//	case *[]anthropic.TextBlockParam:
+//	default:
+//	    fmt.Errorf("not present")
+//	}
+func (u messageParamContent) AsAny() any { return u.any }
+
+func init() {
+	apijson.RegisterUnion[MessageParam](
+		"role",
+		apijson.Discriminator[UserMessageParam]("user"),
+		apijson.Discriminator[AssistantMessageParam]("assistant"),
+		apijson.Discriminator[SystemMessageParam]("system"),
+	)
+}
 
 type MessageTokensCount struct {
 	// The total number of tokens across the provided list of messages, system prompt,
@@ -12038,6 +12104,22 @@ const (
 	StopReasonRefusal                    StopReason = "refusal"
 	StopReasonModelContextWindowExceeded StopReason = "model_context_window_exceeded"
 )
+
+// The properties Content, Role are required.
+type SystemMessageParam struct {
+	Content []TextBlockParam `json:"content,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "system".
+	Role constant.System `json:"role" default:"system"`
+	paramObj
+}
+
+func (r SystemMessageParam) MarshalJSON() (data []byte, err error) {
+	type shadow SystemMessageParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SystemMessageParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type TextBlock struct {
 	// Citations supporting the text block.
@@ -16331,6 +16413,22 @@ func (r *UserLocationParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The properties Content, Role are required.
+type UserMessageParam struct {
+	Content []ContentBlockParamUnion `json:"content,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "user".
+	Role constant.User `json:"role" default:"user"`
+	paramObj
+}
+
+func (r UserMessageParam) MarshalJSON() (data []byte, err error) {
+	type shadow UserMessageParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *UserMessageParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type WebFetchBlock struct {
 	Content DocumentBlock `json:"content" api:"required"`
 	// ISO 8601 timestamp when the content was retrieved
@@ -17819,30 +17917,6 @@ type MessageNewParams struct {
 	// Specifies the geographic region for inference processing. If not specified, the
 	// workspace's `default_inference_geo` is used.
 	InferenceGeo param.Opt[string] `json:"inference_geo,omitzero"`
-	// Amount of randomness injected into the response.
-	//
-	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`
-	// for analytical / multiple choice, and closer to `1.0` for creative and
-	// generative tasks.
-	//
-	// Note that even with `temperature` of `0.0`, the results will not be fully
-	// deterministic.
-	Temperature param.Opt[float64] `json:"temperature,omitzero"`
-	// Only sample from the top K options for each subsequent token.
-	//
-	// Used to remove "long tail" low probability responses.
-	// [Learn more technical details here](https://towardsdatascience.com/how-to-sample-from-language-models-682bceb97277).
-	//
-	// Recommended for advanced use cases only.
-	TopK param.Opt[int64] `json:"top_k,omitzero"`
-	// Use nucleus sampling.
-	//
-	// In nucleus sampling, we compute the cumulative distribution over all the options
-	// for each subsequent token in decreasing probability order and cut it off once it
-	// reaches a particular probability specified by `top_p`.
-	//
-	// Recommended for advanced use cases only.
-	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// The user profile ID to attribute this request to. Use when acting on behalf of a
 	// party other than your organization.
 	UserProfileID param.Opt[string] `header:"anthropic-user-profile-id,omitzero" json:"-"`

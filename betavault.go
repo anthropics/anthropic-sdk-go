@@ -10,13 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaVaultService contains methods and other services that help with interacting
@@ -211,9 +212,8 @@ func (r *BetaVaultService) Archive(ctx context.Context, vaultID string, body Bet
 // Confirmation of a deleted vault.
 type BetaManagedAgentsDeletedVault struct {
 	// The unique ID of the deleted vault (`vlt_...`).
-	ID string `json:"id" api:"required"`
-	// Any of "vault_deleted".
-	Type BetaManagedAgentsDeletedVaultType `json:"type" api:"required"`
+	ID   string                            `json:"id" api:"required"`
+	Type constant.VaultDeletedResponseType `json:"type" default:"vault_deleted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -229,12 +229,6 @@ func (r *BetaManagedAgentsDeletedVault) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsDeletedVaultType string
-
-const (
-	BetaManagedAgentsDeletedVaultTypeVaultDeleted BetaManagedAgentsDeletedVaultType = "vault_deleted"
-)
-
 // A vault that stores credentials for use by agents during sessions.
 type BetaManagedAgentsVault struct {
 	// The unique ID of the vault (`vlt_...`).
@@ -247,8 +241,7 @@ type BetaManagedAgentsVault struct {
 	DisplayName string `json:"display_name" api:"required"`
 	// Arbitrary key-value metadata attached to the vault.
 	Metadata map[string]string `json:"metadata" api:"required"`
-	// Any of "vault".
-	Type BetaManagedAgentsVaultType `json:"type" api:"required"`
+	Type     constant.Vault    `json:"type" default:"vault"`
 	// A timestamp in RFC 3339 format
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -270,12 +263,6 @@ func (r BetaManagedAgentsVault) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsVault) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsVaultType string
-
-const (
-	BetaManagedAgentsVaultTypeVault BetaManagedAgentsVaultType = "vault"
-)
 
 type BetaVaultNewParams struct {
 	// Human-readable name for the vault. 1-255 characters.

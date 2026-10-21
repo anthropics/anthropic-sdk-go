@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
-	anthropic "github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/sendwindow"
-	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/tools/agenttoolset"
+	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/sendwindow"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/stainlessheader"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/tools/agenttoolset"
 )
 
 const (
@@ -80,7 +80,7 @@ type EnvironmentWorkerOptions struct {
 	ToolsFunc func(env *agenttoolset.AgentToolContext) []anthropic.BetaTool
 
 	// MaxIdle is forwarded to the per-session
-	// [github.com/anthropics/anthropic-sdk-go.SessionToolRunner].
+	// [github.com/anthropics/anthropic-sdk-go/v2.SessionToolRunner].
 	MaxIdle *time.Duration
 
 	// MemorySyncInterval is how often the session's attached memory stores
@@ -125,7 +125,7 @@ type EnvironmentWorkerOptions struct {
 
 // EnvironmentWorker is the self-hosted environment runner, composed from the
 // control-plane [WorkPoller] and the per-session
-// [github.com/anthropics/anthropic-sdk-go.SessionToolRunner].
+// [github.com/anthropics/anthropic-sdk-go/v2.SessionToolRunner].
 //
 // For each claimed `session` work item it builds the per-session
 // [agenttoolset.AgentToolContext], downloads the session agent's skills
@@ -410,8 +410,8 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	// heartbeat and the force-stop here, the skill download below, plus the
 	// SessionToolRunner's stream/list/send. The x-stainless-helper header
 	// attributes the heartbeat/force-stop/skill traffic to this helper.
-	// helperReqOpts also clears the parent client's default X-Api-Key so it
-	// doesn't ride alongside the bearer credential. Caller-supplied
+	// helperReqOpts also clears any X-Api-Key header the parent client sets so
+	// it doesn't ride alongside the bearer credential. Caller-supplied
 	// RequestOptions are applied first so a proxy/custom header reaches every
 	// per-session call while the worker's own X-Api-Key delete, per-item
 	// bearer auth and helper header (appended last) still win.
@@ -604,8 +604,8 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	// credential (via bearerReqOpts — the runner stamps its own x-stainless-helper
 	// header "session-tool-runner" internally *after* these options, so we
 	// just need the auth bits here; any helper tag we passed in would be
-	// overwritten). bearerReqOpts also clears the parent client's default
-	// X-Api-Key so it doesn't ride alongside the bearer credential.
+	// overwritten). bearerReqOpts also clears any X-Api-Key header the parent
+	// client sets so it doesn't ride alongside the bearer credential.
 	// Caller-supplied RequestOptions go first so a proxy/custom header
 	// reaches stream/list/send too; the X-Api-Key delete + per-item bearer
 	// auth (appended last) still win.

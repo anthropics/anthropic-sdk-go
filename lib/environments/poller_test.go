@@ -16,9 +16,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 	"github.com/stretchr/testify/require"
 )
 
@@ -124,9 +124,9 @@ type recordedCall struct {
 	path   string
 	auth   string
 	// apiKey captures the X-Api-Key header value on the recorded request.
-	// Runner helpers must NOT leak the parent client's default API key
-	// alongside their bearer credential; tests assert this is empty on
-	// every helper-issued call.
+	// Runner helpers must NOT leak an X-Api-Key header the parent client
+	// sets alongside their bearer credential; tests assert this is empty
+	// on every helper-issued call.
 	apiKey string
 	query  string
 	body   string
@@ -243,6 +243,8 @@ func (f *fakeWorkServer) Client() anthropic.Client {
 	return anthropic.NewClient(
 		option.WithBaseURL(f.server.URL),
 		option.WithAPIKey("client-default-key"),
+		// What a client behind a gateway that reads X-Api-Key sets by hand.
+		option.WithHeader("X-Api-Key", "client-default-key"),
 		option.WithMaxRetries(0),
 	)
 }
@@ -335,10 +337,9 @@ func TestWorkPoller_YieldsAndPostsStopOnClose(t *testing.T) {
 	require.Equal(t, "Bearer env_key", calls[2].auth,
 		"Stop must use the environment key")
 
-	// option.WithAuthToken alone only *adds* an Authorization header; the
-	// parent client's WithAPIKey middleware still sets X-Api-Key. The
-	// poller's helperReqOpts must explicitly delete X-Api-Key per-request so
-	// both headers don't ride on the wire together.
+	// option.WithAuthToken only sets the Authorization header. The
+	// poller's helperReqOpts must explicitly delete the parent client's
+	// X-Api-Key per-request so both headers don't ride on the wire together.
 	require.Empty(t, calls[0].apiKey,
 		"Poll must not leak the parent client's X-Api-Key")
 	require.Empty(t, calls[1].apiKey,

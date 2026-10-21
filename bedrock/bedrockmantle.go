@@ -12,16 +12,16 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/awsauth"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 const mantleServiceName = "bedrock-mantle"
 
 // MantleClientConfig holds the configuration for creating an Anthropic Bedrock Mantle client.
 type MantleClientConfig struct {
-	// APIKey is the Anthropic API key for x-api-key authentication.
+	// APIKey is the API key, sent as an Authorization: Bearer header.
 	// Takes precedence over AWS credentials. When no AWS auth args are set, falls back
 	// to the AWS_BEARER_TOKEN_BEDROCK environment variable (then ANTHROPIC_AWS_API_KEY)
 	// before trying SigV4.
@@ -55,8 +55,6 @@ type MantleClientConfig struct {
 
 	// SkipAuth skips Mantle-specific authentication (API key and SigV4).
 	// This is useful when a gateway or proxy handles authentication on your behalf.
-	// Note: when using [NewMantleClient], the base SDK may still send an X-Api-Key header
-	// if the ANTHROPIC_API_KEY environment variable is set.
 	SkipAuth bool
 }
 
@@ -86,10 +84,10 @@ type MantleBetaService struct {
 // still runs after signing and must not mutate the request.
 //
 // Auth is resolved by precedence:
-//  1. APIKey arg (x-api-key header)
+//  1. APIKey arg (Authorization: Bearer header)
 //  2. AWSAccessKey + AWSSecretAccessKey args (SigV4)
 //  3. AWSProfile arg (SigV4 via provider chain)
-//  4. AWS_BEARER_TOKEN_BEDROCK env var, then ANTHROPIC_AWS_API_KEY (x-api-key header)
+//  4. AWS_BEARER_TOKEN_BEDROCK env var, then ANTHROPIC_AWS_API_KEY (Authorization: Bearer header)
 //  5. Default AWS credential chain (SigV4)
 func NewMantleClient(ctx context.Context, cfg MantleClientConfig, opts ...option.RequestOption) (*MantleClient, error) {
 	opts = slices.Concat(opts, []option.RequestOption{option.WithMiddleware(mantleUserProfileMiddleware)})
@@ -157,7 +155,6 @@ func mantleResolveParams() awsauth.ResolveParams {
 		EnvBaseURL:        "ANTHROPIC_BEDROCK_MANTLE_BASE_URL",
 		DeriveBaseURL:     func(region string) string { return fmt.Sprintf("https://bedrock-mantle.%s.api.aws/anthropic", region) },
 		ServiceName:       mantleServiceName,
-		UseBearerAuth:     true,
 	}
 }
 

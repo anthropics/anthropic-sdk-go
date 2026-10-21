@@ -2,14 +2,13 @@
 // Google Cloud — the first-party Anthropic API served through the Google Cloud
 // gateway.
 //
-// This is distinct from the older [github.com/anthropics/anthropic-sdk-go/vertex]
+// This is distinct from the older [github.com/anthropics/anthropic-sdk-go/v2/vertex]
 // package, which targets the :rawPredict publisher-model API (publisher
 // model IDs, messages only). This client speaks the first-party Anthropic API:
 // requests pass through the gateway unchanged — standard /v1/* paths and
 // standard model names.
 //
-// The deprecated text Completions API is intentionally not exposed, and the
-// gateway does not serve the User Profiles API.
+// The gateway does not serve the User Profiles API.
 package googlecloud
 
 import (
@@ -17,8 +16,8 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 // ClientConfig holds the configuration for creating a Claude Platform on Google Cloud client.
@@ -69,8 +68,8 @@ type ClientConfig struct {
 }
 
 // Client provides access to the Anthropic API via the Google Cloud gateway. It
-// mirrors the surface of [anthropic.Client], without the deprecated Completions
-// service and without UserProfiles, which the gateway does not serve.
+// mirrors the surface of [anthropic.Client], without UserProfiles, which the
+// gateway does not serve.
 type Client struct {
 	Options      []option.RequestOption
 	Messages     anthropic.MessageService

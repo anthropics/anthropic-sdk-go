@@ -9,14 +9,14 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // OrganizationWorkspaceRateLimitService contains methods and other services that
@@ -111,8 +111,7 @@ func (r *OrganizationWorkspaceRateLimitService) ListAutoPaging(ctx context.Conte
 }
 
 type WorkspaceRateLimit struct {
-	// The rate-limit group this entry's limits apply to. Its `type` equals
-	// `group_type`.
+	// The rate-limit group this entry's limits apply to.
 	Group WorkspaceRateLimitGroupUnion `json:"group" api:"required"`
 	// The workspace's limiter values for this group. By default only the limiter types
 	// with a workspace-level override are listed. With `include_inherited` set to
@@ -120,7 +119,7 @@ type WorkspaceRateLimit struct {
 	// listed too, each marked by `source`.
 	Limits []WorkspaceRateLimitValue `json:"limits" api:"required"`
 	// Model names this entry's limits apply to, including aliases. `null` when
-	// `group_type` is not `"model_group"`.
+	// `group.type` is not `"model_group"`.
 	Models []string `json:"models" api:"required"`
 	// The `id` of the organization's RateLimit entry this entry applies to.
 	RateLimitID string `json:"rate_limit_id" api:"required"`

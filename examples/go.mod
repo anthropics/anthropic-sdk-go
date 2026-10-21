@@ -1,13 +1,13 @@
 module github.com/anthropic/anthropic-sdk-go/examples
 
-replace github.com/anthropics/anthropic-sdk-go => ../
+replace github.com/anthropics/anthropic-sdk-go/v2 => ../
 
 go 1.24
 
 toolchain go1.24.3
 
 require (
-	github.com/anthropics/anthropic-sdk-go v0.0.0-00010101000000-000000000000
+	github.com/anthropics/anthropic-sdk-go/v2 v2.0.0-00010101000000-000000000000
 	github.com/invopop/jsonschema v0.14.0
 	github.com/modelcontextprotocol/go-sdk v1.3.1
 )

@@ -32,9 +32,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/lib/environments"
-	"github.com/anthropics/anthropic-sdk-go/tools/agenttoolset"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/lib/environments"
+	"github.com/anthropics/anthropic-sdk-go/v2/tools/agenttoolset"
 )
 
 // currentTimeTool is a custom anthropic.BetaTool that returns the local time.

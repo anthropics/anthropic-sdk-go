@@ -13,7 +13,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 
 	"github.com/tidwall/gjson"
 )

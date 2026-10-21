@@ -7,14 +7,13 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/config"
-	"github.com/anthropics/anthropic-sdk-go/internal/auth"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/auth"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
 	"github.com/tidwall/sjson"
 )
 
@@ -72,6 +71,12 @@ func errOption(err error) RequestOption {
 	})
 }
 
+// credentialOption returns the [RequestOption] of the option called name, which
+// supplies a credential by way of apply.
+func credentialOption(name string, apply requestconfig.RequestOptionFunc) RequestOption {
+	return requestconfig.CredentialOption{Name: name, Credential: apply}
+}
+
 // IdentityTokenFile returns an [IdentityTokenFunc] that reads a JWT from path
 // on each invocation. Use it for Kubernetes projected service account tokens
 // and similar rotating on-disk credentials — the file is re-read on every
@@ -112,6 +117,9 @@ func IdentityTokenFile(path string) IdentityTokenFunc {
 //
 // The [auth.TokenCache] built by [auth.WithAuthMiddleware] is shared across
 // requests, so a token is only re-exchanged when it enters the refresh window.
+//
+// This is a credential option. See anthropic.NewClient for how those combine
+// with each other and with the environment.
 func WithFederationTokenProvider(provider IdentityTokenFunc, opts FederationOptions) RequestOption {
 	switch {
 	case provider == nil:
@@ -135,7 +143,7 @@ func WithFederationTokenProvider(provider IdentityTokenFunc, opts FederationOpti
 // which can be supplied to clients, services, and methods. You can read more about this functional
 // options pattern in our [README].
 //
-// [README]: https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go#readme-requestoptions
+// [README]: https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#readme-requestoptions
 type RequestOption = requestconfig.RequestOption
 
 // WithBaseURL returns a RequestOption that sets the BaseURL for the client.
@@ -390,49 +398,44 @@ type withConfigClientKey struct {
 // WithConfig returns a [RequestOption] that authenticates requests using
 // the given [config.Config].
 //
-// Credential resolution is deferred to a request-time middleware so a
-// later [WithAPIKey] / [WithAuthToken] (tier-1 explicit-credential
-// precedence) can preempt the profile — even when the profile's
-// credentials are missing or broken. The same escape-hatch shape as
-// [explicitProfileErrorOption] applies: if the final RequestConfig has a
-// static APIKey/AuthToken, or the request already carries an
-// Authorization / X-Api-Key header, the profile is treated as shadowed
-// and resolution is skipped entirely.
+// Credentials are resolved on the first request, so a config whose
+// credentials are missing or broken fails requests, not the construction of
+// the client. A request that already carries an Authorization or X-Api-Key
+// header, set with [WithHeader], is sent as it is and nothing is resolved.
 //
 // The config's non-credential fields (BaseURL, WorkspaceID) apply at
 // option-Apply time and do not depend on credential resolution. BaseURL
-// only takes effect when no explicit [WithBaseURL] is present.
+// only takes effect when no explicit [WithBaseURL] is present. Both stay in
+// effect when another credential option replaces the config's credentials,
+// unless that option is itself a WithConfig or a [WithProfile].
 //
-// When a static credential shadows the profile, a one-shot warning is
-// emitted so users migrating from API keys can tell why their profile is
-// being ignored. Use [WithConfigQuiet] to suppress that warning when the
-// caller has its own, richer diagnostic.
+// This is a credential option. See anthropic.NewClient for how those combine
+// with each other and with the environment.
 func WithConfig(cfg *config.Config) RequestOption {
-	return withConfig(cfg, false)
+	return withConfig("WithConfig", cfg)
 }
 
-// WithConfigQuiet is identical to [WithConfig] but suppresses the one-shot
-// "static credential shadows profile" warning. Intended for callers (such as
-// the CLI) that detect the same condition themselves and emit a more
-// specific multi-auth diagnostic, so users don't see two warnings for the
-// same thing.
+// WithConfigQuiet is identical to [WithConfig].
+//
+// Deprecated: Use [WithConfig]. The warning this option suppressed no longer
+// exists.
 func WithConfigQuiet(cfg *config.Config) RequestOption {
-	return withConfig(cfg, true)
+	return withConfig("WithConfigQuiet", cfg)
 }
 
 // WithProfile returns a [RequestOption] that loads the named profile from
 // the default config directory (see [config.DefaultDir]) and authenticates
-// requests using it — equivalent to setting ANTHROPIC_PROFILE=name and
-// constructing a zero-config client. Shorthand for:
+// requests using it. Shorthand for:
 //
 //	cfg, err := config.LoadProfile(config.DefaultDir(), name)
 //	... option.WithConfig(cfg)
 //
 // If the profile cannot be loaded, the error is deferred to the first
-// request and is preempted by a static credential ([WithAPIKey] /
-// [WithAuthToken]) — the same escape hatch as the ANTHROPIC_PROFILE env
-// path. As with [WithConfig], a static credential shadows the profile at
-// request time and a one-shot warning is emitted.
+// request. As with [WithConfig], a request that already carries an
+// Authorization or X-Api-Key header is sent as it is.
+//
+// This is a credential option. See anthropic.NewClient for how those combine
+// with each other and with the environment.
 func WithProfile(name string) RequestOption {
 	if name == "" {
 		return errOption(fmt.Errorf("option: WithProfile: profile name is empty"))
@@ -440,12 +443,8 @@ func WithProfile(name string) RequestOption {
 	cfg, err := config.LoadProfile(config.DefaultDir(), name)
 	if err != nil {
 		loadErr := fmt.Errorf("option: WithProfile(%q): %w", name, err)
-		return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-			rc := r
+		return credentialOption("WithProfile", func(r *requestconfig.RequestConfig) error {
 			check := func(req *http.Request, next func(*http.Request) (*http.Response, error)) (*http.Response, error) {
-				if rc.APIKey != "" || rc.AuthToken != "" {
-					return next(req)
-				}
 				if req.Header.Get("Authorization") != "" || req.Header.Get("X-Api-Key") != "" {
 					return next(req)
 				}
@@ -455,16 +454,7 @@ func WithProfile(name string) RequestOption {
 			return nil
 		})
 	}
-	return withConfig(cfg, false)
-}
-
-// joinedOption is the [RequestOption] returned by [Join]. It is a distinct
-// type (rather than a RequestOptionFunc closure) so that
-// [HasWithoutEnvironmentDefaults] can look inside it.
-type joinedOption []RequestOption
-
-func (opts joinedOption) Apply(r *requestconfig.RequestConfig) error {
-	return r.Apply(opts...)
+	return withConfig("WithProfile", cfg)
 }
 
 // Join returns a single [RequestOption] that applies opts in order, at the
@@ -480,10 +470,10 @@ func (opts joinedOption) Apply(r *requestconfig.RequestConfig) error {
 //		)
 //	}
 //
-// A [WithoutEnvironmentDefaults] marker nested inside a Join (at any depth)
-// is still recognized by anthropic.NewClient.
+// A [WithoutEnvironmentDefaults] marker or a credential option nested inside
+// a Join (at any depth) is still recognized by anthropic.NewClient.
 func Join(opts ...RequestOption) RequestOption {
-	return joinedOption(opts)
+	return requestconfig.JoinedOption(opts)
 }
 
 // withoutEnvironmentDefaultsOption is the marker type returned by
@@ -502,9 +492,7 @@ func (withoutEnvironmentDefaultsOption) Apply(*requestconfig.RequestConfig) erro
 // credentials get a working client.
 //
 // Intended for callers that perform their own credential resolution (such
-// as the CLI) and want full control over which auth source is used, without
-// the SDK's autoloader contributing a second [WithConfig] that would emit a
-// duplicate shadow-warning.
+// as the CLI) and want full control over which auth source is used.
 func WithoutEnvironmentDefaults() RequestOption {
 	return withoutEnvironmentDefaultsOption{}
 }
@@ -518,7 +506,7 @@ func HasWithoutEnvironmentDefaults(opts []RequestOption) bool {
 		switch o := o.(type) {
 		case withoutEnvironmentDefaultsOption:
 			return true
-		case joinedOption:
+		case requestconfig.JoinedOption:
 			if HasWithoutEnvironmentDefaults(o) {
 				return true
 			}
@@ -527,9 +515,8 @@ func HasWithoutEnvironmentDefaults(opts []RequestOption) bool {
 	return false
 }
 
-func withConfig(cfg *config.Config, quiet bool) RequestOption {
+func withConfig(name string, cfg *config.Config) RequestOption {
 	var (
-		shadowOnce  sync.Once
 		resolveOnce sync.Once
 		provider    auth.TokenProvider
 		resolveErr  error
@@ -537,10 +524,10 @@ func withConfig(cfg *config.Config, quiet bool) RequestOption {
 		cacheMu sync.Mutex
 		cacheBy = map[withConfigClientKey]*auth.TokenCache{}
 	)
-	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-		// Non-credential config — applied unconditionally so a profile's
+	settings := func(r *requestconfig.RequestConfig) error {
+		// Non-credential config — kept apart from the credential so a profile's
 		// base_url / workspace_id are honored even when its credentials
-		// are shadowed by a later WithAPIKey or fail to resolve.
+		// are replaced by a later credential option or fail to resolve.
 		if cfg.BaseURL != "" && r.BaseURL == nil {
 			if err := WithBaseURL(cfg.BaseURL).Apply(r); err != nil {
 				return err
@@ -556,31 +543,11 @@ func withConfig(cfg *config.Config, quiet bool) RequestOption {
 				return err
 			}
 		}
-
-		// Both checks below are request-time middlewares so they observe
-		// the RequestConfig after ALL options have applied — order of
-		// WithConfig vs WithAPIKey/WithAuthToken in the caller's option
-		// list doesn't matter.
+		return nil
+	}
+	credential := func(r *requestconfig.RequestConfig) error {
 		rc := r
-		if !quiet {
-			shadowCheck := func(req *http.Request, next func(*http.Request) (*http.Response, error)) (*http.Response, error) {
-				shadowOnce.Do(func() {
-					switch {
-					case rc.APIKey != "":
-						auth.WarnConfigShadowed("ANTHROPIC_API_KEY", detectShadowSource("ANTHROPIC_API_KEY"))
-					case rc.AuthToken != "":
-						auth.WarnConfigShadowed("ANTHROPIC_AUTH_TOKEN", detectShadowSource("ANTHROPIC_AUTH_TOKEN"))
-					}
-				})
-				return next(req)
-			}
-			r.Middlewares = append(r.Middlewares, shadowCheck)
-		}
-
 		credCheck := func(req *http.Request, next func(*http.Request) (*http.Response, error)) (*http.Response, error) {
-			if rc.APIKey != "" || rc.AuthToken != "" {
-				return next(req)
-			}
 			if req.Header.Get("Authorization") != "" || req.Header.Get("X-Api-Key") != "" {
 				return next(req)
 			}
@@ -608,18 +575,12 @@ func withConfig(cfg *config.Config, quiet bool) RequestOption {
 		}
 		r.Middlewares = append(r.Middlewares, credCheck)
 		return nil
-	})
-}
-
-// detectShadowSource classifies where the shadowing static credential
-// came from by inspecting whether the named env var is set. When the env
-// var has a non-empty value the source is [auth.ConfigShadowFromEnv];
-// otherwise the credential must have come from an explicit option call.
-func detectShadowSource(envVar string) auth.ConfigShadowSource {
-	if v, ok := os.LookupEnv(envVar); ok && v != "" {
-		return auth.ConfigShadowFromEnv
 	}
-	return auth.ConfigShadowFromOption
+	return requestconfig.CredentialOption{
+		Name:       name,
+		Settings:   requestconfig.RequestOptionFunc(settings),
+		Credential: requestconfig.RequestOptionFunc(credential),
+	}
 }
 
 // WithEnvironmentProduction returns a RequestOption that sets the current
@@ -630,16 +591,22 @@ func WithEnvironmentProduction() RequestOption {
 }
 
 // WithAPIKey returns a RequestOption that sets the client setting "api_key".
+//
+// This is a credential option. See anthropic.NewClient for how those combine
+// with each other and with the environment.
 func WithAPIKey(value string) RequestOption {
-	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+	return credentialOption("WithAPIKey", func(r *requestconfig.RequestConfig) error {
 		r.APIKey = value
-		return r.Apply(WithHeader("X-Api-Key", r.APIKey))
+		return r.Apply(WithHeader("authorization", fmt.Sprintf("Bearer %s", r.APIKey)))
 	})
 }
 
 // WithAuthToken returns a RequestOption that sets the client setting "auth_token".
+//
+// This is a credential option. See anthropic.NewClient for how those combine
+// with each other and with the environment.
 func WithAuthToken(value string) RequestOption {
-	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+	return credentialOption("WithAuthToken", func(r *requestconfig.RequestConfig) error {
 		r.AuthToken = value
 		return r.Apply(WithHeader("authorization", fmt.Sprintf("Bearer %s", r.AuthToken)))
 	})

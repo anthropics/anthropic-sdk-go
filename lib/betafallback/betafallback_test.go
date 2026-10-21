@@ -13,10 +13,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/lib/betafallback"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/lib/betafallback"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -296,7 +296,7 @@ func TestRefusalFallbackMiddlewareAppliesFallbackOverridesAndPreservesOtherField
 	)
 
 	params := fallbackTestParams
-	params.Temperature = anthropic.Float(0.5)
+	params.InferenceGeo = anthropic.String("us")
 	_, err := client.Beta.Messages.New(context.Background(), params)
 	require.NoError(t, err)
 
@@ -305,7 +305,7 @@ func TestRefusalFallbackMiddlewareAppliesFallbackOverridesAndPreservesOtherField
 	assert.Equal(t, "fallback-model", retry["model"])
 	assert.Equal(t, float64(2048), retry["max_tokens"])
 	assert.Equal(t, map[string]any{"type": "disabled"}, retry["thinking"])
-	assert.Equal(t, 0.5, retry["temperature"])
+	assert.Equal(t, "us", retry["inference_geo"])
 	assert.Equal(t, transport.bodies[0]["messages"], retry["messages"])
 }
 
@@ -316,13 +316,13 @@ func TestRefusalFallbackMiddlewareNullOverrideUnsetsTheOriginalField(t *testing.
 			[]anthropic.BetaFallbackParam{{
 				Model:     "fallback-model",    // set: overrides the original
 				MaxTokens: param.Null[int64](), // null: unsets the original
-				// temperature absent: the original value is kept
+				// inference_geo absent: the original value is kept
 			}},
 		),
 	)
 
 	params := fallbackTestParams
-	params.Temperature = anthropic.Float(0.5)
+	params.InferenceGeo = anthropic.String("us")
 	_, err := client.Beta.Messages.New(context.Background(), params)
 	require.NoError(t, err)
 
@@ -332,7 +332,7 @@ func TestRefusalFallbackMiddlewareNullOverrideUnsetsTheOriginalField(t *testing.
 	assert.Equal(t, "fallback-model", retry["model"])
 	_, hasMaxTokens := retry["max_tokens"]
 	assert.False(t, hasMaxTokens, "null override must remove the key, not send null or keep the original")
-	assert.Equal(t, 0.5, retry["temperature"])
+	assert.Equal(t, "us", retry["inference_geo"])
 }
 
 // betweenToolsParams spells the thinking config as raw JSON so the tests do

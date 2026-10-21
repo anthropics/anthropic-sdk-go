@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	anthropic "github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/toolrunner"
+	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/toolrunner"
 )
 
 // schemaToBytes converts a map schema to JSON bytes for use with NewBetaToolFromBytes.
@@ -302,7 +302,10 @@ func TestToolRunner_ToolCallError_ThenSuccess(t *testing.T) {
 	// 2. should be a success
 	toolResultBlocks := []*anthropic.BetaToolResultBlockParam{}
 	for _, msg := range messages {
-		for _, c := range msg.Content {
+		if msg.OfUser == nil {
+			continue
+		}
+		for _, c := range msg.OfUser.Content {
 			if tr := c.OfToolResult; tr != nil {
 				toolResultBlocks = append(toolResultBlocks, tr)
 			}
@@ -482,7 +485,10 @@ func TestToolRunner_ConcurrentToolExecution(t *testing.T) {
 	messages := runner.Messages()
 	toolResultCount := 0
 	for _, msg := range messages {
-		for _, c := range msg.Content {
+		if msg.OfUser == nil {
+			continue
+		}
+		for _, c := range msg.OfUser.Content {
 			if c.OfToolResult != nil {
 				toolResultCount++
 			}

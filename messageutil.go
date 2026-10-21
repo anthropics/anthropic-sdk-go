@@ -8,9 +8,9 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 )
 
 // Accumulate builds up the Message incrementally from a MessageStreamEvent. The Message then can be used as
@@ -193,13 +193,13 @@ func checkContentBlockIndex(eventType string, index int64, numBlocks int) error 
 // ToParam converters
 
 func (r Message) ToParam() MessageParam {
-	var p MessageParam
-	p.Role = MessageParamRole(r.Role)
+	var p AssistantMessageParam
+	p.Role = r.Role
 	p.Content = make([]ContentBlockParamUnion, len(r.Content))
 	for i, c := range r.Content {
 		p.Content[i] = c.ToParam()
 	}
-	return p
+	return MessageParam{OfAssistant: &p}
 }
 
 // ToParam converts the block into the param that sends it back in a later

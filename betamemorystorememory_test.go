@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaMemoryStoreMemoryNewWithOptionalParams(t *testing.T) {
@@ -95,7 +95,6 @@ func TestBetaMemoryStoreMemoryUpdateWithOptionalParams(t *testing.T) {
 			Content:       anthropic.String("content"),
 			Path:          anthropic.String("xx"),
 			Precondition: anthropic.BetaManagedAgentsPreconditionParam{
-				Type:          anthropic.BetaManagedAgentsPreconditionTypeContentSha256,
 				ContentSha256: anthropic.String("content_sha256"),
 			},
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},

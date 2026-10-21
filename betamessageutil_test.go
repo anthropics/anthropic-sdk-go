@@ -7,7 +7,7 @@ import (
 
 	"github.com/tidwall/gjson"
 
-	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/v2"
 )
 
 func unmarshalBetaContentBlockParam(t *testing.T, jsonData string) anthropic.BetaContentBlockParamUnion {
@@ -218,26 +218,26 @@ func TestNewBetaSystemMessageMarshalsContent(t *testing.T) {
 
 	t.Run("directive-only emits empty content array", func(t *testing.T) {
 		msg := anthropic.NewBetaSystemMessage(config)
-		if msg.Content == nil {
-			t.Fatal("Expected Content to be a non-nil empty slice so the required key is emitted")
+		if msg.OfSystem.Content == nil {
+			t.Fatal("Expected Content to be a non-nil empty slice so the key is emitted")
 		}
 		got, err := json.Marshal(msg)
 		if err != nil {
 			t.Fatalf("marshal error: %v", err)
 		}
-		want := `{"content":[],"role":"system","output_config":{"effort":"high"}}`
+		want := `{"content":[],"output_config":{"effort":"high"},"role":"system"}`
 		if string(got) != want {
 			t.Errorf("Expected directive-only system message JSON\n got: %s\nwant: %s", got, want)
 		}
 	})
 
 	t.Run("with blocks", func(t *testing.T) {
-		msg := anthropic.NewBetaSystemMessage(config, anthropic.NewBetaTextBlock("Answer tersely."))
+		msg := anthropic.NewBetaSystemMessage(config, anthropic.BetaSystemMessageParamContentUnion{OfText: &anthropic.BetaTextBlockParam{Text: "Answer tersely."}})
 		got, err := json.Marshal(msg)
 		if err != nil {
 			t.Fatalf("marshal error: %v", err)
 		}
-		want := `{"content":[{"text":"Answer tersely.","type":"text"}],"role":"system","output_config":{"effort":"high"}}`
+		want := `{"content":[{"text":"Answer tersely.","type":"text"}],"output_config":{"effort":"high"},"role":"system"}`
 		if string(got) != want {
 			t.Errorf("Expected system message JSON with content\n got: %s\nwant: %s", got, want)
 		}
@@ -256,7 +256,7 @@ func TestNewBetaSystemMessageMarshalsContent(t *testing.T) {
 		if err != nil {
 			t.Fatalf("marshal error: %v", err)
 		}
-		if !strings.Contains(string(got), `{"content":[],"role":"system","output_config":{"effort":"high"}}`) {
+		if !strings.Contains(string(got), `{"content":[],"output_config":{"effort":"high"},"role":"system"}`) {
 			t.Errorf("Expected request body to carry the directive-only system message with content:[], got %s", got)
 		}
 	})

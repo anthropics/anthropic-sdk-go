@@ -20,9 +20,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/tidwall/gjson"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/awsauth"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func makeStaticAWSConfig(region string) awssdk.Config {
@@ -300,6 +300,7 @@ func TestMantleSkipAuthNoAuthRequired(t *testing.T) {
 func TestMantleSkipAuthNoAuthHeaders(t *testing.T) {
 	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
 	t.Setenv("ANTHROPIC_AWS_API_KEY", "")
+	t.Setenv("ANTHROPIC_API_KEY", "should-not-appear")
 
 	client, captured := newTestMantleClient(t, MantleClientConfig{
 		SkipAuth: true,

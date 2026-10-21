@@ -26,16 +26,13 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/awsauth"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/telemetry"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
-const DefaultVersion = "bedrock-2023-05-31"
-
 var DefaultEndpoints = map[string]bool{
-	"/v1/complete": true,
 	"/v1/messages": true,
 }
 
@@ -297,6 +294,10 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 			return nil, errors.New("bedrock: Amazon Bedrock does not serve the User Profiles API; manage user profiles with a first-party client")
 		}
 
+		// Bedrock takes the API version from the body.
+		version := r.Header.Get("anthropic-version")
+		r.Header.Del("anthropic-version")
+
 		var body []byte
 		if r.Body != nil {
 			body, err = io.ReadAll(r.Body)
@@ -309,8 +310,8 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 			// JSON body carries fields to inject or strip.
 			isJSON := gjson.ValidBytes(body)
 
-			if isJSON && !gjson.GetBytes(body, "anthropic_version").Exists() {
-				body, _ = sjson.SetBytes(body, "anthropic_version", DefaultVersion)
+			if isJSON && version != "" && !gjson.GetBytes(body, "anthropic_version").Exists() {
+				body, _ = sjson.SetBytes(body, "anthropic_version", version)
 			}
 
 			// pull the betas off of the header (if set) and put them in the body

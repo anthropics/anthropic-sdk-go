@@ -11,8 +11,8 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func clearEnv(t *testing.T) {
@@ -368,7 +368,7 @@ func TestFirstPartyEnvironmentDoesNotLeak(t *testing.T) {
 		t.Errorf("x-api-key = %q, want exactly [fake-foundry-api-key]", got)
 	}
 	if got := req.Headers.Get("Authorization"); got != "" {
-		t.Errorf("ANTHROPIC_AUTH_TOKEN leaked as Authorization %q", got)
+		t.Errorf("first-party credential leaked as Authorization %q", got)
 	}
 }
 
@@ -376,7 +376,7 @@ func TestFirstPartyEnvironmentDoesNotLeak(t *testing.T) {
 
 // Services Foundry does not serve. A service added to anthropic.Client fails
 // the test below until someone decides whether Foundry serves it.
-var excludedServices = map[string]bool{"Completions": true, "Models": true, "Organization": true}
+var excludedServices = map[string]bool{"Models": true, "Organization": true}
 
 func TestClientServicesMatchAnthropicClient(t *testing.T) {
 	foundryType := reflect.TypeFor[Client]()
@@ -411,8 +411,6 @@ func TestClientServicesMatchAnthropicClient(t *testing.T) {
 
 func TestOptionsBuildAFirstPartyClient(t *testing.T) {
 	clearEnv(t)
-	// Only the auth token is set: the default chain stops at an API key, which
-	// the Foundry key would overwrite, hiding the leak.
 	t.Setenv("ANTHROPIC_AUTH_TOKEN", "leaked-1p-token")
 	server, requests := newServer(t)
 	fc := newTestClient(t, server, ClientConfig{APIKey: "fake-foundry-api-key"})
@@ -432,7 +430,7 @@ func TestOptionsBuildAFirstPartyClient(t *testing.T) {
 		t.Errorf("x-api-key = %q, want exactly [fake-foundry-api-key]", got)
 	}
 	if got := req.Headers.Get("Authorization"); got != "" {
-		t.Errorf("ANTHROPIC_AUTH_TOKEN leaked as Authorization %q", got)
+		t.Errorf("first-party credential leaked as Authorization %q", got)
 	}
 }
 

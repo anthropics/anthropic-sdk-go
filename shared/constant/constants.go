@@ -75,6 +75,7 @@ type Auto string                                    // Always "auto"
 type AWS string                                     // Always "aws"
 type AWSRole string                                 // Always "aws_role"
 type Azure string                                   // Always "azure"
+type Ban string                                     // Always "ban"
 type Base64 string                                  // Always "base64"
 type Bash string                                    // Always "bash"
 type Bash20241022 string                            // Always "bash_20241022"
@@ -328,6 +329,7 @@ type RepositoryCloneError string                    // Always "repository_clone_
 type RepositoryForbiddenError string                // Always "repository_forbidden_error"
 type RepositoryNotFoundError string                 // Always "repository_not_found_error"
 type RequiresAction string                          // Always "requires_action"
+type Restriction string                             // Always "restriction"
 type RetriesExhausted string                        // Always "retries_exhausted"
 type Retrying string                                // Always "retrying"
 type RightClick string                              // Always "right_click"
@@ -579,6 +581,7 @@ func (c Auto) Default() Auto                                     { return "auto"
 func (c AWS) Default() AWS                                       { return "aws" }
 func (c AWSRole) Default() AWSRole                               { return "aws_role" }
 func (c Azure) Default() Azure                                   { return "azure" }
+func (c Ban) Default() Ban                                       { return "ban" }
 func (c Base64) Default() Base64                                 { return "base64" }
 func (c Bash) Default() Bash                                     { return "bash" }
 func (c Bash20241022) Default() Bash20241022                     { return "bash_20241022" }
@@ -892,6 +895,7 @@ func (c RepositoryNotFoundError) Default() RepositoryNotFoundError {
 	return "repository_not_found_error"
 }
 func (c RequiresAction) Default() RequiresAction             { return "requires_action" }
+func (c Restriction) Default() Restriction                   { return "restriction" }
 func (c RetriesExhausted) Default() RetriesExhausted         { return "retries_exhausted" }
 func (c Retrying) Default() Retrying                         { return "retrying" }
 func (c RightClick) Default() RightClick                     { return "right_click" }
@@ -1225,6 +1229,7 @@ func (c Auto) MarshalJSON() ([]byte, error)                                 { re
 func (c AWS) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
 func (c AWSRole) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Azure) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
+func (c Ban) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
 func (c Base64) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Bash) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Bash20241022) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
@@ -1478,6 +1483,7 @@ func (c RepositoryCloneError) MarshalJSON() ([]byte, error)                 { re
 func (c RepositoryForbiddenError) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c RepositoryNotFoundError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c RequiresAction) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c Restriction) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c RetriesExhausted) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Retrying) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c RightClick) MarshalJSON() ([]byte, error)                           { return marshalString(c) }

@@ -2,6 +2,7 @@ package anthropic
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -93,7 +94,7 @@ func (r *UserProfileService) List(ctx context.Context, params UserProfileListPar
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/user_profiles"
-	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.list", "/v1/user_profiles", "limit", "order", "order_by", "page"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.list", "/v1/user_profiles", "enforcement_status", "limit", "order", "order_by", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -164,6 +165,20 @@ type UserProfile struct {
 	AccessType UserProfileAccessType `json:"access_type" api:"required"`
 	// When this user profile was created, in RFC 3339 format.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// The enforcement actions open on this profile; empty when none is open. Absent
+	// under the `user-profiles-2026-09-04` and earlier beta headers.
+	EnforcementActions []UserProfileEnforcementActionUnion `json:"enforcement_actions" api:"required"`
+	// Anthropic's enforcement status of this profile, from its open enforcement
+	// actions and any identity check under review, by the first rule that applies:
+	// `banned` while any open action is a `ban`; `pending` while a restriction that an
+	// identity check can clear is open, the end user has submitted that check,
+	// Anthropic's review of it has not ended, and no open action's `reason` is
+	// `account_compromise`; `restricted` while any action is open; `unrestricted`
+	// while none is. Absent under the `user-profiles-2026-09-04` and earlier beta
+	// headers.
+	//
+	// Any of "unrestricted", "pending", "restricted", "banned".
+	EnforcementStatus UserProfileEnforcementStatus `json:"enforcement_status" api:"required"`
 	// Details about the entity this profile represents, as the platform states them;
 	// not verified by Anthropic. Every field is present, `null` until the platform
 	// supplies a value. Absent under the legacy `user-profiles-2026-03-24` and
@@ -196,6 +211,8 @@ type UserProfile struct {
 		ID                  respjson.Field
 		AccessType          respjson.Field
 		CreatedAt           respjson.Field
+		EnforcementActions  respjson.Field
+		EnforcementStatus   respjson.Field
 		ExternalUserDetails respjson.Field
 		Metadata            respjson.Field
 		Name                respjson.Field
@@ -394,6 +411,199 @@ func (r UserProfileEfsProgram) RawJSON() string { return r.JSON.raw }
 func (r *UserProfileEfsProgram) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// UserProfileEnforcementActionUnion contains all possible properties and values
+// from [UserProfileEnforcementActionRestriction],
+// [UserProfileEnforcementActionBan].
+//
+// Use the [UserProfileEnforcementActionUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type UserProfileEnforcementActionUnion struct {
+	ID string `json:"id"`
+	// This field is from variant [UserProfileEnforcementActionRestriction].
+	Action    UserProfileEnforcementActionNextStep `json:"action"`
+	ExpiresAt time.Time                            `json:"expires_at"`
+	OpenedAt  time.Time                            `json:"opened_at"`
+	// This field is from variant [UserProfileEnforcementActionRestriction].
+	Reason UserProfileEnforcementActionReason `json:"reason"`
+	// Any of "restriction", "ban".
+	Type string `json:"type"`
+	JSON struct {
+		ID        respjson.Field
+		Action    respjson.Field
+		ExpiresAt respjson.Field
+		OpenedAt  respjson.Field
+		Reason    respjson.Field
+		Type      respjson.Field
+		raw       string
+	} `json:"-"`
+}
+
+// anyUserProfileEnforcementAction is implemented by each variant of
+// [UserProfileEnforcementActionUnion] to add type safety for the return type of
+// [UserProfileEnforcementActionUnion.AsAny]
+type anyUserProfileEnforcementAction interface {
+	implUserProfileEnforcementActionUnion()
+}
+
+func (UserProfileEnforcementActionRestriction) implUserProfileEnforcementActionUnion() {}
+func (UserProfileEnforcementActionBan) implUserProfileEnforcementActionUnion()         {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := UserProfileEnforcementActionUnion.AsAny().(type) {
+//	case anthropic.UserProfileEnforcementActionRestriction:
+//	case anthropic.UserProfileEnforcementActionBan:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u UserProfileEnforcementActionUnion) AsAny() anyUserProfileEnforcementAction {
+	switch u.Type {
+	case "restriction":
+		return u.AsRestriction()
+	case "ban":
+		return u.AsBan()
+	}
+	return nil
+}
+
+func (u UserProfileEnforcementActionUnion) AsRestriction() (v UserProfileEnforcementActionRestriction) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u UserProfileEnforcementActionUnion) AsBan() (v UserProfileEnforcementActionBan) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u UserProfileEnforcementActionUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *UserProfileEnforcementActionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Anthropic has stopped serving the end user where the ban applies and does not
+// plan to serve them there again.
+type UserProfileEnforcementActionBan struct {
+	// The action's ID (`enac_...`), stable while the action is open.
+	ID string `json:"id" api:"required"`
+	// Always `null`: the end user cannot clear a ban.
+	//
+	// Any of "verify".
+	Action UserProfileEnforcementActionNextStep `json:"action" api:"required"`
+	// Always `null`: a ban has no end date.
+	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
+	// When Anthropic opened the action, in RFC 3339 format.
+	OpenedAt time.Time `json:"opened_at" api:"required" format:"date-time"`
+	// Why Anthropic placed the limit: `unsupported_region`, `fraud_or_abuse`,
+	// `high_harm`, `usage_policy_violation`, `account_compromise` or `unspecified`.
+	//
+	// Any of "unsupported_region", "fraud_or_abuse", "high_harm",
+	// "usage_policy_violation", "account_compromise", "unspecified".
+	Reason UserProfileEnforcementActionReason `json:"reason" api:"required"`
+	Type   constant.Ban                       `json:"type" default:"ban"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Action      respjson.Field
+		ExpiresAt   respjson.Field
+		OpenedAt    respjson.Field
+		Reason      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r UserProfileEnforcementActionBan) RawJSON() string { return r.JSON.raw }
+func (r *UserProfileEnforcementActionBan) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The next step on this enforcement action: `verify` means the end user can clear
+// the action by passing an identity check. More values may be added; read a value
+// you do not recognize as `null`.
+type UserProfileEnforcementActionNextStep string
+
+const (
+	UserProfileEnforcementActionNextStepVerify UserProfileEnforcementActionNextStep = "verify"
+)
+
+// Why Anthropic placed this enforcement action: `unsupported_region`,
+// `fraud_or_abuse`, `high_harm`, `usage_policy_violation`, `account_compromise` or
+// `unspecified`. More values may be added; read a value you do not recognize as
+// `unspecified`.
+type UserProfileEnforcementActionReason string
+
+const (
+	UserProfileEnforcementActionReasonUnsupportedRegion    UserProfileEnforcementActionReason = "unsupported_region"
+	UserProfileEnforcementActionReasonFraudOrAbuse         UserProfileEnforcementActionReason = "fraud_or_abuse"
+	UserProfileEnforcementActionReasonHighHarm             UserProfileEnforcementActionReason = "high_harm"
+	UserProfileEnforcementActionReasonUsagePolicyViolation UserProfileEnforcementActionReason = "usage_policy_violation"
+	UserProfileEnforcementActionReasonAccountCompromise    UserProfileEnforcementActionReason = "account_compromise"
+	UserProfileEnforcementActionReasonUnspecified          UserProfileEnforcementActionReason = "unspecified"
+)
+
+// Anthropic has limited how it serves the end user until the action is resolved.
+// The end user may still be served in part.
+type UserProfileEnforcementActionRestriction struct {
+	// The action's ID (`enac_...`), stable while the action is open.
+	ID string `json:"id" api:"required"`
+	// The next step on the action: `verify` or `null`. `verify`: the end user can
+	// clear it now by passing an identity check. `null`: there is nothing the end user
+	// can do now to clear it, including while Anthropic reviews an identity check the
+	// end user submitted.
+	//
+	// Any of "verify".
+	Action UserProfileEnforcementActionNextStep `json:"action" api:"required"`
+	// When the action ends on its own, in RFC 3339 format; it stops showing once this
+	// time has passed. `null` when it has no end date, and always `null` when `reason`
+	// is `account_compromise`.
+	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
+	// When Anthropic opened the action, in RFC 3339 format.
+	OpenedAt time.Time `json:"opened_at" api:"required" format:"date-time"`
+	// Why Anthropic placed the limit: `unsupported_region`, `fraud_or_abuse`,
+	// `high_harm`, `usage_policy_violation`, `account_compromise` or `unspecified`.
+	//
+	// Any of "unsupported_region", "fraud_or_abuse", "high_harm",
+	// "usage_policy_violation", "account_compromise", "unspecified".
+	Reason UserProfileEnforcementActionReason `json:"reason" api:"required"`
+	Type   constant.Restriction               `json:"type" default:"restriction"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Action      respjson.Field
+		ExpiresAt   respjson.Field
+		OpenedAt    respjson.Field
+		Reason      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r UserProfileEnforcementActionRestriction) RawJSON() string { return r.JSON.raw }
+func (r *UserProfileEnforcementActionRestriction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Anthropic's enforcement status of this profile: `unrestricted`, `pending`,
+// `restricted` or `banned`. More values may be added; read a value you do not
+// recognize as `restricted`.
+type UserProfileEnforcementStatus string
+
+const (
+	UserProfileEnforcementStatusUnrestricted UserProfileEnforcementStatus = "unrestricted"
+	UserProfileEnforcementStatusPending      UserProfileEnforcementStatus = "pending"
+	UserProfileEnforcementStatusRestricted   UserProfileEnforcementStatus = "restricted"
+	UserProfileEnforcementStatusBanned       UserProfileEnforcementStatus = "banned"
+)
 
 // The status of the entity's account on the platform, as the platform states it:
 // `active`; `suspended`, when the platform has restricted the account and may
@@ -692,6 +902,15 @@ type UserProfileListParams struct {
 	// credential that belongs to a specific Workspace may omit it; if sent, it must
 	// match that Workspace.
 	WorkspaceID param.Opt[string] `header:"anthropic-workspace-id,omitzero" json:"-"`
+	// Return only the user profiles whose `enforcement_status` is one of these values:
+	// `unrestricted`, `pending`, `restricted` or `banned`. Repeat the parameter to
+	// match any of several. With it set, a page may hold fewer than `limit` profiles,
+	// or none, and still carry a `next_page`: the service examines a bounded number of
+	// profiles per request, and only a null `next_page` means the listing is complete.
+	// Rejected with `invalid_request_error` under the `user-profiles-2026-09-04` and
+	// earlier beta headers. Fails with `overloaded_error` when a profile's enforcement
+	// actions cannot be read for the moment.
+	EnforcementStatus []UserProfileEnforcementStatus `query:"enforcement_status,omitzero" json:"-"`
 	// The sort direction, applied to the field that `order_by` selects. Defaults to
 	// `desc`.
 	//

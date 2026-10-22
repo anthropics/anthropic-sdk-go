@@ -254,6 +254,8 @@ func loadUserOAuthProfile(cfg *config.Config) (*CredentialsResult, error) {
 		}
 	}
 
+	// A refresh token is single-use, so only one refresh may run at a time.
+	refreshSlot := make(chan struct{}, 1)
 	provider := func(ctx context.Context, baseURL string, handler func(*http.Request) (*http.Response, error)) (*AccessToken, error) {
 		base := strings.TrimRight(cfg.BaseURL, "/")
 		if base == "" {
@@ -261,6 +263,12 @@ func loadUserOAuthProfile(cfg *config.Config) (*CredentialsResult, error) {
 		}
 		if err := config.RequireSecureTokenEndpoint(base); err != nil {
 			return nil, err
+		}
+		select {
+		case refreshSlot <- struct{}{}:
+			defer func() { <-refreshSlot }()
+		case <-ctx.Done():
+			return nil, ctx.Err()
 		}
 		// Re-read credentials file to check if token is still fresh. Skip
 		// the freshness shortcut when force-refresh is signaled (e.g. after

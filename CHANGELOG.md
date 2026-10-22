@@ -2,6 +2,11 @@
 
 ## [2.1.1](https://github.com/anthropics/anthropic-sdk-go/compare/v2.1.0...v2.1.1) (2026-10-22)
 
+### Bug Fixes
+
+* **auth:** don't share an in-flight token fetch across base URLs
+
+
 ### Chores
 
 * **docs:** clarify plugin served_version_pinned and updated_at

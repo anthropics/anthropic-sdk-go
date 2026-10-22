@@ -36,7 +36,7 @@ type TokenCache struct {
 	mu                sync.Mutex
 	cached            *AccessToken
 	cachedBaseURL     string
-	refresh           *refreshState
+	refreshByBaseURL  map[string]*refreshState
 	lastAdvisoryError time.Time
 }
 
@@ -50,7 +50,7 @@ type refreshState struct {
 // The handler is passed through to the provider on every fetch; the base URL
 // to exchange at is supplied per call to [TokenCache.Token].
 func NewTokenCache(provider TokenProvider, handler func(*http.Request) (*http.Response, error)) *TokenCache {
-	return &TokenCache{provider: provider, httpHandler: handler}
+	return &TokenCache{provider: provider, httpHandler: handler, refreshByBaseURL: map[string]*refreshState{}}
 }
 
 // Token returns a valid access token, fetching or refreshing via the provider
@@ -130,11 +130,12 @@ func (cache *TokenCache) check(ctx context.Context, baseURL string) (bool, strin
 }
 
 // fetch performs a synchronous token fetch. If another goroutine is already
-// fetching, it waits for that result instead of starting a duplicate. Callers
-// in the mandatory window (the only callers that reach fetch) never receive
-// a stale token: if the refresh fails, the error propagates.
+// fetching for the same baseURL, it waits for that result instead of starting
+// a duplicate. Callers in the mandatory window (the only callers that reach
+// fetch) never receive a stale token: if the refresh fails, the error
+// propagates.
 func (cache *TokenCache) fetch(ctx context.Context, baseURL string) (string, error) {
-	isFetcher, refresh := cache.getOrStartRefresh()
+	isFetcher, refresh := cache.getOrStartRefresh(baseURL)
 	if !isFetcher {
 		return awaitRefresh(ctx, refresh)
 	}
@@ -147,18 +148,18 @@ func (cache *TokenCache) fetch(ctx context.Context, baseURL string) (string, err
 	return token.Token, nil
 }
 
-// getOrStartRefresh returns the in-flight refresh if one exists, or starts a
-// new one. The bool indicates whether the caller is the fetcher.
-func (cache *TokenCache) getOrStartRefresh() (bool, *refreshState) {
+// getOrStartRefresh returns the in-flight refresh for baseURL if one exists, or
+// starts a new one. The bool indicates whether the caller is the fetcher.
+func (cache *TokenCache) getOrStartRefresh(baseURL string) (bool, *refreshState) {
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
 
-	if refresh := cache.refresh; refresh != nil {
+	if refresh := cache.refreshByBaseURL[baseURL]; refresh != nil {
 		return false, refresh
 	}
 
 	refresh := &refreshState{done: make(chan struct{})}
-	cache.refresh = refresh
+	cache.refreshByBaseURL[baseURL] = refresh
 	return true, refresh
 }
 
@@ -193,19 +194,19 @@ func (cache *TokenCache) completeRefresh(refresh *refreshState, baseURL string, 
 	} else if advisory {
 		cache.lastAdvisoryError = time.Now()
 	}
-	cache.refresh = nil
+	delete(cache.refreshByBaseURL, baseURL)
 	close(refresh.done)
 }
 
 // startBackgroundRefresh kicks off an advisory background refresh if one isn't
-// already in-flight. Must be called with mu held.
+// already in-flight for baseURL. Must be called with mu held.
 func (cache *TokenCache) startBackgroundRefresh(ctx context.Context, baseURL string) {
-	if cache.refresh != nil {
+	if cache.refreshByBaseURL[baseURL] != nil {
 		return
 	}
 
 	refresh := &refreshState{done: make(chan struct{})}
-	cache.refresh = refresh
+	cache.refreshByBaseURL[baseURL] = refresh
 
 	go func() {
 		token, err := cache.provider(context.WithoutCancel(ctx), baseURL, cache.httpHandler)

@@ -992,6 +992,7 @@ Params Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaMemoryTool20250818Param">BetaMemoryTool20250818Param</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#[]BetaContentBlockParamUnion">[]BetaContentBlockParamUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaMessageParam">BetaMessageParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaMessageThreadParamUnion">BetaMessageThreadParamUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaMetadataParam">BetaMetadataParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOutputConfigParam">BetaOutputConfigParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaPlainTextSourceParam">BetaPlainTextSourceParam</a>
@@ -1026,6 +1027,8 @@ Params Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaThinkingConfigParamUnion">BetaThinkingConfigParamUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaThinkingPrefixMismatchBehavior">BetaThinkingPrefixMismatchBehavior</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaThinkingTurnsParam">BetaThinkingTurnsParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaThreadContinueParams">BetaThreadContinueParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaThreadCreateParams">BetaThreadCreateParams</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaTokenTaskBudgetParam">BetaTokenTaskBudgetParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaToolParam">BetaToolParam</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaToolBash20241022Param">BetaToolBash20241022Param</a>

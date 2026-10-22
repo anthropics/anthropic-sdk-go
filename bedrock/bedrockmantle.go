@@ -14,6 +14,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/v2"
 	"github.com/anthropics/anthropic-sdk-go/v2/internal/awsauth"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
@@ -100,7 +101,7 @@ func NewMantleClient(ctx context.Context, cfg MantleClientConfig, opts ...option
 		return nil, err
 	}
 	// Mantle is an endpoint of Amazon Bedrock.
-	opts = append(opts, withPlatform)
+	opts = append(opts, withPlatform, requestconfig.WithoutMessageThreads())
 
 	return &MantleClient{
 		Options:  opts,

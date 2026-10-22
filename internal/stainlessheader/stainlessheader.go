@@ -29,6 +29,7 @@ const (
 	EnvironmentsWorkPoller    Value = "environments-work-poller"
 	EnvironmentsWorker        Value = "environments-worker"
 	FallbackRefusalMiddleware Value = "fallback-refusal-middleware"
+	MessageThread             Value = "message-thread"
 	SessionToolRunner         Value = "session-tool-runner"
 )
 

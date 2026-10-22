@@ -107,6 +107,15 @@ func toolRunnerParams() anthropic.BetaToolRunnerParams {
 	}}
 }
 
+// unthreadedToolRunnerParams opts the runner out of message threads, for a test
+// that reads what a request with the whole history has, or counts what the
+// runner does apart from its thread.
+func unthreadedToolRunnerParams() anthropic.BetaToolRunnerParams {
+	params := toolRunnerParams()
+	params.DisableThread = true
+	return params
+}
+
 func TestOpenTelemetryToolRunner(t *testing.T) {
 	tool := &weatherTool{err: errors.New("no forecast")}
 	client, recorder := newTracedClient(t, toolRunnerTransport())
@@ -703,7 +712,7 @@ func TestOpenTelemetryToolContentIsNotHTMLEscaped(t *testing.T) {
 	content := option.WithOpenTelemetryTracesContentMode(option.OpenTelemetryContentModeContent)
 	client, recorder := newTracedClient(t, rt, content)
 
-	runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{&textsTool{texts: []string{markupText}}}, toolRunnerParams())
+	runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{&textsTool{texts: []string{markupText}}}, unthreadedToolRunnerParams())
 	if _, err := runner.RunToCompletion(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -1550,7 +1559,7 @@ func TestOpenTelemetryToolRunnerWithTheSpansOffDoesNoSpanWork(t *testing.T) {
 				var defined int32
 				if streaming {
 					client, r := newTracedClient(t, toolRunnerStreamingTransport(), opts...)
-					runner := client.Beta.Messages.NewToolRunnerStreaming(tools, toolRunnerParams(), counted)
+					runner := client.Beta.Messages.NewToolRunnerStreaming(tools, unthreadedToolRunnerParams(), counted)
 					defined, recorder = tool.descriptions.Load(), r
 					for events, err := range runner.AllStreaming(context.Background()) {
 						if err != nil {
@@ -1564,7 +1573,7 @@ func TestOpenTelemetryToolRunnerWithTheSpansOffDoesNoSpanWork(t *testing.T) {
 					}
 				} else {
 					client, r := newTracedClient(t, toolRunnerTransport(), opts...)
-					runner := client.Beta.Messages.NewToolRunner(tools, toolRunnerParams(), counted)
+					runner := client.Beta.Messages.NewToolRunner(tools, unthreadedToolRunnerParams(), counted)
 					defined, recorder = tool.descriptions.Load(), r
 					if _, err := runner.RunToCompletion(context.Background()); err != nil {
 						t.Fatal(err)

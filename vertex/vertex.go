@@ -110,7 +110,7 @@ func WithCredentials(ctx context.Context, region string, projectID string, creds
 		baseURL = fmt.Sprintf("https://%s-aiplatform.googleapis.com/", region)
 	}
 
-	return sdkoption.Join(sdkoption.WithoutEnvironmentDefaults(), requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+	return sdkoption.Join(sdkoption.WithoutEnvironmentDefaults(), requestconfig.WithoutMessageThreads(), requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		rc.OpenTelemetry.ProviderName, rc.OpenTelemetry.Platform = telemetry.ProviderVertex, "vertex"
 		client := defaultClient
 		if rc.HTTPClient != nil && rc.HTTPClient != http.DefaultClient {

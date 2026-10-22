@@ -336,7 +336,7 @@ func TestBetaToolRunner_ToolRemoval_HoldsAcrossACompaction(t *testing.T) {
 	forEachRunner(t, func(t *testing.T, stream bool) {
 		server, requests := scriptedMessagesServer(t, compactionResponseJSON, toolUseTurnJSON, endTurnJSON)
 		weather := &stubBetaTool{name: "weather"}
-		params := pauseTurnParams(10)
+		params := unthreaded(pauseTurnParams(10))
 		params.Messages = append([]BetaMessageParam{systemToolChange(NewBetaToolRemovalBlock(weatherRef()))}, params.Messages...)
 		runner := newTurnRunner(newTestToolRunnerClient(server), stream, []BetaTool{weather}, params)
 		runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
@@ -386,6 +386,7 @@ func (s toolChangeStubs) tools(labels ...string) []BetaTool {
 func runToolChangeTurns(t *testing.T, stream bool, client Client, tools []BetaTool, params BetaToolRunnerParams, onTurn func(*betaToolRunnerBase, *BetaMessage)) *betaToolRunnerBase {
 	t.Helper()
 	ctx := context.Background()
+	params = unthreaded(params)
 	if stream {
 		runner := client.Beta.Messages.NewToolRunnerStreaming(tools, params)
 		onTurn(&runner.betaToolRunnerBase, nil)
@@ -837,7 +838,7 @@ func TestBetaToolRunner_ToolChanges_GoOutWithTheCompactionRequest(t *testing.T) 
 	forEachRunner(t, func(t *testing.T, stream bool) {
 		server, requests := scriptedMessagesServer(t, toolCallTurnJSON("toolu_1", "time"), compactionResponseJSON, toolCallTurnJSON("toolu_2", "weather"), endTurnJSON)
 		stubs := toolChangeStubs{}
-		runner := newTurnRunner(newTestToolRunnerClient(server), stream, stubs.tools("time"), pauseTurnParams(10))
+		runner := newTurnRunner(newTestToolRunnerClient(server), stream, stubs.tools("time"), unthreaded(pauseTurnParams(10)))
 		runner.run(t, func(message *BetaMessage) {
 			if calledTool(message) == "time" {
 				runner.AddTools(stubs.tool("weather"))
@@ -871,7 +872,7 @@ func TestBetaToolRunner_ToolChanges_MadeWhileHandlingTheCompactionResponse(t *te
 	forEachRunner(t, func(t *testing.T, stream bool) {
 		server, requests := scriptedMessagesServer(t, compactionResponseJSON, toolCallTurnJSON("toolu_1", "weather"), endTurnJSON)
 		stubs := toolChangeStubs{}
-		runner := newTurnRunner(newTestToolRunnerClient(server), stream, nil, pauseTurnParams(10))
+		runner := newTurnRunner(newTestToolRunnerClient(server), stream, nil, unthreaded(pauseTurnParams(10)))
 		runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
 		runner.run(t, func(message *BetaMessage) {
 			if message.StopReason == BetaStopReasonCompaction {
@@ -897,7 +898,7 @@ func TestBetaToolRunnerStreaming_ToolChanges_ReAddedWhileTheCompactionResponseSt
 	server, requests := scriptedMessagesServer(t, toolCallTurnJSON("toolu_1", "time"), compactionResponseJSON, toolCallTurnJSON("toolu_2", "weather"), endTurnJSON)
 	stubs := toolChangeStubs{}
 	client := newTestToolRunnerClient(server)
-	runner := client.Beta.Messages.NewToolRunnerStreaming(stubs.tools("time", "weather"), pauseTurnParams(10))
+	runner := client.Beta.Messages.NewToolRunnerStreaming(stubs.tools("time", "weather"), unthreaded(pauseTurnParams(10)))
 	for !runner.IsCompleted() {
 		for event, err := range runner.NextStreaming(context.Background()) {
 			if err != nil {
@@ -983,7 +984,7 @@ func TestExecuteToolsSkipsMaxTokensTurn(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			tool := &recordingTool{name: "rec"}
-			base := newBetaToolRunnerBase(nil, []BetaTool{tool}, BetaToolRunnerParams{}, nil)
+			base := newBetaToolRunnerBase(&BetaMessageService{}, []BetaTool{tool}, BetaToolRunnerParams{}, nil)
 			message := &BetaMessage{
 				StopReason: tt.stopReason,
 				Content:    []BetaContentBlockUnion{toolUse},
@@ -1361,6 +1362,13 @@ func requireJSONEqual(t *testing.T, got, want string) {
 	}
 }
 
+// unthreaded opts a runner out of message threads, for a test that reads the
+// whole history from each request rather than what a thread sends.
+func unthreaded(params BetaToolRunnerParams) BetaToolRunnerParams {
+	params.DisableThread = true
+	return params
+}
+
 func pauseTurnParams(maxIterations int) BetaToolRunnerParams {
 	return BetaToolRunnerParams{BetaMessageNewParams: BetaMessageNewParams{
 		Model:     "m",
@@ -1396,7 +1404,7 @@ func requireTurnResumed(t *testing.T, unfinishedTurn string) {
 			var final *BetaMessage
 			var history []BetaMessageParam
 			if stream {
-				runner := client.Beta.Messages.NewToolRunnerStreaming(nil, pauseTurnParams(5))
+				runner := client.Beta.Messages.NewToolRunnerStreaming(nil, unthreaded(pauseTurnParams(5)))
 				for events, err := range runner.AllStreaming(ctx) {
 					if err != nil {
 						t.Fatalf("AllStreaming: %v", err)
@@ -1409,7 +1417,7 @@ func requireTurnResumed(t *testing.T, unfinishedTurn string) {
 				}
 				final, history = runner.LastMessage(), runner.Messages()
 			} else {
-				runner := client.Beta.Messages.NewToolRunner(nil, pauseTurnParams(5))
+				runner := client.Beta.Messages.NewToolRunner(nil, unthreaded(pauseTurnParams(5)))
 				var err error
 				if final, err = runner.RunToCompletion(ctx); err != nil {
 					t.Fatalf("RunToCompletion: %v", err)
@@ -1683,8 +1691,8 @@ func TestBetaToolRunner_CompactBeforeNextTurn_SentAfterToolResults(t *testing.T)
 			t.Fatalf("request after the compaction must not carry compaction: %s", after)
 		}
 		requireJSONEqual(t, gjson.GetBytes(after, "context_management").Raw, gjson.GetBytes(first, "context_management").Raw)
-		if fmt.Sprint(betas) != "[compact-2026-09-04 compact-2026-09-04 compact-2026-09-04]" {
-			t.Fatalf("anthropic-beta headers = %v, want the caller's beta and nothing added", betas)
+		if fmt.Sprint(betas) != "[compact-2026-09-04,message-threads-2026-08-12 compact-2026-09-04,message-threads-2026-08-12 compact-2026-09-04,message-threads-2026-08-12]" {
+			t.Fatalf("anthropic-beta headers = %v, want the caller's beta, the thread's and nothing else", betas)
 		}
 	})
 }
@@ -1776,8 +1784,8 @@ func TestBetaToolRunner_CompactBeforeNextTurn_LeavesOffReplyOnlyParams(t *testin
 				for _, path := range []string{"tools", "system", "max_tokens"} {
 					requireJSONEqual(t, gjson.GetBytes(compaction, path).Raw, gjson.GetBytes(first, path).Raw)
 				}
-				if fmt.Sprint(betas) != "[compact-2026-09-04 compact-2026-09-04 compact-2026-09-04]" {
-					t.Fatalf("anthropic-beta headers = %v, want the caller's beta on every request", betas)
+				if fmt.Sprint(betas) != "[compact-2026-09-04,message-threads-2026-08-12 compact-2026-09-04,message-threads-2026-08-12 compact-2026-09-04,message-threads-2026-08-12]" {
+					t.Fatalf("anthropic-beta headers = %v, want the caller's beta and the thread's on every request", betas)
 				}
 			})
 		})
@@ -1927,7 +1935,7 @@ func TestBetaToolRunner_CompactBeforeNextTurn_NoSummaryKeepsHistory(t *testing.T
 			forEachRunner(t, func(t *testing.T, stream bool) {
 				warned := captureStderr(t)
 				server, requests := scriptedMessagesServer(t, toolUseTurnJSON, tt.response, endTurnJSON)
-				runner := newTurnRunner(newTestToolRunnerClient(server), stream, []BetaTool{&stubBetaTool{name: "weather"}}, pauseTurnParams(0))
+				runner := newTurnRunner(newTestToolRunnerClient(server), stream, []BetaTool{&stubBetaTool{name: "weather"}}, unthreaded(pauseTurnParams(0)))
 
 				ids := runner.run(t, func(message *BetaMessage) {
 					compactOnToolUse(runner)(message)

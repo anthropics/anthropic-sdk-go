@@ -227,11 +227,6 @@ runner.Params.MaxTokens = 2048
 // Update maximum iterations
 runner.Params.MaxIterations = 10
 
-// Update system prompt
-runner.Params.System = []anthropic.BetaTextBlockParam{
-	{Text: "You are a helpful assistant."},
-}
-
 // Add messages to the conversation (direct field access)
 runner.Params.Messages = append(runner.Params.Messages, anthropic.NewBetaUserMessage(
 	anthropic.NewBetaTextBlock("Now check the weather in London too"),
@@ -242,6 +237,19 @@ runner.AppendMessages(anthropic.NewBetaUserMessage(
 	anthropic.NewBetaTextBlock("Now check the weather in London too"),
 ))
 ```
+
+### Message Threads
+
+The tool runner keeps its conversation in a [message thread](./threads.md) by default. To send the whole history with every request instead, set `DisableThread` when you create the runner:
+
+```go
+runner := client.Beta.Messages.NewToolRunner(tools, anthropic.BetaToolRunnerParams{
+	BetaMessageNewParams: params,
+	DisableThread:        true,
+})
+```
+
+`System` and `Tools` cannot change during a run unless `DisableThread` is set.
 
 ### Compacting the Conversation
 
@@ -296,7 +304,7 @@ A few things to know:
 
 ### Changing Tools Mid-Conversation
 
-Editing `runner.Params.Tools` between turns invalidates the prompt cache for the whole conversation. `AddTools`, `AddToolParams`, `RemoveTools` and `RemoveToolsByNames` change the model's tools and keep the cache: they leave `Params.Tools` as it is and tell the model about the change in a `role: "system"` message. Requests must include the `inline-tools-2026-09-15` beta, which the runner does not add for you.
+`runner.Params.Tools` cannot be changed between turns on a message thread, and without a thread a change invalidates the prompt cache for the whole conversation. `AddTools`, `AddToolParams`, `RemoveTools` and `RemoveToolsByNames` change the model's tools and keep the cache: they leave `Params.Tools` as it is and tell the model about the change in a `role: "system"` message. Requests must include the `inline-tools-2026-09-15` beta, which the runner does not add for you.
 
 ```go
 runner := client.Beta.Messages.NewToolRunner([]anthropic.BetaTool{readFileTool}, anthropic.BetaToolRunnerParams{
@@ -386,4 +394,5 @@ See the [examples](./examples) directory for complete working examples:
 
 - [examples/tool-runner](./examples/tool-runner) - Basic tool runner usage
 - [examples/tool-runner-streaming](./examples/tool-runner-streaming) - Streaming with tool runner
+- [examples/message-threads](./examples/message-threads) - A conversation on a message thread
 - [examples/managed-agents-self-hosted-sandbox-worker](./examples/managed-agents-self-hosted-sandbox-worker) - Self-hosted environment worker

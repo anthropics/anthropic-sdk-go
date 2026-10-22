@@ -260,7 +260,7 @@ func WithConfig(cfg aws.Config) option.RequestOption {
 	signer := v4.NewSigner()
 	middleware := bedrockMiddleware(signer, cfg)
 
-	return option.Join(option.WithoutEnvironmentDefaults(), withPlatform, requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
+	return option.Join(option.WithoutEnvironmentDefaults(), withPlatform, requestconfig.WithoutMessageThreads(), requestconfig.RequestOptionFunc(func(rc *requestconfig.RequestConfig) error {
 		if credentialErr != nil {
 			return credentialErr
 		}

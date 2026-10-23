@@ -76,6 +76,7 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) List(ctx context.Contex
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces?beta=true", url.PathEscape(serviceAccountID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.workspaces.list", "/v1/organizations/service_accounts/{service_account_id}/workspaces", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", serviceAccountID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -140,6 +141,7 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) Add(ctx context.Context
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces?beta=true", url.PathEscape(serviceAccountID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.workspaces.add", "/v1/organizations/service_accounts/{service_account_id}/workspaces"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", serviceAccountID), requestconfig.WithSpanCreatedID("anthropic.organization.service_account.workspace.id", &res, func(created *BetaServiceAccountWorkspaceMember) string { return created.WorkspaceID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -180,6 +182,7 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) Remove(ctx context.Cont
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces/%s?beta=true", url.PathEscape(params.ServiceAccountID), url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.workspaces.remove", "/v1/organizations/service_accounts/{service_account_id}/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", params.ServiceAccountID), requestconfig.WithSpanAttribute("anthropic.organization.service_account.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

@@ -66,6 +66,7 @@ func (r *BetaOrganizationTelemetryDestinationService) New(ctx context.Context, p
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "telemetry-destinations-2026-08-11")}, opts...)
 	path := "v1/organizations/telemetry_destinations?beta=true"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.create", "/v1/organizations/telemetry_destinations"), requestconfig.WithSpanCreatedID("anthropic.organization.telemetry_destination.id", &res, func(created *BetaTelemetryDestination) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -94,6 +95,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Get(ctx context.Context, d
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s?beta=true", url.PathEscape(destinationID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.retrieve", "/v1/organizations/telemetry_destinations/{destination_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -132,6 +134,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Update(ctx context.Context
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s?beta=true", url.PathEscape(destinationID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.update", "/v1/organizations/telemetry_destinations/{destination_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -158,6 +161,7 @@ func (r *BetaOrganizationTelemetryDestinationService) List(ctx context.Context, 
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "telemetry-destinations-2026-08-11"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/telemetry_destinations?beta=true"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.list", "/v1/organizations/telemetry_destinations", "limit", "page", "workspace_ids"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -208,6 +212,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Delete(ctx context.Context
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s?beta=true", url.PathEscape(destinationID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.delete", "/v1/organizations/telemetry_destinations/{destination_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -239,6 +244,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Test(ctx context.Context, 
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/test?beta=true", url.PathEscape(destinationID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.test", "/v1/organizations/telemetry_destinations/{destination_id}/test"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

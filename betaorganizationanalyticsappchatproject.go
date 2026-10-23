@@ -46,6 +46,7 @@ func (r *BetaOrganizationAnalyticsAppChatProjectService) List(ctx context.Contex
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/analytics/apps/chat/projects?beta=true"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.apps.chat.projects.list", "/v1/organizations/analytics/apps/chat/projects", "date", "ending_date", "filter", "group_by", "limit", "order", "order_by", "page", "starting_date"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {

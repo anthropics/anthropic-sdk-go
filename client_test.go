@@ -710,6 +710,43 @@ func TestClonedRequestKeepsCustomHTTPClient(t *testing.T) {
 	}
 }
 
+func TestEveryAttemptHasTheQualifiers(t *testing.T) {
+	qualifiers := map[string]string{"variant": "b"}
+	var got []map[string]string
+	cfg, err := requestconfig.NewRequestConfig(
+		context.Background(),
+		http.MethodGet,
+		"cards",
+		nil,
+		nil,
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithBaseURL("http://localhost"),
+		option.WithMaxRetries(1),
+		option.WithHTTPClient(doerFunc(func(req *http.Request) (*http.Response, error) {
+			got = append(got, requestconfig.Qualifiers(req))
+			return &http.Response{
+				StatusCode: http.StatusTooManyRequests,
+				Header:     http.Header{"Retry-After-Ms": []string{"1"}},
+				Body:       http.NoBody,
+				Request:    req,
+			}, nil
+		})),
+		requestconfig.WithQualifiers(qualifiers),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, cfg := range []*requestconfig.RequestConfig{cfg, cfg.Clone(context.Background())} {
+		if err := cfg.Execute(); err == nil {
+			t.Fatal("Expected there to be an error")
+		}
+	}
+	want := []map[string]string{qualifiers, qualifiers, qualifiers, qualifiers}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Expected %v qualifiers, got %v", want, got)
+	}
+}
+
 // fakeTracerProvider makes spans that keep their status and whether they ended. The
 // method of the provider, of its tracer or of its spans that panicIn names panics.
 type fakeTracerProvider struct {

@@ -68,6 +68,7 @@ func (r *BetaTunnelCertificateService) New(ctx context.Context, tunnelID string,
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/tunnels/%s/certificates?beta=true", url.PathEscape(tunnelID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.tunnels.certificates.create", "/v1/tunnels/{tunnel_id}/certificates"), requestconfig.WithSpanAttribute("anthropic.tunnel.id", tunnelID), requestconfig.WithSpanCreatedID("anthropic.tunnel.certificate.id", &res, func(created *BetaTunnelCertificate) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -104,6 +105,7 @@ func (r *BetaTunnelCertificateService) Get(ctx context.Context, certificateID st
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/tunnels/%s/certificates/%s?beta=true", url.PathEscape(params.TunnelID), url.PathEscape(certificateID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.tunnels.certificates.retrieve", "/v1/tunnels/{tunnel_id}/certificates/{certificate_id}"), requestconfig.WithSpanAttribute("anthropic.tunnel.id", params.TunnelID), requestconfig.WithSpanAttribute("anthropic.tunnel.certificate.id", certificateID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -138,6 +140,7 @@ func (r *BetaTunnelCertificateService) List(ctx context.Context, tunnelID string
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/tunnels/%s/certificates?beta=true", url.PathEscape(tunnelID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.tunnels.certificates.list", "/v1/tunnels/{tunnel_id}/certificates", "include_archived", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.tunnel.id", tunnelID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -196,6 +199,7 @@ func (r *BetaTunnelCertificateService) Archive(ctx context.Context, certificateI
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/tunnels/%s/certificates/%s/archive?beta=true", url.PathEscape(params.TunnelID), url.PathEscape(certificateID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.tunnels.certificates.archive", "/v1/tunnels/{tunnel_id}/certificates/{certificate_id}/archive"), requestconfig.WithSpanAttribute("anthropic.tunnel.id", params.TunnelID), requestconfig.WithSpanAttribute("anthropic.tunnel.certificate.id", certificateID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

@@ -65,6 +65,7 @@ func (r *BetaSessionEventService) List(ctx context.Context, sessionID string, pa
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.events.list", "/v1/sessions/{session_id}/events", "created_at[gt]", "created_at[gte]", "created_at[lt]", "created_at[lte]", "limit", "order", "page", "types"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -105,6 +106,7 @@ func (r *BetaSessionEventService) Send(ctx context.Context, sessionID string, pa
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/events?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.events.send", "/v1/sessions/{session_id}/events"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -136,6 +138,7 @@ func (r *BetaSessionEventService) StreamEvents(ctx context.Context, sessionID st
 		return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](nil, err)
 	}
 	path := fmt.Sprintf("v1/sessions/%s/events/stream?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.events.stream", "/v1/sessions/{session_id}/events/stream", "event_deltas"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &raw, opts...)
 	return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](ssestream.NewDecoder(raw), err)

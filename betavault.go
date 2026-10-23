@@ -59,6 +59,7 @@ func (r *BetaVaultService) New(ctx context.Context, params BetaVaultNewParams, o
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	path := "v1/vaults?beta=true"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.create", "/v1/vaults"), requestconfig.WithSpanCreatedID("anthropic.vault.id", &res, func(created *BetaManagedAgentsVault) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -86,6 +87,7 @@ func (r *BetaVaultService) Get(ctx context.Context, vaultID string, query BetaVa
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/vaults/%s?beta=true", url.PathEscape(vaultID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.retrieve", "/v1/vaults/{vault_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -113,6 +115,7 @@ func (r *BetaVaultService) Update(ctx context.Context, vaultID string, params Be
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/vaults/%s?beta=true", url.PathEscape(vaultID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.update", "/v1/vaults/{vault_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -137,6 +140,7 @@ func (r *BetaVaultService) List(ctx context.Context, params BetaVaultListParams,
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/vaults?beta=true"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.list", "/v1/vaults", "include_archived", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -177,6 +181,7 @@ func (r *BetaVaultService) Delete(ctx context.Context, vaultID string, body Beta
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/vaults/%s?beta=true", url.PathEscape(vaultID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.delete", "/v1/vaults/{vault_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -204,6 +209,7 @@ func (r *BetaVaultService) Archive(ctx context.Context, vaultID string, body Bet
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/vaults/%s/archive?beta=true", url.PathEscape(vaultID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.archive", "/v1/vaults/{vault_id}/archive"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

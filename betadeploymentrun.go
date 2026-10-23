@@ -62,6 +62,7 @@ func (r *BetaDeploymentRunService) Get(ctx context.Context, deploymentRunID stri
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/deployment_runs/%s?beta=true", url.PathEscape(deploymentRunID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployment_runs.retrieve", "/v1/deployment_runs/{deployment_run_id}"), requestconfig.WithSpanAttribute("anthropic.deployment_run.id", deploymentRunID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -86,6 +87,7 @@ func (r *BetaDeploymentRunService) List(ctx context.Context, params BetaDeployme
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/deployment_runs?beta=true"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployment_runs.list", "/v1/deployment_runs", "created_at[gt]", "created_at[gte]", "created_at[lt]", "created_at[lte]", "deployment_id", "has_error", "limit", "page", "trigger_type"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {

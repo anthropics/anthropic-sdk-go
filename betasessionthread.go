@@ -68,6 +68,7 @@ func (r *BetaSessionThreadService) Get(ctx context.Context, threadID string, par
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/threads/%s?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.retrieve", "/v1/sessions/{session_id}/threads/{thread_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.thread.id", threadID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -96,6 +97,7 @@ func (r *BetaSessionThreadService) List(ctx context.Context, sessionID string, p
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/threads?beta=true", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.list", "/v1/sessions/{session_id}/threads", "limit", "page", "statuses"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -140,6 +142,7 @@ func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string,
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/threads/%s/archive?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.archive", "/v1/sessions/{session_id}/threads/{thread_id}/archive"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.thread.id", threadID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

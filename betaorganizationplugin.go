@@ -100,6 +100,7 @@ func (r *BetaOrganizationPluginService) New(ctx context.Context, params BetaOrga
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "ce-plugins-2026-09-01")}, opts...)
 	path := "v1/organizations/plugins?beta=true"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.create", "/v1/organizations/plugins"), requestconfig.WithSpanCreatedID("anthropic.organization.plugin.id", &res, func(created *BetaPlugin) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -135,6 +136,7 @@ func (r *BetaOrganizationPluginService) Get(ctx context.Context, pluginID string
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/plugins/%s?beta=true", url.PathEscape(pluginID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.retrieve", "/v1/organizations/plugins/{plugin_id}", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
@@ -192,6 +194,7 @@ func (r *BetaOrganizationPluginService) Update(ctx context.Context, pluginID str
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/plugins/%s?beta=true", url.PathEscape(pluginID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.update", "/v1/organizations/plugins/{plugin_id}"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -231,6 +234,7 @@ func (r *BetaOrganizationPluginService) List(ctx context.Context, params BetaOrg
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "ce-plugins-2026-09-01"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/plugins?beta=true"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.list", "/v1/organizations/plugins", "created_at[gt]", "created_at[gte]", "created_at[lt]", "created_at[lte]", "limit", "marketplace_id", "organization_id", "owner_type", "owner_user_id", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -306,6 +310,7 @@ func (r *BetaOrganizationPluginService) Delete(ctx context.Context, pluginID str
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/plugins/%s?beta=true", url.PathEscape(pluginID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.delete", "/v1/organizations/plugins/{plugin_id}"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

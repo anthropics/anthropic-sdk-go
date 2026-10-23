@@ -78,6 +78,7 @@ func (r *BetaOrganizationPluginShareService) List(ctx context.Context, pluginID 
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/plugins/%s/shares?beta=true", url.PathEscape(pluginID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.shares.list", "/v1/organizations/plugins/{plugin_id}/shares", "limit", "organization_id", "page", "target_type"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {

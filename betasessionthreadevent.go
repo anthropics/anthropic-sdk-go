@@ -63,6 +63,7 @@ func (r *BetaSessionThreadEventService) List(ctx context.Context, threadID strin
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/sessions/%s/threads/%s/events?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.events.list", "/v1/sessions/{session_id}/threads/{thread_id}/events", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.thread.id", threadID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -111,6 +112,7 @@ func (r *BetaSessionThreadEventService) StreamEvents(ctx context.Context, thread
 		return ssestream.NewStream[BetaManagedAgentsStreamSessionThreadEventsUnion](nil, err)
 	}
 	path := fmt.Sprintf("v1/sessions/%s/threads/%s/stream?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.events.stream", "/v1/sessions/{session_id}/threads/{thread_id}/stream", "event_deltas"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.thread.id", threadID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &raw, opts...)
 	return ssestream.NewStream[BetaManagedAgentsStreamSessionThreadEventsUnion](ssestream.NewDecoder(raw), err)

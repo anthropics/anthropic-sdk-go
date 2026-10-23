@@ -61,6 +61,7 @@ func (r *BetaAgentService) New(ctx context.Context, params BetaAgentNewParams, o
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	path := "v1/agents?beta=true"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.create", "/v1/agents"), requestconfig.WithSpanCreatedID("gen_ai.agent.id", &res, func(created *BetaManagedAgentsAgent) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -88,6 +89,7 @@ func (r *BetaAgentService) Get(ctx context.Context, agentID string, params BetaA
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/agents/%s?beta=true", url.PathEscape(agentID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.retrieve", "/v1/agents/{agent_id}", "version"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
@@ -115,6 +117,7 @@ func (r *BetaAgentService) Update(ctx context.Context, agentID string, params Be
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/agents/%s?beta=true", url.PathEscape(agentID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.update", "/v1/agents/{agent_id}"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -139,6 +142,7 @@ func (r *BetaAgentService) List(ctx context.Context, params BetaAgentListParams,
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/agents?beta=true"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.list", "/v1/agents", "created_at[gte]", "created_at[lte]", "include_archived", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -179,6 +183,7 @@ func (r *BetaAgentService) Archive(ctx context.Context, agentID string, body Bet
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/agents/%s/archive?beta=true", url.PathEscape(agentID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.archive", "/v1/agents/{agent_id}/archive"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

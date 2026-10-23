@@ -51,6 +51,7 @@ func (r *BetaOrganizationRBACRolePermissionService) List(ctx context.Context, rb
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/organizations/rbac_roles/%s/permissions?beta=true", url.PathEscape(rbacRoleID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_roles.permissions.list", "/v1/organizations/rbac_roles/{rbac_role_id}/permissions", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_role.id", rbacRoleID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {

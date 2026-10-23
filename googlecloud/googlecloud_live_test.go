@@ -132,6 +132,15 @@ func TestLiveGoogleCloud(t *testing.T) {
 		}
 	})
 
+	t.Run("user_profiles", func(t *testing.T) {
+		_, err := client.UserProfiles.List(ctx, anthropic.UserProfileListParams{
+			Limit: anthropic.Int(1),
+		})
+		if err != nil {
+			t.Fatalf("UserProfiles.List failed: %v", err)
+		}
+	})
+
 	t.Run("managed_agents", func(t *testing.T) {
 		agent, err := client.Beta.Agents.New(ctx, anthropic.BetaAgentNewParams{
 			Model: anthropic.BetaManagedAgentsModelConfigParams{ID: model},

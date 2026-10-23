@@ -86,24 +86,14 @@ func sendTestRequest(t *testing.T, client *Client) {
 
 // --- Service surface parity ---
 
-// excludedServices are anthropic.Client fields intentionally NOT mirrored here:
-// the gateway does not serve UserProfiles endpoints.
-var excludedServices = map[string]bool{"UserProfiles": true}
-
 func TestClientServicesMatchAnthropicClient(t *testing.T) {
 	gcType := reflect.TypeFor[Client]()
 	anthropicType := reflect.TypeFor[anthropic.Client]()
 
-	// Every non-excluded base service must be present here with the same type —
-	// catches the base client growing a resource this mirror would silently miss.
+	// Every base service must be present here with the same type — catches the
+	// base client growing a resource this mirror would silently miss.
 	for i := 0; i < anthropicType.NumField(); i++ {
 		field := anthropicType.Field(i)
-		if excludedServices[field.Name] {
-			if _, ok := gcType.FieldByName(field.Name); ok {
-				t.Errorf("Client exposes %q, which is intentionally excluded", field.Name)
-			}
-			continue
-		}
 		gcField, ok := gcType.FieldByName(field.Name)
 		if !ok {
 			t.Errorf("Client is missing field %q (type %s) from anthropic.Client", field.Name, field.Type)
@@ -444,6 +434,26 @@ func listBetaWorkspaces(client *Client, opts ...option.RequestOption) error {
 	return err
 }
 
+func listUserProfiles(client *Client, opts ...option.RequestOption) error {
+	_, err := client.UserProfiles.List(context.Background(), anthropic.UserProfileListParams{}, opts...)
+	return err
+}
+
+func getUserProfile(client *Client, opts ...option.RequestOption) error {
+	_, err := client.UserProfiles.Get(context.Background(), "uprof_1", anthropic.UserProfileGetParams{}, opts...)
+	return err
+}
+
+func newBetaUserProfile(client *Client, opts ...option.RequestOption) error {
+	_, err := client.Beta.UserProfiles.New(context.Background(), anthropic.BetaUserProfileNewParams{}, opts...)
+	return err
+}
+
+func getBetaUserProfile(client *Client, opts ...option.RequestOption) error {
+	_, err := client.Beta.UserProfiles.Get(context.Background(), "uprof_1", anthropic.BetaUserProfileGetParams{}, opts...)
+	return err
+}
+
 func requestedURLs(captured []capturedRequest) []string {
 	urls := make([]string, len(captured))
 	for i, c := range captured {
@@ -461,6 +471,10 @@ func TestDerivedBaseURLByRoute(t *testing.T) {
 		{"workspace route", newMessage, workspaceBaseURL + "/v1/messages"},
 		{"organization route", listWorkspaces, organizationBaseURL + "/v1/organizations/workspaces"},
 		{"beta organization route", listBetaWorkspaces, organizationBaseURL + "/v1/organizations/workspaces"},
+		{"user profiles route", listUserProfiles, organizationBaseURL + "/v1/user_profiles"},
+		{"user profile route", getUserProfile, organizationBaseURL + "/v1/user_profiles/uprof_1"},
+		{"beta user profiles route", newBetaUserProfile, organizationBaseURL + "/v1/user_profiles"},
+		{"beta user profile route", getBetaUserProfile, organizationBaseURL + "/v1/user_profiles/uprof_1"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -580,13 +594,19 @@ func TestOrganizationRouteNeedsNoWorkspaceID(t *testing.T) {
 			client := newDerivedTestClient(t, cfg)
 
 			var captured []capturedRequest
-			if err := listBetaWorkspaces(client, recordRequests(&captured)); err != nil {
-				t.Fatalf("request failed: %v", err)
+			for _, call := range []func(*Client, ...option.RequestOption) error{listBetaWorkspaces, listUserProfiles, getBetaUserProfile} {
+				if err := call(client, recordRequests(&captured)); err != nil {
+					t.Fatalf("request failed: %v", err)
+				}
 			}
 
-			want := organizationBaseURL + "/v1/organizations/workspaces"
-			if got := requestedURLs(captured); !slices.Equal(got, []string{want}) {
-				t.Errorf("requested %q, want [%q]", got, want)
+			want := []string{
+				organizationBaseURL + "/v1/organizations/workspaces",
+				organizationBaseURL + "/v1/user_profiles",
+				organizationBaseURL + "/v1/user_profiles/uprof_1",
+			}
+			if got := requestedURLs(captured); !slices.Equal(got, want) {
+				t.Errorf("requested %q, want %q", got, want)
 			}
 		})
 	}
@@ -673,7 +693,7 @@ func TestExplicitBaseURLTakesEveryRoute(t *testing.T) {
 
 			var captured []capturedRequest
 			opts := append(tt.opts, recordRequests(&captured), option.WithMaxRetries(0))
-			for _, call := range []func(*Client, ...option.RequestOption) error{newMessage, listWorkspaces, listBetaWorkspaces} {
+			for _, call := range []func(*Client, ...option.RequestOption) error{newMessage, listWorkspaces, listBetaWorkspaces, listUserProfiles} {
 				if err := call(client, opts...); err != nil {
 					t.Fatalf("request failed: %v", err)
 				}
@@ -683,6 +703,7 @@ func TestExplicitBaseURLTakesEveryRoute(t *testing.T) {
 				"https://proxy.example.com/v1/messages",
 				"https://proxy.example.com/v1/organizations/workspaces",
 				"https://proxy.example.com/v1/organizations/workspaces",
+				"https://proxy.example.com/v1/user_profiles",
 			}
 			if got := requestedURLs(captured); !slices.Equal(got, want) {
 				t.Errorf("requested %q, want %q", got, want)

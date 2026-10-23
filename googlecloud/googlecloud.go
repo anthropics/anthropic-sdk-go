@@ -7,8 +7,6 @@
 // model IDs, messages only). This client speaks the first-party Anthropic API:
 // requests pass through the gateway unchanged — standard /v1/* paths and
 // standard model names.
-//
-// The gateway does not serve the User Profiles API.
 package googlecloud
 
 import (
@@ -47,9 +45,9 @@ type ClientConfig struct {
 	//  2. The ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID environment variable
 	//
 	// Required when the base URL is derived, except by organization-level
-	// routes (paths under /v1/organizations), which are sent to the project's
-	// organization endpoint. A request that needs a workspace ID and has none
-	// fails before it is sent.
+	// routes (paths under /v1/organizations, and /v1/user_profiles and the
+	// paths under it), which are sent to the project's organization endpoint.
+	// A request that needs a workspace ID and has none fails before it is sent.
 	WorkspaceID string
 
 	// BaseURL overrides the default gateway base URL for every route. Resolved
@@ -69,14 +67,14 @@ type ClientConfig struct {
 }
 
 // Client provides access to the Anthropic API via the Google Cloud gateway. It
-// mirrors the surface of [anthropic.Client], without UserProfiles, which the
-// gateway does not serve.
+// mirrors the surface of [anthropic.Client].
 type Client struct {
 	Options      []option.RequestOption
 	Messages     anthropic.MessageService
 	Models       anthropic.ModelService
 	Files        anthropic.FileService
 	Skills       anthropic.SkillService
+	UserProfiles anthropic.UserProfileService
 	Organization anthropic.OrganizationService
 	Beta         anthropic.BetaService
 }
@@ -107,6 +105,7 @@ func NewClient(ctx context.Context, cfg ClientConfig) (*Client, error) {
 		Models:       anthropic.NewModelService(opts...),
 		Files:        anthropic.NewFileService(opts...),
 		Skills:       anthropic.NewSkillService(opts...),
+		UserProfiles: anthropic.NewUserProfileService(opts...),
 		Organization: anthropic.NewOrganizationService(opts...),
 		Beta:         anthropic.NewBetaService(opts...),
 	}, nil

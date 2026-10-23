@@ -32,7 +32,7 @@ interactions:
       - go1.24.5
       X-Stainless-Timeout:
       - "600"
-    url: https://api.anthropic.com/v1/messages?beta=true
+    url: https://api.anthropic.com/v1/messages
     method: POST
   response:
     body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_014tfMBTf8yzH6aC9ohZ94k3","type":"message","role":"assistant","content":[{"type":"text","text":"I''ll
@@ -120,7 +120,7 @@ interactions:
       - go1.24.5
       X-Stainless-Timeout:
       - "600"
-    url: https://api.anthropic.com/v1/messages?beta=true
+    url: https://api.anthropic.com/v1/messages
     method: POST
   response:
     body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_01WkcabYzR3oCnHMEPgBcSAa","type":"message","role":"assistant","content":[{"type":"text","text":"I
@@ -211,7 +211,7 @@ interactions:
       - go1.24.5
       X-Stainless-Timeout:
       - "600"
-    url: https://api.anthropic.com/v1/messages?beta=true
+    url: https://api.anthropic.com/v1/messages
     method: POST
   response:
     body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_01BT54to51fGtyrvodmSUuUw","type":"message","role":"assistant","content":[{"type":"text","text":"The

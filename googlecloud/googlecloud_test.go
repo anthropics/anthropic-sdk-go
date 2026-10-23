@@ -460,7 +460,7 @@ func TestDerivedBaseURLByRoute(t *testing.T) {
 	}{
 		{"workspace route", newMessage, workspaceBaseURL + "/v1/messages"},
 		{"organization route", listWorkspaces, organizationBaseURL + "/v1/organizations/workspaces"},
-		{"beta organization route", listBetaWorkspaces, organizationBaseURL + "/v1/organizations/workspaces?beta=true"},
+		{"beta organization route", listBetaWorkspaces, organizationBaseURL + "/v1/organizations/workspaces"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -584,7 +584,7 @@ func TestOrganizationRouteNeedsNoWorkspaceID(t *testing.T) {
 				t.Fatalf("request failed: %v", err)
 			}
 
-			want := organizationBaseURL + "/v1/organizations/workspaces?beta=true"
+			want := organizationBaseURL + "/v1/organizations/workspaces"
 			if got := requestedURLs(captured); !slices.Equal(got, []string{want}) {
 				t.Errorf("requested %q, want [%q]", got, want)
 			}
@@ -682,7 +682,7 @@ func TestExplicitBaseURLTakesEveryRoute(t *testing.T) {
 			want := []string{
 				"https://proxy.example.com/v1/messages",
 				"https://proxy.example.com/v1/organizations/workspaces",
-				"https://proxy.example.com/v1/organizations/workspaces?beta=true",
+				"https://proxy.example.com/v1/organizations/workspaces",
 			}
 			if got := requestedURLs(captured); !slices.Equal(got, want) {
 				t.Errorf("requested %q, want %q", got, want)
@@ -717,7 +717,7 @@ func TestADCProjectReachesOrganizationRoute(t *testing.T) {
 		t.Fatalf("request failed: %v", err)
 	}
 
-	want := "https://claude.googleapis.com/v1/projects/adc-project/locations/us-central1/claudeOrganization/invoke/v1/organizations/workspaces?beta=true"
+	want := "https://claude.googleapis.com/v1/projects/adc-project/locations/us-central1/claudeOrganization/invoke/v1/organizations/workspaces"
 	if got := requestedURLs(captured); !slices.Equal(got, []string{want}) {
 		t.Errorf("requested %q, want [%q]", got, want)
 	}

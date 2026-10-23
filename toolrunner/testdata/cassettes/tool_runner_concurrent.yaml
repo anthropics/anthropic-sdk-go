@@ -33,7 +33,7 @@ interactions:
       - go1.25.5
       X-Stainless-Timeout:
       - "600"
-    url: https://api.anthropic.com/v1/messages?beta=true
+    url: https://api.anthropic.com/v1/messages
     method: POST
   response:
     body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_01GhukHZbus69MS8zCp3tqTa","type":"message","role":"assistant","content":[{"type":"text","text":"I''d
@@ -124,7 +124,7 @@ interactions:
       - go1.25.5
       X-Stainless-Timeout:
       - "600"
-    url: https://api.anthropic.com/v1/messages?beta=true
+    url: https://api.anthropic.com/v1/messages
     method: POST
   response:
     body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_0146jGKLKCa86wwR9aHbrEfe","type":"message","role":"assistant","content":[{"type":"tool_use","id":"toolu_015Sh8xNQBhJJnBCLz8x9F6f","name":"get_weather","input":{"city":"New
@@ -215,7 +215,7 @@ interactions:
       - go1.25.5
       X-Stainless-Timeout:
       - "600"
-    url: https://api.anthropic.com/v1/messages?beta=true
+    url: https://api.anthropic.com/v1/messages
     method: POST
   response:
     body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_018RyYEDtaKf3WyN2AVY7DVZ","type":"message","role":"assistant","content":[{"type":"tool_use","id":"toolu_019FKPTDNUQxrGzdjFtpP9Yp","name":"get_weather","input":{"city":"London"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":598,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":54,"service_tier":"standard"}}'
@@ -306,7 +306,7 @@ interactions:
       - go1.25.5
       X-Stainless-Timeout:
       - "600"
-    url: https://api.anthropic.com/v1/messages?beta=true
+    url: https://api.anthropic.com/v1/messages
     method: POST
   response:
     body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_01U2itU4GfWtWJXqw43f4XB1","type":"message","role":"assistant","content":[{"type":"text","text":"Here''s

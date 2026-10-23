@@ -48,7 +48,7 @@ func (r *BetaOrganizationAnalyticsSummaryService) List(ctx context.Context, quer
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/analytics/summaries?beta=true"
+	path := "v1/organizations/analytics/summaries"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.summaries.list", "/v1/organizations/analytics/summaries", "ending_date", "filter", "limit", "page", "starting_date"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)

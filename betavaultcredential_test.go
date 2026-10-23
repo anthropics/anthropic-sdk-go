@@ -23,6 +23,7 @@ func TestBetaVaultCredentialNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.New(
 		context.TODO(),
@@ -62,6 +63,7 @@ func TestBetaVaultCredentialGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.Get(
 		context.TODO(),
@@ -92,6 +94,7 @@ func TestBetaVaultCredentialUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.Update(
 		context.TODO(),
@@ -141,6 +144,7 @@ func TestBetaVaultCredentialListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.List(
 		context.TODO(),
@@ -173,6 +177,7 @@ func TestBetaVaultCredentialDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.Delete(
 		context.TODO(),
@@ -203,6 +208,7 @@ func TestBetaVaultCredentialArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.Archive(
 		context.TODO(),
@@ -233,6 +239,7 @@ func TestBetaVaultCredentialMCPOAuthValidateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.MCPOAuthValidate(
 		context.TODO(),

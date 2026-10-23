@@ -59,7 +59,7 @@ func (r *BetaEnvironmentService) New(ctx context.Context, params BetaEnvironment
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
-	path := "v1/environments?beta=true"
+	path := "v1/environments"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.create", "/v1/environments"), requestconfig.WithSpanCreatedID("anthropic.environment.id", &res, func(created *BetaEnvironment) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -87,7 +87,7 @@ func (r *BetaEnvironmentService) Get(ctx context.Context, environmentID string, 
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s?beta=true", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s", url.PathEscape(environmentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.retrieve", "/v1/environments/{environment_id}"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -115,7 +115,7 @@ func (r *BetaEnvironmentService) Update(ctx context.Context, environmentID strin
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s?beta=true", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s", url.PathEscape(environmentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.update", "/v1/environments/{environment_id}"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -140,7 +140,7 @@ func (r *BetaEnvironmentService) List(ctx context.Context, params BetaEnvironmen
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/environments?beta=true"
+	path := "v1/environments"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.list", "/v1/environments", "include_archived", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -181,7 +181,7 @@ func (r *BetaEnvironmentService) Delete(ctx context.Context, environmentID strin
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s?beta=true", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s", url.PathEscape(environmentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.delete", "/v1/environments/{environment_id}"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -210,7 +210,7 @@ func (r *BetaEnvironmentService) Archive(ctx context.Context, environmentID stri
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/archive?beta=true", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s/archive", url.PathEscape(environmentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.archive", "/v1/environments/{environment_id}/archive"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

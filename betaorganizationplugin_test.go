@@ -25,6 +25,7 @@ func TestBetaOrganizationPluginNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Plugins.New(context.TODO(), anthropic.BetaOrganizationPluginNewParams{
 		Files:         []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
@@ -52,6 +53,7 @@ func TestBetaOrganizationPluginGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Plugins.Get(
 		context.TODO(),
@@ -81,6 +83,7 @@ func TestBetaOrganizationPluginUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Plugins.Update(
 		context.TODO(),
@@ -110,6 +113,7 @@ func TestBetaOrganizationPluginListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Plugins.List(context.TODO(), anthropic.BetaOrganizationPluginListParams{
 		CreatedAtGt:    anthropic.Time(time.Now()),
@@ -144,6 +148,7 @@ func TestBetaOrganizationPluginDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Plugins.Delete(
 		context.TODO(),

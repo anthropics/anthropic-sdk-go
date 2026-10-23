@@ -22,6 +22,7 @@ func TestBetaOrganizationTelemetryDestinationNewWithOptionalParams(t *testing.T)
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.TelemetryDestinations.New(context.TODO(), anthropic.BetaOrganizationTelemetryDestinationNewParams{
 		EndpointURL: "x",
@@ -60,6 +61,7 @@ func TestBetaOrganizationTelemetryDestinationGetWithOptionalParams(t *testing.T)
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.TelemetryDestinations.Get(
 		context.TODO(),
@@ -88,6 +90,7 @@ func TestBetaOrganizationTelemetryDestinationUpdateWithOptionalParams(t *testing
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.TelemetryDestinations.Update(
 		context.TODO(),
@@ -133,6 +136,7 @@ func TestBetaOrganizationTelemetryDestinationListWithOptionalParams(t *testing.T
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.TelemetryDestinations.List(context.TODO(), anthropic.BetaOrganizationTelemetryDestinationListParams{
 		Limit:        anthropic.Int(0),
@@ -160,6 +164,7 @@ func TestBetaOrganizationTelemetryDestinationDeleteWithOptionalParams(t *testing
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.TelemetryDestinations.Delete(
 		context.TODO(),
@@ -188,6 +193,7 @@ func TestBetaOrganizationTelemetryDestinationTestWithOptionalParams(t *testing.T
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.TelemetryDestinations.Test(
 		context.TODO(),

@@ -66,7 +66,7 @@ func (r *BetaOrganizationTelemetryDestinationWorkspaceService) List(ctx context.
 		err = errors.New("missing required destination_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces?beta=true", url.PathEscape(destinationID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces", url.PathEscape(destinationID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.workspaces.list", "/v1/organizations/telemetry_destinations/{destination_id}/workspaces", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -128,7 +128,7 @@ func (r *BetaOrganizationTelemetryDestinationWorkspaceService) Add(ctx context.C
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces/%s?beta=true", url.PathEscape(params.DestinationID), url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces/%s", url.PathEscape(params.DestinationID), url.PathEscape(workspaceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.workspaces.add", "/v1/organizations/telemetry_destinations/{destination_id}/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", params.DestinationID), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -167,7 +167,7 @@ func (r *BetaOrganizationTelemetryDestinationWorkspaceService) Remove(ctx contex
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces/%s?beta=true", url.PathEscape(params.DestinationID), url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces/%s", url.PathEscape(params.DestinationID), url.PathEscape(workspaceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.workspaces.remove", "/v1/organizations/telemetry_destinations/{destination_id}/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", params.DestinationID), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

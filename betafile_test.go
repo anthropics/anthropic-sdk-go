@@ -26,6 +26,7 @@ func TestBetaFileListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Files.List(context.TODO(), anthropic.BetaFileListParams{
 		IDs:         []string{"string"},
@@ -55,6 +56,7 @@ func TestBetaFileDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Files.Delete(
 		context.TODO(),
@@ -83,6 +85,7 @@ func TestBetaFileDownloadWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	resp, err := client.Beta.Files.Download(
 		context.TODO(),
@@ -125,6 +128,7 @@ func TestBetaFileGetMetadataWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Files.GetMetadata(
 		context.TODO(),
@@ -154,6 +158,7 @@ func TestBetaFileUploadWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Files.Upload(context.TODO(), anthropic.BetaFileUploadParams{
 		File:             io.Reader(bytes.NewBuffer([]byte("Example data"))),

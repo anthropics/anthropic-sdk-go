@@ -22,6 +22,7 @@ func TestBetaMemoryStoreMemoryNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.MemoryStores.Memories.New(
 		context.TODO(),
@@ -54,6 +55,7 @@ func TestBetaMemoryStoreMemoryGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.MemoryStores.Memories.Get(
 		context.TODO(),
@@ -85,6 +87,7 @@ func TestBetaMemoryStoreMemoryUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.MemoryStores.Memories.Update(
 		context.TODO(),
@@ -121,6 +124,7 @@ func TestBetaMemoryStoreMemoryListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.MemoryStores.Memories.List(
 		context.TODO(),
@@ -155,6 +159,7 @@ func TestBetaMemoryStoreMemoryDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.MemoryStores.Memories.Delete(
 		context.TODO(),

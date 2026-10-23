@@ -22,6 +22,7 @@ func TestBetaOrganizationUserGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Users.Get(context.TODO(), "user_id")
 	if err != nil {
@@ -44,6 +45,7 @@ func TestBetaOrganizationUserUpdate(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Users.Update(
 		context.TODO(),
@@ -72,6 +74,7 @@ func TestBetaOrganizationUserListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Users.List(context.TODO(), anthropic.BetaOrganizationUserListParams{
 		AfterID:  anthropic.String("after_id"),
@@ -100,6 +103,7 @@ func TestBetaOrganizationUserRemove(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Users.Remove(context.TODO(), "user_id")
 	if err != nil {

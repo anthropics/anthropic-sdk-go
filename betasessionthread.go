@@ -67,7 +67,7 @@ func (r *BetaSessionThreadService) Get(ctx context.Context, threadID string, par
 		err = errors.New("missing required thread_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads/%s?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	path := fmt.Sprintf("v1/sessions/%s/threads/%s", url.PathEscape(params.SessionID), url.PathEscape(threadID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.retrieve", "/v1/sessions/{session_id}/threads/{thread_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.thread.id", threadID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -96,7 +96,7 @@ func (r *BetaSessionThreadService) List(ctx context.Context, sessionID string, p
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads?beta=true", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/threads", url.PathEscape(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.list", "/v1/sessions/{session_id}/threads", "limit", "page", "statuses"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -141,7 +141,7 @@ func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string,
 		err = errors.New("missing required thread_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads/%s/archive?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	path := fmt.Sprintf("v1/sessions/%s/threads/%s/archive", url.PathEscape(params.SessionID), url.PathEscape(threadID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.archive", "/v1/sessions/{session_id}/threads/{thread_id}/archive"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.thread.id", threadID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

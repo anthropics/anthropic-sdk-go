@@ -43,7 +43,7 @@ func (r *BetaOrganizationSpendLimitEffectiveService) List(ctx context.Context, q
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/spend_limits/effective?beta=true"
+	path := "v1/organizations/spend_limits/effective"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.effective.list", "/v1/organizations/spend_limits/effective", "limit", "page", "period", "user_ids"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)

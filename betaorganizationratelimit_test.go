@@ -22,6 +22,7 @@ func TestBetaOrganizationRateLimitListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.RateLimits.List(context.TODO(), anthropic.BetaOrganizationRateLimitListParams{
 		GroupType: anthropic.BetaOrganizationRateLimitListParamsGroupTypeBatch,

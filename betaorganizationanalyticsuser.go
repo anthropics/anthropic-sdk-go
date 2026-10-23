@@ -44,7 +44,7 @@ func (r *BetaOrganizationAnalyticsUserService) List(ctx context.Context, query B
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/analytics/users?beta=true"
+	path := "v1/organizations/analytics/users"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.users.list", "/v1/organizations/analytics/users", "date", "ending_date", "filter", "group_by", "limit", "order", "order_by", "page", "starting_date"))
 	opts = append(opts, requestconfig.WithSpanContentQuery("page"))

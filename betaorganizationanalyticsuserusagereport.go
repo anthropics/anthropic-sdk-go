@@ -39,9 +39,9 @@ func NewBetaOrganizationAnalyticsUserUsageReportService(opts ...option.RequestOp
 // Returns usage per user, ranked by the chosen token metric; `group_by[]` or
 // `bucket_width` splits a user across several rows. Use this to see which users
 // consume the most tokens. Only usage attributed to a user account is included;
-// usage with no user attributed to it, such as requests attributed only to an API
-// key, is left out. Available to organizations on a Claude Enterprise plan.
-// Requires an API key with the `read:analytics` scope.
+// usage with no user attributed to it, such as Code Review usage and Claude Tag
+// usage in Slack channels, is left out. Available to organizations on a Claude
+// Enterprise plan. Requires an API key with the `read:analytics` scope.
 //
 // This endpoint is one of the legacy Claude Enterprise usage and cost reports. For
 // new integrations, use
@@ -53,7 +53,7 @@ func (r *BetaOrganizationAnalyticsUserUsageReportService) List(ctx context.Conte
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/analytics/user_usage_report?beta=true"
+	path := "v1/organizations/analytics/user_usage_report"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.user_usage_report.list", "/v1/organizations/analytics/user_usage_report", "bucket_width", "claude_tag_categories", "claude_tag_user_ids", "context_windows", "ending_at", "exclude_deleted_users", "group_by", "inference_geos", "limit", "models", "order", "order_by", "page", "products", "rbac_group_ids", "slack_channel_ids", "speeds", "starting_at", "user_ids"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
@@ -73,9 +73,9 @@ func (r *BetaOrganizationAnalyticsUserUsageReportService) List(ctx context.Conte
 // Returns usage per user, ranked by the chosen token metric; `group_by[]` or
 // `bucket_width` splits a user across several rows. Use this to see which users
 // consume the most tokens. Only usage attributed to a user account is included;
-// usage with no user attributed to it, such as requests attributed only to an API
-// key, is left out. Available to organizations on a Claude Enterprise plan.
-// Requires an API key with the `read:analytics` scope.
+// usage with no user attributed to it, such as Code Review usage and Claude Tag
+// usage in Slack channels, is left out. Available to organizations on a Claude
+// Enterprise plan. Requires an API key with the `read:analytics` scope.
 //
 // This endpoint is one of the legacy Claude Enterprise usage and cost reports. For
 // new integrations, use

@@ -69,7 +69,7 @@ func NewBetaOrganizationService(opts ...option.RequestOption) (r BetaOrganizatio
 // API key.
 func (r *BetaOrganizationService) Get(ctx context.Context, opts ...option.RequestOption) (res *BetaOrganization, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/me?beta=true"
+	path := "v1/organizations/me"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.retrieve", "/v1/organizations/me"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)

@@ -23,6 +23,7 @@ func TestBetaSessionNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.New(context.TODO(), anthropic.BetaSessionNewParams{
 		Agent: anthropic.BetaSessionNewParamsAgentUnion{
@@ -78,6 +79,7 @@ func TestBetaSessionGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Get(
 		context.TODO(),
@@ -107,6 +109,7 @@ func TestBetaSessionUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Update(
 		context.TODO(),
@@ -172,6 +175,7 @@ func TestBetaSessionListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.List(context.TODO(), anthropic.BetaSessionListParams{
 		AgentID:         anthropic.String("agent_id"),
@@ -210,6 +214,7 @@ func TestBetaSessionDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Delete(
 		context.TODO(),
@@ -239,6 +244,7 @@ func TestBetaSessionArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Archive(
 		context.TODO(),

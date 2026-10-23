@@ -52,7 +52,7 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 		err = errors.New("missing required spend_limit_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limits/%s?beta=true", url.PathEscape(spendLimitID))
+	path := fmt.Sprintf("v1/organizations/spend_limits/%s", url.PathEscape(spendLimitID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.retrieve", "/v1/organizations/spend_limits/{spend_limit_id}"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit.id", spendLimitID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -81,7 +81,7 @@ func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params Bet
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "spend-limit-reads-2026-09-26"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/spend_limits?beta=true"
+	path := "v1/organizations/spend_limits"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.list", "/v1/organizations/spend_limits", "limit", "page", "scope_type", "workspace_id"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -122,7 +122,7 @@ func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLim
 		err = errors.New("missing required spend_limit_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limits/%s?beta=true", url.PathEscape(spendLimitID))
+	path := fmt.Sprintf("v1/organizations/spend_limits/%s", url.PathEscape(spendLimitID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.delete", "/v1/organizations/spend_limits/{spend_limit_id}"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit.id", spendLimitID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -149,7 +149,7 @@ func (r *BetaOrganizationSpendLimitService) Set(ctx context.Context, params Beta
 		}))
 	}
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/spend_limits?beta=true"
+	path := "v1/organizations/spend_limits"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.set", "/v1/organizations/spend_limits"), requestconfig.WithSpanCreatedID("anthropic.organization.spend_limit.id", &res, func(created *BetaSpendLimit) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)

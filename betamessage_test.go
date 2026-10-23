@@ -25,6 +25,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Messages.New(context.TODO(), anthropic.BetaMessageNewParams{
 		MaxTokens: 1024,
@@ -210,6 +211,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Messages.CountTokens(context.TODO(), anthropic.BetaMessageCountTokensParams{
 		Messages: []anthropic.BetaMessageParam{{

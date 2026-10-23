@@ -49,7 +49,7 @@ func (r *BetaOrganizationAnalyticsPluginService) List(ctx context.Context, query
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/analytics/plugins?beta=true"
+	path := "v1/organizations/analytics/plugins"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.plugins.list", "/v1/organizations/analytics/plugins", "date", "ending_date", "filter", "group_by", "limit", "order", "order_by", "page", "starting_date"))
 	opts = append(opts, requestconfig.WithSpanContentQuery("filter"))

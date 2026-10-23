@@ -33,7 +33,7 @@ func TestUsage(t *testing.T) {
 				}},
 			},
 		}},
-		Model: anthropic.ModelClaudeSonnet5_5,
+		Model: anthropic.ModelClaudeOpus5_5,
 	})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())

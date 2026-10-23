@@ -22,6 +22,7 @@ func TestBetaSessionThreadGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Threads.Get(
 		context.TODO(),
@@ -52,6 +53,7 @@ func TestBetaSessionThreadListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Threads.List(
 		context.TODO(),
@@ -84,6 +86,7 @@ func TestBetaSessionThreadArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Threads.Archive(
 		context.TODO(),

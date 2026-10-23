@@ -22,6 +22,7 @@ func TestBetaOrganizationServiceAccountWorkspaceListWithOptionalParams(t *testin
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ServiceAccounts.Workspaces.List(
 		context.TODO(),
@@ -52,6 +53,7 @@ func TestBetaOrganizationServiceAccountWorkspaceAddWithOptionalParams(t *testing
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ServiceAccounts.Workspaces.Add(
 		context.TODO(),
@@ -82,6 +84,7 @@ func TestBetaOrganizationServiceAccountWorkspaceRemoveWithOptionalParams(t *test
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ServiceAccounts.Workspaces.Remove(
 		context.TODO(),

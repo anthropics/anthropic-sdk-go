@@ -65,7 +65,7 @@ func (r *BetaMemoryStoreMemoryVersionService) Get(ctx context.Context, memoryVer
 		err = errors.New("missing required memory_version_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryVersionID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions/%s", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryVersionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memory_versions.retrieve", "/v1/memory_stores/{memory_store_id}/memory_versions/{memory_version_id}", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("anthropic.memory_store.memory_version.id", memoryVersionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -94,7 +94,7 @@ func (r *BetaMemoryStoreMemoryVersionService) List(ctx context.Context, memorySt
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions?beta=true", url.PathEscape(memoryStoreID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions", url.PathEscape(memoryStoreID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memory_versions.list", "/v1/memory_stores/{memory_store_id}/memory_versions", "api_key_id", "created_at[gte]", "created_at[lte]", "limit", "memory_id", "operation", "page", "service_account_id", "session_id", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -139,7 +139,7 @@ func (r *BetaMemoryStoreMemoryVersionService) Redact(ctx context.Context, memory
 		err = errors.New("missing required memory_version_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions/%s/redact?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryVersionID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions/%s/redact", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryVersionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memory_versions.redact", "/v1/memory_stores/{memory_store_id}/memory_versions/{memory_version_id}/redact"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("anthropic.memory_store.memory_version.id", memoryVersionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

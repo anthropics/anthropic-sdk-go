@@ -22,6 +22,7 @@ func TestBetaOrganizationComplianceSettingGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ComplianceSettings.Get(context.TODO())
 	if err != nil {
@@ -44,6 +45,7 @@ func TestBetaOrganizationComplianceSettingUpdate(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ComplianceSettings.Update(context.TODO(), anthropic.BetaOrganizationComplianceSettingUpdateParams{
 		State: anthropic.BetaComplianceSettingsStateParamUnion{

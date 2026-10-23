@@ -22,6 +22,7 @@ func TestBetaOrganizationWebhookNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Webhooks.New(context.TODO(), anthropic.BetaOrganizationWebhookNewParams{
 		EnabledEvents: []string{"user_profile.enforcement_action_opened"},
@@ -50,6 +51,7 @@ func TestBetaOrganizationWebhookGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Webhooks.Get(
 		context.TODO(),
@@ -78,6 +80,7 @@ func TestBetaOrganizationWebhookUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Webhooks.Update(
 		context.TODO(),
@@ -111,6 +114,7 @@ func TestBetaOrganizationWebhookListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Webhooks.List(context.TODO(), anthropic.BetaOrganizationWebhookListParams{
 		AfterID:  anthropic.String("after_id"),
@@ -139,6 +143,7 @@ func TestBetaOrganizationWebhookDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Webhooks.Delete(
 		context.TODO(),
@@ -167,6 +172,7 @@ func TestBetaOrganizationWebhookRegenerateSigningSecretWithOptionalParams(t *tes
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Webhooks.RegenerateSigningSecret(
 		context.TODO(),

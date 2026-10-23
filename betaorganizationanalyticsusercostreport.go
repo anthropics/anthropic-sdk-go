@@ -39,9 +39,9 @@ func NewBetaOrganizationAnalyticsUserCostReportService(opts ...option.RequestOpt
 // Returns cost per user, ranked by spend; `group_by[]` or `bucket_width` splits a
 // user across several rows. Use this to see which users account for the most cost.
 // Only cost attributed to a user account is included; cost with no user attributed
-// to it, such as requests attributed only to an API key, is left out. Available to
-// organizations on a Claude Enterprise plan. Requires an API key with the
-// `read:analytics` scope.
+// to it, such as Code Review usage and Claude Tag usage in Slack channels, is left
+// out. Available to organizations on a Claude Enterprise plan. Requires an API key
+// with the `read:analytics` scope.
 //
 // This endpoint is one of the legacy Claude Enterprise usage and cost reports. For
 // new integrations, use
@@ -53,7 +53,7 @@ func (r *BetaOrganizationAnalyticsUserCostReportService) List(ctx context.Contex
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/analytics/user_cost_report?beta=true"
+	path := "v1/organizations/analytics/user_cost_report"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.user_cost_report.list", "/v1/organizations/analytics/user_cost_report", "bucket_width", "claude_tag_categories", "claude_tag_user_ids", "context_windows", "ending_at", "exclude_deleted_users", "group_by", "inference_geos", "limit", "models", "order", "order_by", "page", "products", "rbac_group_ids", "slack_channel_ids", "speeds", "starting_at", "user_ids"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
@@ -73,9 +73,9 @@ func (r *BetaOrganizationAnalyticsUserCostReportService) List(ctx context.Contex
 // Returns cost per user, ranked by spend; `group_by[]` or `bucket_width` splits a
 // user across several rows. Use this to see which users account for the most cost.
 // Only cost attributed to a user account is included; cost with no user attributed
-// to it, such as requests attributed only to an API key, is left out. Available to
-// organizations on a Claude Enterprise plan. Requires an API key with the
-// `read:analytics` scope.
+// to it, such as Code Review usage and Claude Tag usage in Slack channels, is left
+// out. Available to organizations on a Claude Enterprise plan. Requires an API key
+// with the `read:analytics` scope.
 //
 // This endpoint is one of the legacy Claude Enterprise usage and cost reports. For
 // new integrations, use

@@ -9,14 +9,19 @@
 
 ### Chores
 
+* **client:** stop sending query params hardcoded in endpoint paths
 * **docs:** reword work queue, skill and external key descriptions
+* **docs:** update descriptions of the per-user usage and cost reports
 * **internal:** carry endpoint path query params to the request layer
+* **internal:** check the repository by owner and public name in workflows
 * **internal:** read the beta route qualifier instead of the beta=true query
 
 
 ### Documentation
 
+* **client:** correct two doc comments on param.Opt
 * **google-cloud:** update the product name
+* update the README and the example request
 
 ## [2.2.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.1.0...v2.2.0) (2026-10-23)
 

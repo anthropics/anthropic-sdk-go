@@ -61,7 +61,7 @@ func (r *BetaSkillService) New(ctx context.Context, params BetaSkillNewParams, o
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/skills?beta=true"
+	path := "v1/skills"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.create", "/v1/skills"), requestconfig.WithSpanCreatedID("anthropic.skill.id", &res, func(created *BetaSkill) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -88,7 +88,7 @@ func (r *BetaSkillService) Get(ctx context.Context, skillID string, query BetaSk
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s?beta=true", url.PathEscape(skillID))
+	path := fmt.Sprintf("v1/skills/%s", url.PathEscape(skillID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.retrieve", "/v1/skills/{skill_id}"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -113,7 +113,7 @@ func (r *BetaSkillService) List(ctx context.Context, params BetaSkillListParams,
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/skills?beta=true"
+	path := "v1/skills"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.list", "/v1/skills", "limit", "page", "source"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -153,7 +153,7 @@ func (r *BetaSkillService) Delete(ctx context.Context, skillID string, body Beta
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s?beta=true", url.PathEscape(skillID))
+	path := fmt.Sprintf("v1/skills/%s", url.PathEscape(skillID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.delete", "/v1/skills/{skill_id}"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

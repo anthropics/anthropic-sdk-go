@@ -23,6 +23,7 @@ func TestBetaUserProfileNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.UserProfiles.New(context.TODO(), anthropic.BetaUserProfileNewParams{
 		AccessType: anthropic.BetaUserProfileNewParamsAccessTypeApplication,
@@ -62,6 +63,7 @@ func TestBetaUserProfileGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.UserProfiles.Get(
 		context.TODO(),
@@ -91,6 +93,7 @@ func TestBetaUserProfileUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.UserProfiles.Update(
 		context.TODO(),
@@ -136,6 +139,7 @@ func TestBetaUserProfileListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.UserProfiles.List(context.TODO(), anthropic.BetaUserProfileListParams{
 		Limit:       anthropic.Int(0),
@@ -165,6 +169,7 @@ func TestBetaUserProfileDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.UserProfiles.Delete(
 		context.TODO(),
@@ -194,6 +199,7 @@ func TestBetaUserProfileNewEnrollmentURLWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.UserProfiles.NewEnrollmentURL(
 		context.TODO(),

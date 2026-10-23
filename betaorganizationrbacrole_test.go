@@ -22,6 +22,7 @@ func TestBetaOrganizationRBACRoleGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.RBACRoles.Get(context.TODO(), "rbac_role_id")
 	if err != nil {
@@ -44,6 +45,7 @@ func TestBetaOrganizationRBACRoleListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.RBACRoles.List(context.TODO(), anthropic.BetaOrganizationRBACRoleListParams{
 		Limit: anthropic.Int(1),

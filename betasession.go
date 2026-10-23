@@ -64,7 +64,7 @@ func (r *BetaSessionService) New(ctx context.Context, params BetaSessionNewParam
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
-	path := "v1/sessions?beta=true"
+	path := "v1/sessions"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.create", "/v1/sessions"), sessionsCreateSpan(params, &res), requestconfig.WithSpanCreatedID("anthropic.session.id", &res, func(created *BetaManagedAgentsSession) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -92,7 +92,7 @@ func (r *BetaSessionService) Get(ctx context.Context, sessionID string, query Be
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s?beta=true", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s", url.PathEscape(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.retrieve", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -120,7 +120,7 @@ func (r *BetaSessionService) Update(ctx context.Context, sessionID string, param
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s?beta=true", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s", url.PathEscape(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.update", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -145,7 +145,7 @@ func (r *BetaSessionService) List(ctx context.Context, params BetaSessionListPar
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/sessions?beta=true"
+	path := "v1/sessions"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.list", "/v1/sessions", "agent_id", "agent_version", "created_at[gt]", "created_at[gte]", "created_at[lt]", "created_at[lte]", "deployment_id", "include_archived", "limit", "memory_store_id", "order", "page", "statuses"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -186,7 +186,7 @@ func (r *BetaSessionService) Delete(ctx context.Context, sessionID string, body 
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s?beta=true", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s", url.PathEscape(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.delete", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -214,7 +214,7 @@ func (r *BetaSessionService) Archive(ctx context.Context, sessionID string, body
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/archive?beta=true", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/archive", url.PathEscape(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.archive", "/v1/sessions/{session_id}/archive"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

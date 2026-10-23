@@ -23,6 +23,7 @@ func TestBetaOrganizationAnalyticsCostReportListWithOptionalParams(t *testing.T)
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Analytics.CostReport.List(context.TODO(), anthropic.BetaOrganizationAnalyticsCostReportListParams{
 		StartingAt:          time.Now(),

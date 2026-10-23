@@ -22,6 +22,7 @@ func TestBetaVaultNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.New(context.TODO(), anthropic.BetaVaultNewParams{
 		DisplayName: "Example vault",
@@ -51,6 +52,7 @@ func TestBetaVaultGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Get(
 		context.TODO(),
@@ -80,6 +82,7 @@ func TestBetaVaultUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Update(
 		context.TODO(),
@@ -113,6 +116,7 @@ func TestBetaVaultListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.List(context.TODO(), anthropic.BetaVaultListParams{
 		IncludeArchived: anthropic.Bool(true),
@@ -141,6 +145,7 @@ func TestBetaVaultDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Delete(
 		context.TODO(),
@@ -170,6 +175,7 @@ func TestBetaVaultArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Archive(
 		context.TODO(),

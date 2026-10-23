@@ -24,6 +24,7 @@ func TestBetaOrganizationPluginMarketplaceGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.PluginMarketplaces.Get(
 		context.TODO(),
@@ -53,6 +54,7 @@ func TestBetaOrganizationPluginMarketplaceUpdateWithOptionalParams(t *testing.T)
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.PluginMarketplaces.Update(
 		context.TODO(),
@@ -82,6 +84,7 @@ func TestBetaOrganizationPluginMarketplaceListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.PluginMarketplaces.List(context.TODO(), anthropic.BetaOrganizationPluginMarketplaceListParams{
 		Limit:          anthropic.Int(1),
@@ -111,6 +114,7 @@ func TestBetaOrganizationPluginMarketplaceValidateArchiveWithOptionalParams(t *t
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.PluginMarketplaces.ValidateArchive(context.TODO(), anthropic.BetaOrganizationPluginMarketplaceValidateArchiveParams{
 		Archive: io.Reader(bytes.NewBuffer([]byte("Example data"))),
@@ -136,6 +140,7 @@ func TestBetaOrganizationPluginMarketplaceValidateRepositoryWithOptionalParams(t
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.PluginMarketplaces.ValidateRepository(context.TODO(), anthropic.BetaOrganizationPluginMarketplaceValidateRepositoryParams{
 		RepositoryURL: "https://github.com/example-org/example-marketplace",

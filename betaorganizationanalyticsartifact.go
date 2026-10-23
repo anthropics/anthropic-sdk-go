@@ -43,7 +43,7 @@ func (r *BetaOrganizationAnalyticsArtifactService) List(ctx context.Context, que
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/analytics/artifacts?beta=true"
+	path := "v1/organizations/analytics/artifacts"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.artifacts.list", "/v1/organizations/analytics/artifacts", "date", "filter", "group_by", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)

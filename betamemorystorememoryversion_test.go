@@ -23,6 +23,7 @@ func TestBetaMemoryStoreMemoryVersionGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.MemoryStores.MemoryVersions.Get(
 		context.TODO(),
@@ -54,6 +55,7 @@ func TestBetaMemoryStoreMemoryVersionListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.MemoryStores.MemoryVersions.List(
 		context.TODO(),
@@ -93,6 +95,7 @@ func TestBetaMemoryStoreMemoryVersionRedactWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.MemoryStores.MemoryVersions.Redact(
 		context.TODO(),

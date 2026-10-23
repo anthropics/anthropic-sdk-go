@@ -22,6 +22,7 @@ func TestBetaOrganizationInviteNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Invites.New(context.TODO(), anthropic.BetaOrganizationInviteNewParams{
 		Email:        "user@emaildomain.com",
@@ -48,6 +49,7 @@ func TestBetaOrganizationInviteGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Invites.Get(context.TODO(), "invite_id")
 	if err != nil {
@@ -70,6 +72,7 @@ func TestBetaOrganizationInviteListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Invites.List(context.TODO(), anthropic.BetaOrganizationInviteListParams{
 		AfterID:  anthropic.String("after_id"),
@@ -99,6 +102,7 @@ func TestBetaOrganizationInviteDelete(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Invites.Delete(context.TODO(), "invite_id")
 	if err != nil {

@@ -22,6 +22,7 @@ func TestBetaOrganizationSpendLimitIncreaseRequestGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.SpendLimits.IncreaseRequests.Get(context.TODO(), "spend_limit_increase_request_id")
 	if err != nil {
@@ -44,6 +45,7 @@ func TestBetaOrganizationSpendLimitIncreaseRequestListWithOptionalParams(t *test
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.SpendLimits.IncreaseRequests.List(context.TODO(), anthropic.BetaOrganizationSpendLimitIncreaseRequestListParams{
 		ActorIDs: []string{"string"},
@@ -71,6 +73,7 @@ func TestBetaOrganizationSpendLimitIncreaseRequestApproveWithOptionalParams(t *t
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.SpendLimits.IncreaseRequests.Approve(
 		context.TODO(),
@@ -101,6 +104,7 @@ func TestBetaOrganizationSpendLimitIncreaseRequestDenyWithOptionalParams(t *test
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.SpendLimits.IncreaseRequests.Deny(
 		context.TODO(),

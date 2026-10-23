@@ -437,7 +437,8 @@ const (
 
 // Response after recording a heartbeat for a work item.
 type BetaSelfHostedWorkHeartbeatResponse struct {
-	// RFC 3339 timestamp of the actual heartbeat from DB
+	// RFC 3339 timestamp of the most recent heartbeat recorded for this work item, or
+	// an empty string if none has been recorded
 	LastHeartbeat string `json:"last_heartbeat" api:"required"`
 	// Whether the heartbeat succeeded in extending the lease
 	LeaseExtended bool `json:"lease_extended" api:"required"`
@@ -500,10 +501,8 @@ func (r *BetaSelfHostedWorkListResponse) UnmarshalJSON(data []byte) error {
 }
 
 // Statistics about the work queue for an environment.
-//
-// Uses Redis Stream consumer group metrics for O(1) queries.
 type BetaSelfHostedWorkQueueStats struct {
-	// Number of work items waiting to be picked up (lag from consumer group)
+	// Number of work items waiting to be picked up
 	Depth int64 `json:"depth" api:"required"`
 	// RFC 3339 timestamp of oldest item in the work stream (includes both queued and
 	// pending items), null if stream empty

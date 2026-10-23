@@ -12062,7 +12062,7 @@ func (r *SignatureDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Specification for a skill to be loaded in a container (request model).
+// Specification for a skill to be loaded in a container.
 //
 // The properties SkillID, Type are required.
 type SkillParams struct {

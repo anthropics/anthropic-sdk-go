@@ -11,6 +11,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/v2"
 	"github.com/anthropics/anthropic-sdk-go/v2/config"
@@ -1513,4 +1514,83 @@ func TestIntegration_AbsoluteURLSchemeDowngrade_NoCredentials(t *testing.T) {
 	if reqs[1].auth != "" {
 		t.Fatalf("bearer was attached to cleartext request %s: Authorization=%q", reqs[1].url, reqs[1].auth)
 	}
+}
+
+// exchangeServer answers token exchanges with token and records every other
+// request. If hold is non-nil, every exchange waits for hold to be closed
+// before answering, and the first one closes held when it arrives.
+func exchangeServer(t *testing.T, token string, held chan<- struct{}, hold <-chan struct{}) (*httptest.Server, *recordingHandler) {
+	t.Helper()
+	api := &recordingHandler{}
+	var heldOnce sync.Once
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/oauth/token" {
+			if hold != nil {
+				heldOnce.Do(func() { close(held) })
+				<-hold
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]any{"access_token": token})
+			return
+		}
+		api.ServeHTTP(w, r)
+	}))
+	t.Cleanup(server.Close)
+	return server, api
+}
+
+func assertBearer(t *testing.T, server string, reqs []recordedRequest, want string) {
+	t.Helper()
+	if len(reqs) != 1 {
+		t.Errorf("%s got %d API requests, want 1", server, len(reqs))
+	}
+	for _, r := range reqs {
+		if r.auth != want {
+			t.Errorf("%s got Authorization %q, want %q", server, r.auth, want)
+		}
+	}
+}
+
+// A request that overrides the base URL with option.WithBaseURL, sent while
+// the client's own token exchange is in flight, must get a token for its own
+// base URL.
+func TestIntegration_PerRequestBaseURLDuringTokenExchange(t *testing.T) {
+	unsetEnv(t, "ANTHROPIC_API_KEY")
+	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
+	isolateAuthEnv(t)
+
+	held, hold := make(chan struct{}), make(chan struct{})
+	serverA, apiA := exchangeServer(t, "tok-A", held, hold)
+	serverB, apiB := exchangeServer(t, "tok-B", nil, nil)
+	release := sync.OnceFunc(func() { close(hold) })
+	t.Cleanup(release)
+
+	client := anthropic.NewClient(
+		option.WithMaxRetries(0),
+		option.WithBaseURL(serverA.URL),
+		option.WithFederationTokenProvider(
+			func(context.Context) (string, error) { return "jwt", nil },
+			option.FederationOptions{FederationRuleID: "rule-1", OrganizationID: "org-1"},
+		),
+	)
+
+	errA := make(chan error, 1)
+	go func() { errA <- client.Get(context.Background(), "/v1/models", nil, nil) }()
+	<-held
+	errB := make(chan error, 1)
+	go func() {
+		errB <- client.Get(context.Background(), "/v1/models", nil, nil, option.WithBaseURL(serverB.URL))
+	}()
+	// Let the second request reach the token cache before the first exchange finishes.
+	time.Sleep(100 * time.Millisecond)
+	release()
+
+	if err := <-errA; err != nil {
+		t.Fatal(err)
+	}
+	if err := <-errB; err != nil {
+		t.Fatal(err)
+	}
+	assertBearer(t, "serverA", apiA.requests(), "Bearer tok-A")
+	assertBearer(t, "serverB", apiB.requests(), "Bearer tok-B")
 }

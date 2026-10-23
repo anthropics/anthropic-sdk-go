@@ -319,6 +319,24 @@ func (r BetaMessage) ToParam() BetaMessageParam {
 	return BetaMessageParam{OfAssistant: &p}
 }
 
+// cloneBetaMessageParams returns a copy of messages, which is never nil. Each
+// element points at its message, so the message is copied as well.
+func cloneBetaMessageParams(messages []BetaMessageParam) []BetaMessageParam {
+	result := make([]BetaMessageParam, len(messages))
+	copy(result, messages)
+	for i, message := range result {
+		switch {
+		case message.OfUser != nil:
+			result[i].OfUser = Ptr(*message.OfUser)
+		case message.OfAssistant != nil:
+			result[i].OfAssistant = Ptr(*message.OfAssistant)
+		case message.OfSystem != nil:
+			result[i].OfSystem = Ptr(*message.OfSystem)
+		}
+	}
+	return result
+}
+
 func (r BetaRedactedThinkingBlock) ToParam() BetaRedactedThinkingBlockParam {
 	var p BetaRedactedThinkingBlockParam
 	p.Type = r.Type

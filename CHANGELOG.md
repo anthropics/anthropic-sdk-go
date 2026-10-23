@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.2.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.1.0...v2.2.0) (2026-10-23)
+
+### Features
+
+* **api:** add support for message threads
+* **api:** add usage and cost reports by dimension, mark older reports legacy
+
+
+### Bug Fixes
+
+* **auth:** don't share an in-flight token fetch across base URLs
+* **tools:** send a change made in place to an earlier message of a tool runner with the next request
+
+
+### Chores
+
+* **docs:** clarify plugin content scan and validation descriptions
+* **docs:** clarify plugin served_version_pinned and updated_at
+* **docs:** fix usage and cost report examples and ending_at docs
+* **docs:** rate limit model lists vary by organization and workspace
+
 ## [2.1.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.0.0...v2.1.0) (2026-10-21)
 
 ### Features

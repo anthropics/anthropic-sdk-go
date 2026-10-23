@@ -154,6 +154,9 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 				Display: anthropic.BetaThinkingConfigAdaptiveDisplaySummarized,
 			},
 		},
+		Thread: anthropic.BetaMessageThreadParamUnion{
+			OfCreate: &anthropic.BetaThreadCreateParams{},
+		},
 		ToolChoice: anthropic.BetaToolChoiceUnionParam{
 			OfAuto: &anthropic.BetaToolChoiceAutoParam{
 				DisableParallelToolUse: anthropic.Bool(true),

@@ -120,7 +120,8 @@ type BetaWorkspaceRateLimit struct {
 	// listed too, each marked by `source`.
 	Limits []BetaWorkspaceRateLimitValue `json:"limits" api:"required"`
 	// Model names this entry's limits apply to, including aliases. `null` when
-	// `group.type` is not `"model_group"`.
+	// `group.type` is not `"model_group"`. The list covers the models this workspace
+	// has access to, so it can differ between workspaces.
 	Models []string `json:"models" api:"required"`
 	// The `id` of the organization's RateLimit entry this entry applies to.
 	RateLimitID string `json:"rate_limit_id" api:"required"`

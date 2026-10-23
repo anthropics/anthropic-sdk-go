@@ -42,13 +42,26 @@ type BetaToolRunnerParams struct {
 	// there is no limit and the runner continues until the model stops using tools.
 	// Compaction requests sent for CompactBeforeNextTurn are not counted.
 	MaxIterations int
+	// DisableThread sends the whole history with every request. By default the
+	// runner sends its requests on a message thread, on which System and Tools
+	// cannot change after the first request. It is read when the runner is created.
+	DisableThread bool
 }
 
 // betaToolRunnerBase holds state and logic shared by BetaToolRunner and BetaToolRunnerStreaming.
 type betaToolRunnerBase struct {
 	messageService *BetaMessageService
+	// thread sends the requests of a runner on a message thread. It is nil on a
+	// runner without one.
+	thread *BetaMessageThread
+	// threadLen counts the thread's messages that Params.Messages accounts for, and
+	// is 0 when the thread has stored them all. The caller appended what follows
+	// them to the thread.
+	threadLen int
 	// Params contains the configuration for the tool runner.
 	// This field is exported so users can modify parameters directly.
+	// To change a field that is fixed on a message thread, such as System or
+	// Tools, during a run, create the runner with DisableThread.
 	Params         BetaToolRunnerParams
 	toolMap        map[string]BetaTool
 	iterationCount int
@@ -134,17 +147,68 @@ func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool,
 
 	// Add tools to the API params
 	params.BetaMessageNewParams.Tools = apiTools
-	params.Messages = append([]BetaMessageParam{}, params.Messages...)
+	params.Messages = cloneBetaMessageParams(params.Messages)
 
 	opts = append([]option.RequestOption{stainlessheader.With(stainlessheader.BetaToolRunner)}, opts...)
 
-	return betaToolRunnerBase{
+	base := betaToolRunnerBase{
 		messageService: messageService,
 		Params:         params,
 		toolMap:        toolMap,
 		opts:           opts,
 		loopSpan:       &toolRunnerLoopSpan{},
 	}
+	if !params.DisableThread && messageService.supportsMessageThreads(opts) {
+		base.thread = messageService.NewThread(BetaMessageThreadCreateParams{
+			UnsupportedRequestBehavior: BetaMessageThreadUnsupportedRequestBehaviorContinueUnthreaded,
+		})
+	}
+	return base
+}
+
+// newBetaToolRunnerBaseOverThread returns the base of a runner that sends its
+// requests on thread and starts from its request fields and history.
+func newBetaToolRunnerBaseOverThread(thread *BetaMessageThread, tools []BetaTool, opts []option.RequestOption) betaToolRunnerBase {
+	params := BetaToolRunnerParams{BetaMessageNewParams: thread.Params.toBetaMessageNewParams()}
+	params.Messages = thread.Messages()
+	params.Tools = slices.Clone(params.Tools)
+
+	toolMap := make(map[string]BetaTool)
+	for _, tool := range tools {
+		toolMap[tool.Name()] = tool
+		// A definition the thread was created with has to stay as it was sent.
+		if !slices.ContainsFunc(params.Tools, func(definition BetaToolUnionParam) bool {
+			return definitionName(definition) == tool.Name()
+		}) {
+			params.Tools = append(params.Tools, betaToolDefinition(tool))
+		}
+	}
+
+	return betaToolRunnerBase{
+		messageService: thread.service,
+		thread:         thread,
+		threadLen:      len(params.Messages),
+		Params:         params,
+		toolMap:        toolMap,
+		opts:           append([]option.RequestOption{stainlessheader.With(stainlessheader.BetaToolRunner)}, opts...),
+		loopSpan:       &toolRunnerLoopSpan{},
+	}
+}
+
+// NewToolRunner creates a [BetaToolRunner] whose turns are turns of this thread,
+// and sends no request. During the run, change request fields through the runner.
+func (t *BetaMessageThread) NewToolRunner(tools []BetaTool, opts ...option.RequestOption) *BetaToolRunner {
+	runner := &BetaToolRunner{betaToolRunnerBase: newBetaToolRunnerBaseOverThread(t, tools, opts)}
+	runtime.AddCleanup(runner, (*toolRunnerLoopSpan).stopDropped, runner.loopSpan)
+	return runner
+}
+
+// NewToolRunnerStreaming creates a [BetaToolRunnerStreaming] over this thread
+// like [BetaMessageThread.NewToolRunner].
+func (t *BetaMessageThread) NewToolRunnerStreaming(tools []BetaTool, opts ...option.RequestOption) *BetaToolRunnerStreaming {
+	runner := &BetaToolRunnerStreaming{betaToolRunnerBase: newBetaToolRunnerBaseOverThread(t, tools, opts)}
+	runtime.AddCleanup(runner, (*toolRunnerLoopSpan).stopDropped, runner.loopSpan)
+	return runner
 }
 
 func betaToolDefinition(tool BetaTool) BetaToolUnionParam {
@@ -232,26 +296,13 @@ func (b *betaToolRunnerBase) LastMessage() *BetaMessage {
 //
 //	runner.Params.Messages = append(runner.Params.Messages, messages...)
 func (b *betaToolRunnerBase) AppendMessages(messages ...BetaMessageParam) {
-	b.Params.Messages = append(b.Params.Messages, messages...)
+	b.Params.Messages = append(b.Params.Messages, cloneBetaMessageParams(messages)...)
 }
 
 // Messages returns a copy of the current conversation history.
 // The returned slice can be safely modified without affecting the runner's state.
 func (b *betaToolRunnerBase) Messages() []BetaMessageParam {
-	result := make([]BetaMessageParam, len(b.Params.Messages))
-	copy(result, b.Params.Messages)
-	// Each element points at its message, so the message is copied as well.
-	for i, message := range result {
-		switch {
-		case message.OfUser != nil:
-			result[i].OfUser = Ptr(*message.OfUser)
-		case message.OfAssistant != nil:
-			result[i].OfAssistant = Ptr(*message.OfAssistant)
-		case message.OfSystem != nil:
-			result[i].OfSystem = Ptr(*message.OfSystem)
-		}
-	}
-	return result
+	return cloneBetaMessageParams(b.Params.Messages)
 }
 
 // CompactBeforeNextTurn compacts the conversation before the model's next turn.
@@ -288,27 +339,6 @@ func (b *betaToolRunnerBase) IsCompleted() bool {
 // after the iteration completes.
 func (b *betaToolRunnerBase) Err() error {
 	return b.err
-}
-
-// adoptContainer carries the container the last turn ran in onto the next
-// request: container-bound server tools reject a follow-up that omits it, so
-// its id is forwarded unless the caller pinned one themselves.
-func (b *betaToolRunnerBase) adoptContainer(message *BetaMessage) {
-	id := message.Container.ID
-	if id == "" {
-		return
-	}
-	container := &b.Params.Container
-	switch {
-	case container.OfContainers != nil:
-		if !container.OfContainers.ID.Valid() {
-			pinned := *container.OfContainers
-			pinned.ID = String(id)
-			container.OfContainers = &pinned
-		}
-	case !container.OfString.Valid():
-		container.OfString = String(id)
-	}
 }
 
 // toolRunnerStep is what the runner does with a turn, decided by its stop reason.
@@ -386,7 +416,7 @@ func (b *betaToolRunnerBase) startToolRunnerSpan(ctx context.Context) context.Co
 		return ctx
 	}
 	if b.loopSpan.span == nil {
-		b.telemetry = openTelemetryOptions(ctx, slices.Concat(b.messageService.Options, b.opts))
+		b.telemetry = openTelemetryOptions(ctx, slices.Concat(b.messageService.Options, b.threadOptions(), b.opts))
 		hasOutputFormat := !param.IsOmitted(b.Params.OutputConfig.Format) || !param.IsOmitted(b.Params.OutputFormat)
 		b.loopSpan.span = telemetry.StartToolRunnerSpan(ctx, b.telemetry, string(b.Params.Model), hasOutputFormat)
 		b.loopSpan.off = b.loopSpan.span == nil
@@ -622,6 +652,15 @@ func (b *betaToolRunnerBase) nextRequest(ctx context.Context) (*toolRunnerReques
 	if b.completed {
 		return nil, nil
 	}
+	var link betaThreadLink
+	if b.thread != nil {
+		b.takeAppended()
+		link = b.thread.link
+		b.syncThread(b.Params.BetaMessageNewParams)
+	}
+	if !param.IsOmitted(b.Params.Thread) {
+		return nil, errors.New("anthropic: Params.Thread cannot be set on a tool runner because the runner sets it itself; leave it unset, and set DisableThread when you create the runner to run without a message thread")
+	}
 	if !param.IsOmitted(b.Params.Compaction) {
 		// Unset it so the refusal is reported once; left set, it would block
 		// every later turn.
@@ -654,13 +693,31 @@ func (b *betaToolRunnerBase) nextRequest(ctx context.Context) (*toolRunnerReques
 		b.completed = true
 		return nil, nil
 	}
+	// A turn that the thread would refuse runs no tool and is not counted.
+	if b.thread != nil {
+		request, err := b.thread.planRequest(BetaMessageThreadSendParams{}, b.opts)
+		// System and Tools stay for the run, also when a changed history starts a new thread.
+		if link, ok := link.(betaThreadContinue); ok && err == nil && turn != nil {
+			err = request.createOnly.errChangedSince(link.createdWith)
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
 	if turn != nil && !paused {
 		toolMessage, err := b.executeTools(ctx, turn)
 		if err != nil {
 			return nil, err
 		}
 		if toolMessage != nil {
-			b.Params.Messages = append(b.Params.Messages, *toolMessage)
+			index := len(b.Params.Messages)
+			// On a thread the results go directly after the reply, ahead of the
+			// messages that were added since.
+			if b.thread != nil {
+				b.takeAppended()
+				index = b.afterLastReply()
+			}
+			b.Params.Messages = slices.Insert(b.Params.Messages, index, *toolMessage)
 		}
 	}
 
@@ -674,6 +731,16 @@ func (b *betaToolRunnerBase) nextRequest(ctx context.Context) (*toolRunnerReques
 	}
 	b.iterationCount++
 	return &toolRunnerRequest{params: b.Params.BetaMessageNewParams}, nil
+}
+
+// afterLastReply returns the index in Params.Messages that follows the last reply.
+func (b *betaToolRunnerBase) afterLastReply() int {
+	for i, message := range slices.Backward(b.Params.Messages) {
+		if message.OfAssistant != nil {
+			return i + 1
+		}
+	}
+	return len(b.Params.Messages)
 }
 
 // finalTurnRequest ends the run. It returns one last request when a compaction
@@ -712,7 +779,78 @@ func (b *betaToolRunnerBase) compactionRequest() *toolRunnerRequest {
 	b.compacting = true
 	params := withoutCompactionIncompatibleParams(b.Params.BetaMessageNewParams)
 	params.Compaction = compaction
+	// The request carries the whole history that it summarizes.
+	if b.thread != nil {
+		b.thread.startNewThread()
+	}
 	return &toolRunnerRequest{params: params}
+}
+
+// syncThread gives the thread the request fields and the history of params.
+func (b *betaToolRunnerBase) syncThread(params BetaMessageNewParams) {
+	threadParams := params.toBetaMessageThreadCreateParams()
+	threadParams.Messages = slices.Clone(params.Messages)
+	threadParams.UnsupportedRequestBehavior = b.thread.Params.UnsupportedRequestBehavior
+	b.thread.Params = threadParams
+	b.thread.adoptHistory()
+	b.threadLen = len(params.Messages)
+	// The thread counts what it has stored itself: its next turn may leave out a partial reply.
+	if b.threadLen == len(b.thread.stored) {
+		b.threadLen = 0
+	}
+}
+
+// takeAppended adds what the caller appended to the thread to Params.Messages,
+// which would otherwise replace it on the thread.
+func (b *betaToolRunnerBase) takeAppended() {
+	history := b.thread.Params.Messages
+	// The thread puts the reply of a turn ahead of what was appended during it.
+	from := max(b.threadLen, len(b.thread.stored))
+	b.Params.Messages = append(b.Params.Messages, history[min(from, len(history)):]...)
+	b.threadLen = len(history)
+}
+
+// threadOptions returns the options that the thread adds to the runner's requests.
+func (b *betaToolRunnerBase) threadOptions() []option.RequestOption {
+	if b.thread == nil {
+		return nil
+	}
+	return b.thread.Options
+}
+
+// leaveCompaction takes the fields and the history of a compaction request back off
+// the thread. The next request would be too late: a compaction can end the run.
+func (b *betaToolRunnerBase) leaveCompaction(request *toolRunnerRequest) {
+	if b.thread != nil && !param.IsOmitted(request.params.Compaction) {
+		b.takeAppended()
+		b.syncThread(b.Params.BetaMessageNewParams)
+	}
+}
+
+// send sends request, on the thread when there is one.
+func (b *betaToolRunnerBase) send(ctx context.Context, request *toolRunnerRequest) (*BetaMessage, error) {
+	if b.thread == nil {
+		return b.messageService.New(ctx, request.params, b.opts...)
+	}
+	b.syncThread(request.params)
+	return b.thread.Send(ctx, BetaMessageThreadSendParams{}, b.opts...)
+}
+
+// betaToolRunnerStream is what the runner reads a streamed response from.
+type betaToolRunnerStream interface {
+	Next() bool
+	Current() BetaRawMessageStreamEventUnion
+	Err() error
+	Close() error
+}
+
+// stream is send for a streamed response.
+func (b *betaToolRunnerBase) stream(ctx context.Context, request *toolRunnerRequest) betaToolRunnerStream {
+	if b.thread == nil {
+		return b.messageService.NewStreaming(ctx, request.params, b.opts...)
+	}
+	b.syncThread(request.params)
+	return b.thread.SendStreaming(ctx, BetaMessageThreadSendParams{}, b.opts...)
 }
 
 // withoutCompactionIncompatibleParams returns params without the ones that only
@@ -741,8 +879,19 @@ func (b *betaToolRunnerBase) handleResponse(request *toolRunnerRequest, message 
 		return b.finishCompaction(request, message)
 	}
 	b.lastMessage = message
+	// The thread does not record a refused turn, so the history goes without its reply.
+	if b.thread != nil && message.StopReason == BetaStopReasonRefusal {
+		return nil
+	}
 	b.Params.Messages = append(b.Params.Messages, message.ToParam())
-	b.adoptContainer(message)
+	// The thread may have sent less than it was given: it leaves out the partial
+	// reply of a turn that it sends again. A change made while the response was
+	// streaming stays.
+	if b.thread != nil && len(b.Params.Messages) == len(request.params.Messages)+1 {
+		b.Params.Messages = b.thread.Messages()
+		b.threadLen = len(b.Params.Messages)
+	}
+	adoptBetaContainer(&b.Params.Container, message)
 	return nil
 }
 
@@ -770,6 +919,12 @@ func (b *betaToolRunnerBase) finishCompaction(request *toolRunnerRequest, messag
 			// messages it summarizes.
 			b.lastMessage = message
 			b.Params.Messages = []BetaMessageParam{message.ToParam()}
+			if b.thread != nil {
+				b.takeAppended()
+				// The thread goes on holding the response, so appending it again does nothing.
+				b.thread.stored = []betaThreadEntry{{sent: betaThreadJSON(message.ToParam()), reply: message}}
+				b.thread.startNewThread()
+			}
 			return nil
 		}
 	}
@@ -793,6 +948,10 @@ type BetaToolRunner struct {
 // the model generating tool calls, executing those tool calls, and sending the
 // results back to the model until a final answer is produced or the maximum
 // number of iterations is reached.
+//
+// The runner sends its requests on a message thread unless params.DisableThread
+// is set or the client's API has no message threads. To run over an existing
+// thread, use [BetaMessageThread.NewToolRunner].
 func (r *BetaMessageService) NewToolRunner(tools []BetaTool, params BetaToolRunnerParams, opts ...option.RequestOption) *BetaToolRunner {
 	runner := &BetaToolRunner{
 		betaToolRunnerBase: newBetaToolRunnerBase(r, tools, params, opts),
@@ -840,9 +999,10 @@ func (r *BetaToolRunner) nextMessage(runnerCtx context.Context) (*BetaMessage, e
 	if request == nil {
 		return nil, nil
 	}
+	defer r.leaveCompaction(request)
 
 	// Make API call
-	message, err := r.messageService.New(runnerCtx, request.params, r.opts...)
+	message, err := r.send(runnerCtx, request)
 	if err != nil {
 		r.compacting = false
 		r.err = err
@@ -919,6 +1079,10 @@ type BetaToolRunnerStreaming struct {
 // the loop between the model generating tool calls, executing those tool calls, and
 // sending the results back to the model using streaming API calls until a final answer
 // is produced or the maximum number of iterations is reached.
+//
+// The runner sends its requests on a message thread unless params.DisableThread
+// is set or the client's API has no message threads. To run over an existing
+// thread, use [BetaMessageThread.NewToolRunnerStreaming].
 func (r *BetaMessageService) NewToolRunnerStreaming(tools []BetaTool, params BetaToolRunnerParams, opts ...option.RequestOption) *BetaToolRunnerStreaming {
 	runner := &BetaToolRunnerStreaming{
 		betaToolRunnerBase: newBetaToolRunnerBase(r, tools, params, opts),
@@ -979,9 +1143,10 @@ func (r *BetaToolRunnerStreaming) nextStreaming(runnerCtx context.Context, yield
 	if request == nil {
 		return
 	}
+	defer r.leaveCompaction(request)
 
 	// Make streaming API call
-	stream := r.messageService.NewStreaming(runnerCtx, request.params, r.opts...)
+	stream := r.stream(runnerCtx, request)
 	defer stream.Close()
 	responded := false
 	defer func() {

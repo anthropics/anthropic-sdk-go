@@ -83,6 +83,8 @@ TEST_PATHS=(
 	betaorganizationanalyticsplugin_test.go
 	betaorganizationanalyticsskill_test.go
 	betaorganizationanalyticsartifact_test.go
+	betaorganizationanalyticsusage_test.go
+	betaorganizationanalyticscost_test.go
 	betaorganizationanalyticsusagereport_test.go
 	betaorganizationanalyticsuserusagereport_test.go
 	betaorganizationanalyticscostreport_test.go

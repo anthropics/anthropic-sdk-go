@@ -778,6 +778,12 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// Any of "standard", "fast".
 	Speed string `json:"speed,omitzero"`
+	// Server-held conversation state (a Thread). `{"type": "create"}` asks the server
+	// to hold this conversation's state under the response's `id`;
+	// `{"type": "continue", "previous_message_id": ...}` resumes from a previous
+	// response so only the new turn's messages are sent. The response shape is
+	// unchanged.
+	Thread BetaMessageThreadParamUnion `json:"thread,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`

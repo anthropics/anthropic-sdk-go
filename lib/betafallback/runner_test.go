@@ -120,7 +120,9 @@ func TestStreamingToolRunnerEchoesTheSplicedTurn(t *testing.T) {
 
 	runner := client.Beta.Messages.NewToolRunnerStreaming(
 		[]anthropic.BetaTool{echoTool(t)},
-		anthropic.BetaToolRunnerParams{BetaMessageNewParams: fallbackTestParams},
+		// Without a thread the next request carries the whole history, which is
+		// what this test reads.
+		anthropic.BetaToolRunnerParams{BetaMessageNewParams: fallbackTestParams, DisableThread: true},
 	)
 	for events, err := range runner.AllStreaming(context.Background()) {
 		require.NoError(t, err)

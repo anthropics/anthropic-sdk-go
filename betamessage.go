@@ -14515,6 +14515,63 @@ func init() {
 	)
 }
 
+func BetaMessageThreadParamOfContinue(previousMessageID string) BetaMessageThreadParamUnion {
+	var continue_ BetaThreadContinueParams
+	continue_.PreviousMessageID = previousMessageID
+	return BetaMessageThreadParamUnion{OfContinue: &continue_}
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaMessageThreadParamUnion struct {
+	OfCreate   *BetaThreadCreateParams   `json:",omitzero,inline"`
+	OfContinue *BetaThreadContinueParams `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaMessageThreadParamUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfCreate, u.OfContinue)
+}
+func (u *BetaMessageThreadParamUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaMessageThreadParamUnion) asAny() any {
+	if !param.IsOmitted(u.OfCreate) {
+		return u.OfCreate
+	} else if !param.IsOmitted(u.OfContinue) {
+		return u.OfContinue
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageThreadParamUnion) GetPreviousMessageID() *string {
+	if vt := u.OfContinue; vt != nil {
+		return &vt.PreviousMessageID
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaMessageThreadParamUnion) GetType() *string {
+	if vt := u.OfCreate; vt != nil {
+		return paramutil.AddrOrDefault(vt.Type)
+	} else if vt := u.OfContinue; vt != nil {
+		return paramutil.AddrOrDefault(vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaMessageThreadParamUnion](
+		"type",
+		apijson.Discriminator[BetaThreadCreateParams]("create"),
+		apijson.Discriminator[BetaThreadContinueParams]("continue"),
+	)
+}
+
 type BetaMessageTokensCount struct {
 	// Information about context management applied to the message.
 	ContextManagement BetaCountTokensContextManagementResponse `json:"context_management" api:"required"`
@@ -19220,6 +19277,47 @@ func (r BetaThinkingTurnsParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *BetaThinkingTurnsParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Resume from the response named by `previous_message_id`.
+//
+// The properties PreviousMessageID, Type are required.
+type BetaThreadContinueParams struct {
+	// The `id` of the previous response in this Thread.
+	PreviousMessageID string `json:"previous_message_id" api:"required"`
+	// This field can be elided, and will marshal its zero value as "continue".
+	Type constant.Continue `json:"type" default:"continue"`
+	paramObj
+}
+
+func (r BetaThreadContinueParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaThreadContinueParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaThreadContinueParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func NewBetaThreadCreateParams() BetaThreadCreateParams {
+	return BetaThreadCreateParams{
+		Type: "create",
+	}
+}
+
+// Start holding conversation state under this response's `id`.
+//
+// This struct has a constant value, construct it with [NewBetaThreadCreateParams].
+type BetaThreadCreateParams struct {
+	Type constant.Create `json:"type" default:"create"`
+	paramObj
+}
+
+func (r BetaThreadCreateParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaThreadCreateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaThreadCreateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -26064,6 +26162,12 @@ type BetaMessageNewParams struct {
 	//
 	// Any of "standard", "fast".
 	Speed BetaMessageNewParamsSpeed `json:"speed,omitzero"`
+	// Server-held conversation state (a Thread). `{"type": "create"}` asks the server
+	// to hold this conversation's state under the response's `id`;
+	// `{"type": "continue", "previous_message_id": ...}` resumes from a previous
+	// response so only the new turn's messages are sent. The response shape is
+	// unchanged.
+	Thread BetaMessageThreadParamUnion `json:"thread,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`

@@ -134,6 +134,7 @@ type ContentBlockStart string                       // Always "content_block_sta
 type ContentBlockStop string                        // Always "content_block_stop"
 type ContentDelta string                            // Always "content_delta"
 type ContentSha256 string                           // Always "content_sha256"
+type Continue string                                // Always "continue"
 type Coordinate string                              // Always "coordinate"
 type Coordinator string                             // Always "coordinator"
 type Create string                                  // Always "create"
@@ -197,6 +198,7 @@ type ExternalKeyValidation string                   // Always "external_key_vali
 type Failure string                                 // Always "failure"
 type Fallback string                                // Always "fallback"
 type FallbackMessage string                         // Always "fallback_message"
+type FederatedActor string                          // Always "federated_actor"
 type FederationIssuer string                        // Always "federation_issuer"
 type FederationRule string                          // Always "federation_rule"
 type FederationRuleWorkspace string                 // Always "federation_rule_workspace"
@@ -285,6 +287,7 @@ type None string                                    // Always "none"
 type NotApplied string                              // Always "not_applied"
 type NotFoundError string                           // Always "not_found_error"
 type Object string                                  // Always "object"
+type OIDC string                                    // Always "oidc"
 type Only string                                    // Always "only"
 type Organization string                            // Always "organization"
 type OrganizationDisabledError string               // Always "organization_disabled_error"
@@ -654,6 +657,7 @@ func (c ContentBlockStart) Default() ContentBlockStart       { return "content_b
 func (c ContentBlockStop) Default() ContentBlockStop         { return "content_block_stop" }
 func (c ContentDelta) Default() ContentDelta                 { return "content_delta" }
 func (c ContentSha256) Default() ContentSha256               { return "content_sha256" }
+func (c Continue) Default() Continue                         { return "continue" }
 func (c Coordinate) Default() Coordinate                     { return "coordinate" }
 func (c Coordinator) Default() Coordinator                   { return "coordinator" }
 func (c Create) Default() Create                             { return "create" }
@@ -727,6 +731,7 @@ func (c ExternalKeyValidation) Default() ExternalKeyValidation { return "externa
 func (c Failure) Default() Failure                             { return "failure" }
 func (c Fallback) Default() Fallback                           { return "fallback" }
 func (c FallbackMessage) Default() FallbackMessage             { return "fallback_message" }
+func (c FederatedActor) Default() FederatedActor               { return "federated_actor" }
 func (c FederationIssuer) Default() FederationIssuer           { return "federation_issuer" }
 func (c FederationRule) Default() FederationRule               { return "federation_rule" }
 func (c FederationRuleWorkspace) Default() FederationRuleWorkspace {
@@ -833,6 +838,7 @@ func (c None) Default() None                             { return "none" }
 func (c NotApplied) Default() NotApplied                 { return "not_applied" }
 func (c NotFoundError) Default() NotFoundError           { return "not_found_error" }
 func (c Object) Default() Object                         { return "object" }
+func (c OIDC) Default() OIDC                             { return "oidc" }
 func (c Only) Default() Only                             { return "only" }
 func (c Organization) Default() Organization             { return "organization" }
 func (c OrganizationDisabledError) Default() OrganizationDisabledError {
@@ -1288,6 +1294,7 @@ func (c ContentBlockStart) MarshalJSON() ([]byte, error)                    { re
 func (c ContentBlockStop) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c ContentDelta) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c ContentSha256) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c Continue) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Coordinate) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c Coordinator) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Create) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
@@ -1351,6 +1358,7 @@ func (c ExternalKeyValidation) MarshalJSON() ([]byte, error)                { re
 func (c Failure) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Fallback) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c FallbackMessage) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c FederatedActor) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c FederationIssuer) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c FederationRule) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c FederationRuleWorkspace) MarshalJSON() ([]byte, error)              { return marshalString(c) }
@@ -1439,6 +1447,7 @@ func (c None) MarshalJSON() ([]byte, error)                                 { re
 func (c NotApplied) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c NotFoundError) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Object) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c OIDC) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Only) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c Organization) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c OrganizationDisabledError) MarshalJSON() ([]byte, error)            { return marshalString(c) }

@@ -84,7 +84,8 @@ type BetaOrganizationRateLimit struct {
 	// The limiter values that apply to this group.
 	Limits []BetaOrganizationRateLimitValue `json:"limits" api:"required"`
 	// Model names this entry's limits apply to, including aliases. `null` when
-	// `group.type` is not `"model_group"`.
+	// `group.type` is not `"model_group"`. The list covers the models your
+	// organization has access to, so it can differ between organizations.
 	Models []string `json:"models" api:"required"`
 	// Object type. Always `rate_limit` for organization rate-limit entries.
 	Type constant.RateLimit `json:"type" default:"rate_limit"`

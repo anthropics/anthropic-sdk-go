@@ -3,11 +3,14 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -229,6 +232,84 @@ func TestResolveCredentials_UserOAuthRefresh(t *testing.T) {
 	}
 	if updated.Type != "oauth_token" {
 		t.Fatalf("credentials type not set, got %q", updated.Type)
+	}
+}
+
+func TestResolveCredentials_UserOAuthConcurrentRefreshSpendsTokenOnce(t *testing.T) {
+	held := make(chan struct{})
+	hold := make(chan struct{})
+	release := sync.OnceFunc(func() { close(hold) })
+	var posts atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if posts.Add(1) > 1 {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]any{"error": "invalid_grant"})
+			return
+		}
+		close(held)
+		<-hold
+		json.NewEncoder(w).Encode(map[string]any{
+			"access_token":  "new-token",
+			"refresh_token": "rotated-refresh",
+			"expires_in":    3600,
+		})
+	}))
+	t.Cleanup(server.Close)
+	t.Cleanup(release)
+
+	credPath := filepath.Join(t.TempDir(), "creds.json")
+	writeCredentials(t, credPath, map[string]any{
+		"access_token":  "expired",
+		"refresh_token": "single-use-refresh",
+		"expires_at":    time.Now().Add(-time.Hour).Unix(),
+	})
+	result, err := ResolveCredentials(&config.Config{
+		BaseURL: server.URL,
+		AuthenticationInfo: &config.AuthenticationInfo{
+			Type:            config.AuthenticationTypeUserOAuth,
+			CredentialsPath: credPath,
+			UserOAuth:       &config.UserOAuth{ClientID: "client-1"},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	cache := NewTokenCache(result.Provider, http.DefaultClient.Do)
+
+	type outcome struct {
+		token string
+		err   error
+	}
+	fetch := func(baseURL string) <-chan outcome {
+		got := make(chan outcome, 1)
+		go func() {
+			token, err := cache.Token(context.Background(), baseURL)
+			got <- outcome{token, err}
+		}()
+		return got
+	}
+
+	gotA := fetch("https://a.example.com")
+	<-held
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Millisecond)
+	defer cancel()
+	if _, err := cache.Token(ctx, "https://c.example.com"); !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("caller behind a held refresh got %v, want its own deadline", err)
+	}
+
+	gotB := fetch("https://b.example.com")
+	// Let the second fetch reach the provider while the first refresh is held.
+	time.Sleep(50 * time.Millisecond)
+	release()
+
+	for name, got := range map[string]<-chan outcome{"a": gotA, "b": gotB} {
+		if r := <-got; r.err != nil || r.token != "new-token" {
+			t.Errorf("%s got (%q, %v), want (%q, nil)", name, r.token, r.err, "new-token")
+		}
+	}
+	if n := posts.Load(); n != 1 {
+		t.Fatalf("refresh token posted %d times, want 1", n)
 	}
 }
 

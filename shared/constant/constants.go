@@ -92,8 +92,11 @@ type Browser string                                 // Always "browser"
 type BrowserState string                            // Always "browser_state"
 type BrowserToolset20260801 string                  // Always "browser_toolset_20260801"
 type BudgetReached string                           // Always "budget_reached"
+type Bundle string                                  // Always "bundle"
+type BundleTargetDeleted string                     // Always "bundle_target_deleted"
 type Caller string                                  // Always "caller"
 type Canceled string                                // Always "canceled"
+type ChannelOnly string                             // Always "channel_only"
 type CharLocation string                            // Always "char_location"
 type CitationsDelta string                          // Always "citations_delta"
 type ClearThinking20251015 string                   // Always "clear_thinking_20251015"
@@ -332,6 +335,7 @@ type RepositoryCloneError string                    // Always "repository_clone_
 type RepositoryForbiddenError string                // Always "repository_forbidden_error"
 type RepositoryNotFoundError string                 // Always "repository_not_found_error"
 type RequiresAction string                          // Always "requires_action"
+type Restrict string                                // Always "restrict"
 type Restriction string                             // Always "restriction"
 type RetriesExhausted string                        // Always "retries_exhausted"
 type Retrying string                                // Always "retrying"
@@ -393,6 +397,12 @@ type SkillNotFoundError string                      // Always "skill_not_found_e
 type SkillVersion string                            // Always "skill_version"
 type SkillVersionDeleted string                     // Always "skill_version_deleted"
 type Skills string                                  // Always "skills"
+type SlackChannel string                            // Always "slack_channel"
+type SlackChannelDeleted string                     // Always "slack_channel_deleted"
+type SlackDefault string                            // Always "slack_default"
+type SlackGridChannel string                        // Always "slack_grid_channel"
+type SlackParentChannel string                      // Always "slack_parent_channel"
+type SlackWorkspace string                          // Always "slack_workspace"
 type SpanModelRequestEnd string                     // Always "span.model_request_end"
 type SpanModelRequestStart string                   // Always "span.model_request_start"
 type SpanOutcomeEvaluationEnd string                // Always "span.outcome_evaluation_end"
@@ -609,8 +619,11 @@ func (c Browser) Default() Browser                               { return "brows
 func (c BrowserState) Default() BrowserState                     { return "browser_state" }
 func (c BrowserToolset20260801) Default() BrowserToolset20260801 { return "browser_toolset_20260801" }
 func (c BudgetReached) Default() BudgetReached                   { return "budget_reached" }
+func (c Bundle) Default() Bundle                                 { return "bundle" }
+func (c BundleTargetDeleted) Default() BundleTargetDeleted       { return "bundle_target_deleted" }
 func (c Caller) Default() Caller                                 { return "caller" }
 func (c Canceled) Default() Canceled                             { return "canceled" }
+func (c ChannelOnly) Default() ChannelOnly                       { return "channel_only" }
 func (c CharLocation) Default() CharLocation                     { return "char_location" }
 func (c CitationsDelta) Default() CitationsDelta                 { return "citations_delta" }
 func (c ClearThinking20251015) Default() ClearThinking20251015   { return "clear_thinking_20251015" }
@@ -901,6 +914,7 @@ func (c RepositoryNotFoundError) Default() RepositoryNotFoundError {
 	return "repository_not_found_error"
 }
 func (c RequiresAction) Default() RequiresAction             { return "requires_action" }
+func (c Restrict) Default() Restrict                         { return "restrict" }
 func (c Restriction) Default() Restriction                   { return "restriction" }
 func (c RetriesExhausted) Default() RetriesExhausted         { return "retries_exhausted" }
 func (c Retrying) Default() Retrying                         { return "retrying" }
@@ -992,6 +1006,12 @@ func (c SkillNotFoundError) Default() SkillNotFoundError       { return "skill_n
 func (c SkillVersion) Default() SkillVersion                   { return "skill_version" }
 func (c SkillVersionDeleted) Default() SkillVersionDeleted     { return "skill_version_deleted" }
 func (c Skills) Default() Skills                               { return "skills" }
+func (c SlackChannel) Default() SlackChannel                   { return "slack_channel" }
+func (c SlackChannelDeleted) Default() SlackChannelDeleted     { return "slack_channel_deleted" }
+func (c SlackDefault) Default() SlackDefault                   { return "slack_default" }
+func (c SlackGridChannel) Default() SlackGridChannel           { return "slack_grid_channel" }
+func (c SlackParentChannel) Default() SlackParentChannel       { return "slack_parent_channel" }
+func (c SlackWorkspace) Default() SlackWorkspace               { return "slack_workspace" }
 func (c SpanModelRequestEnd) Default() SpanModelRequestEnd     { return "span.model_request_end" }
 func (c SpanModelRequestStart) Default() SpanModelRequestStart { return "span.model_request_start" }
 func (c SpanOutcomeEvaluationEnd) Default() SpanOutcomeEvaluationEnd {
@@ -1252,8 +1272,11 @@ func (c Browser) MarshalJSON() ([]byte, error)                              { re
 func (c BrowserState) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c BrowserToolset20260801) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c BudgetReached) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c Bundle) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c BundleTargetDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Caller) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Canceled) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c ChannelOnly) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c CharLocation) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c CitationsDelta) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c ClearThinking20251015) MarshalJSON() ([]byte, error)                { return marshalString(c) }
@@ -1492,6 +1515,7 @@ func (c RepositoryCloneError) MarshalJSON() ([]byte, error)                 { re
 func (c RepositoryForbiddenError) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c RepositoryNotFoundError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c RequiresAction) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c Restrict) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Restriction) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c RetriesExhausted) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Retrying) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -1553,6 +1577,12 @@ func (c SkillNotFoundError) MarshalJSON() ([]byte, error)                   { re
 func (c SkillVersion) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c SkillVersionDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Skills) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c SlackChannel) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c SlackChannelDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c SlackDefault) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c SlackGridChannel) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c SlackParentChannel) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c SlackWorkspace) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c SpanModelRequestEnd) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c SpanModelRequestStart) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c SpanOutcomeEvaluationEnd) MarshalJSON() ([]byte, error)             { return marshalString(c) }

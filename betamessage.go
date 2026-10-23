@@ -6859,8 +6859,16 @@ func (r *BetaCodeExecutionTool20250825Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Code execution tool with REPL state persistence (daemon mode + gVisor
-// checkpoint).
+// A `tools` entry for the code execution tool, version `code_execution_20260120`.
+// It adds REPL state persistence to version `code_execution_20250825`.
+//
+// REPL state persistence applies with programmatic tool calling. With it, the
+// Python interpreter state, such as variable bindings, persists across requests
+// that reuse the container.
+//
+// See the
+// [code execution tool guide](https://platform.claude.com/docs/en/agents-and-tools/tool-use/code-execution-tool#tool-versions)
+// to learn what each tool version adds.
 type BetaCodeExecutionTool20260120 struct {
 	// Name of the tool.
 	//
@@ -6906,8 +6914,16 @@ func (r BetaCodeExecutionTool20260120) ToParam() BetaCodeExecutionTool20260120Pa
 	return param.Override[BetaCodeExecutionTool20260120Param](json.RawMessage(r.RawJSON()))
 }
 
-// Code execution tool with REPL state persistence (daemon mode + gVisor
-// checkpoint).
+// A `tools` entry for the code execution tool, version `code_execution_20260120`.
+// It adds REPL state persistence to version `code_execution_20250825`.
+//
+// REPL state persistence applies with programmatic tool calling. With it, the
+// Python interpreter state, such as variable bindings, persists across requests
+// that reuse the container.
+//
+// See the
+// [code execution tool guide](https://platform.claude.com/docs/en/agents-and-tools/tool-use/code-execution-tool#tool-versions)
+// to learn what each tool version adds.
 //
 // The properties Name, Type are required.
 type BetaCodeExecutionTool20260120Param struct {
@@ -12283,7 +12299,15 @@ func (r *BetaDocumentBlockSourceUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Code execution result with encrypted stdout for PFC + web_search results.
+// The output and exit code of Python code that Claude ran with the code execution
+// tool, with standard output in encrypted form.
+//
+// The API returns this block in place of `code_execution_result` when the code
+// called the web search tool.
+//
+// See the
+// [programmatic tool calling guide](https://platform.claude.com/docs/en/agents-and-tools/tool-use/programmatic-tool-calling)
+// to learn more about programmatic tool calling.
 type BetaEncryptedCodeExecutionResultBlock struct {
 	Content         []BetaCodeExecutionOutputBlock        `json:"content" api:"required"`
 	EncryptedStdout string                                `json:"encrypted_stdout" api:"required"`
@@ -12308,7 +12332,8 @@ func (r *BetaEncryptedCodeExecutionResultBlock) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Code execution result with encrypted stdout for PFC + web_search results.
+// The output and exit code of Python code that Claude ran with the code execution
+// tool, with standard output in encrypted form, sent back in a later request.
 //
 // The properties Content, EncryptedStdout, ReturnCode, Stderr, Type are required.
 type BetaEncryptedCodeExecutionResultBlockParam struct {

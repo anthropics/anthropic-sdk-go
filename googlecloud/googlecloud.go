@@ -1,6 +1,6 @@
-// Package googlecloud provides client configuration for Claude Platform on
-// Google Cloud — the first-party Anthropic API served through the Google Cloud
-// gateway.
+// Package googlecloud provides client configuration for Claude Models on Google
+// Cloud (Anthropic managed) — the first-party Anthropic API served through the
+// Google Cloud gateway.
 //
 // This is distinct from the older [github.com/anthropics/anthropic-sdk-go/v2/vertex]
 // package, which targets the :rawPredict publisher-model API (publisher
@@ -20,7 +20,8 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
-// ClientConfig holds the configuration for creating a Claude Platform on Google Cloud client.
+// ClientConfig holds the configuration for creating a Claude Models on Google
+// Cloud (Anthropic managed) client.
 type ClientConfig struct {
 	// Project is the GCP consumer project ID. Resolved by precedence:
 	//  1. ClientConfig.Project
@@ -80,8 +81,8 @@ type Client struct {
 	Beta         anthropic.BetaService
 }
 
-// NewClient creates a new Claude Platform on Google Cloud client with the given
-// configuration.
+// NewClient creates a new Claude Models on Google Cloud (Anthropic managed)
+// client with the given configuration.
 //
 // Authentication uses Google credentials by precedence:
 //  1. TokenSource arg

@@ -25,6 +25,8 @@ type BetaOrganizationAnalyticsService struct {
 	Plugins         BetaOrganizationAnalyticsPluginService
 	Skills          BetaOrganizationAnalyticsSkillService
 	Artifacts       BetaOrganizationAnalyticsArtifactService
+	Usage           BetaOrganizationAnalyticsUsageService
+	Cost            BetaOrganizationAnalyticsCostService
 	UsageReport     BetaOrganizationAnalyticsUsageReportService
 	UserUsageReport BetaOrganizationAnalyticsUserUsageReportService
 	CostReport      BetaOrganizationAnalyticsCostReportService
@@ -44,11 +46,145 @@ func NewBetaOrganizationAnalyticsService(opts ...option.RequestOption) (r BetaOr
 	r.Plugins = NewBetaOrganizationAnalyticsPluginService(opts...)
 	r.Skills = NewBetaOrganizationAnalyticsSkillService(opts...)
 	r.Artifacts = NewBetaOrganizationAnalyticsArtifactService(opts...)
+	r.Usage = NewBetaOrganizationAnalyticsUsageService(opts...)
+	r.Cost = NewBetaOrganizationAnalyticsCostService(opts...)
 	r.UsageReport = NewBetaOrganizationAnalyticsUsageReportService(opts...)
 	r.UserUsageReport = NewBetaOrganizationAnalyticsUserUsageReportService(opts...)
 	r.CostReport = NewBetaOrganizationAnalyticsCostReportService(opts...)
 	r.UserCostReport = NewBetaOrganizationAnalyticsUserCostReportService(opts...)
 	return
+}
+
+// BetaAnalyticsActorUnion contains all possible properties and values from
+// [BetaAnalyticsReportUserActor], [BetaAnalyticsServiceAccountActor],
+// [BetaAnalyticsFederatedActor], [BetaAnalyticsAPIActor].
+//
+// Use the [BetaAnalyticsActorUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaAnalyticsActorUnion struct {
+	// This field is from variant [BetaAnalyticsReportUserActor].
+	Deleted bool `json:"deleted"`
+	// This field is from variant [BetaAnalyticsReportUserActor].
+	EmailAddress string `json:"email_address"`
+	// This field is from variant [BetaAnalyticsReportUserActor].
+	Name string `json:"name"`
+	// Any of "user_actor", "service_account_actor", "federated_actor", "api_actor".
+	Type string `json:"type"`
+	// This field is from variant [BetaAnalyticsReportUserActor].
+	UserID string `json:"user_id"`
+	// This field is from variant [BetaAnalyticsServiceAccountActor].
+	ServiceAccountID string `json:"service_account_id"`
+	// This field is from variant [BetaAnalyticsFederatedActor].
+	Provider BetaAnalyticsFederatedActorProviderUnion `json:"provider"`
+	// This field is from variant [BetaAnalyticsFederatedActor].
+	Subject string `json:"subject"`
+	// This field is from variant [BetaAnalyticsAPIActor].
+	APIKeyID string `json:"api_key_id"`
+	JSON     struct {
+		Deleted          respjson.Field
+		EmailAddress     respjson.Field
+		Name             respjson.Field
+		Type             respjson.Field
+		UserID           respjson.Field
+		ServiceAccountID respjson.Field
+		Provider         respjson.Field
+		Subject          respjson.Field
+		APIKeyID         respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// anyBetaAnalyticsActor is implemented by each variant of
+// [BetaAnalyticsActorUnion] to add type safety for the return type of
+// [BetaAnalyticsActorUnion.AsAny]
+type anyBetaAnalyticsActor interface {
+	implBetaAnalyticsActorUnion()
+}
+
+func (BetaAnalyticsReportUserActor) implBetaAnalyticsActorUnion()     {}
+func (BetaAnalyticsServiceAccountActor) implBetaAnalyticsActorUnion() {}
+func (BetaAnalyticsFederatedActor) implBetaAnalyticsActorUnion()      {}
+func (BetaAnalyticsAPIActor) implBetaAnalyticsActorUnion()            {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaAnalyticsActorUnion.AsAny().(type) {
+//	case anthropic.BetaAnalyticsReportUserActor:
+//	case anthropic.BetaAnalyticsServiceAccountActor:
+//	case anthropic.BetaAnalyticsFederatedActor:
+//	case anthropic.BetaAnalyticsAPIActor:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaAnalyticsActorUnion) AsAny() anyBetaAnalyticsActor {
+	switch u.Type {
+	case "user_actor":
+		return u.AsUserActor()
+	case "service_account_actor":
+		return u.AsServiceAccountActor()
+	case "federated_actor":
+		return u.AsFederatedActor()
+	case "api_actor":
+		return u.AsAPIActor()
+	}
+	return nil
+}
+
+func (u BetaAnalyticsActorUnion) AsUserActor() (v BetaAnalyticsReportUserActor) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaAnalyticsActorUnion) AsServiceAccountActor() (v BetaAnalyticsServiceAccountActor) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaAnalyticsActorUnion) AsFederatedActor() (v BetaAnalyticsFederatedActor) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaAnalyticsActorUnion) AsAPIActor() (v BetaAnalyticsAPIActor) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaAnalyticsActorUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaAnalyticsActorUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Kind of identity a row's usage is attributed to.
+type BetaAnalyticsActorType string
+
+const (
+	BetaAnalyticsActorTypeAPIActor            BetaAnalyticsActorType = "api_actor"
+	BetaAnalyticsActorTypeFederatedActor      BetaAnalyticsActorType = "federated_actor"
+	BetaAnalyticsActorTypeServiceAccountActor BetaAnalyticsActorType = "service_account_actor"
+	BetaAnalyticsActorTypeUserActor           BetaAnalyticsActorType = "user_actor"
+)
+
+type BetaAnalyticsAPIActor struct {
+	// Tagged API key ID.
+	APIKeyID string            `json:"api_key_id" api:"required"`
+	Type     constant.APIActor `json:"type" default:"api_actor"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		APIKeyID    respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsAPIActor) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsAPIActor) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 // Artifact-creation activity for one (`artifact_type`, `is_shared`) bucket on a
@@ -1270,6 +1406,216 @@ func (r *BetaAnalyticsDesignMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type BetaAnalyticsFederatedActor struct {
+	// The trusted provider that asserted the caller's identity.
+	Provider BetaAnalyticsFederatedActorProviderUnion `json:"provider" api:"required"`
+	// The provider's identifier for the caller: on `aws`, the IAM principal ARN (one
+	// role is one actor across its sessions); on `gcp`, the caller's IAM principal
+	// identifier as Google Cloud reports it, such as `serviceAccount:<email>`,
+	// `user:<email>`, or a `principal://...` URI.
+	Subject string                  `json:"subject" api:"required"`
+	Type    constant.FederatedActor `json:"type" default:"federated_actor"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Provider    respjson.Field
+		Subject     respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsFederatedActor) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsFederatedActor) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaAnalyticsFederatedActorAWSProvider struct {
+	// The AWS account the organization is bound to.
+	AccountID string `json:"account_id" api:"required"`
+	// The AWS-signed ARN of the IAM principal that made the requests.
+	SignedPrincipal string       `json:"signed_principal" api:"required"`
+	Type            constant.AWS `json:"type" default:"aws"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AccountID       respjson.Field
+		SignedPrincipal respjson.Field
+		Type            respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsFederatedActorAWSProvider) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsFederatedActorAWSProvider) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaAnalyticsFederatedActorAzureProvider struct {
+	// The Azure subscription the organization is bound to.
+	SubscriptionID string         `json:"subscription_id" api:"required"`
+	Type           constant.Azure `json:"type" default:"azure"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		SubscriptionID respjson.Field
+		Type           respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsFederatedActorAzureProvider) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsFederatedActorAzureProvider) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaAnalyticsFederatedActorGCPProvider struct {
+	// The Google Cloud project the organization is bound to.
+	ProjectNumber string       `json:"project_number" api:"required"`
+	Type          constant.GCP `json:"type" default:"gcp"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ProjectNumber respjson.Field
+		Type          respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsFederatedActorGCPProvider) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsFederatedActorGCPProvider) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaAnalyticsFederatedActorOIDCProvider struct {
+	// The federation issuer's URL.
+	Issuer string        `json:"issuer" api:"required"`
+	Type   constant.OIDC `json:"type" default:"oidc"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Issuer      respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsFederatedActorOIDCProvider) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsFederatedActorOIDCProvider) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaAnalyticsFederatedActorProviderUnion contains all possible properties and
+// values from [BetaAnalyticsFederatedActorAWSProvider],
+// [BetaAnalyticsFederatedActorAzureProvider],
+// [BetaAnalyticsFederatedActorGCPProvider],
+// [BetaAnalyticsFederatedActorOIDCProvider].
+//
+// Use the [BetaAnalyticsFederatedActorProviderUnion.AsAny] method to switch on the
+// variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaAnalyticsFederatedActorProviderUnion struct {
+	// This field is from variant [BetaAnalyticsFederatedActorAWSProvider].
+	AccountID string `json:"account_id"`
+	// This field is from variant [BetaAnalyticsFederatedActorAWSProvider].
+	SignedPrincipal string `json:"signed_principal"`
+	// Any of "aws", "azure", "gcp", "oidc".
+	Type string `json:"type"`
+	// This field is from variant [BetaAnalyticsFederatedActorAzureProvider].
+	SubscriptionID string `json:"subscription_id"`
+	// This field is from variant [BetaAnalyticsFederatedActorGCPProvider].
+	ProjectNumber string `json:"project_number"`
+	// This field is from variant [BetaAnalyticsFederatedActorOIDCProvider].
+	Issuer string `json:"issuer"`
+	JSON   struct {
+		AccountID       respjson.Field
+		SignedPrincipal respjson.Field
+		Type            respjson.Field
+		SubscriptionID  respjson.Field
+		ProjectNumber   respjson.Field
+		Issuer          respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// anyBetaAnalyticsFederatedActorProvider is implemented by each variant of
+// [BetaAnalyticsFederatedActorProviderUnion] to add type safety for the return
+// type of [BetaAnalyticsFederatedActorProviderUnion.AsAny]
+type anyBetaAnalyticsFederatedActorProvider interface {
+	implBetaAnalyticsFederatedActorProviderUnion()
+}
+
+func (BetaAnalyticsFederatedActorAWSProvider) implBetaAnalyticsFederatedActorProviderUnion()   {}
+func (BetaAnalyticsFederatedActorAzureProvider) implBetaAnalyticsFederatedActorProviderUnion() {}
+func (BetaAnalyticsFederatedActorGCPProvider) implBetaAnalyticsFederatedActorProviderUnion()   {}
+func (BetaAnalyticsFederatedActorOIDCProvider) implBetaAnalyticsFederatedActorProviderUnion()  {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaAnalyticsFederatedActorProviderUnion.AsAny().(type) {
+//	case anthropic.BetaAnalyticsFederatedActorAWSProvider:
+//	case anthropic.BetaAnalyticsFederatedActorAzureProvider:
+//	case anthropic.BetaAnalyticsFederatedActorGCPProvider:
+//	case anthropic.BetaAnalyticsFederatedActorOIDCProvider:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaAnalyticsFederatedActorProviderUnion) AsAny() anyBetaAnalyticsFederatedActorProvider {
+	switch u.Type {
+	case "aws":
+		return u.AsAWS()
+	case "azure":
+		return u.AsAzure()
+	case "gcp":
+		return u.AsGCP()
+	case "oidc":
+		return u.AsOIDC()
+	}
+	return nil
+}
+
+func (u BetaAnalyticsFederatedActorProviderUnion) AsAWS() (v BetaAnalyticsFederatedActorAWSProvider) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaAnalyticsFederatedActorProviderUnion) AsAzure() (v BetaAnalyticsFederatedActorAzureProvider) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaAnalyticsFederatedActorProviderUnion) AsGCP() (v BetaAnalyticsFederatedActorGCPProvider) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaAnalyticsFederatedActorProviderUnion) AsOIDC() (v BetaAnalyticsFederatedActorOIDCProvider) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaAnalyticsFederatedActorProviderUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaAnalyticsFederatedActorProviderUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaAnalyticsGroupedCostType string
+
+const (
+	BetaAnalyticsGroupedCostTypeCodeExecution BetaAnalyticsGroupedCostType = "code_execution"
+	BetaAnalyticsGroupedCostTypeSessionUsage  BetaAnalyticsGroupedCostType = "session_usage"
+	BetaAnalyticsGroupedCostTypeTokens        BetaAnalyticsGroupedCostType = "tokens"
+	BetaAnalyticsGroupedCostTypeWebSearch     BetaAnalyticsGroupedCostType = "web_search"
+)
+
 type BetaAnalyticsInferenceGeoFilter string
 
 const (
@@ -1595,6 +1941,44 @@ func (r *BetaAnalyticsProjectActivity) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type BetaAnalyticsReportUserActor struct {
+	// True when the account has been deleted, or when the user is no longer a member
+	// of the organization or its associated organizations (for example, their
+	// membership was removed or they were deprovisioned via your identity provider).
+	// `email_address` stays populated for removed users and is null when the account
+	// has been deleted. `name` follows the rules described on that field. The
+	// `user_id` is still populated for reconciliation.
+	Deleted bool `json:"deleted" api:"required"`
+	// The user's current email address, including for users who are no longer members
+	// of the organization. Null when the account has been deleted and for
+	// system-minted service accounts.
+	EmailAddress string `json:"email_address" api:"required"`
+	// The user's current full name. Null when the user has not set one.
+	// `"Deleted User"` when the account has been deleted, or when the user is no
+	// longer a member and the organization hides removed users' names.
+	Name string `json:"name" api:"required"`
+	// Actor type. Always `"user_actor"`.
+	Type constant.UserActor `json:"type" default:"user_actor"`
+	// Tagged user ID.
+	UserID string `json:"user_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Deleted      respjson.Field
+		EmailAddress respjson.Field
+		Name         respjson.Field
+		Type         respjson.Field
+		UserID       respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsReportUserActor) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsReportUserActor) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Claude Science activity metrics for a single user on a given day.
 type BetaAnalyticsScienceMetrics struct {
 	// Number of delegations (handoffs to a specialized agent) in Claude Science
@@ -1644,6 +2028,36 @@ func (r BetaAnalyticsServerToolUse) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsServerToolUse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type BetaAnalyticsServiceAccountActor struct {
+	// Tagged service account ID.
+	ServiceAccountID string                       `json:"service_account_id" api:"required"`
+	Type             constant.ServiceAccountActor `json:"type" default:"service_account_actor"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ServiceAccountID respjson.Field
+		Type             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsServiceAccountActor) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsServiceAccountActor) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaAnalyticsServiceTier string
+
+const (
+	BetaAnalyticsServiceTierBatch            BetaAnalyticsServiceTier = "batch"
+	BetaAnalyticsServiceTierFlex             BetaAnalyticsServiceTier = "flex"
+	BetaAnalyticsServiceTierFlexDiscount     BetaAnalyticsServiceTier = "flex_discount"
+	BetaAnalyticsServiceTierPriority         BetaAnalyticsServiceTier = "priority"
+	BetaAnalyticsServiceTierPriorityOnDemand BetaAnalyticsServiceTier = "priority_on_demand"
+	BetaAnalyticsServiceTierStandard         BetaAnalyticsServiceTier = "standard"
+)
 
 // Per-day entry in the /summaries response.
 type BetaAnalyticsSingleDayActivitySummary struct {
@@ -2192,6 +2606,21 @@ func (r *BetaAnalyticsSkillOfficeProductMetrics) UnmarshalJSON(data []byte) erro
 	return apijson.UnmarshalRoot(data, r)
 }
 
+type BetaAnalyticsSpeed string
+
+const (
+	BetaAnalyticsSpeedFast     BetaAnalyticsSpeed = "fast"
+	BetaAnalyticsSpeedStandard BetaAnalyticsSpeed = "standard"
+)
+
+type BetaAnalyticsTimeBucketWidth string
+
+const (
+	BetaAnalyticsTimeBucketWidthDay    BetaAnalyticsTimeBucketWidth = "1d"
+	BetaAnalyticsTimeBucketWidthHour   BetaAnalyticsTimeBucketWidth = "1h"
+	BetaAnalyticsTimeBucketWidthMinute BetaAnalyticsTimeBucketWidth = "1m"
+)
+
 type BetaAnalyticsTokenType string
 
 const (
@@ -2376,6 +2805,42 @@ type BetaAnalyticsUsageBucketedResultSpeed string
 const (
 	BetaAnalyticsUsageBucketedResultSpeedFast     BetaAnalyticsUsageBucketedResultSpeed = "fast"
 	BetaAnalyticsUsageBucketedResultSpeedStandard BetaAnalyticsUsageBucketedResultSpeed = "standard"
+)
+
+type BetaAnalyticsUsageCostInferenceGeo string
+
+const (
+	BetaAnalyticsUsageCostInferenceGeoGlobal BetaAnalyticsUsageCostInferenceGeo = "global"
+	BetaAnalyticsUsageCostInferenceGeoUs     BetaAnalyticsUsageCostInferenceGeo = "us"
+)
+
+// Publicly documented product surfaces. `claude_tag` is Claude Tag, the Claude
+// product in Slack. `chat_cowork_unified` is Chat and Cowork unified, Cowork's
+// features inside claude.ai chat: chat and Cowork usage by a member who has it
+// turned on is reported under this value instead of `chat` or `cowork`. It is
+// accepted as a filter only on deployments that offer Chat and Cowork unified.
+type BetaAnalyticsUsageCostProductFilter string
+
+const (
+	BetaAnalyticsUsageCostProductFilterChat              BetaAnalyticsUsageCostProductFilter = "chat"
+	BetaAnalyticsUsageCostProductFilterChatCoworkUnified BetaAnalyticsUsageCostProductFilter = "chat_cowork_unified"
+	BetaAnalyticsUsageCostProductFilterClaudeCode        BetaAnalyticsUsageCostProductFilter = "claude_code"
+	BetaAnalyticsUsageCostProductFilterClaudeConsole     BetaAnalyticsUsageCostProductFilter = "claude_console"
+	BetaAnalyticsUsageCostProductFilterClaudeDesign      BetaAnalyticsUsageCostProductFilter = "claude_design"
+	BetaAnalyticsUsageCostProductFilterClaudeInChrome    BetaAnalyticsUsageCostProductFilter = "claude_in_chrome"
+	BetaAnalyticsUsageCostProductFilterClaudeTag         BetaAnalyticsUsageCostProductFilter = "claude_tag"
+	BetaAnalyticsUsageCostProductFilterCowork            BetaAnalyticsUsageCostProductFilter = "cowork"
+	BetaAnalyticsUsageCostProductFilterManagedAgentsAPI  BetaAnalyticsUsageCostProductFilter = "managed_agents_api"
+	BetaAnalyticsUsageCostProductFilterMessageBatchesAPI BetaAnalyticsUsageCostProductFilter = "message_batches_api"
+	BetaAnalyticsUsageCostProductFilterMessagesAPI       BetaAnalyticsUsageCostProductFilter = "messages_api"
+	BetaAnalyticsUsageCostProductFilterOfficeAgent       BetaAnalyticsUsageCostProductFilter = "office_agent"
+)
+
+type BetaAnalyticsUsageCostSortOrder string
+
+const (
+	BetaAnalyticsUsageCostSortOrderAsc  BetaAnalyticsUsageCostSortOrder = "asc"
+	BetaAnalyticsUsageCostSortOrderDesc BetaAnalyticsUsageCostSortOrder = "desc"
 )
 
 type BetaAnalyticsUsageReportTimeBucket struct {

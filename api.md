@@ -2592,13 +2592,22 @@ Methods:
 
 Params Types:
 
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsActorType">BetaAnalyticsActorType</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsClaudeTagCategory">BetaAnalyticsClaudeTagCategory</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsContextWindow">BetaAnalyticsContextWindow</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsInferenceGeoFilter">BetaAnalyticsInferenceGeoFilter</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsProductFilter">BetaAnalyticsProductFilter</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsServiceTier">BetaAnalyticsServiceTier</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsSpeed">BetaAnalyticsSpeed</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsTimeBucketWidth">BetaAnalyticsTimeBucketWidth</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageCostProductFilter">BetaAnalyticsUsageCostProductFilter</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageCostSortOrder">BetaAnalyticsUsageCostSortOrder</a>
 
 Response Types:
 
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsActorUnion">BetaAnalyticsActorUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsActorType">BetaAnalyticsActorType</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsAPIActor">BetaAnalyticsAPIActor</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsArtifactActivity">BetaAnalyticsArtifactActivity</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsChatCoworkUnifiedChatMetrics">BetaAnalyticsChatCoworkUnifiedChatMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsChatCoworkUnifiedSessionsMetrics">BetaAnalyticsChatCoworkUnifiedSessionsMetrics</a>
@@ -2621,6 +2630,13 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsCostUsersItem">BetaAnalyticsCostUsersItem</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsCoworkMetrics">BetaAnalyticsCoworkMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsDesignMetrics">BetaAnalyticsDesignMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsFederatedActor">BetaAnalyticsFederatedActor</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsFederatedActorAWSProvider">BetaAnalyticsFederatedActorAWSProvider</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsFederatedActorAzureProvider">BetaAnalyticsFederatedActorAzureProvider</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsFederatedActorGCPProvider">BetaAnalyticsFederatedActorGCPProvider</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsFederatedActorOIDCProvider">BetaAnalyticsFederatedActorOIDCProvider</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsFederatedActorProviderUnion">BetaAnalyticsFederatedActorProviderUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsGroupedCostType">BetaAnalyticsGroupedCostType</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsLinesOfCode">BetaAnalyticsLinesOfCode</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsOfficeMetrics">BetaAnalyticsOfficeMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsOfficeProductMetrics">BetaAnalyticsOfficeProductMetrics</a>
@@ -2628,8 +2644,11 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsPluginClaudeCodeMetrics">BetaAnalyticsPluginClaudeCodeMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsPluginCoworkMetrics">BetaAnalyticsPluginCoworkMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsProjectActivity">BetaAnalyticsProjectActivity</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsReportUserActor">BetaAnalyticsReportUserActor</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsScienceMetrics">BetaAnalyticsScienceMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsServerToolUse">BetaAnalyticsServerToolUse</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsServiceAccountActor">BetaAnalyticsServiceAccountActor</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsServiceTier">BetaAnalyticsServiceTier</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsSingleDayActivitySummary">BetaAnalyticsSingleDayActivitySummary</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsSkillActivity">BetaAnalyticsSkillActivity</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsSkillChatCoworkUnifiedChatMetrics">BetaAnalyticsSkillChatCoworkUnifiedChatMetrics</a>
@@ -2639,10 +2658,12 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsSkillCoworkMetrics">BetaAnalyticsSkillCoworkMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsSkillOfficeMetrics">BetaAnalyticsSkillOfficeMetrics</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsSkillOfficeProductMetrics">BetaAnalyticsSkillOfficeProductMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsSpeed">BetaAnalyticsSpeed</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsTokenType">BetaAnalyticsTokenType</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsToolActionCounts">BetaAnalyticsToolActionCounts</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsToolActions">BetaAnalyticsToolActions</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageBucketedResult">BetaAnalyticsUsageBucketedResult</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageCostInferenceGeo">BetaAnalyticsUsageCostInferenceGeo</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageReportTimeBucket">BetaAnalyticsUsageReportTimeBucket</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageUsersItem">BetaAnalyticsUsageUsersItem</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUser">BetaAnalyticsUser</a>
@@ -2694,6 +2715,40 @@ Methods:
 Methods:
 
 - <code title="get /v1/organizations/analytics/artifacts?beta=true">client.Beta.Organization.Analytics.Artifacts.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganizationAnalyticsArtifactService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganizationAnalyticsArtifactListParams">BetaOrganizationAnalyticsArtifactListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsArtifactActivity">BetaAnalyticsArtifactActivity</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+#### Usage
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageGroupBy">BetaAnalyticsUsageGroupBy</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageOrderBy">BetaAnalyticsUsageOrderBy</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageGroup">BetaAnalyticsUsageGroup</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageItem">BetaAnalyticsUsageItem</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageMetrics">BetaAnalyticsUsageMetrics</a>
+
+Methods:
+
+- <code title="get /v1/organizations/analytics/usage?beta=true">client.Beta.Organization.Analytics.Usage.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganizationAnalyticsUsageService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganizationAnalyticsUsageListParams">BetaOrganizationAnalyticsUsageListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#ReportPageCursor">ReportPageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsUsageItem">BetaAnalyticsUsageItem</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+#### Cost
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsCostGroupBy">BetaAnalyticsCostGroupBy</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsCostOrderBy">BetaAnalyticsCostOrderBy</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsCostGroup">BetaAnalyticsCostGroup</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsCostItem">BetaAnalyticsCostItem</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsCostMetrics">BetaAnalyticsCostMetrics</a>
+
+Methods:
+
+- <code title="get /v1/organizations/analytics/cost?beta=true">client.Beta.Organization.Analytics.Cost.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganizationAnalyticsCostService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganizationAnalyticsCostListParams">BetaOrganizationAnalyticsCostListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#ReportPageCursor">ReportPageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsCostItem">BetaAnalyticsCostItem</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 #### UsageReport
 

@@ -34,14 +34,21 @@ func NewBetaOrganizationAnalyticsUserUsageReportService(opts ...option.RequestOp
 	return
 }
 
-// Get per-user token usage across a date range.
+// [Legacy] Get per-user token usage across a date range.
 //
-// Returns one row per user, ranked by the chosen token metric. Use this to see
-// which users consume the most tokens. Only usage attributable to a seat user is
-// included; for organization-wide totals including direct API-key and automation
-// traffic, use the bucketed `/v1/organizations/analytics/usage_report` endpoint.
-// Available to organizations on a Claude Enterprise plan. Requires an API key with
-// the `read:analytics` scope.
+// Returns usage per user, ranked by the chosen token metric; `group_by[]` or
+// `bucket_width` splits a user across several rows. Use this to see which users
+// consume the most tokens. Only usage attributed to a user account is included;
+// usage with no user attributed to it, such as requests attributed only to an API
+// key, is left out. Available to organizations on a Claude Enterprise plan.
+// Requires an API key with the `read:analytics` scope.
+//
+// This endpoint is one of the legacy Claude Enterprise usage and cost reports. For
+// new integrations, use
+// [`GET /v1/organizations/analytics/usage`](/docs/en/api/beta/organization/analytics/usage/list)
+// in the Usage and Cost Analytics API instead. To move an existing integration,
+// see
+// [Migrate from the Claude Enterprise usage and cost reports](/docs/en/manage-claude/usage-cost-analytics-api#migrate-from-enterprise-analytics-reports).
 func (r *BetaOrganizationAnalyticsUserUsageReportService) List(ctx context.Context, query BetaOrganizationAnalyticsUserUsageReportListParams, opts ...option.RequestOption) (res *pagination.ReportPageCursor[BetaAnalyticsUsageUsersItem], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
@@ -60,14 +67,21 @@ func (r *BetaOrganizationAnalyticsUserUsageReportService) List(ctx context.Conte
 	return res, nil
 }
 
-// Get per-user token usage across a date range.
+// [Legacy] Get per-user token usage across a date range.
 //
-// Returns one row per user, ranked by the chosen token metric. Use this to see
-// which users consume the most tokens. Only usage attributable to a seat user is
-// included; for organization-wide totals including direct API-key and automation
-// traffic, use the bucketed `/v1/organizations/analytics/usage_report` endpoint.
-// Available to organizations on a Claude Enterprise plan. Requires an API key with
-// the `read:analytics` scope.
+// Returns usage per user, ranked by the chosen token metric; `group_by[]` or
+// `bucket_width` splits a user across several rows. Use this to see which users
+// consume the most tokens. Only usage attributed to a user account is included;
+// usage with no user attributed to it, such as requests attributed only to an API
+// key, is left out. Available to organizations on a Claude Enterprise plan.
+// Requires an API key with the `read:analytics` scope.
+//
+// This endpoint is one of the legacy Claude Enterprise usage and cost reports. For
+// new integrations, use
+// [`GET /v1/organizations/analytics/usage`](/docs/en/api/beta/organization/analytics/usage/list)
+// in the Usage and Cost Analytics API instead. To move an existing integration,
+// see
+// [Migrate from the Claude Enterprise usage and cost reports](/docs/en/manage-claude/usage-cost-analytics-api#migrate-from-enterprise-analytics-reports).
 func (r *BetaOrganizationAnalyticsUserUsageReportService) ListAutoPaging(ctx context.Context, query BetaOrganizationAnalyticsUserUsageReportListParams, opts ...option.RequestOption) *pagination.ReportPageCursorAutoPager[BetaAnalyticsUsageUsersItem] {
 	return pagination.NewReportPageCursorAutoPager(r.List(ctx, query, opts...))
 }

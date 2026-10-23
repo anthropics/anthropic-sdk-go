@@ -372,16 +372,97 @@ func TestBetaToolRunner_Thread_ARewrittenHistoryStartsANewThread(t *testing.T) {
 	})
 }
 
-func TestBetaToolRunner_Thread_ASentMessageChangedInPlaceStartsANewThread(t *testing.T) {
-	forEachRunner(t, func(t *testing.T, stream bool) {
-		runner, server, _ := newThreadRunner(t, stream, threadRunnerParams(), weatherCall("a"), reply("msg_b", "Sunny"))
+// sentMessageEdits change, in place, the question or the tool result of a history
+// that begins with "Weather?", the call a and its result.
+var sentMessageEdits = map[string]struct {
+	edit             func(messages []BetaMessageParam)
+	question, result string
+}{
+	"the content of a message": {
+		edit: func(messages []BetaMessageParam) {
+			messages[0].OfUser.Content = userMessage("Weather in Paris?").OfUser.Content
+		},
+		question: userJSON("Weather in Paris?"),
+		result:   weatherResultJSON("a"),
+	},
+	"the text of a block": {
+		edit: func(messages []BetaMessageParam) {
+			messages[0].OfUser.Content[0].OfText.Text = "Weather in Paris?"
+		},
+		question: userJSON("Weather in Paris?"),
+		result:   weatherResultJSON("a"),
+	},
+	"the cache breakpoint of a block": {
+		edit: func(messages []BetaMessageParam) {
+			messages[0].OfUser.Content[0].OfText.CacheControl = NewBetaCacheControlEphemeralParam()
+		},
+		question: markedUserJSON("Weather?"),
+		result:   weatherResultJSON("a"),
+	},
+	"the content of a tool result": {
+		edit: func(messages []BetaMessageParam) {
+			messages[2].OfUser.Content[0].OfToolResult.Content = []BetaToolResultBlockParamContentUnion{{OfText: &BetaTextBlockParam{Text: "trimmed"}}}
+		},
+		question: userJSON("Weather?"),
+		result:   toolResultMessageJSON(toolResultBlockJSON("a", "trimmed")),
+	},
+}
 
-		runner.run(t, onReply("msg_a", func(*BetaMessage) {
-			runner.Params.Messages[0].OfUser.Content = userMessage("Weather in Paris?").OfUser.Content
-		}))
+func TestBetaToolRunner_ASentMessageChangedInPlaceIsSentAsItIsNow(t *testing.T) {
+	for kind, of := range runnerKinds {
+		for name, change := range sentMessageEdits {
+			t.Run(kind+"/"+name, func(t *testing.T) {
+				forEachRunner(t, func(t *testing.T, stream bool) {
+					server := newThreadServer(t, weatherCall("a"), weatherCall("b"), weatherCall("c"), reply("msg_d", "Sunny"))
+					client, params := of(server, threadRunnerParams())
+					weather := &stubBetaTool{name: "weather"}
+					runner := newTurnRunner(client, stream, []BetaTool{weather}, params)
 
-		requireCreate(t, server.requireRequests(t, 2)[1], messagesOf(userJSON("Weather in Paris?"), weatherCallJSON("a"), weatherResultJSON("a")))
-	})
+					ids := runner.run(t, onReply("msg_b", func(*BetaMessage) { change.edit(runner.Params.Messages) }))
+
+					edited := []string{change.question, weatherCallJSON("a"), change.result, weatherCallJSON("b"), weatherResultJSON("b")}
+					whole := append(slices.Clone(edited), weatherCallJSON("c"), weatherResultJSON("c"))
+					requests := server.requireRequests(t, 4)
+					if kind == "on a thread" {
+						requireCreate(t, requests[2], messagesOf(edited...))
+						requireContinue(t, requests[3], "msg_c", messagesOf(weatherResultJSON("c")))
+					} else {
+						requireUnthreaded(t, requests[2], messagesOf(edited...))
+						requireUnthreaded(t, requests[3], messagesOf(whole...))
+					}
+					require.Equal(t, []string{"msg_a", "msg_b", "msg_c", "msg_d"}, ids)
+					require.EqualValues(t, 3, weather.runs.Load())
+					requireMessages(t, runner.Messages(), messagesOf(append(whole, assistantJSON("Sunny"))...))
+				})
+			})
+		}
+	}
+}
+
+func TestBetaToolRunnerStreaming_AMessageChangedInPlaceWhileItsReplyStreamsIsSentAsItIsNow(t *testing.T) {
+	for kind, of := range runnerKinds {
+		t.Run(kind, func(t *testing.T) {
+			server := newThreadServer(t, weatherCall("a"), reply("msg_b", "Sunny"))
+			client, params := of(server, threadRunnerParams())
+			runner := client.Beta.Messages.NewToolRunnerStreaming([]BetaTool{&stubBetaTool{name: "weather"}}, params)
+
+			for events, err := range runner.AllStreaming(context.Background()) {
+				require.NoError(t, err)
+				for _, err := range events {
+					require.NoError(t, err)
+					runner.Params.Messages[0].OfUser.Content[0].OfText.Text = "Weather in Paris?"
+				}
+			}
+
+			edited := messagesOf(userJSON("Weather in Paris?"), weatherCallJSON("a"), weatherResultJSON("a"))
+			request := server.requireRequests(t, 2)[1]
+			if kind == "on a thread" {
+				requireCreate(t, request, edited)
+			} else {
+				requireUnthreaded(t, request, edited)
+			}
+		})
+	}
 }
 
 func TestBetaToolRunner_AMessageTheCallerChangesAfterCreatingTheRunnerStaysAsItWasGiven(t *testing.T) {
@@ -446,31 +527,53 @@ func TestBetaToolRunner_Thread_AssignedParamsReplaceTheFields(t *testing.T) {
 	})
 }
 
+// historyChanges are what the caller does to a history that holds "Weather?" and
+// the call a.
+var historyChanges = map[string]func(runner *turnRunner){
+	"left as it is": func(*turnRunner) {},
+	"changed in place": func(runner *turnRunner) {
+		runner.Params.Messages[0].OfUser.Content[0].OfText.Text = "Weather in Paris?"
+	},
+	"replaced": func(runner *turnRunner) {
+		runner.Params.Messages = []BetaMessageParam{userMessage("Weather in Paris?"), runner.Params.Messages[1]}
+	},
+}
+
 func TestBetaToolRunner_Thread_AChangedSystemIsRefusedBeforeAToolRuns(t *testing.T) {
-	forEachRunner(t, func(t *testing.T, stream bool) {
-		runner, server, weather := newThreadRunner(t, stream, threadRunnerParams(), weatherCall("a"))
-		runner.mustNext(t)
-		runner.Params.System = []BetaTextBlockParam{{Text: "Be verbose."}}
+	for name, changeHistory := range historyChanges {
+		t.Run("with the history "+name, func(t *testing.T) {
+			forEachRunner(t, func(t *testing.T, stream bool) {
+				runner, server, weather := newThreadRunner(t, stream, threadRunnerParams(), weatherCall("a"))
+				runner.mustNext(t)
+				runner.Params.System = []BetaTextBlockParam{{Text: "Be verbose."}}
+				changeHistory(runner)
 
-		_, err := runner.next(context.Background())
+				_, err := runner.next(context.Background())
 
-		requireLocalError(t, err)
-		require.ErrorContains(t, err, "System cannot be changed on a message thread")
-		require.Len(t, server.requests(), 1)
-		require.Zero(t, weather.runs.Load())
-	})
+				requireLocalError(t, err)
+				require.ErrorContains(t, err, "System cannot be changed on a message thread")
+				require.Len(t, server.requests(), 1)
+				require.Zero(t, weather.runs.Load())
+			})
+		})
+	}
 }
 
 func TestBetaToolRunner_DisableThread_AChangedSystemIsSent(t *testing.T) {
-	forEachRunner(t, func(t *testing.T, stream bool) {
-		runner, server, _ := newThreadRunner(t, stream, unthreaded(threadRunnerParams()), weatherCall("a"), reply("msg_b", "Sunny"))
+	for name, changeHistory := range historyChanges {
+		t.Run("with the history "+name, func(t *testing.T) {
+			forEachRunner(t, func(t *testing.T, stream bool) {
+				runner, server, _ := newThreadRunner(t, stream, unthreaded(threadRunnerParams()), weatherCall("a"), reply("msg_b", "Sunny"))
 
-		runner.run(t, onReply("msg_a", func(*BetaMessage) {
-			runner.Params.System = []BetaTextBlockParam{{Text: "Be verbose."}}
-		}))
+				runner.run(t, onReply("msg_a", func(*BetaMessage) {
+					runner.Params.System = []BetaTextBlockParam{{Text: "Be verbose."}}
+					changeHistory(runner)
+				}))
 
-		requireJSONEqual(t, server.requireRequests(t, 2)[1].field("system.0.text"), `"Be verbose."`)
-	})
+				requireJSONEqual(t, server.requireRequests(t, 2)[1].field("system.0.text"), `"Be verbose."`)
+			})
+		})
+	}
 }
 
 // toolChangeScript calls weather, then lookup, then weather again, then ends.

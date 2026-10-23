@@ -11,6 +11,7 @@
 ### Bug Fixes
 
 * **auth:** don't share an in-flight token fetch across base URLs
+* **tools:** send a change made in place to an earlier message of a tool runner with the next request
 
 
 ### Chores

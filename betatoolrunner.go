@@ -652,8 +652,10 @@ func (b *betaToolRunnerBase) nextRequest(ctx context.Context) (*toolRunnerReques
 	if b.completed {
 		return nil, nil
 	}
+	var link betaThreadLink
 	if b.thread != nil {
 		b.takeAppended()
+		link = b.thread.link
 		b.syncThread(b.Params.BetaMessageNewParams)
 	}
 	if !param.IsOmitted(b.Params.Thread) {
@@ -693,7 +695,12 @@ func (b *betaToolRunnerBase) nextRequest(ctx context.Context) (*toolRunnerReques
 	}
 	// A turn that the thread would refuse runs no tool and is not counted.
 	if b.thread != nil {
-		if _, err := b.thread.planRequest(BetaMessageThreadSendParams{}, b.opts); err != nil {
+		request, err := b.thread.planRequest(BetaMessageThreadSendParams{}, b.opts)
+		// System and Tools stay for the run, also when a changed history starts a new thread.
+		if link, ok := link.(betaThreadContinue); ok && err == nil && turn != nil {
+			err = request.createOnly.errChangedSince(link.createdWith)
+		}
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -915,7 +922,7 @@ func (b *betaToolRunnerBase) finishCompaction(request *toolRunnerRequest, messag
 			if b.thread != nil {
 				b.takeAppended()
 				// The thread goes on holding the response, so appending it again does nothing.
-				b.thread.stored = []betaThreadEntry{{param: message.ToParam(), reply: message}}
+				b.thread.stored = []betaThreadEntry{{sent: betaThreadJSON(message.ToParam()), reply: message}}
 				b.thread.startNewThread()
 			}
 			return nil

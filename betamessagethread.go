@@ -88,7 +88,9 @@ type betaThreadCreateOnlyFields struct {
 
 // betaThreadEntry is one message of the stored history.
 type betaThreadEntry struct {
-	param BetaMessageParam
+	// sent is the request JSON of the message. A change that the caller makes to
+	// the message in place does not reach it.
+	sent string
 	// reply is set when the message came from the API rather than the caller.
 	reply *BetaMessage
 	// partial is set when the stream of reply ended before message_stop.
@@ -98,6 +100,8 @@ type betaThreadEntry struct {
 type betaThreadRequest struct {
 	params  BetaMessageNewParams
 	options []option.RequestOption
+	// sent holds the request JSON of the messages that follow the stored history.
+	sent []string
 	// createOnly holds the create-only fields of the turn. A request that
 	// continues a thread leaves them out, and they equal what it was created with.
 	createOnly betaThreadCreateOnlyFields
@@ -169,16 +173,19 @@ func (t *BetaMessageThread) repeatsLastReply(message BetaMessageParam) bool {
 		return false
 	}
 	last := t.stored[n-1]
-	return last.reply != nil && betaThreadJSON(message) == betaThreadJSON(last.param)
+	return last.reply != nil && betaThreadJSON(message) == last.sent
 }
 
 // adoptHistory makes the next turn start a new thread when Params.Messages no
-// longer begins with the stored history.
+// longer begins with the stored history. A turn in progress still adds to the
+// stored history, so a change made during it is seen once it has ended.
 func (t *BetaMessageThread) adoptHistory() {
+	if t.inTurn {
+		return
+	}
 	kept := len(t.stored)
 	if kept > len(t.Params.Messages) || !slices.EqualFunc(t.stored, t.Params.Messages[:kept], func(entry betaThreadEntry, message BetaMessageParam) bool {
-		// Only a message that was built again needs its JSON compared.
-		return reflect.DeepEqual(entry.param, message) || betaThreadJSON(entry.param) == betaThreadJSON(message)
+		return entry.sent == betaThreadJSON(message)
 	}) {
 		t.stored = nil
 		t.startNewThread()
@@ -302,6 +309,9 @@ func (t *BetaMessageThread) planRequest(params BetaMessageThreadSendParams, opts
 	}
 
 	messages := t.Params.Messages
+	for _, message := range messages[len(t.stored):] {
+		request.sent = append(request.sent, betaThreadJSON(message))
+	}
 	switch link := t.link.(type) {
 	case betaThreadCreate:
 		request.params.Thread.OfCreate = &BetaThreadCreateParams{}
@@ -316,8 +326,7 @@ func (t *BetaMessageThread) planRequest(params BetaMessageThreadSendParams, opts
 		request.params.Tools = nil
 		messages = messages[len(t.stored):]
 	}
-	// Never nil: a turn with no new message sends an empty list. A copy: what is
-	// stored has to stay as it was sent.
+	// Never nil: a turn with no new message sends an empty list.
 	request.params.Messages = cloneBetaMessageParams(messages)
 	// Each turn may have set a cache breakpoint, and a request takes a limited number.
 	if request.params.Thread.OfContinue == nil {
@@ -414,16 +423,12 @@ func (t *BetaMessageThread) recordPartialReply(request betaThreadRequest, messag
 // what was added during the turn.
 func (t *BetaMessageThread) storeTurn(request betaThreadRequest, reply *BetaMessage, partial bool) {
 	t.givenCount = 0
-	sent := request.params.Messages
-	if request.params.Thread.OfContinue == nil {
-		sent = sent[len(t.stored):]
-	}
-	for _, message := range sent {
-		t.stored = append(t.stored, betaThreadEntry{param: message})
+	for _, sent := range request.sent {
+		t.stored = append(t.stored, betaThreadEntry{sent: sent})
 	}
 	if reply != nil {
 		t.Params.Messages = slices.Insert(slices.Clip(t.Params.Messages), min(len(t.stored), len(t.Params.Messages)), reply.ToParam())
-		t.stored = append(t.stored, betaThreadEntry{param: reply.ToParam(), reply: reply, partial: partial})
+		t.stored = append(t.stored, betaThreadEntry{sent: betaThreadJSON(reply.ToParam()), reply: reply, partial: partial})
 	}
 }
 

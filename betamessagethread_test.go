@@ -572,16 +572,42 @@ func TestBetaMessageThread_Params_AssignedMessagesThatRewriteTheHistoryStartANew
 }
 
 func TestBetaMessageThread_Params_ASentMessageChangedInPlaceStartsANewThread(t *testing.T) {
-	forEachRunner(t, func(t *testing.T, stream bool) {
-		thread, server := newThread(t, threadParams(), reply("msg_a", "Reply A"), reply("msg_b", "Reply B"))
-		send(t, thread, turn("Hello"))
+	edits := map[string]struct {
+		edit func(message BetaMessageParam)
+		want string
+	}{
+		"the content of the message": {
+			edit: func(message BetaMessageParam) { message.OfUser.Content = userMessage("Other").OfUser.Content },
+			want: userJSON("Other"),
+		},
+		"the text of a block": {
+			edit: func(message BetaMessageParam) { message.OfUser.Content[0].OfText.Text = "Other" },
+			want: userJSON("Other"),
+		},
+		"the cache breakpoint of a block": {
+			edit: func(message BetaMessageParam) {
+				message.OfUser.Content[0].OfText.CacheControl = NewBetaCacheControlEphemeralParam()
+			},
+			want: markedUserJSON("Hello"),
+		},
+	}
+	for name, change := range edits {
+		t.Run(name, func(t *testing.T) {
+			forEachRunner(t, func(t *testing.T, stream bool) {
+				thread, server := newThread(t, threadParams(), reply("msg_a", "Reply A"), reply("msg_b", "Reply B"), reply("msg_c", "Reply C"))
+				send(t, thread, turn("Hello"))
 
-		thread.Params.Messages[0].OfUser.Content = userMessage("Other").OfUser.Content
-		require.Equal(t, "", thread.PreviousMessageID())
-		require.NoError(t, sendOrStream(thread, stream, turn("Again")))
+				change.edit(thread.Params.Messages[0])
+				require.Equal(t, "", thread.PreviousMessageID())
+				require.NoError(t, sendOrStream(thread, stream, turn("Again")))
+				require.NoError(t, sendOrStream(thread, stream, turn("Once more")))
 
-		requireCreate(t, server.requireRequests(t, 2)[1], messagesOf(userJSON("Other"), assistantJSON("Reply A"), userJSON("Again")))
-	})
+				requests := server.requireRequests(t, 3)
+				requireCreate(t, requests[1], messagesOf(change.want, assistantJSON("Reply A"), userJSON("Again")))
+				requireContinue(t, requests[2], "msg_b", messagesOf(userJSON("Once more")))
+			})
+		})
+	}
 }
 
 func TestBetaMessageThread_AMessageTheCallerChangesAfterGivingItStaysAsItWasGiven(t *testing.T) {
@@ -654,6 +680,31 @@ func TestBetaMessageThread_SendStreaming_AMessageAddedWhileTheStreamIsOpenFollow
 			send(t, thread, noMessages)
 
 			requireContinue(t, server.requireRequests(t, 2)[1], "msg_a", messagesOf(userJSON("Added")))
+		})
+	}
+}
+
+func TestBetaMessageThread_SendStreaming_ASentMessageChangedWhileTheStreamIsOpenStartsANewThreadOnTheNextTurn(t *testing.T) {
+	edits := map[string]func(thread *BetaMessageThread){
+		"the text of a block": func(thread *BetaMessageThread) { thread.Params.Messages[0].OfUser.Content[0].OfText.Text = "Other" },
+		"the whole message":   func(thread *BetaMessageThread) { thread.Params.Messages[0] = userMessage("Other") },
+	}
+	for name, edit := range edits {
+		t.Run(name, func(t *testing.T) {
+			thread, server := newThread(t, threadParams(), reply("msg_a", "Reply A"), reply("msg_b", "Reply B"), reply("msg_c", "Reply C"))
+			send(t, thread, turn("Hello"))
+			stream := thread.SendStreaming(context.Background(), turn("Again"))
+			require.True(t, stream.Next())
+
+			edit(thread)
+			require.Equal(t, "msg_a", thread.PreviousMessageID())
+			require.Equal(t, "msg_a", thread.LastMessage().ID)
+			read(stream)
+			requireMessages(t, thread.Messages(), messagesOf(userJSON("Other"), assistantJSON("Reply A"), userJSON("Again"), assistantJSON("Reply B")))
+			require.Equal(t, "", thread.PreviousMessageID())
+			send(t, thread, turn("Once more"))
+
+			requireCreate(t, server.requireRequests(t, 3)[2], messagesOf(userJSON("Other"), assistantJSON("Reply A"), userJSON("Again"), assistantJSON("Reply B"), userJSON("Once more")))
 		})
 	}
 }

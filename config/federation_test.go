@@ -62,11 +62,10 @@ func TestExchangeFederationAssertion_Success(t *testing.T) {
 		t.Errorf("anthropic-beta header missing required values: %q", beta)
 	}
 
-	// The JSON body's field names must match the REST gateway's alias
-	// transformation exactly — grant_type, assertion, federation_rule_id,
-	// organization_id, service_account_id, workspace_id. Anything else is
-	// silently dropped by the gateway and produces an empty-field error
-	// downstream.
+	// The JSON body's field names must be exactly the ones the token
+	// endpoint accepts: grant_type, assertion, federation_rule_id,
+	// organization_id, service_account_id, workspace_id. The server ignores
+	// any other field, so a misnamed one fails the request.
 	var decoded map[string]any
 	if err := json.Unmarshal(gotBody, &decoded); err != nil {
 		t.Fatalf("body must be JSON: %v, got=%q", err, gotBody)

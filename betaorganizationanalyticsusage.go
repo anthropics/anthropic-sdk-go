@@ -198,10 +198,7 @@ type BetaAnalyticsUsageGroup struct {
 	UserProfileID string `json:"user_profile_id" api:"required"`
 	// Workspace the usage occurred in, as a tagged workspace ID, including the
 	// organization's default workspace. Populated only when `workspace_id` is in
-	// `group_by[]`; null for Claude Enterprise usage. Usage a linked platform made on
-	// this organization's account is in none of its workspaces and carries the
-	// placeholder workspace ID `wrkspc_011111111111111111111111`, which
-	// `workspace_ids[]` also accepts.
+	// `group_by[]`; null for Claude Enterprise usage.
 	WorkspaceID string `json:"workspace_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -344,8 +341,9 @@ type BetaOrganizationAnalyticsUsageListParams struct {
 	// Start of range, inclusive. RFC 3339 tz-aware. Must be within the last 365 days
 	// and no earlier than 2026-01-01T00:00:00Z.
 	StartingAt time.Time `query:"starting_at" api:"required" format:"date-time" json:"-"`
-	// End of range, exclusive. When omitted, defaults to the earlier of now and
-	// `starting_at` + 31 days. The range may span at most 31 days.
+	// End of range, exclusive. Required when `time_bucket_width` is set. Without
+	// `time_bucket_width`, defaults to the earlier of now and `starting_at` + 31 days.
+	// The range may span at most 31 days.
 	EndingAt param.Opt[time.Time] `query:"ending_at,omitzero" format:"date-time" json:"-"`
 	// Opaque cursor from a previous response's `next_page` field.
 	Page param.Opt[string] `query:"page,omitzero" json:"-"`

@@ -23,6 +23,7 @@ func TestBetaOrganizationAnalyticsAppChatProjectListWithOptionalParams(t *testin
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Analytics.Apps.Chat.Projects.List(context.TODO(), anthropic.BetaOrganizationAnalyticsAppChatProjectListParams{
 		Date:         anthropic.Time(time.Now()),

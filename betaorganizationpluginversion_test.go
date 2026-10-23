@@ -26,6 +26,7 @@ func TestBetaOrganizationPluginVersionNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Plugins.Versions.New(
 		context.TODO(),
@@ -56,6 +57,7 @@ func TestBetaOrganizationPluginVersionGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Plugins.Versions.Get(
 		context.TODO(),
@@ -86,6 +88,7 @@ func TestBetaOrganizationPluginVersionListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Plugins.Versions.List(
 		context.TODO(),
@@ -116,6 +119,7 @@ func TestBetaOrganizationPluginVersionDownloadWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	resp, err := client.Beta.Organization.Plugins.Versions.Download(
 		context.TODO(),

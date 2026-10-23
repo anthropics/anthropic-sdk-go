@@ -44,8 +44,12 @@ func NewMiddleware(cache *TokenCache, cfg *requestconfig.RequestConfig) authMidd
 			return next(req)
 		}
 		baseURL := cfg.BaseURL.Scheme + "://" + cfg.BaseURL.Host
+		ctx := req.Context()
+		if client := cfg.ClientBaseURL; client != nil && !sameOrigin(req.URL, client) {
+			ctx = withBaseURLOverride(ctx, client.Scheme+"://"+client.Host)
+		}
 
-		token, err := cache.Token(req.Context(), baseURL)
+		token, err := cache.Token(ctx, baseURL)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get credentials token: %w", err)
 		}
@@ -72,7 +76,7 @@ func NewMiddleware(cache *TokenCache, cfg *requestconfig.RequestConfig) authMidd
 			return resp, nil
 		}
 
-		token, tokenErr := cache.ForceToken(req.Context(), baseURL)
+		token, tokenErr := cache.ForceToken(ctx, baseURL)
 		if tokenErr != nil {
 			warnOnce(
 				"401-retry-refresh-failed",

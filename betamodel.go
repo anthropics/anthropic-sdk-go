@@ -62,7 +62,8 @@ func (r *BetaModelService) Get(ctx context.Context, modelID string, query BetaMo
 		err = errors.New("missing required model_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/models/%s?beta=true", url.PathEscape(modelID))
+	path := fmt.Sprintf("v1/models/%s", url.PathEscape(modelID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.models.retrieve", "/v1/models/{model_id}"), requestconfig.WithSpanAttribute("anthropic.model.id", modelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -89,7 +90,8 @@ func (r *BetaModelService) List(ctx context.Context, params BetaModelListParams,
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/models?beta=true"
+	path := "v1/models"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.models.list", "/v1/models", "after_id", "before_id", "lifecycle", "limit"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {

@@ -24,6 +24,7 @@ func TestBetaSkillNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Skills.New(context.TODO(), anthropic.BetaSkillNewParams{
 		Files:       []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
@@ -51,6 +52,7 @@ func TestBetaSkillGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Skills.Get(
 		context.TODO(),
@@ -80,6 +82,7 @@ func TestBetaSkillListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Skills.List(context.TODO(), anthropic.BetaSkillListParams{
 		Limit:       anthropic.Int(1),
@@ -108,6 +111,7 @@ func TestBetaSkillDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Skills.Delete(
 		context.TODO(),

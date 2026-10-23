@@ -101,8 +101,9 @@ func WithBetaFallbackState(state *BetaFallbackState) option.RequestOption {
 // An exhausted chain returns the last refusal as a normal response;
 // an empty chain disables the middleware.
 //
-// Only the beta Messages surface is handled (client.Beta.Messages, which
-// routes ?beta=true); plain client.Messages requests pass through untouched.
+// Only the beta Messages surface is handled (client.Beta.Messages); plain
+// client.Messages requests pass through untouched, and so does a request made
+// with client.Post or client.Execute.
 // With the Bedrock or Vertex options, register this middleware first — it
 // needs the Anthropic-shaped request, and after the platform transform it
 // stands down.
@@ -137,10 +138,9 @@ func BetaRefusalFallbackMiddleware(fallbacks []anthropic.BetaFallbackParam) opti
 			return next(req)
 		}
 		// The middleware is a beta feature: only the beta surface
-		// (client.Beta.Messages, which requests v1/messages?beta=true) is
-		// handled. The plain surface passes through untouched — no credit
-		// beta armed, no retry on refusal.
-		if req.URL.Query().Get("beta") != "true" {
+		// (client.Beta.Messages) is handled. The plain surface passes through
+		// untouched — no credit beta armed, no retry on refusal.
+		if requestconfig.Qualifiers(req)["beta"] != "true" {
 			return next(req)
 		}
 		mediaType, _, _ := mime.ParseMediaType(req.Header.Get("Content-Type"))

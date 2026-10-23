@@ -1,5 +1,37 @@
 # Changelog
 
+## [2.3.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.2.0...v2.3.0) (2026-10-23)
+
+### Features
+
+* **api:** add Claude Tag endpoints for Claude Enterprise organizations
+* **google-cloud:** add user profiles and send them to the organization endpoint
+
+
+### Bug Fixes
+
+* **auth:** don't overwrite a credentials file or spend its refresh token on a client's per-request base URL override
+
+
+### Chores
+
+* **client:** stop sending query params hardcoded in endpoint paths
+* **docs:** improve the descriptions of the code execution tool and its encrypted results
+* **docs:** reword work queue, skill and external key descriptions
+* **docs:** update descriptions of the per-user usage and cost reports
+* **internal:** carry endpoint path query params to the request layer
+* **internal:** check the repository by owner and public name in workflows
+* **internal:** read the beta route qualifier instead of the beta=true query
+* **internal:** remove preview build upload from CI
+* **internal:** stop expecting the beta query param in tests
+
+
+### Documentation
+
+* **client:** correct two doc comments on param.Opt
+* **google-cloud:** update the product name
+* update the README and the example request
+
 ## [2.2.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.1.0...v2.2.0) (2026-10-23)
 
 ### Features

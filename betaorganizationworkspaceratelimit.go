@@ -59,7 +59,8 @@ func (r *BetaOrganizationWorkspaceRateLimitService) Update(ctx context.Context, 
 		err = errors.New("missing required rate_limit_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/rate_limits/%s?beta=true", url.PathEscape(params.WorkspaceID), url.PathEscape(rateLimitID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/rate_limits/%s", url.PathEscape(params.WorkspaceID), url.PathEscape(rateLimitID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.rate_limits.update", "/v1/organizations/workspaces/{workspace_id}/rate_limits/{rate_limit_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", params.WorkspaceID), requestconfig.WithSpanAttribute("anthropic.organization.workspace.rate_limit.id", rateLimitID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -83,7 +84,8 @@ func (r *BetaOrganizationWorkspaceRateLimitService) List(ctx context.Context, wo
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/rate_limits?beta=true", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/rate_limits", url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.rate_limits.list", "/v1/organizations/workspaces/{workspace_id}/rate_limits", "group_type", "include_inherited", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {

@@ -23,6 +23,7 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.New(context.TODO(), anthropic.BetaDeploymentNewParams{
 		Agent: anthropic.BetaDeploymentNewParamsAgentUnion{
@@ -83,6 +84,7 @@ func TestBetaDeploymentGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Get(
 		context.TODO(),
@@ -112,6 +114,7 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Update(
 		context.TODO(),
@@ -176,6 +179,7 @@ func TestBetaDeploymentListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.List(context.TODO(), anthropic.BetaDeploymentListParams{
 		AgentID:         anthropic.String("agent_id"),
@@ -208,6 +212,7 @@ func TestBetaDeploymentArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Archive(
 		context.TODO(),
@@ -237,6 +242,7 @@ func TestBetaDeploymentPauseWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Pause(
 		context.TODO(),
@@ -266,6 +272,7 @@ func TestBetaDeploymentRunWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Run(
 		context.TODO(),
@@ -295,6 +302,7 @@ func TestBetaDeploymentUnpauseWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Unpause(
 		context.TODO(),

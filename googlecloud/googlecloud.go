@@ -1,14 +1,12 @@
-// Package googlecloud provides client configuration for Claude Platform on
-// Google Cloud — the first-party Anthropic API served through the Google Cloud
-// gateway.
+// Package googlecloud provides client configuration for Claude Models on Google
+// Cloud (Anthropic managed) — the first-party Anthropic API served through the
+// Google Cloud gateway.
 //
 // This is distinct from the older [github.com/anthropics/anthropic-sdk-go/v2/vertex]
 // package, which targets the :rawPredict publisher-model API (publisher
 // model IDs, messages only). This client speaks the first-party Anthropic API:
 // requests pass through the gateway unchanged — standard /v1/* paths and
 // standard model names.
-//
-// The gateway does not serve the User Profiles API.
 package googlecloud
 
 import (
@@ -20,7 +18,8 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
-// ClientConfig holds the configuration for creating a Claude Platform on Google Cloud client.
+// ClientConfig holds the configuration for creating a Claude Models on Google
+// Cloud (Anthropic managed) client.
 type ClientConfig struct {
 	// Project is the GCP consumer project ID. Resolved by precedence:
 	//  1. ClientConfig.Project
@@ -46,9 +45,9 @@ type ClientConfig struct {
 	//  2. The ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID environment variable
 	//
 	// Required when the base URL is derived, except by organization-level
-	// routes (paths under /v1/organizations), which are sent to the project's
-	// organization endpoint. A request that needs a workspace ID and has none
-	// fails before it is sent.
+	// routes (paths under /v1/organizations, and /v1/user_profiles and the
+	// paths under it), which are sent to the project's organization endpoint.
+	// A request that needs a workspace ID and has none fails before it is sent.
 	WorkspaceID string
 
 	// BaseURL overrides the default gateway base URL for every route. Resolved
@@ -68,20 +67,20 @@ type ClientConfig struct {
 }
 
 // Client provides access to the Anthropic API via the Google Cloud gateway. It
-// mirrors the surface of [anthropic.Client], without UserProfiles, which the
-// gateway does not serve.
+// mirrors the surface of [anthropic.Client].
 type Client struct {
 	Options      []option.RequestOption
 	Messages     anthropic.MessageService
 	Models       anthropic.ModelService
 	Files        anthropic.FileService
 	Skills       anthropic.SkillService
+	UserProfiles anthropic.UserProfileService
 	Organization anthropic.OrganizationService
 	Beta         anthropic.BetaService
 }
 
-// NewClient creates a new Claude Platform on Google Cloud client with the given
-// configuration.
+// NewClient creates a new Claude Models on Google Cloud (Anthropic managed)
+// client with the given configuration.
 //
 // Authentication uses Google credentials by precedence:
 //  1. TokenSource arg
@@ -106,6 +105,7 @@ func NewClient(ctx context.Context, cfg ClientConfig) (*Client, error) {
 		Models:       anthropic.NewModelService(opts...),
 		Files:        anthropic.NewFileService(opts...),
 		Skills:       anthropic.NewSkillService(opts...),
+		UserProfiles: anthropic.NewUserProfileService(opts...),
 		Organization: anthropic.NewOrganizationService(opts...),
 		Beta:         anthropic.NewBetaService(opts...),
 	}, nil

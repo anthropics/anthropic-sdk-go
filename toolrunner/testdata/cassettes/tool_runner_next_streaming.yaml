@@ -30,7 +30,7 @@ interactions:
       - go
       X-Stainless-Runtime-Version:
       - go1.24.5
-    url: https://api.anthropic.com/v1/messages?beta=true
+    url: https://api.anthropic.com/v1/messages
     method: POST
   response:
     body: |+

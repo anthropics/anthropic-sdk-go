@@ -63,7 +63,8 @@ func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, param
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions?beta=true", url.PathEscape(skillID))
+	path := fmt.Sprintf("v1/skills/%s/versions", url.PathEscape(skillID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.create", "/v1/skills/{skill_id}/versions"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID), requestconfig.WithSpanCreatedID("anthropic.skill.version.id", &res, func(created *BetaSkillVersion) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -93,7 +94,8 @@ func (r *BetaSkillVersionService) Get(ctx context.Context, version string, param
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions/%s?beta=true", url.PathEscape(params.SkillID), url.PathEscape(version))
+	path := fmt.Sprintf("v1/skills/%s/versions/%s", url.PathEscape(params.SkillID), url.PathEscape(version))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.retrieve", "/v1/skills/{skill_id}/versions/{version}"), requestconfig.WithSpanAttribute("anthropic.skill.id", params.SkillID), requestconfig.WithSpanAttribute("anthropic.skill.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -121,7 +123,8 @@ func (r *BetaSkillVersionService) List(ctx context.Context, skillID string, para
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions?beta=true", url.PathEscape(skillID))
+	path := fmt.Sprintf("v1/skills/%s/versions", url.PathEscape(skillID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.list", "/v1/skills/{skill_id}/versions", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -164,7 +167,8 @@ func (r *BetaSkillVersionService) Delete(ctx context.Context, version string, pa
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions/%s?beta=true", url.PathEscape(params.SkillID), url.PathEscape(version))
+	path := fmt.Sprintf("v1/skills/%s/versions/%s", url.PathEscape(params.SkillID), url.PathEscape(version))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.delete", "/v1/skills/{skill_id}/versions/{version}"), requestconfig.WithSpanAttribute("anthropic.skill.id", params.SkillID), requestconfig.WithSpanAttribute("anthropic.skill.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -195,7 +199,8 @@ func (r *BetaSkillVersionService) Download(ctx context.Context, version string, 
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions/%s/content?beta=true", url.PathEscape(params.SkillID), url.PathEscape(version))
+	path := fmt.Sprintf("v1/skills/%s/versions/%s/content", url.PathEscape(params.SkillID), url.PathEscape(version))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.download", "/v1/skills/{skill_id}/versions/{version}/content"), requestconfig.WithSpanAttribute("anthropic.skill.id", params.SkillID), requestconfig.WithSpanAttribute("anthropic.skill.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err

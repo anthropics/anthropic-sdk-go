@@ -4740,8 +4740,16 @@ func (r *CodeExecutionTool20250825Param) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Code execution tool with REPL state persistence (daemon mode + gVisor
-// checkpoint).
+// A `tools` entry for the code execution tool, version `code_execution_20260120`.
+// It adds REPL state persistence to version `code_execution_20250825`.
+//
+// REPL state persistence applies with programmatic tool calling. With it, the
+// Python interpreter state, such as variable bindings, persists across requests
+// that reuse the container.
+//
+// See the
+// [code execution tool guide](https://platform.claude.com/docs/en/agents-and-tools/tool-use/code-execution-tool#tool-versions)
+// to learn what each tool version adds.
 //
 // The properties Name, Type are required.
 type CodeExecutionTool20260120Param struct {
@@ -8538,7 +8546,15 @@ func init() {
 	)
 }
 
-// Code execution result with encrypted stdout for PFC + web_search results.
+// The output and exit code of Python code that Claude ran with the code execution
+// tool, with standard output in encrypted form.
+//
+// The API returns this block in place of `code_execution_result` when the code
+// called the web search tool.
+//
+// See the
+// [programmatic tool calling guide](https://platform.claude.com/docs/en/agents-and-tools/tool-use/programmatic-tool-calling)
+// to learn more about programmatic tool calling.
 type EncryptedCodeExecutionResultBlock struct {
 	Content         []CodeExecutionOutputBlock            `json:"content" api:"required"`
 	EncryptedStdout string                                `json:"encrypted_stdout" api:"required"`
@@ -8563,7 +8579,8 @@ func (r *EncryptedCodeExecutionResultBlock) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Code execution result with encrypted stdout for PFC + web_search results.
+// The output and exit code of Python code that Claude ran with the code execution
+// tool, with standard output in encrypted form, sent back in a later request.
 //
 // The properties Content, EncryptedStdout, ReturnCode, Stderr, Type are required.
 type EncryptedCodeExecutionResultBlockParam struct {
@@ -12062,7 +12079,7 @@ func (r *SignatureDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Specification for a skill to be loaded in a container (request model).
+// Specification for a skill to be loaded in a container.
 //
 // The properties SkillID, Type are required.
 type SkillParams struct {

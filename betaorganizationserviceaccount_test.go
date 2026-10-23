@@ -22,6 +22,7 @@ func TestBetaOrganizationServiceAccountNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ServiceAccounts.New(context.TODO(), anthropic.BetaOrganizationServiceAccountNewParams{
 		Name:             "ci-deploy-bot",
@@ -49,6 +50,7 @@ func TestBetaOrganizationServiceAccountGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ServiceAccounts.Get(
 		context.TODO(),
@@ -77,6 +79,7 @@ func TestBetaOrganizationServiceAccountUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ServiceAccounts.Update(
 		context.TODO(),
@@ -107,6 +110,7 @@ func TestBetaOrganizationServiceAccountListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ServiceAccounts.List(context.TODO(), anthropic.BetaOrganizationServiceAccountListParams{
 		IncludeArchived: anthropic.Bool(true),
@@ -134,6 +138,7 @@ func TestBetaOrganizationServiceAccountArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ServiceAccounts.Archive(
 		context.TODO(),

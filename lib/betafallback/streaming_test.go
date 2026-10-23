@@ -587,9 +587,7 @@ func TestStreamingEncodedResponsePassesThroughUnread(t *testing.T) {
 	middleware := betafallback.BetaRefusalFallbackMiddleware(
 		[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
 	)
-	req, err := http.NewRequest(http.MethodPost, "https://api.anthropic.com/v1/messages?beta=true",
-		strings.NewReader(`{"model": "primary-model", "messages": [], "max_tokens": 16, "stream": true}`))
-	require.NoError(t, err)
+	req := betaRequest(t, strings.NewReader(`{"model": "primary-model", "messages": [], "max_tokens": 16, "stream": true}`))
 	req.Header.Set("Content-Type", "application/json")
 	calls := 0
 	res, err := middleware(req, func(*http.Request) (*http.Response, error) {

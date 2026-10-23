@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/v2/lib/betafallback"
 	"github.com/anthropics/anthropic-sdk-go/v2/option"
 	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
@@ -119,6 +120,23 @@ func fallbackTestClient(t *testing.T, responses []string, middleware option.Midd
 		option.WithMiddleware(middleware),
 	)
 	return client, transport
+}
+
+// betaRequest returns the request that a middleware gets from a beta method
+// that posts body to v1/messages.
+func betaRequest(t *testing.T, body io.Reader) *http.Request {
+	t.Helper()
+	var req *http.Request
+	err := requestconfig.ExecuteNewRequest(context.Background(), http.MethodPost, "v1/messages", body, nil,
+		option.WithBaseURL("https://api.anthropic.com"),
+		requestconfig.WithQualifiers(map[string]string{"beta": "true"}),
+		option.WithMiddleware(func(sent *http.Request, _ option.MiddlewareNext) (*http.Response, error) {
+			req = sent
+			return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody}, nil
+		}),
+	)
+	require.NoError(t, err)
+	return req
 }
 
 var fallbackTestParams = anthropic.BetaMessageNewParams{
@@ -635,11 +653,9 @@ func TestRefusalFallbackMiddlewareErrorsWhenAFallbackHasNoModel(t *testing.T) {
 		[]anthropic.BetaFallbackParam{{MaxTokens: anthropic.Int(2048)}},
 	)
 
-	req, err := http.NewRequest(http.MethodPost, "https://api.anthropic.com/v1/messages?beta=true",
-		strings.NewReader(`{"model": "primary-model", "messages": [], "max_tokens": 16}`))
-	require.NoError(t, err)
+	req := betaRequest(t, strings.NewReader(`{"model": "primary-model", "messages": [], "max_tokens": 16}`))
 	req.Header.Set("Content-Type", "application/json")
-	_, err = middleware(req, func(*http.Request) (*http.Response, error) {
+	_, err := middleware(req, func(*http.Request) (*http.Response, error) {
 		t.Fatal("request should not be sent")
 		return nil, nil
 	})
@@ -656,9 +672,7 @@ func TestRefusalFallbackMiddlewareErrorsWhenAFallbackHasNoModel(t *testing.T) {
 
 	// Streaming requests are handled too; the bad chain fails them just as
 	// loudly.
-	streaming, err := http.NewRequest(http.MethodPost, "https://api.anthropic.com/v1/messages?beta=true",
-		strings.NewReader(`{"model": "primary-model", "messages": [], "max_tokens": 16, "stream": true}`))
-	require.NoError(t, err)
+	streaming := betaRequest(t, strings.NewReader(`{"model": "primary-model", "messages": [], "max_tokens": 16, "stream": true}`))
 	streaming.Header.Set("Content-Type", "application/json")
 	_, err = middleware(streaming, func(*http.Request) (*http.Response, error) {
 		t.Fatal("request should not be sent")
@@ -901,8 +915,7 @@ func TestRefusalFallbackMiddlewareSkipsEncodedResponseBodies(t *testing.T) {
 	)
 
 	calls := 0
-	req, err := http.NewRequest(http.MethodPost, "https://api.anthropic.com/v1/messages?beta=true", strings.NewReader(`{"model": "primary-model"}`))
-	require.NoError(t, err)
+	req := betaRequest(t, strings.NewReader(`{"model": "primary-model"}`))
 	req.Header.Set("Content-Type", "application/json")
 	res, err := middleware(req, func(*http.Request) (*http.Response, error) {
 		calls++
@@ -955,11 +968,9 @@ func TestRefusalFallbackMiddlewareDoesNotAddTheBetaToPassthroughRequests(t *test
 		[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
 	)
 
-	req, err := http.NewRequest(http.MethodPost, "https://api.anthropic.com/v1/messages?beta=true",
-		strings.NewReader(`{"model": "primary-model", "stream": true}`))
-	require.NoError(t, err)
+	req := betaRequest(t, strings.NewReader(`{"model": "primary-model", "stream": true}`))
 	req.Header.Set("Content-Type", "application/json")
-	_, err = middleware(req, func(seen *http.Request) (*http.Response, error) {
+	_, err := middleware(req, func(seen *http.Request) (*http.Response, error) {
 		assert.Empty(t, seen.Header.Values("anthropic-beta"))
 		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader("{}"))}, nil
 	})
@@ -972,8 +983,7 @@ func TestRefusalFallbackMiddlewarePassesErrorResponsesThrough(t *testing.T) {
 	)
 
 	calls := 0
-	req, err := http.NewRequest(http.MethodPost, "https://api.anthropic.com/v1/messages?beta=true", strings.NewReader(`{"model": "primary-model", "messages": [], "max_tokens": 16}`))
-	require.NoError(t, err)
+	req := betaRequest(t, strings.NewReader(`{"model": "primary-model", "messages": [], "max_tokens": 16}`))
 	req.Header.Set("Content-Type", "application/json")
 	errorBody := `{"type": "error", "error": {"type": "invalid_request_error", "message": "nope"}}`
 	res, err := middleware(req, func(*http.Request) (*http.Response, error) {
@@ -995,12 +1005,10 @@ func TestRefusalFallbackMiddlewarePassesNonJSONContentTypesThroughUnread(t *test
 		[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
 	)
 
-	req, err := http.NewRequest(http.MethodPost, "https://api.anthropic.com/v1/messages?beta=true",
-		strings.NewReader("--boundary--"))
-	require.NoError(t, err)
+	req := betaRequest(t, strings.NewReader("--boundary--"))
 	req.Header.Set("Content-Type", "multipart/form-data; boundary=boundary")
 	calls := 0
-	_, err = middleware(req, func(seen *http.Request) (*http.Response, error) {
+	_, err := middleware(req, func(seen *http.Request) (*http.Response, error) {
 		calls++
 		body, err := io.ReadAll(seen.Body)
 		require.NoError(t, err)
@@ -1021,9 +1029,7 @@ func TestRefusalFallbackMiddlewareWorksWithUnbufferableRequestBodies(t *testing.
 		[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
 	)
 
-	req, err := http.NewRequest(http.MethodPost, "https://api.anthropic.com/v1/messages?beta=true",
-		opaqueReader{strings.NewReader(`{"model": "primary-model", "max_tokens": 16, "messages": []}`)})
-	require.NoError(t, err)
+	req := betaRequest(t, opaqueReader{strings.NewReader(`{"model": "primary-model", "max_tokens": 16, "messages": []}`)})
 	require.Nil(t, req.GetBody, "test requires an unbufferable body")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -1216,6 +1222,35 @@ func TestRefusalFallbackMiddlewareStandsDownOffTheBetaSurface(t *testing.T) {
 	assert.Contains(t, string(body), `"refusal"`)
 }
 
+func TestRefusalFallbackMiddlewareHandlesARequestWithTheBetaQualifier(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{refusalResponse("primary-model", "credit-token"), messageResponse("fallback-model")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
+		),
+	)
+
+	err := client.Post(context.Background(), "v1/messages", fallbackTestParams, nil,
+		requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	require.NoError(t, err)
+	assert.Equal(t, []string{"primary-model", "fallback-model"}, transport.models())
+}
+
+func TestRefusalFallbackMiddlewareIgnoresTheBetaQuery(t *testing.T) {
+	client, transport := fallbackTestClient(t,
+		[]string{refusalResponse("primary-model", "credit-token")},
+		betafallback.BetaRefusalFallbackMiddleware(
+			[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
+		),
+	)
+
+	err := client.Post(context.Background(), "v1/messages?beta=true", fallbackTestParams, nil)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"primary-model"}, transport.models())
+	assert.Equal(t, [][]string{nil}, transport.betas)
+	assert.Equal(t, [][]string{nil}, transport.helpers)
+}
+
 func TestRefusalFallbackMiddlewarePrependsFallbackBlockWhenCallerArmedTheBeta(t *testing.T) {
 	// A caller already opted into the credit beta sees the same stitched
 	// envelope the server's own chain produces: a fallback boundary block
@@ -1223,9 +1258,7 @@ func TestRefusalFallbackMiddlewarePrependsFallbackBlockWhenCallerArmedTheBeta(t 
 	middleware := betafallback.BetaRefusalFallbackMiddleware(
 		[]anthropic.BetaFallbackParam{{Model: "fallback-model"}},
 	)
-	req, err := http.NewRequest(http.MethodPost, "https://api.anthropic.com/v1/messages?beta=true",
-		strings.NewReader(`{"model": "primary-model", "messages": [], "max_tokens": 16}`))
-	require.NoError(t, err)
+	req := betaRequest(t, strings.NewReader(`{"model": "primary-model", "messages": [], "max_tokens": 16}`))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("anthropic-beta", string(anthropic.AnthropicBetaFallbackCredit2026_07_01))
 

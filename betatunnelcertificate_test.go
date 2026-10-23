@@ -22,6 +22,7 @@ func TestBetaTunnelCertificateNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Tunnels.Certificates.New(
 		context.TODO(),
@@ -52,6 +53,7 @@ func TestBetaTunnelCertificateGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Tunnels.Certificates.Get(
 		context.TODO(),
@@ -82,6 +84,7 @@ func TestBetaTunnelCertificateListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Tunnels.Certificates.List(
 		context.TODO(),
@@ -114,6 +117,7 @@ func TestBetaTunnelCertificateArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Tunnels.Certificates.Archive(
 		context.TODO(),

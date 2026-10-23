@@ -58,7 +58,8 @@ func (r *BetaUserProfileService) New(ctx context.Context, params BetaUserProfile
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "user-profiles-2026-08-18")}, opts...)
-	path := "v1/user_profiles?beta=true"
+	path := "v1/user_profiles"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.create", "/v1/user_profiles"), requestconfig.WithSpanCreatedID("anthropic.user_profile.id", &res, func(created *BetaUserProfile) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -85,7 +86,8 @@ func (r *BetaUserProfileService) Get(ctx context.Context, userProfileID string, 
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s?beta=true", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.retrieve", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -112,7 +114,8 @@ func (r *BetaUserProfileService) Update(ctx context.Context, userProfileID strin
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s?beta=true", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.update", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -136,7 +139,8 @@ func (r *BetaUserProfileService) List(ctx context.Context, params BetaUserProfil
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "user-profiles-2026-08-18"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/user_profiles?beta=true"
+	path := "v1/user_profiles"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.list", "/v1/user_profiles", "limit", "order", "order_by", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -176,7 +180,8 @@ func (r *BetaUserProfileService) Delete(ctx context.Context, userProfileID strin
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s?beta=true", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.delete", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -203,7 +208,8 @@ func (r *BetaUserProfileService) NewEnrollmentURL(ctx context.Context, userProfi
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s/enrollment_url?beta=true", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s/enrollment_url", url.PathEscape(userProfileID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.create_enrollment_url", "/v1/user_profiles/{user_profile_id}/enrollment_url"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

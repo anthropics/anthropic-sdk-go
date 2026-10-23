@@ -23,6 +23,7 @@ func TestBetaOrganizationAnalyticsSkillListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Analytics.Skills.List(context.TODO(), anthropic.BetaOrganizationAnalyticsSkillListParams{
 		Date:         anthropic.Time(time.Now()),

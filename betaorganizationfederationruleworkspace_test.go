@@ -22,6 +22,7 @@ func TestBetaOrganizationFederationRuleWorkspaceListWithOptionalParams(t *testin
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Rules.Workspaces.List(
 		context.TODO(),
@@ -52,6 +53,7 @@ func TestBetaOrganizationFederationRuleWorkspaceAddWithOptionalParams(t *testing
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Rules.Workspaces.Add(
 		context.TODO(),
@@ -81,6 +83,7 @@ func TestBetaOrganizationFederationRuleWorkspaceRemoveWithOptionalParams(t *test
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Rules.Workspaces.Remove(
 		context.TODO(),

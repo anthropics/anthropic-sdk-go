@@ -22,6 +22,7 @@ func TestBetaEnvironmentNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.New(context.TODO(), anthropic.BetaEnvironmentNewParams{
 		Name: "python-data-analysis",
@@ -73,6 +74,7 @@ func TestBetaEnvironmentGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Get(
 		context.TODO(),
@@ -102,6 +104,7 @@ func TestBetaEnvironmentUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Update(
 		context.TODO(),
@@ -157,6 +160,7 @@ func TestBetaEnvironmentListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.List(context.TODO(), anthropic.BetaEnvironmentListParams{
 		IncludeArchived: anthropic.Bool(true),
@@ -185,6 +189,7 @@ func TestBetaEnvironmentDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Delete(
 		context.TODO(),
@@ -214,6 +219,7 @@ func TestBetaEnvironmentArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Archive(
 		context.TODO(),

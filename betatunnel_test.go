@@ -22,6 +22,7 @@ func TestBetaTunnelNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Tunnels.New(context.TODO(), anthropic.BetaTunnelNewParams{
 		DisplayName: anthropic.String("x"),
@@ -48,6 +49,7 @@ func TestBetaTunnelGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Tunnels.Get(
 		context.TODO(),
@@ -77,6 +79,7 @@ func TestBetaTunnelListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Tunnels.List(context.TODO(), anthropic.BetaTunnelListParams{
 		IncludeArchived: anthropic.Bool(true),
@@ -105,6 +108,7 @@ func TestBetaTunnelArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Tunnels.Archive(
 		context.TODO(),
@@ -134,6 +138,7 @@ func TestBetaTunnelRevealTokenWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Tunnels.RevealToken(
 		context.TODO(),
@@ -163,6 +168,7 @@ func TestBetaTunnelRotateTokenWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Tunnels.RotateToken(
 		context.TODO(),

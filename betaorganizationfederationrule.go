@@ -73,7 +73,8 @@ func (r *BetaOrganizationFederationRuleService) New(ctx context.Context, params 
 		}))
 	}
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/federation_rules?beta=true"
+	path := "v1/organizations/federation_rules"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.create", "/v1/organizations/federation_rules"), requestconfig.WithSpanCreatedID("anthropic.organization.federation_rule.id", &res, func(created *BetaFederationRule) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -101,7 +102,8 @@ func (r *BetaOrganizationFederationRuleService) Get(ctx context.Context, federat
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", url.PathEscape(federationRuleID))
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s", url.PathEscape(federationRuleID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.retrieve", "/v1/organizations/federation_rules/{federation_rule_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -144,7 +146,8 @@ func (r *BetaOrganizationFederationRuleService) Update(ctx context.Context, fede
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s?beta=true", url.PathEscape(federationRuleID))
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s", url.PathEscape(federationRuleID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.update", "/v1/organizations/federation_rules/{federation_rule_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -173,7 +176,8 @@ func (r *BetaOrganizationFederationRuleService) List(ctx context.Context, params
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/federation_rules?beta=true"
+	path := "v1/organizations/federation_rules"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.list", "/v1/organizations/federation_rules", "include_archived", "issuer_id", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -229,7 +233,8 @@ func (r *BetaOrganizationFederationRuleService) Archive(ctx context.Context, fed
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/archive?beta=true", url.PathEscape(federationRuleID))
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s/archive", url.PathEscape(federationRuleID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.archive", "/v1/organizations/federation_rules/{federation_rule_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

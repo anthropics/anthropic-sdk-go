@@ -22,6 +22,7 @@ func TestBetaEnvironmentWorkGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Work.Get(
 		context.TODO(),
@@ -52,6 +53,7 @@ func TestBetaEnvironmentWorkUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Work.Update(
 		context.TODO(),
@@ -87,6 +89,7 @@ func TestBetaEnvironmentWorkListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Work.List(
 		context.TODO(),
@@ -117,6 +120,7 @@ func TestBetaEnvironmentWorkAckWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Work.Ack(
 		context.TODO(),
@@ -146,6 +150,7 @@ func TestBetaEnvironmentWorkHeartbeatWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Work.Heartbeat(
 		context.TODO(),
@@ -177,6 +182,7 @@ func TestBetaEnvironmentWorkPollWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Work.Poll(
 		context.TODO(),
@@ -208,6 +214,7 @@ func TestBetaEnvironmentWorkStatsWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Work.Stats(
 		context.TODO(),
@@ -237,6 +244,7 @@ func TestBetaEnvironmentWorkStopWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Environments.Work.Stop(
 		context.TODO(),

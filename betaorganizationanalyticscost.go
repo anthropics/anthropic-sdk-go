@@ -59,7 +59,8 @@ func (r *BetaOrganizationAnalyticsCostService) List(ctx context.Context, params 
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "analytics-usage-cost-2026-08-24"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/analytics/cost?beta=true"
+	path := "v1/organizations/analytics/cost"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.cost.list", "/v1/organizations/analytics/cost", "actor_ids", "actor_types", "agent_ids", "api_key_ids", "claude_tag_categories", "claude_tag_user_ids", "context_windows", "deployment_ids", "ending_at", "environment_ids", "exclude_deleted_users", "group_by", "inference_geos", "limit", "models", "order", "order_by", "page", "products", "rbac_group_ids", "service_tiers", "session_ids", "slack_channel_ids", "speeds", "starting_at", "time_bucket_width", "user_profile_ids", "workspace_ids"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {

@@ -22,6 +22,7 @@ func TestBetaOrganizationAPIKeyGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.APIKeys.Get(context.TODO(), "api_key_id")
 	if err != nil {
@@ -44,6 +45,7 @@ func TestBetaOrganizationAPIKeyUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.APIKeys.Update(
 		context.TODO(),
@@ -73,6 +75,7 @@ func TestBetaOrganizationAPIKeyListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.APIKeys.List(context.TODO(), anthropic.BetaOrganizationAPIKeyListParams{
 		AfterID:         anthropic.String("after_id"),

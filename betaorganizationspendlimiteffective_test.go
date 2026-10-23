@@ -22,6 +22,7 @@ func TestBetaOrganizationSpendLimitEffectiveListWithOptionalParams(t *testing.T)
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.SpendLimits.Effective.List(context.TODO(), anthropic.BetaOrganizationSpendLimitEffectiveListParams{
 		Limit:   anthropic.Int(1),

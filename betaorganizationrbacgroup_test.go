@@ -22,6 +22,7 @@ func TestBetaOrganizationRBACGroupNew(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.RBACGroups.New(context.TODO(), anthropic.BetaOrganizationRBACGroupNewParams{
 		Name: "Engineering",
@@ -46,6 +47,7 @@ func TestBetaOrganizationRBACGroupGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.RBACGroups.Get(context.TODO(), "rbac_group_id")
 	if err != nil {
@@ -68,6 +70,7 @@ func TestBetaOrganizationRBACGroupUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.RBACGroups.Update(
 		context.TODO(),
@@ -96,6 +99,7 @@ func TestBetaOrganizationRBACGroupListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.RBACGroups.List(context.TODO(), anthropic.BetaOrganizationRBACGroupListParams{
 		Limit: anthropic.Int(1),
@@ -121,6 +125,7 @@ func TestBetaOrganizationRBACGroupDelete(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.RBACGroups.Delete(context.TODO(), "rbac_group_id")
 	if err != nil {

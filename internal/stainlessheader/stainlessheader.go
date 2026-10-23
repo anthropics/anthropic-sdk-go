@@ -34,10 +34,9 @@ const (
 )
 
 // With returns a request option (assignable to [option.RequestOption]) that
-// appends value to the x-stainless-helper header rather than replacing it —
-// the backend logs the header as one opaque string, so a second header line or
-// a clobbered value loses data. Existing tags keep their position; the new tag
-// appends at the end; duplicates are dropped.
+// appends value to the x-stainless-helper header rather than replacing it,
+// because a second header line or a clobbered value loses data. Existing tags
+// keep their position; the new tag appends at the end; duplicates are dropped.
 func With(value Value) requestconfig.RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		AppendHeaderValue(r.Request.Header, value)

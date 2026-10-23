@@ -48,7 +48,8 @@ func (r *BetaOrganizationRateLimitService) List(ctx context.Context, query BetaO
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/rate_limits?beta=true"
+	path := "v1/organizations/rate_limits"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rate_limits.list", "/v1/organizations/rate_limits", "group_type", "limit", "model", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {

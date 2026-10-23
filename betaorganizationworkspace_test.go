@@ -23,6 +23,7 @@ func TestBetaOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.New(context.TODO(), anthropic.BetaOrganizationWorkspaceNewParams{
 		Name: "x",
@@ -61,6 +62,7 @@ func TestBetaOrganizationWorkspaceGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.Get(context.TODO(), "workspace_id")
 	if err != nil {
@@ -83,6 +85,7 @@ func TestBetaOrganizationWorkspaceUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.Update(
 		context.TODO(),
@@ -123,6 +126,7 @@ func TestBetaOrganizationWorkspaceListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.List(context.TODO(), anthropic.BetaOrganizationWorkspaceListParams{
 		AfterID:         anthropic.String("after_id"),
@@ -151,6 +155,7 @@ func TestBetaOrganizationWorkspaceArchive(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.Archive(context.TODO(), "workspace_id")
 	if err != nil {

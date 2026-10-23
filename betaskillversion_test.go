@@ -26,6 +26,7 @@ func TestBetaSkillVersionNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Skills.Versions.New(
 		context.TODO(),
@@ -56,6 +57,7 @@ func TestBetaSkillVersionGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Skills.Versions.Get(
 		context.TODO(),
@@ -86,6 +88,7 @@ func TestBetaSkillVersionListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Skills.Versions.List(
 		context.TODO(),
@@ -117,6 +120,7 @@ func TestBetaSkillVersionDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Skills.Versions.Delete(
 		context.TODO(),
@@ -146,6 +150,7 @@ func TestBetaSkillVersionDownloadWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	resp, err := client.Beta.Skills.Versions.Download(
 		context.TODO(),

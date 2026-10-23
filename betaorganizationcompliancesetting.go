@@ -42,7 +42,8 @@ func NewBetaOrganizationComplianceSettingService(opts ...option.RequestOption) (
 // organization reads the state inherited from the parent's configuration.
 func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/compliance_settings?beta=true"
+	path := "v1/organizations/compliance_settings"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.compliance_settings.retrieve", "/v1/organizations/compliance_settings"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -63,7 +64,8 @@ func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts
 // provisioning never disables compliance settings.
 func (r *BetaOrganizationComplianceSettingService) Update(ctx context.Context, body BetaOrganizationComplianceSettingUpdateParams, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/compliance_settings?beta=true"
+	path := "v1/organizations/compliance_settings"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.compliance_settings.update", "/v1/organizations/compliance_settings"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err

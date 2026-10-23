@@ -22,6 +22,7 @@ func TestBetaOrganizationFederationRuleNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Rules.New(context.TODO(), anthropic.BetaOrganizationFederationRuleNewParams{
 		IssuerID: "issuer_id",
@@ -68,6 +69,7 @@ func TestBetaOrganizationFederationRuleGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Rules.Get(
 		context.TODO(),
@@ -96,6 +98,7 @@ func TestBetaOrganizationFederationRuleUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Rules.Update(
 		context.TODO(),
@@ -145,6 +148,7 @@ func TestBetaOrganizationFederationRuleListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Rules.List(context.TODO(), anthropic.BetaOrganizationFederationRuleListParams{
 		IncludeArchived: anthropic.Bool(true),
@@ -173,6 +177,7 @@ func TestBetaOrganizationFederationRuleArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Rules.Archive(
 		context.TODO(),

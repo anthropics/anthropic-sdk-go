@@ -22,6 +22,7 @@ func TestBetaOrganizationWorkspaceRateLimitUpdate(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.RateLimits.Update(
 		context.TODO(),
@@ -54,6 +55,7 @@ func TestBetaOrganizationWorkspaceRateLimitListWithOptionalParams(t *testing.T) 
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.RateLimits.List(
 		context.TODO(),

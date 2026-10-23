@@ -22,6 +22,7 @@ func TestBetaOrganizationFederationIssuerNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Issuers.New(context.TODO(), anthropic.BetaOrganizationFederationIssuerNewParams{
 		IssuerURL: "x",
@@ -56,6 +57,7 @@ func TestBetaOrganizationFederationIssuerGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Issuers.Get(
 		context.TODO(),
@@ -84,6 +86,7 @@ func TestBetaOrganizationFederationIssuerUpdateWithOptionalParams(t *testing.T) 
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Issuers.Update(
 		context.TODO(),
@@ -123,6 +126,7 @@ func TestBetaOrganizationFederationIssuerListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Issuers.List(context.TODO(), anthropic.BetaOrganizationFederationIssuerListParams{
 		IncludeArchived: anthropic.Bool(true),
@@ -150,6 +154,7 @@ func TestBetaOrganizationFederationIssuerArchiveWithOptionalParams(t *testing.T)
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Issuers.Archive(
 		context.TODO(),

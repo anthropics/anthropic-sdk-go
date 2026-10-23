@@ -22,6 +22,7 @@ func TestBetaOrganizationPluginInstallationSettingListWithOptionalParams(t *test
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Plugins.InstallationSettings.List(
 		context.TODO(),
@@ -54,6 +55,7 @@ func TestBetaOrganizationPluginInstallationSettingRemoveWithOptionalParams(t *te
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Plugins.InstallationSettings.Remove(
 		context.TODO(),
@@ -83,6 +85,7 @@ func TestBetaOrganizationPluginInstallationSettingSetWithOptionalParams(t *testi
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Plugins.InstallationSettings.Set(
 		context.TODO(),

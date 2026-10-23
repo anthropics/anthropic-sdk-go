@@ -23,6 +23,7 @@ func TestBetaDreamNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Dreams.New(context.TODO(), anthropic.BetaDreamNewParams{
 		Inputs: []anthropic.BetaDreamInputUnionParam{{
@@ -60,6 +61,7 @@ func TestBetaDreamGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Dreams.Get(
 		context.TODO(),
@@ -89,6 +91,7 @@ func TestBetaDreamListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Dreams.List(context.TODO(), anthropic.BetaDreamListParams{
 		CreatedAtGt:     anthropic.Time(time.Now()),
@@ -120,6 +123,7 @@ func TestBetaDreamArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Dreams.Archive(
 		context.TODO(),
@@ -149,6 +153,7 @@ func TestBetaDreamCancelWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Dreams.Cancel(
 		context.TODO(),

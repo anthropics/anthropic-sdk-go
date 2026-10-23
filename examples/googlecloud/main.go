@@ -10,10 +10,11 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/v2/googlecloud"
 )
 
-// Claude Platform on Google Cloud: the full first-party Anthropic API served
-// through the Google Cloud gateway. Authentication uses Google Application
-// Default Credentials (run `gcloud auth application-default login`, or rely on
-// the ambient service-account credentials in a GCP environment).
+// Claude Models on Google Cloud (Anthropic managed): the full first-party
+// Anthropic API served through the Google Cloud gateway. Authentication uses
+// Google Application Default Credentials (run
+// `gcloud auth application-default login`, or rely on the ambient
+// service-account credentials in a GCP environment).
 //
 // Configure via environment, or set the fields directly:
 //

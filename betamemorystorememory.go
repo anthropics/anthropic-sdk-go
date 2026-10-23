@@ -61,7 +61,8 @@ func (r *BetaMemoryStoreMemoryService) New(ctx context.Context, memoryStoreID st
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories?beta=true", url.PathEscape(memoryStoreID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memories", url.PathEscape(memoryStoreID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memories.create", "/v1/memory_stores/{memory_store_id}/memories", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID), requestconfig.WithSpanCreatedID("gen_ai.memory.record.id", &res, func(created *BetaManagedAgentsMemory) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -92,7 +93,8 @@ func (r *BetaMemoryStoreMemoryService) Get(ctx context.Context, memoryID string,
 		err = errors.New("missing required memory_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memories.retrieve", "/v1/memory_stores/{memory_store_id}/memories/{memory_id}", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("gen_ai.memory.record.id", memoryID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
@@ -123,7 +125,8 @@ func (r *BetaMemoryStoreMemoryService) Update(ctx context.Context, memoryID stri
 		err = errors.New("missing required memory_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memories.update", "/v1/memory_stores/{memory_store_id}/memories/{memory_id}", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("gen_ai.memory.record.id", memoryID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -151,7 +154,8 @@ func (r *BetaMemoryStoreMemoryService) List(ctx context.Context, memoryStoreID s
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories?beta=true", url.PathEscape(memoryStoreID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memories", url.PathEscape(memoryStoreID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memories.list", "/v1/memory_stores/{memory_store_id}/memories", "depth", "limit", "page", "path_prefix", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID))
 	opts = append(opts, requestconfig.WithSpanContentQuery("page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -196,7 +200,8 @@ func (r *BetaMemoryStoreMemoryService) Delete(ctx context.Context, memoryID stri
 		err = errors.New("missing required memory_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memories.delete", "/v1/memory_stores/{memory_store_id}/memories/{memory_id}", "expected_content_sha256"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("gen_ai.memory.record.id", memoryID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, params, &res, opts...)
 	return res, err

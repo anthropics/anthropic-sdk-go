@@ -151,9 +151,8 @@ type WorkPollerOptions struct {
 	// call the poller issues — Poll, Ack and Stop. Required.
 	EnvironmentKey string
 
-	// WorkerID is a stable identifier reported back to the server for
-	// observability and Redis consumer-group routing. Defaults to
-	// "<os.Hostname()>-<random hex>".
+	// WorkerID is a stable identifier reported back to the server. Defaults
+	// to "<os.Hostname()>-<random hex>".
 	WorkerID string
 
 	// RequestOptions are applied to every work.* call the poller issues —
@@ -638,11 +637,10 @@ func sleep(ctx context.Context, d time.Duration) {
 	}
 }
 
-// defaultWorkerID returns a process-unique worker id. The control plane uses
-// it for observability and Redis consumer-group routing and documents that it
-// must be unique, so even when os.Hostname succeeds we append a random suffix
-// rather than reusing a bare (and possibly shared) hostname; if Hostname fails
-// the random suffix alone still keeps the id unique.
+// defaultWorkerID returns a process-unique worker id. The id must be unique,
+// so even when os.Hostname succeeds we append a random suffix rather than
+// reusing a bare (and possibly shared) hostname; if Hostname fails the random
+// suffix alone still keeps the id unique.
 func defaultWorkerID(log *slog.Logger) string {
 	var b [8]byte
 	if _, err := crand.Read(b[:]); err != nil {

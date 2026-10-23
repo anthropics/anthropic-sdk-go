@@ -37,20 +37,16 @@ const (
 	// refresh_token grants against the token endpoint.
 	OAuthAPIBetaHeader = "oauth-2025-04-20"
 
-	// FederationBetaHeader is the anthropic-beta value required on
-	// jwt-bearer exchanges against the token endpoint. It routes the
-	// request to the Go userauth service; it must NOT be sent on
-	// refresh_token grants, which are gateway-routed to the Python
-	// oauth-server.
+	// FederationBetaHeader is the anthropic-beta value sent on
+	// jwt-bearer exchanges against the token endpoint. It must NOT be
+	// sent on refresh_token grants.
 	FederationBetaHeader = "oidc-federation-2026-04-01"
 )
 
 const (
 	defaultAPIBaseURL = "https://api.anthropic.com"
 	// federationExchangeBetaValue is the combined anthropic-beta value
-	// for jwt-bearer exchanges: oauth-2025-04-20 unlocks the oauth/token
-	// endpoint family, and oidc-federation-2026-04-01 routes jwt-bearer
-	// to the federation service.
+	// sent on jwt-bearer exchanges.
 	federationExchangeBetaValue = OAuthAPIBetaHeader + "," + FederationBetaHeader
 )
 
@@ -102,13 +98,10 @@ type FederationExchangeParams struct {
 	UserAgent string
 }
 
-// federationExchangeRequest mirrors the JSON body the server's token
-// endpoint accepts. The REST gateway's AliasTransformation strips any
-// field not in this exact set, so each JSON tag is load-bearing — sending
-// "federation_rule" or "organization" (without "_id") causes the gateway
-// to drop the value and the Connect handler to fail with an empty
-// federation_rule_id error. Keep in sync with
-// internal/auth/workload.go:tokenExchangeRequest.
+// federationExchangeRequest mirrors the JSON body the token endpoint
+// accepts. The server ignores any other field, so sending
+// "federation_rule" or "organization" (without "_id") fails the request.
+// Keep in sync with internal/auth/workload.go:tokenExchangeRequest.
 type federationExchangeRequest struct {
 	GrantType        string `json:"grant_type"`
 	Assertion        string `json:"assertion"`

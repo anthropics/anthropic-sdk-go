@@ -46,7 +46,8 @@ func NewBetaOrganizationInviteService(opts ...option.RequestOption) (r BetaOrgan
 // rather than purchasing a seat.
 func (r *BetaOrganizationInviteService) New(ctx context.Context, body BetaOrganizationInviteNewParams, opts ...option.RequestOption) (res *BetaOrganizationInvite, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/invites?beta=true"
+	path := "v1/organizations/invites"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.invites.create", "/v1/organizations/invites"), requestconfig.WithSpanCreatedID("anthropic.organization.invite.id", &res, func(created *BetaOrganizationInvite) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -59,7 +60,8 @@ func (r *BetaOrganizationInviteService) Get(ctx context.Context, inviteID string
 		err = errors.New("missing required invite_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/invites/%s?beta=true", url.PathEscape(inviteID))
+	path := fmt.Sprintf("v1/organizations/invites/%s", url.PathEscape(inviteID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.invites.retrieve", "/v1/organizations/invites/{invite_id}"), requestconfig.WithSpanAttribute("anthropic.organization.invite.id", inviteID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -70,7 +72,8 @@ func (r *BetaOrganizationInviteService) List(ctx context.Context, query BetaOrga
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/invites?beta=true"
+	path := "v1/organizations/invites"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.invites.list", "/v1/organizations/invites", "after_id", "before_id", "email", "limit", "roles", "statuses"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
@@ -96,7 +99,8 @@ func (r *BetaOrganizationInviteService) Delete(ctx context.Context, inviteID str
 		err = errors.New("missing required invite_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/invites/%s?beta=true", url.PathEscape(inviteID))
+	path := fmt.Sprintf("v1/organizations/invites/%s", url.PathEscape(inviteID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.invites.delete", "/v1/organizations/invites/{invite_id}"), requestconfig.WithSpanAttribute("anthropic.organization.invite.id", inviteID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

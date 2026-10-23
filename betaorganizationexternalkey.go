@@ -43,7 +43,8 @@ func NewBetaOrganizationExternalKeyService(opts ...option.RequestOption) (r Beta
 // Create an external key config owned by the caller's organization.
 func (r *BetaOrganizationExternalKeyService) New(ctx context.Context, body BetaOrganizationExternalKeyNewParams, opts ...option.RequestOption) (res *BetaExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/external_keys?beta=true"
+	path := "v1/organizations/external_keys"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.create", "/v1/organizations/external_keys"), requestconfig.WithSpanCreatedID("anthropic.organization.external_key.id", &res, func(created *BetaExternalKey) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -56,7 +57,8 @@ func (r *BetaOrganizationExternalKeyService) Get(ctx context.Context, externalKe
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s?beta=true", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.retrieve", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -73,7 +75,8 @@ func (r *BetaOrganizationExternalKeyService) Update(ctx context.Context, externa
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s?beta=true", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.update", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -87,7 +90,8 @@ func (r *BetaOrganizationExternalKeyService) List(ctx context.Context, query Bet
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/external_keys?beta=true"
+	path := "v1/organizations/external_keys"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.list", "/v1/organizations/external_keys", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
@@ -118,7 +122,8 @@ func (r *BetaOrganizationExternalKeyService) Delete(ctx context.Context, externa
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s?beta=true", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.delete", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -136,7 +141,8 @@ func (r *BetaOrganizationExternalKeyService) Validate(ctx context.Context, exter
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s/validate?beta=true", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s/validate", url.PathEscape(externalKeyID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.validate", "/v1/organizations/external_keys/{external_key_id}/validate"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -286,8 +292,8 @@ type BetaExternalKey struct {
 	CreatedAt  time.Time                      `json:"created_at" api:"required" format:"date-time"`
 	// Human-friendly display name. Null if none was set.
 	DisplayName string `json:"display_name" api:"required"`
-	// Data residency geo. Selects which regional validator handles this key's
-	// encrypt/decrypt roundtrips.
+	// Data residency geo. Selects the region that handles this key's encrypt/decrypt
+	// roundtrips.
 	Geo string `json:"geo" api:"required"`
 	// KMS provider identity and auth coordinates.
 	ProviderConfig BetaExternalKeyProviderConfigUnion `json:"provider_config" api:"required"`

@@ -57,7 +57,8 @@ func (r *BetaAgentVersionService) List(ctx context.Context, agentID string, para
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/versions?beta=true", url.PathEscape(agentID))
+	path := fmt.Sprintf("v1/agents/%s/versions", url.PathEscape(agentID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.versions.list", "/v1/agents/{agent_id}/versions", "limit", "page"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {

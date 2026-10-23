@@ -32,7 +32,7 @@ func TestOpenTelemetryRequestSpanHasTheMethodTheRouteAndTheURL(t *testing.T) {
 	if _, err := client.Beta.Messages.Batches.Get(context.Background(), "msgbatch_1", anthropic.BetaMessageBatchGetParams{}); err != nil {
 		t.Fatal(err)
 	}
-	if want := "https://user:secret@api.example.com:8443/proxy/v1/messages/batches/msgbatch_1?beta=true"; sent != want {
+	if want := "https://user:secret@api.example.com:8443/proxy/v1/messages/batches/msgbatch_1"; sent != want {
 		t.Fatalf("the request went to %s, want %s", sent, want)
 	}
 	// The route is the endpoint's, whatever the base URL, and the URL is the one
@@ -97,7 +97,7 @@ func TestOpenTelemetryURLQueryHasOnlyTheParametersThatTheEndpointDefines(t *test
 				return err
 			},
 			opts:  []option.RequestOption{option.WithQuery("trace", "on")},
-			sent:  "beta=true&ids%5B%5D=file_b&ids%5B%5D=file+a&limit=5&scope_id=sesn_1&trace=on",
+			sent:  "ids%5B%5D=file_b&ids%5B%5D=file+a&limit=5&scope_id=sesn_1&trace=on",
 			query: "ids%5B%5D=file_b&ids%5B%5D=file+a&limit=5&scope_id=sesn_1",
 		},
 		// scope_id is a parameter of the beta endpoint only.
@@ -118,7 +118,7 @@ func TestOpenTelemetryURLQueryHasOnlyTheParametersThatTheEndpointDefines(t *test
 				return err
 			},
 			opts:  []option.RequestOption{option.WithQuery("created_at[eq]", "now")},
-			sent:  "beta=true&created_at%5Beq%5D=now&created_at%5Bgte%5D=2026-01-02T03%3A04%3A05Z&statuses%5B%5D=idle",
+			sent:  "created_at%5Beq%5D=now&created_at%5Bgte%5D=2026-01-02T03%3A04%3A05Z&statuses%5B%5D=idle",
 			query: "created_at%5Bgte%5D=2026-01-02T03%3A04%3A05Z&statuses%5B%5D=idle",
 		},
 		"a value of the application's for a parameter that the endpoint defines": {
@@ -143,7 +143,7 @@ func TestOpenTelemetryURLQueryHasOnlyTheParametersThatTheEndpointDefines(t *test
 				_, err := c.Beta.Models.List(ctx, anthropic.BetaModelListParams{Lifecycle: []string{"retired"}, Limit: anthropic.Int(5)}, opts...)
 				return err
 			},
-			sent:  "beta=true&lifecycle%5B%5D=retired&limit=5",
+			sent:  "lifecycle%5B%5D=retired&limit=5",
 			query: "lifecycle%5B%5D=retired&limit=5",
 		},
 		"the default workspace of the workspaces list": {
@@ -159,7 +159,7 @@ func TestOpenTelemetryURLQueryHasOnlyTheParametersThatTheEndpointDefines(t *test
 				_, err := c.Beta.Organization.Workspaces.List(ctx, anthropic.BetaOrganizationWorkspaceListParams{IncludeDefault: anthropic.Bool(true)}, opts...)
 				return err
 			},
-			sent:  "beta=true&include_default=true",
+			sent:  "include_default=true",
 			query: "include_default=true",
 		},
 		"the statuses of the session threads list": {
@@ -167,15 +167,8 @@ func TestOpenTelemetryURLQueryHasOnlyTheParametersThatTheEndpointDefines(t *test
 				_, err := c.Beta.Sessions.Threads.List(ctx, "sesn_1", anthropic.BetaSessionThreadListParams{Statuses: []anthropic.BetaManagedAgentsSessionThreadStatus{anthropic.BetaManagedAgentsSessionThreadStatusIdle}}, opts...)
 				return err
 			},
-			sent:  "beta=true&statuses%5B%5D=idle",
+			sent:  "statuses%5B%5D=idle",
 			query: "statuses%5B%5D=idle",
-		},
-		"nothing but beta=true": {
-			call: func(c anthropic.Client, opts ...option.RequestOption) error {
-				_, err := c.Beta.Files.GetMetadata(ctx, "file_1", anthropic.BetaFileGetMetadataParams{}, opts...)
-				return err
-			},
-			sent: "beta=true",
 		},
 		"nothing but a parameter that the application added": {
 			call: func(c anthropic.Client, opts ...option.RequestOption) error {

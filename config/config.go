@@ -142,12 +142,9 @@ type OIDCFederation struct {
 	// the profile expects to be granted. It is stored on the profile for
 	// display and configuration purposes only — the SDK does NOT send it
 	// on the jwt-bearer exchange. The granted scope is determined by the
-	// federation rule on the server; IssueOAuthTokenRequest has no scope
-	// field, and the REST gateway's alias transformation strips unknown
-	// keys, so any attempt to wire this through to the exchange body
-	// would be silently dropped. The granted scope appears on the token
-	// response's `scope` field, but the SDK does not currently surface
-	// it to callers.
+	// federation rule on the server, and the exchange has no scope field.
+	// The granted scope appears on the token response's `scope` field,
+	// but the SDK does not currently surface it to callers.
 	Scope string `json:"scope,omitempty"`
 }
 
@@ -163,7 +160,7 @@ type UserOAuth struct {
 
 	// Scope is the OAuth scope string (RFC 6749 §3.3 space-delimited form)
 	// the profile was granted, captured at login time. The SDK does not
-	// consult this on refresh — the oauth-server preserves the original
+	// consult this on refresh — the server keeps the original
 	// scope set when the refresh request omits scope — but `ant auth status`
 	// and similar tools display it.
 	Scope string `json:"scope,omitempty"`
@@ -490,12 +487,11 @@ const (
 
 // fillMissingFromEnv populates cfg fields from ANTHROPIC_* environment
 // variables, but only when the corresponding field is empty in the loaded
-// profile. Contract lives in the cross-SDK credential precedence spec
-// (sdk_credential_precedence.md, section 1 interaction rules): "env vars
-// fill in fields omitted from a profile file, but never override present
-// ones." This keeps an explicit profile authoritative on a machine that
-// also happens to have WIF env vars exported (e.g., a prod profile is
-// not silently replaced by a leftover dev federation_rule_id env var).
+// profile. The rule: "env vars fill in fields omitted from a profile file,
+// but never override present ones." This keeps an explicit profile
+// authoritative on a machine that also happens to have WIF env vars
+// exported (e.g., a prod profile is not silently replaced by a leftover
+// dev federation_rule_id env var).
 //
 // Empty env values are treated as unset rather than "clear the field" so
 // an accidentally-blanked env var can't silently strip a required field.

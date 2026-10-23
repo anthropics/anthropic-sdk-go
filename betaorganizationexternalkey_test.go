@@ -22,6 +22,7 @@ func TestBetaOrganizationExternalKeyNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ExternalKeys.New(context.TODO(), anthropic.BetaOrganizationExternalKeyNewParams{
 		ProviderConfig: anthropic.BetaOrganizationExternalKeyNewParamsProviderConfigUnion{
@@ -54,6 +55,7 @@ func TestBetaOrganizationExternalKeyGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ExternalKeys.Get(context.TODO(), "external_key_id")
 	if err != nil {
@@ -76,6 +78,7 @@ func TestBetaOrganizationExternalKeyUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ExternalKeys.Update(
 		context.TODO(),
@@ -112,6 +115,7 @@ func TestBetaOrganizationExternalKeyListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ExternalKeys.List(context.TODO(), anthropic.BetaOrganizationExternalKeyListParams{
 		Limit: anthropic.Int(1),
@@ -137,6 +141,7 @@ func TestBetaOrganizationExternalKeyDelete(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ExternalKeys.Delete(context.TODO(), "external_key_id")
 	if err != nil {
@@ -159,6 +164,7 @@ func TestBetaOrganizationExternalKeyValidate(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ExternalKeys.Validate(context.TODO(), "external_key_id")
 	if err != nil {

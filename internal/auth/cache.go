@@ -226,3 +226,18 @@ func isForceRefresh(ctx context.Context) bool {
 	v, _ := ctx.Value(forceRefreshKey{}).(bool)
 	return v
 }
+
+type baseURLOverrideKey struct{}
+
+// withBaseURLOverride marks ctx as a request that overrides clientBaseURL, the
+// base URL of the client whose profile is in use.
+func withBaseURLOverride(ctx context.Context, clientBaseURL string) context.Context {
+	return context.WithValue(ctx, baseURLOverrideKey{}, clientBaseURL)
+}
+
+// overriddenBaseURL returns the client's base URL when ctx belongs to a request
+// that overrides it, and "" otherwise.
+func overriddenBaseURL(ctx context.Context) string {
+	v, _ := ctx.Value(baseURLOverrideKey{}).(string)
+	return v
+}

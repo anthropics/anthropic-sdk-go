@@ -2,6 +2,11 @@
 
 ## [2.2.1](https://github.com/anthropics/anthropic-sdk-go/compare/v2.2.0...v2.2.1) (2026-10-23)
 
+### Bug Fixes
+
+* **auth:** don't overwrite a credentials file or spend its refresh token on a client's per-request base URL override
+
+
 ### Chores
 
 * **internal:** carry endpoint path query params to the request layer

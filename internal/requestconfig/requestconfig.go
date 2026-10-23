@@ -221,6 +221,9 @@ type RequestConfig struct {
 	// DefaultBaseURL will be used if BaseURL is not explicitly overridden using
 	// WithBaseURL.
 	DefaultBaseURL *url.URL
+	// ClientBaseURL is what a method's WithBaseURL overrides. It is set only when
+	// the request's credential came from the client: see [resolveCredential].
+	ClientBaseURL  *url.URL
 	CustomHTTPDoer HTTPDoer
 	HTTPClient     *http.Client
 	Middlewares    []middleware

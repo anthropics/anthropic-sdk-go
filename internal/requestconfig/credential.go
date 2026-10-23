@@ -24,6 +24,10 @@ import "fmt"
 // the request is what it would be had that option not been passed. The option
 // that is left keeps its position, so a WithHeader or a WithMiddleware before or
 // after it behaves as it does next to any other option.
+//
+// The last boundary ends the client's options. When the credential came before it,
+// the base URL in effect there is recorded as [RequestConfig.ClientBaseURL]: what a
+// method's WithBaseURL overrides.
 
 // CredentialOption is a [RequestOption] that supplies the credential requests are
 // sent with. Of the CredentialOptions given to [NewRequestConfig], only the last
@@ -69,13 +73,13 @@ func resolveCredential(opts []RequestOption) ([]RequestOption, error) {
 	// one twice is allowed, as it is for any other option.
 	inCall := ""
 	// credential and settings index the last CredentialOption and the last one
-	// that has Settings.
-	credential, settings := -1, -1
+	// that has Settings. boundary indexes the last CallBoundary.
+	credential, settings, boundary := -1, -1, -1
 
 	for i, o := range opts {
 		switch o := o.(type) {
 		case CallBoundary:
-			fromClient, inCall = true, ""
+			fromClient, inCall, boundary = true, "", i
 		case CredentialOption:
 			if fromClient && inCall != "" && inCall != o.Name {
 				return nil, fmt.Errorf(
@@ -95,6 +99,8 @@ func resolveCredential(opts []RequestOption) ([]RequestOption, error) {
 	for i, o := range opts {
 		c, ok := o.(CredentialOption)
 		switch {
+		case i == boundary && credential < boundary:
+			resolved = append(resolved, RequestOptionFunc(recordClientBaseURL))
 		case !ok || i == credential:
 			resolved = append(resolved, o)
 		case i == settings:
@@ -102,6 +108,14 @@ func resolveCredential(opts []RequestOption) ([]RequestOption, error) {
 		}
 	}
 	return resolved, nil
+}
+
+func recordClientBaseURL(r *RequestConfig) error {
+	r.ClientBaseURL = r.BaseURL
+	if r.ClientBaseURL == nil {
+		r.ClientBaseURL = r.DefaultBaseURL
+	}
+	return nil
 }
 
 // JoinedOption is a [RequestOption] that applies its members in order. It is a

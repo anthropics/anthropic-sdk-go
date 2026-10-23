@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go/v2"
 	"github.com/anthropics/anthropic-sdk-go/v2/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
@@ -1593,4 +1595,412 @@ func TestIntegration_PerRequestBaseURLDuringTokenExchange(t *testing.T) {
 	}
 	assertBearer(t, "serverA", apiA.requests(), "Bearer tok-A")
 	assertBearer(t, "serverB", apiB.requests(), "Bearer tok-B")
+}
+
+// tokenServer answers token requests with an expiring token, which the SDK saves
+// to the credentials file, and passes every other request to api.
+func tokenServer(t *testing.T, token string, api http.Handler) (*httptest.Server, *atomic.Int32) {
+	t.Helper()
+	var tokenRequests atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/oauth/token" {
+			api.ServeHTTP(w, r)
+			return
+		}
+		tokenRequests.Add(1)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]any{"access_token": token, "refresh_token": "rotated-refresh", "expires_in": 3600})
+	}))
+	t.Cleanup(server.Close)
+	return server, &tokenRequests
+}
+
+func isolateProfileEnv(t *testing.T) {
+	t.Helper()
+	unsetEnv(t, "ANTHROPIC_API_KEY")
+	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
+	unsetEnv(t, "ANTHROPIC_BASE_URL")
+	isolateAuthEnv(t)
+}
+
+func federationConfig(t *testing.T, credPath string) *config.Config {
+	t.Helper()
+	identityTokenPath := filepath.Join(t.TempDir(), "identity-token")
+	if err := os.WriteFile(identityTokenPath, []byte("jwt"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	return &config.Config{
+		OrganizationID: "org-1",
+		AuthenticationInfo: &config.AuthenticationInfo{
+			Type:            config.AuthenticationTypeOIDCFederation,
+			CredentialsPath: credPath,
+			OIDCFederation: &config.OIDCFederation{
+				FederationRuleID: "rule-1",
+				IdentityToken:    &config.IdentityTokenConfig{Source: config.IdentityTokenSourceFile, Path: identityTokenPath},
+			},
+		},
+	}
+}
+
+func userOAuthConfig(credPath string) *config.Config {
+	return &config.Config{
+		AuthenticationInfo: &config.AuthenticationInfo{
+			Type:            config.AuthenticationTypeUserOAuth,
+			CredentialsPath: credPath,
+			UserOAuth:       &config.UserOAuth{ClientID: "client-1"},
+		},
+	}
+}
+
+func saveCredentials(t *testing.T, accessToken string, expiresIn time.Duration) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "creds.json")
+	expiresAt := time.Now().Add(expiresIn)
+	credentials := config.Credentials{AccessToken: accessToken, RefreshToken: "saved-refresh", ExpiresAt: &expiresAt}
+	if err := config.WriteCredentials(path, credentials); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+func fileContents(t *testing.T, path string) string {
+	t.Helper()
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(data)
+}
+
+// clientBaseURLSources are the ways a client gets the base URL that a method's
+// WithBaseURL overrides.
+var clientBaseURLSources = []struct {
+	name    string
+	options func(cfg *config.Config, baseURL string) []option.RequestOption
+}{
+	{
+		name: "WithBaseURL",
+		options: func(cfg *config.Config, baseURL string) []option.RequestOption {
+			return []option.RequestOption{option.WithMaxRetries(0), option.WithConfig(cfg), option.WithBaseURL(baseURL)}
+		},
+	},
+	{
+		name: "default base URL",
+		options: func(cfg *config.Config, baseURL string) []option.RequestOption {
+			return []option.RequestOption{option.WithMaxRetries(0), option.WithConfig(cfg), requestconfig.WithDefaultBaseURL(baseURL)}
+		},
+	},
+	{
+		name: "profile base_url",
+		options: func(cfg *config.Config, baseURL string) []option.RequestOption {
+			cfg.BaseURL = baseURL
+			return []option.RequestOption{option.WithMaxRetries(0), option.WithConfig(cfg)}
+		},
+	},
+}
+
+// Server B stands for a proxy that forwards API paths and has no token endpoint,
+// so its one request has to carry the file's token.
+func TestIntegration_PerRequestBaseURL_FederationUsesValidFileToken(t *testing.T) {
+	for _, source := range clientBaseURLSources {
+		t.Run(source.name, func(t *testing.T) {
+			isolateProfileEnv(t)
+			apiB := &recordingHandler{}
+			serverA, exchangesA := tokenServer(t, "tok-A", &recordingHandler{})
+			serverB := httptest.NewServer(apiB)
+			t.Cleanup(serverB.Close)
+			credPath := saveCredentials(t, "saved-tok", time.Hour)
+			before := fileContents(t, credPath)
+			client := anthropic.NewClient(source.options(federationConfig(t, credPath), serverA.URL)...)
+
+			err := client.Get(context.Background(), "/v1/models", nil, nil, option.WithBaseURL(serverB.URL))
+
+			if err != nil {
+				t.Fatal(err)
+			}
+			assertBearer(t, "serverB", apiB.requests(), "Bearer saved-tok")
+			if got := exchangesA.Load(); got != 0 {
+				t.Errorf("serverA got %d exchanges, want 0", got)
+			}
+			if got := fileContents(t, credPath); got != before {
+				t.Errorf("credentials file changed to %s, want %s", got, before)
+			}
+		})
+	}
+}
+
+// Server B rejects its first token, so the forced exchange of the 401 retry has
+// to leave the file alone too. A later request to server A must not get the token
+// obtained for server B.
+func TestIntegration_PerRequestBaseURL_FederationDoesNotSaveOverrideToken(t *testing.T) {
+	saved := []struct {
+		name          string
+		expiresIn     time.Duration
+		wantExchanges int32
+		wantTokenA    string
+	}{
+		{name: "fresh token", expiresIn: time.Hour, wantExchanges: 1, wantTokenA: "saved-tok"},
+		{name: "expired token", expiresIn: -time.Hour, wantExchanges: 2, wantTokenA: "tok-A"},
+	}
+	for _, source := range clientBaseURLSources {
+		for _, file := range saved {
+			t.Run(source.name+"/"+file.name, func(t *testing.T) {
+				isolateProfileEnv(t)
+				var apiRequests atomic.Int32
+				var lastBearerB atomic.Value
+				apiA := &recordingHandler{}
+				apiB := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					lastBearerB.Store(r.Header.Get("Authorization"))
+					if apiRequests.Add(1) == 1 {
+						w.WriteHeader(http.StatusUnauthorized)
+						return
+					}
+					w.Write([]byte(`{}`))
+				})
+				serverA, exchangesA := tokenServer(t, "tok-A", apiA)
+				serverB, exchangesB := tokenServer(t, "tok-B", apiB)
+				credPath := saveCredentials(t, "saved-tok", file.expiresIn)
+				before := fileContents(t, credPath)
+				cfg := federationConfig(t, credPath)
+				client := anthropic.NewClient(source.options(cfg, serverA.URL)...)
+
+				err := client.Get(context.Background(), "/v1/models", nil, nil, option.WithBaseURL(serverB.URL))
+
+				if err != nil {
+					t.Fatal(err)
+				}
+				wantBearer, wantExchangesA, wantExchangesB := "Bearer tok-B", int32(0), file.wantExchanges
+				if cfg.BaseURL != "" {
+					wantBearer, wantExchangesA, wantExchangesB = "Bearer tok-A", file.wantExchanges, 0
+				}
+				if got := lastBearerB.Load(); got != wantBearer {
+					t.Errorf("serverB got Authorization %q, want %q", got, wantBearer)
+				}
+				if got := exchangesA.Load(); got != wantExchangesA {
+					t.Errorf("serverA got %d exchanges, want %d", got, wantExchangesA)
+				}
+				if got := exchangesB.Load(); got != wantExchangesB {
+					t.Errorf("serverB got %d exchanges, want %d", got, wantExchangesB)
+				}
+				if got := fileContents(t, credPath); got != before {
+					t.Errorf("credentials file changed to %s, want %s", got, before)
+				}
+
+				if err := client.Get(context.Background(), "/v1/models", nil, nil); err != nil {
+					t.Fatal(err)
+				}
+				assertBearer(t, "serverA", apiA.requests(), "Bearer "+file.wantTokenA)
+			})
+		}
+	}
+}
+
+func TestIntegration_PerRequestBaseURL_ClientBaseURLUsesCredentialsFile(t *testing.T) {
+	saved := []struct {
+		name          string
+		expiresIn     time.Duration
+		wantToken     string
+		wantExchanges int32
+	}{
+		{name: "fresh token is read", expiresIn: time.Hour, wantToken: "saved-tok", wantExchanges: 0},
+		{name: "expired token is replaced", expiresIn: -time.Hour, wantToken: "tok-A", wantExchanges: 1},
+	}
+	for _, source := range clientBaseURLSources {
+		for _, file := range saved {
+			t.Run(source.name+"/"+file.name, func(t *testing.T) {
+				isolateProfileEnv(t)
+				api := &recordingHandler{}
+				server, exchanges := tokenServer(t, "tok-A", api)
+				credPath := saveCredentials(t, "saved-tok", file.expiresIn)
+				client := anthropic.NewClient(source.options(federationConfig(t, credPath), server.URL)...)
+
+				err := client.Get(context.Background(), "/v1/models", nil, nil)
+
+				if err != nil {
+					t.Fatal(err)
+				}
+				assertBearer(t, "server", api.requests(), "Bearer "+file.wantToken)
+				if got := exchanges.Load(); got != file.wantExchanges {
+					t.Errorf("server got %d exchanges, want %d", got, file.wantExchanges)
+				}
+				if got := fileContents(t, credPath); !strings.Contains(got, file.wantToken) {
+					t.Errorf("credentials file is %s, want it to hold %s", got, file.wantToken)
+				}
+			})
+		}
+	}
+}
+
+func TestIntegration_PerRequestBaseURL_UserOAuthRefreshesWhereClientDoes(t *testing.T) {
+	for _, source := range clientBaseURLSources {
+		t.Run(source.name, func(t *testing.T) {
+			isolateProfileEnv(t)
+			apiB := &recordingHandler{}
+			serverA, refreshesA := tokenServer(t, "tok-A", &recordingHandler{})
+			serverB, refreshesB := tokenServer(t, "tok-B", apiB)
+			credPath := saveCredentials(t, "saved-tok", -time.Hour)
+			client := anthropic.NewClient(source.options(userOAuthConfig(credPath), serverA.URL)...)
+
+			err := client.Get(context.Background(), "/v1/models", nil, nil, option.WithBaseURL(serverB.URL))
+
+			if err != nil {
+				t.Fatal(err)
+			}
+			assertBearer(t, "serverB", apiB.requests(), "Bearer tok-A")
+			if got := refreshesA.Load(); got != 1 {
+				t.Errorf("serverA got %d refreshes, want 1", got)
+			}
+			if got := refreshesB.Load(); got != 0 {
+				t.Errorf("serverB got %d refreshes, want 0", got)
+			}
+			if got := fileContents(t, credPath); !strings.Contains(got, "rotated-refresh") {
+				t.Errorf("credentials file is %s, want the rotated refresh token", got)
+			}
+		})
+	}
+
+	t.Run("profile base_url differs from client base URL", func(t *testing.T) {
+		isolateProfileEnv(t)
+		apiB := &recordingHandler{}
+		serverClient, refreshesClient := tokenServer(t, "tok-client", &recordingHandler{})
+		serverPin, refreshesPin := tokenServer(t, "tok-pin", &recordingHandler{})
+		serverB, refreshesB := tokenServer(t, "tok-B", apiB)
+		cfg := userOAuthConfig(saveCredentials(t, "saved-tok", -time.Hour))
+		cfg.BaseURL = serverPin.URL
+		client := anthropic.NewClient(option.WithMaxRetries(0), option.WithConfig(cfg), option.WithBaseURL(serverClient.URL))
+
+		err := client.Get(context.Background(), "/v1/models", nil, nil, option.WithBaseURL(serverB.URL))
+
+		if err != nil {
+			t.Fatal(err)
+		}
+		assertBearer(t, "serverB", apiB.requests(), "Bearer tok-pin")
+		if got := refreshesPin.Load(); got != 1 {
+			t.Errorf("serverPin got %d refreshes, want 1", got)
+		}
+		if got := refreshesClient.Load() + refreshesB.Load(); got != 0 {
+			t.Errorf("serverClient and serverB got %d refreshes, want 0", got)
+		}
+	})
+}
+
+// The token goes to the request's base URL, so a plain-HTTP, non-loopback override
+// fails before anything is sent. A refresh goes to the client's base URL, so such a
+// client fails only when the request needs a refresh.
+func TestIntegration_PerRequestBaseURL_UserOAuthPlainHTTP(t *testing.T) {
+	const secure, plain = "https://api.example.test", "http://plain.example.test"
+	tests := []struct {
+		name      string
+		client    string
+		override  string
+		expiresIn time.Duration
+		wantSent  []recordedRequest
+	}{
+		{name: "override/fresh token", client: secure, override: plain, expiresIn: time.Hour},
+		{name: "override/expired token", client: secure, override: plain, expiresIn: -time.Hour},
+		{name: "client/expired token", client: plain, override: secure, expiresIn: -time.Hour},
+		{
+			name: "client/fresh token", client: plain, override: secure, expiresIn: time.Hour,
+			wantSent: []recordedRequest{{method: http.MethodGet, url: secure + "/v1/models", auth: "Bearer saved-tok"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			isolateProfileEnv(t)
+			transport := &recordingTransport{}
+			credPath := saveCredentials(t, "saved-tok", tt.expiresIn)
+			before := fileContents(t, credPath)
+			client := anthropic.NewClient(
+				option.WithMaxRetries(0),
+				option.WithHTTPClient(&http.Client{Transport: transport}),
+				option.WithConfig(userOAuthConfig(credPath)),
+				option.WithBaseURL(tt.client),
+			)
+
+			err := client.Get(context.Background(), "/v1/models", nil, nil, option.WithBaseURL(tt.override))
+
+			if tt.wantSent != nil {
+				if err != nil {
+					t.Errorf("got error %v, want none", err)
+				}
+			} else if err == nil || !strings.Contains(err.Error(), "refusing to send credential over non-https token endpoint") {
+				t.Errorf("got error %v, want the non-https refusal", err)
+			}
+			if got := transport.requests(); !slices.Equal(got, tt.wantSent) {
+				t.Errorf("sent %+v, want %+v", got, tt.wantSent)
+			}
+			if got := fileContents(t, credPath); got != before {
+				t.Errorf("credentials file changed to %s, want %s", got, before)
+			}
+		})
+	}
+}
+
+// A profile passed to the method is the method's own, even when the client has the
+// same one, so it refreshes where it would without a client.
+func TestIntegration_PerRequestBaseURL_MethodProfileIsNotAnOverride(t *testing.T) {
+	tests := []struct {
+		name          string
+		pinnedToOther bool
+	}{
+		{name: "no base_url"},
+		{name: "base_url", pinnedToOther: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			isolateProfileEnv(t)
+			serverA, refreshesA := tokenServer(t, "tok-A", &recordingHandler{})
+			serverB, refreshesB := tokenServer(t, "tok-B", &recordingHandler{})
+			serverPin, refreshesPin := tokenServer(t, "tok-pin", &recordingHandler{})
+			cfg := userOAuthConfig(saveCredentials(t, "saved-tok", -time.Hour))
+			wantRefreshesB, wantRefreshesPin := int32(1), int32(0)
+			if tt.pinnedToOther {
+				cfg.BaseURL = serverPin.URL
+				wantRefreshesB, wantRefreshesPin = 0, 1
+			}
+			client := anthropic.NewClient(option.WithMaxRetries(0), option.WithBaseURL(serverA.URL), option.WithConfig(cfg))
+
+			err := client.Get(context.Background(), "/v1/models", nil, nil, option.WithConfig(cfg), option.WithBaseURL(serverB.URL))
+
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := refreshesA.Load(); got != 0 {
+				t.Errorf("serverA got %d refreshes, want 0", got)
+			}
+			if got := refreshesB.Load(); got != wantRefreshesB {
+				t.Errorf("serverB got %d refreshes, want %d", got, wantRefreshesB)
+			}
+			if got := refreshesPin.Load(); got != wantRefreshesPin {
+				t.Errorf("serverPin got %d refreshes, want %d", got, wantRefreshesPin)
+			}
+		})
+	}
+}
+
+// A service built without a client has no boundary to record its base URL at, so
+// nothing counts as an override and the token from server B is saved.
+func TestIntegration_PerRequestBaseURL_ServiceWithoutClientSavesToFile(t *testing.T) {
+	isolateProfileEnv(t)
+	apiB := &recordingHandler{}
+	serverA, exchangesA := tokenServer(t, "tok-A", &recordingHandler{})
+	serverB, exchangesB := tokenServer(t, "tok-B", apiB)
+	credPath := saveCredentials(t, "saved-tok", -time.Hour)
+	service := anthropic.NewModelService(option.WithMaxRetries(0), option.WithBaseURL(serverA.URL), option.WithConfig(federationConfig(t, credPath)))
+
+	_, err := service.List(context.Background(), anthropic.ModelListParams{}, option.WithBaseURL(serverB.URL))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertBearer(t, "serverB", apiB.requests(), "Bearer tok-B")
+	if got := exchangesA.Load(); got != 0 {
+		t.Errorf("serverA got %d exchanges, want 0", got)
+	}
+	if got := exchangesB.Load(); got != 1 {
+		t.Errorf("serverB got %d exchanges, want 1", got)
+	}
+	if got := fileContents(t, credPath); !strings.Contains(got, "tok-B") {
+		t.Errorf("credentials file is %s, want it to hold tok-B", got)
+	}
 }

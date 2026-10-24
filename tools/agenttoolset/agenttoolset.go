@@ -80,8 +80,23 @@ type AgentToolContext struct {
 	// value disables the size cap entirely. Disabling it reintroduces the OOM
 	// risk on a model-controlled path, so set it negative only when the sandbox
 	// can absorb arbitrarily large files. The non-regular-file (FIFO/device)
-	// guard always applies regardless of this value.
+	// guard always applies regardless of this value. Image/PDF files, which
+	// read returns as base64 content blocks, are not subject to the 256 KiB
+	// default (MaxImageBase64Bytes and MaxPDFBytes govern instead), but an
+	// explicit positive cap binds them too.
 	MaxFileBytes int64
+
+	// MaxImageBase64Bytes caps the base64-encoded size of an image that read
+	// returns as a content block. Zero (the default) uses the built-in 5 MiB
+	// cap; a positive value overrides it; a negative value disables it (only
+	// an explicit positive MaxFileBytes then applies).
+	MaxImageBase64Bytes int64
+
+	// MaxPDFBytes caps the raw size of a PDF that read returns as a document
+	// block. Zero (the default) uses the built-in 20 MiB cap; a positive value
+	// overrides it; a negative value disables it (only an explicit positive
+	// MaxFileBytes then applies).
+	MaxPDFBytes int64
 
 	// Env sets the bash subprocess environment. When non-nil it fully replaces
 	// the inherited environment with exactly these entries; when nil the
@@ -176,6 +191,7 @@ type funcTool struct {
 	schema      anthropic.BetaToolInputSchemaParam
 	env         *AgentToolContext
 	run         func(ctx context.Context, input json.RawMessage, env *AgentToolContext) (string, bool)
+	runBlocks   func(ctx context.Context, input json.RawMessage, env *AgentToolContext) ([]anthropic.BetaToolResultBlockParamContentUnion, error)
 }
 
 func (t *funcTool) Name() string                                    { return t.name }
@@ -184,6 +200,9 @@ func (t *funcTool) InputSchema() anthropic.BetaToolInputSchemaParam { return t.s
 func (t *funcTool) Execute(ctx context.Context, input json.RawMessage) ([]anthropic.BetaToolResultBlockParamContentUnion, error) {
 	if err := rejectUnrestrictedPaths(t.env); err != nil {
 		return nil, err
+	}
+	if t.runBlocks != nil {
+		return t.runBlocks(ctx, input, t.env)
 	}
 	content, isErr := t.run(ctx, input, t.env)
 	if isErr {

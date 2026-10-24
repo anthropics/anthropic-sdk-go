@@ -2,14 +2,20 @@ package agenttoolset
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 
+	anthropic "github.com/anthropics/anthropic-sdk-go"
 	"github.com/stretchr/testify/require"
 )
 
@@ -85,7 +91,7 @@ func TestExecRead(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.description, func(t *testing.T) {
-			got, isErr := execRead(context.Background(), mustJSON(t, tc.input), env)
+			got, isErr := runTool(t, BetaReadTool(env), mustJSON(t, tc.input))
 			require.Equal(t, tc.wantErr, isErr, "is_error mismatch; output=%q", got)
 			if !tc.wantErr {
 				require.Equal(t, tc.want, got)
@@ -526,7 +532,7 @@ func TestExecReadViewRangeStreamsFileOverCap(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.description, func(t *testing.T) {
-			got, isErr := execRead(context.Background(), mustJSON(t, tc.input), env)
+			got, isErr := runTool(t, BetaReadTool(env), mustJSON(t, tc.input))
 			require.Equal(t, tc.wantErr, isErr, "is_error mismatch; output=%q", got)
 			if !tc.wantErr {
 				require.Equal(t, tc.want, got)
@@ -556,7 +562,7 @@ func TestExecReadViewRangeStreamsAcrossChunkBoundaries(t *testing.T) {
 	require.Greater(t, sb.Len(), 2*readChunkBytes)
 	require.NoError(t, os.WriteFile(filepath.Join(work, "big.txt"), []byte(sb.String()), 0o644))
 
-	got, isErr := execRead(context.Background(), mustJSON(t, map[string]any{"file_path": "big.txt", "view_range": []int{1000, 1002}}), &AgentToolContext{Workdir: work})
+	got, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{"file_path": "big.txt", "view_range": []int{1000, 1002}}))
 	require.False(t, isErr, "output=%q", got)
 	require.Equal(t, strings.Join(rows[999:1002], "\n"), got)
 }
@@ -670,4 +676,198 @@ func TestWriteAndEditToolsRefuseReadOnlyRoots(t *testing.T) {
 	got, err = os.ReadFile(filepath.Join(work, "scratch.txt"))
 	require.NoError(t, err)
 	require.Equal(t, "ok", string(got))
+}
+
+// TestBinaryMediaTypesTrackGeneratedAPITypes ensures binaryMediaTypes covers
+// every media type generated on BetaBase64ImageSourceMediaType and
+// BetaBase64PDFSourceParam.
+func TestBinaryMediaTypesTrackGeneratedAPITypes(t *testing.T) {
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, filepath.Join("..", "..", "betamessage.go"), nil, 0)
+	require.NoError(t, err)
+
+	want := map[string]bool{
+		string(anthropic.BetaBase64PDFSourceParam{}.MediaType.Default()): true,
+	}
+	for _, decl := range file.Decls {
+		gen, ok := decl.(*ast.GenDecl)
+		if !ok || gen.Tok != token.CONST {
+			continue
+		}
+		for _, spec := range gen.Specs {
+			vs, ok := spec.(*ast.ValueSpec)
+			if !ok {
+				continue
+			}
+			ident, ok := vs.Type.(*ast.Ident)
+			if !ok || ident.Name != "BetaBase64ImageSourceMediaType" {
+				continue
+			}
+			for _, v := range vs.Values {
+				lit, ok := v.(*ast.BasicLit)
+				require.True(t, ok && lit.Kind == token.STRING)
+				unquoted, err := strconv.Unquote(lit.Value)
+				require.NoError(t, err)
+				want[unquoted] = true
+			}
+		}
+	}
+
+	got := map[string]bool{}
+	for _, mediaType := range binaryMediaTypes {
+		got[mediaType] = true
+	}
+	require.Equal(t, want, got)
+}
+
+func TestExecReadImageReturnsImageContentBlock(t *testing.T) {
+	cases := []struct {
+		name      string
+		mediaType anthropic.BetaBase64ImageSourceMediaType
+	}{
+		{"photo.png", anthropic.BetaBase64ImageSourceMediaTypeImagePNG},
+		{"slide.JPG", anthropic.BetaBase64ImageSourceMediaTypeImageJPEG},
+		{"slide.jpeg", anthropic.BetaBase64ImageSourceMediaTypeImageJPEG},
+		{"anim.gif", anthropic.BetaBase64ImageSourceMediaTypeImageGIF},
+		{"hero.webp", anthropic.BetaBase64ImageSourceMediaTypeImageWebP},
+	}
+	raw := []byte("\x89PNG\r\n\x1a\n\xff\xd8")
+	wantB64 := base64.StdEncoding.EncodeToString(raw)
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			work := t.TempDir()
+			require.NoError(t, os.WriteFile(filepath.Join(work, tc.name), raw, 0o644))
+			tool := BetaReadTool(&AgentToolContext{Workdir: work})
+
+			blocks, err := tool.Execute(context.Background(), mustJSON(t, map[string]any{"file_path": tc.name}))
+			require.NoError(t, err)
+			require.Len(t, blocks, 1)
+			require.NotNil(t, blocks[0].OfImage)
+			require.NotNil(t, blocks[0].OfImage.Source.OfBase64)
+			require.Equal(t, tc.mediaType, blocks[0].OfImage.Source.OfBase64.MediaType)
+			require.Equal(t, wantB64, blocks[0].OfImage.Source.OfBase64.Data)
+			wire, err := json.Marshal(blocks[0])
+			require.NoError(t, err)
+			require.JSONEq(t, fmt.Sprintf(`{"type":"image","source":{"type":"base64","media_type":%q,"data":%q}}`, tc.mediaType, wantB64), string(wire))
+		})
+	}
+}
+
+func TestExecReadPDFReturnsDocumentContentBlock(t *testing.T) {
+	raw := []byte("%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")
+	wantB64 := base64.StdEncoding.EncodeToString(raw)
+
+	for _, name := range []string{"report.pdf", "REPORT.PDF"} {
+		t.Run(name, func(t *testing.T) {
+			work := t.TempDir()
+			require.NoError(t, os.WriteFile(filepath.Join(work, name), raw, 0o644))
+			tool := BetaReadTool(&AgentToolContext{Workdir: work})
+
+			blocks, err := tool.Execute(context.Background(), mustJSON(t, map[string]any{"file_path": name}))
+			require.NoError(t, err)
+			require.Len(t, blocks, 1)
+			require.NotNil(t, blocks[0].OfDocument)
+			require.NotNil(t, blocks[0].OfDocument.Source.OfBase64)
+			require.Equal(t, wantB64, blocks[0].OfDocument.Source.OfBase64.Data)
+			wire, err := json.Marshal(blocks[0])
+			require.NoError(t, err)
+			require.JSONEq(t, fmt.Sprintf(`{"type":"document","source":{"type":"base64","media_type":"application/pdf","data":%q}}`, wantB64), string(wire))
+		})
+	}
+}
+
+func TestExecReadImageExceedingTextCapSucceeds(t *testing.T) {
+	work := t.TempDir()
+	raw := append([]byte("\x89PNG\r\n\x1a\n"), make([]byte, defaultMaxFileBytes+1024)...)
+	require.NoError(t, os.WriteFile(filepath.Join(work, "big.png"), raw, 0o644))
+	tool := BetaReadTool(&AgentToolContext{Workdir: work})
+
+	blocks, err := tool.Execute(context.Background(), mustJSON(t, map[string]any{"file_path": "big.png"}))
+	require.NoError(t, err)
+	require.Len(t, blocks, 1)
+	require.NotNil(t, blocks[0].OfImage)
+	require.Equal(t, base64.StdEncoding.EncodeToString(raw), blocks[0].OfImage.Source.OfBase64.Data)
+}
+
+func TestExecReadImageRejectsOverImageCap(t *testing.T) {
+	work := t.TempDir()
+	rawCap := (defaultMaxImageBase64Bytes / 4) * 3
+	require.NoError(t, os.WriteFile(filepath.Join(work, "huge.png"), make([]byte, rawCap+1), 0o644))
+	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{"file_path": "huge.png"}))
+	require.True(t, isErr)
+	require.Contains(t, out, "exceeds")
+	require.Contains(t, out, "limit for image/PDF files")
+}
+
+func TestExecReadImageAndPDFCustomMaxBytes(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(work, "small.png"), make([]byte, 300), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(work, "over.png"), make([]byte, 301), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(work, "small.pdf"), make([]byte, 500), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(work, "over.pdf"), make([]byte, 501), 0o644))
+
+	// 400 base64 bytes -> 300 raw bytes.
+	imgEnv := &AgentToolContext{Workdir: work, MaxImageBase64Bytes: 400}
+	_, err := BetaReadTool(imgEnv).Execute(context.Background(), mustJSON(t, map[string]any{"file_path": "small.png"}))
+	require.NoError(t, err)
+	out, isErr := runTool(t, BetaReadTool(imgEnv), mustJSON(t, map[string]any{"file_path": "over.png"}))
+	require.True(t, isErr)
+	require.Contains(t, out, "exceeds 300-byte limit")
+
+	pdfEnv := &AgentToolContext{Workdir: work, MaxPDFBytes: 500}
+	_, err = BetaReadTool(pdfEnv).Execute(context.Background(), mustJSON(t, map[string]any{"file_path": "small.pdf"}))
+	require.NoError(t, err)
+	out, isErr = runTool(t, BetaReadTool(pdfEnv), mustJSON(t, map[string]any{"file_path": "over.pdf"}))
+	require.True(t, isErr)
+	require.Contains(t, out, "exceeds 500-byte limit")
+
+	// Uncapped media limits allow files above the default caps.
+	rawCap := (defaultMaxImageBase64Bytes / 4) * 3
+	require.NoError(t, os.WriteFile(filepath.Join(work, "huge.png"), make([]byte, rawCap+1), 0o644))
+	_, err = BetaReadTool(&AgentToolContext{Workdir: work, MaxImageBase64Bytes: -1}).Execute(
+		context.Background(), mustJSON(t, map[string]any{"file_path": "huge.png"}))
+	require.NoError(t, err)
+
+	// An explicit positive MaxFileBytes tightens the media cap.
+	tightEnv := &AgentToolContext{Workdir: work, MaxFileBytes: 200, MaxImageBase64Bytes: -1}
+	out, isErr = runTool(t, BetaReadTool(tightEnv), mustJSON(t, map[string]any{"file_path": "small.png"}))
+	require.True(t, isErr)
+	require.Contains(t, out, "exceeds 200-byte limit")
+}
+
+func TestExecReadImageRejectsViewRange(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(work, "pic.png"), []byte("\x89PNG\r\n\x1a\n"), 0o644))
+	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{
+		"file_path": "pic.png", "view_range": []int{1, 10},
+	}))
+	require.True(t, isErr)
+	require.Contains(t, out, "view_range is not supported for image/PDF files")
+}
+
+func TestExecReadNonImageBinaryRaisesToolError(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(work, "blob.bin"), []byte("\xff\xd8\xff\xe0\x00\x10\nvalid\n"), 0o644))
+
+	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{"file_path": "blob.bin"}))
+	require.True(t, isErr)
+	require.Equal(t, "read: blob.bin: not valid UTF-8 text (binary files are only supported for image/PDF extensions)", out)
+
+	// Streaming ranged read over MaxFileBytes also rejects invalid UTF-8 bytes.
+	out, isErr = runTool(t, BetaReadTool(&AgentToolContext{Workdir: work, MaxFileBytes: 8}), mustJSON(t, map[string]any{
+		"file_path": "blob.bin", "view_range": []int{1, 1},
+	}))
+	require.True(t, isErr)
+	require.Equal(t, "read: blob.bin: not valid UTF-8 text (binary files are only supported for image/PDF extensions)", out)
+}
+
+func TestExecEditBinaryFileRaisesToolError(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(work, "pic.png"), []byte("\x89PNG\r\n\x1a\n\xff\xfe"), 0o644))
+	out, isErr := runTool(t, BetaEditTool(&AgentToolContext{Workdir: work}), mustJSON(t, map[string]any{
+		"file_path": "pic.png", "old_string": "PNG", "new_string": "JPG",
+	}))
+	require.True(t, isErr)
+	require.Equal(t, "edit: pic.png: not valid UTF-8 text (cannot edit binary files)", out)
 }

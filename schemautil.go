@@ -22,7 +22,8 @@ var supportedSchemaKeySet = func() map[string]bool {
 }()
 
 // transformSchema transforms a [jsonschema.Schema] in-place to ensure it
-// conforms to the Anthropic API's expectations.
+// conforms to the Anthropic API's expectations. It returns an error if a
+// non-empty subschema cannot be transformed safely.
 //
 // The transformation process:
 //   - Preserves $ref references
@@ -32,23 +33,41 @@ var supportedSchemaKeySet = func() map[string]bool {
 //   - Filters string formats to only supported ones
 //   - Limits array minItems to 0 or 1
 //   - Appends unsupported properties to the description
-func transformSchema(s *jsonschema.Schema) {
+func transformSchema(s *jsonschema.Schema) error {
 	if s == nil {
-		return
+		return nil
+	}
+	return transformSchemaAt(s, "$")
+}
+
+func transformSchemaAt(s *jsonschema.Schema, path string) error {
+	if s == nil {
+		return fmt.Errorf("schema at %s is invalid: null schema", path)
 	}
 
 	// $ref is not supported alongside other properties
 	if s.Ref != "" {
 		*s = jsonschema.Schema{Ref: s.Ref}
-		return
+		return nil
 	}
+
+	hadContent := hasExportedContent(s) || len(s.Extras) > 0
 
 	// Collect and clear fields not in the supported set
 	extras := extractUnsupportedFields(s)
 
-	// Transform $defs recursively
-	for _, def := range s.Definitions {
-		transformSchema(def)
+	// Transform $defs recursively in sorted order for deterministic error reporting
+	if len(s.Definitions) > 0 {
+		names := make([]string, 0, len(s.Definitions))
+		for name := range s.Definitions {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+		for _, name := range names {
+			if err := transformSchemaAt(s.Definitions[name], path+".$defs."+name); err != nil {
+				return err
+			}
+		}
 	}
 
 	// Convert oneOf to anyOf before recursing so variants are transformed once.
@@ -57,51 +76,48 @@ func transformSchema(s *jsonschema.Schema) {
 	}
 	s.OneOf = nil
 
-	// Recurse into anyOf variants, dropping any that transformSchema zeroed out
-	// as invalid — a zero jsonschema.Schema marshals as the literal JSON `true`,
-	// which would otherwise leak into the variant list as a match-everything.
-	if len(s.AnyOf) > 0 {
-		kept := s.AnyOf[:0]
-		for _, variant := range s.AnyOf {
-			transformSchema(variant)
-			if variant != nil && !reflect.ValueOf(*variant).IsZero() {
-				kept = append(kept, variant)
-			}
+	// Recurse into anyOf variants.
+	for i, variant := range s.AnyOf {
+		if err := transformSchemaAt(variant, fmt.Sprintf("%s.anyOf[%d]", path, i)); err != nil {
+			return err
 		}
-		s.AnyOf = kept
 	}
 
-	// Recurse into allOf variants. Unlike anyOf, a zeroed-out (`true`) variant
-	// adds no constraint to a conjunction, so there's no need to prune.
-	for _, variant := range s.AllOf {
-		transformSchema(variant)
+	// Recurse into allOf variants.
+	for i, variant := range s.AllOf {
+		if err := transformSchemaAt(variant, fmt.Sprintf("%s.allOf[%d]", path, i)); err != nil {
+			return err
+		}
 	}
 
-	// Bail if the schema carries no shape information — schema is invalid or a
-	// boolean schema. enum/const/allOf can all stand in for an explicit type.
-	// Boolean schemas (JSON true/false) carry meaning in an unexported field
-	// that zeroing would clear, flipping false→true. Detect them by checking
-	// whether any exported field is non-zero: if not, the schema is either
-	// boolean (preserve) or truly empty (zeroing is a no-op anyway).
+	// Bail if the schema carries no shape information.
+	// enum/const/allOf/anyOf can all stand in for an explicit type.
+	// Genuine empty schemas ({}) and boolean schemas (JSON true/false) carry no
+	// exported content and are valid match-anything or match-nothing schemas.
+	// A schema that originally carried exported fields/extras but lacks shape
+	// is invalid and cannot be safely transformed.
 	if s.Type == "" && len(s.AnyOf) == 0 && len(s.AllOf) == 0 && len(s.Enum) == 0 && s.Const == nil {
-		if !hasExportedContent(s) {
-			return
+		if !hadContent {
+			return nil
 		}
-		*s = jsonschema.Schema{}
-		return
+		return fmt.Errorf("schema at %s is invalid: typeless schema without shape", path)
 	}
 
 	switch s.Type {
 	case "object":
 		if s.Properties != nil {
 			for pair := s.Properties.Oldest(); pair != nil; pair = pair.Next() {
-				transformSchema(pair.Value)
+				if err := transformSchemaAt(pair.Value, path+".properties."+pair.Key); err != nil {
+					return err
+				}
 			}
 			s.AdditionalProperties = jsonschema.FalseSchema
 		} else if s.AdditionalProperties != nil {
 			// Dictionary-style schema (e.g. Go map types): no fixed properties,
 			// additionalProperties describes the value type. Preserve and recurse.
-			transformSchema(s.AdditionalProperties)
+			if err := transformSchemaAt(s.AdditionalProperties, path+".additionalProperties"); err != nil {
+				return err
+			}
 		} else {
 			s.Properties = orderedmap.New[string, *jsonschema.Schema]()
 			s.AdditionalProperties = jsonschema.FalseSchema
@@ -115,7 +131,9 @@ func transformSchema(s *jsonschema.Schema) {
 
 	case "array":
 		if s.Items != nil {
-			transformSchema(s.Items)
+			if err := transformSchemaAt(s.Items, path+".items"); err != nil {
+				return err
+			}
 		}
 		if s.MinItems != nil && *s.MinItems != 0 && *s.MinItems != 1 {
 			extras["minItems"] = *s.MinItems
@@ -143,10 +161,13 @@ func transformSchema(s *jsonschema.Schema) {
 			s.Description = extraStr
 		}
 	}
+	return nil
 }
 
 // transformSchemaMap transforms a JSON schema map to conform to Anthropic's API
 // requirements. It delegates to [transformSchema] via a JSON round-trip.
+// On transformation failure, it transactionally returns a clean copy of the
+// original input map without mutating the caller's input.
 func transformSchemaMap(jsonSchema map[string]any) map[string]any {
 	if jsonSchema == nil {
 		return nil
@@ -162,7 +183,13 @@ func transformSchemaMap(jsonSchema map[string]any) map[string]any {
 		return nil
 	}
 
-	transformSchema(&s)
+	if err := transformSchema(&s); err != nil {
+		var origCopy map[string]any
+		if err := json.Unmarshal(b, &origCopy); err != nil {
+			return nil
+		}
+		return origCopy
+	}
 
 	result, err := json.Marshal(&s)
 	if err != nil {

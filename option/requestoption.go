@@ -140,10 +140,10 @@ func WithFederationTokenProvider(provider IdentityTokenFunc, opts FederationOpti
 }
 
 // RequestOption is an option for the requests made by the anthropic API Client
-// which can be supplied to clients, services, and methods. You can read more about this functional
-// options pattern in our [README].
+// which can be supplied to clients, services, and methods.
+// You can read more about this functional options pattern in our [documentation].
 //
-// [README]: https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#readme-requestoptions
+// [documentation]: https://platform.claude.com/docs/en/api/sdks/go
 type RequestOption = requestconfig.RequestOption
 
 // WithBaseURL returns a RequestOption that sets the BaseURL for the client.

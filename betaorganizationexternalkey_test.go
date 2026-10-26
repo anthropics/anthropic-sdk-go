@@ -32,8 +32,9 @@ func TestBetaOrganizationExternalKeyNewWithOptionalParams(t *testing.T) {
 				RoleARN: anthropic.String("arn:aws:iam::111122223333:role/anthropic-cmek"),
 			},
 		},
-		DisplayName: anthropic.String("x"),
-		Geo:         anthropic.BetaOrganizationExternalKeyNewParamsGeoUs,
+		DisplayName:   anthropic.String("x"),
+		Geo:           anthropic.BetaOrganizationExternalKeyNewParamsGeoUs,
+		UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

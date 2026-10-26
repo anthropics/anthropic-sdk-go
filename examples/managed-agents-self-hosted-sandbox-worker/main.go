@@ -58,7 +58,7 @@ func main() {
 
 	agent, err := client.Beta.Agents.New(ctx, anthropic.BetaAgentNewParams{
 		Name:   "self-hosted-runner-example",
-		Model:  anthropic.BetaManagedAgentsModelConfigParams{ID: "claude-haiku-4-5"},
+		Model:  anthropic.BetaManagedAgentsModelConfigParams{ID: "claude-haiku-5-5"},
 		System: param.NewOpt("You are running in a self-hosted sandbox. Use the available tools to answer."),
 		Tools: []anthropic.BetaAgentNewParamsToolUnion{
 			{OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{

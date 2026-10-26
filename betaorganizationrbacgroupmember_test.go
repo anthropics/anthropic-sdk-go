@@ -58,7 +58,7 @@ func TestBetaOrganizationRBACGroupMemberAdd(t *testing.T) {
 		context.TODO(),
 		"rbac_group_id",
 		anthropic.BetaOrganizationRBACGroupMemberAddParams{
-			UserID: "user_01WCz1FkmYMm4gnmykNKUu3Q",
+			UserID: "user_01WxYzAbCdEfGhJkMnPqRsTu",
 		},
 	)
 	if err != nil {

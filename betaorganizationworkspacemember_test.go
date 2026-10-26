@@ -118,7 +118,7 @@ func TestBetaOrganizationWorkspaceMemberAdd(t *testing.T) {
 		context.TODO(),
 		"workspace_id",
 		anthropic.BetaOrganizationWorkspaceMemberAddParams{
-			UserID:        "user_01WCz1FkmYMm4gnmykNKUu3Q",
+			UserID:        "user_01WxYzAbCdEfGhJkMnPqRsTu",
 			WorkspaceRole: anthropic.BetaNoBillingWorkspaceRoleWorkspaceAdmin,
 		},
 	)

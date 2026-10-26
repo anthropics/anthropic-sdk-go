@@ -27,7 +27,7 @@ func TestBetaOrganizationAnalyticsCostListWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Organization.Analytics.Cost.List(context.TODO(), anthropic.BetaOrganizationAnalyticsCostListParams{
 		StartingAt:          time.Now(),
-		ActorIDs:            []string{"user_01WCz1FkmYMm4gnmykNKUu3Q"},
+		ActorIDs:            []string{"user_01WxYzAbCdEfGhJkMnPqRsTu"},
 		ActorTypes:          []anthropic.BetaAnalyticsActorType{anthropic.BetaAnalyticsActorTypeServiceAccountActor},
 		AgentIDs:            []string{"agent_01VHd3EAGJ6PLkP9LM7DDu3f"},
 		APIKeyIDs:           []string{"apikey_01Rj2N8SVvo6BePZj99NhmiT"},

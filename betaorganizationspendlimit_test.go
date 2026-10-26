@@ -103,7 +103,7 @@ func TestBetaOrganizationSpendLimitSetWithOptionalParams(t *testing.T) {
 		Amount: anthropic.String("50000"),
 		Scope: anthropic.BetaOrganizationSpendLimitSetParamsScopeUnion{
 			OfUser: &anthropic.BetaSpendLimitUserScopeParam{
-				UserID: "user_01WCz1FkmYMm4gnmykNKUu3Q",
+				UserID: "user_01WxYzAbCdEfGhJkMnPqRsTu",
 			},
 		},
 		Period: anthropic.BetaSpendLimitPeriodMonthly,

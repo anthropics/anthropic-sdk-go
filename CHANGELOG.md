@@ -11,6 +11,7 @@
 
 * **ci:** remove unused build upload steps
 * **docs:** clarify what disabling the Compliance API stops
+* **tests:** fail with a hint when the mock server is not running
 
 ### Documentation
 

@@ -45,7 +45,7 @@ func main() {
 		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(anthropic.NewTextBlock(content)),
 		},
-		Model: "claude-sonnet-4-5",
+		Model: "claude-sonnet-5-5",
 	})
 	if err != nil {
 		panic(err)

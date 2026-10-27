@@ -113,7 +113,7 @@ tools := []anthropic.BetaTool{weatherTool}
 
 runner := client.Beta.Messages.NewToolRunner(tools, anthropic.BetaToolRunnerParams{
 	BetaMessageNewParams: anthropic.BetaMessageNewParams{
-		Model:     anthropic.ModelClaudeSonnet4_5_20250929,
+		Model:     anthropic.ModelClaudeSonnet5_5,
 		MaxTokens: 1024,
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather in Tokyo?")),
@@ -169,7 +169,7 @@ Use `BetaToolRunnerStreaming` via `NewToolRunnerStreaming()` for streaming respo
 ```go
 runner := client.Beta.Messages.NewToolRunnerStreaming(tools, anthropic.BetaToolRunnerParams{
 	BetaMessageNewParams: anthropic.BetaMessageNewParams{
-		Model:     anthropic.ModelClaudeSonnet4_5_20250929,
+		Model:     anthropic.ModelClaudeSonnet5_5,
 		MaxTokens: 1024,
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("What's the weather in Tokyo?")),
@@ -258,7 +258,7 @@ With the `compact-2026-09-04` beta you decide when a conversation is compacted: 
 ```go
 runner := client.Beta.Messages.NewToolRunner(tools, anthropic.BetaToolRunnerParams{
 	BetaMessageNewParams: anthropic.BetaMessageNewParams{
-		Model:     anthropic.ModelClaudeSonnet4_5_20250929,
+		Model:     anthropic.ModelClaudeSonnet5_5,
 		MaxTokens: 1024,
 		Betas:     []anthropic.AnthropicBeta{anthropic.AnthropicBetaCompact2026_09_04},
 		Messages: []anthropic.BetaMessageParam{

@@ -40,7 +40,8 @@ func TestBetaOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
 			"env":  "prod",
 			"team": "platform",
 		},
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -104,6 +105,7 @@ func TestBetaOrganizationWorkspaceUpdateWithOptionalParams(t *testing.T) {
 				"env":  "prod",
 				"team": "platform",
 			},
+			UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
 		},
 	)
 	if err != nil {

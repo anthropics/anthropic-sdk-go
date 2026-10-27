@@ -30,8 +30,9 @@ func TestOrganizationExternalKeyNewWithOptionalParams(t *testing.T) {
 				Region: anthropic.String("us-east-1"),
 			},
 		},
-		DisplayName: anthropic.String("x"),
-		Geo:         anthropic.OrganizationExternalKeyNewParamsGeoUs,
+		DisplayName:   anthropic.String("x"),
+		Geo:           anthropic.OrganizationExternalKeyNewParamsGeoUs,
+		UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

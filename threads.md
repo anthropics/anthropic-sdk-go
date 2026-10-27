@@ -4,7 +4,7 @@ A message thread (beta) keeps the conversation on the server, so each request se
 
 ```go
 thread := client.Beta.Messages.NewThread(anthropic.BetaMessageThreadCreateParams{
-	Model:     anthropic.ModelClaudeSonnet5,
+	Model:     anthropic.ModelClaudeSonnet5_5,
 	MaxTokens: 1024,
 	System:    []anthropic.BetaTextBlockParam{{Text: "You are a concise assistant."}},
 })

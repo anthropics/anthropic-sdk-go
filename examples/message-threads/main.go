@@ -14,7 +14,7 @@ func main() {
 	ctx := context.Background()
 
 	thread := client.Beta.Messages.NewThread(anthropic.BetaMessageThreadCreateParams{
-		Model:     anthropic.ModelClaudeSonnet5,
+		Model:     anthropic.ModelClaudeSonnet5_5,
 		MaxTokens: 1024,
 		System:    []anthropic.BetaTextBlockParam{{Text: "You are a concise assistant."}},
 	})

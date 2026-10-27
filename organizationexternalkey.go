@@ -143,9 +143,9 @@ func (r *OrganizationExternalKeyService) Validate(ctx context.Context, externalK
 }
 
 type AWSExternalKeyConfig struct {
-	// Full ARN of the AWS KMS key. On Claude Platform on AWS the key must be a
-	// single-Region key in your organization's own AWS account; cross-account keys,
-	// multi-Region keys, and alias ARNs are rejected.
+	// Full ARN of the AWS KMS key. On Claude Platform on AWS, alias ARNs are rejected,
+	// and your organization's own key must be a single-Region key in your
+	// organization's AWS account.
 	KMSARN string       `json:"kms_arn" api:"required"`
 	Type   constant.AWS `json:"type" default:"aws"`
 	// AWS region. Derived from `kms_arn` if omitted.
@@ -177,9 +177,9 @@ func (r AWSExternalKeyConfig) ToParam() AWSExternalKeyConfigParam {
 
 // The properties KMSARN, Type are required.
 type AWSExternalKeyConfigParam struct {
-	// Full ARN of the AWS KMS key. On Claude Platform on AWS the key must be a
-	// single-Region key in your organization's own AWS account; cross-account keys,
-	// multi-Region keys, and alias ARNs are rejected.
+	// Full ARN of the AWS KMS key. On Claude Platform on AWS, alias ARNs are rejected,
+	// and your organization's own key must be a single-Region key in your
+	// organization's AWS account.
 	KMSARN string `json:"kms_arn" api:"required"`
 	// AWS region. Derived from `kms_arn` if omitted.
 	Region param.Opt[string] `json:"region,omitzero"`
@@ -261,8 +261,8 @@ func (r *AzureExternalKeyConfigParam) UnmarshalJSON(data []byte) error {
 // workspace references it, the provider fields become effectively immutable
 // (existing encrypted data needs the config for decrypt).
 type ExternalKey struct {
-	// Identifier of the external key config. A tagged ID prefixed `ekey_`, or — for
-	// organizations on the Claude Platform on AWS — the AWS KMS key ARN.
+	// Identifier of the external key config: a tagged ID prefixed `ekey_`, or, on
+	// Claude Platform on AWS, an AWS KMS key's ARN.
 	ID string `json:"id" api:"required"`
 	// Whether any workspace uses this config to encrypt its data — counting live and
 	// archived workspaces (an archived workspace's data remains encrypted under the
@@ -279,6 +279,11 @@ type ExternalKey struct {
 	ProviderConfig ExternalKeyProviderConfigUnion `json:"provider_config" api:"required"`
 	Type           constant.ExternalKey           `json:"type" default:"external_key"`
 	UpdatedAt      time.Time                      `json:"updated_at" api:"required" format:"date-time"`
+	// ID of the user profile the key is bound to, or null if the key is not bound to
+	// one. A key bound to a user profile can only be attached to a Workspace that has
+	// the same user profile. A key that isn't bound can be attached to a Workspace
+	// whatever its user profile.
+	UserProfileID string `json:"user_profile_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID             respjson.Field
@@ -289,6 +294,7 @@ type ExternalKey struct {
 		ProviderConfig respjson.Field
 		Type           respjson.Field
 		UpdatedAt      respjson.Field
+		UserProfileID  respjson.Field
 		ExtraFields    map[string]respjson.Field
 		raw            string
 	} `json:"-"`
@@ -585,6 +591,11 @@ type OrganizationExternalKeyNewParams struct {
 	ProviderConfig OrganizationExternalKeyNewParamsProviderConfigUnion `json:"provider_config,omitzero" api:"required"`
 	// Human-friendly display name.
 	DisplayName param.Opt[string] `json:"display_name,omitzero"`
+	// ID of a user profile to bind the key to. Omit this field for a key that isn't
+	// bound to a user profile. Such a key can be attached to a Workspace whatever its
+	// user profile. The binding cannot be changed later. A key bound to a user profile
+	// can only be attached to a Workspace that has the same user profile.
+	UserProfileID param.Opt[string] `json:"user_profile_id,omitzero"`
 	// Data residency geo. Only `us` is supported.
 	//
 	// Any of "us".

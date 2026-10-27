@@ -22,7 +22,7 @@ func main() {
 	agent, err := client.Beta.Agents.New(ctx, anthropic.BetaAgentNewParams{
 		Name: "streaming-deltas-example",
 		Model: anthropic.BetaManagedAgentsModelConfigParams{
-			ID: anthropic.BetaManagedAgentsModelClaudeSonnet4_6,
+			ID: anthropic.BetaManagedAgentsModelClaudeSonnet5_5,
 		},
 	})
 	if err != nil {

@@ -39,6 +39,7 @@ func TestOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
 			"env":  "prod",
 			"team": "platform",
 		},
+		UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -100,6 +101,7 @@ func TestOrganizationWorkspaceUpdateWithOptionalParams(t *testing.T) {
 				"env":  "prod",
 				"team": "platform",
 			},
+			UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
 		},
 	)
 	if err != nil {

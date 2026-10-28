@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -869,4 +870,84 @@ func TestServerLeaseState(t *testing.T) {
 	require.Nil(t, serverLeaseState(apiError(`{"type":"error","error":{"type":"api_error","message":"unavailable"}}`)))
 	require.Nil(t, serverLeaseState(errors.New("connection reset")))
 	require.Nil(t, serverLeaseState(nil))
+}
+
+// TestEnvironmentWorker_ForwardsToolTimeout pins that ToolTimeout reaches
+// the per-session runner: a tool that would run for the runner's 120s
+// default is cut at the 50ms the worker was given, and the cut is posted as
+// the tool's error result naming that bound.
+func TestEnvironmentWorker_ForwardsToolTimeout(t *testing.T) {
+	server := newFakeWorkServer(t)
+	scriptOpenSession(t, server)
+	server.HandleHeartbeat = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"last_heartbeat":"2026-05-11T12:00:00Z","lease_extended":true,"state":"active","ttl_seconds":30,"type":"work_heartbeat"}`))
+	}
+	var posted atomic.Value // the first tool result's body
+	sent := make(chan struct{})
+	var once sync.Once
+	server.HandleSend = func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		once.Do(func() {
+			posted.Store(string(body))
+			close(sent)
+		})
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"type":"send_session_events"}`))
+	}
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		flusher, ok := w.(http.Flusher)
+		require.True(t, ok, "stream response writer must support flushing")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("event: agent.tool_use\n" +
+			`data: {"type":"agent.tool_use","id":"evt_1","name":"slow","input":{},"processed_at":"2026-05-11T12:00:00Z"}` +
+			"\n\n"))
+		flusher.Flush()
+		// Hold the session open until the result is posted, then end it.
+		select {
+		case <-sent:
+		case <-r.Context().Done():
+			return
+		}
+		_, _ = w.Write([]byte("event: session.status_terminated\n" +
+			`data: {"type":"session.status_terminated","id":"evt_term","processed_at":"2026-05-11T12:00:00Z"}` +
+			"\n\n"))
+		flusher.Flush()
+	}
+
+	worker := NewEnvironmentWorker(server.Client(), EnvironmentWorkerOptions{
+		EnvironmentID:  "env_1",
+		EnvironmentKey: "env_key",
+		Workdir:        t.TempDir(),
+		Tools:          []anthropic.BetaTool{slowTool{}},
+		ToolTimeout:    50 * time.Millisecond,
+		Logger:         silentLogger,
+	})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	require.NoError(t, worker.HandleItem(ctx, HandleItemOptions{
+		WorkID:        "work_1",
+		EnvironmentID: "env_1",
+		SessionID:     "sesn_test",
+	}))
+
+	body, _ := posted.Load().(string)
+	require.Contains(t, body, `"is_error":true`)
+	require.Contains(t, body, `tool \"slow\" timed out after 50ms`)
+}
+
+// slowTool blocks until its context ends, as a tool that outlives its bound
+// does.
+type slowTool struct{}
+
+func (slowTool) Name() string        { return "slow" }
+func (slowTool) Description() string { return "slow" }
+func (slowTool) InputSchema() anthropic.BetaToolInputSchemaParam {
+	return anthropic.BetaToolInputSchemaParam{Properties: map[string]any{}}
+}
+func (slowTool) Execute(ctx context.Context, _ json.RawMessage) ([]anthropic.BetaToolResultBlockParamContentUnion, error) {
+	<-ctx.Done()
+	return nil, ctx.Err()
 }

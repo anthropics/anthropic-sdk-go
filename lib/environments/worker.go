@@ -83,6 +83,13 @@ type EnvironmentWorkerOptions struct {
 	// [github.com/anthropics/anthropic-sdk-go/v2.SessionToolRunner].
 	MaxIdle *time.Duration
 
+	// ToolTimeout is forwarded to the per-session
+	// [github.com/anthropics/anthropic-sdk-go/v2.SessionToolRunner]: it bounds
+	// a single tool's Execute call, after which the tool is cancelled and the
+	// timeout is posted as its error result. Zero keeps the runner's default
+	// of 120s.
+	ToolTimeout time.Duration
+
 	// MemorySyncInterval is how often the session's attached memory stores
 	// are synced back while it runs — checked after each dispatched tool
 	// call, plus one final sync when the session ends cleanly. A session
@@ -621,6 +628,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 	runner := w.client.Beta.Sessions.Events.NewToolRunner(sessCtx, sessionID, anthropic.SessionToolRunnerOptions{
 		Tools:          tools,
 		MaxIdle:        w.opts.MaxIdle,
+		ToolTimeout:    w.opts.ToolTimeout,
 		Logger:         log,
 		RequestOptions: runnerReqOpts,
 	})

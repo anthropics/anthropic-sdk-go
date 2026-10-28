@@ -1,6 +1,11 @@
 # Changelog
 
-## [2.4.1](https://github.com/anthropics/anthropic-sdk-go/compare/v2.4.0...v2.4.1) (2026-10-27)
+## [2.4.1](https://github.com/anthropics/anthropic-sdk-go/compare/v2.4.0...v2.4.1) (2026-10-28)
+
+### Chores
+
+* **docs:** clarify what the capability_access_all role action grants
+
 
 ### Documentation
 

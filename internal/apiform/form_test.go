@@ -46,6 +46,10 @@ type DateTime struct {
 	DateTime time.Time `form:"date-time" format:"date-time"`
 }
 
+type DateMap struct {
+	Dates map[string]time.Time `form:"dates" format:"date"`
+}
+
 type AdditionalProperties struct {
 	A      bool           `form:"a"`
 	Extras map[string]any `form:"-" api:"extrafields"`
@@ -358,6 +362,16 @@ Content-Disposition: form-data; name="date-time"
 			Date:     time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC),
 			DateTime: time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC),
 		},
+	},
+
+	"date_map_struct": {
+		`--xxx
+Content-Disposition: form-data; name="dates.a"
+
+2006-01-02
+--xxx--
+`,
+		DateMap{Dates: map[string]time.Time{"a": time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)}},
 	},
 
 	"additional_properties": {

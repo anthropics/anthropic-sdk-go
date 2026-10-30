@@ -1,0 +1,91 @@
+package anthropic
+
+import (
+	"context"
+	"net/http"
+	"net/url"
+	"slices"
+
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+)
+
+// OrganizationSpendLimitEffectiveService contains methods and other services that
+// help with interacting with the anthropic API.
+//
+// Note, unlike clients, this service does not read variables from the environment
+// automatically. You should not instantiate this service directly, and instead use
+// the [NewOrganizationSpendLimitEffectiveService] method instead.
+type OrganizationSpendLimitEffectiveService struct {
+	Options []option.RequestOption
+}
+
+// NewOrganizationSpendLimitEffectiveService generates a new service that applies
+// the given options to each request. These options are applied after the parent
+// client's options (if there is one), and before any request-specific options.
+func NewOrganizationSpendLimitEffectiveService(opts ...option.RequestOption) (r OrganizationSpendLimitEffectiveService) {
+	r = OrganizationSpendLimitEffectiveService{}
+	r.Options = opts
+	return
+}
+
+// List each member's effective spend limit and period-to-date spend.
+//
+// Returns one row per (member, period) the member resolves a spend limit for, with
+// the `source` scope the spend limit was inherited from. Paginates by member, so a
+// member's periods never split across pages. Supported for Claude Enterprise
+// organizations only, not for Claude Console organizations.
+func (r *OrganizationSpendLimitEffectiveService) List(ctx context.Context, query OrganizationSpendLimitEffectiveListParams, opts ...option.RequestOption) (res *pagination.PageCursor[SpendSummary], err error) {
+	var raw *http.Response
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	path := "v1/organizations/spend_limits/effective"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.effective.list", "/v1/organizations/spend_limits/effective", "limit", "page", "period", "user_ids"))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.Execute()
+	if err != nil {
+		return nil, err
+	}
+	res.SetPageConfig(cfg, raw)
+	return res, nil
+}
+
+// List each member's effective spend limit and period-to-date spend.
+//
+// Returns one row per (member, period) the member resolves a spend limit for, with
+// the `source` scope the spend limit was inherited from. Paginates by member, so a
+// member's periods never split across pages. Supported for Claude Enterprise
+// organizations only, not for Claude Console organizations.
+func (r *OrganizationSpendLimitEffectiveService) ListAutoPaging(ctx context.Context, query OrganizationSpendLimitEffectiveListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[SpendSummary] {
+	return pagination.NewPageCursorAutoPager(r.List(ctx, query, opts...))
+}
+
+type OrganizationSpendLimitEffectiveListParams struct {
+	// Opaque cursor from a previous response's `next_page` field.
+	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Maximum number of members per page. A member's period rows never split across
+	// pages, so a page may carry more rows than this. Defaults to `20`.
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Restrict the report to these limit periods. Omit to return one row per period
+	// each member resolves a spend limit for.
+	Period []SpendLimitPeriod `query:"period,omitzero" json:"-"`
+	// Restrict the report to these members, by tagged user ID (`user_...`). At most
+	// 100 entries.
+	UserIDs []string `query:"user_ids,omitzero" json:"-"`
+	paramObj
+}
+
+// URLQuery serializes [OrganizationSpendLimitEffectiveListParams]'s query
+// parameters as `url.Values`.
+func (r OrganizationSpendLimitEffectiveListParams) URLQuery() (v url.Values, err error) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
+		NestedFormat: apiquery.NestedQueryFormatBrackets,
+	})
+}

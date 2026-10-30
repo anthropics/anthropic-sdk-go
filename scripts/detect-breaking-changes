@@ -32,6 +32,19 @@ TEST_PATHS=(
 	organizationworkspaceserviceaccount_test.go
 	organizationratelimit_test.go
 	organizationcompliancesetting_test.go
+	organizationanalyticssummary_test.go
+	organizationanalyticsuser_test.go
+	organizationanalyticsappchatproject_test.go
+	organizationanalyticsconnector_test.go
+	organizationanalyticsplugin_test.go
+	organizationanalyticsskill_test.go
+	organizationanalyticsartifact_test.go
+	organizationspendlimiteffective_test.go
+	organizationspendlimitincreaserequest_test.go
+	organizationrbacgroup_test.go
+	organizationrbacgroupmember_test.go
+	organizationrbacrole_test.go
+	organizationrbacrolepermission_test.go
 	betamodel_test.go
 	betamessage_test.go
 	betamessagebatch_test.go

@@ -4,6 +4,7 @@
 
 ### Features
 
+* **api:** add GA methods for analytics, spend limits and RBAC
 * **api:** add shared analytics order and increase request actor types
 * **api:** add types for analytics group_by and spend limit period filters
 

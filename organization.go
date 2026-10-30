@@ -29,6 +29,10 @@ type OrganizationService struct {
 	Workspaces         OrganizationWorkspaceService
 	RateLimits         OrganizationRateLimitService
 	ComplianceSettings OrganizationComplianceSettingService
+	Analytics          OrganizationAnalyticsService
+	SpendLimits        OrganizationSpendLimitService
+	RBACGroups         OrganizationRBACGroupService
+	RBACRoles          OrganizationRBACRoleService
 }
 
 // NewOrganizationService generates a new service that applies the given options to
@@ -46,6 +50,10 @@ func NewOrganizationService(opts ...option.RequestOption) (r OrganizationService
 	r.Workspaces = NewOrganizationWorkspaceService(opts...)
 	r.RateLimits = NewOrganizationRateLimitService(opts...)
 	r.ComplianceSettings = NewOrganizationComplianceSettingService(opts...)
+	r.Analytics = NewOrganizationAnalyticsService(opts...)
+	r.SpendLimits = NewOrganizationSpendLimitService(opts...)
+	r.RBACGroups = NewOrganizationRBACGroupService(opts...)
+	r.RBACRoles = NewOrganizationRBACRoleService(opts...)
 	return
 }
 

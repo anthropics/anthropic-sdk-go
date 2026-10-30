@@ -820,6 +820,210 @@ Methods:
 - <code title="get /v1/organizations/compliance_settings">client.Organization.ComplianceSettings.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationComplianceSettingService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationComplianceSettings">OrganizationComplianceSettings</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="post /v1/organizations/compliance_settings">client.Organization.ComplianceSettings.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationComplianceSettingService.Update">Update</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationComplianceSettingUpdateParams">OrganizationComplianceSettingUpdateParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationComplianceSettings">OrganizationComplianceSettings</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
+## Analytics
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsArtifactGroupBy">AnalyticsArtifactGroupBy</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsConnectorGroupBy">AnalyticsConnectorGroupBy</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsOrder">AnalyticsOrder</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsPluginGroupBy">AnalyticsPluginGroupBy</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsProjectGroupBy">AnalyticsProjectGroupBy</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSkillGroupBy">AnalyticsSkillGroupBy</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsUserGroupBy">AnalyticsUserGroupBy</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsArtifactActivity">AnalyticsArtifactActivity</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsChatCoworkUnifiedChatMetrics">AnalyticsChatCoworkUnifiedChatMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsChatCoworkUnifiedMetrics">AnalyticsChatCoworkUnifiedMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsChatCoworkUnifiedSessionsMetrics">AnalyticsChatCoworkUnifiedSessionsMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsChatMetrics">AnalyticsChatMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsClaudeCodeMetrics">AnalyticsClaudeCodeMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsConnectorActivity">AnalyticsConnectorActivity</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsConnectorChatCoworkUnifiedChatMetrics">AnalyticsConnectorChatCoworkUnifiedChatMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsConnectorChatCoworkUnifiedMetrics">AnalyticsConnectorChatCoworkUnifiedMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsConnectorChatCoworkUnifiedSessionsMetrics">AnalyticsConnectorChatCoworkUnifiedSessionsMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsConnectorChatMetrics">AnalyticsConnectorChatMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsConnectorClaudeCodeMetrics">AnalyticsConnectorClaudeCodeMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsConnectorCoworkMetrics">AnalyticsConnectorCoworkMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsConnectorOfficeMetrics">AnalyticsConnectorOfficeMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsConnectorOfficeProductMetrics">AnalyticsConnectorOfficeProductMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsCoreCodeMetrics">AnalyticsCoreCodeMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsCoworkMetrics">AnalyticsCoworkMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsDesignMetrics">AnalyticsDesignMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsLinesOfCode">AnalyticsLinesOfCode</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsOfficeMetrics">AnalyticsOfficeMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsOfficeProductMetrics">AnalyticsOfficeProductMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsPluginActivity">AnalyticsPluginActivity</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsPluginChatCoworkUnifiedMetrics">AnalyticsPluginChatCoworkUnifiedMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsPluginClaudeCodeMetrics">AnalyticsPluginClaudeCodeMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsPluginCoworkMetrics">AnalyticsPluginCoworkMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsProjectActivity">AnalyticsProjectActivity</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsScienceMetrics">AnalyticsScienceMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSingleDayActivitySummary">AnalyticsSingleDayActivitySummary</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSkillActivity">AnalyticsSkillActivity</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSkillChatCoworkUnifiedChatMetrics">AnalyticsSkillChatCoworkUnifiedChatMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSkillChatCoworkUnifiedMetrics">AnalyticsSkillChatCoworkUnifiedMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSkillChatCoworkUnifiedSessionsMetrics">AnalyticsSkillChatCoworkUnifiedSessionsMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSkillChatMetrics">AnalyticsSkillChatMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSkillClaudeCodeMetrics">AnalyticsSkillClaudeCodeMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSkillCoworkMetrics">AnalyticsSkillCoworkMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSkillOfficeMetrics">AnalyticsSkillOfficeMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSkillOfficeProductMetrics">AnalyticsSkillOfficeProductMetrics</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsToolActionCounts">AnalyticsToolActionCounts</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsToolActions">AnalyticsToolActions</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsUser">AnalyticsUser</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsUserActivity">AnalyticsUserActivity</a>
+
+### Summaries
+
+Methods:
+
+- <code title="get /v1/organizations/analytics/summaries">client.Organization.Analytics.Summaries.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsSummaryService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsSummaryListParams">OrganizationAnalyticsSummaryListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSingleDayActivitySummary">AnalyticsSingleDayActivitySummary</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+### Users
+
+Methods:
+
+- <code title="get /v1/organizations/analytics/users">client.Organization.Analytics.Users.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsUserService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsUserListParams">OrganizationAnalyticsUserListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsUserActivity">AnalyticsUserActivity</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+### Apps
+
+#### Chat
+
+##### Projects
+
+Methods:
+
+- <code title="get /v1/organizations/analytics/apps/chat/projects">client.Organization.Analytics.Apps.Chat.Projects.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsAppChatProjectService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsAppChatProjectListParams">OrganizationAnalyticsAppChatProjectListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsProjectActivity">AnalyticsProjectActivity</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+### Connectors
+
+Methods:
+
+- <code title="get /v1/organizations/analytics/connectors">client.Organization.Analytics.Connectors.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsConnectorService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsConnectorListParams">OrganizationAnalyticsConnectorListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsConnectorActivity">AnalyticsConnectorActivity</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+### Plugins
+
+Methods:
+
+- <code title="get /v1/organizations/analytics/plugins">client.Organization.Analytics.Plugins.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsPluginService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsPluginListParams">OrganizationAnalyticsPluginListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsPluginActivity">AnalyticsPluginActivity</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+### Skills
+
+Methods:
+
+- <code title="get /v1/organizations/analytics/skills">client.Organization.Analytics.Skills.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsSkillService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsSkillListParams">OrganizationAnalyticsSkillListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsSkillActivity">AnalyticsSkillActivity</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+### Artifacts
+
+Methods:
+
+- <code title="get /v1/organizations/analytics/artifacts">client.Organization.Analytics.Artifacts.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsArtifactService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationAnalyticsArtifactListParams">OrganizationAnalyticsArtifactListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AnalyticsArtifactActivity">AnalyticsArtifactActivity</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+## SpendLimits
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitPeriod">SpendLimitPeriod</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimit">SpendLimit</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitOrganizationScope">SpendLimitOrganizationScope</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitOrganizationServiceScope">SpendLimitOrganizationServiceScope</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitPeriod">SpendLimitPeriod</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitRBACGroupScope">SpendLimitRBACGroupScope</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitScopedAPIKeyActor">SpendLimitScopedAPIKeyActor</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitSeatTierScope">SpendLimitSeatTierScope</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitUsageTierScope">SpendLimitUsageTierScope</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitUserActor">SpendLimitUserActor</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitUserScope">SpendLimitUserScope</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitWorkspaceScope">SpendLimitWorkspaceScope</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendSummary">SpendSummary</a>
+
+### Effective
+
+Methods:
+
+- <code title="get /v1/organizations/spend_limits/effective">client.Organization.SpendLimits.Effective.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationSpendLimitEffectiveService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationSpendLimitEffectiveListParams">OrganizationSpendLimitEffectiveListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendSummary">SpendSummary</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+### IncreaseRequests
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitIncreaseRequestStatus">SpendLimitIncreaseRequestStatus</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitIncreaseRequest">SpendLimitIncreaseRequest</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitIncreaseRequestActorUnion">SpendLimitIncreaseRequestActorUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitIncreaseRequestResolvedByUnion">SpendLimitIncreaseRequestResolvedByUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitIncreaseRequestStatus">SpendLimitIncreaseRequestStatus</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationSpendLimitIncreaseRequestApproveResponse">OrganizationSpendLimitIncreaseRequestApproveResponse</a>
+
+Methods:
+
+- <code title="get /v1/organizations/spend_limit_increase_requests/{spend_limit_increase_request_id}">client.Organization.SpendLimits.IncreaseRequests.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationSpendLimitIncreaseRequestService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, spendLimitIncreaseRequestID <a href="https://pkg.go.dev/builtin#string">string</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitIncreaseRequest">SpendLimitIncreaseRequest</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/organizations/spend_limit_increase_requests">client.Organization.SpendLimits.IncreaseRequests.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationSpendLimitIncreaseRequestService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationSpendLimitIncreaseRequestListParams">OrganizationSpendLimitIncreaseRequestListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitIncreaseRequest">SpendLimitIncreaseRequest</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/organizations/spend_limit_increase_requests/{spend_limit_increase_request_id}/approve">client.Organization.SpendLimits.IncreaseRequests.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationSpendLimitIncreaseRequestService.Approve">Approve</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, spendLimitIncreaseRequestID <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationSpendLimitIncreaseRequestApproveParams">OrganizationSpendLimitIncreaseRequestApproveParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationSpendLimitIncreaseRequestApproveResponse">OrganizationSpendLimitIncreaseRequestApproveResponse</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/organizations/spend_limit_increase_requests/{spend_limit_increase_request_id}/deny">client.Organization.SpendLimits.IncreaseRequests.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationSpendLimitIncreaseRequestService.Deny">Deny</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, spendLimitIncreaseRequestID <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationSpendLimitIncreaseRequestDenyParams">OrganizationSpendLimitIncreaseRequestDenyParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SpendLimitIncreaseRequest">SpendLimitIncreaseRequest</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+## RBACGroups
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#DeletedRBACGroup">DeletedRBACGroup</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroup">RBACGroup</a>
+
+Methods:
+
+- <code title="post /v1/organizations/rbac_groups">client.Organization.RBACGroups.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupService.New">New</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupNewParams">OrganizationRBACGroupNewParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroup">RBACGroup</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/organizations/rbac_groups/{rbac_group_id}">client.Organization.RBACGroups.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, rbacGroupID <a href="https://pkg.go.dev/builtin#string">string</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroup">RBACGroup</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/organizations/rbac_groups/{rbac_group_id}">client.Organization.RBACGroups.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupService.Update">Update</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, rbacGroupID <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupUpdateParams">OrganizationRBACGroupUpdateParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroup">RBACGroup</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/organizations/rbac_groups">client.Organization.RBACGroups.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupListParams">OrganizationRBACGroupListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroup">RBACGroup</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="delete /v1/organizations/rbac_groups/{rbac_group_id}">client.Organization.RBACGroups.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupService.Delete">Delete</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, rbacGroupID <a href="https://pkg.go.dev/builtin#string">string</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#DeletedRBACGroup">DeletedRBACGroup</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+### Members
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#DeletedRBACGroupMember">DeletedRBACGroupMember</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroupMember">RBACGroupMember</a>
+
+Methods:
+
+- <code title="get /v1/organizations/rbac_groups/{rbac_group_id}/members">client.Organization.RBACGroups.Members.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupMemberService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, rbacGroupID <a href="https://pkg.go.dev/builtin#string">string</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupMemberListParams">OrganizationRBACGroupMemberListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroupMember">RBACGroupMember</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/organizations/rbac_groups/{rbac_group_id}/members">client.Organization.RBACGroups.Members.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupMemberService.Add">Add</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, rbacGroupID <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupMemberAddParams">OrganizationRBACGroupMemberAddParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroupMember">RBACGroupMember</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="delete /v1/organizations/rbac_groups/{rbac_group_id}/members/{user_id}">client.Organization.RBACGroups.Members.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupMemberService.Remove">Remove</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, userID <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACGroupMemberRemoveParams">OrganizationRBACGroupMemberRemoveParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#DeletedRBACGroupMember">DeletedRBACGroupMember</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+## RBACRoles
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACRole">RBACRole</a>
+
+Methods:
+
+- <code title="get /v1/organizations/rbac_roles/{rbac_role_id}">client.Organization.RBACRoles.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACRoleService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, rbacRoleID <a href="https://pkg.go.dev/builtin#string">string</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACRole">RBACRole</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/organizations/rbac_roles">client.Organization.RBACRoles.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACRoleService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACRoleListParams">OrganizationRBACRoleListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACRole">RBACRole</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+### Permissions
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACAllConnectorsPermissionResource">RBACAllConnectorsPermissionResource</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACConnectorPermissionResource">RBACConnectorPermissionResource</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACConnectorScopePermissionResource">RBACConnectorScopePermissionResource</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACConnectorToolPermissionResource">RBACConnectorToolPermissionResource</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACOrganizationPermissionResource">RBACOrganizationPermissionResource</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACRolePermission">RBACRolePermission</a>
+
+Methods:
+
+- <code title="get /v1/organizations/rbac_roles/{rbac_role_id}/permissions">client.Organization.RBACRoles.Permissions.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACRolePermissionService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, rbacRoleID <a href="https://pkg.go.dev/builtin#string">string</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRBACRolePermissionListParams">OrganizationRBACRolePermissionListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACRolePermission">RBACRolePermission</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
 # Beta
 
 Params Types:

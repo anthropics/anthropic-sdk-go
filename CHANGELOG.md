@@ -17,6 +17,7 @@
 ### Chores
 
 * **docs:** clarify what the capability_access_all role action grants
+* **internal:** add a section for each repository's own review rules
 * **internal:** stop encoder state leaking between marshal calls
 
 

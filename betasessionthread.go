@@ -1512,6 +1512,8 @@ type BetaManagedAgentsStreamSessionThreadEventsUnionError struct {
 	// [BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion],
 	// [BetaManagedAgentsBillingErrorRetryStatusUnion],
 	// [BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion],
+	// [BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion],
+	// [BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion],
 	// [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion],
 	// [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion],
 	// [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion],

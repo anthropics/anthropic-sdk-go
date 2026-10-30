@@ -549,24 +549,6 @@ type BetaAnalyticsConnectorActivity struct {
 	ChatMetrics BetaAnalyticsConnectorChatMetrics `json:"chat_metrics" api:"required"`
 	// Claude Code activity metrics for a single connector on a given day.
 	ClaudeCodeMetrics BetaAnalyticsConnectorClaudeCodeMetrics `json:"claude_code_metrics" api:"required"`
-	// Name of the connector. Some rows carry an opaque connector id here instead of a
-	// readable name; `connector_display_name` holds the resolved name for those rows.
-	ConnectorName string `json:"connector_name" api:"required"`
-	// Cowork activity metrics for a single connector on a given day.
-	CoworkMetrics BetaAnalyticsConnectorCoworkMetrics `json:"cowork_metrics" api:"required"`
-	// Number of distinct users who used the connector on the requested day, or, in
-	// date-range mode, over the requested window — recomputed as an exact distinct
-	// count over the window's per-member daily rows, never a sum of per-day values.
-	DistinctUserCount int64 `json:"distinct_user_count" api:"required"`
-	// Office Agent activity metrics for a single connector on a given day, broken out
-	// by Office product.
-	OfficeMetrics BetaAnalyticsConnectorOfficeMetrics `json:"office_metrics" api:"required"`
-	// Connector use recorded while members had Chat and Cowork unified (Cowork's
-	// features inside claude.ai chat) turned on, split into chat conversations and
-	// Cowork sessions. A count is null in date-range mode where it cannot be computed.
-	// Omitted from the response on deployments that do not offer Chat and Cowork
-	// unified.
-	ChatCoworkUnifiedMetrics BetaAnalyticsConnectorActivityChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
 	// Human-readable display name for rows whose `connector_name` is an opaque
 	// connector id rather than a readable name, resolved at request time from the
 	// organization's connectors (including connectors that have since been removed).
@@ -577,13 +559,22 @@ type BetaAnalyticsConnectorActivity struct {
 	// `connector_name` is already a readable name, when the id cannot be resolved to
 	// one of the organization's connectors, or when display-name resolution is not
 	// enabled for this organization.
-	ConnectorDisplayName string `json:"connector_display_name" api:"nullable"`
+	ConnectorDisplayName string `json:"connector_display_name" api:"required"`
+	// Name of the connector. Some rows carry an opaque connector id here instead of a
+	// readable name; `connector_display_name` holds the resolved name for those rows.
+	ConnectorName string `json:"connector_name" api:"required"`
+	// Cowork activity metrics for a single connector on a given day.
+	CoworkMetrics BetaAnalyticsConnectorCoworkMetrics `json:"cowork_metrics" api:"required"`
+	// Number of distinct users who used the connector on the requested day, or, in
+	// date-range mode, over the requested window — recomputed as an exact distinct
+	// count over the window's per-member daily rows, never a sum of per-day values.
+	DistinctUserCount int64 `json:"distinct_user_count" api:"required"`
 	// Number of distinct users whose use of this connector on the requested day ran on
 	// their own individual credential, connected through their own consent flow.
 	// Companion bucket to `managed_auth_distinct_user_count`, which carries the
 	// measurement, attribution, and null rules. Users whose requests used no stored
 	// credential count in neither bucket.
-	IndividualAuthDistinctUserCount int64 `json:"individual_auth_distinct_user_count" api:"nullable"`
+	IndividualAuthDistinctUserCount int64 `json:"individual_auth_distinct_user_count" api:"required"`
 	// Number of distinct users whose use of this connector on the requested day ran on
 	// Enterprise Managed Auth (an organization-managed credential provisioned through
 	// the organization's identity provider), read from the token record each request
@@ -605,7 +596,43 @@ type BetaAnalyticsConnectorActivity struct {
 	// and mint-event rules applying with the window in place of the day; a range
 	// starting earlier reports every managed-auth field as null, never a
 	// partial-window value.
-	ManagedAuthDistinctUserCount int64 `json:"managed_auth_distinct_user_count" api:"nullable"`
+	ManagedAuthDistinctUserCount int64 `json:"managed_auth_distinct_user_count" api:"required"`
+	// Office Agent activity metrics for a single connector on a given day, broken out
+	// by Office product.
+	OfficeMetrics BetaAnalyticsConnectorOfficeMetrics `json:"office_metrics" api:"required"`
+	// Number of connector tool calls on the requested day whose trusted read-only
+	// annotation marked them read-only. Call count, not distinct users. Every call
+	// recorded on a classified surface lands in exactly one of `read_call_count`,
+	// `write_call_count`, or `unclassified_call_count`, so the three sum to the day's
+	// classified calls. Classification is forward-only per surface: claude.ai from
+	// 2026-06-01, Claude Code from 2026-05-30, Claude in Office from 2026-05-29,
+	// Cowork from 2026-06-02 (Cowork clients predating annotation forwarding land in
+	// `unclassified_call_count`). Null, never 0, when the value cannot be stated: the
+	// read/write split is not enabled for this organization, or the day predates
+	// 2026-05-29. For a date-range total, sum the per-day values, but treat a window
+	// that extends before 2026-05-29 as null rather than summing only its covered days
+	// — date-range rollup mode (`starting_date`/`ending_date`) applies both rules
+	// server-side.
+	ReadCallCount int64 `json:"read_call_count" api:"required"`
+	// Number of connector tool calls on the requested day with no trusted read-only
+	// annotation — the annotation is optional in the MCP spec and is discarded when
+	// connector access controls are active, so unclassified calls are common. This
+	// field shows how much of the day's classified activity the read/write split
+	// actually covers. Call count, not distinct users. One of the three
+	// call-classification buckets; see `read_call_count` for the per-surface
+	// data-start dates, null conditions, and date-range guidance.
+	UnclassifiedCallCount int64 `json:"unclassified_call_count" api:"required"`
+	// Number of connector tool calls on the requested day whose trusted read-only
+	// annotation marked them not read-only. Call count, not distinct users. One of the
+	// three call-classification buckets; see `read_call_count` for the per-surface
+	// data-start dates, null conditions, and date-range guidance.
+	WriteCallCount int64 `json:"write_call_count" api:"required"`
+	// Connector use recorded while members had Chat and Cowork unified (Cowork's
+	// features inside claude.ai chat) turned on, split into chat conversations and
+	// Cowork sessions. A count is null in date-range mode where it cannot be computed.
+	// Omitted from the response on deployments that do not offer Chat and Cowork
+	// unified.
+	ChatCoworkUnifiedMetrics BetaAnalyticsConnectorActivityChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
 	// Product that produced this row's activity: one of `chat`, `claude_code`,
 	// `cowork`, `office_agent`, or `chat_cowork_unified` (Chat and Cowork unified).
 	// These are the canonical Cost & Usage product names; an `office_agent` row's
@@ -624,55 +651,28 @@ type BetaAnalyticsConnectorActivity struct {
 	// is available. Null if the group has been deleted or its name could not be
 	// resolved; `rbac_group_id` remains the stable key.
 	RBACGroupName string `json:"rbac_group_name" api:"nullable"`
-	// Number of connector tool calls on the requested day whose trusted read-only
-	// annotation marked them read-only. Call count, not distinct users. Every call
-	// recorded on a classified surface lands in exactly one of `read_call_count`,
-	// `write_call_count`, or `unclassified_call_count`, so the three sum to the day's
-	// classified calls. Classification is forward-only per surface: claude.ai from
-	// 2026-06-01, Claude Code from 2026-05-30, Claude in Office from 2026-05-29,
-	// Cowork from 2026-06-02 (Cowork clients predating annotation forwarding land in
-	// `unclassified_call_count`). Null, never 0, when the value cannot be stated: the
-	// read/write split is not enabled for this organization, or the day predates
-	// 2026-05-29. For a date-range total, sum the per-day values, but treat a window
-	// that extends before 2026-05-29 as null rather than summing only its covered days
-	// — date-range rollup mode (`starting_date`/`ending_date`) applies both rules
-	// server-side.
-	ReadCallCount int64 `json:"read_call_count" api:"nullable"`
-	// Number of connector tool calls on the requested day with no trusted read-only
-	// annotation — the annotation is optional in the MCP spec and is discarded when
-	// connector access controls are active, so unclassified calls are common. This
-	// field shows how much of the day's classified activity the read/write split
-	// actually covers. Call count, not distinct users. One of the three
-	// call-classification buckets; see `read_call_count` for the per-surface
-	// data-start dates, null conditions, and date-range guidance.
-	UnclassifiedCallCount int64 `json:"unclassified_call_count" api:"nullable"`
 	// Tagged user identifier (e.g. `user_...`). Present only when the request grouped
 	// by `user_id`.
 	UserID string `json:"user_id" api:"nullable"`
-	// Number of connector tool calls on the requested day whose trusted read-only
-	// annotation marked them not read-only. Call count, not distinct users. One of the
-	// three call-classification buckets; see `read_call_count` for the per-surface
-	// data-start dates, null conditions, and date-range guidance.
-	WriteCallCount int64 `json:"write_call_count" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChatMetrics                     respjson.Field
 		ClaudeCodeMetrics               respjson.Field
+		ConnectorDisplayName            respjson.Field
 		ConnectorName                   respjson.Field
 		CoworkMetrics                   respjson.Field
 		DistinctUserCount               respjson.Field
-		OfficeMetrics                   respjson.Field
-		ChatCoworkUnifiedMetrics        respjson.Field
-		ConnectorDisplayName            respjson.Field
 		IndividualAuthDistinctUserCount respjson.Field
 		ManagedAuthDistinctUserCount    respjson.Field
+		OfficeMetrics                   respjson.Field
+		ReadCallCount                   respjson.Field
+		UnclassifiedCallCount           respjson.Field
+		WriteCallCount                  respjson.Field
+		ChatCoworkUnifiedMetrics        respjson.Field
 		Product                         respjson.Field
 		RBACGroupID                     respjson.Field
 		RBACGroupName                   respjson.Field
-		ReadCallCount                   respjson.Field
-		UnclassifiedCallCount           respjson.Field
 		UserID                          respjson.Field
-		WriteCallCount                  respjson.Field
 		ExtraFields                     map[string]respjson.Field
 		raw                             string
 	} `json:"-"`
@@ -1320,6 +1320,11 @@ type BetaAnalyticsCoworkMetrics struct {
 	// error <2%) in date-range mode. Null on aggregated rows where a distinct count
 	// cannot be computed.
 	DistinctConnectorsUsedCount int64 `json:"distinct_connectors_used_count" api:"required"`
+	// Number of distinct plugins used in Cowork sessions. Null while Cowork plugin-use
+	// metrics are not enabled for this organization. Approximate (HLL, typical error
+	// <2%) in date-range mode. Null on aggregated rows where a distinct count cannot
+	// be computed.
+	DistinctPluginsUsedCount int64 `json:"distinct_plugins_used_count" api:"required"`
 	// Number of distinct Cowork sessions. Approximate (HLL, typical error <2%) in
 	// date-range mode. Null on aggregated rows where a distinct count cannot be
 	// computed.
@@ -1328,39 +1333,34 @@ type BetaAnalyticsCoworkMetrics struct {
 	// error <2%) in date-range mode. Null on aggregated rows where a distinct count
 	// cannot be computed.
 	DistinctSkillsUsedCount int64 `json:"distinct_skills_used_count" api:"required"`
-	// Number of messages sent in Cowork sessions
-	MessageCount int64 `json:"message_count" api:"required"`
-	// Total number of skill invocations in Cowork sessions
-	SkillsUsedCount int64 `json:"skills_used_count" api:"required"`
-	// Number of distinct plugins used in Cowork sessions. Null while Cowork plugin-use
-	// metrics are not enabled for this organization. Approximate (HLL, typical error
-	// <2%) in date-range mode. Null on aggregated rows where a distinct count cannot
-	// be computed.
-	DistinctPluginsUsedCount int64 `json:"distinct_plugins_used_count" api:"nullable"`
 	// Number of successful Edit tool calls in Cowork sessions. Null while the
 	// file-edit metrics are not enabled for this organization.
-	EditToolCount int64 `json:"edit_tool_count" api:"nullable"`
+	EditToolCount int64 `json:"edit_tool_count" api:"required"`
 	// Number of successful file-edit tool calls (Edit, MultiEdit, Write, NotebookEdit)
 	// in Cowork sessions. Null, never 0, while the file-edit metrics are not enabled
 	// for this organization.
-	FileEditCount int64 `json:"file_edit_count" api:"nullable"`
+	FileEditCount int64 `json:"file_edit_count" api:"required"`
+	// Number of messages sent in Cowork sessions
+	MessageCount int64 `json:"message_count" api:"required"`
 	// Number of successful MultiEdit tool calls in Cowork sessions. Null while the
 	// file-edit metrics are not enabled for this organization.
-	MultiEditToolCount int64 `json:"multi_edit_tool_count" api:"nullable"`
+	MultiEditToolCount int64 `json:"multi_edit_tool_count" api:"required"`
 	// Number of successful NotebookEdit tool calls in Cowork sessions. Null while the
 	// file-edit metrics are not enabled for this organization.
-	NotebookEditToolCount int64 `json:"notebook_edit_tool_count" api:"nullable"`
+	NotebookEditToolCount int64 `json:"notebook_edit_tool_count" api:"required"`
 	// Total number of plugin invocations in Cowork sessions. Null while Cowork
 	// plugin-use metrics are not enabled for this organization.
-	PluginsUsedCount int64 `json:"plugins_used_count" api:"nullable"`
+	PluginsUsedCount int64 `json:"plugins_used_count" api:"required"`
 	// Number of distinct Cowork sessions with at least one successful file-edit tool
 	// call. Null while the file-edit metrics are not enabled for this organization.
 	// Approximate (HLL, typical error <2%) in date-range mode. Null on aggregated rows
 	// where a distinct count cannot be computed.
-	SessionsWithFileEditsCount int64 `json:"sessions_with_file_edits_count" api:"nullable"`
+	SessionsWithFileEditsCount int64 `json:"sessions_with_file_edits_count" api:"required"`
+	// Total number of skill invocations in Cowork sessions
+	SkillsUsedCount int64 `json:"skills_used_count" api:"required"`
 	// Number of successful Write tool calls in Cowork sessions. Null while the
 	// file-edit metrics are not enabled for this organization.
-	WriteToolCount int64 `json:"write_tool_count" api:"nullable"`
+	WriteToolCount int64 `json:"write_tool_count" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ActionCount                 respjson.Field
@@ -1368,17 +1368,17 @@ type BetaAnalyticsCoworkMetrics struct {
 		ConnectorsUsedCount         respjson.Field
 		DispatchTurnCount           respjson.Field
 		DistinctConnectorsUsedCount respjson.Field
+		DistinctPluginsUsedCount    respjson.Field
 		DistinctSessionCount        respjson.Field
 		DistinctSkillsUsedCount     respjson.Field
-		MessageCount                respjson.Field
-		SkillsUsedCount             respjson.Field
-		DistinctPluginsUsedCount    respjson.Field
 		EditToolCount               respjson.Field
 		FileEditCount               respjson.Field
+		MessageCount                respjson.Field
 		MultiEditToolCount          respjson.Field
 		NotebookEditToolCount       respjson.Field
 		PluginsUsedCount            respjson.Field
 		SessionsWithFileEditsCount  respjson.Field
+		SkillsUsedCount             respjson.Field
 		WriteToolCount              respjson.Field
 		ExtraFields                 map[string]respjson.Field
 		raw                         string
@@ -1757,6 +1757,10 @@ type BetaAnalyticsPluginActivity struct {
 	InstallCount int64 `json:"install_count" api:"required"`
 	// Number of plugin invocations on the requested day
 	InvocationCount int64 `json:"invocation_count" api:"required"`
+	// Stable plugin identifier when available (e.g. `serena@claude-plugins-official`).
+	// Null for third-party Claude Code plugins (redacted at the source) and Cowork
+	// slash commands that carry only a hashed id.
+	PluginID string `json:"plugin_id" api:"required"`
 	// Name of the plugin
 	PluginName string `json:"plugin_name" api:"required"`
 	// Plugin use recorded while members had Chat and Cowork unified (Cowork's features
@@ -1764,10 +1768,6 @@ type BetaAnalyticsPluginActivity struct {
 	// cannot be computed. Omitted from the response on deployments that do not offer
 	// Chat and Cowork unified.
 	ChatCoworkUnifiedMetrics BetaAnalyticsPluginActivityChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
-	// Stable plugin identifier when available (e.g. `serena@claude-plugins-official`).
-	// Null for third-party Claude Code plugins (redacted at the source) and Cowork
-	// slash commands that carry only a hashed id.
-	PluginID string `json:"plugin_id" api:"nullable"`
 	// Product that produced this row's activity: one of `chat`, `claude_code`,
 	// `cowork`, `office_agent`, or `chat_cowork_unified` (Chat and Cowork unified).
 	// These are the canonical Cost & Usage product names; an `office_agent` row's
@@ -1796,9 +1796,9 @@ type BetaAnalyticsPluginActivity struct {
 		DistinctUserCount        respjson.Field
 		InstallCount             respjson.Field
 		InvocationCount          respjson.Field
+		PluginID                 respjson.Field
 		PluginName               respjson.Field
 		ChatCoworkUnifiedMetrics respjson.Field
-		PluginID                 respjson.Field
 		Product                  respjson.Field
 		RBACGroupID              respjson.Field
 		RBACGroupName            respjson.Field
@@ -1904,6 +1904,15 @@ const (
 
 // Per-project activity data for a given day.
 type BetaAnalyticsProjectActivity struct {
+	// Project creation timestamp in RFC 3339 format. Null if the project was deleted
+	// before attribution was recorded.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// User who created the project. Null if the project was deleted before attribution
+	// was recorded, or if the creator's account no longer exists.
+	CreatedBy BetaAnalyticsUser `json:"created_by" api:"required"`
+	// Number of distinct conversations in the project. Null on aggregated rows where a
+	// distinct count cannot be computed.
+	DistinctConversationCount int64 `json:"distinct_conversation_count" api:"required"`
 	// Number of distinct users who used the project on the requested day, or, in
 	// date-range mode, over the requested window — recomputed as an exact distinct
 	// count over the window's per-member daily rows, never a sum of per-day values.
@@ -1914,26 +1923,6 @@ type BetaAnalyticsProjectActivity struct {
 	ProjectID string `json:"project_id" api:"required"`
 	// Name of the project
 	ProjectName string `json:"project_name" api:"required"`
-	// Project creation timestamp in RFC 3339 format. Null if the project was deleted
-	// before attribution was recorded.
-	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
-	// User who created the project. Null if the project was deleted before attribution
-	// was recorded, or if the creator's account no longer exists.
-	CreatedBy BetaAnalyticsUser `json:"created_by" api:"nullable"`
-	// Number of distinct conversations in the project. Null on aggregated rows where a
-	// distinct count cannot be computed.
-	DistinctConversationCount int64 `json:"distinct_conversation_count" api:"nullable"`
-	// Product that produced this row's activity: one of `chat`, `claude_code`,
-	// `cowork`, `office_agent`, or `chat_cowork_unified` (Chat and Cowork unified).
-	// These are the canonical Cost & Usage product names; an `office_agent` row's
-	// per-surface breakdown is in its `office_metrics`. On `/plugins` only `cowork`,
-	// `claude_code` and `chat_cowork_unified` occur (the only surfaces with plugin
-	// attribution); on `/artifacts` only `chat`, `claude_code`, `cowork` and
-	// `chat_cowork_unified` occur (the surfaces that create artifacts);
-	// `/apps/chat/projects` does not support the product dimension (a `product` entry
-	// in `group_by[]` or `filter[]` there is rejected). Present only when the request
-	// grouped by `product`.
-	Product string `json:"product" api:"nullable"`
 	// Tagged RBAC group identifier (`rbac_group_...`), matching the spend-limits API
 	// spelling. Present only when the request grouped by `rbac_group_id`.
 	RBACGroupID string `json:"rbac_group_id" api:"nullable"`
@@ -1946,14 +1935,13 @@ type BetaAnalyticsProjectActivity struct {
 	UserID string `json:"user_id" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
+		CreatedAt                 respjson.Field
+		CreatedBy                 respjson.Field
+		DistinctConversationCount respjson.Field
 		DistinctUserCount         respjson.Field
 		MessageCount              respjson.Field
 		ProjectID                 respjson.Field
 		ProjectName               respjson.Field
-		CreatedAt                 respjson.Field
-		CreatedBy                 respjson.Field
-		DistinctConversationCount respjson.Field
-		Product                   respjson.Field
 		RBACGroupID               respjson.Field
 		RBACGroupName             respjson.Field
 		UserID                    respjson.Field
@@ -2256,26 +2244,6 @@ func (r *BetaAnalyticsSingleDayActivitySummary) UnmarshalJSON(data []byte) error
 
 // Per-skill activity data for a given day.
 type BetaAnalyticsSkillActivity struct {
-	// Claude.ai activity metrics for a single skill on a given day.
-	ChatMetrics BetaAnalyticsSkillChatMetrics `json:"chat_metrics" api:"required"`
-	// Claude Code activity metrics for a single skill on a given day.
-	ClaudeCodeMetrics BetaAnalyticsSkillClaudeCodeMetrics `json:"claude_code_metrics" api:"required"`
-	// Cowork activity metrics for a single skill on a given day.
-	CoworkMetrics BetaAnalyticsSkillCoworkMetrics `json:"cowork_metrics" api:"required"`
-	// Number of distinct users who used the skill on the requested day, or, in
-	// date-range mode, over the requested window — recomputed as an exact distinct
-	// count over the window's per-member daily rows, never a sum of per-day values. A
-	// skill counts as used only when it is explicitly activated — the model (or the
-	// user, via the skill's slash command) invokes it, reading its instructions into
-	// context as part of that activation. Skills that are merely installed or listed
-	// as available, or whose content reaches the context without an activation
-	// (preloaded, hook-injected, or read as a plain file), are not counted.
-	DistinctUserCount int64 `json:"distinct_user_count" api:"required"`
-	// Office Agent activity metrics for a single skill on a given day, broken out by
-	// Office product.
-	OfficeMetrics BetaAnalyticsSkillOfficeMetrics `json:"office_metrics" api:"required"`
-	// Name of the skill
-	SkillName string `json:"skill_name" api:"required"`
 	// List-price (rate-card) value of the member requests attributed to this skill, as
 	// a decimal string in the minor unit of `currency` (cents for USD), from Claude
 	// Code, Cowork, and Office Agent request-level attribution — the value of requests
@@ -2295,17 +2263,26 @@ type BetaAnalyticsSkillActivity struct {
 	// below the ungrouped value for the same skill over the same date or range: spend
 	// attributed to a member–skill pair with no counted usage on that day is excluded
 	// from those cuts.
-	AttributedListPrice string `json:"attributed_list_price" api:"nullable"`
-	// Skill use recorded while members had Chat and Cowork unified (Cowork's features
-	// inside claude.ai chat) turned on, split into chat conversations and Cowork
-	// sessions. A count is null in date-range mode where it cannot be computed.
-	// Omitted from the response on deployments that do not offer Chat and Cowork
-	// unified.
-	ChatCoworkUnifiedMetrics BetaAnalyticsSkillActivityChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
+	AttributedListPrice string `json:"attributed_list_price" api:"required"`
+	// Claude.ai activity metrics for a single skill on a given day.
+	ChatMetrics BetaAnalyticsSkillChatMetrics `json:"chat_metrics" api:"required"`
+	// Claude Code activity metrics for a single skill on a given day.
+	ClaudeCodeMetrics BetaAnalyticsSkillClaudeCodeMetrics `json:"claude_code_metrics" api:"required"`
+	// Cowork activity metrics for a single skill on a given day.
+	CoworkMetrics BetaAnalyticsSkillCoworkMetrics `json:"cowork_metrics" api:"required"`
 	// Currency for this row's monetary fields (`estimated_overage_spend` and
 	// `attributed_list_price`), as an uppercase ISO-4217 code. Always "USD" when
 	// either amount is populated; null whenever both amounts are null.
-	Currency string `json:"currency" api:"nullable"`
+	Currency string `json:"currency" api:"required"`
+	// Number of distinct users who used the skill on the requested day, or, in
+	// date-range mode, over the requested window — recomputed as an exact distinct
+	// count over the window's per-member daily rows, never a sum of per-day values. A
+	// skill counts as used only when it is explicitly activated — the model (or the
+	// user, via the skill's slash command) invokes it, reading its instructions into
+	// context as part of that activation. Skills that are merely installed or listed
+	// as available, or whose content reaches the context without an activation
+	// (preloaded, hook-injected, or read as a plain file), are not counted.
+	DistinctUserCount int64 `json:"distinct_user_count" api:"required"`
 	// Distinct accounts that enabled this skill on the requested day (claude.ai only —
 	// the skill analog of plugin `install_count`). The count is org-wide: null when
 	// enable reporting is not enabled for this organization, or when the request
@@ -2314,7 +2291,7 @@ type BetaAnalyticsSkillActivity struct {
 	// an event count: summing across days double-counts members who enable the skill
 	// on more than one day, so it is also null in date-range rollup mode
 	// (`starting_date`/`ending_date`).
-	EnableCount int64 `json:"enable_count" api:"nullable"`
+	EnableCount int64 `json:"enable_count" api:"required"`
 	// Estimated overage spend attributed to this skill, as a decimal string in the
 	// minor unit of `currency` (cents for USD; "1250" is $12.50, fractional cents
 	// possible) — an allocation of each member's daily post-discount, pre-credit
@@ -2338,7 +2315,7 @@ type BetaAnalyticsSkillActivity struct {
 	// below the ungrouped value for the same skill over the same date or range: spend
 	// attributed to a member–skill pair with no counted usage on that day is excluded
 	// from those cuts.
-	EstimatedOverageSpend string `json:"estimated_overage_spend" api:"nullable"`
+	EstimatedOverageSpend string `json:"estimated_overage_spend" api:"required"`
 	// Total number of times this skill was invoked on the requested day (the skill
 	// analog of plugin `invocation_count`). Unlike `distinct_user_count` — which
 	// answers '# of users' — this is the true '# of uses'. A skill counts as used only
@@ -2350,7 +2327,40 @@ type BetaAnalyticsSkillActivity struct {
 	// enabled for this organization. Sum across a date range for total uses in the
 	// window — date-range rollup mode (`starting_date`/`ending_date`) returns this sum
 	// directly.
-	InvocationCount int64 `json:"invocation_count" api:"nullable"`
+	InvocationCount int64 `json:"invocation_count" api:"required"`
+	// Office Agent activity metrics for a single skill on a given day, broken out by
+	// Office product.
+	OfficeMetrics BetaAnalyticsSkillOfficeMetrics `json:"office_metrics" api:"required"`
+	// Skill share status (claude.ai only): one of `private`, `organization`, or
+	// `public`. Null for skills used only in Claude Code or Office (no per-skill
+	// share-status concept) and when share-status reporting is not yet available for
+	// the organization. Filterable via `filter[]=share_status:{value}`.
+	//
+	// Any of "organization", "private", "public".
+	ShareStatus BetaAnalyticsSkillActivityShareStatus `json:"share_status" api:"required"`
+	// Human-readable display name for rows whose `skill_name` is an opaque skill id
+	// (user/organization skill types and plugin-delivered skills, whose user-defined
+	// names usage reports generally withhold). Organization-shared skills and skills
+	// delivered by the organization's own plugins (its plugin marketplaces and its
+	// library) resolve; plugin skill names are shown without their 'plugin:' prefix.
+	// The literal 'unknown' bucket row gets a fixed 'Unknown skill' label. For a
+	// member's own skill (private or personal-plugin) it is null, except when the
+	// skill's owner used it from Claude Code or Cowork in the requested period: then
+	// it shows the name that client reported at the time. Apart from that, the names
+	// of members' own skills are not disclosed to analytics-key holders. Also null for
+	// Anthropic-provided plugin skills (not resolved), for an organization skill or
+	// plugin whose name can no longer be found (for example, one since deleted), when
+	// `skill_name` is already a display name, or when display-name resolution is not
+	// enabled for this organization.
+	SkillDisplayName string `json:"skill_display_name" api:"required"`
+	// Name of the skill
+	SkillName string `json:"skill_name" api:"required"`
+	// Skill use recorded while members had Chat and Cowork unified (Cowork's features
+	// inside claude.ai chat) turned on, split into chat conversations and Cowork
+	// sessions. A count is null in date-range mode where it cannot be computed.
+	// Omitted from the response on deployments that do not offer Chat and Cowork
+	// unified.
+	ChatCoworkUnifiedMetrics BetaAnalyticsSkillActivityChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
 	// Product that produced this row's activity: one of `chat`, `claude_code`,
 	// `cowork`, `office_agent`, or `chat_cowork_unified` (Chat and Cowork unified).
 	// These are the canonical Cost & Usage product names; an `office_agent` row's
@@ -2369,50 +2379,28 @@ type BetaAnalyticsSkillActivity struct {
 	// is available. Null if the group has been deleted or its name could not be
 	// resolved; `rbac_group_id` remains the stable key.
 	RBACGroupName string `json:"rbac_group_name" api:"nullable"`
-	// Skill share status (claude.ai only): one of `private`, `organization`, or
-	// `public`. Null for skills used only in Claude Code or Office (no per-skill
-	// share-status concept) and when share-status reporting is not yet available for
-	// the organization. Filterable via `filter[]=share_status:{value}`.
-	//
-	// Any of "organization", "private", "public".
-	ShareStatus BetaAnalyticsSkillActivityShareStatus `json:"share_status" api:"nullable"`
-	// Human-readable display name for rows whose `skill_name` is an opaque skill id
-	// (user/organization skill types and plugin-delivered skills, whose user-defined
-	// names usage reports generally withhold). Organization-shared skills and skills
-	// delivered by the organization's own plugins (its plugin marketplaces and its
-	// library) resolve; plugin skill names are shown without their 'plugin:' prefix.
-	// The literal 'unknown' bucket row gets a fixed 'Unknown skill' label. For a
-	// member's own skill (private or personal-plugin) it is null, except when the
-	// skill's owner used it from Claude Code or Cowork in the requested period: then
-	// it shows the name that client reported at the time. Apart from that, the names
-	// of members' own skills are not disclosed to analytics-key holders. Also null for
-	// Anthropic-provided plugin skills (not resolved), for an organization skill or
-	// plugin whose name can no longer be found (for example, one since deleted), when
-	// `skill_name` is already a display name, or when display-name resolution is not
-	// enabled for this organization.
-	SkillDisplayName string `json:"skill_display_name" api:"nullable"`
 	// Tagged user identifier (e.g. `user_...`). Present only when the request grouped
 	// by `user_id`.
 	UserID string `json:"user_id" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
+		AttributedListPrice      respjson.Field
 		ChatMetrics              respjson.Field
 		ClaudeCodeMetrics        respjson.Field
 		CoworkMetrics            respjson.Field
-		DistinctUserCount        respjson.Field
-		OfficeMetrics            respjson.Field
-		SkillName                respjson.Field
-		AttributedListPrice      respjson.Field
-		ChatCoworkUnifiedMetrics respjson.Field
 		Currency                 respjson.Field
+		DistinctUserCount        respjson.Field
 		EnableCount              respjson.Field
 		EstimatedOverageSpend    respjson.Field
 		InvocationCount          respjson.Field
+		OfficeMetrics            respjson.Field
+		ShareStatus              respjson.Field
+		SkillDisplayName         respjson.Field
+		SkillName                respjson.Field
+		ChatCoworkUnifiedMetrics respjson.Field
 		Product                  respjson.Field
 		RBACGroupID              respjson.Field
 		RBACGroupName            respjson.Field
-		ShareStatus              respjson.Field
-		SkillDisplayName         respjson.Field
 		UserID                   respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
@@ -2424,6 +2412,18 @@ func (r BetaAnalyticsSkillActivity) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsSkillActivity) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Skill share status (claude.ai only): one of `private`, `organization`, or
+// `public`. Null for skills used only in Claude Code or Office (no per-skill
+// share-status concept) and when share-status reporting is not yet available for
+// the organization. Filterable via `filter[]=share_status:{value}`.
+type BetaAnalyticsSkillActivityShareStatus string
+
+const (
+	BetaAnalyticsSkillActivityShareStatusOrganization BetaAnalyticsSkillActivityShareStatus = "organization"
+	BetaAnalyticsSkillActivityShareStatusPrivate      BetaAnalyticsSkillActivityShareStatus = "private"
+	BetaAnalyticsSkillActivityShareStatusPublic       BetaAnalyticsSkillActivityShareStatus = "public"
+)
 
 // Skill use recorded while members had Chat and Cowork unified (Cowork's features
 // inside claude.ai chat) turned on, split into chat conversations and Cowork
@@ -2451,18 +2451,6 @@ func (r BetaAnalyticsSkillActivityChatCoworkUnifiedMetrics) RawJSON() string { r
 func (r *BetaAnalyticsSkillActivityChatCoworkUnifiedMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Skill share status (claude.ai only): one of `private`, `organization`, or
-// `public`. Null for skills used only in Claude Code or Office (no per-skill
-// share-status concept) and when share-status reporting is not yet available for
-// the organization. Filterable via `filter[]=share_status:{value}`.
-type BetaAnalyticsSkillActivityShareStatus string
-
-const (
-	BetaAnalyticsSkillActivityShareStatusOrganization BetaAnalyticsSkillActivityShareStatus = "organization"
-	BetaAnalyticsSkillActivityShareStatusPrivate      BetaAnalyticsSkillActivityShareStatus = "private"
-	BetaAnalyticsSkillActivityShareStatusPublic       BetaAnalyticsSkillActivityShareStatus = "public"
-)
 
 // A skill's use in chat conversations recorded while members had Chat and Cowork
 // unified turned on.
@@ -3154,11 +3142,18 @@ type BetaAnalyticsUserActivity struct {
 	CoworkMetrics BetaAnalyticsCoworkMetrics `json:"cowork_metrics" api:"required"`
 	// Claude Design activity metrics for a single user on a given day.
 	DesignMetrics BetaAnalyticsDesignMetrics `json:"design_metrics" api:"required"`
+	// Number of distinct active users represented by this row. Only set for grouped
+	// rollups (`group_by[]`); null for per-user rows. In date-range mode, recomputed
+	// as an exact distinct count of the group's active members over the requested
+	// window, never a sum of per-day values.
+	DistinctUserCount int64 `json:"distinct_user_count" api:"required"`
 	// Office Agent activity metrics for a single user on a given day, broken out by
 	// Office product.
 	OfficeMetrics BetaAnalyticsOfficeMetrics `json:"office_metrics" api:"required"`
 	// Claude Science activity metrics for a single user on a given day.
 	ScienceMetrics BetaAnalyticsScienceMetrics `json:"science_metrics" api:"required"`
+	// The user this row describes. Null on rows aggregated across users.
+	User BetaAnalyticsUser `json:"user" api:"required"`
 	// Number of web searches performed
 	WebSearchCount int64 `json:"web_search_count" api:"required"`
 	// Activity recorded while the member had Chat and Cowork unified (Cowork's
@@ -3166,11 +3161,6 @@ type BetaAnalyticsUserActivity struct {
 	// `sessions` (Cowork activity). Omitted from the response on deployments that do
 	// not offer Chat and Cowork unified.
 	ChatCoworkUnifiedMetrics BetaAnalyticsUserActivityChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
-	// Number of distinct active users represented by this row. Only set for grouped
-	// rollups (`group_by[]`); null for per-user rows. In date-range mode, recomputed
-	// as an exact distinct count of the group's active members over the requested
-	// window, never a sum of per-day values.
-	DistinctUserCount int64 `json:"distinct_user_count" api:"nullable"`
 	// Most recent UTC day (YYYY-MM-DD) on which the user had any counted activity,
 	// within the requested window: equal to the requested `date` in single-day mode,
 	// and to the latest active day from `starting_date` (inclusive) to `ending_date`
@@ -3189,23 +3179,21 @@ type BetaAnalyticsUserActivity struct {
 	// is available. Null if the group has been deleted or its name could not be
 	// resolved; `rbac_group_id` remains the stable key.
 	RBACGroupName string `json:"rbac_group_name" api:"nullable"`
-	// The user this row describes. Null on rows aggregated across users.
-	User BetaAnalyticsUser `json:"user" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ChatMetrics              respjson.Field
 		ClaudeCodeMetrics        respjson.Field
 		CoworkMetrics            respjson.Field
 		DesignMetrics            respjson.Field
+		DistinctUserCount        respjson.Field
 		OfficeMetrics            respjson.Field
 		ScienceMetrics           respjson.Field
+		User                     respjson.Field
 		WebSearchCount           respjson.Field
 		ChatCoworkUnifiedMetrics respjson.Field
-		DistinctUserCount        respjson.Field
 		LastActivityDate         respjson.Field
 		RBACGroupID              respjson.Field
 		RBACGroupName            respjson.Field
-		User                     respjson.Field
 		ExtraFields              map[string]respjson.Field
 		raw                      string
 	} `json:"-"`

@@ -7,6 +7,11 @@
 * **api:** add types for analytics group_by and spend limit period filters
 
 
+### Bug Fixes
+
+* **api:** require always-sent analytics fields and drop the unused project product field
+
+
 ### Chores
 
 * **docs:** clarify what the capability_access_all role action grants

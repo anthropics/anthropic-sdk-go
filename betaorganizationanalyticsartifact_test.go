@@ -28,7 +28,7 @@ func TestBetaOrganizationAnalyticsArtifactListWithOptionalParams(t *testing.T) {
 	_, err := client.Beta.Organization.Analytics.Artifacts.List(context.TODO(), anthropic.BetaOrganizationAnalyticsArtifactListParams{
 		Date:    time.Now(),
 		Filter:  []string{"string"},
-		GroupBy: []string{"product"},
+		GroupBy: []anthropic.BetaAnalyticsArtifactGroupBy{anthropic.BetaAnalyticsArtifactGroupByProduct},
 		Limit:   anthropic.Int(1),
 		Page:    anthropic.String("page"),
 	})

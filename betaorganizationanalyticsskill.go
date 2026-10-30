@@ -125,9 +125,7 @@ type BetaOrganizationAnalyticsSkillListParams struct {
 	// attributes a user to every group they held at any point during each covered UTC
 	// day, so grouped rows are not an exclusive partition and can sum above org-level
 	// totals. At most 100 entries.
-	//
-	// Any of "product", "rbac_group_id", "user_id".
-	GroupBy []string `query:"group_by,omitzero" json:"-"`
+	GroupBy []BetaAnalyticsSkillGroupBy `query:"group_by,omitzero" json:"-"`
 	// Sort direction: `asc` or `desc`. Defaults to `asc` for the endpoint's sort
 	// column and to `desc` when `order_by` names a metric (a top-N ranking). Applies
 	// to `order_by`, or to the endpoint's default sort field when `order_by` is

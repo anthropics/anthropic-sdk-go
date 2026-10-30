@@ -258,6 +258,15 @@ func (r *BetaAnalyticsArtifactActivity) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A dimension to group artifact activity by.
+type BetaAnalyticsArtifactGroupBy string
+
+const (
+	BetaAnalyticsArtifactGroupByProduct     BetaAnalyticsArtifactGroupBy = "product"
+	BetaAnalyticsArtifactGroupByRBACGroupID BetaAnalyticsArtifactGroupBy = "rbac_group_id"
+	BetaAnalyticsArtifactGroupByUserID      BetaAnalyticsArtifactGroupBy = "user_id"
+)
+
 // Chat activity recorded while members had Chat and Cowork unified turned on.
 type BetaAnalyticsChatCoworkUnifiedChatMetrics struct {
 	// Same measure as `chat_metrics.connectors_used_count`, for activity recorded
@@ -805,6 +814,15 @@ func (r BetaAnalyticsConnectorCoworkMetrics) RawJSON() string { return r.JSON.ra
 func (r *BetaAnalyticsConnectorCoworkMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// A dimension to group connector activity by.
+type BetaAnalyticsConnectorGroupBy string
+
+const (
+	BetaAnalyticsConnectorGroupByProduct     BetaAnalyticsConnectorGroupBy = "product"
+	BetaAnalyticsConnectorGroupByRBACGroupID BetaAnalyticsConnectorGroupBy = "rbac_group_id"
+	BetaAnalyticsConnectorGroupByUserID      BetaAnalyticsConnectorGroupBy = "user_id"
+)
 
 // Office Agent activity metrics for a single connector on a given day, broken out
 // by Office product.
@@ -1857,6 +1875,15 @@ func (r *BetaAnalyticsPluginCoworkMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A dimension to group plugin activity by.
+type BetaAnalyticsPluginGroupBy string
+
+const (
+	BetaAnalyticsPluginGroupByProduct     BetaAnalyticsPluginGroupBy = "product"
+	BetaAnalyticsPluginGroupByRBACGroupID BetaAnalyticsPluginGroupBy = "rbac_group_id"
+	BetaAnalyticsPluginGroupByUserID      BetaAnalyticsPluginGroupBy = "user_id"
+)
+
 // Publicly documented product surfaces. `claude-tag` is Claude Tag, the Claude
 // product in Slack. `chat_cowork_unified` is Chat and Cowork unified, Cowork's
 // features inside claude.ai chat: chat and Cowork usage by a member who has it
@@ -1940,6 +1967,14 @@ func (r BetaAnalyticsProjectActivity) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsProjectActivity) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// A dimension to group chat project activity by.
+type BetaAnalyticsProjectGroupBy string
+
+const (
+	BetaAnalyticsProjectGroupByRBACGroupID BetaAnalyticsProjectGroupBy = "rbac_group_id"
+	BetaAnalyticsProjectGroupByUserID      BetaAnalyticsProjectGroupBy = "user_id"
+)
 
 type BetaAnalyticsReportUserActor struct {
 	// True when the account has been deleted, or when the user is no longer a member
@@ -2547,6 +2582,15 @@ func (r BetaAnalyticsSkillCoworkMetrics) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsSkillCoworkMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// A dimension to group skill activity by.
+type BetaAnalyticsSkillGroupBy string
+
+const (
+	BetaAnalyticsSkillGroupByProduct     BetaAnalyticsSkillGroupBy = "product"
+	BetaAnalyticsSkillGroupByRBACGroupID BetaAnalyticsSkillGroupBy = "rbac_group_id"
+	BetaAnalyticsSkillGroupByUserID      BetaAnalyticsSkillGroupBy = "user_id"
+)
 
 // Office Agent activity metrics for a single skill on a given day, broken out by
 // Office product.
@@ -3240,3 +3284,10 @@ func (r BetaAnalyticsUserActor) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsUserActor) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// A dimension to group user activity by.
+type BetaAnalyticsUserGroupBy string
+
+const (
+	BetaAnalyticsUserGroupByRBACGroupID BetaAnalyticsUserGroupBy = "rbac_group_id"
+)

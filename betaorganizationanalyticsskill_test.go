@@ -29,7 +29,7 @@ func TestBetaOrganizationAnalyticsSkillListWithOptionalParams(t *testing.T) {
 		Date:         anthropic.Time(time.Now()),
 		EndingDate:   anthropic.Time(time.Now()),
 		Filter:       []string{"string"},
-		GroupBy:      []string{"product"},
+		GroupBy:      []anthropic.BetaAnalyticsSkillGroupBy{anthropic.BetaAnalyticsSkillGroupByProduct},
 		Limit:        anthropic.Int(1),
 		Order:        anthropic.BetaOrganizationAnalyticsSkillListParamsOrderAsc,
 		OrderBy:      anthropic.String("order_by"),

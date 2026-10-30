@@ -76,9 +76,7 @@ type BetaOrganizationSpendLimitEffectiveListParams struct {
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
 	// Restrict the report to these limit periods. Omit to return one row per period
 	// each member resolves a spend limit for.
-	//
-	// Any of "daily", "monthly", "weekly".
-	Period []string `query:"period,omitzero" json:"-"`
+	Period []BetaSpendLimitPeriod `query:"period,omitzero" json:"-"`
 	// Restrict the report to these members, by tagged user ID (`user_...`). At most
 	// 100 entries.
 	UserIDs []string `query:"user_ids,omitzero" json:"-"`

@@ -29,7 +29,7 @@ func TestBetaOrganizationAnalyticsConnectorListWithOptionalParams(t *testing.T) 
 		Date:         anthropic.Time(time.Now()),
 		EndingDate:   anthropic.Time(time.Now()),
 		Filter:       []string{"string"},
-		GroupBy:      []string{"product"},
+		GroupBy:      []anthropic.BetaAnalyticsConnectorGroupBy{anthropic.BetaAnalyticsConnectorGroupByProduct},
 		Limit:        anthropic.Int(1),
 		Order:        anthropic.BetaOrganizationAnalyticsConnectorListParamsOrderAsc,
 		OrderBy:      anthropic.String("order_by"),

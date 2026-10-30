@@ -27,7 +27,7 @@ func TestBetaOrganizationSpendLimitEffectiveListWithOptionalParams(t *testing.T)
 	_, err := client.Beta.Organization.SpendLimits.Effective.List(context.TODO(), anthropic.BetaOrganizationSpendLimitEffectiveListParams{
 		Limit:   anthropic.Int(1),
 		Page:    anthropic.String("page"),
-		Period:  []string{"daily"},
+		Period:  []anthropic.BetaSpendLimitPeriod{anthropic.BetaSpendLimitPeriodDaily},
 		UserIDs: []string{"string"},
 	})
 	if err != nil {

@@ -1735,6 +1735,17 @@ func (r *BetaAnalyticsOfficeProductMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Sort direction: `asc` or `desc`. Defaults to `asc` for the endpoint's sort
+// column and to `desc` when `order_by` names a metric (a top-N ranking). Applies
+// to `order_by`, or to the endpoint's default sort field when `order_by` is
+// omitted.
+type BetaAnalyticsOrder string
+
+const (
+	BetaAnalyticsOrderAsc  BetaAnalyticsOrder = "asc"
+	BetaAnalyticsOrderDesc BetaAnalyticsOrder = "desc"
+)
+
 // Per-plugin install + invocation activity for a given day.
 //
 // With `group_by[]=user_id` / `rbac_group_id` / `product` (`cowork`, `claude_code`

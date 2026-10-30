@@ -31,7 +31,7 @@ func TestBetaOrganizationAnalyticsPluginListWithOptionalParams(t *testing.T) {
 		Filter:       []string{"string"},
 		GroupBy:      []anthropic.BetaAnalyticsPluginGroupBy{anthropic.BetaAnalyticsPluginGroupByProduct},
 		Limit:        anthropic.Int(1),
-		Order:        anthropic.BetaOrganizationAnalyticsPluginListParamsOrderAsc,
+		Order:        anthropic.BetaAnalyticsOrderAsc,
 		OrderBy:      anthropic.String("order_by"),
 		Page:         anthropic.String("page"),
 		StartingDate: anthropic.Time(time.Now()),

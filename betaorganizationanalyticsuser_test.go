@@ -31,7 +31,7 @@ func TestBetaOrganizationAnalyticsUserListWithOptionalParams(t *testing.T) {
 		Filter:       []string{"string"},
 		GroupBy:      []anthropic.BetaAnalyticsUserGroupBy{anthropic.BetaAnalyticsUserGroupByRBACGroupID},
 		Limit:        anthropic.Int(1),
-		Order:        anthropic.BetaOrganizationAnalyticsUserListParamsOrderAsc,
+		Order:        anthropic.BetaAnalyticsOrderAsc,
 		OrderBy:      anthropic.String("order_by"),
 		Page:         anthropic.String("page"),
 		StartingDate: anthropic.Time(time.Now()),

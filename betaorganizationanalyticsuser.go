@@ -135,7 +135,7 @@ type BetaOrganizationAnalyticsUserListParams struct {
 	// omitted.
 	//
 	// Any of "asc", "desc".
-	Order BetaOrganizationAnalyticsUserListParamsOrder `query:"order,omitzero" json:"-"`
+	Order BetaAnalyticsOrder `query:"order,omitzero" json:"-"`
 	paramObj
 }
 
@@ -147,14 +147,3 @@ func (r BetaOrganizationAnalyticsUserListParams) URLQuery() (v url.Values, err e
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
-
-// Sort direction: `asc` or `desc`. Defaults to `asc` for the endpoint's sort
-// column and to `desc` when `order_by` names a metric (a top-N ranking). Applies
-// to `order_by`, or to the endpoint's default sort field when `order_by` is
-// omitted.
-type BetaOrganizationAnalyticsUserListParamsOrder string
-
-const (
-	BetaOrganizationAnalyticsUserListParamsOrderAsc  BetaOrganizationAnalyticsUserListParamsOrder = "asc"
-	BetaOrganizationAnalyticsUserListParamsOrderDesc BetaOrganizationAnalyticsUserListParamsOrder = "desc"
-)

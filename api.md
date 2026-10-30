@@ -2598,6 +2598,7 @@ Params Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsConnectorGroupBy">BetaAnalyticsConnectorGroupBy</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsContextWindow">BetaAnalyticsContextWindow</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsInferenceGeoFilter">BetaAnalyticsInferenceGeoFilter</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsOrder">BetaAnalyticsOrder</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsPluginGroupBy">BetaAnalyticsPluginGroupBy</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsProductFilter">BetaAnalyticsProductFilter</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaAnalyticsProjectGroupBy">BetaAnalyticsProjectGroupBy</a>
@@ -2827,6 +2828,8 @@ Params Types:
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaSpendLimitIncreaseRequest">BetaSpendLimitIncreaseRequest</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaSpendLimitIncreaseRequestActorUnion">BetaSpendLimitIncreaseRequestActorUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaSpendLimitIncreaseRequestResolvedByUnion">BetaSpendLimitIncreaseRequestResolvedByUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaSpendLimitIncreaseRequestStatus">BetaSpendLimitIncreaseRequestStatus</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganizationSpendLimitIncreaseRequestApproveResponse">BetaOrganizationSpendLimitIncreaseRequestApproveResponse</a>
 

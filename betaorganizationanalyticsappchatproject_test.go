@@ -31,7 +31,7 @@ func TestBetaOrganizationAnalyticsAppChatProjectListWithOptionalParams(t *testin
 		Filter:       []string{"string"},
 		GroupBy:      []anthropic.BetaAnalyticsProjectGroupBy{anthropic.BetaAnalyticsProjectGroupByRBACGroupID},
 		Limit:        anthropic.Int(1),
-		Order:        anthropic.BetaOrganizationAnalyticsAppChatProjectListParamsOrderAsc,
+		Order:        anthropic.BetaAnalyticsOrderAsc,
 		OrderBy:      anthropic.String("order_by"),
 		Page:         anthropic.String("page"),
 		StartingDate: anthropic.Time(time.Now()),

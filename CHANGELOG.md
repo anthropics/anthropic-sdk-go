@@ -13,6 +13,7 @@
 ### Bug Fixes
 
 * **api:** require always-sent analytics fields and drop the unused project product field
+* **sessions:** check evaluated_permission on every tool call the runner dispatches
 
 
 ### Chores

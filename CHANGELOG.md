@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.5.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.4.0...v2.5.0) (2026-10-30)
+## [2.5.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.4.0...v2.5.0) (2026-11-02)
 
 ### Features
 
@@ -18,6 +18,7 @@
 
 ### Chores
 
+* **docs:** clarify the Slack channel id description
 * **docs:** clarify what the capability_access_all role action grants
 * **docs:** link Dreams model fields to the supported models section
 * **internal:** add a section for each repository's own review rules

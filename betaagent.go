@@ -3349,7 +3349,9 @@ type BetaManagedAgentsModelConfigParams struct {
 	// (`"high"`) or `{"type": "high"}`. On create, omitting it resolves the per-model
 	// default; on update, omitting it leaves the stored value unchanged.
 	Effort BetaManagedAgentsModelConfigParamsEffortUnion `json:"effort,omitzero"`
-	// Inference speed mode. Defaults to `standard`.
+	// Inference speed mode. `fast` provides significantly faster output token
+	// generation at premium pricing. Defaults to `standard`. Not all models support
+	// `fast`; invalid combinations are rejected at create time.
 	//
 	// Any of "standard", "fast".
 	Speed BetaManagedAgentsModelConfigParamsSpeed `json:"speed,omitzero"`
@@ -3442,7 +3444,9 @@ const (
 	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelMax BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "max"
 )
 
-// Inference speed mode. Defaults to `standard`.
+// Inference speed mode. `fast` provides significantly faster output token
+// generation at premium pricing. Defaults to `standard`. Not all models support
+// `fast`; invalid combinations are rejected at create time.
 type BetaManagedAgentsModelConfigParamsSpeed string
 
 const (

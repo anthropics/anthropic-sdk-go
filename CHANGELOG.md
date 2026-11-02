@@ -29,6 +29,7 @@
 
 ### Documentation
 
+* **api:** show each field's own description for `speed`
 * **readme:** point to the docs site for documentation
 * add a description to the AnthropicBeta type
 

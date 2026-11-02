@@ -346,6 +346,29 @@ func (r *BetaAnalyticsChatCoworkUnifiedChatMetrics) UnmarshalJSON(data []byte) e
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Activity in Chat and Cowork unified for one user on one day: `chat` holds chat
+// activity and `sessions` holds Cowork session activity.
+type BetaAnalyticsChatCoworkUnifiedMetrics struct {
+	// Chat activity recorded while members had Chat and Cowork unified turned on.
+	Chat BetaAnalyticsChatCoworkUnifiedChatMetrics `json:"chat" api:"required"`
+	// Cowork session activity recorded while members had Chat and Cowork unified
+	// turned on.
+	Sessions BetaAnalyticsChatCoworkUnifiedSessionsMetrics `json:"sessions" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Chat        respjson.Field
+		Sessions    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsChatCoworkUnifiedMetrics) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsChatCoworkUnifiedMetrics) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Cowork session activity recorded while members had Chat and Cowork unified
 // turned on.
 type BetaAnalyticsChatCoworkUnifiedSessionsMetrics struct {
@@ -632,7 +655,7 @@ type BetaAnalyticsConnectorActivity struct {
 	// Cowork sessions. A count is null in date-range mode where it cannot be computed.
 	// Omitted from the response on deployments that do not offer Chat and Cowork
 	// unified.
-	ChatCoworkUnifiedMetrics BetaAnalyticsConnectorActivityChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
+	ChatCoworkUnifiedMetrics BetaAnalyticsConnectorChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
 	// Product that produced this row's activity: one of `chat`, `claude_code`,
 	// `cowork`, `office_agent`, or `chat_cowork_unified` (Chat and Cowork unified).
 	// These are the canonical Cost & Usage product names; an `office_agent` row's
@@ -684,33 +707,6 @@ func (r *BetaAnalyticsConnectorActivity) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Connector use recorded while members had Chat and Cowork unified (Cowork's
-// features inside claude.ai chat) turned on, split into chat conversations and
-// Cowork sessions. A count is null in date-range mode where it cannot be computed.
-// Omitted from the response on deployments that do not offer Chat and Cowork
-// unified.
-type BetaAnalyticsConnectorActivityChatCoworkUnifiedMetrics struct {
-	// A connector's use in chat conversations recorded while members had Chat and
-	// Cowork unified turned on.
-	Chat BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics `json:"chat" api:"required"`
-	// A connector's use in Cowork sessions recorded while members had Chat and Cowork
-	// unified turned on.
-	Sessions BetaAnalyticsConnectorChatCoworkUnifiedSessionsMetrics `json:"sessions" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Chat        respjson.Field
-		Sessions    respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaAnalyticsConnectorActivityChatCoworkUnifiedMetrics) RawJSON() string { return r.JSON.raw }
-func (r *BetaAnalyticsConnectorActivityChatCoworkUnifiedMetrics) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // A connector's use in chat conversations recorded while members had Chat and
 // Cowork unified turned on.
 type BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics struct {
@@ -730,6 +726,30 @@ type BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics struct {
 // Returns the unmodified JSON received from the API
 func (r BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A connector's use in Chat and Cowork unified on one day: `chat` holds its use in
+// chat conversations and `sessions` its use in Cowork sessions.
+type BetaAnalyticsConnectorChatCoworkUnifiedMetrics struct {
+	// A connector's use in chat conversations recorded while members had Chat and
+	// Cowork unified turned on.
+	Chat BetaAnalyticsConnectorChatCoworkUnifiedChatMetrics `json:"chat" api:"required"`
+	// A connector's use in Cowork sessions recorded while members had Chat and Cowork
+	// unified turned on.
+	Sessions BetaAnalyticsConnectorChatCoworkUnifiedSessionsMetrics `json:"sessions" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Chat        respjson.Field
+		Sessions    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsConnectorChatCoworkUnifiedMetrics) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsConnectorChatCoworkUnifiedMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1778,7 +1798,7 @@ type BetaAnalyticsPluginActivity struct {
 	// inside claude.ai chat) turned on. A count is null in date-range mode where it
 	// cannot be computed. Omitted from the response on deployments that do not offer
 	// Chat and Cowork unified.
-	ChatCoworkUnifiedMetrics BetaAnalyticsPluginActivityChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
+	ChatCoworkUnifiedMetrics BetaAnalyticsPluginChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
 	// Product that produced this row's activity: one of `chat`, `claude_code`,
 	// `cowork`, `office_agent`, or `chat_cowork_unified` (Chat and Cowork unified).
 	// These are the canonical Cost & Usage product names; an `office_agent` row's
@@ -1825,11 +1845,9 @@ func (r *BetaAnalyticsPluginActivity) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Plugin use recorded while members had Chat and Cowork unified (Cowork's features
-// inside claude.ai chat) turned on. A count is null in date-range mode where it
-// cannot be computed. Omitted from the response on deployments that do not offer
-// Chat and Cowork unified.
-type BetaAnalyticsPluginActivityChatCoworkUnifiedMetrics struct {
+// A plugin's use in Cowork sessions recorded while members had Chat and Cowork
+// unified turned on.
+type BetaAnalyticsPluginChatCoworkUnifiedMetrics struct {
 	// Same measure as `cowork_metrics.distinct_session_plugin_used_count`, for
 	// activity recorded while members had Chat and Cowork unified turned on. Null on
 	// aggregated rows where a distinct count cannot be computed.
@@ -1843,8 +1861,8 @@ type BetaAnalyticsPluginActivityChatCoworkUnifiedMetrics struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaAnalyticsPluginActivityChatCoworkUnifiedMetrics) RawJSON() string { return r.JSON.raw }
-func (r *BetaAnalyticsPluginActivityChatCoworkUnifiedMetrics) UnmarshalJSON(data []byte) error {
+func (r BetaAnalyticsPluginChatCoworkUnifiedMetrics) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsPluginChatCoworkUnifiedMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2371,7 +2389,7 @@ type BetaAnalyticsSkillActivity struct {
 	// sessions. A count is null in date-range mode where it cannot be computed.
 	// Omitted from the response on deployments that do not offer Chat and Cowork
 	// unified.
-	ChatCoworkUnifiedMetrics BetaAnalyticsSkillActivityChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
+	ChatCoworkUnifiedMetrics BetaAnalyticsSkillChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
 	// Product that produced this row's activity: one of `chat`, `claude_code`,
 	// `cowork`, `office_agent`, or `chat_cowork_unified` (Chat and Cowork unified).
 	// These are the canonical Cost & Usage product names; an `office_agent` row's
@@ -2436,33 +2454,6 @@ const (
 	BetaAnalyticsSkillActivityShareStatusPublic       BetaAnalyticsSkillActivityShareStatus = "public"
 )
 
-// Skill use recorded while members had Chat and Cowork unified (Cowork's features
-// inside claude.ai chat) turned on, split into chat conversations and Cowork
-// sessions. A count is null in date-range mode where it cannot be computed.
-// Omitted from the response on deployments that do not offer Chat and Cowork
-// unified.
-type BetaAnalyticsSkillActivityChatCoworkUnifiedMetrics struct {
-	// A skill's use in chat conversations recorded while members had Chat and Cowork
-	// unified turned on.
-	Chat BetaAnalyticsSkillChatCoworkUnifiedChatMetrics `json:"chat" api:"required"`
-	// A skill's use in Cowork sessions recorded while members had Chat and Cowork
-	// unified turned on.
-	Sessions BetaAnalyticsSkillChatCoworkUnifiedSessionsMetrics `json:"sessions" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Chat        respjson.Field
-		Sessions    respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaAnalyticsSkillActivityChatCoworkUnifiedMetrics) RawJSON() string { return r.JSON.raw }
-func (r *BetaAnalyticsSkillActivityChatCoworkUnifiedMetrics) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // A skill's use in chat conversations recorded while members had Chat and Cowork
 // unified turned on.
 type BetaAnalyticsSkillChatCoworkUnifiedChatMetrics struct {
@@ -2482,6 +2473,30 @@ type BetaAnalyticsSkillChatCoworkUnifiedChatMetrics struct {
 // Returns the unmodified JSON received from the API
 func (r BetaAnalyticsSkillChatCoworkUnifiedChatMetrics) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsSkillChatCoworkUnifiedChatMetrics) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A skill's use in Chat and Cowork unified on one day: `chat` holds its use in
+// chat conversations and `sessions` its use in Cowork sessions.
+type BetaAnalyticsSkillChatCoworkUnifiedMetrics struct {
+	// A skill's use in chat conversations recorded while members had Chat and Cowork
+	// unified turned on.
+	Chat BetaAnalyticsSkillChatCoworkUnifiedChatMetrics `json:"chat" api:"required"`
+	// A skill's use in Cowork sessions recorded while members had Chat and Cowork
+	// unified turned on.
+	Sessions BetaAnalyticsSkillChatCoworkUnifiedSessionsMetrics `json:"sessions" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Chat        respjson.Field
+		Sessions    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAnalyticsSkillChatCoworkUnifiedMetrics) RawJSON() string { return r.JSON.raw }
+func (r *BetaAnalyticsSkillChatCoworkUnifiedMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3171,7 +3186,7 @@ type BetaAnalyticsUserActivity struct {
 	// features inside claude.ai chat) turned on, split into `chat` (chat activity) and
 	// `sessions` (Cowork activity). Omitted from the response on deployments that do
 	// not offer Chat and Cowork unified.
-	ChatCoworkUnifiedMetrics BetaAnalyticsUserActivityChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
+	ChatCoworkUnifiedMetrics BetaAnalyticsChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
 	// Most recent UTC day (YYYY-MM-DD) on which the user had any counted activity,
 	// within the requested window: equal to the requested `date` in single-day mode,
 	// and to the latest active day from `starting_date` (inclusive) to `ending_date`
@@ -3213,31 +3228,6 @@ type BetaAnalyticsUserActivity struct {
 // Returns the unmodified JSON received from the API
 func (r BetaAnalyticsUserActivity) RawJSON() string { return r.JSON.raw }
 func (r *BetaAnalyticsUserActivity) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Activity recorded while the member had Chat and Cowork unified (Cowork's
-// features inside claude.ai chat) turned on, split into `chat` (chat activity) and
-// `sessions` (Cowork activity). Omitted from the response on deployments that do
-// not offer Chat and Cowork unified.
-type BetaAnalyticsUserActivityChatCoworkUnifiedMetrics struct {
-	// Chat activity recorded while members had Chat and Cowork unified turned on.
-	Chat BetaAnalyticsChatCoworkUnifiedChatMetrics `json:"chat" api:"required"`
-	// Cowork session activity recorded while members had Chat and Cowork unified
-	// turned on.
-	Sessions BetaAnalyticsChatCoworkUnifiedSessionsMetrics `json:"sessions" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Chat        respjson.Field
-		Sessions    respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaAnalyticsUserActivityChatCoworkUnifiedMetrics) RawJSON() string { return r.JSON.raw }
-func (r *BetaAnalyticsUserActivityChatCoworkUnifiedMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

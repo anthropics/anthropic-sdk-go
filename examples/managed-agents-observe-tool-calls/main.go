@@ -266,7 +266,7 @@ func observeAsSelfHostedWorker(ctx context.Context, client anthropic.Client, log
 		tools := append(agenttoolset.BetaAgentToolset20260401(env), currentTimeTool{})
 
 		// Per-session context: the heartbeat goroutine cancels it when the
-		// control plane reports the work is stopping/stopped or the lease was
+		// API reports the work is stopping/stopped or the lease was
 		// not extended, which in turn stops the runner loop below.
 		sessCtx, sessCancel := context.WithCancel(ctx)
 
@@ -314,7 +314,7 @@ func observeAsSelfHostedWorker(ctx context.Context, client anthropic.Client, log
 // observeAsSelfHostedWorker. It beats on a fixed interval; the first beat uses
 // the "NO_HEARTBEAT" sentinel, each later one echoes the server's previous
 // last_heartbeat. It calls cancel (which stops the runner loop) as soon as the
-// control plane reports the work is stopping/stopped or the lease was not
+// API reports the work is stopping/stopped or the lease was not
 // extended — or on any heartbeat error.
 func heartbeatLease(ctx context.Context, cancel context.CancelFunc, client anthropic.Client, work *anthropic.BetaSelfHostedWork, reqOpts []option.RequestOption, logger *slog.Logger) {
 	const interval = 30 * time.Second

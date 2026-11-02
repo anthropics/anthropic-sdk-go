@@ -6,7 +6,7 @@ package environments
 // Faked: the network (the memoryServer behind the fake work server) and the
 // clock. So the chain worker → gate on the sessions token → download →
 // SyncIfDue per tool call → Finish → Dispose runs for real against a fake
-// control plane; assertions read the server and the disk.
+// API server; assertions read the server and the disk.
 
 import (
 	"bytes"

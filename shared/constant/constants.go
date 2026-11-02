@@ -118,6 +118,7 @@ type Commit string                                  // Always "commit"
 type Compact20260112 string                         // Always "compact_20260112"
 type Compaction string                              // Always "compaction"
 type CompactionDelta string                         // Always "compaction_delta"
+type CompactionLimitReachedError string             // Always "compaction_limit_reached_error"
 type Completed string                               // Always "completed"
 type ComplianceSettings string                      // Always "compliance_settings"
 type Computer string                                // Always "computer"
@@ -464,6 +465,7 @@ type ToolSearchToolResult string                    // Always "tool_search_tool_
 type ToolSearchToolResultError string               // Always "tool_search_tool_result_error"
 type ToolSearchToolSearchResult string              // Always "tool_search_tool_search_result"
 type ToolUse string                                 // Always "tool_use"
+type ToolUseLimitReachedError string                // Always "tool_use_limit_reached_error"
 type ToolUses string                                // Always "tool_uses"
 type ToolsChanged string                            // Always "tools_changed"
 type TripleClick string                             // Always "triple_click"
@@ -645,10 +647,13 @@ func (c CodeExecutionToolResult) Default() CodeExecutionToolResult {
 func (c CodeExecutionToolResultError) Default() CodeExecutionToolResultError {
 	return "code_execution_tool_result_error"
 }
-func (c Commit) Default() Commit                         { return "commit" }
-func (c Compact20260112) Default() Compact20260112       { return "compact_20260112" }
-func (c Compaction) Default() Compaction                 { return "compaction" }
-func (c CompactionDelta) Default() CompactionDelta       { return "compaction_delta" }
+func (c Commit) Default() Commit                   { return "commit" }
+func (c Compact20260112) Default() Compact20260112 { return "compact_20260112" }
+func (c Compaction) Default() Compaction           { return "compaction" }
+func (c CompactionDelta) Default() CompactionDelta { return "compaction_delta" }
+func (c CompactionLimitReachedError) Default() CompactionLimitReachedError {
+	return "compaction_limit_reached_error"
+}
 func (c Completed) Default() Completed                   { return "completed" }
 func (c ComplianceSettings) Default() ComplianceSettings { return "compliance_settings" }
 func (c Computer) Default() Computer                     { return "computer" }
@@ -1106,7 +1111,10 @@ func (c ToolSearchToolResultError) Default() ToolSearchToolResultError {
 func (c ToolSearchToolSearchResult) Default() ToolSearchToolSearchResult {
 	return "tool_search_tool_search_result"
 }
-func (c ToolUse) Default() ToolUse                           { return "tool_use" }
+func (c ToolUse) Default() ToolUse { return "tool_use" }
+func (c ToolUseLimitReachedError) Default() ToolUseLimitReachedError {
+	return "tool_use_limit_reached_error"
+}
 func (c ToolUses) Default() ToolUses                         { return "tool_uses" }
 func (c ToolsChanged) Default() ToolsChanged                 { return "tools_changed" }
 func (c TripleClick) Default() TripleClick                   { return "triple_click" }
@@ -1298,6 +1306,7 @@ func (c Commit) MarshalJSON() ([]byte, error)                               { re
 func (c Compact20260112) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c Compaction) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c CompactionDelta) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c CompactionLimitReachedError) MarshalJSON() ([]byte, error)          { return marshalString(c) }
 func (c Completed) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c ComplianceSettings) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c Computer) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -1648,6 +1657,7 @@ func (c ToolSearchToolResult) MarshalJSON() ([]byte, error)                 { re
 func (c ToolSearchToolResultError) MarshalJSON() ([]byte, error)            { return marshalString(c) }
 func (c ToolSearchToolSearchResult) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c ToolUse) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c ToolUseLimitReachedError) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c ToolUses) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c ToolsChanged) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c TripleClick) MarshalJSON() ([]byte, error)                          { return marshalString(c) }

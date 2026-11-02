@@ -124,12 +124,14 @@ func (r *BetaOrganizationSpendLimitIncreaseRequestService) Deny(ctx context.Cont
 }
 
 type BetaSpendLimitIncreaseRequest struct {
-	ID        string                                  `json:"id" api:"required"`
+	ID string `json:"id" api:"required"`
+	// Who submitted the increase request.
 	Actor     BetaSpendLimitIncreaseRequestActorUnion `json:"actor" api:"required"`
 	CreatedAt time.Time                               `json:"created_at" api:"required" format:"date-time"`
 	// Any of "daily", "monthly", "weekly".
-	Period     BetaSpendLimitPeriod                         `json:"period" api:"required"`
-	ResolvedAt time.Time                                    `json:"resolved_at" api:"required" format:"date-time"`
+	Period     BetaSpendLimitPeriod `json:"period" api:"required"`
+	ResolvedAt time.Time            `json:"resolved_at" api:"required" format:"date-time"`
+	// Who approved or denied the increase request.
 	ResolvedBy BetaSpendLimitIncreaseRequestResolvedByUnion `json:"resolved_by" api:"required"`
 	// Per-member effective-limit report row (`GET /spend_limits/effective`).
 	SpendSummary BetaSpendSummary `json:"spend_summary" api:"required"`
@@ -319,13 +321,15 @@ const (
 )
 
 type BetaOrganizationSpendLimitIncreaseRequestApproveResponse struct {
-	ID        string                                                             `json:"id" api:"required"`
-	Actor     BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion `json:"actor" api:"required"`
-	CreatedAt time.Time                                                          `json:"created_at" api:"required" format:"date-time"`
+	ID string `json:"id" api:"required"`
+	// Who submitted the increase request.
+	Actor     BetaSpendLimitIncreaseRequestActorUnion `json:"actor" api:"required"`
+	CreatedAt time.Time                               `json:"created_at" api:"required" format:"date-time"`
 	// Any of "daily", "monthly", "weekly".
-	Period     BetaSpendLimitPeriod                                                    `json:"period" api:"required"`
-	ResolvedAt time.Time                                                               `json:"resolved_at" api:"required" format:"date-time"`
-	ResolvedBy BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion `json:"resolved_by" api:"required"`
+	Period     BetaSpendLimitPeriod `json:"period" api:"required"`
+	ResolvedAt time.Time            `json:"resolved_at" api:"required" format:"date-time"`
+	// Who approved or denied the increase request.
+	ResolvedBy BetaSpendLimitIncreaseRequestResolvedByUnion `json:"resolved_by" api:"required"`
 	// A configured spend limit: a cap on metered spend for one scope and period.
 	SpendLimit BetaSpendLimit `json:"spend_limit" api:"required"`
 	// Per-member effective-limit report row (`GET /spend_limits/effective`).
@@ -353,174 +357,6 @@ type BetaOrganizationSpendLimitIncreaseRequestApproveResponse struct {
 // Returns the unmodified JSON received from the API
 func (r BetaOrganizationSpendLimitIncreaseRequestApproveResponse) RawJSON() string { return r.JSON.raw }
 func (r *BetaOrganizationSpendLimitIncreaseRequestApproveResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion contains all
-// possible properties and values from [BetaSpendLimitUserActor],
-// [BetaSpendLimitScopedAPIKeyActor].
-//
-// Use the
-// [BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion.AsAny]
-// method to switch on the variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion struct {
-	// This field is from variant [BetaSpendLimitUserActor].
-	Deleted bool `json:"deleted"`
-	// This field is from variant [BetaSpendLimitUserActor].
-	EmailAddress string `json:"email_address"`
-	// This field is from variant [BetaSpendLimitUserActor].
-	Name string `json:"name"`
-	// Any of "user_actor", "scoped_api_key_actor".
-	Type string `json:"type"`
-	// This field is from variant [BetaSpendLimitUserActor].
-	UserID string `json:"user_id"`
-	// This field is from variant [BetaSpendLimitScopedAPIKeyActor].
-	ScopedAPIKeyID string `json:"scoped_api_key_id"`
-	JSON           struct {
-		Deleted        respjson.Field
-		EmailAddress   respjson.Field
-		Name           respjson.Field
-		Type           respjson.Field
-		UserID         respjson.Field
-		ScopedAPIKeyID respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// anyBetaOrganizationSpendLimitIncreaseRequestApproveResponseActor is implemented
-// by each variant of
-// [BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion] to add type
-// safety for the return type of
-// [BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion.AsAny]
-type anyBetaOrganizationSpendLimitIncreaseRequestApproveResponseActor interface {
-	implBetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion()
-}
-
-func (BetaSpendLimitUserActor) implBetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion() {
-}
-func (BetaSpendLimitScopedAPIKeyActor) implBetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion() {
-}
-
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion.AsAny().(type) {
-//	case anthropic.BetaSpendLimitUserActor:
-//	case anthropic.BetaSpendLimitScopedAPIKeyActor:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion) AsAny() anyBetaOrganizationSpendLimitIncreaseRequestApproveResponseActor {
-	switch u.Type {
-	case "user_actor":
-		return u.AsUserActor()
-	case "scoped_api_key_actor":
-		return u.AsScopedAPIKeyActor()
-	}
-	return nil
-}
-
-func (u BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion) AsUserActor() (v BetaSpendLimitUserActor) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion) AsScopedAPIKeyActor() (v BetaSpendLimitScopedAPIKeyActor) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *BetaOrganizationSpendLimitIncreaseRequestApproveResponseActorUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion contains
-// all possible properties and values from [BetaSpendLimitUserActor],
-// [BetaSpendLimitScopedAPIKeyActor].
-//
-// Use the
-// [BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion.AsAny]
-// method to switch on the variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion struct {
-	// This field is from variant [BetaSpendLimitUserActor].
-	Deleted bool `json:"deleted"`
-	// This field is from variant [BetaSpendLimitUserActor].
-	EmailAddress string `json:"email_address"`
-	// This field is from variant [BetaSpendLimitUserActor].
-	Name string `json:"name"`
-	// Any of "user_actor", "scoped_api_key_actor".
-	Type string `json:"type"`
-	// This field is from variant [BetaSpendLimitUserActor].
-	UserID string `json:"user_id"`
-	// This field is from variant [BetaSpendLimitScopedAPIKeyActor].
-	ScopedAPIKeyID string `json:"scoped_api_key_id"`
-	JSON           struct {
-		Deleted        respjson.Field
-		EmailAddress   respjson.Field
-		Name           respjson.Field
-		Type           respjson.Field
-		UserID         respjson.Field
-		ScopedAPIKeyID respjson.Field
-		raw            string
-	} `json:"-"`
-}
-
-// anyBetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedBy is
-// implemented by each variant of
-// [BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion] to add
-// type safety for the return type of
-// [BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion.AsAny]
-type anyBetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedBy interface {
-	implBetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion()
-}
-
-func (BetaSpendLimitUserActor) implBetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion() {
-}
-func (BetaSpendLimitScopedAPIKeyActor) implBetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion() {
-}
-
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion.AsAny().(type) {
-//	case anthropic.BetaSpendLimitUserActor:
-//	case anthropic.BetaSpendLimitScopedAPIKeyActor:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion) AsAny() anyBetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedBy {
-	switch u.Type {
-	case "user_actor":
-		return u.AsUserActor()
-	case "scoped_api_key_actor":
-		return u.AsScopedAPIKeyActor()
-	}
-	return nil
-}
-
-func (u BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion) AsUserActor() (v BetaSpendLimitUserActor) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion) AsScopedAPIKeyActor() (v BetaSpendLimitScopedAPIKeyActor) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion) RawJSON() string {
-	return u.JSON.raw
-}
-
-func (r *BetaOrganizationSpendLimitIncreaseRequestApproveResponseResolvedByUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

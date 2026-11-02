@@ -40,9 +40,8 @@ type EnvironmentWorkerOptions struct {
 	// [HandleItemOptions].
 	EnvironmentKey string
 
-	// WorkerID is a stable identifier reported back to the server for
-	// observability. Defaults to "<os.Hostname()>-<random hex>" — forwarded
-	// to [WorkPoller].
+	// WorkerID is a stable identifier reported back to the server. Defaults
+	// to "<os.Hostname()>-<random hex>" — forwarded to [WorkPoller].
 	WorkerID string
 
 	// Workdir is the base directory for the per-session
@@ -124,7 +123,7 @@ type EnvironmentWorkerOptions struct {
 }
 
 // EnvironmentWorker is the self-hosted environment runner, composed from the
-// control-plane [WorkPoller] and the per-session
+// [WorkPoller] and the per-session
 // [github.com/anthropics/anthropic-sdk-go/v2.SessionToolRunner].
 //
 // For each claimed `session` work item it builds the per-session
@@ -441,7 +440,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 
 	// Start the lease heartbeat BEFORE skill setup. The poller already acked
 	// this work item when it yielded — every second between the ack and the
-	// first heartbeat is a window during which the control plane sees no
+	// first heartbeat is a window during which the API sees no
 	// liveness signal and may reclaim the lease. The session lookup and skill
 	// setup below can be slow (a per-skill download/extract can dwarf the
 	// lease TTL on a slow network or a large bundle), so starting the
@@ -664,7 +663,7 @@ const (
 	// ctx ended first: the run finished or was cancelled with the lease held.
 	leaseRunnerDone
 	// State stopping/stopped, or lease_extended false.
-	leaseControlPlaneStop
+	leaseHeartbeatStop
 	// A heartbeat met 412: the item was re-queued or another worker holds it.
 	leaseLost
 	// A heartbeat met another 4xx that retrying will not fix.
@@ -681,7 +680,7 @@ func (r leaseEndReason) lost() bool {
 
 // runHeartbeat keeps the work-item lease alive while a session is being served
 // and returns why heartbeating ended: ctx ended first (the run finished or was
-// cancelled), the control plane reported the work stopping/stopped or no longer
+// cancelled), the API reported the work stopping/stopped or no longer
 // extended the lease, a heartbeat was rejected (a 412 means the lease already
 // belongs to someone else), or transient failures ran long enough that the
 // lease must be assumed lost. The caller cancels the session once it returns,
@@ -753,7 +752,7 @@ func runHeartbeat(ctx context.Context, client anthropic.Client, work *anthropic.
 				log.Error("permanent heartbeat failure", slog.Any("error", err))
 				return leaseHeartbeatRejected
 			}
-			// Bound the transient-retry window. The control plane lets the
+			// Bound the transient-retry window. The API lets the
 			// lease lapse silently after ttl elapsed without a successful
 			// heartbeat — without this check we'd keep executing tools
 			// against a reclaimed session.
@@ -778,11 +777,11 @@ func runHeartbeat(ctx context.Context, client anthropic.Client, work *anthropic.
 		case anthropic.BetaSelfHostedWorkHeartbeatResponseStateStopping,
 			anthropic.BetaSelfHostedWorkHeartbeatResponseStateStopped:
 			log.Info("heartbeat reports shutdown", slog.String("state", string(resp.State)))
-			return leaseControlPlaneStop
+			return leaseHeartbeatStop
 		}
 		if !resp.LeaseExtended {
 			log.Warn("lease not extended; shutting down")
-			return leaseControlPlaneStop
+			return leaseHeartbeatStop
 		}
 		return leaseHeld
 	}

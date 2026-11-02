@@ -3,6 +3,8 @@ package apiquery
 import (
 	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 	"net/url"
+	"reflect"
+	"sync"
 	"testing"
 	"time"
 )
@@ -432,4 +434,28 @@ func TestEncode(t *testing.T) {
 			}
 		})
 	}
+}
+
+type AnyField struct {
+	V any `query:"v"`
+}
+
+// Fails only under -race. Every call shares one cached interface encoder and
+// makes it build a type that is new to the cache.
+func TestMarshalAnyConcurrently(t *testing.T) {
+	if _, err := Marshal(AnyField{V: 1}); err != nil {
+		t.Fatal(err)
+	}
+	var wg sync.WaitGroup
+	for n := 1; n <= 8; n++ {
+		wg.Add(1)
+		go func(n int) {
+			defer wg.Done()
+			value := reflect.New(reflect.ArrayOf(n, reflect.TypeOf(""))).Elem().Interface()
+			if _, err := Marshal(AnyField{V: value}); err != nil {
+				t.Error(err)
+			}
+		}(n)
+	}
+	wg.Wait()
 }

@@ -1,0 +1,252 @@
+package anthropic
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/url"
+	"slices"
+	"time"
+
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
+)
+
+// OrganizationRBACGroupService contains methods and other services that help with
+// interacting with the anthropic API.
+//
+// Note, unlike clients, this service does not read variables from the environment
+// automatically. You should not instantiate this service directly, and instead use
+// the [NewOrganizationRBACGroupService] method instead.
+type OrganizationRBACGroupService struct {
+	Options []option.RequestOption
+	Members OrganizationRBACGroupMemberService
+}
+
+// NewOrganizationRBACGroupService generates a new service that applies the given
+// options to each request. These options are applied after the parent client's
+// options (if there is one), and before any request-specific options.
+func NewOrganizationRBACGroupService(opts ...option.RequestOption) (r OrganizationRBACGroupService) {
+	r = OrganizationRBACGroupService{}
+	r.Options = opts
+	r.Members = NewOrganizationRBACGroupMemberService(opts...)
+	return
+}
+
+// Create an RBAC Group in the Claude Enterprise tenant. Groups created via the API
+// have source type `"direct"`.
+//
+// The RBAC Groups API is available to Claude Enterprise organizations only.
+func (r *OrganizationRBACGroupService) New(ctx context.Context, body OrganizationRBACGroupNewParams, opts ...option.RequestOption) (res *RBACGroup, err error) {
+	opts = slices.Concat(r.Options, opts)
+	path := "v1/organizations/rbac_groups"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.create", "/v1/organizations/rbac_groups"), requestconfig.WithSpanCreatedID("anthropic.organization.rbac_group.id", &res, func(created *RBACGroup) string { return created.ID }))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Retrieve an RBAC Group by ID.
+//
+// The RBAC Groups API is available to Claude Enterprise organizations only.
+func (r *OrganizationRBACGroupService) Get(ctx context.Context, rbacGroupID string, opts ...option.RequestOption) (res *RBACGroup, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if rbacGroupID == "" {
+		err = errors.New("missing required rbac_group_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.retrieve", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
+	return res, err
+}
+
+// Update an RBAC Group's name. Groups provisioned by an identity provider (source
+// type `"scim"`) cannot be modified via the API while an organization in the
+// tenant uses SCIM provisioning.
+//
+// The RBAC Groups API is available to Claude Enterprise organizations only.
+func (r *OrganizationRBACGroupService) Update(ctx context.Context, rbacGroupID string, body OrganizationRBACGroupUpdateParams, opts ...option.RequestOption) (res *RBACGroup, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if rbacGroupID == "" {
+		err = errors.New("missing required rbac_group_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.update", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// List RBAC Groups in the Claude Enterprise tenant.
+//
+// The RBAC Groups API is available to Claude Enterprise organizations only.
+func (r *OrganizationRBACGroupService) List(ctx context.Context, query OrganizationRBACGroupListParams, opts ...option.RequestOption) (res *pagination.PageCursor[RBACGroup], err error) {
+	var raw *http.Response
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	path := "v1/organizations/rbac_groups"
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.list", "/v1/organizations/rbac_groups", "limit", "page"))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.Execute()
+	if err != nil {
+		return nil, err
+	}
+	res.SetPageConfig(cfg, raw)
+	return res, nil
+}
+
+// List RBAC Groups in the Claude Enterprise tenant.
+//
+// The RBAC Groups API is available to Claude Enterprise organizations only.
+func (r *OrganizationRBACGroupService) ListAutoPaging(ctx context.Context, query OrganizationRBACGroupListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[RBACGroup] {
+	return pagination.NewPageCursorAutoPager(r.List(ctx, query, opts...))
+}
+
+// Delete an RBAC Group. Groups provisioned by an identity provider (source type
+// `"scim"`) cannot be deleted via the API while an organization in the tenant uses
+// SCIM provisioning.
+//
+// The RBAC Groups API is available to Claude Enterprise organizations only.
+func (r *OrganizationRBACGroupService) Delete(ctx context.Context, rbacGroupID string, opts ...option.RequestOption) (res *DeletedRBACGroup, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if rbacGroupID == "" {
+		err = errors.New("missing required rbac_group_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.delete", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
+	return res, err
+}
+
+type DeletedRBACGroup struct {
+	// ID of the RBAC Group.
+	ID string `json:"id" api:"required"`
+	// Deleted object type.
+	//
+	// For RBAC Groups, this is always `"rbac_group_deleted"`.
+	Type constant.RBACGroupDeleted `json:"type" default:"rbac_group_deleted"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r DeletedRBACGroup) RawJSON() string { return r.JSON.raw }
+func (r *DeletedRBACGroup) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type RBACGroup struct {
+	// ID of the RBAC Group.
+	ID string `json:"id" api:"required"`
+	// RFC 3339 timestamp of when the RBAC Group was created.
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Name of the RBAC Group. Not uniqueness-enforced.
+	Name string `json:"name" api:"required"`
+	// RBAC Role IDs attached to this RBAC Group. Role attachment is managed in the
+	// admin settings and is read-only on this API. `null` means role data was
+	// temporarily unavailable — retry to distinguish from an empty list.
+	RoleIDs []string `json:"role_ids" api:"required"`
+	// How the RBAC Group was created: `"direct"` for groups created directly (for
+	// example, in the organization's admin settings), `"scim"` for groups provisioned
+	// by the identity provider.
+	//
+	// Any of "direct", "scim".
+	SourceType RBACGroupSourceType `json:"source_type" api:"required"`
+	// Object type.
+	//
+	// For RBAC Groups, this is always `"rbac_group"`.
+	Type constant.RBACGroup `json:"type" default:"rbac_group"`
+	// RFC 3339 timestamp of when the RBAC Group was last updated.
+	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		CreatedAt   respjson.Field
+		Name        respjson.Field
+		RoleIDs     respjson.Field
+		SourceType  respjson.Field
+		Type        respjson.Field
+		UpdatedAt   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RBACGroup) RawJSON() string { return r.JSON.raw }
+func (r *RBACGroup) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// How the RBAC Group was created: `"direct"` for groups created directly (for
+// example, in the organization's admin settings), `"scim"` for groups provisioned
+// by the identity provider.
+type RBACGroupSourceType string
+
+const (
+	RBACGroupSourceTypeDirect RBACGroupSourceType = "direct"
+	RBACGroupSourceTypeSCIM   RBACGroupSourceType = "scim"
+)
+
+type OrganizationRBACGroupNewParams struct {
+	// Name of the RBAC Group. Not uniqueness-enforced.
+	Name string `json:"name" api:"required"`
+	paramObj
+}
+
+func (r OrganizationRBACGroupNewParams) MarshalJSON() (data []byte, err error) {
+	type shadow OrganizationRBACGroupNewParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *OrganizationRBACGroupNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type OrganizationRBACGroupUpdateParams struct {
+	// Name of the RBAC Group. Not uniqueness-enforced.
+	Name param.Opt[string] `json:"name,omitzero"`
+	paramObj
+}
+
+func (r OrganizationRBACGroupUpdateParams) MarshalJSON() (data []byte, err error) {
+	type shadow OrganizationRBACGroupUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *OrganizationRBACGroupUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type OrganizationRBACGroupListParams struct {
+	// Optionally set to the `next_page` token from the previous response.
+	Page param.Opt[string] `query:"page,omitzero" json:"-"`
+	// Number of items to return per page.
+	//
+	// Defaults to `20`. Ranges from `1` to `1000`.
+	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	paramObj
+}
+
+// URLQuery serializes [OrganizationRBACGroupListParams]'s query parameters as
+// `url.Values`.
+func (r OrganizationRBACGroupListParams) URLQuery() (v url.Values, err error) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatBrackets,
+		NestedFormat: apiquery.NestedQueryFormatBrackets,
+	})
+}

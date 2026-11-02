@@ -102,9 +102,7 @@ type BetaOrganizationAnalyticsArtifactListParams struct {
 	// create artifacts). `rbac_group_id` attributes a user to every group they held at
 	// any point during the requested UTC day, so grouped rows are not an exclusive
 	// partition. At most 100 entries.
-	//
-	// Any of "product", "rbac_group_id", "user_id".
-	GroupBy []string `query:"group_by,omitzero" json:"-"`
+	GroupBy []BetaAnalyticsArtifactGroupBy `query:"group_by,omitzero" json:"-"`
 	paramObj
 }
 

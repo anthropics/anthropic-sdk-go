@@ -612,7 +612,7 @@ type BetaDreamModelConfigParam struct {
 	// The ID can be 1 to 256 characters long.
 	//
 	// The
-	// [limits table in the Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#limits)
+	// [Availability section of the Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#feature-availability)
 	// lists the supported models.
 	ID string `json:"id" api:"required"`
 	// How fast the model generates output for the dream. Defaults to `standard`.
@@ -672,10 +672,6 @@ type BetaDreamSessionsInput struct {
 	//
 	// Give 1 to 100 IDs, with no duplicates. Each session must be in the same
 	// workspace as the dream. Responses list the IDs in sorted order.
-	//
-	// The
-	// [limits table in the Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#limits)
-	// lists all the limits on a dream.
 	SessionIDs []string          `json:"session_ids" api:"required"`
 	Type       constant.Sessions `json:"type" default:"sessions"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -710,10 +706,6 @@ type BetaDreamSessionsInputParam struct {
 	//
 	// Give 1 to 100 IDs, with no duplicates. Each session must be in the same
 	// workspace as the dream. Responses list the IDs in sorted order.
-	//
-	// The
-	// [limits table in the Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#limits)
-	// lists all the limits on a dream.
 	SessionIDs []string `json:"session_ids,omitzero" api:"required"`
 	// This field can be elided, and will marshal its zero value as "sessions".
 	Type constant.Sessions `json:"type" default:"sessions"`
@@ -1056,7 +1048,7 @@ type BetaDreamNewParams struct {
 	// In the object form, `speed` can only be `standard`.
 	//
 	// The
-	// [limits table in the Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#limits)
+	// [Availability section of the Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#feature-availability)
 	// lists the supported models.
 	Model BetaDreamNewParamsModelUnion `json:"model,omitzero" api:"required"`
 	// Guidance that steers how the dream reads the sessions and organizes the output

@@ -128,16 +128,14 @@ type BetaOrganizationAnalyticsUserListParams struct {
 	// attributes a user to every group they held at any point during each covered UTC
 	// day, so grouped rows are not an exclusive partition and can sum above org-level
 	// totals. At most 100 entries.
-	//
-	// Any of "rbac_group_id".
-	GroupBy []string `query:"group_by,omitzero" json:"-"`
+	GroupBy []BetaAnalyticsUserGroupBy `query:"group_by,omitzero" json:"-"`
 	// Sort direction: `asc` or `desc`. Defaults to `asc` for the endpoint's sort
 	// column and to `desc` when `order_by` names a metric (a top-N ranking). Applies
 	// to `order_by`, or to the endpoint's default sort field when `order_by` is
 	// omitted.
 	//
 	// Any of "asc", "desc".
-	Order BetaOrganizationAnalyticsUserListParamsOrder `query:"order,omitzero" json:"-"`
+	Order BetaAnalyticsOrder `query:"order,omitzero" json:"-"`
 	paramObj
 }
 
@@ -149,14 +147,3 @@ func (r BetaOrganizationAnalyticsUserListParams) URLQuery() (v url.Values, err e
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
-
-// Sort direction: `asc` or `desc`. Defaults to `asc` for the endpoint's sort
-// column and to `desc` when `order_by` names a metric (a top-N ranking). Applies
-// to `order_by`, or to the endpoint's default sort field when `order_by` is
-// omitted.
-type BetaOrganizationAnalyticsUserListParamsOrder string
-
-const (
-	BetaOrganizationAnalyticsUserListParamsOrderAsc  BetaOrganizationAnalyticsUserListParamsOrder = "asc"
-	BetaOrganizationAnalyticsUserListParamsOrderDesc BetaOrganizationAnalyticsUserListParamsOrder = "desc"
-)

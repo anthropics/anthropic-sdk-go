@@ -38,6 +38,10 @@ type DateTime struct {
 	DateTime time.Time `json:"date-time" format:"date-time"`
 }
 
+type DateMap struct {
+	Dates map[string]time.Time `json:"dates" format:"date"`
+}
+
 type AdditionalProperties struct {
 	A           bool           `json:"a"`
 	ExtraFields map[string]any `json:"-" api:"extrafields"`
@@ -394,6 +398,11 @@ var tests = map[string]struct {
 			Date:     time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC),
 			DateTime: time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC),
 		},
+	},
+
+	"date_map_struct": {
+		`{"dates":{"a":"2006-01-02"}}`,
+		DateMap{Dates: map[string]time.Time{"a": time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)}},
 	},
 
 	"additional_properties": {

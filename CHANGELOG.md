@@ -1,5 +1,37 @@
 # Changelog
 
+## [2.5.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.4.0...v2.5.0) (2026-11-02)
+
+### Features
+
+* **api:** add GA methods for analytics, spend limits and RBAC
+* **api:** add named beta types for unified metrics and RBAC delete responses
+* **api:** add shared analytics order and increase request actor types
+* **api:** add tool_use_limit_reached_error and compaction_limit_reached_error session error types
+* **api:** add types for analytics group_by and spend limit period filters
+
+
+### Bug Fixes
+
+* **api:** require always-sent analytics fields and drop the unused project product field
+* **sessions:** check evaluated_permission on every tool call the runner dispatches
+
+
+### Chores
+
+* **docs:** clarify the Slack channel id description
+* **docs:** clarify what the capability_access_all role action grants
+* **docs:** link Dreams model fields to the supported models section
+* **internal:** add a section for each repository's own review rules
+* **internal:** plainer wording in worker comments
+* **internal:** stop encoder state leaking between marshal calls
+
+
+### Documentation
+
+* **readme:** point to the docs site for documentation
+* add a description to the AnthropicBeta type
+
 ## [2.4.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.3.0...v2.4.0) (2026-10-26)
 
 ### Features

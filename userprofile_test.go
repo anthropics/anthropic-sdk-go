@@ -95,7 +95,7 @@ func TestUserProfileUpdateWithOptionalParams(t *testing.T) {
 			AccessType: anthropic.UserProfileAccessTypeApplication,
 			ExternalUserDetails: anthropic.UserProfileExternalUserDetailsParams{
 				AccountStatus: anthropic.UserProfileExternalUserAccountStatusSuspended,
-				Country:       anthropic.String("country"),
+				Country:       anthropic.String("SE"),
 				EmailHash:     anthropic.String("x"),
 				EntityType:    anthropic.UserProfileExternalUserEntityTypeIndividual,
 				NameHash:      anthropic.String("x"),

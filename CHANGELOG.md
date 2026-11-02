@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.5.1](https://github.com/anthropics/anthropic-sdk-go/compare/v2.5.0...v2.5.1) (2026-11-02)
+
+### Chores
+
+* **api:** update example values for pattern-constrained string fields
+
+
+### Documentation
+
+* **api:** show each field's own description for `speed`
+
 ## [2.5.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.4.0...v2.5.0) (2026-11-02)
 
 ### Features
@@ -29,7 +40,6 @@
 
 ### Documentation
 
-* **api:** show each field's own description for `speed`
 * **readme:** point to the docs site for documentation
 * add a description to the AnthropicBeta type
 

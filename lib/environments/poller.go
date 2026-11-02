@@ -1,5 +1,5 @@
 // Package environments provides helpers for running self-hosted environment
-// workers: the control-plane [WorkPoller] (claim work items and hand them
+// workers: the [WorkPoller] (claim work items and hand them
 // back) and the [EnvironmentWorker] composition (poll + skills + run the
 // session tools while heartbeating + force-stop unless the lease was lost +
 // loop). They are designed to feel at home alongside the SDK's other
@@ -72,10 +72,10 @@ func bearerReqOpts(environmentKey string) ([]option.RequestOption, error) {
 }
 
 // helperReqOpts wraps [bearerReqOpts] with an x-stainless-helper telemetry
-// tag so the control plane can attribute requests to the specific helper
-// that issued them. Use this for the WorkPoller and the EnvironmentWorker's
-// heartbeat/force-stop; the SessionToolRunner stamps its own tag internally
-// and so should pass [bearerReqOpts] through unchanged.
+// tag naming the helper that issued each request. Use this for the WorkPoller
+// and the EnvironmentWorker's heartbeat/force-stop; the SessionToolRunner
+// stamps its own tag internally and so should pass [bearerReqOpts] through
+// unchanged.
 //
 // Surfaces [bearerReqOpts]'s empty-key error to the caller.
 func helperReqOpts(environmentKey string, helper stainlessheader.Value) ([]option.RequestOption, error) {

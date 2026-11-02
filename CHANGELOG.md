@@ -21,6 +21,7 @@
 * **docs:** clarify what the capability_access_all role action grants
 * **docs:** link Dreams model fields to the supported models section
 * **internal:** add a section for each repository's own review rules
+* **internal:** plainer wording in worker comments
 * **internal:** stop encoder state leaking between marshal calls
 
 

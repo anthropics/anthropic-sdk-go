@@ -1207,7 +1207,7 @@ func TestMemorySync_AFailedLocalRemovalNeverReUploadsTheDeletedMemory(t *testing
 }
 
 // twoStoreSession builds a session attaching two memory stores at the given
-// mount paths, the way the control plane would send it.
+// mount paths, the way the API would send it.
 func twoStoreSession(t *testing.T, aRoot, bRoot string) *anthropic.BetaManagedAgentsSession {
 	t.Helper()
 	body := fmt.Sprintf(`{"resources":[

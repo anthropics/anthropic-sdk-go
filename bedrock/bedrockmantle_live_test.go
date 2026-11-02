@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/bedrock"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/bedrock"
 )
 
 // Live integration tests for Bedrock Mantle. Skipped unless ANTHROPIC_LIVE=1.

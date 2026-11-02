@@ -33,7 +33,7 @@ interactions:
       - go1.25.5
       X-Stainless-Timeout:
       - "600"
-    url: https://api.anthropic.com/v1/messages?beta=true
+    url: https://api.anthropic.com/v1/messages
     method: POST
   response:
     body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_0142PtqubSsNMQyL4EiyyEs6","type":"message","role":"assistant","content":[{"type":"text","text":"I

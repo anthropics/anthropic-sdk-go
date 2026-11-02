@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaUserProfileActionURLService contains methods and other services that help
@@ -59,7 +59,8 @@ func (r *BetaUserProfileActionURLService) New(ctx context.Context, userProfileID
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s/action_urls?beta=true", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s/action_urls", url.PathEscape(userProfileID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.action_urls.create", "/v1/user_profiles/{user_profile_id}/action_urls"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

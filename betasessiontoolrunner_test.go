@@ -16,9 +16,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/sendwindow"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/sendwindow"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/codes"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -758,9 +758,9 @@ func recordSessionRequests(server *sessionEventsServer) (requests func() []strin
 // The requests of a Sessions tool runner: it opens the stream, lists the events,
 // and sends the result of each tool.
 const (
-	sessionRunnerStreamRequest = "GET /v1/sessions/sesn_test/events/stream?beta=true"
-	sessionRunnerListRequest   = "GET /v1/sessions/sesn_test/events?beta=true&limit=1000&order=asc"
-	sessionRunnerSendRequest   = "POST /v1/sessions/sesn_test/events?beta=true"
+	sessionRunnerStreamRequest = "GET /v1/sessions/sesn_test/events/stream"
+	sessionRunnerListRequest   = "GET /v1/sessions/sesn_test/events?limit=1000&order=asc"
+	sessionRunnerSendRequest   = "POST /v1/sessions/sesn_test/events"
 )
 
 // An event of the Session's primary thread has no session_thread_id. The first

@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/googlecloud"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/googlecloud"
 )
 
 // Live integration test for the Google Cloud client. Skipped unless ANTHROPIC_LIVE=1.
@@ -129,6 +129,15 @@ func TestLiveGoogleCloud(t *testing.T) {
 		}
 		if workspace.ID != workspaceID {
 			t.Errorf("workspace ID = %q, want %q", workspace.ID, workspaceID)
+		}
+	})
+
+	t.Run("user_profiles", func(t *testing.T) {
+		_, err := client.UserProfiles.List(ctx, anthropic.UserProfileListParams{
+			Limit: anthropic.Int(1),
+		})
+		if err != nil {
+			t.Fatalf("UserProfiles.List failed: %v", err)
 		}
 	})
 

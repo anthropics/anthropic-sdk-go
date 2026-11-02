@@ -10,8 +10,8 @@ import (
 	"sync"
 	"testing"
 
-	anthropic "github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 // SetupSkills must apply the request options it is given (the environment key,

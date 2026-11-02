@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/telemetry"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )

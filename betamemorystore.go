@@ -10,13 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaMemoryStoreService contains methods and other services that help with
@@ -59,7 +60,8 @@ func (r *BetaMemoryStoreService) New(ctx context.Context, params BetaMemoryStore
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22")}, opts...)
-	path := "v1/memory_stores?beta=true"
+	path := "v1/memory_stores"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.create", "/v1/memory_stores"), requestconfig.WithSpanCreatedID("gen_ai.memory.store.id", &res, func(created *BetaManagedAgentsMemoryStore) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -86,7 +88,8 @@ func (r *BetaMemoryStoreService) Get(ctx context.Context, memoryStoreID string, 
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s?beta=true", url.PathEscape(memoryStoreID))
+	path := fmt.Sprintf("v1/memory_stores/%s", url.PathEscape(memoryStoreID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.retrieve", "/v1/memory_stores/{memory_store_id}"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -113,7 +116,8 @@ func (r *BetaMemoryStoreService) Update(ctx context.Context, memoryStoreID strin
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s?beta=true", url.PathEscape(memoryStoreID))
+	path := fmt.Sprintf("v1/memory_stores/%s", url.PathEscape(memoryStoreID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.update", "/v1/memory_stores/{memory_store_id}"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -137,7 +141,8 @@ func (r *BetaMemoryStoreService) List(ctx context.Context, params BetaMemoryStor
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/memory_stores?beta=true"
+	path := "v1/memory_stores"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.list", "/v1/memory_stores", "created_at[gte]", "created_at[lte]", "include_archived", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -177,7 +182,8 @@ func (r *BetaMemoryStoreService) Delete(ctx context.Context, memoryStoreID strin
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s?beta=true", url.PathEscape(memoryStoreID))
+	path := fmt.Sprintf("v1/memory_stores/%s", url.PathEscape(memoryStoreID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.delete", "/v1/memory_stores/{memory_store_id}"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -204,7 +210,8 @@ func (r *BetaMemoryStoreService) Archive(ctx context.Context, memoryStoreID stri
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/archive?beta=true", url.PathEscape(memoryStoreID))
+	path := fmt.Sprintf("v1/memory_stores/%s/archive", url.PathEscape(memoryStoreID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.archive", "/v1/memory_stores/{memory_store_id}/archive"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -214,9 +221,8 @@ func (r *BetaMemoryStoreService) Archive(ctx context.Context, memoryStoreID stri
 type BetaManagedAgentsDeletedMemoryStore struct {
 	// ID of the deleted memory store (a `memstore_...` identifier). The store and all
 	// its memories and versions are no longer retrievable.
-	ID string `json:"id" api:"required"`
-	// Any of "memory_store_deleted".
-	Type BetaManagedAgentsDeletedMemoryStoreType `json:"type" api:"required"`
+	ID   string                                  `json:"id" api:"required"`
+	Type constant.MemoryStoreDeletedResponseType `json:"type" default:"memory_store_deleted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -231,12 +237,6 @@ func (r BetaManagedAgentsDeletedMemoryStore) RawJSON() string { return r.JSON.ra
 func (r *BetaManagedAgentsDeletedMemoryStore) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsDeletedMemoryStoreType string
-
-const (
-	BetaManagedAgentsDeletedMemoryStoreTypeMemoryStoreDeleted BetaManagedAgentsDeletedMemoryStoreType = "memory_store_deleted"
-)
 
 // A `memory_store`: a named container for agent memories, scoped to a workspace.
 // Attach a store to a session via `resources[]` to mount it as a directory the
@@ -269,9 +269,8 @@ type BetaManagedAgentsMemoryStore struct {
 	Metadata map[string]string `json:"metadata" api:"required"`
 	// Human-readable name for the store. 1–255 characters. The store's mount-path slug
 	// under `/mnt/memory/` is derived from this name.
-	Name string `json:"name" api:"required"`
-	// Any of "memory_store".
-	Type BetaManagedAgentsMemoryStoreType `json:"type" api:"required"`
+	Name string               `json:"name" api:"required"`
+	Type constant.MemoryStore `json:"type" default:"memory_store"`
 	// When the memory store was last changed, in RFC 3339.
 	//
 	// Changing its `name`, `description`, or `metadata` updates it. Archiving the
@@ -297,12 +296,6 @@ func (r BetaManagedAgentsMemoryStore) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsMemoryStore) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMemoryStoreType string
-
-const (
-	BetaManagedAgentsMemoryStoreTypeMemoryStore BetaManagedAgentsMemoryStoreType = "memory_store"
-)
 
 type BetaMemoryStoreNewParams struct {
 	// The name of the memory store, 1 to 255 characters long, without control

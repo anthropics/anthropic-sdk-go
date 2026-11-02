@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestAutoPagination(t *testing.T) {
@@ -22,9 +22,7 @@ func TestAutoPagination(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	iter := client.Beta.Messages.Batches.ListAutoPaging(context.TODO(), anthropic.BetaMessageBatchListParams{
-		Limit: anthropic.Int(20),
-	})
+	iter := client.Messages.Batches.ListAutoPaging(context.TODO(), anthropic.MessageBatchListParams{})
 	// The mock server isn't going to give us real pagination
 	for i := 0; i < 3 && iter.Next(); i++ {
 		batch := iter.Current()

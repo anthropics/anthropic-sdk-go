@@ -16,11 +16,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal"
-	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiform"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apierror"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiform"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 )
 
 func getDefaultHeaders() map[string]string {
@@ -167,7 +167,7 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 	for k, v := range getDefaultHeaders() {
 		req.Header.Add(k, v)
 	}
-	req.Header.Set("anthropic-version", "2023-06-01")
+	req.Header.Set("anthropic-version", "2026-10-21")
 	for k, v := range getPlatformProperties() {
 		req.Header.Add(k, v)
 	}
@@ -179,6 +179,10 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 		Body:       reader,
 	}
 	cfg.ResponseBodyInto = dst
+	opts, err = resolveCredential(opts)
+	if err != nil {
+		return nil, err
+	}
 	err = cfg.Apply(opts...)
 	if err != nil {
 		return nil, err
@@ -217,13 +221,19 @@ type RequestConfig struct {
 	// DefaultBaseURL will be used if BaseURL is not explicitly overridden using
 	// WithBaseURL.
 	DefaultBaseURL *url.URL
+	// ClientBaseURL is what a method's WithBaseURL overrides. It is set only when
+	// the request's credential came from the client: see [resolveCredential].
+	ClientBaseURL  *url.URL
 	CustomHTTPDoer HTTPDoer
 	HTTPClient     *http.Client
 	Middlewares    []middleware
-	APIKey         string
-	AuthToken      string
-	WebhookKey     string
-	OpenTelemetry  OpenTelemetryConfig
+	// Qualifiers is what the SDK method that makes the API call sets with
+	// WithQualifiers.
+	Qualifiers    map[string]string
+	APIKey        string
+	AuthToken     string
+	WebhookKey    string
+	OpenTelemetry OpenTelemetryConfig
 	// If ResponseBodyInto not nil, then we will attempt to deserialize into
 	// ResponseBodyInto. If Destination is a []byte, then it will return the body as
 	// is.
@@ -579,7 +589,8 @@ func (cfg *RequestConfig) send(ctx context.Context, call *tracing.APICall) (err 
 			}()
 		}
 
-		req := cfg.Request.Clone(ctx)
+		// Set even when nil, so that a request made with the context of another has only its own.
+		req := cfg.Request.Clone(context.WithValue(ctx, qualifiersKey{}, cfg.Qualifiers))
 		if shouldSendRetryCount {
 			req.Header.Set("X-Stainless-Retry-Count", strconv.Itoa(retryCount))
 		}
@@ -754,6 +765,7 @@ func (cfg *RequestConfig) Clone(ctx context.Context) *RequestConfig {
 		CustomHTTPDoer: cfg.CustomHTTPDoer,
 		HTTPClient:     cfg.HTTPClient,
 		Middlewares:    cfg.Middlewares,
+		Qualifiers:     cfg.Qualifiers,
 		APIKey:         cfg.APIKey,
 		AuthToken:      cfg.AuthToken,
 		WebhookKey:     cfg.WebhookKey,
@@ -790,6 +802,25 @@ func PreRequestOptions(opts ...RequestOption) (RequestConfig, error) {
 		}
 	}
 	return cfg, nil
+}
+
+type qualifiersKey struct{}
+
+// WithQualifiers returns a RequestOption that sets the query pairs that tell the operation apart
+// from the others with its path in the OpenAPI document. The SDK method that makes the API call
+// passes it.
+func WithQualifiers(qualifiers map[string]string) RequestOption {
+	return RequestOptionFunc(func(r *RequestConfig) error {
+		r.Qualifiers = qualifiers
+		return nil
+	})
+}
+
+// Qualifiers returns what the SDK method that sends req set with WithQualifiers, which every
+// attempt of its API call has. It is nil for any other request.
+func Qualifiers(req *http.Request) map[string]string {
+	qualifiers, _ := req.Context().Value(qualifiersKey{}).(map[string]string)
+	return qualifiers
 }
 
 // WithDefaultBaseURL returns a RequestOption that sets the client's default Base URL.

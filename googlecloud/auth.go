@@ -12,8 +12,8 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 // Environment variables consulted as fallbacks for the corresponding
@@ -42,6 +42,10 @@ const organizationBaseURLTemplate = locationURLTemplate + "/claudeOrganization/i
 
 // organizationPathPrefix is the path prefix of organization-level routes.
 const organizationPathPrefix = "/v1/organizations/"
+
+// userProfilesPath is the root of the User Profiles routes, which are
+// organization-level too.
+const userProfilesPath = "/v1/user_profiles"
 
 // defaultLocation is the location used when none is configured; the gateway
 // should always be addressed via the global region.
@@ -165,7 +169,10 @@ func withDerivedBaseURL(project, location, workspaceID string) option.RequestOpt
 // isOrganizationPath reports whether path is an organization-level route.
 // Request paths are relative to the base URL, so they carry no leading slash.
 func isOrganizationPath(path string) bool {
-	return strings.HasPrefix("/"+strings.TrimLeft(path, "/"), organizationPathPrefix)
+	path = "/" + strings.TrimLeft(path, "/")
+	return strings.HasPrefix(path, organizationPathPrefix) ||
+		path == userProfilesPath ||
+		strings.HasPrefix(path, userProfilesPath+"/")
 }
 
 func deriveBaseURL(project, location, workspaceID string) string {

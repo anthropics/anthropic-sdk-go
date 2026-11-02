@@ -11,13 +11,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaMemoryStoreMemoryService contains methods and other services that help with
@@ -60,7 +61,8 @@ func (r *BetaMemoryStoreMemoryService) New(ctx context.Context, memoryStoreID st
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories?beta=true", url.PathEscape(memoryStoreID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memories", url.PathEscape(memoryStoreID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memories.create", "/v1/memory_stores/{memory_store_id}/memories", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID), requestconfig.WithSpanCreatedID("gen_ai.memory.record.id", &res, func(created *BetaManagedAgentsMemory) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -91,7 +93,8 @@ func (r *BetaMemoryStoreMemoryService) Get(ctx context.Context, memoryID string,
 		err = errors.New("missing required memory_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memories.retrieve", "/v1/memory_stores/{memory_store_id}/memories/{memory_id}", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("gen_ai.memory.record.id", memoryID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
@@ -122,7 +125,8 @@ func (r *BetaMemoryStoreMemoryService) Update(ctx context.Context, memoryID stri
 		err = errors.New("missing required memory_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memories.update", "/v1/memory_stores/{memory_store_id}/memories/{memory_id}", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("gen_ai.memory.record.id", memoryID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -150,7 +154,8 @@ func (r *BetaMemoryStoreMemoryService) List(ctx context.Context, memoryStoreID s
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories?beta=true", url.PathEscape(memoryStoreID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memories", url.PathEscape(memoryStoreID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memories.list", "/v1/memory_stores/{memory_store_id}/memories", "depth", "limit", "page", "path_prefix", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID))
 	opts = append(opts, requestconfig.WithSpanContentQuery("page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -195,7 +200,8 @@ func (r *BetaMemoryStoreMemoryService) Delete(ctx context.Context, memoryID stri
 		err = errors.New("missing required memory_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memories/%s", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memories.delete", "/v1/memory_stores/{memory_store_id}/memories/{memory_id}", "expected_content_sha256"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("gen_ai.memory.record.id", memoryID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, params, &res, opts...)
 	return res, err
@@ -216,9 +222,8 @@ func (r *BetaMemoryStoreMemoryService) Delete(ctx context.Context, memoryID stri
 // to learn more about how long versions are kept.
 type BetaManagedAgentsDeletedMemory struct {
 	// ID of the deleted memory (a `mem_...` value).
-	ID string `json:"id" api:"required"`
-	// Any of "memory_deleted".
-	Type BetaManagedAgentsDeletedMemoryType `json:"type" api:"required"`
+	ID   string                 `json:"id" api:"required"`
+	Type constant.MemoryDeleted `json:"type" default:"memory_deleted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -233,12 +238,6 @@ func (r BetaManagedAgentsDeletedMemory) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsDeletedMemory) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsDeletedMemoryType string
-
-const (
-	BetaManagedAgentsDeletedMemoryTypeMemoryDeleted BetaManagedAgentsDeletedMemoryType = "memory_deleted"
-)
 
 // A text document at a path inside a memory store.
 //
@@ -281,9 +280,8 @@ type BetaManagedAgentsMemory struct {
 	// Hierarchical path of the memory within the store, e.g. `/projects/foo/notes.md`.
 	// Always starts with `/`. Paths are case-sensitive and unique within a store.
 	// Maximum 1,024 bytes.
-	Path string `json:"path" api:"required"`
-	// Any of "memory".
-	Type BetaManagedAgentsMemoryType `json:"type" api:"required"`
+	Path string          `json:"path" api:"required"`
+	Type constant.Memory `json:"type" default:"memory"`
 	// When the memory was last changed, in RFC 3339.
 	//
 	// To find out who made the change, look at `created_by` on the memory version that
@@ -315,12 +313,6 @@ func (r BetaManagedAgentsMemory) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsMemory) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMemoryType string
-
-const (
-	BetaManagedAgentsMemoryTypeMemory BetaManagedAgentsMemoryType = "memory"
-)
 
 // BetaManagedAgentsMemoryListItemUnion contains all possible properties and values
 // from [BetaManagedAgentsMemory], [BetaManagedAgentsMemoryPrefix].
@@ -420,9 +412,8 @@ type BetaManagedAgentsMemoryPrefix struct {
 	// The rolled-up path prefix, including a trailing `/` (e.g. `/projects/foo/`).
 	// Pass this value as `path_prefix` on a subsequent list call to drill into the
 	// directory.
-	Path string `json:"path" api:"required"`
-	// Any of "memory_prefix".
-	Type BetaManagedAgentsMemoryPrefixType `json:"type" api:"required"`
+	Path string                `json:"path" api:"required"`
+	Type constant.MemoryPrefix `json:"type" default:"memory_prefix"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Path        respjson.Field
@@ -437,12 +428,6 @@ func (r BetaManagedAgentsMemoryPrefix) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsMemoryPrefix) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMemoryPrefixType string
-
-const (
-	BetaManagedAgentsMemoryPrefixTypeMemoryPrefix BetaManagedAgentsMemoryPrefixType = "memory_prefix"
-)
 
 // Whether a `memory` or `memory_version` in the response includes its `content`.
 // Defaults to `full` on retrieve operations and to `basic` on list, create, and
@@ -469,13 +454,13 @@ const (
 //
 // The property Type is required.
 type BetaManagedAgentsPreconditionParam struct {
-	// Any of "content_sha256".
-	Type BetaManagedAgentsPreconditionType `json:"type,omitzero" api:"required"`
 	// Expected `content_sha256` of the stored memory (64 lowercase hexadecimal
 	// characters). Typically the `content_sha256` returned by a prior read or list
 	// call. Because the server applies no content normalization, clients can also
 	// compute this locally as the SHA-256 of the UTF-8 content bytes.
 	ContentSha256 param.Opt[string] `json:"content_sha256,omitzero"`
+	// This field can be elided, and will marshal its zero value as "content_sha256".
+	Type constant.ContentSha256 `json:"type" default:"content_sha256"`
 	paramObj
 }
 
@@ -486,12 +471,6 @@ func (r BetaManagedAgentsPreconditionParam) MarshalJSON() (data []byte, err erro
 func (r *BetaManagedAgentsPreconditionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsPreconditionType string
-
-const (
-	BetaManagedAgentsPreconditionTypeContentSha256 BetaManagedAgentsPreconditionType = "content_sha256"
-)
 
 type BetaMemoryStoreMemoryNewParams struct {
 	// The UTF-8 text content of the new memory. Pass `""` to create an empty memory.

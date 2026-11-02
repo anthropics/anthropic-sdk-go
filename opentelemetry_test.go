@@ -23,10 +23,10 @@ import (
 	"go.opentelemetry.io/otel/trace/embedded"
 	"go.opentelemetry.io/otel/trace/noop"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 )
 
 const messageJSON = `{
@@ -116,10 +116,9 @@ func newTracedClient(t *testing.T, rt http.RoundTripper, opts ...option.RequestO
 
 func messageParams() anthropic.MessageNewParams {
 	return anthropic.MessageNewParams{
-		Model:       "claude-requested",
-		MaxTokens:   100,
-		Temperature: anthropic.Float(0.5),
-		Messages:    []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hello"))},
+		Model:     "claude-requested",
+		MaxTokens: 100,
+		Messages:  []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hello"))},
 	}
 }
 
@@ -221,8 +220,6 @@ func TestOpenTelemetryMessageSpan(t *testing.T) {
 		"anthropic.workspace.id":                                   "wrkspc_1",
 		"gen_ai.request.model":                                     "claude-requested",
 		"gen_ai.request.max_tokens":                                int64(100),
-		"gen_ai.request.temperature":                               0.5,
-		"gen_ai.request.top_p":                                     nil,
 		"gen_ai.request.stream":                                    nil,
 		"gen_ai.output.type":                                       nil,
 		"anthropic.beta":                                           []string{"beta-a", "beta-b"},
@@ -412,9 +409,6 @@ func TestOpenTelemetryRequestAttributes(t *testing.T) {
 	want := map[string]any{
 		"gen_ai.request.model":             "claude-requested",
 		"gen_ai.request.max_tokens":        int64(100),
-		"gen_ai.request.temperature":       0.5,
-		"gen_ai.request.top_k":             int64(5),
-		"gen_ai.request.top_p":             0.9,
 		"gen_ai.request.reasoning.level":   "high",
 		"anthropic.request.service_tier":   "auto",
 		"anthropic.thinking.type":          "enabled",
@@ -425,8 +419,6 @@ func TestOpenTelemetryRequestAttributes(t *testing.T) {
 	for name, send := range map[string]func(client anthropic.Client) error{
 		"messages": func(client anthropic.Client) error {
 			params := messageParams()
-			params.TopK = anthropic.Int(5)
-			params.TopP = anthropic.Float(0.9)
 			params.ServiceTier = anthropic.MessageNewParamsServiceTierAuto
 			params.OutputConfig = anthropic.OutputConfigParam{Effort: anthropic.OutputConfigEffortHigh}
 			// The type is left to its default, which the request still sends.
@@ -438,9 +430,6 @@ func TestOpenTelemetryRequestAttributes(t *testing.T) {
 			_, err := client.Beta.Messages.New(context.Background(), anthropic.BetaMessageNewParams{
 				Model:        "claude-requested",
 				MaxTokens:    100,
-				Temperature:  anthropic.Float(0.5),
-				TopK:         anthropic.Int(5),
-				TopP:         anthropic.Float(0.9),
 				ServiceTier:  anthropic.BetaMessageNewParamsServiceTierAuto,
 				OutputConfig: anthropic.BetaOutputConfigParam{Effort: anthropic.BetaOutputConfigEffortHigh},
 				Thinking:     anthropic.BetaThinkingConfigParamUnion{OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{BudgetTokens: 1024}},
@@ -468,7 +457,6 @@ func TestOpenTelemetryRequestAttributes(t *testing.T) {
 		wantAttrs(t, onlySpan(t, recorder), map[string]any{
 			"anthropic.thinking.type":          "adaptive",
 			"anthropic.thinking.budget_tokens": nil,
-			"gen_ai.request.top_k":             nil,
 			"anthropic.request.service_tier":   nil,
 			"gen_ai.request.reasoning.level":   nil,
 		})
@@ -1417,10 +1405,9 @@ func TestOpenTelemetrySamplerSeesTheAttributesThatASpanStartsWith(t *testing.T) 
 	}
 	want := map[string][]map[string]any{
 		"anthropic.messages.create": {with("POST", "/v1/messages", map[string]any{
-			"gen_ai.operation.name":      "chat",
-			"gen_ai.request.model":       "claude-requested",
-			"gen_ai.request.max_tokens":  int64(100),
-			"gen_ai.request.temperature": 0.5,
+			"gen_ai.operation.name":     "chat",
+			"gen_ai.request.model":      "claude-requested",
+			"gen_ai.request.max_tokens": int64(100),
 		})},
 		"anthropic.messages.count_tokens":     {with("POST", "/v1/messages/count_tokens", map[string]any{"gen_ai.request.model": "claude-requested"})},
 		"anthropic.messages.batches.retrieve": {with("GET", "/v1/messages/batches/{message_batch_id}", map[string]any{"anthropic.message.batch.id": "msgbatch_1"})},
@@ -1449,8 +1436,6 @@ func TestOpenTelemetrySamplerSeesTheRequestParametersOfMessages(t *testing.T) {
 		option.WithOpenTelemetryConversationID("conv_1"),
 	}
 	params := messageParams()
-	params.TopK = anthropic.Int(5)
-	params.TopP = anthropic.Float(0.9)
 	params.ServiceTier = anthropic.MessageNewParamsServiceTierAuto
 	params.Thinking = anthropic.ThinkingConfigParamUnion{OfEnabled: &anthropic.ThinkingConfigEnabledParam{BudgetTokens: 2048}}
 	params.OutputConfig = anthropic.OutputConfigParam{
@@ -1467,9 +1452,6 @@ func TestOpenTelemetrySamplerSeesTheRequestParametersOfMessages(t *testing.T) {
 		"http.route":                       "/v1/messages",
 		"gen_ai.request.model":             "claude-requested",
 		"gen_ai.request.max_tokens":        int64(100),
-		"gen_ai.request.temperature":       0.5,
-		"gen_ai.request.top_k":             int64(5),
-		"gen_ai.request.top_p":             0.9,
 		"gen_ai.request.reasoning.level":   "high",
 		"gen_ai.output.type":               "json",
 		"anthropic.request.service_tier":   "auto",

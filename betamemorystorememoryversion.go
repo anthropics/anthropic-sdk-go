@@ -11,14 +11,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaMemoryStoreMemoryVersionService contains methods and other services that
@@ -65,7 +65,8 @@ func (r *BetaMemoryStoreMemoryVersionService) Get(ctx context.Context, memoryVer
 		err = errors.New("missing required memory_version_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions/%s?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryVersionID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions/%s", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryVersionID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memory_versions.retrieve", "/v1/memory_stores/{memory_store_id}/memory_versions/{memory_version_id}", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("anthropic.memory_store.memory_version.id", memoryVersionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
@@ -93,7 +94,8 @@ func (r *BetaMemoryStoreMemoryVersionService) List(ctx context.Context, memorySt
 		err = errors.New("missing required memory_store_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions?beta=true", url.PathEscape(memoryStoreID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions", url.PathEscape(memoryStoreID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memory_versions.list", "/v1/memory_stores/{memory_store_id}/memory_versions", "api_key_id", "created_at[gte]", "created_at[lte]", "limit", "memory_id", "operation", "page", "service_account_id", "session_id", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -137,7 +139,8 @@ func (r *BetaMemoryStoreMemoryVersionService) Redact(ctx context.Context, memory
 		err = errors.New("missing required memory_version_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions/%s/redact?beta=true", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryVersionID))
+	path := fmt.Sprintf("v1/memory_stores/%s/memory_versions/%s/redact", url.PathEscape(params.MemoryStoreID), url.PathEscape(memoryVersionID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memory_versions.redact", "/v1/memory_stores/{memory_store_id}/memory_versions/{memory_version_id}/redact"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", params.MemoryStoreID), requestconfig.WithSpanAttribute("anthropic.memory_store.memory_version.id", memoryVersionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -239,9 +242,8 @@ func (r *BetaManagedAgentsActorUnion) UnmarshalJSON(data []byte) error {
 type BetaManagedAgentsAPIActor struct {
 	// ID of the API key (an `apikey_...` value). This identifies the key, not the
 	// secret.
-	APIKeyID string `json:"api_key_id" api:"required"`
-	// Any of "api_actor".
-	Type BetaManagedAgentsAPIActorType `json:"type" api:"required"`
+	APIKeyID string            `json:"api_key_id" api:"required"`
+	Type     constant.APIActor `json:"type" default:"api_actor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		APIKeyID    respjson.Field
@@ -256,12 +258,6 @@ func (r BetaManagedAgentsAPIActor) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsAPIActor) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsAPIActorType string
-
-const (
-	BetaManagedAgentsAPIActorTypeAPIActor BetaManagedAgentsAPIActorType = "api_actor"
-)
 
 // One entry in a memory's history, recording a single change and who made it.
 //
@@ -295,8 +291,7 @@ type BetaManagedAgentsMemoryVersion struct {
 	//
 	// Any of "created", "modified", "deleted".
 	Operation BetaManagedAgentsMemoryVersionOperation `json:"operation" api:"required"`
-	// Any of "memory_version".
-	Type BetaManagedAgentsMemoryVersionType `json:"type" api:"required"`
+	Type      constant.MemoryVersion                  `json:"type" default:"memory_version"`
 	// The memory's UTF-8 text content as of this version. `null` when `view=basic`,
 	// when `operation` is `deleted`, or when `redacted_at` is set.
 	Content string `json:"content" api:"nullable"`
@@ -360,12 +355,6 @@ func (r *BetaManagedAgentsMemoryVersion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsMemoryVersionType string
-
-const (
-	BetaManagedAgentsMemoryVersionTypeMemoryVersion BetaManagedAgentsMemoryVersionType = "memory_version"
-)
-
 // The kind of change that a memory version records.
 //
 // Every change to a memory adds one version. If you update a memory and nothing
@@ -411,9 +400,8 @@ func (r *BetaManagedAgentsServiceAccountActor) UnmarshalJSON(data []byte) error 
 type BetaManagedAgentsSessionActor struct {
 	// ID of the session (a `sesn_...` value). Look up the session via
 	// [Retrieve a session](/en/api/beta/sessions/retrieve) for further provenance.
-	SessionID string `json:"session_id" api:"required"`
-	// Any of "session_actor".
-	Type BetaManagedAgentsSessionActorType `json:"type" api:"required"`
+	SessionID string                `json:"session_id" api:"required"`
+	Type      constant.SessionActor `json:"type" default:"session_actor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		SessionID   respjson.Field
@@ -429,16 +417,9 @@ func (r *BetaManagedAgentsSessionActor) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsSessionActorType string
-
-const (
-	BetaManagedAgentsSessionActorTypeSessionActor BetaManagedAgentsSessionActorType = "session_actor"
-)
-
 // A human user, for example acting through the Anthropic Console.
 type BetaManagedAgentsUserActor struct {
-	// Any of "user_actor".
-	Type BetaManagedAgentsUserActorType `json:"type" api:"required"`
+	Type constant.UserActor `json:"type" default:"user_actor"`
 	// ID of the user (a `user_...` value).
 	UserID string `json:"user_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -455,12 +436,6 @@ func (r BetaManagedAgentsUserActor) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsUserActor) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsUserActorType string
-
-const (
-	BetaManagedAgentsUserActorTypeUserActor BetaManagedAgentsUserActorType = "user_actor"
-)
 
 type BetaMemoryStoreMemoryVersionGetParams struct {
 	// The ID of the memory store that holds the version (`memstore_...`).

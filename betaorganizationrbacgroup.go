@@ -9,14 +9,14 @@ import (
 	"slices"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationRBACGroupService contains methods and other services that help
@@ -46,7 +46,8 @@ func NewBetaOrganizationRBACGroupService(opts ...option.RequestOption) (r BetaOr
 // The RBAC Groups API is available to Claude Enterprise organizations only.
 func (r *BetaOrganizationRBACGroupService) New(ctx context.Context, body BetaOrganizationRBACGroupNewParams, opts ...option.RequestOption) (res *BetaRBACGroup, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/rbac_groups?beta=true"
+	path := "v1/organizations/rbac_groups"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.create", "/v1/organizations/rbac_groups"), requestconfig.WithSpanCreatedID("anthropic.organization.rbac_group.id", &res, func(created *BetaRBACGroup) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -61,7 +62,8 @@ func (r *BetaOrganizationRBACGroupService) Get(ctx context.Context, rbacGroupID 
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s?beta=true", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.retrieve", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -78,7 +80,8 @@ func (r *BetaOrganizationRBACGroupService) Update(ctx context.Context, rbacGroup
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s?beta=true", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.update", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -91,7 +94,8 @@ func (r *BetaOrganizationRBACGroupService) List(ctx context.Context, query BetaO
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/rbac_groups?beta=true"
+	path := "v1/organizations/rbac_groups"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.list", "/v1/organizations/rbac_groups", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
@@ -123,7 +127,8 @@ func (r *BetaOrganizationRBACGroupService) Delete(ctx context.Context, rbacGroup
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s?beta=true", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.delete", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

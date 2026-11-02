@@ -14,12 +14,12 @@ import (
 	"testing/iotest"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/ssestream"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -69,14 +69,15 @@ func TestUserAgentHeader(t *testing.T) {
 	_, _ = client.Messages.New(context.Background(), anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{
-					Text: "x",
-				},
-			}},
-			Role: anthropic.MessageParamRoleUser,
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
 		}},
-		Model: anthropic.ModelClaudeSonnet5_5,
+		Model: anthropic.ModelClaudeOpus5_5,
 	})
 	if userAgent != fmt.Sprintf("Anthropic/Go %s", internal.PackageVersion) {
 		t.Errorf("Expected User-Agent to be correct, but got: %#v", userAgent)
@@ -104,14 +105,15 @@ func TestRetryAfter(t *testing.T) {
 	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{
-					Text: "x",
-				},
-			}},
-			Role: anthropic.MessageParamRoleUser,
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
 		}},
-		Model: anthropic.ModelClaudeSonnet5_5,
+		Model: anthropic.ModelClaudeOpus5_5,
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -150,14 +152,15 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{
-					Text: "x",
-				},
-			}},
-			Role: anthropic.MessageParamRoleUser,
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
 		}},
-		Model: anthropic.ModelClaudeSonnet5_5,
+		Model: anthropic.ModelClaudeOpus5_5,
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -191,14 +194,15 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{
-					Text: "x",
-				},
-			}},
-			Role: anthropic.MessageParamRoleUser,
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
 		}},
-		Model: anthropic.ModelClaudeSonnet5_5,
+		Model: anthropic.ModelClaudeOpus5_5,
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -231,14 +235,15 @@ func TestRetryAfterMs(t *testing.T) {
 	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{
-					Text: "x",
-				},
-			}},
-			Role: anthropic.MessageParamRoleUser,
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
 		}},
-		Model: anthropic.ModelClaudeSonnet5_5,
+		Model: anthropic.ModelClaudeOpus5_5,
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -269,14 +274,15 @@ func TestNonJSONErrorBody(t *testing.T) {
 		_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
-				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{
-						Text: "x",
-					},
-				}},
-				Role: anthropic.MessageParamRoleUser,
+				OfUser: &anthropic.UserMessageParam{
+					Content: []anthropic.ContentBlockParamUnion{{
+						OfText: &anthropic.TextBlockParam{
+							Text: "x",
+						},
+					}},
+				},
 			}},
-			Model: anthropic.ModelClaudeSonnet5_5,
+			Model: anthropic.ModelClaudeOpus5_5,
 		})
 		var apiErr *anthropic.Error
 		if !errors.As(err, &apiErr) || apiErr.StatusCode != http.StatusRequestEntityTooLarge {
@@ -313,14 +319,15 @@ func TestErrorDumpRedactsSensitiveHeaders(t *testing.T) {
 	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{
-					Text: "x",
-				},
-			}},
-			Role: anthropic.MessageParamRoleUser,
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
 		}},
-		Model: anthropic.ModelClaudeSonnet5_5,
+		Model: anthropic.ModelClaudeOpus5_5,
 	})
 	var apiErr *anthropic.Error
 	if !errors.As(err, &apiErr) {
@@ -356,14 +363,15 @@ func TestContextCancel(t *testing.T) {
 	_, err := client.Messages.New(cancelCtx, anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{
-					Text: "x",
-				},
-			}},
-			Role: anthropic.MessageParamRoleUser,
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
 		}},
-		Model: anthropic.ModelClaudeSonnet5_5,
+		Model: anthropic.ModelClaudeOpus5_5,
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -387,14 +395,15 @@ func TestContextCancelDelay(t *testing.T) {
 	_, err := client.Messages.New(cancelCtx, anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{
-					Text: "x",
-				},
-			}},
-			Role: anthropic.MessageParamRoleUser,
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
 		}},
-		Model: anthropic.ModelClaudeSonnet5_5,
+		Model: anthropic.ModelClaudeOpus5_5,
 	})
 	if err == nil {
 		t.Error("expected there to be a cancel error")
@@ -420,14 +429,15 @@ func TestRequestTimeoutRetried(t *testing.T) {
 		anthropic.MessageNewParams{
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
-				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{
-						Text: "x",
-					},
-				}},
-				Role: anthropic.MessageParamRoleUser,
+				OfUser: &anthropic.UserMessageParam{
+					Content: []anthropic.ContentBlockParamUnion{{
+						OfText: &anthropic.TextBlockParam{
+							Text: "x",
+						},
+					}},
+				},
 			}},
-			Model: anthropic.ModelClaudeSonnet5_5,
+			Model: anthropic.ModelClaudeOpus5_5,
 		},
 		option.WithRequestTimeout((10 * time.Millisecond)),
 		option.WithMaxRetries(1),
@@ -462,14 +472,15 @@ func TestRequestTimeoutNotRetriedAfterContextDone(t *testing.T) {
 		anthropic.MessageNewParams{
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
-				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{
-						Text: "x",
-					},
-				}},
-				Role: anthropic.MessageParamRoleUser,
+				OfUser: &anthropic.UserMessageParam{
+					Content: []anthropic.ContentBlockParamUnion{{
+						OfText: &anthropic.TextBlockParam{
+							Text: "x",
+						},
+					}},
+				},
 			}},
-			Model: anthropic.ModelClaudeSonnet5_5,
+			Model: anthropic.ModelClaudeOpus5_5,
 		},
 		option.WithRequestTimeout(time.Second),
 	)
@@ -502,14 +513,15 @@ func TestResponseBodyReadErrorRetried(t *testing.T) {
 		anthropic.MessageNewParams{
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
-				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{
-						Text: "x",
-					},
-				}},
-				Role: anthropic.MessageParamRoleUser,
+				OfUser: &anthropic.UserMessageParam{
+					Content: []anthropic.ContentBlockParamUnion{{
+						OfText: &anthropic.TextBlockParam{
+							Text: "x",
+						},
+					}},
+				},
 			}},
-			Model: anthropic.ModelClaudeSonnet5_5,
+			Model: anthropic.ModelClaudeOpus5_5,
 		},
 		option.WithMaxRetries(1),
 	)
@@ -551,14 +563,15 @@ func TestRetriedResponseBodyNotRead(t *testing.T) {
 		anthropic.MessageNewParams{
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
-				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{
-						Text: "x",
-					},
-				}},
-				Role: anthropic.MessageParamRoleUser,
+				OfUser: &anthropic.UserMessageParam{
+					Content: []anthropic.ContentBlockParamUnion{{
+						OfText: &anthropic.TextBlockParam{
+							Text: "x",
+						},
+					}},
+				},
 			}},
-			Model: anthropic.ModelClaudeSonnet5_5,
+			Model: anthropic.ModelClaudeOpus5_5,
 		},
 		option.WithMaxRetries(1),
 	)
@@ -590,14 +603,15 @@ func TestResponseBodyReadErrorKeepsResponse(t *testing.T) {
 		anthropic.MessageNewParams{
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
-				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{
-						Text: "x",
-					},
-				}},
-				Role: anthropic.MessageParamRoleUser,
+				OfUser: &anthropic.UserMessageParam{
+					Content: []anthropic.ContentBlockParamUnion{{
+						OfText: &anthropic.TextBlockParam{
+							Text: "x",
+						},
+					}},
+				},
 			}},
-			Model: anthropic.ModelClaudeSonnet5_5,
+			Model: anthropic.ModelClaudeOpus5_5,
 		},
 		option.WithMaxRetries(1),
 		option.WithResponseInto(&res),
@@ -634,14 +648,15 @@ func TestResponseBodyReadErrorNotRetriedWhenToldNotTo(t *testing.T) {
 		anthropic.MessageNewParams{
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
-				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{
-						Text: "x",
-					},
-				}},
-				Role: anthropic.MessageParamRoleUser,
+				OfUser: &anthropic.UserMessageParam{
+					Content: []anthropic.ContentBlockParamUnion{{
+						OfText: &anthropic.TextBlockParam{
+							Text: "x",
+						},
+					}},
+				},
 			}},
-			Model: anthropic.ModelClaudeSonnet5_5,
+			Model: anthropic.ModelClaudeOpus5_5,
 		},
 		option.WithMaxRetries(2),
 	)
@@ -692,6 +707,43 @@ func TestClonedRequestKeepsCustomHTTPClient(t *testing.T) {
 	}
 	if requests != 2 {
 		t.Errorf("the custom HTTP client got %d requests, want 2", requests)
+	}
+}
+
+func TestEveryAttemptHasTheQualifiers(t *testing.T) {
+	qualifiers := map[string]string{"variant": "b"}
+	var got []map[string]string
+	cfg, err := requestconfig.NewRequestConfig(
+		context.Background(),
+		http.MethodGet,
+		"cards",
+		nil,
+		nil,
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithBaseURL("http://localhost"),
+		option.WithMaxRetries(1),
+		option.WithHTTPClient(doerFunc(func(req *http.Request) (*http.Response, error) {
+			got = append(got, requestconfig.Qualifiers(req))
+			return &http.Response{
+				StatusCode: http.StatusTooManyRequests,
+				Header:     http.Header{"Retry-After-Ms": []string{"1"}},
+				Body:       http.NoBody,
+				Request:    req,
+			}, nil
+		})),
+		requestconfig.WithQualifiers(qualifiers),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, cfg := range []*requestconfig.RequestConfig{cfg, cfg.Clone(context.Background())} {
+		if err := cfg.Execute(); err == nil {
+			t.Fatal("Expected there to be an error")
+		}
+	}
+	want := []map[string]string{qualifiers, qualifiers, qualifiers, qualifiers}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Expected %v qualifiers, got %v", want, got)
 	}
 }
 
@@ -1086,14 +1138,15 @@ func TestContextDeadline(t *testing.T) {
 		_, err := client.Messages.New(deadlineCtx, anthropic.MessageNewParams{
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
-				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{
-						Text: "x",
-					},
-				}},
-				Role: anthropic.MessageParamRoleUser,
+				OfUser: &anthropic.UserMessageParam{
+					Content: []anthropic.ContentBlockParamUnion{{
+						OfText: &anthropic.TextBlockParam{
+							Text: "x",
+						},
+					}},
+				},
 			}},
-			Model: anthropic.ModelClaudeSonnet5_5,
+			Model: anthropic.ModelClaudeOpus5_5,
 		})
 		if err == nil {
 			t.Error("expected there to be a deadline error")
@@ -1142,12 +1195,13 @@ func TestContextDeadlineStreaming(t *testing.T) {
 		stream := client.Messages.NewStreaming(deadlineCtx, anthropic.MessageNewParams{
 			MaxTokens: 1024,
 			Messages: []anthropic.MessageParam{{
-				Content: []anthropic.ContentBlockParamUnion{{
-					OfText: &anthropic.TextBlockParam{
-						Text: "x",
-					},
-				}},
-				Role: anthropic.MessageParamRoleUser,
+				OfUser: &anthropic.UserMessageParam{
+					Content: []anthropic.ContentBlockParamUnion{{
+						OfText: &anthropic.TextBlockParam{
+							Text: "x",
+						},
+					}},
+				},
 			}},
 			Model: anthropic.ModelClaudeOpus5_5,
 		})
@@ -1200,12 +1254,13 @@ func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
 			anthropic.MessageNewParams{
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{{
-					Content: []anthropic.ContentBlockParamUnion{{
-						OfText: &anthropic.TextBlockParam{
-							Text: "x",
-						},
-					}},
-					Role: anthropic.MessageParamRoleUser,
+					OfUser: &anthropic.UserMessageParam{
+						Content: []anthropic.ContentBlockParamUnion{{
+							OfText: &anthropic.TextBlockParam{
+								Text: "x",
+							},
+						}},
+					},
 				}},
 				Model: anthropic.ModelClaudeOpus5_5,
 			},

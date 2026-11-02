@@ -10,13 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaVaultService contains methods and other services that help with interacting
@@ -57,7 +58,8 @@ func (r *BetaVaultService) New(ctx context.Context, params BetaVaultNewParams, o
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
-	path := "v1/vaults?beta=true"
+	path := "v1/vaults"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.create", "/v1/vaults"), requestconfig.WithSpanCreatedID("anthropic.vault.id", &res, func(created *BetaManagedAgentsVault) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -84,7 +86,8 @@ func (r *BetaVaultService) Get(ctx context.Context, vaultID string, query BetaVa
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s?beta=true", url.PathEscape(vaultID))
+	path := fmt.Sprintf("v1/vaults/%s", url.PathEscape(vaultID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.retrieve", "/v1/vaults/{vault_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -111,7 +114,8 @@ func (r *BetaVaultService) Update(ctx context.Context, vaultID string, params Be
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s?beta=true", url.PathEscape(vaultID))
+	path := fmt.Sprintf("v1/vaults/%s", url.PathEscape(vaultID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.update", "/v1/vaults/{vault_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -135,7 +139,8 @@ func (r *BetaVaultService) List(ctx context.Context, params BetaVaultListParams,
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/vaults?beta=true"
+	path := "v1/vaults"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.list", "/v1/vaults", "include_archived", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -175,7 +180,8 @@ func (r *BetaVaultService) Delete(ctx context.Context, vaultID string, body Beta
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s?beta=true", url.PathEscape(vaultID))
+	path := fmt.Sprintf("v1/vaults/%s", url.PathEscape(vaultID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.delete", "/v1/vaults/{vault_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -202,7 +208,8 @@ func (r *BetaVaultService) Archive(ctx context.Context, vaultID string, body Bet
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/archive?beta=true", url.PathEscape(vaultID))
+	path := fmt.Sprintf("v1/vaults/%s/archive", url.PathEscape(vaultID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.archive", "/v1/vaults/{vault_id}/archive"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -211,9 +218,8 @@ func (r *BetaVaultService) Archive(ctx context.Context, vaultID string, body Bet
 // Confirmation of a deleted vault.
 type BetaManagedAgentsDeletedVault struct {
 	// The unique ID of the deleted vault (`vlt_...`).
-	ID string `json:"id" api:"required"`
-	// Any of "vault_deleted".
-	Type BetaManagedAgentsDeletedVaultType `json:"type" api:"required"`
+	ID   string                            `json:"id" api:"required"`
+	Type constant.VaultDeletedResponseType `json:"type" default:"vault_deleted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -229,12 +235,6 @@ func (r *BetaManagedAgentsDeletedVault) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsDeletedVaultType string
-
-const (
-	BetaManagedAgentsDeletedVaultTypeVaultDeleted BetaManagedAgentsDeletedVaultType = "vault_deleted"
-)
-
 // A vault that stores credentials for use by agents during sessions.
 type BetaManagedAgentsVault struct {
 	// The unique ID of the vault (`vlt_...`).
@@ -247,8 +247,7 @@ type BetaManagedAgentsVault struct {
 	DisplayName string `json:"display_name" api:"required"`
 	// Arbitrary key-value metadata attached to the vault.
 	Metadata map[string]string `json:"metadata" api:"required"`
-	// Any of "vault".
-	Type BetaManagedAgentsVaultType `json:"type" api:"required"`
+	Type     constant.Vault    `json:"type" default:"vault"`
 	// A timestamp in RFC 3339 format
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -270,12 +269,6 @@ func (r BetaManagedAgentsVault) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsVault) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsVaultType string
-
-const (
-	BetaManagedAgentsVaultTypeVault BetaManagedAgentsVaultType = "vault"
-)
 
 type BetaVaultNewParams struct {
 	// Human-readable name for the vault. 1-255 characters.

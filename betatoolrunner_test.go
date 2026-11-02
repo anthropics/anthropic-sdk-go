@@ -16,7 +16,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
@@ -62,7 +62,10 @@ func runToToolResults(t *testing.T, runner *BetaToolRunner) []*BetaToolResultBlo
 	}
 	var results []*BetaToolResultBlockParam
 	for _, msg := range runner.Messages() {
-		for _, c := range msg.Content {
+		if msg.OfUser == nil {
+			continue
+		}
+		for _, c := range msg.OfUser.Content {
 			if c.OfToolResult != nil {
 				results = append(results, c.OfToolResult)
 			}
@@ -81,7 +84,7 @@ func toolResultJSON(t *testing.T, block *BetaToolResultBlockParam) string {
 }
 
 func systemToolChange(block BetaContentBlockParamUnion) BetaMessageParam {
-	return BetaMessageParam{Role: BetaMessageParamRoleSystem, Content: []BetaContentBlockParamUnion{block}}
+	return BetaMessageParam{OfSystem: &BetaSystemMessageParam{Content: []BetaSystemMessageParamContentUnion{{OfToolAddition: block.OfToolAddition, OfToolRemoval: block.OfToolRemoval}}}}
 }
 
 func weatherRef() BetaToolChangeToolReferenceParam {
@@ -211,6 +214,74 @@ func TestBetaToolRunner_ToolRemoval_AppendMessagesBeforeCall(t *testing.T) {
 	}
 }
 
+// A Role set by hand goes out as given, so a user or assistant variant that
+// says "system" is a system message and its tool_removal must be honored.
+func TestBetaToolRunner_ToolRemoval_SystemRoleOnAnotherVariant(t *testing.T) {
+	content := []BetaContentBlockParamUnion{NewBetaToolRemovalBlock(weatherRef())}
+	for name, message := range map[string]BetaMessageParam{
+		"user":      {OfUser: &BetaUserMessageParam{Role: "system", Content: content}},
+		"assistant": {OfAssistant: &BetaAssistantMessageParam{Role: "system", Content: content}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			weather := &stubBetaTool{name: "weather"}
+			requireToolNotFound(t, runToToolResults(t, newWeatherRunner(t, weather, message)))
+			if got := weather.runs.Load(); got != 0 {
+				t.Fatalf("removed tool must not execute, ran %d times", got)
+			}
+		})
+	}
+
+	// In a message that goes out as "user" the block changes nothing.
+	weather := &stubBetaTool{name: "weather"}
+	runToToolResults(t, newWeatherRunner(t, weather, NewBetaUserMessage(content...)))
+	if got := weather.runs.Load(); got != 1 {
+		t.Fatalf("tool should run once, ran %d times", got)
+	}
+}
+
+// Editing a message returned by Messages must not undo a tool_removal in the
+// runner's own history.
+func TestBetaToolRunner_ToolRemoval_MessagesCopyMutation(t *testing.T) {
+	weather := &stubBetaTool{name: "weather"}
+	runner := newWeatherRunner(t, weather, systemToolChange(NewBetaToolRemovalBlock(weatherRef())))
+	runner.Messages()[0].OfSystem.Content = nil
+
+	requireToolNotFound(t, runToToolResults(t, runner))
+	if got := weather.runs.Load(); got != 0 {
+		t.Fatalf("removed tool must not execute, ran %d times", got)
+	}
+}
+
+// Messages and availableToolNames name the variants of BetaMessageParam by hand,
+// so each variant goes through both as a system message that removes a tool.
+func TestBetaToolRunner_EveryMessageVariantIsHandled(t *testing.T) {
+	union := reflect.TypeFor[BetaMessageParam]()
+	for i := range union.NumField() {
+		field := union.Field(i)
+		if !strings.HasPrefix(field.Name, "Of") {
+			continue
+		}
+		t.Run(field.Name, func(t *testing.T) {
+			variant := reflect.New(field.Type.Elem())
+			variant.Elem().FieldByName("Role").SetString("system")
+			content := variant.Elem().FieldByName("Content")
+			block := reflect.New(content.Type().Elem()).Elem()
+			block.FieldByName("OfToolRemoval").Set(reflect.ValueOf(NewBetaToolRemovalBlock(weatherRef()).OfToolRemoval))
+			content.Set(reflect.Append(content, block))
+			var message BetaMessageParam
+			reflect.ValueOf(&message).Elem().Field(i).Set(variant)
+
+			runner := newWeatherRunner(t, &stubBetaTool{name: "weather"}, message)
+			if reflect.ValueOf(runner.Messages()[0]).Field(i).Pointer() == variant.Pointer() {
+				t.Errorf("Messages returns the runner's own BetaMessageParam.%s: copy it in betaToolRunnerBase.Messages", field.Name)
+			}
+			if _, ok := runner.availableToolNames()["weather"]; ok {
+				t.Errorf("a tool_removal in BetaMessageParam.%s is ignored: read it in betaToolRunnerBase.availableToolNames", field.Name)
+			}
+		})
+	}
+}
+
 // A tool_removal appended in the dispatch window — after NextMessage has
 // returned the assistant's tool_use but before the following NextMessage
 // executes it — must also stop the call. Uses the exported Params.Messages
@@ -265,7 +336,7 @@ func TestBetaToolRunner_ToolRemoval_HoldsAcrossACompaction(t *testing.T) {
 	forEachRunner(t, func(t *testing.T, stream bool) {
 		server, requests := scriptedMessagesServer(t, compactionResponseJSON, toolUseTurnJSON, endTurnJSON)
 		weather := &stubBetaTool{name: "weather"}
-		params := pauseTurnParams(10)
+		params := unthreaded(pauseTurnParams(10))
 		params.Messages = append([]BetaMessageParam{systemToolChange(NewBetaToolRemovalBlock(weatherRef()))}, params.Messages...)
 		runner := newTurnRunner(newTestToolRunnerClient(server), stream, []BetaTool{weather}, params)
 		runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
@@ -315,6 +386,7 @@ func (s toolChangeStubs) tools(labels ...string) []BetaTool {
 func runToolChangeTurns(t *testing.T, stream bool, client Client, tools []BetaTool, params BetaToolRunnerParams, onTurn func(*betaToolRunnerBase, *BetaMessage)) *betaToolRunnerBase {
 	t.Helper()
 	ctx := context.Background()
+	params = unthreaded(params)
 	if stream {
 		runner := client.Beta.Messages.NewToolRunnerStreaming(tools, params)
 		onTurn(&runner.betaToolRunnerBase, nil)
@@ -682,17 +754,20 @@ func TestBetaToolRunner_RemoveTools_HoldsOnceTheRemovalIsTrimmed(t *testing.T) {
 			r.RemoveTools(stubs.tool("weather"))
 		case calledTool(message) == "time":
 			r.Params.Messages = slices.DeleteFunc(r.Params.Messages, func(m BetaMessageParam) bool {
-				return m.Role == BetaMessageParamRoleSystem
+				return m.OfSystem != nil
 			})
 		}
 	})
 
 	var results []string
 	for _, message := range runner.Messages() {
-		if message.Role == BetaMessageParamRoleSystem {
+		if message.OfSystem != nil {
 			t.Fatalf("the tool_removal should be gone from the history, got %+v", message)
 		}
-		for _, block := range message.Content {
+		if message.OfUser == nil {
+			continue
+		}
+		for _, block := range message.OfUser.Content {
 			if block.OfToolResult != nil {
 				results = append(results, toolResultJSON(t, block.OfToolResult))
 			}
@@ -763,7 +838,7 @@ func TestBetaToolRunner_ToolChanges_GoOutWithTheCompactionRequest(t *testing.T) 
 	forEachRunner(t, func(t *testing.T, stream bool) {
 		server, requests := scriptedMessagesServer(t, toolCallTurnJSON("toolu_1", "time"), compactionResponseJSON, toolCallTurnJSON("toolu_2", "weather"), endTurnJSON)
 		stubs := toolChangeStubs{}
-		runner := newTurnRunner(newTestToolRunnerClient(server), stream, stubs.tools("time"), pauseTurnParams(10))
+		runner := newTurnRunner(newTestToolRunnerClient(server), stream, stubs.tools("time"), unthreaded(pauseTurnParams(10)))
 		runner.run(t, func(message *BetaMessage) {
 			if calledTool(message) == "time" {
 				runner.AddTools(stubs.tool("weather"))
@@ -797,7 +872,7 @@ func TestBetaToolRunner_ToolChanges_MadeWhileHandlingTheCompactionResponse(t *te
 	forEachRunner(t, func(t *testing.T, stream bool) {
 		server, requests := scriptedMessagesServer(t, compactionResponseJSON, toolCallTurnJSON("toolu_1", "weather"), endTurnJSON)
 		stubs := toolChangeStubs{}
-		runner := newTurnRunner(newTestToolRunnerClient(server), stream, nil, pauseTurnParams(10))
+		runner := newTurnRunner(newTestToolRunnerClient(server), stream, nil, unthreaded(pauseTurnParams(10)))
 		runner.CompactBeforeNextTurn(BetaCompactionConfigUnionParam{})
 		runner.run(t, func(message *BetaMessage) {
 			if message.StopReason == BetaStopReasonCompaction {
@@ -823,7 +898,7 @@ func TestBetaToolRunnerStreaming_ToolChanges_ReAddedWhileTheCompactionResponseSt
 	server, requests := scriptedMessagesServer(t, toolCallTurnJSON("toolu_1", "time"), compactionResponseJSON, toolCallTurnJSON("toolu_2", "weather"), endTurnJSON)
 	stubs := toolChangeStubs{}
 	client := newTestToolRunnerClient(server)
-	runner := client.Beta.Messages.NewToolRunnerStreaming(stubs.tools("time", "weather"), pauseTurnParams(10))
+	runner := client.Beta.Messages.NewToolRunnerStreaming(stubs.tools("time", "weather"), unthreaded(pauseTurnParams(10)))
 	for !runner.IsCompleted() {
 		for event, err := range runner.NextStreaming(context.Background()) {
 			if err != nil {
@@ -909,7 +984,7 @@ func TestExecuteToolsSkipsMaxTokensTurn(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			tool := &recordingTool{name: "rec"}
-			base := newBetaToolRunnerBase(nil, []BetaTool{tool}, BetaToolRunnerParams{}, nil)
+			base := newBetaToolRunnerBase(&BetaMessageService{}, []BetaTool{tool}, BetaToolRunnerParams{}, nil)
 			message := &BetaMessage{
 				StopReason: tt.stopReason,
 				Content:    []BetaContentBlockUnion{toolUse},
@@ -1287,6 +1362,13 @@ func requireJSONEqual(t *testing.T, got, want string) {
 	}
 }
 
+// unthreaded opts a runner out of message threads, for a test that reads the
+// whole history from each request rather than what a thread sends.
+func unthreaded(params BetaToolRunnerParams) BetaToolRunnerParams {
+	params.DisableThread = true
+	return params
+}
+
 func pauseTurnParams(maxIterations int) BetaToolRunnerParams {
 	return BetaToolRunnerParams{BetaMessageNewParams: BetaMessageNewParams{
 		Model:     "m",
@@ -1322,7 +1404,7 @@ func requireTurnResumed(t *testing.T, unfinishedTurn string) {
 			var final *BetaMessage
 			var history []BetaMessageParam
 			if stream {
-				runner := client.Beta.Messages.NewToolRunnerStreaming(nil, pauseTurnParams(5))
+				runner := client.Beta.Messages.NewToolRunnerStreaming(nil, unthreaded(pauseTurnParams(5)))
 				for events, err := range runner.AllStreaming(ctx) {
 					if err != nil {
 						t.Fatalf("AllStreaming: %v", err)
@@ -1335,7 +1417,7 @@ func requireTurnResumed(t *testing.T, unfinishedTurn string) {
 				}
 				final, history = runner.LastMessage(), runner.Messages()
 			} else {
-				runner := client.Beta.Messages.NewToolRunner(nil, pauseTurnParams(5))
+				runner := client.Beta.Messages.NewToolRunner(nil, unthreaded(pauseTurnParams(5)))
 				var err error
 				if final, err = runner.RunToCompletion(ctx); err != nil {
 					t.Fatalf("RunToCompletion: %v", err)
@@ -1609,8 +1691,8 @@ func TestBetaToolRunner_CompactBeforeNextTurn_SentAfterToolResults(t *testing.T)
 			t.Fatalf("request after the compaction must not carry compaction: %s", after)
 		}
 		requireJSONEqual(t, gjson.GetBytes(after, "context_management").Raw, gjson.GetBytes(first, "context_management").Raw)
-		if fmt.Sprint(betas) != "[compact-2026-09-04 compact-2026-09-04 compact-2026-09-04]" {
-			t.Fatalf("anthropic-beta headers = %v, want the caller's beta and nothing added", betas)
+		if fmt.Sprint(betas) != "[compact-2026-09-04,message-threads-2026-08-12 compact-2026-09-04,message-threads-2026-08-12 compact-2026-09-04,message-threads-2026-08-12]" {
+			t.Fatalf("anthropic-beta headers = %v, want the caller's beta, the thread's and nothing else", betas)
 		}
 	})
 }
@@ -1702,8 +1784,8 @@ func TestBetaToolRunner_CompactBeforeNextTurn_LeavesOffReplyOnlyParams(t *testin
 				for _, path := range []string{"tools", "system", "max_tokens"} {
 					requireJSONEqual(t, gjson.GetBytes(compaction, path).Raw, gjson.GetBytes(first, path).Raw)
 				}
-				if fmt.Sprint(betas) != "[compact-2026-09-04 compact-2026-09-04 compact-2026-09-04]" {
-					t.Fatalf("anthropic-beta headers = %v, want the caller's beta on every request", betas)
+				if fmt.Sprint(betas) != "[compact-2026-09-04,message-threads-2026-08-12 compact-2026-09-04,message-threads-2026-08-12 compact-2026-09-04,message-threads-2026-08-12]" {
+					t.Fatalf("anthropic-beta headers = %v, want the caller's beta and the thread's on every request", betas)
 				}
 			})
 		})
@@ -1853,7 +1935,7 @@ func TestBetaToolRunner_CompactBeforeNextTurn_NoSummaryKeepsHistory(t *testing.T
 			forEachRunner(t, func(t *testing.T, stream bool) {
 				warned := captureStderr(t)
 				server, requests := scriptedMessagesServer(t, toolUseTurnJSON, tt.response, endTurnJSON)
-				runner := newTurnRunner(newTestToolRunnerClient(server), stream, []BetaTool{&stubBetaTool{name: "weather"}}, pauseTurnParams(0))
+				runner := newTurnRunner(newTestToolRunnerClient(server), stream, []BetaTool{&stubBetaTool{name: "weather"}}, unthreaded(pauseTurnParams(0)))
 
 				ids := runner.run(t, func(message *BetaMessage) {
 					compactOnToolUse(runner)(message)
@@ -2014,8 +2096,8 @@ func TestBetaToolRunnerStreaming_CompactBeforeNextTurn_MessagesReplacedWhileComp
 			if runner.Err() != got {
 				t.Fatalf("Err() = %v, want %v", runner.Err(), got)
 			}
-			if role := runner.Messages()[0].Role; role != BetaMessageParamRoleUser {
-				t.Fatalf("the caller's messages should be kept, first role = %q", role)
+			if first := runner.Messages()[0]; first.OfUser == nil {
+				t.Fatalf("the caller's messages should be kept, first message = %+v", first)
 			}
 		})
 	}

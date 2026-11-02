@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/anthropics/anthropic-sdk-go/config"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
 )
 
 // applyBearerAuth sets the Authorization and anthropic-beta headers for
@@ -32,7 +32,7 @@ type authMiddlewareFunc func(*http.Request, func(*http.Request) (*http.Response,
 // a request path may be an absolute URL for some other host.
 func NewMiddleware(cache *TokenCache, cfg *requestconfig.RequestConfig) authMiddlewareFunc {
 	return func(req *http.Request, next func(*http.Request) (*http.Response, error)) (*http.Response, error) {
-		// Skip if static auth headers are already set.
+		// Skip if the caller set an auth header by hand.
 		if req.Header.Get("X-Api-Key") != "" || req.Header.Get("Authorization") != "" {
 			return next(req)
 		}
@@ -44,8 +44,12 @@ func NewMiddleware(cache *TokenCache, cfg *requestconfig.RequestConfig) authMidd
 			return next(req)
 		}
 		baseURL := cfg.BaseURL.Scheme + "://" + cfg.BaseURL.Host
+		ctx := req.Context()
+		if client := cfg.ClientBaseURL; client != nil && !sameOrigin(req.URL, client) {
+			ctx = withBaseURLOverride(ctx, client.Scheme+"://"+client.Host)
+		}
 
-		token, err := cache.Token(req.Context(), baseURL)
+		token, err := cache.Token(ctx, baseURL)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get credentials token: %w", err)
 		}
@@ -72,7 +76,7 @@ func NewMiddleware(cache *TokenCache, cfg *requestconfig.RequestConfig) authMidd
 			return resp, nil
 		}
 
-		token, tokenErr := cache.ForceToken(req.Context(), baseURL)
+		token, tokenErr := cache.ForceToken(ctx, baseURL)
 		if tokenErr != nil {
 			warnOnce(
 				"401-retry-refresh-failed",
@@ -121,7 +125,7 @@ func TokenRequestHandler(r *requestconfig.RequestConfig) func(*http.Request) (*h
 	return config.WithoutRedirects(r.HTTPClient).Do
 }
 
-// WithAuthMiddleware returns a [requestconfig.RequestOptionFunc] that appends
+// WithAuthMiddleware returns a [requestconfig.CredentialOption] that appends
 // HTTP middleware which authenticates requests using a cached bearer token.
 //
 // A separate [TokenCache] is lazily constructed per distinct HTTP transport
@@ -135,15 +139,14 @@ func TokenRequestHandler(r *requestconfig.RequestConfig) func(*http.Request) (*h
 // The base URL is read at request time, so this option can be listed in any
 // order relative to [option.WithBaseURL] / [option.WithEnvironmentProduction].
 //
-// If the request already has an X-Api-Key or Authorization header set
-// (e.g. via [option.WithAPIKey] or [option.WithAuthToken]), the middleware
-// is a no-op pass-through.
-func WithAuthMiddleware(provider TokenProvider) requestconfig.RequestOptionFunc {
+// If the request already has an X-Api-Key or Authorization header, set with
+// [option.WithHeader], the middleware is a no-op pass-through.
+func WithAuthMiddleware(provider TokenProvider) requestconfig.CredentialOption {
 	var (
 		mu    sync.Mutex
 		byKey = map[clientKey]*TokenCache{}
 	)
-	return func(r *requestconfig.RequestConfig) error {
+	apply := func(r *requestconfig.RequestConfig) error {
 		key := clientKey{httpClient: r.HTTPClient, customDoer: r.CustomHTTPDoer}
 
 		mu.Lock()
@@ -156,5 +159,9 @@ func WithAuthMiddleware(provider TokenProvider) requestconfig.RequestOptionFunc 
 
 		r.Middlewares = append(r.Middlewares, NewMiddleware(cache, r))
 		return nil
+	}
+	return requestconfig.CredentialOption{
+		Name:       "WithFederationTokenProvider",
+		Credential: requestconfig.RequestOptionFunc(apply),
 	}
 }

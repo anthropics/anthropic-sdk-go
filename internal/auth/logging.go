@@ -16,58 +16,31 @@ var (
 )
 
 func warnOnce(key, format string, args ...any) {
-	warnOnceMu.Lock()
-	already := warnOnceSet[key]
-	warnOnceSet[key] = true
-	warnOnceMu.Unlock()
-	if already {
-		return
+	if firstWarning(key) {
+		log.Printf("anthropic-sdk-go/auth: "+format, args...)
 	}
-	log.Printf("anthropic-sdk-go/auth: "+format, args...)
 }
 
-// ResetWarnOnceForTest clears the warnOnce dedupe set. Exported for test
-// helpers in sibling packages (e.g. internal/auth integration tests in
-// package auth_test) that need to observe a warning a prior test may
-// already have triggered.
+func firstWarning(key string) bool {
+	warnOnceMu.Lock()
+	defer warnOnceMu.Unlock()
+	already := warnOnceSet[key]
+	warnOnceSet[key] = true
+	return !already
+}
+
+// WarnAPIKeyAndAuthTokenInEnv warns once that the environment holds both an API
+// key and an auth token, of which a client can send only the key.
+func WarnAPIKeyAndAuthTokenInEnv() {
+	if firstWarning("api-key-and-auth-token-in-env") {
+		log.Print("Anthropic: ANTHROPIC_API_KEY and ANTHROPIC_AUTH_TOKEN are both set. Using ANTHROPIC_API_KEY.")
+	}
+}
+
+// ResetWarnOnceForTest lets a test observe a warning that an earlier test has
+// already triggered.
 func ResetWarnOnceForTest() {
 	warnOnceMu.Lock()
 	warnOnceSet = map[string]bool{}
 	warnOnceMu.Unlock()
-}
-
-// ConfigShadowSource describes where the static credential that is
-// shadowing a profile came from. Used by [WarnConfigShadowed] to tailor
-// the remediation hint.
-type ConfigShadowSource int
-
-const (
-	// ConfigShadowFromEnv means the static credential was picked up from
-	// ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN by the env autoloader.
-	// Remediation: unset the env var.
-	ConfigShadowFromEnv ConfigShadowSource = iota
-	// ConfigShadowFromOption means the static credential was passed
-	// explicitly via option.WithAPIKey / option.WithAuthToken.
-	// Remediation: remove the option.
-	ConfigShadowFromOption
-)
-
-// WarnConfigShadowed warns once when a static credential is present
-// alongside a profile config. Per the documented precedence, the static
-// credential wins, which silently disables the profile's auth. Source
-// determines whether the remediation points at an env var or an explicit
-// option call.
-func WarnConfigShadowed(name string, source ConfigShadowSource) {
-	var remediation string
-	switch source {
-	case ConfigShadowFromOption:
-		remediation = "remove the explicit option"
-	default:
-		remediation = "unset " + name + " (and remove any explicit WithAPIKey/WithAuthToken calls if present)"
-	}
-	warnOnce(
-		"config-shadowed-by-"+name,
-		"%s is set and takes precedence over the profile configuration passed via WithConfig; to use the profile, %s",
-		name, remediation,
-	)
 }

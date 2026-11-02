@@ -10,14 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationTelemetryDestinationWorkspaceService contains methods and other
@@ -66,7 +66,8 @@ func (r *BetaOrganizationTelemetryDestinationWorkspaceService) List(ctx context.
 		err = errors.New("missing required destination_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces?beta=true", url.PathEscape(destinationID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces", url.PathEscape(destinationID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.workspaces.list", "/v1/organizations/telemetry_destinations/{destination_id}/workspaces", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -127,7 +128,8 @@ func (r *BetaOrganizationTelemetryDestinationWorkspaceService) Add(ctx context.C
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces/%s?beta=true", url.PathEscape(params.DestinationID), url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces/%s", url.PathEscape(params.DestinationID), url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.workspaces.add", "/v1/organizations/telemetry_destinations/{destination_id}/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", params.DestinationID), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -165,7 +167,8 @@ func (r *BetaOrganizationTelemetryDestinationWorkspaceService) Remove(ctx contex
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces/%s?beta=true", url.PathEscape(params.DestinationID), url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/workspaces/%s", url.PathEscape(params.DestinationID), url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.workspaces.remove", "/v1/organizations/telemetry_destinations/{destination_id}/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", params.DestinationID), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

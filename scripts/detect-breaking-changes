@@ -8,7 +8,6 @@ echo "==> Detecting breaking changes"
 
 TEST_PATHS=(
 	client_test.go
-	completion_test.go
 	message_test.go
 	messagebatch_test.go
 	model_test.go
@@ -84,6 +83,8 @@ TEST_PATHS=(
 	betaorganizationanalyticsplugin_test.go
 	betaorganizationanalyticsskill_test.go
 	betaorganizationanalyticsartifact_test.go
+	betaorganizationanalyticsusage_test.go
+	betaorganizationanalyticscost_test.go
 	betaorganizationanalyticsusagereport_test.go
 	betaorganizationanalyticsuserusagereport_test.go
 	betaorganizationanalyticscostreport_test.go
@@ -103,6 +104,10 @@ TEST_PATHS=(
 	betaorganizationtelemetrydestination_test.go
 	betaorganizationtelemetrydestinationworkspace_test.go
 	betaorganizationwebhook_test.go
+	betaorganizationclaudetagslackchannel_test.go
+	betaorganizationclaudetagslackworkspace_test.go
+	betaorganizationclaudetagbundle_test.go
+	betaorganizationclaudetagbundletarget_test.go
 	usage_test.go
 	paginationauto_test.go
 	paginationmanual_test.go

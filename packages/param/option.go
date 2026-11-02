@@ -3,7 +3,7 @@ package param
 import (
 	"encoding/json"
 	"fmt"
-	shimjson "github.com/anthropics/anthropic-sdk-go/internal/encoding/json"
+	shimjson "github.com/anthropics/anthropic-sdk-go/v2/internal/encoding/json"
 	"time"
 )
 
@@ -35,7 +35,7 @@ type Opt[T comparable] struct {
 
 // Valid returns true if the value is not "null" or omitted.
 //
-// To check if explicitly null, use [Opt.Null].
+// To check if explicitly null, use [IsNull].
 func (o Opt[T]) Valid() bool {
 	var empty Opt[T]
 	return o.status == included || o != empty && o.status != null
@@ -89,7 +89,7 @@ func (o *Opt[T]) UnmarshalJSON(data []byte) error {
 // MarshalJSONWithTimeLayout is necessary to bypass the internal caching performed
 // by [json.Marshal]. Prefer to use [Opt.MarshalJSON] instead.
 //
-// This function requires that the generic type parameter of [Opt] is not [time.Time].
+// This function requires that the generic type parameter of [Opt] is [time.Time].
 func (o Opt[T]) MarshalJSONWithTimeLayout(format string) []byte {
 	t, ok := any(o.Value).(time.Time)
 	if !ok || o.null() {

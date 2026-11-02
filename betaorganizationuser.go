@@ -9,14 +9,14 @@ import (
 	"slices"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationUserService contains methods and other services that help with
@@ -45,7 +45,8 @@ func (r *BetaOrganizationUserService) Get(ctx context.Context, userID string, op
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s?beta=true", url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.retrieve", "/v1/organizations/users/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.user.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -58,7 +59,8 @@ func (r *BetaOrganizationUserService) Update(ctx context.Context, userID string,
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s?beta=true", url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.update", "/v1/organizations/users/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.user.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -69,7 +71,8 @@ func (r *BetaOrganizationUserService) List(ctx context.Context, query BetaOrgani
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/users?beta=true"
+	path := "v1/organizations/users"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.list", "/v1/organizations/users", "after_id", "before_id", "email", "limit", "roles"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
@@ -95,7 +98,8 @@ func (r *BetaOrganizationUserService) Remove(ctx context.Context, userID string,
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s?beta=true", url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.remove", "/v1/organizations/users/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.user.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

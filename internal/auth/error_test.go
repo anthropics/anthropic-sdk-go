@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
 )
 
 func TestNoCredentialsError_IsSentinel(t *testing.T) {

@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaOrganizationAnalyticsSkillListWithOptionalParams(t *testing.T) {
@@ -23,6 +23,7 @@ func TestBetaOrganizationAnalyticsSkillListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Analytics.Skills.List(context.TODO(), anthropic.BetaOrganizationAnalyticsSkillListParams{
 		Date:         anthropic.Time(time.Now()),

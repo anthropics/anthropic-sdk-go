@@ -11,7 +11,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 )
 
 // StartToolRunnerSpan starts the anthropic.messages.tool_runner span of one loop

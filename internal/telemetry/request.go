@@ -7,8 +7,7 @@ import (
 	"github.com/tidwall/gjson"
 	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 )
 
 // MessagesCreateRequest is what the span of a call to the Messages create method
@@ -18,9 +17,6 @@ import (
 type MessagesCreateRequest struct {
 	Model       string
 	MaxTokens   int64
-	Temperature param.Opt[float64]
-	TopK        param.Opt[int64]
-	TopP        param.Opt[float64]
 	ServiceTier string
 	// Effort is output_config.effort.
 	Effort string
@@ -57,15 +53,6 @@ func MessagesCreateStartAttributes(request *MessagesCreateRequest) []attribute.K
 		attrs = append(attrs, GenAIRequestModelKey.String(request.Model))
 	}
 	attrs = append(attrs, GenAIRequestMaxTokensKey.Int64(request.MaxTokens))
-	if request.Temperature.Valid() {
-		attrs = append(attrs, GenAIRequestTemperatureKey.Float64(request.Temperature.Value))
-	}
-	if request.TopK.Valid() {
-		attrs = append(attrs, GenAIRequestTopKKey.Int64(request.TopK.Value))
-	}
-	if request.TopP.Valid() {
-		attrs = append(attrs, GenAIRequestTopPKey.Float64(request.TopP.Value))
-	}
 	if request.ServiceTier != "" {
 		attrs = append(attrs, AnthropicRequestServiceTierKey.String(request.ServiceTier))
 	}

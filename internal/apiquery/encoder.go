@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 )
 
 var encoders sync.Map // map[reflect.Type]encoderFunc

@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestUsage(t *testing.T) {
@@ -25,14 +25,15 @@ func TestUsage(t *testing.T) {
 	message, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{
-					Text: "x",
-				},
-			}},
-			Role: anthropic.MessageParamRoleUser,
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
 		}},
-		Model: anthropic.ModelClaudeSonnet5_5,
+		Model: anthropic.ModelClaudeOpus5_5,
 	})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())

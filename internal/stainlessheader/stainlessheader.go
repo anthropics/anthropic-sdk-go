@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
 )
 
 // Header is the helper-telemetry header key. Always this lowercase form;
@@ -29,14 +29,14 @@ const (
 	EnvironmentsWorkPoller    Value = "environments-work-poller"
 	EnvironmentsWorker        Value = "environments-worker"
 	FallbackRefusalMiddleware Value = "fallback-refusal-middleware"
+	MessageThread             Value = "message-thread"
 	SessionToolRunner         Value = "session-tool-runner"
 )
 
 // With returns a request option (assignable to [option.RequestOption]) that
-// appends value to the x-stainless-helper header rather than replacing it —
-// the backend logs the header as one opaque string, so a second header line or
-// a clobbered value loses data. Existing tags keep their position; the new tag
-// appends at the end; duplicates are dropped.
+// appends value to the x-stainless-helper header rather than replacing it,
+// because a second header line or a clobbered value loses data. Existing tags
+// keep their position; the new tag appends at the end; duplicates are dropped.
 func With(value Value) requestconfig.RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		AppendHeaderValue(r.Request.Header, value)

@@ -9,14 +9,14 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationRBACRolePermissionService contains methods and other services
@@ -50,7 +50,8 @@ func (r *BetaOrganizationRBACRolePermissionService) List(ctx context.Context, rb
 		err = errors.New("missing required rbac_role_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_roles/%s/permissions?beta=true", url.PathEscape(rbacRoleID))
+	path := fmt.Sprintf("v1/organizations/rbac_roles/%s/permissions", url.PathEscape(rbacRoleID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_roles.permissions.list", "/v1/organizations/rbac_roles/{rbac_role_id}/permissions", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_role.id", rbacRoleID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {

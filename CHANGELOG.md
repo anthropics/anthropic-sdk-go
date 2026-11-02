@@ -6,6 +6,105 @@
 
 * **middleware:** preserve serving-hop usage iterations and relabel only the final sampling iteration during streaming refusal fallback.
 
+## [2.4.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.3.0...v2.4.0) (2026-10-26)
+
+### Features
+
+* **api:** add user_profile_id to External Keys and Workspaces
+
+
+### Chores
+
+* **ci:** remove unused build upload steps
+* **docs:** clarify what disabling the Compliance API stops
+* **docs:** update example user ID in Admin API examples
+* **tests:** fail with a hint when the mock server is not running
+
+### Documentation
+
+* **examples:** use current model IDs
+* link to the SDK documentation instead of removed README sections
+
+## [2.3.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.2.0...v2.3.0) (2026-10-23)
+
+### Features
+
+* **api:** add Claude Tag endpoints for Claude Enterprise organizations
+* **google-cloud:** add user profiles and send them to the organization endpoint
+
+
+### Bug Fixes
+
+* **auth:** don't overwrite a credentials file or spend its refresh token on a client's per-request base URL override
+
+
+### Chores
+
+* **client:** stop sending query params hardcoded in endpoint paths
+* **docs:** improve the descriptions of the code execution tool and its encrypted results
+* **docs:** reword work queue, skill and external key descriptions
+* **docs:** update descriptions of the per-user usage and cost reports
+* **internal:** carry endpoint path query params to the request layer
+* **internal:** check the repository by owner and public name in workflows
+* **internal:** read the beta route qualifier instead of the beta=true query
+* **internal:** remove preview build upload from CI
+* **internal:** stop expecting the beta query param in tests
+
+
+### Documentation
+
+* **client:** correct two doc comments on param.Opt
+* **google-cloud:** update the product name
+* update the README and the example request
+
+## [2.2.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.1.0...v2.2.0) (2026-10-23)
+
+### Features
+
+* **api:** add support for message threads
+* **api:** add usage and cost reports by dimension, mark older reports legacy
+
+
+### Bug Fixes
+
+* **auth:** don't share an in-flight token fetch across base URLs
+* **tools:** send a change made in place to an earlier message of a tool runner with the next request
+
+
+### Chores
+
+* **docs:** clarify plugin content scan and validation descriptions
+* **docs:** clarify plugin served_version_pinned and updated_at
+* **docs:** fix usage and cost report examples and ending_at docs
+* **docs:** rate limit model lists vary by organization and workspace
+
+## [2.1.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.0.0...v2.1.0) (2026-10-21)
+
+### Features
+
+* **api:** add enforcement status, actions and filter to user profiles
+
+## [2.0.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.84.0...v2.0.0) (2026-10-21)
+
+### ⚠ BREAKING CHANGES
+
+* **api:** add support for new API version 2026-10-21
+
+### Features
+
+* **api:** add a workspace_id filter and the usage_tier scope type to list spend limits
+* **api:** add support for new API version 2026-10-21
+
+
+### Chores
+
+* require Go 1.25 or later
+
+
+### Documentation
+
+* **api:** remove outdated system role note from messages description
+
 ## [1.84.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.83.0...v1.84.0) (2026-10-20)
 
 ### Features

@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationComplianceSettingService contains methods and other services
@@ -42,7 +42,8 @@ func NewBetaOrganizationComplianceSettingService(opts ...option.RequestOption) (
 // organization reads the state inherited from the parent's configuration.
 func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/compliance_settings?beta=true"
+	path := "v1/organizations/compliance_settings"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.compliance_settings.retrieve", "/v1/organizations/compliance_settings"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -51,8 +52,11 @@ func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts
 // Update your organization's Compliance Settings.
 //
 // Setting `state` to `enabled` turns on the Compliance API and begins capturing
-// organization activity events. Setting it to `disabled` turns both off. `state`
-// reflects whether the Compliance API is enabled.
+// organization activity events. Setting it to `disabled` turns both off. Access
+// Transparency events are an exception: they are still captured while the
+// Compliance API is disabled, and the Compliance API activity feed returns them
+// once it is enabled again. `state` reflects whether the Compliance API is
+// enabled.
 //
 // A request that sets `state` to its current value succeeds and leaves the
 // resource unchanged. A `disabled` request stays in effect until a later `enabled`
@@ -63,7 +67,8 @@ func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts
 // provisioning never disables compliance settings.
 func (r *BetaOrganizationComplianceSettingService) Update(ctx context.Context, body BetaOrganizationComplianceSettingUpdateParams, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/compliance_settings?beta=true"
+	path := "v1/organizations/compliance_settings"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.compliance_settings.update", "/v1/organizations/compliance_settings"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err

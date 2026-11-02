@@ -10,14 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaUserProfileService contains methods and other services that help with
@@ -58,7 +58,8 @@ func (r *BetaUserProfileService) New(ctx context.Context, params BetaUserProfile
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "user-profiles-2026-08-18")}, opts...)
-	path := "v1/user_profiles?beta=true"
+	path := "v1/user_profiles"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.create", "/v1/user_profiles"), requestconfig.WithSpanCreatedID("anthropic.user_profile.id", &res, func(created *BetaUserProfile) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -85,7 +86,8 @@ func (r *BetaUserProfileService) Get(ctx context.Context, userProfileID string, 
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s?beta=true", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.retrieve", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -112,7 +114,8 @@ func (r *BetaUserProfileService) Update(ctx context.Context, userProfileID strin
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s?beta=true", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.update", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -136,7 +139,8 @@ func (r *BetaUserProfileService) List(ctx context.Context, params BetaUserProfil
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "user-profiles-2026-08-18"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/user_profiles?beta=true"
+	path := "v1/user_profiles"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.list", "/v1/user_profiles", "limit", "order", "order_by", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -176,7 +180,8 @@ func (r *BetaUserProfileService) Delete(ctx context.Context, userProfileID strin
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s?beta=true", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.delete", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -203,7 +208,8 @@ func (r *BetaUserProfileService) NewEnrollmentURL(ctx context.Context, userProfi
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s/enrollment_url?beta=true", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s/enrollment_url", url.PathEscape(userProfileID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.create_enrollment_url", "/v1/user_profiles/{user_profile_id}/enrollment_url"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -253,9 +259,7 @@ type BetaUserProfile struct {
 	// active or in flight.
 	TrustGrants map[string]BetaUserProfileTrustGrant `json:"trust_grants" api:"required"`
 	// Object type. Always `user_profile`.
-	//
-	// Any of "user_profile".
-	Type BetaUserProfileType `json:"type" api:"required"`
+	Type constant.UserProfile `json:"type" default:"user_profile"`
 	// When this user profile was last modified, in RFC 3339 format. It normally also
 	// updates shortly after Anthropic gives the profile an approval or withdraws one.
 	// Other changes to the statuses that Anthropic reports do not always update it, so
@@ -308,13 +312,6 @@ func (r *BetaUserProfile) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Object type. Always `user_profile`.
-type BetaUserProfileType string
-
-const (
-	BetaUserProfileTypeUserProfile BetaUserProfileType = "user_profile"
-)
-
 // How the platform uses the API for this entity: `application` (default) or
 // `passthrough`. Absent under the legacy `user-profiles-2026-03-24` beta header.
 type BetaUserProfileAccessType string
@@ -334,9 +331,7 @@ type BetaUserProfileEnrollmentURL struct {
 	// When this enrollment URL expires, in RFC 3339 format.
 	ExpiresAt time.Time `json:"expires_at" api:"required" format:"date-time"`
 	// Object type. Always `enrollment_url`.
-	//
-	// Any of "enrollment_url".
-	Type BetaUserProfileEnrollmentURLType `json:"type" api:"required"`
+	Type constant.EnrollmentURL `json:"type" default:"enrollment_url"`
 	// Enrollment URL to send to the end user. Valid until `expires_at`.
 	URL string `json:"url" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -354,13 +349,6 @@ func (r BetaUserProfileEnrollmentURL) RawJSON() string { return r.JSON.raw }
 func (r *BetaUserProfileEnrollmentURL) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// Object type. Always `enrollment_url`.
-type BetaUserProfileEnrollmentURLType string
-
-const (
-	BetaUserProfileEnrollmentURLTypeEnrollmentURL BetaUserProfileEnrollmentURLType = "enrollment_url"
-)
 
 // Details about the entity this profile represents, as the platform states them.
 // Anthropic does not verify them. Every field is present, `null` until the

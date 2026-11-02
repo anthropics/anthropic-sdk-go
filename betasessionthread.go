@@ -11,14 +11,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaSessionThreadService contains methods and other services that help with
@@ -67,7 +67,8 @@ func (r *BetaSessionThreadService) Get(ctx context.Context, threadID string, par
 		err = errors.New("missing required thread_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads/%s?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	path := fmt.Sprintf("v1/sessions/%s/threads/%s", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.retrieve", "/v1/sessions/{session_id}/threads/{thread_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.thread.id", threadID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -95,7 +96,8 @@ func (r *BetaSessionThreadService) List(ctx context.Context, sessionID string, p
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads?beta=true", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/threads", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.list", "/v1/sessions/{session_id}/threads", "limit", "page", "statuses"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -139,7 +141,8 @@ func (r *BetaSessionThreadService) Archive(ctx context.Context, threadID string,
 		err = errors.New("missing required thread_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/threads/%s/archive?beta=true", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	path := fmt.Sprintf("v1/sessions/%s/threads/%s/archive", url.PathEscape(params.SessionID), url.PathEscape(threadID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.threads.archive", "/v1/sessions/{session_id}/threads/{thread_id}/archive"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.thread.id", threadID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -434,8 +437,7 @@ type BetaManagedAgentsSessionThread struct {
 	//
 	// Any of "running", "idle", "rescheduling", "terminated".
 	Status BetaManagedAgentsSessionThreadStatus `json:"status" api:"required"`
-	// Any of "session_thread".
-	Type BetaManagedAgentsSessionThreadType `json:"type" api:"required"`
+	Type   constant.SessionThread               `json:"type" default:"session_thread"`
 	// When the thread was last updated.
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// Cumulative token usage for this thread. Null until the thread's first idle
@@ -660,12 +662,6 @@ type BetaManagedAgentsSessionThreadAgentUnionTools struct {
 func (r *BetaManagedAgentsSessionThreadAgentUnionTools) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsSessionThreadType string
-
-const (
-	BetaManagedAgentsSessionThreadTypeSessionThread BetaManagedAgentsSessionThreadType = "session_thread"
-)
 
 // Timing statistics for a session thread.
 type BetaManagedAgentsSessionThreadStats struct {

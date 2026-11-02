@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
-	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
-	"github.com/anthropics/anthropic-sdk-go/shared"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apierror"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/ssestream"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

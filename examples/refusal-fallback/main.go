@@ -10,9 +10,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/lib/betafallback"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/lib/betafallback"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	client := anthropic.NewClient()
 	served, err := client.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
 		MaxTokens: 1024,
-		Model:     anthropic.ModelClaudeFable5,
+		Model:     anthropic.ModelClaudeFable5_1,
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("Some prompt that triggers a refusal")),
 		},
@@ -52,7 +52,7 @@ func main() {
 	// `fallback` content block marking the model boundary.
 	stream := fallbackClient.Beta.Messages.NewStreaming(ctx, anthropic.BetaMessageNewParams{
 		MaxTokens: 1024,
-		Model:     anthropic.ModelClaudeFable5,
+		Model:     anthropic.ModelClaudeFable5_1,
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("Some prompt that triggers a refusal")),
 		},
@@ -86,7 +86,7 @@ func main() {
 	// get the message back.
 	message, err := fallbackClient.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
 		MaxTokens: 1024,
-		Model:     anthropic.ModelClaudeFable5,
+		Model:     anthropic.ModelClaudeFable5_1,
 		Messages: []anthropic.BetaMessageParam{
 			anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("Some prompt that triggers a refusal")),
 		},

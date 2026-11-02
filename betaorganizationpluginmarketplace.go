@@ -14,15 +14,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apiform"
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiform"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationPluginMarketplaceService contains methods and other services
@@ -73,7 +73,8 @@ func (r *BetaOrganizationPluginMarketplaceService) Get(ctx context.Context, mark
 		err = errors.New("missing required marketplace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s?beta=true", url.PathEscape(marketplaceID))
+	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s", url.PathEscape(marketplaceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugin_marketplaces.retrieve", "/v1/organizations/plugin_marketplaces/{marketplace_id}", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin_marketplace.id", marketplaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
 	return res, err
@@ -111,7 +112,8 @@ func (r *BetaOrganizationPluginMarketplaceService) Update(ctx context.Context, m
 		err = errors.New("missing required marketplace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s?beta=true", url.PathEscape(marketplaceID))
+	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s", url.PathEscape(marketplaceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugin_marketplaces.update", "/v1/organizations/plugin_marketplaces/{marketplace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.plugin_marketplace.id", marketplaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -150,7 +152,8 @@ func (r *BetaOrganizationPluginMarketplaceService) List(ctx context.Context, par
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "ce-plugins-2026-09-01"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/plugin_marketplaces?beta=true"
+	path := "v1/organizations/plugin_marketplaces"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugin_marketplaces.list", "/v1/organizations/plugin_marketplaces", "limit", "organization_id", "owner_type", "page", "source"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -198,9 +201,9 @@ func (r *BetaOrganizationPluginMarketplaceService) ListAutoPaging(ctx context.Co
 // part, with some files left out. An archive that cannot be read as a marketplace
 // is reported, not refused: the response is a report with `valid: false`. Plugin
 // sources outside the marketplace are fetched anonymously from GitHub, so a
-// private one is reported as not found; a source on any other host is not fetched
-// here, and the report notes that it will be checked when the marketplace actually
-// synchronizes.
+// private one is reported as not found or as needing a GitHub sign-in; a source on
+// any other host is not fetched here, and the report notes that it will be checked
+// when the marketplace actually synchronizes.
 //
 // Nothing is recorded on the Compliance API activity feed.
 //
@@ -231,7 +234,8 @@ func (r *BetaOrganizationPluginMarketplaceService) ValidateArchive(ctx context.C
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "ce-plugins-2026-09-01")}, opts...)
-	path := "v1/organizations/plugin_marketplaces/validate_archive?beta=true"
+	path := "v1/organizations/plugin_marketplaces/validate_archive"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugin_marketplaces.validate_archive", "/v1/organizations/plugin_marketplaces/validate_archive"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -248,9 +252,9 @@ func (r *BetaOrganizationPluginMarketplaceService) ValidateArchive(ctx context.C
 // part, with some files left out. A repository that is missing, private, or has no
 // such branch or commit is reported, not refused: the response is a report with
 // `valid: false`. Plugin sources outside the marketplace are fetched anonymously
-// from GitHub, so a private one is reported as not found; a source on any other
-// host is not fetched here, and the report notes that it will be checked when the
-// marketplace actually synchronizes.
+// from GitHub, so a private one is reported as not found or as needing a GitHub
+// sign-in; a source on any other host is not fetched here, and the report notes
+// that it will be checked when the marketplace actually synchronizes.
 //
 // Nothing is recorded on the Compliance API activity feed.
 //
@@ -281,7 +285,8 @@ func (r *BetaOrganizationPluginMarketplaceService) ValidateRepository(ctx contex
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "ce-plugins-2026-09-01")}, opts...)
-	path := "v1/organizations/plugin_marketplaces/validate_repository?beta=true"
+	path := "v1/organizations/plugin_marketplaces/validate_repository"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugin_marketplaces.validate_repository", "/v1/organizations/plugin_marketplaces/validate_repository"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

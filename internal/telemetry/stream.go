@@ -6,8 +6,8 @@ import (
 
 	"github.com/tidwall/gjson"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
-	"github.com/anthropics/anthropic-sdk-go/packages/ssestream"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/ssestream"
 )
 
 // MessageStreamObserver returns what the span of call, whose response streams a

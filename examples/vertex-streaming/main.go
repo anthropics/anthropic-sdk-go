@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/vertex"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/vertex"
 )
 
 func main() {

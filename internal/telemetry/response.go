@@ -4,7 +4,7 @@ import (
 	"github.com/tidwall/gjson"
 	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 )
 
 // SetMessagesCreateResponseAttributes sets on the span of call the attributes

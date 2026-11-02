@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestUserProfileNewWithOptionalParams(t *testing.T) {
@@ -131,11 +131,12 @@ func TestUserProfileListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.UserProfiles.List(context.TODO(), anthropic.UserProfileListParams{
-		Limit:       anthropic.Int(0),
-		Order:       anthropic.UserProfileListOrderAsc,
-		OrderBy:     anthropic.UserProfileListOrderByCreatedAt,
-		Page:        anthropic.String("page"),
-		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
+		EnforcementStatus: []anthropic.UserProfileEnforcementStatus{anthropic.UserProfileEnforcementStatusUnrestricted},
+		Limit:             anthropic.Int(0),
+		Order:             anthropic.UserProfileListOrderAsc,
+		OrderBy:           anthropic.UserProfileListOrderByCreatedAt,
+		Page:              anthropic.String("page"),
+		WorkspaceID:       anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

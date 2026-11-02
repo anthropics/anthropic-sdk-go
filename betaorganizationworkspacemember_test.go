@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaOrganizationWorkspaceMemberGet(t *testing.T) {
@@ -22,6 +22,7 @@ func TestBetaOrganizationWorkspaceMemberGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.Members.Get(
 		context.TODO(),
@@ -50,6 +51,7 @@ func TestBetaOrganizationWorkspaceMemberUpdate(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.Members.Update(
 		context.TODO(),
@@ -79,6 +81,7 @@ func TestBetaOrganizationWorkspaceMemberListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.Members.List(
 		context.TODO(),
@@ -109,12 +112,13 @@ func TestBetaOrganizationWorkspaceMemberAdd(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.Members.Add(
 		context.TODO(),
 		"workspace_id",
 		anthropic.BetaOrganizationWorkspaceMemberAddParams{
-			UserID:        "user_01WCz1FkmYMm4gnmykNKUu3Q",
+			UserID:        "user_01WxYzAbCdEfGhJkMnPqRsTu",
 			WorkspaceRole: anthropic.BetaNoBillingWorkspaceRoleWorkspaceAdmin,
 		},
 	)
@@ -138,6 +142,7 @@ func TestBetaOrganizationWorkspaceMemberRemove(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.Members.Remove(
 		context.TODO(),

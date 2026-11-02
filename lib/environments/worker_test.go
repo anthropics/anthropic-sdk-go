@@ -14,9 +14,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/tools/agenttoolset"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/tools/agenttoolset"
 	"github.com/stretchr/testify/require"
 )
 
@@ -206,8 +206,11 @@ func TestWorkPoller_ThreadsCustomRequestOptions(t *testing.T) {
 		EnvironmentID:  "env_1",
 		EnvironmentKey: "env_key",
 		WorkerID:       "test-worker",
-		RequestOptions: []option.RequestOption{option.WithHeader(customHeaderName, customHeaderValue)},
-		Logger:         silentLogger,
+		RequestOptions: []option.RequestOption{
+			option.WithHeader(customHeaderName, customHeaderValue),
+			option.WithAPIKey("caller-key"),
+		},
+		Logger: silentLogger,
 	})
 
 	require.True(t, p.Next(), "first Next() must yield the scripted work")
@@ -277,8 +280,11 @@ func TestEnvironmentWorker_ThreadsCustomRequestOptions(t *testing.T) {
 		EnvironmentID:  "env_1",
 		EnvironmentKey: "env_key",
 		Workdir:        t.TempDir(),
-		RequestOptions: []option.RequestOption{option.WithHeader(customHeaderName, customHeaderValue)},
-		Logger:         silentLogger,
+		RequestOptions: []option.RequestOption{
+			option.WithHeader(customHeaderName, customHeaderValue),
+			option.WithAPIKey("caller-key"),
+		},
+		Logger: silentLogger,
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

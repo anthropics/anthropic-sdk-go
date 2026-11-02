@@ -7,11 +7,11 @@ import (
 	"slices"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 )
 
 // BetaOrganizationAnalyticsUsageReportService contains methods and other services
@@ -34,17 +34,25 @@ func NewBetaOrganizationAnalyticsUsageReportService(opts ...option.RequestOption
 	return
 }
 
-// Get token usage over time across a date range.
+// [Legacy] Get token usage over time across a date range.
 //
 // Returns token usage bucketed by minute, hour, or day, optionally broken down by
-// product, model, context window, inference region, or speed. Available to
+// one or more `group_by[]` dimensions, such as product or model. Available to
 // organizations on a Claude Enterprise plan. Requires an API key with the
 // `read:analytics` scope.
+//
+// This endpoint is one of the legacy Claude Enterprise usage and cost reports. For
+// new integrations, use
+// [`GET /v1/organizations/analytics/usage`](/docs/en/api/beta/organization/analytics/usage/list)
+// in the Usage and Cost Analytics API instead. To move an existing integration,
+// see
+// [Migrate from the Claude Enterprise usage and cost reports](/docs/en/manage-claude/usage-cost-analytics-api#migrate-from-enterprise-analytics-reports).
 func (r *BetaOrganizationAnalyticsUsageReportService) List(ctx context.Context, query BetaOrganizationAnalyticsUsageReportListParams, opts ...option.RequestOption) (res *pagination.ReportPageCursor[BetaAnalyticsUsageReportTimeBucket], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/analytics/usage_report?beta=true"
+	path := "v1/organizations/analytics/usage_report"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.usage_report.list", "/v1/organizations/analytics/usage_report", "bucket_width", "claude_tag_categories", "claude_tag_user_ids", "context_windows", "ending_at", "group_by", "inference_geos", "limit", "models", "page", "products", "rbac_group_ids", "slack_channel_ids", "speeds", "starting_at", "user_ids"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
@@ -58,12 +66,19 @@ func (r *BetaOrganizationAnalyticsUsageReportService) List(ctx context.Context, 
 	return res, nil
 }
 
-// Get token usage over time across a date range.
+// [Legacy] Get token usage over time across a date range.
 //
 // Returns token usage bucketed by minute, hour, or day, optionally broken down by
-// product, model, context window, inference region, or speed. Available to
+// one or more `group_by[]` dimensions, such as product or model. Available to
 // organizations on a Claude Enterprise plan. Requires an API key with the
 // `read:analytics` scope.
+//
+// This endpoint is one of the legacy Claude Enterprise usage and cost reports. For
+// new integrations, use
+// [`GET /v1/organizations/analytics/usage`](/docs/en/api/beta/organization/analytics/usage/list)
+// in the Usage and Cost Analytics API instead. To move an existing integration,
+// see
+// [Migrate from the Claude Enterprise usage and cost reports](/docs/en/manage-claude/usage-cost-analytics-api#migrate-from-enterprise-analytics-reports).
 func (r *BetaOrganizationAnalyticsUsageReportService) ListAutoPaging(ctx context.Context, query BetaOrganizationAnalyticsUsageReportListParams, opts ...option.RequestOption) *pagination.ReportPageCursorAutoPager[BetaAnalyticsUsageReportTimeBucket] {
 	return pagination.NewReportPageCursorAutoPager(r.List(ctx, query, opts...))
 }

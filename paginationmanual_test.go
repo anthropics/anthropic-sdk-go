@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestManualPagination(t *testing.T) {
@@ -22,9 +22,7 @@ func TestManualPagination(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
-	page, err := client.Beta.Messages.Batches.List(context.TODO(), anthropic.BetaMessageBatchListParams{
-		Limit: anthropic.Int(20),
-	})
+	page, err := client.Messages.Batches.List(context.TODO(), anthropic.MessageBatchListParams{})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}

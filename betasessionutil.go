@@ -38,7 +38,7 @@ func (acc *BetaManagedAgentsEventAccumulator) Accumulate(event BetaManagedAgents
 			preview := start.Event.AsAgentMessage()
 			acc.AgentMessages[preview.ID] = BetaManagedAgentsAgentMessageEvent{
 				ID:   preview.ID,
-				Type: BetaManagedAgentsAgentMessageEventTypeAgentMessage,
+				Type: "agent.message",
 			}
 		}
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/v2"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 	agent, err := client.Beta.Agents.New(ctx, anthropic.BetaAgentNewParams{
 		Name: "streaming-deltas-example",
 		Model: anthropic.BetaManagedAgentsModelConfigParams{
-			ID: anthropic.BetaManagedAgentsModelClaudeSonnet4_6,
+			ID: anthropic.BetaManagedAgentsModelClaudeSonnet5_5,
 		},
 	})
 	if err != nil {
@@ -34,8 +34,7 @@ func main() {
 		EnvironmentID: environment.ID,
 		Agent: anthropic.BetaSessionNewParamsAgentUnion{
 			OfBetaManagedAgentsAgents: &anthropic.BetaManagedAgentsAgentParams{
-				ID:   agent.ID,
-				Type: anthropic.BetaManagedAgentsAgentParamsTypeAgent,
+				ID: agent.ID,
 			},
 		},
 	})
@@ -52,12 +51,10 @@ func main() {
 		Events: []anthropic.BetaManagedAgentsEventParamsUnion{
 			{
 				OfUserMessage: &anthropic.BetaManagedAgentsUserMessageEventParams{
-					Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 					Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{
 						{
 							OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 								Text: "Write a short haiku about the ocean.",
-								Type: anthropic.BetaManagedAgentsTextBlockTypeText,
 							},
 						},
 					},

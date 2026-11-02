@@ -20,9 +20,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/tidwall/gjson"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/awsauth"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/awsauth"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func makeStaticAWSConfig(region string) awssdk.Config {
@@ -300,6 +300,7 @@ func TestMantleSkipAuthNoAuthRequired(t *testing.T) {
 func TestMantleSkipAuthNoAuthHeaders(t *testing.T) {
 	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "")
 	t.Setenv("ANTHROPIC_AWS_API_KEY", "")
+	t.Setenv("ANTHROPIC_API_KEY", "should-not-appear")
 
 	client, captured := newTestMantleClient(t, MantleClientConfig{
 		SkipAuth: true,
@@ -589,7 +590,6 @@ func TestMantleUserProfileID(t *testing.T) {
 		name       string
 		send       func(ctx context.Context, client *MantleClient) error
 		wantPath   string
-		wantQuery  string
 		wantBody   string // the body's user_profile_id; "" when the field must be absent
 		wantHeader string
 	}{
@@ -612,9 +612,8 @@ func TestMantleUserProfileID(t *testing.T) {
 				})
 				return err
 			},
-			wantPath:  "/v1/messages",
-			wantQuery: "beta=true",
-			wantBody:  "uprof_1",
+			wantPath: "/v1/messages",
+			wantBody: "uprof_1",
 		},
 		{
 			name: "streaming",
@@ -639,9 +638,8 @@ func TestMantleUserProfileID(t *testing.T) {
 				}
 				return stream.Err()
 			},
-			wantPath:  "/v1/messages",
-			wantQuery: "beta=true",
-			wantBody:  "uprof_1",
+			wantPath: "/v1/messages",
+			wantBody: "uprof_1",
 		},
 		{
 			name: "header set by the caller",
@@ -705,9 +703,8 @@ func TestMantleUserProfileID(t *testing.T) {
 				})
 				return err
 			},
-			wantPath:  "/v1/messages/count_tokens",
-			wantQuery: "beta=true",
-			wantBody:  "uprof_1",
+			wantPath: "/v1/messages/count_tokens",
+			wantBody: "uprof_1",
 		},
 		{
 			name: "batches",
@@ -741,8 +738,8 @@ func TestMantleUserProfileID(t *testing.T) {
 				t.Fatalf("request failed: %v", err)
 			}
 
-			if wire.Path != test.wantPath || wire.Query != test.wantQuery {
-				t.Errorf("request went to %s?%s, want %s?%s", wire.Path, wire.Query, test.wantPath, test.wantQuery)
+			if wire.Path != test.wantPath || wire.Query != "" {
+				t.Errorf("request went to %s?%s, want %s", wire.Path, wire.Query, test.wantPath)
 			}
 			if got := wire.Headers.Get("anthropic-user-profile-id"); got != test.wantHeader {
 				t.Errorf("anthropic-user-profile-id header is %q, want %q", got, test.wantHeader)

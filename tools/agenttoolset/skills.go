@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	anthropic "github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 // SetupSkillsFromSession downloads the session agent's skills into
@@ -32,10 +32,8 @@ import (
 // list/get/download). Self-hosted-environment callers must pass the
 // environment key here — the skill endpoints are environment-scoped, and
 // without it the requests fall back to the client's default credentials and
-// fail. option.WithAuthToken alone only ADDS an Authorization header; the
-// parent client's WithAPIKey middleware still emits X-Api-Key on every
-// request, so both creds would land on the wire and the server rejects the
-// dual auth. Pair the bearer with an explicit X-Api-Key delete:
+// fail. Pair it with an X-Api-Key delete, so that an X-Api-Key header set on
+// the client doesn't land on the wire next to it:
 //
 //	opts := []option.RequestOption{
 //		option.WithHeaderDel("X-Api-Key"),

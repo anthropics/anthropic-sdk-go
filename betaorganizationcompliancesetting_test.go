@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaOrganizationComplianceSettingGet(t *testing.T) {
@@ -22,6 +22,7 @@ func TestBetaOrganizationComplianceSettingGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ComplianceSettings.Get(context.TODO())
 	if err != nil {
@@ -44,6 +45,7 @@ func TestBetaOrganizationComplianceSettingUpdate(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.ComplianceSettings.Update(context.TODO(), anthropic.BetaOrganizationComplianceSettingUpdateParams{
 		State: anthropic.BetaComplianceSettingsStateParamUnion{

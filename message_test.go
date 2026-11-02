@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 func TestMessageNewWithOptionalParams(t *testing.T) {
@@ -30,24 +30,25 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 	_, err := client.Messages.New(context.TODO(), anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{
-					Text: "x",
-					CacheControl: anthropic.CacheControlEphemeralParam{
-						TTL: anthropic.CacheControlEphemeralTTLTTL5m,
-					},
-					Citations: []anthropic.TextCitationParamUnion{{
-						OfCharLocation: &anthropic.CitationCharLocationParam{
-							CitedText:      "The grass is green. The sky is blue.",
-							DocumentIndex:  0,
-							DocumentTitle:  anthropic.String("x"),
-							EndCharIndex:   0,
-							StartCharIndex: 0,
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+						CacheControl: anthropic.CacheControlEphemeralParam{
+							TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 						},
-					}},
-				},
-			}},
-			Role: anthropic.MessageParamRoleUser,
+						Citations: []anthropic.TextCitationParamUnion{{
+							OfCharLocation: &anthropic.CitationCharLocationParam{
+								CitedText:      "The grass is green. The sky is blue.",
+								DocumentIndex:  0,
+								DocumentTitle:  anthropic.String("x"),
+								EndCharIndex:   0,
+								StartCharIndex: 0,
+							},
+						}},
+					},
+				}},
+			},
 		}},
 		Model: anthropic.ModelClaudeOpus5_5,
 		CacheControl: anthropic.CacheControlEphemeralParam{
@@ -96,7 +97,6 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 				},
 			}},
 		}},
-		Temperature: anthropic.Float(1),
 		Thinking: anthropic.ThinkingConfigParamUnion{
 			OfAdaptive: &anthropic.ThinkingConfigAdaptiveParam{
 				Display: anthropic.ThinkingConfigAdaptiveDisplaySummarized,
@@ -131,8 +131,6 @@ func TestMessageNewWithOptionalParams(t *testing.T) {
 				Type:   anthropic.ToolTypeCustom,
 			},
 		}},
-		TopK:          anthropic.Int(5),
-		TopP:          anthropic.Float(0.7),
 		UserProfileID: anthropic.String("anthropic-user-profile-id"),
 		WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
@@ -159,24 +157,25 @@ func TestMessageCountTokensWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Messages.CountTokens(context.TODO(), anthropic.MessageCountTokensParams{
 		Messages: []anthropic.MessageParam{{
-			Content: []anthropic.ContentBlockParamUnion{{
-				OfText: &anthropic.TextBlockParam{
-					Text: "x",
-					CacheControl: anthropic.CacheControlEphemeralParam{
-						TTL: anthropic.CacheControlEphemeralTTLTTL5m,
-					},
-					Citations: []anthropic.TextCitationParamUnion{{
-						OfCharLocation: &anthropic.CitationCharLocationParam{
-							CitedText:      "The grass is green. The sky is blue.",
-							DocumentIndex:  0,
-							DocumentTitle:  anthropic.String("x"),
-							EndCharIndex:   0,
-							StartCharIndex: 0,
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+						CacheControl: anthropic.CacheControlEphemeralParam{
+							TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 						},
-					}},
-				},
-			}},
-			Role: anthropic.MessageParamRoleUser,
+						Citations: []anthropic.TextCitationParamUnion{{
+							OfCharLocation: &anthropic.CitationCharLocationParam{
+								CitedText:      "The grass is green. The sky is blue.",
+								DocumentIndex:  0,
+								DocumentTitle:  anthropic.String("x"),
+								EndCharIndex:   0,
+								StartCharIndex: 0,
+							},
+						}},
+					},
+				}},
+			},
 		}},
 		Model: anthropic.ModelClaudeOpus5_5,
 		CacheControl: anthropic.CacheControlEphemeralParam{
@@ -527,12 +526,11 @@ func TestMessageNewWithNonStreamingTimeoutLimits(t *testing.T) {
 	// This test verifies that we can still create a message with tokens below the limit
 	safeParams := anthropic.MessageNewParams{
 		MaxTokens: int64(testModelLimit - 1000), // Well below the limit
-		Messages: []anthropic.MessageParam{{
+		Messages: []anthropic.MessageParam{{OfUser: &anthropic.UserMessageParam{
 			Content: []anthropic.ContentBlockParamUnion{{
 				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?"},
 			}},
-			Role: anthropic.MessageParamRoleUser,
-		}},
+		}}},
 		Model: model,
 	}
 
@@ -548,12 +546,11 @@ func TestMessageNewWithNonStreamingTimeoutLimits(t *testing.T) {
 	// This test verifies that we get an error when exceeding the limit
 	unsafeParams := anthropic.MessageNewParams{
 		MaxTokens: int64(testModelLimit + 1000), // Exceed the limit
-		Messages: []anthropic.MessageParam{{
+		Messages: []anthropic.MessageParam{{OfUser: &anthropic.UserMessageParam{
 			Content: []anthropic.ContentBlockParamUnion{{
 				OfText: &anthropic.TextBlockParam{Text: "What is a quaternion?"},
 			}},
-			Role: anthropic.MessageParamRoleUser,
-		}},
+		}}},
 		Model: model,
 	}
 
@@ -682,7 +679,7 @@ func TestMessageParamStringContent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(message.Content) != 1 || message.Content[0].OfText.Text != "hello world" {
+	if message.OfUser == nil || len(message.OfUser.Content) != 1 || message.OfUser.Content[0].OfText.Text != "hello world" {
 		t.Error("String content not converted to TextBlock")
 	}
 }
@@ -694,13 +691,17 @@ func TestMessageParamArrayContent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(message.Content) != 2 {
-		t.Errorf("Expected 2 content blocks, got %d", len(message.Content))
+	if message.OfUser == nil {
+		t.Fatalf("Expected a user message, got %+v", message)
 	}
-	if message.Content[0].OfText.Text != "first block" {
-		t.Errorf("Expected first block text 'first block', got '%s'", message.Content[0].OfText.Text)
+	content := message.OfUser.Content
+	if len(content) != 2 {
+		t.Errorf("Expected 2 content blocks, got %d", len(content))
 	}
-	if message.Content[1].OfText.Text != "second block" {
-		t.Errorf("Expected second block text 'second block', got '%s'", message.Content[1].OfText.Text)
+	if content[0].OfText.Text != "first block" {
+		t.Errorf("Expected first block text 'first block', got '%s'", content[0].OfText.Text)
+	}
+	if content[1].OfText.Text != "second block" {
+		t.Errorf("Expected second block text 'second block', got '%s'", content[1].OfText.Text)
 	}
 }

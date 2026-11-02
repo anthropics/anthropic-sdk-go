@@ -11,13 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaDreamService contains methods and other services that help with interacting
@@ -66,7 +68,8 @@ func (r *BetaDreamService) New(ctx context.Context, params BetaDreamNewParams, o
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "dreaming-2026-04-21")}, opts...)
-	path := "v1/dreams?beta=true"
+	path := "v1/dreams"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.create", "/v1/dreams"), requestconfig.WithSpanCreatedID("anthropic.dream.id", &res, func(created *BetaDream) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -99,7 +102,8 @@ func (r *BetaDreamService) Get(ctx context.Context, dreamID string, query BetaDr
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s?beta=true", url.PathEscape(dreamID))
+	path := fmt.Sprintf("v1/dreams/%s", url.PathEscape(dreamID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.retrieve", "/v1/dreams/{dream_id}"), requestconfig.WithSpanAttribute("anthropic.dream.id", dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -129,7 +133,8 @@ func (r *BetaDreamService) List(ctx context.Context, params BetaDreamListParams,
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "dreaming-2026-04-21"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/dreams?beta=true"
+	path := "v1/dreams"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.list", "/v1/dreams", "created_at[gt]", "created_at[lt]", "include_archived", "limit", "page", "statuses"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -184,7 +189,8 @@ func (r *BetaDreamService) Archive(ctx context.Context, dreamID string, body Bet
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s/archive?beta=true", url.PathEscape(dreamID))
+	path := fmt.Sprintf("v1/dreams/%s/archive", url.PathEscape(dreamID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.archive", "/v1/dreams/{dream_id}/archive"), requestconfig.WithSpanAttribute("anthropic.dream.id", dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -220,7 +226,8 @@ func (r *BetaDreamService) Cancel(ctx context.Context, dreamID string, body Beta
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s/cancel?beta=true", url.PathEscape(dreamID))
+	path := fmt.Sprintf("v1/dreams/%s/cancel", url.PathEscape(dreamID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.cancel", "/v1/dreams/{dream_id}/cancel"), requestconfig.WithSpanAttribute("anthropic.dream.id", dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -299,8 +306,7 @@ type BetaDream struct {
 	//
 	// Any of "pending", "running", "completed", "failed", "canceled".
 	Status BetaDreamStatus `json:"status" api:"required"`
-	// Any of "dream".
-	Type BetaDreamType `json:"type" api:"required"`
+	Type   constant.Dream  `json:"type" default:"dream"`
 	// The dream's token counts, which stop changing once its `status` is `completed`
 	// or `failed`. After a cancel, they can keep changing.
 	Usage BetaDreamUsage `json:"usage" api:"required"`
@@ -330,12 +336,6 @@ func (r BetaDream) RawJSON() string { return r.JSON.raw }
 func (r *BetaDream) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaDreamType string
-
-const (
-	BetaDreamTypeDream BetaDreamType = "dream"
-)
 
 // Failure detail for a Dream whose `status` is `failed`.
 type BetaDreamError struct {
@@ -439,14 +439,12 @@ func (r BetaDreamInputUnion) ToParam() BetaDreamInputUnionParam {
 func BetaDreamInputParamOfMemoryStore(memoryStoreID string) BetaDreamInputUnionParam {
 	var memoryStore BetaDreamMemoryStoreInputParam
 	memoryStore.MemoryStoreID = memoryStoreID
-	memoryStore.Type = BetaDreamMemoryStoreInputTypeMemoryStore
 	return BetaDreamInputUnionParam{OfMemoryStore: &memoryStore}
 }
 
 func BetaDreamInputParamOfSessions(sessionIDs []string) BetaDreamInputUnionParam {
 	var sessions BetaDreamSessionsInputParam
 	sessions.SessionIDs = sessionIDs
-	sessions.Type = BetaDreamSessionsInputTypeSessions
 	return BetaDreamInputUnionParam{OfSessions: &sessions}
 }
 
@@ -494,9 +492,9 @@ func (u BetaDreamInputUnionParam) GetSessionIDs() []string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaDreamInputUnionParam) GetType() *string {
 	if vt := u.OfMemoryStore; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfSessions; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -518,9 +516,8 @@ type BetaDreamMemoryStoreInput struct {
 	//
 	// The memory store must be in the same workspace as the dream and must not be
 	// archived.
-	MemoryStoreID string `json:"memory_store_id" api:"required"`
-	// Any of "memory_store".
-	Type BetaDreamMemoryStoreInputType `json:"type" api:"required"`
+	MemoryStoreID string               `json:"memory_store_id" api:"required"`
+	Type          constant.MemoryStore `json:"type" default:"memory_store"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		MemoryStoreID respjson.Field
@@ -546,12 +543,6 @@ func (r BetaDreamMemoryStoreInput) ToParam() BetaDreamMemoryStoreInputParam {
 	return param.Override[BetaDreamMemoryStoreInputParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaDreamMemoryStoreInputType string
-
-const (
-	BetaDreamMemoryStoreInputTypeMemoryStore BetaDreamMemoryStoreInputType = "memory_store"
-)
-
 // The memory store that a dream reads, given as an entry in `inputs`.
 //
 // With `output_behavior` set to `update_existing`, the dream writes its result
@@ -564,8 +555,8 @@ type BetaDreamMemoryStoreInputParam struct {
 	// The memory store must be in the same workspace as the dream and must not be
 	// archived.
 	MemoryStoreID string `json:"memory_store_id" api:"required"`
-	// Any of "memory_store".
-	Type BetaDreamMemoryStoreInputType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "memory_store".
+	Type constant.MemoryStore `json:"type" default:"memory_store"`
 	paramObj
 }
 
@@ -658,9 +649,8 @@ type BetaDreamOutput struct {
 	//
 	// With `output_behavior` set to `create_new`, this is a new memory store. With
 	// `update_existing`, it is the input memory store.
-	MemoryStoreID string `json:"memory_store_id" api:"required"`
-	// Any of "memory_store".
-	Type BetaDreamOutputType `json:"type" api:"required"`
+	MemoryStoreID string               `json:"memory_store_id" api:"required"`
+	Type          constant.MemoryStore `json:"type" default:"memory_store"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		MemoryStoreID respjson.Field
@@ -676,12 +666,6 @@ func (r *BetaDreamOutput) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaDreamOutputType string
-
-const (
-	BetaDreamOutputTypeMemoryStore BetaDreamOutputType = "memory_store"
-)
-
 // The sessions that a dream reads, given as an entry in `inputs`.
 type BetaDreamSessionsInput struct {
 	// The IDs of the sessions whose transcripts the dream reads (`sesn_...`).
@@ -692,9 +676,8 @@ type BetaDreamSessionsInput struct {
 	// The
 	// [limits table in the Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#limits)
 	// lists all the limits on a dream.
-	SessionIDs []string `json:"session_ids" api:"required"`
-	// Any of "sessions".
-	Type BetaDreamSessionsInputType `json:"type" api:"required"`
+	SessionIDs []string          `json:"session_ids" api:"required"`
+	Type       constant.Sessions `json:"type" default:"sessions"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		SessionIDs  respjson.Field
@@ -719,12 +702,6 @@ func (r BetaDreamSessionsInput) ToParam() BetaDreamSessionsInputParam {
 	return param.Override[BetaDreamSessionsInputParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaDreamSessionsInputType string
-
-const (
-	BetaDreamSessionsInputTypeSessions BetaDreamSessionsInputType = "sessions"
-)
-
 // The sessions that a dream reads, given as an entry in `inputs`.
 //
 // The properties SessionIDs, Type are required.
@@ -738,8 +715,8 @@ type BetaDreamSessionsInputParam struct {
 	// [limits table in the Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#limits)
 	// lists all the limits on a dream.
 	SessionIDs []string `json:"session_ids,omitzero" api:"required"`
-	// Any of "sessions".
-	Type BetaDreamSessionsInputType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "sessions".
+	Type constant.Sessions `json:"type" default:"sessions"`
 	paramObj
 }
 
@@ -893,16 +870,9 @@ func (r BetaOutputBehaviorUnion) ToParam() BetaOutputBehaviorUnionParam {
 	return param.Override[BetaOutputBehaviorUnionParam](json.RawMessage(r.RawJSON()))
 }
 
-func BetaOutputBehaviorParamOfCreateNew(type_ BetaOutputBehaviorCreateNewType) BetaOutputBehaviorUnionParam {
-	var createNew BetaOutputBehaviorCreateNewParam
-	createNew.Type = type_
-	return BetaOutputBehaviorUnionParam{OfCreateNew: &createNew}
-}
-
 func BetaOutputBehaviorParamOfUpdateExisting(memoryStoreID string) BetaOutputBehaviorUnionParam {
 	var updateExisting BetaOutputBehaviorUpdateExistingParam
 	updateExisting.MemoryStoreID = memoryStoreID
-	updateExisting.Type = BetaOutputBehaviorUpdateExistingTypeUpdateExisting
 	return BetaOutputBehaviorUnionParam{OfUpdateExisting: &updateExisting}
 }
 
@@ -942,9 +912,9 @@ func (u BetaOutputBehaviorUnionParam) GetMemoryStoreID() *string {
 // Returns a pointer to the underlying variant's property, if present.
 func (u BetaOutputBehaviorUnionParam) GetType() *string {
 	if vt := u.OfCreateNew; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	} else if vt := u.OfUpdateExisting; vt != nil {
-		return (*string)(&vt.Type)
+		return paramutil.AddrOrDefault(vt.Type)
 	}
 	return nil
 }
@@ -963,8 +933,7 @@ func init() {
 // The new memory store is in the same workspace as the dream. The dream doesn't
 // change the input memory store.
 type BetaOutputBehaviorCreateNew struct {
-	// Any of "create_new".
-	Type BetaOutputBehaviorCreateNewType `json:"type" api:"required"`
+	Type constant.CreateNew `json:"type" default:"create_new"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Type        respjson.Field
@@ -989,11 +958,11 @@ func (r BetaOutputBehaviorCreateNew) ToParam() BetaOutputBehaviorCreateNewParam 
 	return param.Override[BetaOutputBehaviorCreateNewParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaOutputBehaviorCreateNewType string
-
-const (
-	BetaOutputBehaviorCreateNewTypeCreateNew BetaOutputBehaviorCreateNewType = "create_new"
-)
+func NewBetaOutputBehaviorCreateNewParam() BetaOutputBehaviorCreateNewParam {
+	return BetaOutputBehaviorCreateNewParam{
+		Type: "create_new",
+	}
+}
 
 // Write the result to a new memory store that starts as a copy of the input memory
 // store. This is the default.
@@ -1001,10 +970,10 @@ const (
 // The new memory store is in the same workspace as the dream. The dream doesn't
 // change the input memory store.
 //
-// The property Type is required.
+// This struct has a constant value, construct it with
+// [NewBetaOutputBehaviorCreateNewParam].
 type BetaOutputBehaviorCreateNewParam struct {
-	// Any of "create_new".
-	Type BetaOutputBehaviorCreateNewType `json:"type,omitzero" api:"required"`
+	Type constant.CreateNew `json:"type" default:"create_new"`
 	paramObj
 }
 
@@ -1025,9 +994,8 @@ type BetaOutputBehaviorUpdateExisting struct {
 	// The ID of the memory store for the dream to write its result to
 	// (`memstore_...`). It must be the memory store in the `memory_store` entry of
 	// `inputs`.
-	MemoryStoreID string `json:"memory_store_id" api:"required"`
-	// Any of "update_existing".
-	Type BetaOutputBehaviorUpdateExistingType `json:"type" api:"required"`
+	MemoryStoreID string                  `json:"memory_store_id" api:"required"`
+	Type          constant.UpdateExisting `json:"type" default:"update_existing"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		MemoryStoreID respjson.Field
@@ -1053,12 +1021,6 @@ func (r BetaOutputBehaviorUpdateExisting) ToParam() BetaOutputBehaviorUpdateExis
 	return param.Override[BetaOutputBehaviorUpdateExistingParam](json.RawMessage(r.RawJSON()))
 }
 
-type BetaOutputBehaviorUpdateExistingType string
-
-const (
-	BetaOutputBehaviorUpdateExistingTypeUpdateExisting BetaOutputBehaviorUpdateExistingType = "update_existing"
-)
-
 // Write the result into the input memory store instead of a new memory store.
 //
 // The credential must be allowed to write memory stores, or the request returns a
@@ -1071,8 +1033,8 @@ type BetaOutputBehaviorUpdateExistingParam struct {
 	// (`memstore_...`). It must be the memory store in the `memory_store` entry of
 	// `inputs`.
 	MemoryStoreID string `json:"memory_store_id" api:"required"`
-	// Any of "update_existing".
-	Type BetaOutputBehaviorUpdateExistingType `json:"type,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "update_existing".
+	Type constant.UpdateExisting `json:"type" default:"update_existing"`
 	paramObj
 }
 

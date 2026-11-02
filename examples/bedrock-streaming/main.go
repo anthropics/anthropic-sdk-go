@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/bedrock"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/bedrock"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 // loggingMiddleware logs each request and response. Because it is registered

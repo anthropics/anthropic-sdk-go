@@ -5,7 +5,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/v2"
 )
 
 // TestAccumulateExhaustive fails when the generated code gains a delta variant

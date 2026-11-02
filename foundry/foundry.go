@@ -23,9 +23,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 const (
@@ -134,7 +134,7 @@ func createClientOptions(cfg ClientConfig, userOpts []option.RequestOption) ([]o
 	opts := make([]option.RequestOption, 0, len(userOpts)+4)
 	opts = append(opts, option.WithoutEnvironmentDefaults(), option.WithBaseURL(resolved.BaseURL), requestconfig.WithOpenTelemetryPlatform("foundry"))
 	if resolved.AzureADTokenProvider == nil {
-		opts = append(opts, option.WithAPIKey(resolved.APIKey))
+		opts = append(opts, option.WithHeader("X-Api-Key", resolved.APIKey))
 	}
 	opts = append(opts, userOpts...)
 	if resolved.AzureADTokenProvider != nil {

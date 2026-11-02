@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaOrganizationSpendLimitGet(t *testing.T) {
@@ -22,6 +22,7 @@ func TestBetaOrganizationSpendLimitGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.SpendLimits.Get(context.TODO(), "spend_limit_id")
 	if err != nil {
@@ -44,12 +45,14 @@ func TestBetaOrganizationSpendLimitListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.SpendLimits.List(context.TODO(), anthropic.BetaOrganizationSpendLimitListParams{
-		Limit:     anthropic.Int(1),
-		Page:      anthropic.String("page"),
-		ScopeType: []string{"organization"},
-		Betas:     []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Limit:       anthropic.Int(1),
+		Page:        anthropic.String("page"),
+		ScopeType:   []string{"organization"},
+		WorkspaceID: anthropic.String("workspace_id"),
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -71,6 +74,7 @@ func TestBetaOrganizationSpendLimitDelete(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.SpendLimits.Delete(context.TODO(), "spend_limit_id")
 	if err != nil {
@@ -93,12 +97,13 @@ func TestBetaOrganizationSpendLimitSetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.SpendLimits.Set(context.TODO(), anthropic.BetaOrganizationSpendLimitSetParams{
 		Amount: anthropic.String("50000"),
 		Scope: anthropic.BetaOrganizationSpendLimitSetParamsScopeUnion{
 			OfUser: &anthropic.BetaSpendLimitUserScopeParam{
-				UserID: "user_01WCz1FkmYMm4gnmykNKUu3Q",
+				UserID: "user_01WxYzAbCdEfGhJkMnPqRsTu",
 			},
 		},
 		Period: anthropic.BetaSpendLimitPeriodMonthly,

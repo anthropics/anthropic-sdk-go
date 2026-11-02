@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaOrganizationAnalyticsUserUsageReportListWithOptionalParams(t *testing.T) {
@@ -23,6 +23,7 @@ func TestBetaOrganizationAnalyticsUserUsageReportListWithOptionalParams(t *testi
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Analytics.UserUsageReport.List(context.TODO(), anthropic.BetaOrganizationAnalyticsUserUsageReportListParams{
 		StartingAt:          time.Now(),

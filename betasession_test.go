@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaSessionNewWithOptionalParams(t *testing.T) {
@@ -23,6 +23,7 @@ func TestBetaSessionNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.New(context.TODO(), anthropic.BetaSessionNewParams{
 		Agent: anthropic.BetaSessionNewParamsAgentUnion{
@@ -34,17 +35,14 @@ func TestBetaSessionNewWithOptionalParams(t *testing.T) {
 				Amount:   "2500",
 				Currency: anthropic.BetaCurrencyUSD,
 			},
-			Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
 		},
 		InitialEvents: []anthropic.BetaSessionNewParamsInitialEventUnion{{
 			OfUserMessage: &anthropic.BetaManagedAgentsUserMessageEventParams{
 				Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{{
 					OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 						Text: "Where is my order #1234?",
-						Type: anthropic.BetaManagedAgentsTextBlockTypeText,
 					},
 				}},
-				Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 			},
 		}},
 		Metadata: map[string]string{
@@ -53,7 +51,6 @@ func TestBetaSessionNewWithOptionalParams(t *testing.T) {
 		Resources: []anthropic.BetaSessionNewParamsResourceUnion{{
 			OfFile: &anthropic.BetaManagedAgentsFileResourceParams{
 				FileID:    "file_011CNha8iCJcU1wXNR6q4V8w",
-				Type:      anthropic.BetaManagedAgentsFileResourceParamsTypeFile,
 				MountPath: anthropic.String("/uploads/receipt.pdf"),
 			},
 		}},
@@ -82,6 +79,7 @@ func TestBetaSessionGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Get(
 		context.TODO(),
@@ -111,6 +109,7 @@ func TestBetaSessionUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Update(
 		context.TODO(),
@@ -119,19 +118,15 @@ func TestBetaSessionUpdateWithOptionalParams(t *testing.T) {
 			Agent: anthropic.BetaManagedAgentsSessionAgentUpdateParam{
 				MCPServers: []anthropic.BetaManagedAgentsURLMCPServerParams{{
 					Name: "example-mcp",
-					Type: anthropic.BetaManagedAgentsURLMCPServerParamsTypeURL,
 					URL:  "https://example-server.modelcontextprotocol.io/sse",
 				}},
 				Tools: []anthropic.BetaManagedAgentsSessionAgentUpdateToolUnionParam{{
 					OfAgentToolset20260401: &anthropic.BetaManagedAgentsAgentToolset20260401Params{
-						Type: anthropic.BetaManagedAgentsAgentToolset20260401ParamsTypeAgentToolset20260401,
 						Configs: []anthropic.BetaManagedAgentsAgentToolConfigParamsUnion{{
 							OfBash: &anthropic.BetaManagedAgentsBashToolConfigParams{
 								Enabled: anthropic.Bool(true),
 								PermissionPolicy: anthropic.BetaManagedAgentsBashToolConfigParamsPermissionPolicyUnion{
-									OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
-										Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
-									},
+									OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{},
 								},
 								Type: anthropic.BetaManagedAgentsBashToolConfigParamsTypeBash,
 							},
@@ -139,9 +134,7 @@ func TestBetaSessionUpdateWithOptionalParams(t *testing.T) {
 						DefaultConfig: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParams{
 							Enabled: anthropic.Bool(true),
 							PermissionPolicy: anthropic.BetaManagedAgentsAgentToolsetDefaultConfigParamsPermissionPolicyUnion{
-								OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{
-									Type: anthropic.BetaManagedAgentsAlwaysAllowPolicyTypeAlwaysAllow,
-								},
+								OfAlwaysAllow: &anthropic.BetaManagedAgentsAlwaysAllowPolicyParam{},
 							},
 						},
 					},
@@ -152,7 +145,6 @@ func TestBetaSessionUpdateWithOptionalParams(t *testing.T) {
 					Amount:   "2500",
 					Currency: anthropic.BetaCurrencyUSD,
 				},
-				Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
 			},
 			Metadata: map[string]string{
 				"foo": "string",
@@ -183,6 +175,7 @@ func TestBetaSessionListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.List(context.TODO(), anthropic.BetaSessionListParams{
 		AgentID:         anthropic.String("agent_id"),
@@ -221,6 +214,7 @@ func TestBetaSessionDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Delete(
 		context.TODO(),
@@ -250,6 +244,7 @@ func TestBetaSessionArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Archive(
 		context.TODO(),

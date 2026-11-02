@@ -33,7 +33,7 @@ interactions:
       - go1.24.5
       X-Stainless-Timeout:
       - "600"
-    url: https://api.anthropic.com/v1/messages?beta=true
+    url: https://api.anthropic.com/v1/messages
     method: POST
   response:
     body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_01Q2mACVzNZQUHB5En8kt88w","type":"message","role":"assistant","content":[{"type":"text","text":"I''ll
@@ -124,7 +124,7 @@ interactions:
       - go1.24.5
       X-Stainless-Timeout:
       - "600"
-    url: https://api.anthropic.com/v1/messages?beta=true
+    url: https://api.anthropic.com/v1/messages
     method: POST
   response:
     body: '{"model":"claude-3-7-sonnet-20250219","id":"msg_01TF3a1zCD17o4pQHPZXJsdS","type":"message","role":"assistant","content":[{"type":"text","text":"Now,

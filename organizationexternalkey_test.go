@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestOrganizationExternalKeyNewWithOptionalParams(t *testing.T) {
@@ -30,8 +30,9 @@ func TestOrganizationExternalKeyNewWithOptionalParams(t *testing.T) {
 				Region: anthropic.String("us-east-1"),
 			},
 		},
-		DisplayName: anthropic.String("x"),
-		Geo:         anthropic.OrganizationExternalKeyNewParamsGeoUs,
+		DisplayName:   anthropic.String("x"),
+		Geo:           anthropic.OrganizationExternalKeyNewParamsGeoUs,
+		UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

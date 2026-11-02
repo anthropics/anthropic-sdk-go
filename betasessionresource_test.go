@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaSessionResourceGetWithOptionalParams(t *testing.T) {
@@ -22,6 +22,7 @@ func TestBetaSessionResourceGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Resources.Get(
 		context.TODO(),
@@ -52,6 +53,7 @@ func TestBetaSessionResourceUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Resources.Update(
 		context.TODO(),
@@ -83,6 +85,7 @@ func TestBetaSessionResourceListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Resources.List(
 		context.TODO(),
@@ -114,6 +117,7 @@ func TestBetaSessionResourceDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Resources.Delete(
 		context.TODO(),
@@ -144,6 +148,7 @@ func TestBetaSessionResourceAddWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Sessions.Resources.Add(
 		context.TODO(),
@@ -151,7 +156,6 @@ func TestBetaSessionResourceAddWithOptionalParams(t *testing.T) {
 		anthropic.BetaSessionResourceAddParams{
 			BetaManagedAgentsFileResourceParams: anthropic.BetaManagedAgentsFileResourceParams{
 				FileID:    "file_011CNha8iCJcU1wXNR6q4V8w",
-				Type:      anthropic.BetaManagedAgentsFileResourceParamsTypeFile,
 				MountPath: anthropic.String("/uploads/receipt.pdf"),
 			},
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},

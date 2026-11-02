@@ -5,7 +5,7 @@ package telemetry
 import (
 	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 )
 
 // SetAPICallAttributes sets on the span of call the anthropic.* attributes that

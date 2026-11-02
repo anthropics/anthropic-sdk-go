@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
@@ -23,6 +23,7 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.New(context.TODO(), anthropic.BetaDeploymentNewParams{
 		Agent: anthropic.BetaDeploymentNewParamsAgentUnion{
@@ -34,10 +35,8 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 				Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{{
 					OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 						Text: "Where is my order #1234?",
-						Type: anthropic.BetaManagedAgentsTextBlockTypeText,
 					},
 				}},
-				Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 			},
 		}},
 		Name: "x",
@@ -46,7 +45,6 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 				Amount:   "2500",
 				Currency: anthropic.BetaCurrencyUSD,
 			},
-			Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
 		},
 		Description: anthropic.String("description"),
 		Metadata: map[string]string{
@@ -55,14 +53,12 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 		Resources: []anthropic.BetaDeploymentNewParamsResourceUnion{{
 			OfFile: &anthropic.BetaManagedAgentsFileResourceParams{
 				FileID:    "file_011CNha8iCJcU1wXNR6q4V8w",
-				Type:      anthropic.BetaManagedAgentsFileResourceParamsTypeFile,
 				MountPath: anthropic.String("/uploads/receipt.pdf"),
 			},
 		}},
 		Schedule: anthropic.BetaManagedAgentsScheduleParams{
 			Expression: "0 9 * * 1-5",
 			Timezone:   "America/Los_Angeles",
-			Type:       anthropic.BetaManagedAgentsScheduleParamsTypeCron,
 		},
 		VaultIDs:    []string{"string"},
 		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
@@ -88,6 +84,7 @@ func TestBetaDeploymentGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Get(
 		context.TODO(),
@@ -117,6 +114,7 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Update(
 		context.TODO(),
@@ -130,7 +128,6 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 					Amount:   "2500",
 					Currency: anthropic.BetaCurrencyUSD,
 				},
-				Type: anthropic.BetaManagedAgentsBudgetLimitTypeLimit,
 			},
 			Description:   anthropic.String("description"),
 			EnvironmentID: anthropic.String("environment_id"),
@@ -139,10 +136,8 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 					Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{{
 						OfText: &anthropic.BetaManagedAgentsTextBlockParam{
 							Text: "Where is my order #1234?",
-							Type: anthropic.BetaManagedAgentsTextBlockTypeText,
 						},
 					}},
-					Type: anthropic.BetaManagedAgentsUserMessageEventParamsTypeUserMessage,
 				},
 			}},
 			Metadata: map[string]string{
@@ -152,14 +147,12 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 			Resources: []anthropic.BetaDeploymentUpdateParamsResourceUnion{{
 				OfFile: &anthropic.BetaManagedAgentsFileResourceParams{
 					FileID:    "file_011CNha8iCJcU1wXNR6q4V8w",
-					Type:      anthropic.BetaManagedAgentsFileResourceParamsTypeFile,
 					MountPath: anthropic.String("/uploads/receipt.pdf"),
 				},
 			}},
 			Schedule: anthropic.BetaManagedAgentsScheduleParams{
 				Expression: "0 9 * * 1-5",
 				Timezone:   "America/Los_Angeles",
-				Type:       anthropic.BetaManagedAgentsScheduleParamsTypeCron,
 			},
 			VaultIDs:    []string{"string"},
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
@@ -186,6 +179,7 @@ func TestBetaDeploymentListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.List(context.TODO(), anthropic.BetaDeploymentListParams{
 		AgentID:         anthropic.String("agent_id"),
@@ -218,6 +212,7 @@ func TestBetaDeploymentArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Archive(
 		context.TODO(),
@@ -247,6 +242,7 @@ func TestBetaDeploymentPauseWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Pause(
 		context.TODO(),
@@ -276,6 +272,7 @@ func TestBetaDeploymentRunWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Run(
 		context.TODO(),
@@ -305,6 +302,7 @@ func TestBetaDeploymentUnpauseWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Deployments.Unpause(
 		context.TODO(),

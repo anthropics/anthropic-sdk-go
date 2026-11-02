@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestMessageBatchNewWithOptionalParams(t *testing.T) {
@@ -29,24 +29,25 @@ func TestMessageBatchNewWithOptionalParams(t *testing.T) {
 			Params: anthropic.MessageBatchNewParamsRequestParams{
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{{
-					Content: []anthropic.ContentBlockParamUnion{{
-						OfText: &anthropic.TextBlockParam{
-							Text: "x",
-							CacheControl: anthropic.CacheControlEphemeralParam{
-								TTL: anthropic.CacheControlEphemeralTTLTTL5m,
-							},
-							Citations: []anthropic.TextCitationParamUnion{{
-								OfCharLocation: &anthropic.CitationCharLocationParam{
-									CitedText:      "The grass is green. The sky is blue.",
-									DocumentIndex:  0,
-									DocumentTitle:  anthropic.String("x"),
-									EndCharIndex:   0,
-									StartCharIndex: 0,
+					OfUser: &anthropic.UserMessageParam{
+						Content: []anthropic.ContentBlockParamUnion{{
+							OfText: &anthropic.TextBlockParam{
+								Text: "x",
+								CacheControl: anthropic.CacheControlEphemeralParam{
+									TTL: anthropic.CacheControlEphemeralTTLTTL5m,
 								},
-							}},
-						},
-					}},
-					Role: anthropic.MessageParamRoleUser,
+								Citations: []anthropic.TextCitationParamUnion{{
+									OfCharLocation: &anthropic.CitationCharLocationParam{
+										CitedText:      "The grass is green. The sky is blue.",
+										DocumentIndex:  0,
+										DocumentTitle:  anthropic.String("x"),
+										EndCharIndex:   0,
+										StartCharIndex: 0,
+									},
+								}},
+							},
+						}},
+					},
 				}},
 				Model: anthropic.ModelClaudeOpus5_5,
 				CacheControl: anthropic.CacheControlEphemeralParam{
@@ -96,7 +97,6 @@ func TestMessageBatchNewWithOptionalParams(t *testing.T) {
 						},
 					}},
 				}},
-				Temperature: anthropic.Float(1),
 				Thinking: anthropic.ThinkingConfigParamUnion{
 					OfAdaptive: &anthropic.ThinkingConfigAdaptiveParam{
 						Display: anthropic.ThinkingConfigAdaptiveDisplaySummarized,
@@ -131,8 +131,6 @@ func TestMessageBatchNewWithOptionalParams(t *testing.T) {
 						Type:   anthropic.ToolTypeCustom,
 					},
 				}},
-				TopK: anthropic.Int(5),
-				TopP: anthropic.Float(0.7),
 			},
 		}},
 		UserProfileID: anthropic.String("anthropic-user-profile-id"),

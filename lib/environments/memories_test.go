@@ -33,9 +33,9 @@ import (
 	"testing"
 	"time"
 
-	anthropic "github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/filestore"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/filestore"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 	"github.com/stretchr/testify/require"
 )
 

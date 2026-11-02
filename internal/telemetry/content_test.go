@@ -12,7 +12,7 @@ import (
 	"github.com/tidwall/gjson"
 	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 )
 
 // contentLimit is the size limit of a call whose options set none.

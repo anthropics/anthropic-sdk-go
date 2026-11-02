@@ -17,9 +17,9 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	sdkoption "github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	sdkoption "github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBaseURLForRegion(t *testing.T) {
@@ -82,10 +82,12 @@ func TestVertexUserMiddlewareObservesAnthropicShape(t *testing.T) {
 	t.Setenv("ANTHROPIC_API_KEY", "")
 
 	var wirePath, wireAuth string
+	var wireVersion []string
 	var wireBody map[string]any
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		wirePath = r.URL.Path
 		wireAuth = r.Header.Get("Authorization")
+		wireVersion = r.Header.Values("anthropic-version")
 		if err := json.NewDecoder(r.Body).Decode(&wireBody); err != nil {
 			t.Errorf("Failed to decode wire body: %v", err)
 		}
@@ -99,11 +101,12 @@ func TestVertexUserMiddlewareObservesAnthropicShape(t *testing.T) {
 	}))
 	t.Cleanup(server.Close)
 
-	var observedPath, observedAuth string
+	var observedPath, observedAuth, observedVersion string
 	var observedBody map[string]any
 	spy := func(r *http.Request, next sdkoption.MiddlewareNext) (*http.Response, error) {
 		observedPath = r.URL.Path
 		observedAuth = r.Header.Get("Authorization")
+		observedVersion = r.Header.Get("anthropic-version")
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return nil, err
@@ -156,11 +159,76 @@ func TestVertexUserMiddlewareObservesAnthropicShape(t *testing.T) {
 	if _, ok := wireBody["model"]; ok {
 		t.Error("Expected model to be removed from the wire body")
 	}
-	if wireBody["anthropic_version"] != DefaultVersion {
-		t.Errorf("Expected anthropic_version %q on the wire, got %v", DefaultVersion, wireBody["anthropic_version"])
+	if wireBody["anthropic_version"] != observedVersion {
+		t.Errorf("Expected anthropic_version %q on the wire, got %v", observedVersion, wireBody["anthropic_version"])
+	}
+	if len(wireVersion) != 0 {
+		t.Errorf("Expected no anthropic-version header on the wire, got %q", wireVersion)
 	}
 	if wireAuth != "Bearer fake" {
 		t.Errorf("Expected OAuth Authorization on the wire, got %q", wireAuth)
+	}
+}
+
+func TestVertexBodyAPIVersion(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+
+	tests := map[string]struct {
+		option sdkoption.RequestOption
+		want   any
+	}{
+		"a header the caller set":     {sdkoption.WithHeader("anthropic-version", "2030-01-01"), "2030-01-01"},
+		"a header the caller removed": {sdkoption.WithHeaderDel("anthropic-version"), nil},
+		"a body value the caller set": {sdkoption.WithJSONSet("anthropic_version", "2030-01-02"), "2030-01-02"},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			var wireVersion []string
+			var wireBody map[string]any
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				wireVersion = r.Header.Values("anthropic-version")
+				if err := json.NewDecoder(r.Body).Decode(&wireBody); err != nil {
+					t.Errorf("Failed to decode wire body: %v", err)
+				}
+				w.Header().Set("Content-Type", "application/json")
+				json.NewEncoder(w).Encode(map[string]any{
+					"id": "msg_test", "type": "message", "role": "assistant",
+					"content": []map[string]any{{"type": "text", "text": "hi"}},
+					"model":   "claude-3-sonnet", "stop_reason": "end_turn",
+					"usage": map[string]any{"input_tokens": 1, "output_tokens": 1},
+				})
+			}))
+			t.Cleanup(server.Close)
+
+			creds := &google.Credentials{
+				TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: "fake"}),
+			}
+			client := anthropic.NewClient(
+				sdkoption.WithoutEnvironmentDefaults(),
+				WithCredentials(context.Background(), "us-central1", "test-project", creds),
+				sdkoption.WithBaseURL(server.URL),
+				test.option,
+			)
+
+			_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+				Model:     "claude-3-sonnet",
+				MaxTokens: 1,
+				Messages: []anthropic.MessageParam{
+					anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+				},
+			})
+			if err != nil {
+				t.Fatalf("Request failed: %v", err)
+			}
+
+			if wireBody["anthropic_version"] != test.want {
+				t.Errorf("Expected anthropic_version %v on the wire, got %v", test.want, wireBody["anthropic_version"])
+			}
+			if len(wireVersion) != 0 {
+				t.Errorf("Expected no anthropic-version header on the wire, got %q", wireVersion)
+			}
+		})
 	}
 }
 

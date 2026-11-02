@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
 )
 
 // unsetEnv removes an environment variable for the duration of a test.

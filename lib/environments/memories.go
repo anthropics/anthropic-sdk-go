@@ -23,10 +23,10 @@ import (
 	"sync"
 	"time"
 
-	anthropic "github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/filestore"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/filestore"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -1077,7 +1077,6 @@ func (s *SessionMemoryStores) upload(ctx context.Context, store *attachedStore, 
 				MemoryStoreID: store.memoryStoreID,
 				Content:       param.NewOpt(string(data)),
 				Precondition: anthropic.BetaManagedAgentsPreconditionParam{
-					Type:          anthropic.BetaManagedAgentsPreconditionTypeContentSha256,
 					ContentSha256: param.NewOpt(existing.ContentSha256),
 				},
 			}, s.reqOpts...)

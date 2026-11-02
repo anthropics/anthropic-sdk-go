@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaVaultCredentialNewWithOptionalParams(t *testing.T) {
@@ -23,6 +23,7 @@ func TestBetaVaultCredentialNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.New(
 		context.TODO(),
@@ -32,7 +33,6 @@ func TestBetaVaultCredentialNewWithOptionalParams(t *testing.T) {
 				OfStaticBearer: &anthropic.BetaManagedAgentsStaticBearerCreateParams{
 					Token:        "bearer_exampletoken",
 					MCPServerURL: "https://example-server.modelcontextprotocol.io/sse",
-					Type:         anthropic.BetaManagedAgentsStaticBearerCreateParamsTypeStaticBearer,
 				},
 			},
 			DisplayName: anthropic.String("Example credential"),
@@ -63,6 +63,7 @@ func TestBetaVaultCredentialGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.Get(
 		context.TODO(),
@@ -93,6 +94,7 @@ func TestBetaVaultCredentialUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.Update(
 		context.TODO(),
@@ -101,7 +103,6 @@ func TestBetaVaultCredentialUpdateWithOptionalParams(t *testing.T) {
 			VaultID: "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Auth: anthropic.BetaVaultCredentialUpdateParamsAuthUnion{
 				OfMCPOAuth: &anthropic.BetaManagedAgentsMCPOAuthUpdateParams{
-					Type:        anthropic.BetaManagedAgentsMCPOAuthUpdateParamsTypeMCPOAuth,
 					AccessToken: anthropic.String("x"),
 					ExpiresAt:   anthropic.Time(time.Now()),
 					Refresh: anthropic.BetaManagedAgentsMCPOAuthRefreshUpdateParams{
@@ -109,7 +110,6 @@ func TestBetaVaultCredentialUpdateWithOptionalParams(t *testing.T) {
 						Scope:        anthropic.String("scope"),
 						TokenEndpointAuth: anthropic.BetaManagedAgentsMCPOAuthRefreshUpdateParamsTokenEndpointAuthUnion{
 							OfClientSecretBasic: &anthropic.BetaManagedAgentsTokenEndpointAuthBasicUpdateParam{
-								Type:         anthropic.BetaManagedAgentsTokenEndpointAuthBasicUpdateParamTypeClientSecretBasic,
 								ClientSecret: anthropic.String("x"),
 							},
 						},
@@ -144,6 +144,7 @@ func TestBetaVaultCredentialListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.List(
 		context.TODO(),
@@ -176,6 +177,7 @@ func TestBetaVaultCredentialDeleteWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.Delete(
 		context.TODO(),
@@ -206,6 +208,7 @@ func TestBetaVaultCredentialArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.Archive(
 		context.TODO(),
@@ -236,6 +239,7 @@ func TestBetaVaultCredentialMCPOAuthValidateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Vaults.Credentials.MCPOAuthValidate(
 		context.TODO(),

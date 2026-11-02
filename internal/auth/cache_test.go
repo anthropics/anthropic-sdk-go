@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -244,5 +245,138 @@ func TestTokenCache_ConcurrentFetchDeduplication(t *testing.T) {
 
 	if n := calls.Load(); n != 1 {
 		t.Fatalf("expected 1 provider call, got %d", n)
+	}
+}
+
+func TestTokenCache_ConcurrentFetchForOtherBaseURL(t *testing.T) {
+	const baseA, baseB = "https://a.example.com", "https://b.example.com"
+	started := make(chan struct{})
+	release := make(chan struct{})
+	var startOnce sync.Once
+	cache := newTestCache(func(ctx context.Context, baseURL string, _ func(*http.Request) (*http.Response, error)) (*AccessToken, error) {
+		if baseURL == baseA {
+			startOnce.Do(func() { close(started) })
+			<-release
+		}
+		return &AccessToken{Token: "tok " + baseURL}, nil
+	})
+
+	gotA := make(chan string, 1)
+	go func() {
+		token, err := cache.Token(context.Background(), baseA)
+		if err != nil {
+			t.Error(err)
+		}
+		gotA <- token
+	}()
+	<-started
+
+	gotB := make(chan string, 1)
+	go func() {
+		token, err := cache.Token(context.Background(), baseB)
+		if err != nil {
+			t.Error(err)
+		}
+		gotB <- token
+	}()
+
+	select {
+	case token := <-gotB:
+		if token != "tok "+baseB {
+			t.Fatalf("baseB got %q, want %q", token, "tok "+baseB)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("baseB waited for baseA's fetch")
+	}
+	close(release)
+
+	if token := <-gotA; token != "tok "+baseA {
+		t.Fatalf("baseA got %q, want %q", token, "tok "+baseA)
+	}
+}
+
+func TestTokenCache_BackgroundRefreshForOtherBaseURL(t *testing.T) {
+	const baseA, baseB = "https://a.example.com", "https://b.example.com"
+	started := make(chan struct{})
+	release := make(chan struct{})
+	callsA := atomic.Int32{}
+	cache := newTestCache(func(ctx context.Context, baseURL string, _ func(*http.Request) (*http.Response, error)) (*AccessToken, error) {
+		if baseURL == baseA {
+			switch callsA.Add(1) {
+			case 1:
+				exp := time.Now().Add(60 * time.Second) // within advisory window
+				return &AccessToken{Token: "stale " + baseA, ExpiresAt: &exp}, nil
+			case 2:
+				close(started)
+				<-release
+			}
+		}
+		exp := time.Now().Add(10 * time.Minute)
+		return &AccessToken{Token: "tok " + baseURL, ExpiresAt: &exp}, nil
+	})
+
+	// Prime the cache, then start a background refresh for baseA.
+	for range 2 {
+		if _, err := cache.Token(context.Background(), baseA); err != nil {
+			t.Fatal(err)
+		}
+	}
+	<-started
+
+	gotB := make(chan string, 1)
+	go func() {
+		token, err := cache.Token(context.Background(), baseB)
+		if err != nil {
+			t.Error(err)
+		}
+		gotB <- token
+	}()
+	// Let the baseB call reach the cache while baseA's refresh is in flight.
+	time.Sleep(50 * time.Millisecond)
+	close(release)
+
+	if token := <-gotB; token != "tok "+baseB {
+		t.Fatalf("baseB got %q, want %q", token, "tok "+baseB)
+	}
+}
+
+func TestTokenCache_FailedFetchForOtherBaseURLNotShared(t *testing.T) {
+	const baseA, baseB = "https://a.example.com", "https://b.example.com"
+	started := make(chan struct{})
+	release := make(chan struct{})
+	cache := newTestCache(func(ctx context.Context, baseURL string, _ func(*http.Request) (*http.Response, error)) (*AccessToken, error) {
+		if baseURL == baseA {
+			close(started)
+			<-release
+			return nil, errors.New("exchange failed")
+		}
+		return &AccessToken{Token: "tok " + baseURL}, nil
+	})
+
+	errA := make(chan error, 1)
+	go func() {
+		_, err := cache.Token(context.Background(), baseA)
+		errA <- err
+	}()
+	<-started
+
+	type result struct {
+		token string
+		err   error
+	}
+	gotB := make(chan result, 1)
+	go func() {
+		token, err := cache.Token(context.Background(), baseB)
+		gotB <- result{token, err}
+	}()
+	// Let the baseB call reach the cache while baseA's fetch is in flight.
+	time.Sleep(50 * time.Millisecond)
+	close(release)
+
+	if err := <-errA; err == nil {
+		t.Fatal("baseA: expected an error")
+	}
+	if r := <-gotB; r.err != nil || r.token != "tok "+baseB {
+		t.Fatalf("baseB got (%q, %v), want (%q, nil)", r.token, r.err, "tok "+baseB)
 	}
 }

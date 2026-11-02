@@ -7,12 +7,12 @@ import (
 	"github.com/tidwall/gjson"
 	"go.opentelemetry.io/otel/attribute"
 
-	shimjson "github.com/anthropics/anthropic-sdk-go/internal/encoding/json"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	shimjson "github.com/anthropics/anthropic-sdk-go/v2/internal/encoding/json"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/telemetry"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 )
 
 // messagesCreateSpan returns the option that makes the OpenTelemetry span of a
@@ -117,9 +117,6 @@ func messagesCreateRequest(params MessageNewParams, header http.Header, stream b
 	return &telemetry.MessagesCreateRequest{
 		Model:                string(params.Model),
 		MaxTokens:            params.MaxTokens,
-		Temperature:          params.Temperature,
-		TopK:                 params.TopK,
-		TopP:                 params.TopP,
 		ServiceTier:          string(params.ServiceTier),
 		Effort:               string(params.OutputConfig.Effort),
 		ThinkingType:         thinkingType(params.Thinking),
@@ -136,9 +133,6 @@ func betaMessagesCreateRequest(params BetaMessageNewParams, header http.Header, 
 	return &telemetry.MessagesCreateRequest{
 		Model:                string(params.Model),
 		MaxTokens:            params.MaxTokens,
-		Temperature:          params.Temperature,
-		TopK:                 params.TopK,
-		TopP:                 params.TopP,
 		ServiceTier:          string(params.ServiceTier),
 		Effort:               string(params.OutputConfig.Effort),
 		ThinkingType:         thinkingType(params.Thinking),

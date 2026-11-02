@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaOrganizationRBACGroupMemberListWithOptionalParams(t *testing.T) {
@@ -22,6 +22,7 @@ func TestBetaOrganizationRBACGroupMemberListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.RBACGroups.Members.List(
 		context.TODO(),
@@ -51,12 +52,13 @@ func TestBetaOrganizationRBACGroupMemberAdd(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.RBACGroups.Members.Add(
 		context.TODO(),
 		"rbac_group_id",
 		anthropic.BetaOrganizationRBACGroupMemberAddParams{
-			UserID: "user_01WCz1FkmYMm4gnmykNKUu3Q",
+			UserID: "user_01WxYzAbCdEfGhJkMnPqRsTu",
 		},
 	)
 	if err != nil {
@@ -79,6 +81,7 @@ func TestBetaOrganizationRBACGroupMemberRemove(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.RBACGroups.Members.Remove(
 		context.TODO(),

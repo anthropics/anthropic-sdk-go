@@ -1,7 +1,7 @@
 package anthropic
 
 import (
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 // OrganizationFederationService contains methods and other services that help with

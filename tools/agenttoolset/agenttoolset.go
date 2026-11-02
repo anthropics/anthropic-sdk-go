@@ -14,7 +14,7 @@
 // Messages API, or client.Beta.Sessions.Events.NewToolRunner(…) for a
 // managed-agents session:
 //
-//	import "github.com/anthropics/anthropic-sdk-go/tools/agenttoolset"
+//	import "github.com/anthropics/anthropic-sdk-go/v2/tools/agenttoolset"
 //
 //	env := &agenttoolset.AgentToolContext{Workdir: "/work"}
 //	tools := agenttoolset.BetaAgentToolset20260401(env)
@@ -46,7 +46,7 @@ import (
 	"strings"
 	"syscall"
 
-	anthropic "github.com/anthropics/anthropic-sdk-go"
+	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
 )
 
 // AgentToolContext carries per-session configuration the agent_toolset_20260401

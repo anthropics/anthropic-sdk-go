@@ -9,14 +9,14 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationFederationRuleWorkspaceService contains methods and other
@@ -69,7 +69,8 @@ func (r *BetaOrganizationFederationRuleWorkspaceService) List(ctx context.Contex
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces?beta=true", url.PathEscape(federationRuleID))
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces", url.PathEscape(federationRuleID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.workspaces.list", "/v1/organizations/federation_rules/{federation_rule_id}/workspaces", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", federationRuleID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -129,7 +130,8 @@ func (r *BetaOrganizationFederationRuleWorkspaceService) Add(ctx context.Context
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces?beta=true", url.PathEscape(federationRuleID))
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces", url.PathEscape(federationRuleID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.workspaces.add", "/v1/organizations/federation_rules/{federation_rule_id}/workspaces"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", federationRuleID), requestconfig.WithSpanCreatedID("anthropic.organization.federation_rule.workspace.id", &res, func(created *BetaFederationRuleWorkspace) string { return created.WorkspaceID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -165,7 +167,8 @@ func (r *BetaOrganizationFederationRuleWorkspaceService) Remove(ctx context.Cont
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces/%s?beta=true", url.PathEscape(params.FederationRuleID), url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s/workspaces/%s", url.PathEscape(params.FederationRuleID), url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.workspaces.remove", "/v1/organizations/federation_rules/{federation_rule_id}/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", params.FederationRuleID), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

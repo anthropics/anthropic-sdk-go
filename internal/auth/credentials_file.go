@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/config"
-	"github.com/anthropics/anthropic-sdk-go/internal"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal"
 )
 
 // Credentials file schema — credentials/<name>.json. Reads only; all writes
@@ -172,7 +172,9 @@ func loadOIDCFederationProfile(cfg *config.Config) (*CredentialsResult, error) {
 
 		// Write cache back (best-effort; log once on failure so a misconfigured
 		// cache directory does not cause a silent exchange-per-request loop).
-		if token.ExpiresAt != nil {
+		// The file holds one token, which belongs to the client's base URL, so a
+		// token obtained on an override is not saved.
+		if token.ExpiresAt != nil && overriddenBaseURL(ctx) == "" {
 			cacheData := config.Credentials{
 				AccessToken: token.Token,
 				ExpiresAt:   token.ExpiresAt,
@@ -254,6 +256,8 @@ func loadUserOAuthProfile(cfg *config.Config) (*CredentialsResult, error) {
 		}
 	}
 
+	// A refresh token is single-use, so only one refresh may run at a time.
+	refreshSlot := make(chan struct{}, 1)
 	provider := func(ctx context.Context, baseURL string, handler func(*http.Request) (*http.Response, error)) (*AccessToken, error) {
 		base := strings.TrimRight(cfg.BaseURL, "/")
 		if base == "" {
@@ -261,6 +265,12 @@ func loadUserOAuthProfile(cfg *config.Config) (*CredentialsResult, error) {
 		}
 		if err := config.RequireSecureTokenEndpoint(base); err != nil {
 			return nil, err
+		}
+		select {
+		case refreshSlot <- struct{}{}:
+			defer func() { <-refreshSlot }()
+		case <-ctx.Done():
+			return nil, ctx.Err()
 		}
 		// Re-read credentials file to check if token is still fresh. Skip
 		// the freshness shortcut when force-refresh is signaled (e.g. after
@@ -275,10 +285,17 @@ func loadUserOAuthProfile(cfg *config.Config) (*CredentialsResult, error) {
 			}
 		}
 
-		// Refresh the token. `scope` is intentionally omitted: the Python
-		// oauth-server preserves the original token's full scope set when
-		// scope is absent on the request (see the early-return in
-		// api/api/oauth_server/oauth/grants/refresh_token_grant.py).
+		// The refresh token is single-use, so an override refreshes where a plain
+		// request on this client would.
+		if clientBaseURL := overriddenBaseURL(ctx); clientBaseURL != "" && cfg.BaseURL == "" {
+			if err := config.RequireSecureTokenEndpoint(clientBaseURL); err != nil {
+				return nil, err
+			}
+			base = clientBaseURL
+		}
+
+		// Refresh the token. `scope` is intentionally omitted: the server
+		// keeps the original token's scopes when the request has none.
 		refreshReq := map[string]string{
 			"grant_type":    GrantTypeRefreshToken,
 			"refresh_token": current.RefreshToken,
@@ -293,14 +310,9 @@ func loadUserOAuthProfile(cfg *config.Config) (*CredentialsResult, error) {
 		}
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "anthropic-sdk-go/"+internal.PackageVersion+" (user-oauth-refresh)")
-		// The oauth-2025-04-20 beta is required by the Python oauth-server
-		// to accept refresh-token grants for user_oauth credentials.
-		//
-		// Do NOT add FederationBetaHeader here. POST /v1/oauth/token is
-		// gateway-routed: with oidc-federation-2026-04-01 present it goes
-		// to the Go userauth service, which only handles the jwt-bearer
-		// grant. Refresh-token grants must fall through to the Python
-		// oauth-server, where the federation beta must be absent.
+		// Refresh-token grants send the OAuth beta only. Do NOT add
+		// FederationBetaHeader here: the token endpoint accepts that beta on
+		// jwt-bearer grants only.
 		req.Header.Set("anthropic-beta", OAuthAPIBetaHeader)
 
 		resp, err := handler(req)

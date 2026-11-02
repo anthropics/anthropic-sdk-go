@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestOrganizationWorkspaceMemberGet(t *testing.T) {
@@ -114,7 +114,7 @@ func TestOrganizationWorkspaceMemberAdd(t *testing.T) {
 		context.TODO(),
 		"workspace_id",
 		anthropic.OrganizationWorkspaceMemberAddParams{
-			UserID:        "user_01WCz1FkmYMm4gnmykNKUu3Q",
+			UserID:        "user_01WxYzAbCdEfGhJkMnPqRsTu",
 			WorkspaceRole: anthropic.NoBillingWorkspaceRoleWorkspaceAdmin,
 		},
 	)

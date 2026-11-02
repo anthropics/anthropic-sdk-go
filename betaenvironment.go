@@ -10,15 +10,15 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/paramutil"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaEnvironmentService contains methods and other services that help with
@@ -59,7 +59,8 @@ func (r *BetaEnvironmentService) New(ctx context.Context, params BetaEnvironment
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
-	path := "v1/environments?beta=true"
+	path := "v1/environments"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.create", "/v1/environments"), requestconfig.WithSpanCreatedID("anthropic.environment.id", &res, func(created *BetaEnvironment) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -86,7 +87,8 @@ func (r *BetaEnvironmentService) Get(ctx context.Context, environmentID string, 
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s?beta=true", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s", url.PathEscape(environmentID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.retrieve", "/v1/environments/{environment_id}"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -113,7 +115,8 @@ func (r *BetaEnvironmentService) Update(ctx context.Context, environmentID strin
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s?beta=true", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s", url.PathEscape(environmentID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.update", "/v1/environments/{environment_id}"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -137,7 +140,8 @@ func (r *BetaEnvironmentService) List(ctx context.Context, params BetaEnvironmen
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/environments?beta=true"
+	path := "v1/environments"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.list", "/v1/environments", "include_archived", "limit", "page"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -177,7 +181,8 @@ func (r *BetaEnvironmentService) Delete(ctx context.Context, environmentID strin
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s?beta=true", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s", url.PathEscape(environmentID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.delete", "/v1/environments/{environment_id}"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -205,7 +210,8 @@ func (r *BetaEnvironmentService) Archive(ctx context.Context, environmentID stri
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/archive?beta=true", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s/archive", url.PathEscape(environmentID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.archive", "/v1/environments/{environment_id}/archive"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -526,9 +532,7 @@ type BetaEnvironmentDeleteResponse struct {
 	// Environment identifier
 	ID string `json:"id" api:"required"`
 	// The type of response
-	//
-	// Any of "environment_deleted".
-	Type BetaEnvironmentDeleteResponseType `json:"type" api:"required"`
+	Type constant.EnvironmentDeletedResponseType `json:"type" default:"environment_deleted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -543,13 +547,6 @@ func (r BetaEnvironmentDeleteResponse) RawJSON() string { return r.JSON.raw }
 func (r *BetaEnvironmentDeleteResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// The type of response
-type BetaEnvironmentDeleteResponseType string
-
-const (
-	BetaEnvironmentDeleteResponseTypeEnvironmentDeleted BetaEnvironmentDeleteResponseType = "environment_deleted"
-)
 
 // Limited network access.
 type BetaLimitedNetwork struct {

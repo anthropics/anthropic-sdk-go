@@ -11,14 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	shimjson "github.com/anthropics/anthropic-sdk-go/internal/encoding/json"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	shimjson "github.com/anthropics/anthropic-sdk-go/v2/internal/encoding/json"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaSessionResourceService contains methods and other services that help with
@@ -65,7 +66,8 @@ func (r *BetaSessionResourceService) Get(ctx context.Context, resourceID string,
 		err = errors.New("missing required resource_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources/%s?beta=true", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	path := fmt.Sprintf("v1/sessions/%s/resources/%s", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.retrieve", "/v1/sessions/{session_id}/resources/{resource_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.resource.id", resourceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -96,7 +98,8 @@ func (r *BetaSessionResourceService) Update(ctx context.Context, resourceID stri
 		err = errors.New("missing required resource_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources/%s?beta=true", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	path := fmt.Sprintf("v1/sessions/%s/resources/%s", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.update", "/v1/sessions/{session_id}/resources/{resource_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.resource.id", resourceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -124,7 +127,8 @@ func (r *BetaSessionResourceService) List(ctx context.Context, sessionID string,
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources?beta=true", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/resources", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.list", "/v1/sessions/{session_id}/resources", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -168,7 +172,8 @@ func (r *BetaSessionResourceService) Delete(ctx context.Context, resourceID stri
 		err = errors.New("missing required resource_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources/%s?beta=true", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	path := fmt.Sprintf("v1/sessions/%s/resources/%s", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.delete", "/v1/sessions/{session_id}/resources/{resource_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.resource.id", resourceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -195,7 +200,8 @@ func (r *BetaSessionResourceService) Add(ctx context.Context, sessionID string, 
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources?beta=true", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/resources", url.PathEscape(sessionID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.add", "/v1/sessions/{session_id}/resources"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID), requestconfig.WithSpanCreatedID("anthropic.session.resource.id", &res, func(created *BetaManagedAgentsFileResource) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -203,9 +209,8 @@ func (r *BetaSessionResourceService) Add(ctx context.Context, sessionID string, 
 
 // Confirmation of resource deletion.
 type BetaManagedAgentsDeleteSessionResource struct {
-	ID string `json:"id" api:"required"`
-	// Any of "session_resource_deleted".
-	Type BetaManagedAgentsDeleteSessionResourceType `json:"type" api:"required"`
+	ID   string                          `json:"id" api:"required"`
+	Type constant.SessionResourceDeleted `json:"type" default:"session_resource_deleted"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -221,20 +226,13 @@ func (r *BetaManagedAgentsDeleteSessionResource) UnmarshalJSON(data []byte) erro
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsDeleteSessionResourceType string
-
-const (
-	BetaManagedAgentsDeleteSessionResourceTypeSessionResourceDeleted BetaManagedAgentsDeleteSessionResourceType = "session_resource_deleted"
-)
-
 type BetaManagedAgentsFileResource struct {
 	ID string `json:"id" api:"required"`
 	// A timestamp in RFC 3339 format
-	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	FileID    string    `json:"file_id" api:"required"`
-	MountPath string    `json:"mount_path" api:"required"`
-	// Any of "file".
-	Type BetaManagedAgentsFileResourceType `json:"type" api:"required"`
+	CreatedAt time.Time     `json:"created_at" api:"required" format:"date-time"`
+	FileID    string        `json:"file_id" api:"required"`
+	MountPath string        `json:"mount_path" api:"required"`
+	Type      constant.File `json:"type" default:"file"`
 	// A timestamp in RFC 3339 format
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -256,19 +254,12 @@ func (r *BetaManagedAgentsFileResource) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaManagedAgentsFileResourceType string
-
-const (
-	BetaManagedAgentsFileResourceTypeFile BetaManagedAgentsFileResourceType = "file"
-)
-
 type BetaManagedAgentsGitHubRepositoryResource struct {
 	ID string `json:"id" api:"required"`
 	// A timestamp in RFC 3339 format
-	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	MountPath string    `json:"mount_path" api:"required"`
-	// Any of "github_repository".
-	Type BetaManagedAgentsGitHubRepositoryResourceType `json:"type" api:"required"`
+	CreatedAt time.Time                 `json:"created_at" api:"required" format:"date-time"`
+	MountPath string                    `json:"mount_path" api:"required"`
+	Type      constant.GitHubRepository `json:"type" default:"github_repository"`
 	// A timestamp in RFC 3339 format
 	UpdatedAt time.Time                                              `json:"updated_at" api:"required" format:"date-time"`
 	URL       string                                                 `json:"url" api:"required"`
@@ -292,12 +283,6 @@ func (r BetaManagedAgentsGitHubRepositoryResource) RawJSON() string { return r.J
 func (r *BetaManagedAgentsGitHubRepositoryResource) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsGitHubRepositoryResourceType string
-
-const (
-	BetaManagedAgentsGitHubRepositoryResourceTypeGitHubRepository BetaManagedAgentsGitHubRepositoryResourceType = "github_repository"
-)
 
 // BetaManagedAgentsGitHubRepositoryResourceCheckoutUnion contains all possible
 // properties and values from [BetaManagedAgentsBranchCheckout],
@@ -372,9 +357,8 @@ func (r *BetaManagedAgentsGitHubRepositoryResourceCheckoutUnion) UnmarshalJSON(d
 type BetaManagedAgentsMemoryStoreResource struct {
 	// The memory store ID (memstore\_...). Must belong to the caller's organization
 	// and workspace.
-	MemoryStoreID string `json:"memory_store_id" api:"required"`
-	// Any of "memory_store".
-	Type BetaManagedAgentsMemoryStoreResourceType `json:"type" api:"required"`
+	MemoryStoreID string               `json:"memory_store_id" api:"required"`
+	Type          constant.MemoryStore `json:"type" default:"memory_store"`
 	// Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts
 	// the store as a read-only filesystem.
 	//
@@ -411,12 +395,6 @@ func (r BetaManagedAgentsMemoryStoreResource) RawJSON() string { return r.JSON.r
 func (r *BetaManagedAgentsMemoryStoreResource) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaManagedAgentsMemoryStoreResourceType string
-
-const (
-	BetaManagedAgentsMemoryStoreResourceTypeMemoryStore BetaManagedAgentsMemoryStoreResourceType = "memory_store"
-)
 
 // Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts
 // the store as a read-only filesystem.

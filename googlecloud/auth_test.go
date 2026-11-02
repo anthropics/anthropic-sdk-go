@@ -299,9 +299,15 @@ func TestIsOrganizationPath(t *testing.T) {
 		"v1/organizations/workspaces/w/keys": true,
 		"v1/organizations":                   false,
 		"v1/organizationsettings":            false,
+		"v1/user_profiles":                   true,
+		"/v1/user_profiles":                  true,
+		"v1/user_profiles/x":                 true,
+		"v1/user_profiles/x/action_urls":     true,
+		"v1/user_profilesx":                  false,
 		"v1/messages":                        false,
 		"v1/compliance/activities":           false,
 		"v1/files/v1/organizations/x":        false,
+		"v1/files/v1/user_profiles/x":        false,
 	} {
 		if got := isOrganizationPath(path); got != want {
 			t.Errorf("isOrganizationPath(%q) = %v, want %v", path, got, want)

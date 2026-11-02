@@ -1,6 +1,6 @@
-module github.com/anthropics/anthropic-sdk-go
+module github.com/anthropics/anthropic-sdk-go/v2
 
-go 1.24
+go 1.25
 
 toolchain go1.25.8
 

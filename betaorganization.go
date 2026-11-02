@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationService contains methods and other services that help with
@@ -37,6 +37,7 @@ type BetaOrganizationService struct {
 	PluginMarketplaces    BetaOrganizationPluginMarketplaceService
 	TelemetryDestinations BetaOrganizationTelemetryDestinationService
 	Webhooks              BetaOrganizationWebhookService
+	ClaudeTag             BetaOrganizationClaudeTagService
 }
 
 // NewBetaOrganizationService generates a new service that applies the given
@@ -62,6 +63,7 @@ func NewBetaOrganizationService(opts ...option.RequestOption) (r BetaOrganizatio
 	r.PluginMarketplaces = NewBetaOrganizationPluginMarketplaceService(opts...)
 	r.TelemetryDestinations = NewBetaOrganizationTelemetryDestinationService(opts...)
 	r.Webhooks = NewBetaOrganizationWebhookService(opts...)
+	r.ClaudeTag = NewBetaOrganizationClaudeTagService(opts...)
 	return
 }
 
@@ -69,7 +71,8 @@ func NewBetaOrganizationService(opts ...option.RequestOption) (r BetaOrganizatio
 // API key.
 func (r *BetaOrganizationService) Get(ctx context.Context, opts ...option.RequestOption) (res *BetaOrganization, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/me?beta=true"
+	path := "v1/organizations/me"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.retrieve", "/v1/organizations/me"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err

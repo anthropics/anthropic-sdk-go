@@ -11,14 +11,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationWorkspaceService contains methods and other services that help
@@ -59,7 +59,8 @@ func (r *BetaOrganizationWorkspaceService) New(ctx context.Context, params BetaO
 		}))
 	}
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/organizations/workspaces?beta=true"
+	path := "v1/organizations/workspaces"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.create", "/v1/organizations/workspaces"), requestconfig.WithSpanCreatedID("anthropic.organization.workspace.id", &res, func(created *BetaWorkspace) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -72,7 +73,8 @@ func (r *BetaOrganizationWorkspaceService) Get(ctx context.Context, workspaceID 
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s?beta=true", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s", url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.retrieve", "/v1/organizations/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -85,7 +87,8 @@ func (r *BetaOrganizationWorkspaceService) Update(ctx context.Context, workspace
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s?beta=true", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s", url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.update", "/v1/organizations/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -96,7 +99,8 @@ func (r *BetaOrganizationWorkspaceService) List(ctx context.Context, query BetaO
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/workspaces?beta=true"
+	path := "v1/organizations/workspaces"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.list", "/v1/organizations/workspaces", "after_id", "before_id", "include_archived", "include_default", "limit"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
@@ -122,7 +126,8 @@ func (r *BetaOrganizationWorkspaceService) Archive(ctx context.Context, workspac
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive?beta=true", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive", url.PathEscape(workspaceID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.archive", "/v1/organizations/workspaces/{workspace_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -356,17 +361,17 @@ type BetaWorkspace struct {
 	// RFC 3339 datetime string indicating when the Workspace was archived, or `null`
 	// if the Workspace is not archived.
 	ArchivedAt time.Time `json:"archived_at" api:"required" format:"date-time"`
-	// Identifier for this Workspace's encryption compartment. When you configure a
-	// customer-managed encryption key (CMEK) on AWS, reference this value in your KMS
-	// key-policy condition so the key is scoped to this compartment. On GCP and Azure,
-	// Anthropic enforces the compartment binding automatically; you do not need to
-	// reference this value in your key configuration. See the CMEK integration guide
-	// for the required key configuration; unless your organization is on Claude
-	// Platform on AWS, it includes a separate value used during key validation. On
-	// Claude Platform on AWS there is no separate validation value: the key is
-	// validated against this Workspace's own value when it is attached, so if your key
-	// policy uses the compartment condition, add this value to it before attaching the
-	// key.
+	// Identifier for this Workspace's encryption compartment. When you configure an
+	// AWS KMS customer-managed encryption key (CMEK) that isn't bound to a user
+	// profile, reference this value in your KMS key-policy condition so the key is
+	// scoped to this compartment. On GCP and Azure, Anthropic enforces the compartment
+	// binding automatically; you do not need to reference this value in your key
+	// configuration. See the CMEK integration guide for the required key
+	// configuration; unless your organization is on Claude Platform on AWS, it
+	// includes a separate value used during key validation. On Claude Platform on AWS
+	// there is no separate validation value: your organization's own key is validated
+	// against this Workspace's own value when it is attached, so if its key policy
+	// uses the compartment condition, add this value to it before attaching the key.
 	CompartmentID string `json:"compartment_id" api:"required"`
 	// RFC 3339 datetime string indicating when the Workspace was created.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
@@ -378,13 +383,13 @@ type BetaWorkspace struct {
 	// Workspace. Setting this field requires CMEK to be enabled for your organization.
 	// When set, data stored for this Workspace is encrypted with the referenced key.
 	// Create key configurations with the External Keys API. On Claude Platform on AWS
-	// the value is the AWS KMS key ARN, and the key must be a single-Region key in the
-	// same AWS account and Region as the Workspace. On that platform the key is
-	// validated against this Workspace when it is attached, so a key-policy problem is
-	// reported as an error on this request. This field is write-once: once a key is
-	// attached to a Workspace it cannot be detached or replaced. To rotate key
-	// material, rotate the underlying key on your cloud KMS; the `external_key_id`
-	// stays the same.
+	// the value for an AWS KMS key is the key's ARN, and your organization's own key
+	// must be a single-Region key in the same AWS account and Region as the Workspace.
+	// On that platform the key is validated against this Workspace when it is
+	// attached, so a key-policy problem is reported as an error on this request. This
+	// field is write-once: once a key is attached to a Workspace it cannot be detached
+	// or replaced. To rotate key material, rotate the underlying key on your cloud
+	// KMS; the `external_key_id` stays the same.
 	ExternalKeyID string `json:"external_key_id" api:"required"`
 	// Name of the Workspace.
 	Name string `json:"name" api:"required"`
@@ -395,6 +400,10 @@ type BetaWorkspace struct {
 	//
 	// For Workspaces, this is always `"workspace"`.
 	Type constant.Workspace `json:"type" default:"workspace"`
+	// ID of the user profile attached to the Workspace, or null if it has none. Every
+	// inference request through a Workspace that has a user profile must name that
+	// profile.
+	UserProfileID string `json:"user_profile_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID            respjson.Field
@@ -407,6 +416,7 @@ type BetaWorkspace struct {
 		Name          respjson.Field
 		Tags          respjson.Field
 		Type          respjson.Field
+		UserProfileID respjson.Field
 		ExtraFields   map[string]respjson.Field
 		raw           string
 	} `json:"-"`
@@ -468,14 +478,19 @@ type BetaOrganizationWorkspaceNewParams struct {
 	// Workspace. Setting this field requires CMEK to be enabled for your organization.
 	// When set, data stored for this Workspace is encrypted with the referenced key.
 	// Create key configurations with the External Keys API. On Claude Platform on AWS
-	// the value is the AWS KMS key ARN, and the key must be a single-Region key in the
-	// same AWS account and Region as the Workspace. On that platform the key is
-	// validated against this Workspace when it is attached, so a key-policy problem is
-	// reported as an error on this request. This field is write-once: once a key is
-	// attached to a Workspace it cannot be detached or replaced. To rotate key
-	// material, rotate the underlying key on your cloud KMS; the `external_key_id`
-	// stays the same.
+	// the value for an AWS KMS key is the key's ARN, and your organization's own key
+	// must be a single-Region key in the same AWS account and Region as the Workspace.
+	// On that platform the key is validated against this Workspace when it is
+	// attached, so a key-policy problem is reported as an error on this request. This
+	// field is write-once: once a key is attached to a Workspace it cannot be detached
+	// or replaced. To rotate key material, rotate the underlying key on your cloud
+	// KMS; the `external_key_id` stays the same.
 	ExternalKeyID param.Opt[string] `json:"external_key_id,omitzero"`
+	// ID of a user profile to attach to the Workspace. Every inference request through
+	// the Workspace must then name this user profile; the API rejects a request that
+	// names none or a different one. The user profile can't be replaced or removed
+	// later; only deleting the user profile clears it.
+	UserProfileID param.Opt[string] `json:"user_profile_id,omitzero"`
 	// User-defined tags as string key-value pairs. Keys may not begin with
 	// `anthropic`.
 	Tags map[string]string `json:"tags,omitzero"`
@@ -503,16 +518,22 @@ type BetaOrganizationWorkspaceUpdateParams struct {
 	// Workspace. Setting this field requires CMEK to be enabled for your organization.
 	// When set, data stored for this Workspace is encrypted with the referenced key.
 	// Create key configurations with the External Keys API. On Claude Platform on AWS
-	// the value is the AWS KMS key ARN, and the key must be a single-Region key in the
-	// same AWS account and Region as the Workspace. On that platform the key is
-	// validated against this Workspace when it is attached, so a key-policy problem is
-	// reported as an error on this request. This field is write-once: once a key is
-	// attached to a Workspace it cannot be detached or replaced. To rotate key
-	// material, rotate the underlying key on your cloud KMS; the `external_key_id`
-	// stays the same.
+	// the value for an AWS KMS key is the key's ARN, and your organization's own key
+	// must be a single-Region key in the same AWS account and Region as the Workspace.
+	// On that platform the key is validated against this Workspace when it is
+	// attached, so a key-policy problem is reported as an error on this request. This
+	// field is write-once: once a key is attached to a Workspace it cannot be detached
+	// or replaced. To rotate key material, rotate the underlying key on your cloud
+	// KMS; the `external_key_id` stays the same.
 	ExternalKeyID param.Opt[string] `json:"external_key_id,omitzero"`
 	// Name of the Workspace.
 	Name param.Opt[string] `json:"name,omitzero"`
+	// ID of a user profile to attach to the Workspace. Every inference request through
+	// the Workspace must then name this user profile; the API rejects a request that
+	// names none or a different one. Once set, it can't be replaced or removed
+	// (sending the same ID again changes nothing); only deleting the user profile
+	// clears it. The default Workspace can't have a user profile.
+	UserProfileID param.Opt[string] `json:"user_profile_id,omitzero"`
 	// User-defined tags as string key-value pairs. Keys may not begin with
 	// `anthropic`.
 	Tags map[string]string `json:"tags,omitzero"`

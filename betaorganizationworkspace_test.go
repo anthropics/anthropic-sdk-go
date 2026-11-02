@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 func TestBetaOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
@@ -23,6 +23,7 @@ func TestBetaOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.New(context.TODO(), anthropic.BetaOrganizationWorkspaceNewParams{
 		Name: "x",
@@ -39,7 +40,8 @@ func TestBetaOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
 			"env":  "prod",
 			"team": "platform",
 		},
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -61,6 +63,7 @@ func TestBetaOrganizationWorkspaceGet(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.Get(context.TODO(), "workspace_id")
 	if err != nil {
@@ -83,6 +86,7 @@ func TestBetaOrganizationWorkspaceUpdateWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.Update(
 		context.TODO(),
@@ -101,6 +105,7 @@ func TestBetaOrganizationWorkspaceUpdateWithOptionalParams(t *testing.T) {
 				"env":  "prod",
 				"team": "platform",
 			},
+			UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
 		},
 	)
 	if err != nil {
@@ -123,6 +128,7 @@ func TestBetaOrganizationWorkspaceListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.List(context.TODO(), anthropic.BetaOrganizationWorkspaceListParams{
 		AfterID:         anthropic.String("after_id"),
@@ -151,6 +157,7 @@ func TestBetaOrganizationWorkspaceArchive(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.Archive(context.TODO(), "workspace_id")
 	if err != nil {

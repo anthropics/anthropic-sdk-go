@@ -14,14 +14,14 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	anthropicaws "github.com/anthropics/anthropic-sdk-go/aws"
-	"github.com/anthropics/anthropic-sdk-go/bedrock"
-	"github.com/anthropics/anthropic-sdk-go/foundry"
-	"github.com/anthropics/anthropic-sdk-go/googlecloud"
-	"github.com/anthropics/anthropic-sdk-go/internal"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/vertex"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	anthropicaws "github.com/anthropics/anthropic-sdk-go/v2/aws"
+	"github.com/anthropics/anthropic-sdk-go/v2/bedrock"
+	"github.com/anthropics/anthropic-sdk-go/v2/foundry"
+	"github.com/anthropics/anthropic-sdk-go/v2/googlecloud"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/vertex"
 )
 
 func TestOpenTelemetryBedrockProviderName(t *testing.T) {

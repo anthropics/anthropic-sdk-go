@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apierror"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apierror"
 )
 
 type Decoder interface {

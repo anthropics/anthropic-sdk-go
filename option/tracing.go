@@ -1,7 +1,7 @@
 package option
 
 import (
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
 	"go.opentelemetry.io/otel/trace"
 )
 

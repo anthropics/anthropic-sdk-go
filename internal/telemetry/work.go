@@ -6,7 +6,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 )
 
 // StartEnvironmentWorkSpan starts the anthropic.environment.work span of one work

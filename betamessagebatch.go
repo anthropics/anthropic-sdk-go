@@ -11,15 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/jsonl"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/jsonl"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaMessageBatchService contains methods and other services that help with
@@ -68,7 +68,8 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24")}, opts...)
-	path := "v1/messages/batches?beta=true"
+	path := "v1/messages/batches"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.create", "/v1/messages/batches"), messageBatchesCreateSpan(len(params.Requests)), requestconfig.WithSpanCreatedID("anthropic.message.batch.id", &res, func(created *BetaMessageBatch) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -100,7 +101,8 @@ func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string
 		err = errors.New("missing required message_batch_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", url.PathEscape(messageBatchID))
+	path := fmt.Sprintf("v1/messages/batches/%s", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.retrieve", "/v1/messages/batches/{message_batch_id}"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -128,7 +130,8 @@ func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBa
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "message-batches-2024-09-24"), option.WithResponseInto(&raw)}, opts...)
-	path := "v1/messages/batches?beta=true"
+	path := "v1/messages/batches"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.list", "/v1/messages/batches", "after_id", "before_id", "limit"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
@@ -178,7 +181,8 @@ func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID str
 		err = errors.New("missing required message_batch_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s?beta=true", url.PathEscape(messageBatchID))
+	path := fmt.Sprintf("v1/messages/batches/%s", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.delete", "/v1/messages/batches/{message_batch_id}"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -216,7 +220,8 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 		err = errors.New("missing required message_batch_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s/cancel?beta=true", url.PathEscape(messageBatchID))
+	path := fmt.Sprintf("v1/messages/batches/%s/cancel", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.cancel", "/v1/messages/batches/{message_batch_id}/cancel"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -254,7 +259,8 @@ func (r *BetaMessageBatchService) ResultsStreaming(ctx context.Context, messageB
 		err = errors.New("missing required message_batch_id parameter")
 		return jsonl.NewStream[BetaMessageBatchIndividualResponse](nil, err)
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s/results?beta=true", url.PathEscape(messageBatchID))
+	path := fmt.Sprintf("v1/messages/batches/%s/results", url.PathEscape(messageBatchID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.results", "/v1/messages/batches/{message_batch_id}/results"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
 	return jsonl.NewStream[BetaMessageBatchIndividualResponse](raw, err)
@@ -716,8 +722,7 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// Note that if you want to include a
 	// [system prompt](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices#give-claude-a-role),
-	// you can use the top-level `system` parameter — there is no `"system"` role for
-	// input messages in the Messages API.
+	// you can use the top-level `system` parameter.
 	//
 	// There is a limit of 100,000 messages in a single request.
 	Messages []BetaMessageParam `json:"messages,omitzero" api:"required"`
@@ -738,41 +743,6 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	// [Streaming with SDKs](https://platform.claude.com/docs/en/build-with-claude/streaming#streaming-with-sdks)
 	// for an example in each language.
 	Stream param.Opt[bool] `json:"stream,omitzero"`
-	// Amount of randomness injected into the response.
-	//
-	// Defaults to `1.0`. Ranges from `0.0` to `1.0`. Use `temperature` closer to `0.0`
-	// for analytical / multiple choice, and closer to `1.0` for creative and
-	// generative tasks.
-	//
-	// Note that even with `temperature` of `0.0`, the results will not be fully
-	// deterministic.
-	//
-	// Deprecated: Deprecated. Models released after Claude Opus 4.6 do not support
-	// setting temperature. A value of 1.0 will be accepted for backwards
-	// compatibility, all other values will be rejected with a 400 error.
-	Temperature param.Opt[float64] `json:"temperature,omitzero"`
-	// Only sample from the top K options for each subsequent token.
-	//
-	// Used to remove "long tail" low probability responses.
-	// [Learn more technical details here](https://towardsdatascience.com/how-to-sample-from-language-models-682bceb97277).
-	//
-	// Recommended for advanced use cases only.
-	//
-	// Deprecated: Deprecated. Models released after Claude Opus 4.6 do not accept
-	// top_k; any value will be rejected with a 400 error.
-	TopK param.Opt[int64] `json:"top_k,omitzero"`
-	// Use nucleus sampling.
-	//
-	// In nucleus sampling, we compute the cumulative distribution over all the options
-	// for each subsequent token in decreasing probability order and cut it off once it
-	// reaches a particular probability specified by `top_p`.
-	//
-	// Recommended for advanced use cases only.
-	//
-	// Deprecated: Deprecated. Models released after Claude Opus 4.6 do not support
-	// setting top_p. A value >= 0.99 will be accepted for backwards compatibility, all
-	// other values will be rejected with a 400 error.
-	TopP param.Opt[float64] `json:"top_p,omitzero"`
 	// Container identifier for reuse across requests.
 	Container BetaMessageBatchNewParamsRequestParamsContainerUnion `json:"container,omitzero"`
 	// The `fallback_credit_token` from a prior refusal's `stop_details`.
@@ -814,6 +784,12 @@ type BetaMessageBatchNewParamsRequestParams struct {
 	//
 	// Any of "standard", "fast".
 	Speed string `json:"speed,omitzero"`
+	// Server-held conversation state (a Thread). `{"type": "create"}` asks the server
+	// to hold this conversation's state under the response's `id`;
+	// `{"type": "continue", "previous_message_id": ...}` resumes from a previous
+	// response so only the new turn's messages are sent. The response shape is
+	// unchanged.
+	Thread BetaMessageThreadParamUnion `json:"thread,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`

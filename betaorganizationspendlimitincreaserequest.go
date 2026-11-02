@@ -10,14 +10,14 @@ import (
 	"slices"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/internal/apiquery"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/pagination"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/pagination"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaOrganizationSpendLimitIncreaseRequestService contains methods and other
@@ -50,7 +50,8 @@ func (r *BetaOrganizationSpendLimitIncreaseRequestService) Get(ctx context.Conte
 		err = errors.New("missing required spend_limit_increase_request_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s?beta=true", url.PathEscape(spendLimitIncreaseRequestID))
+	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s", url.PathEscape(spendLimitIncreaseRequestID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.increase_requests.retrieve", "/v1/organizations/spend_limit_increase_requests/{spend_limit_increase_request_id}"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit_increase_request.id", spendLimitIncreaseRequestID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -64,7 +65,8 @@ func (r *BetaOrganizationSpendLimitIncreaseRequestService) List(ctx context.Cont
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/organizations/spend_limit_increase_requests?beta=true"
+	path := "v1/organizations/spend_limit_increase_requests"
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.increase_requests.list", "/v1/organizations/spend_limit_increase_requests", "actor_ids", "limit", "page", "status"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
@@ -97,7 +99,8 @@ func (r *BetaOrganizationSpendLimitIncreaseRequestService) Approve(ctx context.C
 		err = errors.New("missing required spend_limit_increase_request_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/approve?beta=true", url.PathEscape(spendLimitIncreaseRequestID))
+	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/approve", url.PathEscape(spendLimitIncreaseRequestID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.increase_requests.approve", "/v1/organizations/spend_limit_increase_requests/{spend_limit_increase_request_id}/approve"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit_increase_request.id", spendLimitIncreaseRequestID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -113,7 +116,8 @@ func (r *BetaOrganizationSpendLimitIncreaseRequestService) Deny(ctx context.Cont
 		err = errors.New("missing required spend_limit_increase_request_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/deny?beta=true", url.PathEscape(spendLimitIncreaseRequestID))
+	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/deny", url.PathEscape(spendLimitIncreaseRequestID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.increase_requests.deny", "/v1/organizations/spend_limit_increase_requests/{spend_limit_increase_request_id}/deny"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit_increase_request.id", spendLimitIncreaseRequestID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err

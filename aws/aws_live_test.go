@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/aws"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/aws"
 )
 
 // Live integration tests for the AWS gateway client. Skipped unless ANTHROPIC_LIVE=1.

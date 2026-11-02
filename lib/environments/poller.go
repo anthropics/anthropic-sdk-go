@@ -7,10 +7,10 @@
 // Next/Current/Err/Close plus a Go 1.23 range-over-func All().
 //
 // The per-session tool-execution loop itself lives next to the Messages tool
-// runner as [github.com/anthropics/anthropic-sdk-go.SessionToolRunner]
+// runner as [github.com/anthropics/anthropic-sdk-go/v2.SessionToolRunner]
 // (client.Beta.Sessions.Events.NewToolRunner), and the agent_toolset_20260401
 // tool implementations live in
-// [github.com/anthropics/anthropic-sdk-go/tools/agenttoolset].
+// [github.com/anthropics/anthropic-sdk-go/v2/tools/agenttoolset].
 package environments
 
 import (
@@ -28,13 +28,13 @@ import (
 	"slices"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
-	"github.com/anthropics/anthropic-sdk-go/internal/stainlessheader"
-	"github.com/anthropics/anthropic-sdk-go/internal/telemetry"
-	"github.com/anthropics/anthropic-sdk-go/internal/tracing"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/requestconfig"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/stainlessheader"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/telemetry"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -42,13 +42,12 @@ import (
 // bearerReqOpts returns the auth-only per-request options every
 // runner-helper API call must carry:
 //
-//   - WithHeaderDel("X-Api-Key") clears the parent client's default API key
-//     so it doesn't ride on the wire alongside the bearer credential.
-//     option.WithAuthToken alone only *adds* an Authorization header — the
-//     parent's WithAPIKey middleware still sets X-Api-Key, so both end up on
-//     every request and the server's route-by-route precedence is what would
-//     otherwise decide which one auth gets.
-//   - WithAuthToken sets the environment key as the Authorization bearer.
+//   - WithAuthToken sets the environment key as the Authorization bearer,
+//     replacing the parent client's credential. CallBoundary lets it replace
+//     a credential in the caller's RequestOptions too.
+//   - WithHeaderDel("X-Api-Key") clears an X-Api-Key header the parent client
+//     sets by hand, so it doesn't ride on the wire alongside the bearer
+//     credential.
 //
 // Use this for pass-through call sites where the downstream helper stamps
 // its own x-stainless-helper header (the SessionToolRunner's stream/list/send
@@ -66,6 +65,7 @@ func bearerReqOpts(environmentKey string) ([]option.RequestOption, error) {
 		return nil, errors.New("environments: environment key is required")
 	}
 	return []option.RequestOption{
+		requestconfig.CallBoundary{},
 		option.WithHeaderDel("X-Api-Key"),
 		option.WithAuthToken(environmentKey),
 	}, nil
@@ -151,9 +151,8 @@ type WorkPollerOptions struct {
 	// call the poller issues — Poll, Ack and Stop. Required.
 	EnvironmentKey string
 
-	// WorkerID is a stable identifier reported back to the server for
-	// observability and Redis consumer-group routing. Defaults to
-	// "<os.Hostname()>-<random hex>".
+	// WorkerID is a stable identifier reported back to the server. Defaults
+	// to "<os.Hostname()>-<random hex>".
 	WorkerID string
 
 	// RequestOptions are applied to every work.* call the poller issues —
@@ -321,8 +320,8 @@ func (p *WorkPoller) Next() bool {
 	}
 
 	// The environment key authorizes every work.* call the poller issues:
-	// Poll, Ack and Stop. helperReqOpts also clears the parent client's
-	// default X-Api-Key so it doesn't ride alongside the bearer credential.
+	// Poll, Ack and Stop. helperReqOpts also clears any X-Api-Key header the
+	// parent client sets so it doesn't ride alongside the bearer credential.
 	// Caller-supplied RequestOptions are applied first so a proxy/custom
 	// header reaches Poll/Ack/Stop while the poller's own X-Api-Key delete,
 	// environment-key auth and helper header (appended last) still win.
@@ -638,11 +637,10 @@ func sleep(ctx context.Context, d time.Duration) {
 	}
 }
 
-// defaultWorkerID returns a process-unique worker id. The control plane uses
-// it for observability and Redis consumer-group routing and documents that it
-// must be unique, so even when os.Hostname succeeds we append a random suffix
-// rather than reusing a bare (and possibly shared) hostname; if Hostname fails
-// the random suffix alone still keeps the id unique.
+// defaultWorkerID returns a process-unique worker id. The id must be unique,
+// so even when os.Hostname succeeds we append a random suffix rather than
+// reusing a bare (and possibly shared) hostname; if Hostname fails the random
+// suffix alone still keeps the id unique.
 func defaultWorkerID(log *slog.Logger) string {
 	var b [8]byte
 	if _, err := crand.Read(b[:]); err != nil {

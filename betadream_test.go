@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/internal/testutil"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/testutil"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
 func TestBetaDreamNewWithOptionalParams(t *testing.T) {
@@ -23,12 +23,12 @@ func TestBetaDreamNewWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Dreams.New(context.TODO(), anthropic.BetaDreamNewParams{
 		Inputs: []anthropic.BetaDreamInputUnionParam{{
 			OfMemoryStore: &anthropic.BetaDreamMemoryStoreInputParam{
 				MemoryStoreID: "x",
-				Type:          anthropic.BetaDreamMemoryStoreInputTypeMemoryStore,
 			},
 		}},
 		Model: anthropic.BetaDreamNewParamsModelUnion{
@@ -36,9 +36,7 @@ func TestBetaDreamNewWithOptionalParams(t *testing.T) {
 		},
 		Instructions: anthropic.String("x"),
 		OutputBehavior: anthropic.BetaOutputBehaviorUnionParam{
-			OfCreateNew: &anthropic.BetaOutputBehaviorCreateNewParam{
-				Type: anthropic.BetaOutputBehaviorCreateNewTypeCreateNew,
-			},
+			OfCreateNew: &anthropic.BetaOutputBehaviorCreateNewParam{},
 		},
 		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
@@ -63,6 +61,7 @@ func TestBetaDreamGetWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Dreams.Get(
 		context.TODO(),
@@ -92,6 +91,7 @@ func TestBetaDreamListWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Dreams.List(context.TODO(), anthropic.BetaDreamListParams{
 		CreatedAtGt:     anthropic.Time(time.Now()),
@@ -123,6 +123,7 @@ func TestBetaDreamArchiveWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Dreams.Archive(
 		context.TODO(),
@@ -152,6 +153,7 @@ func TestBetaDreamCancelWithOptionalParams(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Dreams.Cancel(
 		context.TODO(),

@@ -3,11 +3,11 @@ package anthropic
 import (
 	"encoding/json"
 
-	"github.com/anthropics/anthropic-sdk-go/internal/apijson"
-	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/anthropics/anthropic-sdk-go/packages/param"
-	"github.com/anthropics/anthropic-sdk-go/packages/respjson"
-	"github.com/anthropics/anthropic-sdk-go/shared/constant"
+	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
+	"github.com/anthropics/anthropic-sdk-go/v2/packages/respjson"
+	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
 // BetaService contains methods and other services that help with interacting with
@@ -116,6 +116,9 @@ const (
 	AnthropicBetaSpendLimitReads2026_09_26              AnthropicBeta = "spend-limit-reads-2026-09-26"
 	AnthropicBetaTelemetryDestinations2026_08_11        AnthropicBeta = "telemetry-destinations-2026-08-11"
 	AnthropicBetaWebhooks2026_10_07                     AnthropicBeta = "webhooks-2026-10-07"
+	AnthropicBetaMessageThreads2026_08_12               AnthropicBeta = "message-threads-2026-08-12"
+	AnthropicBetaAnalyticsUsageCost2026_08_24           AnthropicBeta = "analytics-usage-cost-2026-08-24"
+	AnthropicBetaExperimentalClaudeTag2026_10_21        AnthropicBeta = "experimental-claude-tag-2026-10-21"
 )
 
 type BetaAPIError struct {

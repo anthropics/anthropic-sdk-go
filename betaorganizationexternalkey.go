@@ -288,8 +288,7 @@ type BetaExternalKey struct {
 	CreatedAt  time.Time                      `json:"created_at" api:"required" format:"date-time"`
 	// Human-friendly display name. Null if none was set.
 	DisplayName string `json:"display_name" api:"required"`
-	// Data residency geo. Selects the region that handles this key's encrypt/decrypt
-	// roundtrips.
+	// Data residency geo. Selects the region this key is used in.
 	Geo string `json:"geo" api:"required"`
 	// KMS provider identity and auth coordinates.
 	ProviderConfig BetaExternalKeyProviderConfigUnion `json:"provider_config" api:"required"`

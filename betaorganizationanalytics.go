@@ -653,8 +653,7 @@ type BetaAnalyticsConnectorActivity struct {
 	// Connector use recorded while members had Chat and Cowork unified (Cowork's
 	// features inside claude.ai chat) turned on, split into chat conversations and
 	// Cowork sessions. A count is null in date-range mode where it cannot be computed.
-	// Omitted from the response on deployments that do not offer Chat and Cowork
-	// unified.
+	// Omitted from the response where Chat and Cowork unified is not available.
 	ChatCoworkUnifiedMetrics BetaAnalyticsConnectorChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
 	// Product that produced this row's activity: one of `chat`, `claude_code`,
 	// `cowork`, `office_agent`, or `chat_cowork_unified` (Chat and Cowork unified).
@@ -996,8 +995,8 @@ type BetaAnalyticsCostBucketedResult struct {
 	// `chat_cowork_unified` is Chat and Cowork unified, Cowork's features inside
 	// claude.ai chat: chat and Cowork usage by a member who has it turned on is
 	// reported under this value instead of `chat` or `cowork`. It is accepted as a
-	// filter only on deployments that offer Chat and Cowork unified. Some unattributed
-	// usage is reported as "other".
+	// filter only where Chat and Cowork unified is available. Some unattributed usage
+	// is reported as "other".
 	Product string `json:"product" api:"required"`
 	// RBAC group (team) the usage is attributed to, in the public tagged
 	// `rbac_group_...` spelling — the same spelling the activity resources use for
@@ -1170,8 +1169,8 @@ type BetaAnalyticsCostUsersItem struct {
 	// `chat_cowork_unified` is Chat and Cowork unified, Cowork's features inside
 	// claude.ai chat: chat and Cowork usage by a member who has it turned on is
 	// reported under this value instead of `chat` or `cowork`. It is accepted as a
-	// filter only on deployments that offer Chat and Cowork unified. Some unattributed
-	// usage is reported as "other".
+	// filter only where Chat and Cowork unified is available. Some unattributed usage
+	// is reported as "other".
 	Product string `json:"product" api:"required"`
 	// RBAC group (team) the usage is attributed to, in the public tagged
 	// `rbac_group_...` spelling — the same spelling the activity resources use for
@@ -1796,8 +1795,8 @@ type BetaAnalyticsPluginActivity struct {
 	PluginName string `json:"plugin_name" api:"required"`
 	// Plugin use recorded while members had Chat and Cowork unified (Cowork's features
 	// inside claude.ai chat) turned on. A count is null in date-range mode where it
-	// cannot be computed. Omitted from the response on deployments that do not offer
-	// Chat and Cowork unified.
+	// cannot be computed. Omitted from the response where Chat and Cowork unified is
+	// not available.
 	ChatCoworkUnifiedMetrics BetaAnalyticsPluginChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
 	// Product that produced this row's activity: one of `chat`, `claude_code`,
 	// `cowork`, `office_agent`, or `chat_cowork_unified` (Chat and Cowork unified).
@@ -1917,7 +1916,7 @@ const (
 // product in Slack. `chat_cowork_unified` is Chat and Cowork unified, Cowork's
 // features inside claude.ai chat: chat and Cowork usage by a member who has it
 // turned on is reported under this value instead of `chat` or `cowork`. It is
-// accepted as a filter only on deployments that offer Chat and Cowork unified.
+// accepted as a filter only where Chat and Cowork unified is available.
 type BetaAnalyticsProductFilter string
 
 const (
@@ -2150,16 +2149,15 @@ type BetaAnalyticsSingleDayActivitySummary struct {
 	// group.
 	WeeklyAdoptionRate float64 `json:"weekly_adoption_rate" api:"required"`
 	// Number of users with activity in Chat and Cowork unified on the requested day.
-	// Omitted from the response on deployments that do not offer Chat and Cowork
-	// unified.
+	// Omitted from the response where Chat and Cowork unified is not available.
 	ChatCoworkUnifiedDailyActiveUserCount int64 `json:"chat_cowork_unified_daily_active_user_count" api:"nullable"`
 	// Number of users with activity in Chat and Cowork unified in the 28-day rolling
 	// window (30 days when the request filters by `rbac_group_id`). Omitted from the
-	// response on deployments that do not offer Chat and Cowork unified.
+	// response where Chat and Cowork unified is not available.
 	ChatCoworkUnifiedMonthlyActiveUserCount int64 `json:"chat_cowork_unified_monthly_active_user_count" api:"nullable"`
 	// Number of users with activity in Chat and Cowork unified in the 7-day rolling
-	// window. Omitted from the response on deployments that do not offer Chat and
-	// Cowork unified.
+	// window. Omitted from the response where Chat and Cowork unified is not
+	// available.
 	ChatCoworkUnifiedWeeklyActiveUserCount int64 `json:"chat_cowork_unified_weekly_active_user_count" api:"nullable"`
 	// Number of users with claude.ai (chat) activity on the requested day. Omitted
 	// from the response while the per-product breakdown is not enabled for this
@@ -2387,8 +2385,7 @@ type BetaAnalyticsSkillActivity struct {
 	// Skill use recorded while members had Chat and Cowork unified (Cowork's features
 	// inside claude.ai chat) turned on, split into chat conversations and Cowork
 	// sessions. A count is null in date-range mode where it cannot be computed.
-	// Omitted from the response on deployments that do not offer Chat and Cowork
-	// unified.
+	// Omitted from the response where Chat and Cowork unified is not available.
 	ChatCoworkUnifiedMetrics BetaAnalyticsSkillChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
 	// Product that produced this row's activity: one of `chat`, `claude_code`,
 	// `cowork`, `office_agent`, or `chat_cowork_unified` (Chat and Cowork unified).
@@ -2788,8 +2785,8 @@ type BetaAnalyticsUsageBucketedResult struct {
 	// `chat_cowork_unified` is Chat and Cowork unified, Cowork's features inside
 	// claude.ai chat: chat and Cowork usage by a member who has it turned on is
 	// reported under this value instead of `chat` or `cowork`. It is accepted as a
-	// filter only on deployments that offer Chat and Cowork unified. Some unattributed
-	// usage is reported as "other".
+	// filter only where Chat and Cowork unified is available. Some unattributed usage
+	// is reported as "other".
 	Product string `json:"product" api:"required"`
 	// RBAC group (team) the usage is attributed to, in the public tagged
 	// `rbac_group_...` spelling — the same spelling the activity resources use for
@@ -2876,7 +2873,7 @@ const (
 // product in Slack. `chat_cowork_unified` is Chat and Cowork unified, Cowork's
 // features inside claude.ai chat: chat and Cowork usage by a member who has it
 // turned on is reported under this value instead of `chat` or `cowork`. It is
-// accepted as a filter only on deployments that offer Chat and Cowork unified.
+// accepted as a filter only where Chat and Cowork unified is available.
 type BetaAnalyticsUsageCostProductFilter string
 
 const (
@@ -2982,8 +2979,8 @@ type BetaAnalyticsUsageUsersItem struct {
 	// `chat_cowork_unified` is Chat and Cowork unified, Cowork's features inside
 	// claude.ai chat: chat and Cowork usage by a member who has it turned on is
 	// reported under this value instead of `chat` or `cowork`. It is accepted as a
-	// filter only on deployments that offer Chat and Cowork unified. Some unattributed
-	// usage is reported as "other".
+	// filter only where Chat and Cowork unified is available. Some unattributed usage
+	// is reported as "other".
 	Product string `json:"product" api:"required"`
 	// RBAC group (team) the usage is attributed to, in the public tagged
 	// `rbac_group_...` spelling — the same spelling the activity resources use for
@@ -3184,8 +3181,8 @@ type BetaAnalyticsUserActivity struct {
 	WebSearchCount int64 `json:"web_search_count" api:"required"`
 	// Activity recorded while the member had Chat and Cowork unified (Cowork's
 	// features inside claude.ai chat) turned on, split into `chat` (chat activity) and
-	// `sessions` (Cowork activity). Omitted from the response on deployments that do
-	// not offer Chat and Cowork unified.
+	// `sessions` (Cowork activity). Omitted from the response where Chat and Cowork
+	// unified is not available.
 	ChatCoworkUnifiedMetrics BetaAnalyticsChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
 	// Most recent UTC day (YYYY-MM-DD) on which the user had any counted activity,
 	// within the requested window: equal to the requested `date` in single-day mode,
@@ -3249,8 +3246,7 @@ type BetaAnalyticsUserActor struct {
 	// no longer a member of the organization or its associated organizations and the
 	// organization has chosen to hide the names of removed users. Otherwise, the name
 	// stays populated for removed users. Rows for system-minted service accounts
-	// render the service name (for example, `"Claude Security"` for usage by
-	// Anthropic's security-patching service) or null.
+	// render the service name (for example, `"Claude Security"`) or null.
 	Name string `json:"name" api:"required"`
 	// Actor type. Always `"user_actor"`.
 	Type constant.UserActor `json:"type" default:"user_actor"`

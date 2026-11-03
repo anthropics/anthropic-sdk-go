@@ -2813,3 +2813,173 @@ func TestSessionToolRunner_ReconcileInterruptForCallMissingFromHistoryLetsRunner
 	require.Equal(t, int32(0), echo.runs.Load())
 	require.NoError(t, r.Close())
 }
+
+// ===== custom tool calls go through the same gate =====
+
+func askCustomToolUseEvt(id, name string, input map[string]any, permission string) map[string]any {
+	ev := customToolUseEvt(id, name, input)
+	ev["evaluated_permission"] = permission
+	return ev
+}
+
+func TestSessionToolRunner_CustomToolCallsHonorEvaluatedPermission(t *testing.T) {
+	server := newSessionEventsServer(t)
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		body, _ := json.Marshal(map[string]any{
+			"data": []any{
+				askCustomToolUseEvt("hist_deny", "lookup", nil, "deny"),
+				askCustomToolUseEvt("hist_ask_allowed", "lookup", nil, "ask"),
+				toolConfirmationEvt("hist_ask_allowed", "allow"),
+			},
+			"has_more": false, "first_id": "hist_deny", "last_id": "evt_conf_hist_ask_allowed",
+		})
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(body)
+	}
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, []string{
+			sseLine("agent.custom_tool_use", askCustomToolUseEvt("marked_allow", "lookup", nil, "allow")),
+			sseLine("agent.custom_tool_use", customToolUseEvt("unmarked", "lookup", nil)),
+			sseLine("agent.custom_tool_use", askCustomToolUseEvt("marked_deny", "lookup", nil, "deny")),
+			sseLine("agent.custom_tool_use", askCustomToolUseEvt("ask_then_allowed", "lookup", nil, "ask")),
+			sseLine("agent.custom_tool_use", askCustomToolUseEvt("ask_then_denied", "lookup", nil, "ask")),
+			sseLine("agent.custom_tool_use", askCustomToolUseEvt("ask_never_answered", "lookup", nil, "ask")),
+			sseLine("agent.custom_tool_use", askCustomToolUseEvt("ask_verdict_unrecognized", "lookup", nil, "ask")),
+			sseLine("agent.custom_tool_use", askCustomToolUseEvt("unrecognized_mark", "lookup", nil, "something_new")),
+			sseLine("user.tool_confirmation", toolConfirmationEvt("ask_then_allowed", "allow")),
+			sseLine("user.tool_confirmation", toolConfirmationEvt("ask_then_denied", "deny")),
+			sseLine("user.tool_confirmation", toolConfirmationEvt("ask_verdict_unrecognized", "escalate")),
+		}, true)
+	}
+	var posted []string
+	var mu sync.Mutex
+	server.HandleSend = func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		var payload struct {
+			Events []struct {
+				CustomToolUseID string `json:"custom_tool_use_id"`
+			} `json:"events"`
+		}
+		_ = json.Unmarshal(body, &payload)
+		mu.Lock()
+		for _, e := range payload.Events {
+			posted = append(posted, e.CustomToolUseID)
+		}
+		mu.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+
+	lookup := &stubBetaTool{name: "lookup"}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{lookup}, 0)
+
+	got := map[string]DispatchedToolCall{}
+	for range 8 {
+		require.True(t, r.Next(), "expected eight resolved calls; got %v then stopped: %v", got, r.Err())
+		c := r.Current()
+		require.True(t, c.Custom)
+		got[c.ToolUseID] = c
+	}
+	require.NoError(t, r.Close())
+
+	allowed := []string{"ask_then_allowed", "hist_ask_allowed", "marked_allow", "unmarked"}
+	denied := []string{"ask_then_denied", "ask_verdict_unrecognized", "hist_deny", "marked_deny"}
+	var ran, blocked []string
+	for id, c := range got {
+		if c.Confirmation == "deny" {
+			blocked = append(blocked, id)
+			require.False(t, c.Posted, "%s: a denied call posts nothing", id)
+			require.Empty(t, c.CustomResult.CustomToolUseID, "%s: no result was built for a denied call", id)
+		} else {
+			ran = append(ran, id)
+			require.True(t, c.Posted, "%s: an allowed call posts its result", id)
+		}
+	}
+	sort.Strings(ran)
+	sort.Strings(blocked)
+	mu.Lock()
+	sort.Strings(posted)
+	mu.Unlock()
+	require.Equal(t, allowed, ran, "only explicitly allowed (or unmarked) custom calls execute")
+	require.Equal(t, denied, blocked, "denied custom calls are yielded with Confirmation=\"deny\"")
+	require.Equal(t, allowed, posted)
+	require.Equal(t, int32(4), lookup.runs.Load())
+	require.NotContains(t, got, "ask_never_answered", "a custom call whose confirmation never arrives stays held")
+	require.NotContains(t, got, "unrecognized_mark", "an unrecognised permission with no verdict stays held")
+}
+
+func toolResultEvt(eventType, idKey, toolUseID string) map[string]any {
+	ev := plainEvt("evt_res_"+toolUseID, eventType)
+	ev[idKey] = toolUseID
+	return ev
+}
+
+// Another client can answer a held call with its result instead of a verdict.
+func TestSessionToolRunner_ResultFromAnotherClientReleasesHeldCall(t *testing.T) {
+	kinds := map[string]struct {
+		useType, resultType, idKey string
+		use                        map[string]any
+	}{
+		"builtin": {"agent.tool_use", "user.tool_result", "tool_use_id", askToolUseEvt("tu", "echo", nil, "ask")},
+		"custom":  {"agent.custom_tool_use", "user.custom_tool_result", "custom_tool_use_id", askCustomToolUseEvt("tu", "echo", nil, "ask")},
+	}
+	for name, k := range kinds {
+		result := toolResultEvt(k.resultType, k.idKey, "tu")
+
+		t.Run(name+"/live", func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				streamWriter(w, r, []string{
+					sseLine(k.useType, k.use),
+					sseLine(k.resultType, result),
+					sseLine("session.status_idle", idleEndTurnEvt("evt_idle")),
+				}, true)
+			}
+			requireStopsOnIdleWithoutRunning(t, server)
+		})
+
+		t.Run(name+"/reconcile", func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			var streamConns atomic.Int32
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				if streamConns.Add(1) == 1 {
+					streamWriter(w, r, []string{sseLine(k.useType, k.use)}, false)
+					return
+				}
+				streamWriter(w, r, nil, true)
+			}
+			var lists atomic.Int32
+			server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				if lists.Add(1) >= 2 {
+					body, _ := json.Marshal(map[string]any{
+						"data":     []any{k.use, result, idleEndTurnEvt("evt_idle")},
+						"has_more": false, "first_id": "tu", "last_id": "evt_idle",
+					})
+					_, _ = w.Write(body)
+					return
+				}
+				_, _ = w.Write([]byte(emptyEventList()))
+			}
+			requireStopsOnIdleWithoutRunning(t, server)
+		})
+	}
+}
+
+func requireStopsOnIdleWithoutRunning(t *testing.T, server *sessionEventsServer) {
+	t.Helper()
+	server.HandleSend = func(http.ResponseWriter, *http.Request) { t.Error("an already answered call posted a result") }
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 100*time.Millisecond)
+
+	for r.Next() {
+		t.Fatalf("unexpected yield for an already answered call: %+v", r.Current())
+	}
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout, "the hold must end with the call's result")
+	require.Equal(t, int32(0), echo.runs.Load())
+}

@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// stoppedHeartbeat is the 200 the control plane answers once a lease lapsed
+// stoppedHeartbeat is the 200 the API answers once a lease lapsed
 // without anyone re-claiming the item.
 const stoppedHeartbeat = `{"last_heartbeat":"2026-05-11T12:00:01Z","lease_extended":false,"state":"stopped","ttl_seconds":30,"type":"work_heartbeat"}`
 

@@ -412,7 +412,7 @@ func (echoTool) Execute(context.Context, json.RawMessage) ([]anthropic.BetaToolR
 // that the lease heartbeat is running before the session lookup that feeds
 // skill setup completes. The poller acks the item when it
 // yields, so any gap between ack and the first heartbeat is a window where
-// the control plane can reclaim the lease — and the lookup plus a per-skill
+// the API can reclaim the lease — and the lookup plus a per-skill
 // download/extract can take longer than the lease
 // TTL on a slow network or a large bundle.
 //
@@ -678,7 +678,7 @@ func (b *lockedBuffer) String() string {
 	return b.buf.String()
 }
 
-// leaseLostBody is the 412 the control plane answers a heartbeat with once the
+// leaseLostBody is the 412 the API answers a heartbeat with once the
 // item's lease was cleared (re-queued) or is held by another worker.
 const leaseLostBody = `{"type":"error","error":{"type":"invalid_request_error","message":"Heartbeat precondition failed: expected hb-1, actual was NULL","details":{"error_code":"heartbeat_precondition_failed","error_visibility":"user_facing","current_state":{"state":"queued","last_heartbeat":null,"lease_updated_at":null,"lease_extended":false,"ttl_seconds":120}}}}`
 
@@ -793,7 +793,7 @@ func TestEnvironmentWorker_Heartbeat412ReleasesItemWithoutStoppingIt(t *testing.
 // A heartbeat reporting state "stopped" ends the run and the item is still
 // force-stopped on the way out — only a lost lease skips that — and that
 // force-stop is the item's only stop in a full Run.
-func TestEnvironmentWorker_ControlPlaneStopStillForceStops(t *testing.T) {
+func TestEnvironmentWorker_HeartbeatStopStillForceStops(t *testing.T) {
 	server, logs := runItemEndedByHeartbeat(t, func(w http.ResponseWriter, _ int) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"last_heartbeat":"2026-05-11T12:00:00Z","lease_extended":true,"state":"stopped","ttl_seconds":30,"type":"work_heartbeat"}`))
@@ -838,7 +838,7 @@ func TestLeaseLostClassification(t *testing.T) {
 	}{
 		{"a 412 hands the item to the queue or another worker", leaseLost, true},
 		{"a full TTL without a successful heartbeat is treated the same way", leaseAssumedLost, true},
-		{"a control-plane stop still force-stops", leaseControlPlaneStop, false},
+		{"a heartbeat stop still force-stops", leaseHeartbeatStop, false},
 		{"a rejected heartbeat still force-stops", leaseHeartbeatRejected, false},
 		{"the run finishing first still force-stops", leaseRunnerDone, false},
 		{"a lease that never ended still force-stops", leaseHeld, false},

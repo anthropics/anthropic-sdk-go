@@ -565,10 +565,11 @@ func (r *SessionToolRunner) setTerminalErr(err error) {
 // ask-gated call the user approved, "" for a call that needed no confirmation.
 // Denied calls never reach the queue.
 type pendingToolUse struct {
-	custom        bool
-	toolUse       BetaManagedAgentsAgentToolUseEvent
-	customToolUse BetaManagedAgentsAgentCustomToolUseEvent
-	confirmation  string
+	custom           bool
+	toolUse          BetaManagedAgentsAgentToolUseEvent
+	customToolUse    BetaManagedAgentsAgentCustomToolUseEvent
+	customPermission string
+	confirmation     string
 }
 
 // id returns the tool-use event id — the key for the seen/answered dedup sets
@@ -594,6 +595,16 @@ func (p pendingToolUse) input() map[string]any {
 		return p.customToolUse.Input
 	}
 	return p.toolUse.Input
+}
+
+// permission returns the event's evaluated_permission. The typed
+// agent.custom_tool_use variant does not declare the field, so a custom call
+// carries the value read off the event union.
+func (p pendingToolUse) permission() string {
+	if p.custom {
+		return p.customPermission
+	}
+	return string(p.toolUse.EvaluatedPermission)
 }
 
 // sessionThreadID returns the session_thread_id of the tool-use event, which is
@@ -847,7 +858,7 @@ func (r *SessionToolRunner) streamLoop(ctx context.Context, out chan<- pendingTo
 				}
 			case string(constant.ValueOf[constant.AgentCustomToolUse]()):
 				if r.markSeen(ev.ID) {
-					r.routeToolEvent(ctx, out, pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse()})
+					r.routeToolEvent(ctx, out, pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse(), customPermission: string(ev.EvaluatedPermission)})
 				}
 			case "user.tool_confirmation":
 				r.noteConfirmation(ctx, out, ev.ToolUseID, string(ev.AsUserToolConfirmation().Result))
@@ -855,9 +866,9 @@ func (r *SessionToolRunner) streamLoop(ctx context.Context, out chan<- pendingTo
 				r.noteInterrupt(ev.ProcessedAt, ev.SessionThreadID)
 				r.releaseInterruptedHolds()
 			case string(constant.ValueOf[constant.UserToolResult]()):
-				r.markAnswered(ev.ToolUseID)
+				r.noteResult(ev.ToolUseID)
 			case string(constant.ValueOf[constant.UserCustomToolResult]()):
-				r.markAnswered(ev.CustomToolUseID)
+				r.noteResult(ev.CustomToolUseID)
 			case string(constant.ValueOf[constant.SessionStatusTerminated]()), string(constant.ValueOf[constant.SessionDeleted]()):
 				r.log.Info("session terminated", slog.String("type", ev.Type))
 				sentinel = ErrSessionTerminated
@@ -944,7 +955,7 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 			pending = append(pending, pendingToolUse{toolUse: ev.AsAgentToolUse()})
 		case string(constant.ValueOf[constant.AgentCustomToolUse]()):
 			r.markSeen(ev.ID)
-			pending = append(pending, pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse()})
+			pending = append(pending, pendingToolUse{custom: true, customToolUse: ev.AsAgentCustomToolUse(), customPermission: string(ev.EvaluatedPermission)})
 		case "user.tool_confirmation":
 			// Record the verdict only, before the routing pass below, so a
 			// tool call whose confirmation appears later in the same history
@@ -956,9 +967,9 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 		case string(constant.ValueOf[constant.UserInterrupt]()):
 			r.noteInterrupt(ev.ProcessedAt, ev.SessionThreadID)
 		case string(constant.ValueOf[constant.UserToolResult]()):
-			r.markAnswered(ev.ToolUseID)
+			r.noteResult(ev.ToolUseID)
 		case string(constant.ValueOf[constant.UserCustomToolResult]()):
-			r.markAnswered(ev.CustomToolUseID)
+			r.noteResult(ev.CustomToolUseID)
 		case string(constant.ValueOf[constant.SessionStatusTerminated]()), string(constant.ValueOf[constant.SessionDeleted]()):
 			// The session is already over. Any pending tool_use we
 			// collected above can't be answered (the server won't accept
@@ -1585,13 +1596,7 @@ func (r *SessionToolRunner) routeToolEvent(ctx context.Context, out chan<- pendi
 	if r.settleIfInterrupted(p) {
 		return
 	}
-	// Only builtin agent.tool_use carries evaluated_permission today; if the
-	// field ever lands on agent.custom_tool_use the gate must keep failing
-	// closed rather than dispatch a gated call by event type.
-	perm := ""
-	if !p.custom {
-		perm = string(p.toolUse.EvaluatedPermission)
-	}
+	perm := p.permission()
 	// Comma-ok, not the zero value: a verdict this SDK doesn't recognise —
 	// including an empty one — must reach applyVerdict and fail closed, not
 	// read as "no verdict yet" and dispatch.
@@ -1628,6 +1633,16 @@ func (r *SessionToolRunner) noteConfirmation(ctx context.Context, out chan<- pen
 	r.confirmationVerdicts[toolUseID] = result
 	if held, ok := r.awaitingConfirmation[toolUseID]; ok {
 		r.applyVerdict(ctx, out, held, result)
+	}
+}
+
+// noteResult records that a call has its result and ends any hold on it: another
+// client can answer a held call, and then no verdict is left to wait for.
+func (r *SessionToolRunner) noteResult(toolUseID string) {
+	r.markAnswered(toolUseID)
+	if _, held := r.awaitingConfirmation[toolUseID]; held {
+		delete(r.awaitingConfirmation, toolUseID)
+		r.idle.unblock(toolUseID)
 	}
 }
 

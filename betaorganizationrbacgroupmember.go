@@ -94,7 +94,7 @@ func (r *BetaOrganizationRBACGroupMemberService) Add(ctx context.Context, rbacGr
 // organization in the tenant uses SCIM provisioning.
 //
 // The RBAC Groups API is available to Claude Enterprise organizations only.
-func (r *BetaOrganizationRBACGroupMemberService) Remove(ctx context.Context, userID string, body BetaOrganizationRBACGroupMemberRemoveParams, opts ...option.RequestOption) (res *BetaOrganizationRBACGroupMemberRemoveResponse, err error) {
+func (r *BetaOrganizationRBACGroupMemberService) Remove(ctx context.Context, userID string, body BetaOrganizationRBACGroupMemberRemoveParams, opts ...option.RequestOption) (res *BetaDeletedRBACGroupMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if body.RBACGroupID == "" {
 		err = errors.New("missing required rbac_group_id parameter")
@@ -109,6 +109,30 @@ func (r *BetaOrganizationRBACGroupMemberService) Remove(ctx context.Context, use
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.members.remove", "/v1/organizations/rbac_groups/{rbac_group_id}/members/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", body.RBACGroupID), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.member.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
+}
+
+type BetaDeletedRBACGroupMember struct {
+	// ID of the RBAC Group.
+	RBACGroupID string `json:"rbac_group_id" api:"required"`
+	// Deleted object type. For RBAC Group Members, this is always
+	// `"rbac_group_member_deleted"`.
+	Type constant.RBACGroupMemberDeleted `json:"type" default:"rbac_group_member_deleted"`
+	// ID of the User.
+	UserID string `json:"user_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		RBACGroupID respjson.Field
+		Type        respjson.Field
+		UserID      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaDeletedRBACGroupMember) RawJSON() string { return r.JSON.raw }
+func (r *BetaDeletedRBACGroupMember) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type BetaRBACGroupMember struct {
@@ -139,30 +163,6 @@ type BetaRBACGroupMember struct {
 // Returns the unmodified JSON received from the API
 func (r BetaRBACGroupMember) RawJSON() string { return r.JSON.raw }
 func (r *BetaRBACGroupMember) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type BetaOrganizationRBACGroupMemberRemoveResponse struct {
-	// ID of the RBAC Group.
-	RBACGroupID string `json:"rbac_group_id" api:"required"`
-	// Deleted object type. For RBAC Group Members, this is always
-	// `"rbac_group_member_deleted"`.
-	Type constant.RBACGroupMemberDeleted `json:"type" default:"rbac_group_member_deleted"`
-	// ID of the User.
-	UserID string `json:"user_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		RBACGroupID respjson.Field
-		Type        respjson.Field
-		UserID      respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaOrganizationRBACGroupMemberRemoveResponse) RawJSON() string { return r.JSON.raw }
-func (r *BetaOrganizationRBACGroupMemberRemoveResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

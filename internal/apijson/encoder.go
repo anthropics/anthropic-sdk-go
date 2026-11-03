@@ -89,8 +89,10 @@ func (e *encoder) typeEncoder(t reflect.Type) encoderFunc {
 		return fi.(encoderFunc)
 	}
 
-	// Compute the real encoder and replace the indirect func with it.
-	f = e.newTypeEncoder(t)
+	// Compute the real encoder and replace the indirect func with it. It builds
+	// on a copy because the func keeps its encoder and reads it when it runs.
+	built := *e
+	f = built.newTypeEncoder(t)
 	wg.Done()
 	encoders.Store(entry, f)
 	return f

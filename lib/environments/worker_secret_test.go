@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// encodeSecret builds a work-item secret the way the control plane does:
+// encodeSecret builds a work-item secret the way the API does:
 // URL-safe base64 of a JSON payload, without padding.
 func encodeSecret(t *testing.T, payload map[string]any) string {
 	t.Helper()

@@ -8,6 +8,7 @@
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#AuthenticationError">AuthenticationError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#BillingError">BillingError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#ClaudeCodeKeyCreatorNotMemberErrorDetails">ClaudeCodeKeyCreatorNotMemberErrorDetails</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#ClaudeCodeVersionTooOldErrorDetails">ClaudeCodeVersionTooOldErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#CmekContextUnavailableErrorDetails">CmekContextUnavailableErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#CmekKeyDisabledErrorDetails">CmekKeyDisabledErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#CmekKeyNetworkBlockedErrorDetails">CmekKeyNetworkBlockedErrorDetails</a>
@@ -20,6 +21,7 @@
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#InvalidRequestError">InvalidRequestError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#NotFoundError">NotFoundError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#OrganizationOnHoldErrorDetails">OrganizationOnHoldErrorDetails</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#OrganizationTypeNotSupportedErrorDetails">OrganizationTypeNotSupportedErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#OverloadedError">OverloadedError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#PermissionError">PermissionError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#RateLimitError">RateLimitError</a>
@@ -299,7 +301,6 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#CitationsDelta">CitationsDelta</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#CitationsSearchResultLocation">CitationsSearchResultLocation</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#CitationsWebSearchResultLocation">CitationsWebSearchResultLocation</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ClaudeCodeVersionTooOldErrorDetails">ClaudeCodeVersionTooOldErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#CodeExecutionOutputBlock">CodeExecutionOutputBlock</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#CodeExecutionResultBlock">CodeExecutionResultBlock</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#CodeExecutionToolResultBlock">CodeExecutionToolResultBlock</a>
@@ -381,7 +382,6 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ServerToolUsage">ServerToolUsage</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ServerToolUseBlock">ServerToolUseBlock</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SignatureDelta">SignatureDelta</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SkillReadBlockedUndecryptableErrorDetails">SkillReadBlockedUndecryptableErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#StopReason">StopReason</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#TextBlock">TextBlock</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#TextCitationUnion">TextCitationUnion</a>
@@ -492,6 +492,7 @@ Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#DeletedSkill">DeletedSkill</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#Skill">Skill</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SkillReadBlockedUndecryptableErrorDetails">SkillReadBlockedUndecryptableErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#SkillSource">SkillSource</a>
 
 Methods:
@@ -546,6 +547,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#UserProfileExternalUserAccountStatus">UserProfileExternalUserAccountStatus</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#UserProfileExternalUserDetails">UserProfileExternalUserDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#UserProfileExternalUserEntityType">UserProfileExternalUserEntityType</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#UserProfileNotFoundErrorDetails">UserProfileNotFoundErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#UserProfileProgramStatus">UserProfileProgramStatus</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#UserProfilePrograms">UserProfilePrograms</a>
 
@@ -577,12 +579,9 @@ Methods:
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ConcurrentMembershipChangeErrorDetails">ConcurrentMembershipChangeErrorDetails</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrgMemberLimitExceededErrorDetails">OrgMemberLimitExceededErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationInfo">OrganizationInfo</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRole">OrganizationRole</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationTypeNotSupportedErrorDetails">OrganizationTypeNotSupportedErrorDetails</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroupGrantsOwnerAccessErrorDetails">RBACGroupGrantsOwnerAccessErrorDetails</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroupOwnerAccessUnconfirmedErrorDetails">RBACGroupOwnerAccessUnconfirmedErrorDetails</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#UserProfileNotFoundErrorDetails">UserProfileNotFoundErrorDetails</a>
 
 Methods:
 
@@ -621,6 +620,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AzureExternalKeyConfig">AzureExternalKeyConfig</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ExternalKey">ExternalKey</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ExternalKeyAttachedAttachment">ExternalKeyAttachedAttachment</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ExternalKeyChangedErrorDetails">ExternalKeyChangedErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ExternalKeyInWorkspacePolicyErrorDetails">ExternalKeyInWorkspacePolicyErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ExternalKeyUnattachedAttachment">ExternalKeyUnattachedAttachment</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#GCPExternalKeyConfig">GCPExternalKeyConfig</a>
@@ -704,7 +704,6 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#CannotInviteEmailsWithUnverifiedDomainsErrorDetails">CannotInviteEmailsWithUnverifiedDomainsErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#EmailDomainNotAllowedErrorDetails">EmailDomainNotAllowedErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#InviteAlreadyExistsErrorDetails">InviteAlreadyExistsErrorDetails</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrgMemberLimitExceededErrorDetails">OrgMemberLimitExceededErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationInvite">OrganizationInvite</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationInviteDeleteResponse">OrganizationInviteDeleteResponse</a>
 
@@ -771,7 +770,6 @@ Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#AllowedInferenceGeo">AllowedInferenceGeo</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#DataResidency">DataResidency</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ExternalKeyChangedErrorDetails">ExternalKeyChangedErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#KeyProfileMismatchErrorDetails">KeyProfileMismatchErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#Workspace">Workspace</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#WorkspaceMember">WorkspaceMember</a>
@@ -1028,6 +1026,8 @@ Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#DeletedRBACGroup">DeletedRBACGroup</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroup">RBACGroup</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroupGrantsOwnerAccessErrorDetails">RBACGroupGrantsOwnerAccessErrorDetails</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACGroupOwnerAccessUnconfirmedErrorDetails">RBACGroupOwnerAccessUnconfirmedErrorDetails</a>
 
 Methods:
 
@@ -1099,6 +1099,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOverloadedError">BetaOverloadedError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaPermissionError">BetaPermissionError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaRateLimitError">BetaRateLimitError</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaUnsupportedCharsetErrorDetails">BetaUnsupportedCharsetErrorDetails</a>
 
 ## Models
 
@@ -1860,6 +1861,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaEnvironmentArchivedErrorDetails">BetaEnvironmentArchivedErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaEnvironmentCreateDisabledErrorDetails">BetaEnvironmentCreateDisabledErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaEnvironmentDeleteResponse">BetaEnvironmentDeleteResponse</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaEnvironmentNotFoundErrorDetails">BetaEnvironmentNotFoundErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaEnvironmentUpdateDisabledErrorDetails">BetaEnvironmentUpdateDisabledErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaInvalidConfigTypeChangeErrorDetails">BetaInvalidConfigTypeChangeErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaInvalidMetadataErrorDetails">BetaInvalidMetadataErrorDetails</a>
@@ -2579,7 +2581,6 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaBillingFrozenErrorDetails">BetaBillingFrozenErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganization">BetaOrganization</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganizationRole">BetaOrganizationRole</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaUnsupportedCharsetErrorDetails">BetaUnsupportedCharsetErrorDetails</a>
 
 Methods:
 
@@ -3360,7 +3361,6 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaClaudeTagSlackWorkspaceSettingSource">BetaClaudeTagSlackWorkspaceSettingSource</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaClaudeTagWritesNotEnabledErrorDetails">BetaClaudeTagWritesNotEnabledErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceConfigurationRestrictedErrorDetails">BetaComplianceConfigurationRestrictedErrorDetails</a>
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaEnvironmentNotFoundErrorDetails">BetaEnvironmentNotFoundErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganizationLevelScopedAPIKeyRequiredErrorDetails">BetaOrganizationLevelScopedAPIKeyRequiredErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaSlackChannelSetUpEnvironmentNotFoundErrorDetails">BetaSlackChannelSetUpEnvironmentNotFoundErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaSlackChannelSetUpSettingsConflictErrorDetails">BetaSlackChannelSetUpSettingsConflictErrorDetails</a>

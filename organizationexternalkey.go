@@ -467,6 +467,24 @@ func (r *ExternalKeyAttachedAttachment) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The external key changed while the request was validating it. Send the request
+// again.
+type ExternalKeyChangedErrorDetails struct {
+	ErrorCode constant.ExternalKeyChanged `json:"error_code" default:"external_key_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExternalKeyChangedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ExternalKeyChangedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The External Key can't be deleted or reconfigured while the organization's
 // Workspace Policy lists it as an allowed key.
 type ExternalKeyInWorkspacePolicyErrorDetails struct {

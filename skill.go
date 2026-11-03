@@ -188,6 +188,24 @@ func (r *Skill) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A custom skill the request names is stored under an encryption key state the
+// workspace cannot currently decrypt.
+type SkillReadBlockedUndecryptableErrorDetails struct {
+	ErrorCode constant.SkillReadBlockedUndecryptable `json:"error_code" default:"skill_read_blocked_undecryptable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SkillReadBlockedUndecryptableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *SkillReadBlockedUndecryptableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type SkillSource struct {
 	// Where the Skill comes from.
 	//

@@ -204,6 +204,46 @@ const (
 	RBACGroupSourceTypeSCIM   RBACGroupSourceType = "scim"
 )
 
+// A role attached to an RBAC Group in the request grants owner access, so this API
+// does not add members to that group (directly or through an invite), remove its
+// members, or delete it. Make the change in the organization's admin settings in
+// Claude.
+type RBACGroupGrantsOwnerAccessErrorDetails struct {
+	ErrorCode constant.RBACGroupGrantsOwnerAccess `json:"error_code" default:"rbac_group_grants_owner_access"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RBACGroupGrantsOwnerAccessErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *RBACGroupGrantsOwnerAccessErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The API could not finish checking whether an RBAC Group in the request grants
+// owner access (the check reached a fixed limit), so it made no change. Retrying
+// the same request will not help. Make the change in the organization's admin
+// settings in Claude.
+type RBACGroupOwnerAccessUnconfirmedErrorDetails struct {
+	ErrorCode constant.RBACGroupOwnerAccessUnconfirmed `json:"error_code" default:"rbac_group_owner_access_unconfirmed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RBACGroupOwnerAccessUnconfirmedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *RBACGroupOwnerAccessUnconfirmedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type OrganizationRBACGroupNewParams struct {
 	// Name of the RBAC Group. Not uniqueness-enforced.
 	Name string `json:"name" api:"required"`

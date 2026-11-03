@@ -583,6 +583,23 @@ func (r *BetaEnvironmentDeleteResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// `settings.environment_id` names no Environment within the organization's reach.
+type BetaEnvironmentNotFoundErrorDetails struct {
+	ErrorCode constant.EnvironmentNotFound `json:"error_code" default:"environment_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaEnvironmentNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaEnvironmentNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Anthropic has turned off updating environments for this organization. Existing
 // environments still work as they are.
 type BetaEnvironmentUpdateDisabledErrorDetails struct {

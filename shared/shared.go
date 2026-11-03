@@ -93,6 +93,24 @@ func (r *ClaudeCodeKeyCreatorNotMemberErrorDetails) UnmarshalJSON(data []byte) e
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The request comes from a Claude Code version older than the minimum that the
+// requested model or the organization requires. Update Claude Code, then retry.
+type ClaudeCodeVersionTooOldErrorDetails struct {
+	ErrorCode constant.ClaudeCodeVersionTooOld `json:"error_code" default:"claude_code_version_too_old"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ClaudeCodeVersionTooOldErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ClaudeCodeVersionTooOldErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The request's workspace encryption context could not be resolved, so the request
 // was refused. Retry in a few minutes.
 type CmekContextUnavailableErrorDetails struct {
@@ -416,6 +434,24 @@ type OrganizationOnHoldErrorDetails struct {
 // Returns the unmodified JSON received from the API
 func (r OrganizationOnHoldErrorDetails) RawJSON() string { return r.JSON.raw }
 func (r *OrganizationOnHoldErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The endpoint does not support the organization's type. Each endpoint's
+// description says which organization types it supports.
+type OrganizationTypeNotSupportedErrorDetails struct {
+	ErrorCode constant.OrganizationTypeNotSupported `json:"error_code" default:"organization_type_not_supported"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r OrganizationTypeNotSupportedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *OrganizationTypeNotSupportedErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

@@ -29,6 +29,12 @@ type BillingError = shared.BillingError
 // This is an alias to an internal type.
 type ClaudeCodeKeyCreatorNotMemberErrorDetails = shared.ClaudeCodeKeyCreatorNotMemberErrorDetails
 
+// The request comes from a Claude Code version older than the minimum that the
+// requested model or the organization requires. Update Claude Code, then retry.
+//
+// This is an alias to an internal type.
+type ClaudeCodeVersionTooOldErrorDetails = shared.ClaudeCodeVersionTooOldErrorDetails
+
 // The request's workspace encryption context could not be resolved, so the request
 // was refused. Retry in a few minutes.
 //
@@ -119,6 +125,12 @@ type NotFoundError = shared.NotFoundError
 //
 // This is an alias to an internal type.
 type OrganizationOnHoldErrorDetails = shared.OrganizationOnHoldErrorDetails
+
+// The endpoint does not support the organization's type. Each endpoint's
+// description says which organization types it supports.
+//
+// This is an alias to an internal type.
+type OrganizationTypeNotSupportedErrorDetails = shared.OrganizationTypeNotSupportedErrorDetails
 
 // This is an alias to an internal type.
 type OverloadedError = shared.OverloadedError

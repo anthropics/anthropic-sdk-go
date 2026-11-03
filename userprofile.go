@@ -751,6 +751,25 @@ const (
 	UserProfileListOrderByName UserProfileListOrderBy = "name"
 )
 
+// The request depends on a user profile that does not exist in the organization or
+// is no longer active. The request either names this user profile by ID, or names
+// a resource, such as an External Key, that is bound to it.
+type UserProfileNotFoundErrorDetails struct {
+	ErrorCode constant.UserProfileNotFound `json:"error_code" default:"user_profile_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r UserProfileNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *UserProfileNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // A user profile's status in a program. Each program's `status` field says what
 // the values mean there.
 type UserProfileProgramStatus string

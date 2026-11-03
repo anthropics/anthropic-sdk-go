@@ -78,6 +78,24 @@ func (r *BetaOrganizationService) Get(ctx context.Context, opts ...option.Reques
 	return res, err
 }
 
+// Anthropic has temporarily disabled billing changes for the user account the
+// credential belongs to. Contact support.
+type BetaBillingFrozenErrorDetails struct {
+	ErrorCode constant.BillingFrozen `json:"error_code" default:"billing_frozen"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaBillingFrozenErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaBillingFrozenErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaOrganization struct {
 	// ID of the Organization.
 	ID string `json:"id" api:"required" format:"uuid"`
@@ -116,3 +134,21 @@ const (
 	BetaOrganizationRolePrimaryOwner    BetaOrganizationRole = "primary_owner"
 	BetaOrganizationRoleUser            BetaOrganizationRole = "user"
 )
+
+// The request's `Content-Type` header names a charset other than UTF-8, ISO-8859-1
+// or US-ASCII. Send the request with no charset, or with one of these.
+type BetaUnsupportedCharsetErrorDetails struct {
+	ErrorCode constant.UnsupportedCharset `json:"error_code" default:"unsupported_charset"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaUnsupportedCharsetErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaUnsupportedCharsetErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}

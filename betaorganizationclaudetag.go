@@ -36,6 +36,24 @@ func NewBetaOrganizationClaudeTagService(opts ...option.RequestOption) (r BetaOr
 	return
 }
 
+// The API key lacks the scope the request needs: `read:claude_tag` for a read,
+// `write:claude_tag` for a change.
+type BetaAPIKeyScopeMissingErrorDetails struct {
+	ErrorCode constant.APIKeyScopeMissing `json:"error_code" default:"api_key_scope_missing"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAPIKeyScopeMissingErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaAPIKeyScopeMissingErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // No settings level sets a value, and the built-in default applies.
 type BetaClaudeTagDefaultSettingSource struct {
 	Type constant.Default `json:"type" default:"default"`
@@ -744,5 +762,140 @@ type BetaClaudeTagSlackWorkspaceSettingSource struct {
 // Returns the unmodified JSON received from the API
 func (r BetaClaudeTagSlackWorkspaceSettingSource) RawJSON() string { return r.JSON.raw }
 func (r *BetaClaudeTagSlackWorkspaceSettingSource) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Changes through the Claude Tag API are not enabled for the organization.
+type BetaClaudeTagWritesNotEnabledErrorDetails struct {
+	ErrorCode constant.ClaudeTagWritesNotEnabled `json:"error_code" default:"claude_tag_writes_not_enabled"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaClaudeTagWritesNotEnabledErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaClaudeTagWritesNotEnabledErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The organization's compliance configuration does not let Claude Tag store
+// anything new.
+type BetaComplianceConfigurationRestrictedErrorDetails struct {
+	ErrorCode constant.ComplianceConfigurationRestricted `json:"error_code" default:"compliance_configuration_restricted"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaComplianceConfigurationRestrictedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaComplianceConfigurationRestrictedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `settings.environment_id` names no Environment within the organization's reach.
+type BetaEnvironmentNotFoundErrorDetails struct {
+	ErrorCode constant.EnvironmentNotFound `json:"error_code" default:"environment_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaEnvironmentNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaEnvironmentNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The credential is not a scoped API key that is bound at the organization level.
+type BetaOrganizationLevelScopedAPIKeyRequiredErrorDetails struct {
+	ErrorCode constant.OrganizationLevelScopedAPIKeyRequired `json:"error_code" default:"organization_level_scoped_api_key_required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaOrganizationLevelScopedAPIKeyRequiredErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaOrganizationLevelScopedAPIKeyRequiredErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `settings.environment_id` names no Environment within the organization's reach,
+// and the request had set the channel up by then. The channel stays set up with
+// every setting unset.
+type BetaSlackChannelSetUpEnvironmentNotFoundErrorDetails struct {
+	ErrorCode constant.SlackChannelSetUpEnvironmentNotFound `json:"error_code" default:"slack_channel_set_up_environment_not_found"`
+	// The identifier of the channel the request set up, starting with `slch_`.
+	SlackChannelID string `json:"slack_channel_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode      respjson.Field
+		SlackChannelID respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaSlackChannelSetUpEnvironmentNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaSlackChannelSetUpEnvironmentNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The request set the channel up, and something else then changed the channel or
+// removed it. Nothing of `settings` was stored.
+type BetaSlackChannelSetUpSettingsConflictErrorDetails struct {
+	// A stable code that names the cause.
+	ErrorCode constant.SlackChannelSetUpSettingsConflict `json:"error_code" default:"slack_channel_set_up_settings_conflict"`
+	// The identifier of the channel the request set up, starting with `slch_`.
+	SlackChannelID string `json:"slack_channel_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode      respjson.Field
+		SlackChannelID respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaSlackChannelSetUpSettingsConflictErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaSlackChannelSetUpSettingsConflictErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The request set the channel up, and `settings` was then refused. The channel
+// stays set up with every setting unset.
+type BetaSlackChannelSetUpSettingsRefusedErrorDetails struct {
+	// A stable code that names the cause.
+	ErrorCode constant.SlackChannelSetUpSettingsRefused `json:"error_code" default:"slack_channel_set_up_settings_refused"`
+	// The identifier of the channel the request set up, starting with `slch_`.
+	SlackChannelID string `json:"slack_channel_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode      respjson.Field
+		SlackChannelID respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaSlackChannelSetUpSettingsRefusedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaSlackChannelSetUpSettingsRefusedErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }

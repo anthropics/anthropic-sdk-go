@@ -142,6 +142,24 @@ func (r *AssistantMessageParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The tools available after a message exceed a limit on their number or their
+// size.
+type AvailableToolsLimitExceededErrorDetails struct {
+	ErrorCode constant.AvailableToolsLimitExceeded `json:"error_code" default:"available_tools_limit_exceeded"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AvailableToolsLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *AvailableToolsLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The properties Data, MediaType, Type are required.
 type Base64ImageSourceParam struct {
 	Data string `json:"data" api:"required" format:"byte"`
@@ -4597,6 +4615,24 @@ func (r *CitationsWebSearchResultLocation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The request comes from a Claude Code version older than the minimum that the
+// requested model or the organization requires. Update Claude Code, then retry.
+type ClaudeCodeVersionTooOldErrorDetails struct {
+	ErrorCode constant.ClaudeCodeVersionTooOld `json:"error_code" default:"claude_code_version_too_old"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ClaudeCodeVersionTooOldErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ClaudeCodeVersionTooOldErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type CodeExecutionOutputBlock struct {
 	FileID string                       `json:"file_id" api:"required"`
 	Type   constant.CodeExecutionOutput `json:"type" default:"code_execution_output"`
@@ -5052,6 +5088,165 @@ func (r CodeExecutionToolResultErrorParam) MarshalJSON() (data []byte, err error
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *CodeExecutionToolResultErrorParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `messages` holds more than one `compaction` block with content. Send only the
+// block the conversation returned last.
+type CompactionBlockAmbiguousErrorDetails struct {
+	ErrorCode constant.CompactionBlockAmbiguous `json:"error_code" default:"compaction_block_ambiguous"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CompactionBlockAmbiguousErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CompactionBlockAmbiguousErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The `compaction` block is not the first block of the conversation, or is in a
+// `system` message.
+type CompactionBlockMisplacedErrorDetails struct {
+	ErrorCode constant.CompactionBlockMisplaced `json:"error_code" default:"compaction_block_misplaced"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CompactionBlockMisplacedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CompactionBlockMisplacedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The `compaction` block's `content` differs from the text its `signature`
+// recorded.
+type CompactionContentMismatchErrorDetails struct {
+	ErrorCode constant.CompactionContentMismatch `json:"error_code" default:"compaction_content_mismatch"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CompactionContentMismatchErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CompactionContentMismatchErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The compaction request ends on an `assistant` turn that is not finished.
+type CompactionIncompleteTurnErrorDetails struct {
+	ErrorCode constant.CompactionIncompleteTurn `json:"error_code" default:"compaction_incomplete_turn"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CompactionIncompleteTurnErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CompactionIncompleteTurnErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `messages` holds no `user` or `assistant` content to summarize or adopt.
+type CompactionNothingToSummarizeErrorDetails struct {
+	ErrorCode constant.CompactionNothingToSummarize `json:"error_code" default:"compaction_nothing_to_summarize"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CompactionNothingToSummarizeErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CompactionNothingToSummarizeErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The `compaction` block's `signature` does not verify.
+type CompactionSignatureInvalidErrorDetails struct {
+	ErrorCode constant.CompactionSignatureInvalid `json:"error_code" default:"compaction_signature_invalid"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CompactionSignatureInvalidErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CompactionSignatureInvalidErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The conversation references more distinct tools than a `compaction` block can
+// record.
+type CompactionTooManyToolReferencesErrorDetails struct {
+	ErrorCode constant.CompactionTooManyToolReferences `json:"error_code" default:"compaction_too_many_tool_references"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CompactionTooManyToolReferencesErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CompactionTooManyToolReferencesErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The `compaction` block's `tool_changes` differs from what was returned with the
+// block.
+type CompactionToolChangesMismatchErrorDetails struct {
+	ErrorCode constant.CompactionToolChangesMismatch `json:"error_code" default:"compaction_tool_changes_mismatch"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CompactionToolChangesMismatchErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CompactionToolChangesMismatchErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The compaction could not be completed for a transient server reason. Retry the
+// request.
+type CompactionUnavailableErrorDetails struct {
+	ErrorCode constant.CompactionUnavailable `json:"error_code" default:"compaction_unavailable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CompactionUnavailableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CompactionUnavailableErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -12110,6 +12305,24 @@ const (
 	SkillParamsTypeCustom    SkillParamsType = "custom"
 )
 
+// A custom skill the request names is stored under an encryption key state the
+// workspace cannot currently decrypt.
+type SkillReadBlockedUndecryptableErrorDetails struct {
+	ErrorCode constant.SkillReadBlockedUndecryptable `json:"error_code" default:"skill_read_blocked_undecryptable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SkillReadBlockedUndecryptableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *SkillReadBlockedUndecryptableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type StopReason string
 
 const (
@@ -13271,6 +13484,118 @@ func (r *ThinkingDelta) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The response that `previous_message_id` names has already been continued, and
+// each response can be continued only once. Continue from the Thread's most recent
+// response `id`.
+type ThreadAlreadyContinuedErrorDetails struct {
+	ErrorCode constant.ThreadAlreadyContinued `json:"error_code" default:"thread_already_continued"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ThreadAlreadyContinuedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ThreadAlreadyContinuedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Another request is still continuing from the same `previous_message_id`. Wait
+// for it to complete and continue from its response `id`, or replay the full
+// conversation with `thread: {"type": "create"}`.
+type ThreadContinueInFlightErrorDetails struct {
+	ErrorCode constant.ThreadContinueInFlight `json:"error_code" default:"thread_continue_in_flight"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ThreadContinueInFlightErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ThreadContinueInFlightErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A field that must stay the same across a Thread's turns differs from the value
+// stored with the Thread; the message names each such field. Send the stored
+// values, or replay the full conversation with `thread: {"type": "create"}` to
+// change them.
+type ThreadFingerprintMismatchErrorDetails struct {
+	ErrorCode constant.ThreadFingerprintMismatch `json:"error_code" default:"thread_fingerprint_mismatch"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ThreadFingerprintMismatchErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ThreadFingerprintMismatchErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// No usable Thread state was found for `previous_message_id`. Replay the full
+// conversation with `thread: {"type": "create"}` to start a new Thread.
+type ThreadNotFoundErrorDetails struct {
+	ErrorCode constant.ThreadNotFound `json:"error_code" default:"thread_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ThreadNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ThreadNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type ThreadUnsupportedFeatureName string
+
+const (
+	ThreadUnsupportedFeatureNameCacheControl      ThreadUnsupportedFeatureName = "cache_control"
+	ThreadUnsupportedFeatureNameContextManagement ThreadUnsupportedFeatureName = "context_management"
+	ThreadUnsupportedFeatureNameFallbacks         ThreadUnsupportedFeatureName = "fallbacks"
+	ThreadUnsupportedFeatureNameHipaa             ThreadUnsupportedFeatureName = "hipaa"
+	ThreadUnsupportedFeatureNameInferenceHooks    ThreadUnsupportedFeatureName = "inference_hooks"
+	ThreadUnsupportedFeatureNameThinking          ThreadUnsupportedFeatureName = "thinking"
+	ThreadUnsupportedFeatureNameZdr               ThreadUnsupportedFeatureName = "zdr"
+)
+
+// The request combines `thread` with a request field or an organization setting
+// that Threads do not support; `unsupported`, when present, names it. Send the
+// full conversation without `thread`, or change that field.
+type ThreadUnsupportedRequestErrorDetails struct {
+	ErrorCode constant.ThreadUnsupportedRequest `json:"error_code" default:"thread_unsupported_request"`
+	// Each entry names a request field or an organization setting that Threads do not
+	// support. On a value you do not recognize, send the full conversation without
+	// `thread`.
+	Unsupported []ThreadUnsupportedFeatureName `json:"unsupported" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		Unsupported respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ThreadUnsupportedRequestErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ThreadUnsupportedRequestErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // The properties InputSchema, Name are required.
 type ToolParam struct {
 	// [JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.
@@ -13551,6 +13876,24 @@ func (r *ToolChoiceToolParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// A tool made available in `messages` takes a name that an available tool of
+// another kind, or of another MCP server, already holds.
+type ToolNameConflictErrorDetails struct {
+	ErrorCode constant.ToolNameConflict `json:"error_code" default:"tool_name_conflict"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ToolNameConflictErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ToolNameConflictErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ToolReferenceBlock struct {
 	ToolName string                 `json:"tool_name" api:"required"`
 	Type     constant.ToolReference `json:"type" default:"tool_reference"`
@@ -13586,6 +13929,24 @@ func (r ToolReferenceBlockParam) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *ToolReferenceBlockParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A tool change or MCP tool listing references a tool or MCP server that is not
+// defined at that position in the conversation.
+type ToolReferenceUnresolvedErrorDetails struct {
+	ErrorCode constant.ToolReferenceUnresolved `json:"error_code" default:"tool_reference_unresolved"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ToolReferenceUnresolvedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ToolReferenceUnresolvedErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

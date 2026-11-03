@@ -102,6 +102,96 @@ func (r *OrganizationInviteService) Delete(ctx context.Context, inviteID string,
 	return res, err
 }
 
+// The email address already belongs to a user in the organization. The message
+// names the user.
+type AlreadyMemberErrorDetails struct {
+	ErrorCode constant.AlreadyMember `json:"error_code" default:"already_member"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AlreadyMemberErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *AlreadyMemberErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The email address's domain is not one of the verified domains of the
+// organization's parent organization.
+type CannotInviteEmailsWithUnverifiedDomainsErrorDetails struct {
+	ErrorCode constant.CannotInviteEmailsWithUnverifiedDomains `json:"error_code" default:"cannot_invite_emails_with_unverified_domains"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CannotInviteEmailsWithUnverifiedDomainsErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CannotInviteEmailsWithUnverifiedDomainsErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The organization restricts invites to an allowed list of email domains, and the
+// list is empty or does not include the email address's domain.
+type EmailDomainNotAllowedErrorDetails struct {
+	ErrorCode constant.EmailDomainNotAllowed `json:"error_code" default:"email_domain_not_allowed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r EmailDomainNotAllowedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *EmailDomainNotAllowedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A pending invite already exists for the email address. The message names the
+// invite.
+type InviteAlreadyExistsErrorDetails struct {
+	ErrorCode constant.InviteAlreadyExists `json:"error_code" default:"invite_already_exists"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r InviteAlreadyExistsErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *InviteAlreadyExistsErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The organization has reached the member limit that Anthropic set for it. Pending
+// invites count toward the limit.
+type OrgMemberLimitExceededErrorDetails struct {
+	ErrorCode constant.OrgMemberLimitExceeded `json:"error_code" default:"org_member_limit_exceeded"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r OrgMemberLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *OrgMemberLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type OrganizationInvite struct {
 	// ID of the Invite.
 	ID string `json:"id" api:"required"`

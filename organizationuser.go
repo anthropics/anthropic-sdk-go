@@ -101,6 +101,24 @@ func (r *OrganizationUserService) Remove(ctx context.Context, userID string, opt
 	return res, err
 }
 
+// The user is the organization's only member. Add another member before removing
+// this one.
+type CannotRemoveLastMemberErrorDetails struct {
+	ErrorCode constant.CannotRemoveLastMember `json:"error_code" default:"cannot_remove_last_member"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CannotRemoveLastMemberErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CannotRemoveLastMemberErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type OrganizationUser struct {
 	// ID of the User.
 	ID string `json:"id" api:"required"`

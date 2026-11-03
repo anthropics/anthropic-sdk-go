@@ -727,6 +727,26 @@ const (
 	BetaPluginContentScanStatusProcessing BetaPluginContentScanStatus = "processing"
 )
 
+// The marketplace already holds this name. `plugin_id` is the Plugin that holds
+// it, and can be absent.
+type BetaPluginNameTakenErrorDetails struct {
+	ErrorCode constant.PluginNameTaken `json:"error_code" default:"plugin_name_taken"`
+	PluginID  string                   `json:"plugin_id" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		PluginID    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaPluginNameTakenErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaPluginNameTakenErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type BetaPluginOwnerOrganization struct {
 	// The Plugin lives in a plugin marketplace the organization owns.
 	Type constant.Organization `json:"type" default:"organization"`
@@ -842,6 +862,88 @@ type BetaPluginUserActor struct {
 // Returns the unmodified JSON received from the API
 func (r BetaPluginUserActor) RawJSON() string { return r.JSON.raw }
 func (r *BetaPluginUserActor) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The Plugin version was stored but is not yet usable in claude.ai. `plugin_id`
+// and `plugin_version_id` identify what was stored.
+type BetaRegistrationPendingErrorDetails struct {
+	ErrorCode       constant.RegistrationPending `json:"error_code" default:"registration_pending"`
+	PluginID        string                       `json:"plugin_id" api:"required"`
+	PluginVersionID string                       `json:"plugin_version_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode       respjson.Field
+		PluginID        respjson.Field
+		PluginVersionID respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaRegistrationPendingErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaRegistrationPendingErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The content scan of the version in `plugin_version_id` failed, errored or
+// reached no verdict, so the version cannot be served.
+type BetaScanFailedErrorDetails struct {
+	ErrorCode       constant.ScanFailed `json:"error_code" default:"scan_failed"`
+	PluginVersionID string              `json:"plugin_version_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode       respjson.Field
+		PluginVersionID respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaScanFailedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaScanFailedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The content scan of the version in `plugin_version_id` is still running. Retry
+// once the scan finishes.
+type BetaScanPendingErrorDetails struct {
+	ErrorCode       constant.ScanPending `json:"error_code" default:"scan_pending"`
+	PluginVersionID string               `json:"plugin_version_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode       respjson.Field
+		PluginVersionID respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaScanPendingErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaScanPendingErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One of the Plugin's skills has the name of an organization skill. `skill_name`
+// is that name.
+type BetaSkillNameTakenErrorDetails struct {
+	ErrorCode constant.SkillNameTaken `json:"error_code" default:"skill_name_taken"`
+	SkillName string                  `json:"skill_name" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		SkillName   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaSkillNameTakenErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaSkillNameTakenErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

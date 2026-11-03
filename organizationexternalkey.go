@@ -467,6 +467,24 @@ func (r *ExternalKeyAttachedAttachment) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The External Key can't be deleted or reconfigured while the organization's
+// Workspace Policy lists it as an allowed key.
+type ExternalKeyInWorkspacePolicyErrorDetails struct {
+	ErrorCode constant.ExternalKeyInWorkspacePolicy `json:"error_code" default:"external_key_in_workspace_policy"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExternalKeyInWorkspacePolicyErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ExternalKeyInWorkspacePolicyErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type ExternalKeyUnattachedAttachment struct {
 	Type constant.Unattached `json:"type" default:"unattached"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].

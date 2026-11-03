@@ -1,6 +1,11 @@
 # Changelog
 
-## [2.5.1](https://github.com/anthropics/anthropic-sdk-go/compare/v2.5.0...v2.5.1) (2026-11-02)
+## [2.6.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.5.0...v2.6.0) (2026-11-03)
+
+### Features
+
+* **api:** add error details types and new error type values
+
 
 ### Chores
 

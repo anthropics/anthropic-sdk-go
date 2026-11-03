@@ -330,6 +330,43 @@ const (
 	DataResidencyUpdateConfigDefaultInferenceGeoUs     DataResidencyUpdateConfigDefaultInferenceGeo = "us"
 )
 
+// The external key changed while the request was validating it. Send the request
+// again.
+type ExternalKeyChangedErrorDetails struct {
+	ErrorCode constant.ExternalKeyChanged `json:"error_code" default:"external_key_changed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExternalKeyChangedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ExternalKeyChangedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The External Key is bound to a user profile, and the Workspace does not have
+// that user profile. A Workspace can use only a key bound to its own user profile
+// or a key that isn't bound to one.
+type KeyProfileMismatchErrorDetails struct {
+	ErrorCode constant.KeyProfileMismatch `json:"error_code" default:"key_profile_mismatch"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r KeyProfileMismatchErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *KeyProfileMismatchErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type NoBillingWorkspaceRole string
 
 const (
@@ -440,6 +477,53 @@ type WorkspaceMember struct {
 // Returns the unmodified JSON received from the API
 func (r WorkspaceMember) RawJSON() string { return r.JSON.raw }
 func (r *WorkspaceMember) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The workspace has reached the member limit that Anthropic set for it.
+type WorkspaceMemberLimitExceededErrorDetails struct {
+	ErrorCode constant.WorkspaceMemberLimitExceeded `json:"error_code" default:"workspace_member_limit_exceeded"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkspaceMemberLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *WorkspaceMemberLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type WorkspacePolicyField string
+
+const (
+	WorkspacePolicyFieldExternalKeyID WorkspacePolicyField = "external_key_id"
+)
+
+// The request breaks the organization's Workspace Policy. The message says which
+// rule it broke; an organization admin can see and change the policy in the
+// Console.
+type WorkspacePolicyViolationErrorDetails struct {
+	ErrorCode constant.WorkspacePolicyViolation `json:"error_code" default:"workspace_policy_violation"`
+	// The request field the broken rule applies to.
+	//
+	// Any of "external_key_id".
+	Field WorkspacePolicyField `json:"field" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		Field       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkspacePolicyViolationErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *WorkspacePolicyViolationErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

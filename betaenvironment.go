@@ -527,6 +527,41 @@ const (
 	BetaEnvironmentScopeAccount      BetaEnvironmentScope = "account"
 )
 
+// The environment is archived, so it cannot be updated.
+type BetaEnvironmentArchivedErrorDetails struct {
+	ErrorCode constant.EnvironmentArchivedErrorCode `json:"error_code" default:"environment_archived"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaEnvironmentArchivedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaEnvironmentArchivedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Anthropic has turned off creating environments for this organization. Existing
+// environments still work.
+type BetaEnvironmentCreateDisabledErrorDetails struct {
+	ErrorCode constant.EnvironmentCreateDisabled `json:"error_code" default:"environment_create_disabled"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaEnvironmentCreateDisabledErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaEnvironmentCreateDisabledErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Response after deleting an environment.
 type BetaEnvironmentDeleteResponse struct {
 	// Environment identifier
@@ -545,6 +580,60 @@ type BetaEnvironmentDeleteResponse struct {
 // Returns the unmodified JSON received from the API
 func (r BetaEnvironmentDeleteResponse) RawJSON() string { return r.JSON.raw }
 func (r *BetaEnvironmentDeleteResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Anthropic has turned off updating environments for this organization. Existing
+// environments still work as they are.
+type BetaEnvironmentUpdateDisabledErrorDetails struct {
+	ErrorCode constant.EnvironmentUpdateDisabled `json:"error_code" default:"environment_update_disabled"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaEnvironmentUpdateDisabledErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaEnvironmentUpdateDisabledErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `config.type` differs from the environment's stored type, which cannot change
+// after creation.
+type BetaInvalidConfigTypeChangeErrorDetails struct {
+	ErrorCode constant.InvalidConfigTypeChange `json:"error_code" default:"invalid_config_type_change"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaInvalidConfigTypeChangeErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaInvalidConfigTypeChangeErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// `metadata` has too many keys, a key or value that is too long, or a reserved
+// key. The message names each problem.
+type BetaInvalidMetadataErrorDetails struct {
+	ErrorCode constant.InvalidMetadata `json:"error_code" default:"invalid_metadata"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaInvalidMetadataErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaInvalidMetadataErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

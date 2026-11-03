@@ -616,6 +616,24 @@ func (r *BetaSpendLimitWorkspaceScopeParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// The organization cannot retrieve, set or delete spend limits with an Admin API
+// credential.
+type BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails struct {
+	ErrorCode constant.SpendLimitsAdminAPIWritesNotEnabled `json:"error_code" default:"spend_limits_admin_api_writes_not_enabled"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Per-member effective-limit report row (`GET /spend_limits/effective`).
 type BetaSpendSummary struct {
 	Actor BetaSpendSummaryActorUnion `json:"actor" api:"required"`

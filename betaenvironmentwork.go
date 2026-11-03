@@ -363,6 +363,27 @@ const (
 	BetaHealthCheckWorkDataTypeHealthcheck BetaHealthCheckWorkDataType = "healthcheck"
 )
 
+// `expected_last_heartbeat` does not match the stored heartbeat, so another worker
+// may hold the lease.
+type BetaHeartbeatPreconditionFailedErrorDetails struct {
+	// The lease as the server holds it.
+	CurrentState BetaWorkLeaseState                   `json:"current_state" api:"required"`
+	ErrorCode    constant.HeartbeatPreconditionFailed `json:"error_code" default:"heartbeat_precondition_failed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CurrentState respjson.Field
+		ErrorCode    respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaHeartbeatPreconditionFailedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaHeartbeatPreconditionFailedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Work resource representing a unit of work in a self-hosted environment.
 //
 // Work items are queued when sessions are created or when long-dormant sessions
@@ -588,6 +609,46 @@ func (r BetaSessionWorkData) RawJSON() string { return r.JSON.raw }
 func (r *BetaSessionWorkData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// A work item's lease as the server holds it.
+type BetaWorkLeaseState struct {
+	// RFC 3339 timestamp of the stored heartbeat, or null if there has been none
+	LastHeartbeat string `json:"last_heartbeat" api:"required"`
+	// Always false: a refused heartbeat does not extend the lease
+	LeaseExtended bool `json:"lease_extended" api:"required"`
+	// Current state of the work item
+	//
+	// Any of "queued", "starting", "active", "stopping", "stopped".
+	State BetaWorkLeaseStateState `json:"state" api:"required"`
+	// TTL of the lease
+	TTLSeconds int64 `json:"ttl_seconds" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		LastHeartbeat respjson.Field
+		LeaseExtended respjson.Field
+		State         respjson.Field
+		TTLSeconds    respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWorkLeaseState) RawJSON() string { return r.JSON.raw }
+func (r *BetaWorkLeaseState) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Current state of the work item
+type BetaWorkLeaseStateState string
+
+const (
+	BetaWorkLeaseStateStateQueued   BetaWorkLeaseStateState = "queued"
+	BetaWorkLeaseStateStateStarting BetaWorkLeaseStateState = "starting"
+	BetaWorkLeaseStateStateActive   BetaWorkLeaseStateState = "active"
+	BetaWorkLeaseStateStateStopping BetaWorkLeaseStateState = "stopping"
+	BetaWorkLeaseStateStateStopped  BetaWorkLeaseStateState = "stopped"
+)
 
 type BetaEnvironmentWorkGetParams struct {
 	EnvironmentID string `path:"environment_id" api:"required" json:"-"`

@@ -67,6 +67,24 @@ func (r *OrganizationService) Get(ctx context.Context, opts ...option.RequestOpt
 	return res, err
 }
 
+// Another change to the organization's members is in progress. Retry the request
+// once it completes.
+type ConcurrentMembershipChangeErrorDetails struct {
+	ErrorCode constant.ConcurrentMembershipChange `json:"error_code" default:"concurrent_membership_change"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ConcurrentMembershipChangeErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ConcurrentMembershipChangeErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type OrganizationInfo struct {
 	// ID of the Organization.
 	ID string `json:"id" api:"required" format:"uuid"`
@@ -105,3 +123,80 @@ const (
 	OrganizationRolePrimaryOwner    OrganizationRole = "primary_owner"
 	OrganizationRoleUser            OrganizationRole = "user"
 )
+
+// The endpoint does not support the organization's type. Each endpoint's
+// description says which organization types it supports.
+type OrganizationTypeNotSupportedErrorDetails struct {
+	ErrorCode constant.OrganizationTypeNotSupported `json:"error_code" default:"organization_type_not_supported"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r OrganizationTypeNotSupportedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *OrganizationTypeNotSupportedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A role attached to an RBAC Group in the request grants owner access, so this API
+// does not add members to that group (directly or through an invite), remove its
+// members, or delete it. Make the change in the organization's admin settings in
+// Claude.
+type RBACGroupGrantsOwnerAccessErrorDetails struct {
+	ErrorCode constant.RBACGroupGrantsOwnerAccess `json:"error_code" default:"rbac_group_grants_owner_access"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RBACGroupGrantsOwnerAccessErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *RBACGroupGrantsOwnerAccessErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The API could not finish checking whether an RBAC Group in the request grants
+// owner access (the check reached a fixed limit), so it made no change. Retrying
+// the same request will not help. Make the change in the organization's admin
+// settings in Claude.
+type RBACGroupOwnerAccessUnconfirmedErrorDetails struct {
+	ErrorCode constant.RBACGroupOwnerAccessUnconfirmed `json:"error_code" default:"rbac_group_owner_access_unconfirmed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RBACGroupOwnerAccessUnconfirmedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *RBACGroupOwnerAccessUnconfirmedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The request depends on a user profile that does not exist in the organization or
+// is no longer active. The request either names this user profile by ID, or names
+// a resource, such as an External Key, that is bound to it.
+type UserProfileNotFoundErrorDetails struct {
+	ErrorCode constant.UserProfileNotFound `json:"error_code" default:"user_profile_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r UserProfileNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *UserProfileNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}

@@ -75,6 +75,114 @@ func (r *BillingError) UnmarshalJSON(data []byte) error {
 
 func (BillingError) ImplErrorObjectUnion() {}
 
+// The API key belongs to the Claude Code workspace, and the user who created it is
+// no longer a member of the organization or of that workspace.
+type ClaudeCodeKeyCreatorNotMemberErrorDetails struct {
+	ErrorCode constant.ClaudeCodeKeyCreatorNotMember `json:"error_code" default:"claude_code_key_creator_not_member"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ClaudeCodeKeyCreatorNotMemberErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ClaudeCodeKeyCreatorNotMemberErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The request's workspace encryption context could not be resolved, so the request
+// was refused. Retry in a few minutes.
+type CmekContextUnavailableErrorDetails struct {
+	ErrorCode constant.CmekContextUnavailable `json:"error_code" default:"cmek_context_unavailable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CmekContextUnavailableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CmekContextUnavailableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The workspace's customer-managed encryption key is disabled or revoked.
+// Re-enable the key, then retry.
+type CmekKeyDisabledErrorDetails struct {
+	ErrorCode constant.CmekKeyDisabled `json:"error_code" default:"cmek_key_disabled"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CmekKeyDisabledErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CmekKeyDisabledErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The key management service's network access controls blocked the request to the
+// workspace's customer-managed encryption key. The key itself may be healthy.
+type CmekKeyNetworkBlockedErrorDetails struct {
+	ErrorCode constant.CmekKeyNetworkBlocked `json:"error_code" default:"cmek_key_network_blocked"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CmekKeyNetworkBlockedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CmekKeyNetworkBlockedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The workspace's customer-managed encryption key could not be reached. Retry the
+// request; if this continues, check that the key is available in your key
+// management service, or contact Anthropic support.
+type CmekKeyUnreachableErrorDetails struct {
+	ErrorCode constant.CmekKeyUnreachable `json:"error_code" default:"cmek_key_unreachable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r CmekKeyUnreachableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CmekKeyUnreachableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The organization has crossed the monthly API usage threshold of its API tier.
+type EnforcedSpendLimitReachedErrorDetails struct {
+	ErrorCode constant.EnforcedSpendLimitReached `json:"error_code" default:"enforced_spend_limit_reached"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r EnforcedSpendLimitReachedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *EnforcedSpendLimitReachedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // ErrorObjectUnion contains all possible properties and values from
 // [InvalidRequestError], [AuthenticationError], [BillingError], [PermissionError],
 // [NotFoundError], [RateLimitError], [GatewayTimeoutError], [APIErrorObject],
@@ -216,15 +324,18 @@ func (r *ErrorResponse) UnmarshalJSON(data []byte) error {
 type ErrorType string
 
 const (
-	ErrorTypeInvalidRequestError ErrorType = "invalid_request_error"
-	ErrorTypeAuthenticationError ErrorType = "authentication_error"
-	ErrorTypePermissionError     ErrorType = "permission_error"
-	ErrorTypeNotFoundError       ErrorType = "not_found_error"
-	ErrorTypeRateLimitError      ErrorType = "rate_limit_error"
-	ErrorTypeTimeoutError        ErrorType = "timeout_error"
-	ErrorTypeOverloadedError     ErrorType = "overloaded_error"
-	ErrorTypeAPIError            ErrorType = "api_error"
-	ErrorTypeBillingError        ErrorType = "billing_error"
+	ErrorTypeInvalidRequestError           ErrorType = "invalid_request_error"
+	ErrorTypeAuthenticationError           ErrorType = "authentication_error"
+	ErrorTypeBillingError                  ErrorType = "billing_error"
+	ErrorTypePermissionError               ErrorType = "permission_error"
+	ErrorTypeNotFoundError                 ErrorType = "not_found_error"
+	ErrorTypeRateLimitError                ErrorType = "rate_limit_error"
+	ErrorTypeTimeoutError                  ErrorType = "timeout_error"
+	ErrorTypeAPIError                      ErrorType = "api_error"
+	ErrorTypeOverloadedError               ErrorType = "overloaded_error"
+	ErrorTypeMemoryPreconditionFailedError ErrorType = "memory_precondition_failed_error"
+	ErrorTypeMemoryPathConflictError       ErrorType = "memory_path_conflict_error"
+	ErrorTypeConflictError                 ErrorType = "conflict_error"
 )
 
 type GatewayTimeoutError struct {
@@ -287,6 +398,27 @@ func (r *NotFoundError) UnmarshalJSON(data []byte) error {
 
 func (NotFoundError) ImplErrorObjectUnion() {}
 
+// Anthropic has disabled the organization for trust and safety reasons. An
+// organization disabled for any other reason, such as billing, does not get this
+// code. `appeal_url`, when present, is where the organization can appeal.
+type OrganizationOnHoldErrorDetails struct {
+	ErrorCode constant.OrganizationOnHold `json:"error_code" default:"organization_on_hold"`
+	AppealURL string                      `json:"appeal_url" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		AppealURL   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r OrganizationOnHoldErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *OrganizationOnHoldErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 type OverloadedError struct {
 	Message string                   `json:"message" api:"required"`
 	Type    constant.OverloadedError `json:"type" default:"overloaded_error"`
@@ -346,3 +478,54 @@ func (r *RateLimitError) UnmarshalJSON(data []byte) error {
 }
 
 func (RateLimitError) ImplErrorObjectUnion() {}
+
+// The request body is not valid for its `Content-Encoding`.
+type RequestBodyEncodingInvalidErrorDetails struct {
+	ErrorCode constant.RequestBodyEncodingInvalid `json:"error_code" default:"request_body_encoding_invalid"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RequestBodyEncodingInvalidErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *RequestBodyEncodingInvalidErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The request's `Content-Encoding` is not supported.
+type RequestBodyEncodingUnsupportedErrorDetails struct {
+	ErrorCode constant.RequestBodyEncodingUnsupported `json:"error_code" default:"request_body_encoding_unsupported"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RequestBodyEncodingUnsupportedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *RequestBodyEncodingUnsupportedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The compressed request body exceeds the request size limit once decoded.
+type RequestBodyTooLargeAfterDecodingErrorDetails struct {
+	ErrorCode constant.RequestBodyTooLargeAfterDecoding `json:"error_code" default:"request_body_too_large_after_decoding"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RequestBodyTooLargeAfterDecodingErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *RequestBodyTooLargeAfterDecodingErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}

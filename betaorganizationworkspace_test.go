@@ -133,6 +133,7 @@ func TestBetaOrganizationWorkspaceListWithOptionalParams(t *testing.T) {
 	_, err := client.Beta.Organization.Workspaces.List(context.TODO(), anthropic.BetaOrganizationWorkspaceListParams{
 		AfterID:         anthropic.String("after_id"),
 		BeforeID:        anthropic.String("before_id"),
+		IDs:             []string{"string"},
 		IncludeArchived: anthropic.Bool(true),
 		IncludeDefault:  anthropic.Bool(true),
 		Limit:           anthropic.Int(1),

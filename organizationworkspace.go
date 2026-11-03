@@ -86,7 +86,7 @@ func (r *OrganizationWorkspaceService) List(ctx context.Context, query Organizat
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/workspaces"
-	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.list", "/v1/organizations/workspaces", "after_id", "before_id", "include_archived", "include_default", "limit"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.list", "/v1/organizations/workspaces", "after_id", "before_id", "ids", "include_archived", "include_default", "limit"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -631,6 +631,10 @@ type OrganizationWorkspaceListParams struct {
 	//
 	// Defaults to `20`. Ranges from `1` to `1000`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Only the Workspaces with these IDs, at most 100. `include_archived` and
+	// `include_default` still apply, and IDs of Workspaces the caller can't list are
+	// left out.
+	IDs []string `query:"ids,omitzero" json:"-"`
 	paramObj
 }
 

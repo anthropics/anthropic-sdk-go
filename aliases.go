@@ -39,26 +39,26 @@ type ClaudeCodeVersionTooOldErrorDetails = shared.ClaudeCodeVersionTooOldErrorDe
 // was refused. Retry in a few minutes.
 //
 // This is an alias to an internal type.
-type CmekContextUnavailableErrorDetails = shared.CmekContextUnavailableErrorDetails
+type CMEKContextUnavailableErrorDetails = shared.CMEKContextUnavailableErrorDetails
 
 // The workspace's customer-managed encryption key is disabled or revoked.
 // Re-enable the key, then retry.
 //
 // This is an alias to an internal type.
-type CmekKeyDisabledErrorDetails = shared.CmekKeyDisabledErrorDetails
+type CMEKKeyDisabledErrorDetails = shared.CMEKKeyDisabledErrorDetails
 
 // The key management service's network access controls blocked the request to the
 // workspace's customer-managed encryption key. The key itself may be healthy.
 //
 // This is an alias to an internal type.
-type CmekKeyNetworkBlockedErrorDetails = shared.CmekKeyNetworkBlockedErrorDetails
+type CMEKKeyNetworkBlockedErrorDetails = shared.CMEKKeyNetworkBlockedErrorDetails
 
 // The workspace's customer-managed encryption key could not be reached. Retry the
 // request; if this continues, check that the key is available in your key
 // management service, or contact Anthropic support.
 //
 // This is an alias to an internal type.
-type CmekKeyUnreachableErrorDetails = shared.CmekKeyUnreachableErrorDetails
+type CMEKKeyUnreachableErrorDetails = shared.CMEKKeyUnreachableErrorDetails
 
 // The organization has crossed the monthly API usage threshold of its API tier.
 //

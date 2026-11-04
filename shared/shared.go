@@ -113,8 +113,8 @@ func (r *ClaudeCodeVersionTooOldErrorDetails) UnmarshalJSON(data []byte) error {
 
 // The request's workspace encryption context could not be resolved, so the request
 // was refused. Retry in a few minutes.
-type CmekContextUnavailableErrorDetails struct {
-	ErrorCode constant.CmekContextUnavailable `json:"error_code" default:"cmek_context_unavailable"`
+type CMEKContextUnavailableErrorDetails struct {
+	ErrorCode constant.CMEKContextUnavailable `json:"error_code" default:"cmek_context_unavailable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode   respjson.Field
@@ -124,15 +124,15 @@ type CmekContextUnavailableErrorDetails struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r CmekContextUnavailableErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *CmekContextUnavailableErrorDetails) UnmarshalJSON(data []byte) error {
+func (r CMEKContextUnavailableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CMEKContextUnavailableErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The workspace's customer-managed encryption key is disabled or revoked.
 // Re-enable the key, then retry.
-type CmekKeyDisabledErrorDetails struct {
-	ErrorCode constant.CmekKeyDisabled `json:"error_code" default:"cmek_key_disabled"`
+type CMEKKeyDisabledErrorDetails struct {
+	ErrorCode constant.CMEKKeyDisabled `json:"error_code" default:"cmek_key_disabled"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode   respjson.Field
@@ -142,15 +142,15 @@ type CmekKeyDisabledErrorDetails struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r CmekKeyDisabledErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *CmekKeyDisabledErrorDetails) UnmarshalJSON(data []byte) error {
+func (r CMEKKeyDisabledErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CMEKKeyDisabledErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The key management service's network access controls blocked the request to the
 // workspace's customer-managed encryption key. The key itself may be healthy.
-type CmekKeyNetworkBlockedErrorDetails struct {
-	ErrorCode constant.CmekKeyNetworkBlocked `json:"error_code" default:"cmek_key_network_blocked"`
+type CMEKKeyNetworkBlockedErrorDetails struct {
+	ErrorCode constant.CMEKKeyNetworkBlocked `json:"error_code" default:"cmek_key_network_blocked"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode   respjson.Field
@@ -160,16 +160,16 @@ type CmekKeyNetworkBlockedErrorDetails struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r CmekKeyNetworkBlockedErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *CmekKeyNetworkBlockedErrorDetails) UnmarshalJSON(data []byte) error {
+func (r CMEKKeyNetworkBlockedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CMEKKeyNetworkBlockedErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The workspace's customer-managed encryption key could not be reached. Retry the
 // request; if this continues, check that the key is available in your key
 // management service, or contact Anthropic support.
-type CmekKeyUnreachableErrorDetails struct {
-	ErrorCode constant.CmekKeyUnreachable `json:"error_code" default:"cmek_key_unreachable"`
+type CMEKKeyUnreachableErrorDetails struct {
+	ErrorCode constant.CMEKKeyUnreachable `json:"error_code" default:"cmek_key_unreachable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode   respjson.Field
@@ -179,8 +179,8 @@ type CmekKeyUnreachableErrorDetails struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r CmekKeyUnreachableErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *CmekKeyUnreachableErrorDetails) UnmarshalJSON(data []byte) error {
+func (r CMEKKeyUnreachableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *CMEKKeyUnreachableErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

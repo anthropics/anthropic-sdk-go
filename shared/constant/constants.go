@@ -114,10 +114,10 @@ type ClientSecretBasic string                       // Always "client_secret_bas
 type ClientSecretPost string                        // Always "client_secret_post"
 type CloseTab string                                // Always "close_tab"
 type Cloud string                                   // Always "cloud"
-type CmekContextUnavailable string                  // Always "cmek_context_unavailable"
-type CmekKeyDisabled string                         // Always "cmek_key_disabled"
-type CmekKeyNetworkBlocked string                   // Always "cmek_key_network_blocked"
-type CmekKeyUnreachable string                      // Always "cmek_key_unreachable"
+type CMEKContextUnavailable string                  // Always "cmek_context_unavailable"
+type CMEKKeyDisabled string                         // Always "cmek_key_disabled"
+type CMEKKeyNetworkBlocked string                   // Always "cmek_key_network_blocked"
+type CMEKKeyUnreachable string                      // Always "cmek_key_unreachable"
 type CodeExecution string                           // Always "code_execution"
 type CodeExecution20250522 string                   // Always "code_execution_20250522"
 type CodeExecution20250825 string                   // Always "code_execution_20250825"
@@ -725,10 +725,10 @@ func (c ClientSecretBasic) Default() ClientSecretBasic           { return "clien
 func (c ClientSecretPost) Default() ClientSecretPost             { return "client_secret_post" }
 func (c CloseTab) Default() CloseTab                             { return "close_tab" }
 func (c Cloud) Default() Cloud                                   { return "cloud" }
-func (c CmekContextUnavailable) Default() CmekContextUnavailable { return "cmek_context_unavailable" }
-func (c CmekKeyDisabled) Default() CmekKeyDisabled               { return "cmek_key_disabled" }
-func (c CmekKeyNetworkBlocked) Default() CmekKeyNetworkBlocked   { return "cmek_key_network_blocked" }
-func (c CmekKeyUnreachable) Default() CmekKeyUnreachable         { return "cmek_key_unreachable" }
+func (c CMEKContextUnavailable) Default() CMEKContextUnavailable { return "cmek_context_unavailable" }
+func (c CMEKKeyDisabled) Default() CMEKKeyDisabled               { return "cmek_key_disabled" }
+func (c CMEKKeyNetworkBlocked) Default() CMEKKeyNetworkBlocked   { return "cmek_key_network_blocked" }
+func (c CMEKKeyUnreachable) Default() CMEKKeyUnreachable         { return "cmek_key_unreachable" }
 func (c CodeExecution) Default() CodeExecution                   { return "code_execution" }
 func (c CodeExecution20250522) Default() CodeExecution20250522   { return "code_execution_20250522" }
 func (c CodeExecution20250825) Default() CodeExecution20250825   { return "code_execution_20250825" }
@@ -1528,10 +1528,10 @@ func (c ClientSecretBasic) MarshalJSON() ([]byte, error)                     { r
 func (c ClientSecretPost) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c CloseTab) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Cloud) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
-func (c CmekContextUnavailable) MarshalJSON() ([]byte, error)                { return marshalString(c) }
-func (c CmekKeyDisabled) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c CmekKeyNetworkBlocked) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
-func (c CmekKeyUnreachable) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c CMEKContextUnavailable) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c CMEKKeyDisabled) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c CMEKKeyNetworkBlocked) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c CMEKKeyUnreachable) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c CodeExecution) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c CodeExecution20250522) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c CodeExecution20250825) MarshalJSON() ([]byte, error)                 { return marshalString(c) }

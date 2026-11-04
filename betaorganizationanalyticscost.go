@@ -113,9 +113,7 @@ type BetaAnalyticsCostGroup struct {
 	// addressed), `scheduled` (a scheduled routine ran), `monitoring` (Claude watching
 	// a channel it was asked to monitor), or `dm` (direct messages with Claude).
 	// Populated only when `claude_tag_category` is in `group_by[]`; null for usage
-	// that is not Claude Tag. Direct-message usage is billed to the individual user
-	// and is reported under that user's product, not under `claude_tag`. New
-	// categories may be added over time.
+	// that is not Claude Tag. New categories may be added over time.
 	//
 	// Any of "dm", "engaged", "monitoring", "proactive", "scheduled".
 	ClaudeTagCategory BetaAnalyticsClaudeTagCategory `json:"claude_tag_category" api:"required"`
@@ -187,8 +185,9 @@ type BetaAnalyticsCostGroup struct {
 	// `session_id` is in `group_by[]`; null for usage outside a managed session.
 	SessionID string `json:"session_id" api:"required"`
 	// Slack channel the usage originated from. Populated only when `slack_channel_id`
-	// is in `group_by[]`; null for usage outside Slack (and for rows recorded before
-	// channel attribution was enabled).
+	// is in `group_by[]`; null for usage outside Slack, for some Claude Tag usage that
+	// has no channel recorded, and for usage recorded before channel attribution was
+	// enabled.
 	SlackChannelID string `json:"slack_channel_id" api:"required"`
 	// Inference speed mode of the usage or cost: `fast` or `standard`. Null unless
 	// `speed` is in `group_by[]`.
@@ -380,10 +379,8 @@ type BetaOrganizationAnalyticsCostListParams struct {
 	// null `api_key_id`. Claude Platform organizations only.
 	APIKeyIDs []string `query:"api_key_ids,omitzero" json:"-"`
 	// Filter to Claude Tag (Claude in Slack) usage in specific spend categories. Usage
-	// with no category never matches. `dm` usage is reported under the user's product
-	// rather than `claude_tag`, so combining this filter with `products[]=claude_tag`
-	// excludes it. Use `group_by[]=claude_tag_category` to break out per-category
-	// values.
+	// with no category never matches. Use `group_by[]=claude_tag_category` to break
+	// out per-category values.
 	ClaudeTagCategories []BetaAnalyticsClaudeTagCategory `query:"claude_tag_categories,omitzero" json:"-"`
 	// Filter to Claude Tag (Claude in Slack) usage attributed to specific Slack users,
 	// by Slack user ID (for example `U0123ABCDEF`), not claude.ai user ID. Usage that

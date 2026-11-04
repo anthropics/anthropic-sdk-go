@@ -947,9 +947,7 @@ type BetaAnalyticsCostBucketedResult struct {
 	// addressed), `scheduled` (a scheduled routine ran), `monitoring` (Claude watching
 	// a channel it was asked to monitor), or `dm` (direct messages with Claude).
 	// Populated only when `claude_tag_category` is in `group_by[]`; null for usage
-	// that is not Claude Tag. Direct-message usage is billed to the individual user
-	// and is reported under that user's product, not under `claude-tag`. New
-	// categories may be added over time.
+	// that is not Claude Tag. New categories may be added over time.
 	//
 	// Any of "dm", "engaged", "monitoring", "proactive", "scheduled".
 	ClaudeTagCategory BetaAnalyticsClaudeTagCategory `json:"claude_tag_category" api:"required"`
@@ -1015,8 +1013,9 @@ type BetaAnalyticsCostBucketedResult struct {
 	// `product: null`).
 	Requests int64 `json:"requests" api:"required"`
 	// Slack channel the usage originated from. Populated only when `slack_channel_id`
-	// is in `group_by[]`; null for usage outside Slack (and for rows recorded before
-	// channel attribution was enabled).
+	// is in `group_by[]`; null for usage outside Slack, for some Claude Tag usage that
+	// has no channel recorded, and for usage recorded before channel attribution was
+	// enabled.
 	SlackChannelID string `json:"slack_channel_id" api:"required"`
 	// Inference speed mode of the usage or cost: `fast` or `standard`. Null unless
 	// `speed` is in `group_by[]`.
@@ -1119,9 +1118,7 @@ type BetaAnalyticsCostUsersItem struct {
 	// addressed), `scheduled` (a scheduled routine ran), `monitoring` (Claude watching
 	// a channel it was asked to monitor), or `dm` (direct messages with Claude).
 	// Populated only when `claude_tag_category` is in `group_by[]`; null for usage
-	// that is not Claude Tag. Direct-message usage is billed to the individual user
-	// and is reported under that user's product, not under `claude-tag`. New
-	// categories may be added over time.
+	// that is not Claude Tag. New categories may be added over time.
 	//
 	// Any of "dm", "engaged", "monitoring", "proactive", "scheduled".
 	ClaudeTagCategory BetaAnalyticsClaudeTagCategory `json:"claude_tag_category" api:"required"`
@@ -1189,8 +1186,9 @@ type BetaAnalyticsCostUsersItem struct {
 	// `product: null`).
 	Requests int64 `json:"requests" api:"required"`
 	// Slack channel the usage originated from. Populated only when `slack_channel_id`
-	// is in `group_by[]`; null for usage outside Slack (and for rows recorded before
-	// channel attribution was enabled).
+	// is in `group_by[]`; null for usage outside Slack, for some Claude Tag usage that
+	// has no channel recorded, and for usage recorded before channel attribution was
+	// enabled.
 	SlackChannelID string `json:"slack_channel_id" api:"required"`
 	// Inference speed mode of the usage or cost: `fast` or `standard`. Null unless
 	// `speed` is in `group_by[]`.
@@ -2744,9 +2742,7 @@ type BetaAnalyticsUsageBucketedResult struct {
 	// addressed), `scheduled` (a scheduled routine ran), `monitoring` (Claude watching
 	// a channel it was asked to monitor), or `dm` (direct messages with Claude).
 	// Populated only when `claude_tag_category` is in `group_by[]`; null for usage
-	// that is not Claude Tag. Direct-message usage is billed to the individual user
-	// and is reported under that user's product, not under `claude-tag`. New
-	// categories may be added over time.
+	// that is not Claude Tag. New categories may be added over time.
 	//
 	// Any of "dm", "engaged", "monitoring", "proactive", "scheduled".
 	ClaudeTagCategory BetaAnalyticsClaudeTagCategory `json:"claude_tag_category" api:"required"`
@@ -2805,8 +2801,9 @@ type BetaAnalyticsUsageBucketedResult struct {
 	// Server-side tool usage metrics.
 	ServerToolUse BetaAnalyticsServerToolUse `json:"server_tool_use" api:"required"`
 	// Slack channel the usage originated from. Populated only when `slack_channel_id`
-	// is in `group_by[]`; null for usage outside Slack (and for rows recorded before
-	// channel attribution was enabled).
+	// is in `group_by[]`; null for usage outside Slack, for some Claude Tag usage that
+	// has no channel recorded, and for usage recorded before channel attribution was
+	// enabled.
 	SlackChannelID string `json:"slack_channel_id" api:"required"`
 	// Inference speed mode of the usage or cost: `fast` or `standard`. Null unless
 	// `speed` is in `group_by[]`.
@@ -2935,9 +2932,7 @@ type BetaAnalyticsUsageUsersItem struct {
 	// addressed), `scheduled` (a scheduled routine ran), `monitoring` (Claude watching
 	// a channel it was asked to monitor), or `dm` (direct messages with Claude).
 	// Populated only when `claude_tag_category` is in `group_by[]`; null for usage
-	// that is not Claude Tag. Direct-message usage is billed to the individual user
-	// and is reported under that user's product, not under `claude-tag`. New
-	// categories may be added over time.
+	// that is not Claude Tag. New categories may be added over time.
 	//
 	// Any of "dm", "engaged", "monitoring", "proactive", "scheduled".
 	ClaudeTagCategory BetaAnalyticsClaudeTagCategory `json:"claude_tag_category" api:"required"`
@@ -2999,8 +2994,9 @@ type BetaAnalyticsUsageUsersItem struct {
 	// Server-side tool usage metrics.
 	ServerToolUse BetaAnalyticsServerToolUse `json:"server_tool_use" api:"required"`
 	// Slack channel the usage originated from. Populated only when `slack_channel_id`
-	// is in `group_by[]`; null for usage outside Slack (and for rows recorded before
-	// channel attribution was enabled).
+	// is in `group_by[]`; null for usage outside Slack, for some Claude Tag usage that
+	// has no channel recorded, and for usage recorded before channel attribution was
+	// enabled.
 	SlackChannelID string `json:"slack_channel_id" api:"required"`
 	// Inference speed mode of the usage or cost: `fast` or `standard`. Null unless
 	// `speed` is in `group_by[]`.

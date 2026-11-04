@@ -368,14 +368,14 @@ type BetaOrganizationAnalyticsUsageListParams struct {
 	// `group_by[]=actor_type` to break out per-kind values.
 	ActorTypes []BetaAnalyticsActorType `query:"actor_types,omitzero" json:"-"`
 	// Filter to usage incurred by sessions of specific Claude Managed Agents agents.
-	// Use `group_by[]=agent_id` to break out per-agent values. Claude Developer
-	// Platform organizations only.
+	// Use `group_by[]=agent_id` to break out per-agent values. Claude Platform
+	// organizations only.
 	AgentIDs []string `query:"agent_ids,omitzero" json:"-"`
 	// Filter to usage authenticated by specific API keys, by tagged API key ID
 	// (`apikey_...`), whichever identity the usage is attributed to. Include an empty
 	// entry (`api_key_ids[]=`) to also match usage that no API key authenticated. Use
 	// `group_by[]=api_key_id` to break out per-key values; usage without a key has a
-	// null `api_key_id`. Claude Developer Platform organizations only.
+	// null `api_key_id`. Claude Platform organizations only.
 	APIKeyIDs []string `query:"api_key_ids,omitzero" json:"-"`
 	// Filter to Claude Tag (Claude in Slack) usage in specific spend categories. Usage
 	// with no category never matches. `dm` usage is reported under the user's product
@@ -393,11 +393,11 @@ type BetaOrganizationAnalyticsUsageListParams struct {
 	ContextWindows []BetaAnalyticsContextWindow `query:"context_windows,omitzero" json:"-"`
 	// Filter to usage incurred by Claude Managed Agents sessions that specific
 	// deployments started. Use `group_by[]=deployment_id` to break out per-deployment
-	// values. Claude Developer Platform organizations only.
+	// values. Claude Platform organizations only.
 	DeploymentIDs []string `query:"deployment_ids,omitzero" json:"-"`
 	// Filter to usage incurred by Claude Managed Agents sessions that ran in specific
 	// environments. Use `group_by[]=environment_id` to break out per-environment
-	// values. Claude Developer Platform organizations only.
+	// values. Claude Platform organizations only.
 	EnvironmentIDs []string `query:"environment_ids,omitzero" json:"-"`
 	// Dimensions to break usage out by (at most 5): one row per combination of their
 	// values with usage in the range (and per time bucket, when `time_bucket_width` is
@@ -418,12 +418,12 @@ type BetaOrganizationAnalyticsUsageListParams struct {
 	// group attribution never matches.
 	RBACGroupIDs []string `query:"rbac_group_ids,omitzero" json:"-"`
 	// Filter to specific service tiers. Use `group_by[]=service_tier` to break out
-	// per-tier values. Claude Developer Platform organizations only; matches nothing
-	// for a Claude Enterprise organization.
+	// per-tier values. Claude Platform organizations only; matches nothing for a
+	// Claude Enterprise organization.
 	ServiceTiers []BetaAnalyticsServiceTier `query:"service_tiers,omitzero" json:"-"`
 	// Filter to usage incurred by specific Claude Managed Agents sessions, by tagged
 	// session ID (`sesn_...`). Use `group_by[]=session_id` to break out per-session
-	// values. Claude Developer Platform organizations only.
+	// values. Claude Platform organizations only.
 	SessionIDs []string `query:"session_ids,omitzero" json:"-"`
 	// Filter to usage originating from specific Slack channels. Use
 	// `group_by[]=slack_channel_id` to break out per-channel values.
@@ -433,12 +433,11 @@ type BetaOrganizationAnalyticsUsageListParams struct {
 	Speeds []BetaAnalyticsSpeed `query:"speeds,omitzero" json:"-"`
 	// Filter to usage attributed to specific user profiles, by tagged user profile ID
 	// (`uprof_...`). Use `group_by[]=user_profile_id` to break out per-profile values.
-	// Claude Developer Platform organizations only.
+	// Claude Platform organizations only.
 	UserProfileIDs []string `query:"user_profile_ids,omitzero" json:"-"`
 	// Filter to usage in specific workspaces, by tagged workspace ID (`wrkspc_...`).
-	// Use `group_by[]=workspace_id` to break out per-workspace values. Claude
-	// Developer Platform organizations only; matches nothing for a Claude Enterprise
-	// organization.
+	// Use `group_by[]=workspace_id` to break out per-workspace values. Claude Platform
+	// organizations only; matches nothing for a Claude Enterprise organization.
 	WorkspaceIDs []string `query:"workspace_ids,omitzero" json:"-"`
 	// Sort direction of the `order_by` metric, or of the time buckets when `order_by`
 	// is `time` and `time_bucket_width` is set. Defaults to `desc`.

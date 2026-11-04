@@ -241,8 +241,8 @@ func (r *BetaDreamService) Cancel(ctx context.Context, dreamID string, body Beta
 // writes its result into the input memory store instead.
 //
 // The Dreams API is in research preview: the request and response shapes are
-// volatile and may change without the deprecation period that applies to
-// generally-available endpoints.
+// volatile and may change without the deprecation period that applies to stable
+// endpoints.
 //
 // See the
 // [Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#how-it-works)

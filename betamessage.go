@@ -11832,8 +11832,8 @@ func (u betaContentBlockParamUnionContent) GetContent() (res betaContentBlockPar
 	return res
 }
 
-// Can have the runtime types [_BetaRequestDocumentBlockParam],
-// [_[]BetaCodeExecutionOutputBlockParam],
+// Can have the runtime types [*BetaRequestDocumentBlockParam],
+// [*[]BetaCodeExecutionOutputBlockParam],
 // [*[]BetaBashCodeExecutionOutputBlockParam], [*string]
 type betaContentBlockParamUnionContentContent struct{ any }
 
@@ -26255,7 +26255,7 @@ const (
 type BetaMessageNewParams struct {
 	// The maximum number of tokens to generate before stopping.
 	//
-	// Note that our models may stop _before_ reaching this maximum. This parameter
+	// Note that our models may stop *before* reaching this maximum. This parameter
 	// only specifies the absolute maximum number of tokens to generate.
 	//
 	// Set to `0` to populate the

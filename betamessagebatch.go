@@ -721,7 +721,7 @@ func (r *BetaMessageBatchNewParamsRequest) UnmarshalJSON(data []byte) error {
 type BetaMessageBatchNewParamsRequestParams struct {
 	// The maximum number of tokens to generate before stopping.
 	//
-	// Note that our models may stop _before_ reaching this maximum. This parameter
+	// Note that our models may stop *before* reaching this maximum. This parameter
 	// only specifies the absolute maximum number of tokens to generate.
 	//
 	// Set to `0` to populate the

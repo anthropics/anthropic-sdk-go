@@ -136,6 +136,7 @@ func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts 
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 
@@ -252,6 +253,7 @@ func (r *MessageService) NewStreaming(ctx context.Context, params MessageNewPara
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 	opts = append(opts, option.WithJSONSet("stream", true))
@@ -316,9 +318,10 @@ func (r *MessageService) CountTokens(ctx context.Context, params MessageCountTok
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens"
-	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"), countTokensSpan(string(params.Model), &res, func(count *MessageTokensCount) int64 { return count.InputTokens }))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

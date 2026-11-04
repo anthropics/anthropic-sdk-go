@@ -179,6 +179,7 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 		Body:       reader,
 	}
 	cfg.ResponseBodyInto = dst
+	cfg.OpenTelemetry.responseBodyInto = dst
 	opts, err = resolveCredential(opts)
 	if err != nil {
 		return nil, err

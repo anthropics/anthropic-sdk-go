@@ -62,11 +62,12 @@ func (r *BetaSessionService) New(ctx context.Context, params BetaSessionNewParam
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	path := "v1/sessions"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
-	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.create", "/v1/sessions"), sessionsCreateSpan(params, &res), requestconfig.WithSpanCreatedID("anthropic.session.id", &res, func(created *BetaManagedAgentsSession) string { return created.ID }))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.create", "/v1/sessions"), sessionsCreateSpan(params), requestconfig.WithSpanCreatedID("anthropic.session.id", &res, func(created *BetaManagedAgentsSession) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 
 	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 	"github.com/anthropics/anthropic-sdk-go/v2/packages/ssestream"
@@ -15,7 +16,7 @@ import (
 // the application decodes them, and message_stop is the stream's last event. A
 // stream that ends before it leaves the span what the events built of the
 // Message's content. request is what the span recorded of the call's
-// parameters, and message is an empty Message of the method's API, which the
+// content, and message is an empty Message of the method's API, which the
 // events build.
 func MessageStreamObserver(call *tracing.APICall, request *MessagesCreateRequest, message StreamedMessage) tracing.StreamObserver {
 	recorder := &messageStreamRecorder{call: call, request: request, message: message}
@@ -47,7 +48,7 @@ type StreamedMessage interface {
 // whichever way it ends.
 type messageStreamRecorder struct {
 	call *tracing.APICall
-	// request is what the span recorded of the call's parameters.
+	// request is what the span keeps of the content of the call's request.
 	request *MessagesCreateRequest
 	// timed is set once the time to the first chunk is on the span.
 	timed bool
@@ -98,10 +99,12 @@ func (d *messageStreamRecorder) record(event ssestream.Event, decoded any) {
 			return
 		}
 		d.started = true
-		var response responseMessage
-		response.fromJSON(gjson.Parse(message.RawJSON()))
-		// message_start has output tokens too, of a Message that has yet to stream.
-		call.Span.SetAttributes(response.attributes(event.Type == "message_delta")...)
+		complete, response := event.Type == "message_delta", message.RawJSON()
+		if !complete {
+			response = withoutDeltaFields(response)
+		}
+		tracing.SetSpanResponseAttributes(call, response)
+		call.Span.SetAttributes(tokenSumAttributes(gjson.Parse(response), complete)...)
 	case "content_block_start":
 		// Applied without content mode too: a fallback block names the model that
 		// served the response, and the accumulator takes the Message's model from it.
@@ -116,14 +119,30 @@ func (d *messageStreamRecorder) record(event ssestream.Event, decoded any) {
 		if content && message.AccumulateEvent(decoded) != nil {
 			content = false
 		}
-		var response responseMessage
-		response.fromJSON(gjson.Parse(message.RawJSON()))
-		attrs := response.attributes(true)
-		if content && response.content.Exists() {
-			attrs = append(attrs, outputContentAttributes(call, d.request, contentParts(response.content))...)
+		tracing.SetSpanResponseAttributes(call, message.RawJSON())
+		response := gjson.Parse(message.RawJSON())
+		attrs := tokenSumAttributes(response, true)
+		if output := response.Get("content"); content && output.Exists() {
+			attrs = append(attrs, outputContentAttributes(call, d.request, contentParts(output))...)
 		}
 		call.Span.SetAttributes(attrs...)
 	}
+}
+
+// messageDeltaFields are the paths, in the JSON of a Message, of the values that
+// only message_delta ends, among those that the span reads there.
+var messageDeltaFields = []string{"stop_reason", "usage.output_tokens", "usage.output_tokens_details"}
+
+// withoutDeltaFields returns message, the JSON of a Message that message_start
+// began, without [messageDeltaFields]: message_start has output tokens too, of a
+// Message that has yet to stream.
+func withoutDeltaFields(message string) string {
+	for _, field := range messageDeltaFields {
+		if without, err := sjson.Delete(message, field); err == nil {
+			message = without
+		}
+	}
+	return message
 }
 
 // cutShort sets gen_ai.output.messages on the span of a stream that ends before

@@ -429,8 +429,8 @@ func (u BetaManagedAgentsAgentWithOverridesParamsToolUnion) GetConfigs() (res be
 	return
 }
 
-// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParamsUnion],
-// [_[]BetaManagedAgentsMCPToolConfigParams]
+// Can have the runtime types [*[]BetaManagedAgentsAgentToolConfigParamsUnion],
+// [*[]BetaManagedAgentsMCPToolConfigParams]
 type betaManagedAgentsAgentWithOverridesParamsToolUnionConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -889,8 +889,8 @@ func init() {
 //
 // The properties MemoryStoreID, Type are required.
 type BetaManagedAgentsMemoryStoreResourceParam struct {
-	// The memory store ID (memstore\_...). Must belong to the caller's organization
-	// and workspace.
+	// The memory store ID (memstore_...). Must belong to the caller's organization and
+	// workspace.
 	MemoryStoreID string `json:"memory_store_id" api:"required"`
 	// Per-attachment guidance for the agent on how to use this store. Rendered into
 	// the memory section of the system prompt. Max 4096 chars.
@@ -1169,7 +1169,7 @@ type BetaManagedAgentsOutcomeEvaluationResource struct {
 	Explanation string `json:"explanation" api:"required"`
 	// 0-indexed revision cycle the outcome is currently on.
 	Iteration int64 `json:"iteration" api:"required"`
-	// Server-generated outc\_ ID for this outcome.
+	// Server-generated outc_ ID for this outcome.
 	OutcomeID string `json:"outcome_id" api:"required"`
 	// Current evaluation state. `pending` before the agent begins work; `running`
 	// while producing or revising; `evaluating` while the grader scores;
@@ -1674,8 +1674,8 @@ func (u BetaManagedAgentsSessionAgentUpdateToolUnionParam) GetConfigs() (res bet
 	return
 }
 
-// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParamsUnion],
-// [_[]BetaManagedAgentsMCPToolConfigParams]
+// Can have the runtime types [*[]BetaManagedAgentsAgentToolConfigParamsUnion],
+// [*[]BetaManagedAgentsMCPToolConfigParams]
 type betaManagedAgentsSessionAgentUpdateToolUnionParamConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:

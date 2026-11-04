@@ -485,7 +485,7 @@ func init() {
 
 // Unified Environment resource for both cloud and self-hosted environments.
 type BetaEnvironment struct {
-	// Environment identifier (e.g., 'env\_...')
+	// Environment identifier (e.g., 'env_...')
 	ID string `json:"id" api:"required"`
 	// RFC 3339 timestamp when environment was archived, or null if not archived
 	ArchivedAt string `json:"archived_at" api:"required"`

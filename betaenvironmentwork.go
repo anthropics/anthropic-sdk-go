@@ -417,7 +417,7 @@ const (
 // receive new messages. The Environment Manager polls for work items and executes
 // them on customer-hosted infrastructure.
 type BetaSelfHostedWork struct {
-	// Work identifier (e.g., 'work\_...')
+	// Work identifier (e.g., 'work_...')
 	ID string `json:"id" api:"required"`
 	// RFC 3339 timestamp when work was acknowledged by Environment Manager
 	AcknowledgedAt string `json:"acknowledged_at" api:"required"`
@@ -618,7 +618,7 @@ func (r *BetaSelfHostedWorkUpdateRequestParam) UnmarshalJSON(data []byte) error 
 // This resource type is used when work represents a session that needs to be
 // executed in a self-hosted environment.
 type BetaSessionWorkData struct {
-	// Session identifier (e.g., 'session\_...')
+	// Session identifier (e.g., 'session_...')
 	ID string `json:"id" api:"required"`
 	// Type of work data
 	Type constant.Session `json:"type" default:"session"`

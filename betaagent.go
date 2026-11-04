@@ -6616,8 +6616,8 @@ func (u BetaAgentNewParamsToolUnion) GetConfigs() (res betaAgentNewParamsToolUni
 	return
 }
 
-// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParamsUnion],
-// [_[]BetaManagedAgentsMCPToolConfigParams]
+// Can have the runtime types [*[]BetaManagedAgentsAgentToolConfigParamsUnion],
+// [*[]BetaManagedAgentsMCPToolConfigParams]
 type betaAgentNewParamsToolUnionConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -6884,8 +6884,8 @@ func (u BetaAgentUpdateParamsToolUnion) GetConfigs() (res betaAgentUpdateParamsT
 	return
 }
 
-// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParamsUnion],
-// [_[]BetaManagedAgentsMCPToolConfigParams]
+// Can have the runtime types [*[]BetaManagedAgentsAgentToolConfigParamsUnion],
+// [*[]BetaManagedAgentsMCPToolConfigParams]
 type betaAgentUpdateParamsToolUnionConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:

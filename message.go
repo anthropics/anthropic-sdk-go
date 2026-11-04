@@ -7884,8 +7884,8 @@ func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent)
 	return
 }
 
-// Can have the runtime types [_[]TextBlockParam],
-// [_[]ToolResultBlockParamContentUnion], [*[]WebSearchResultBlockParam],
+// Can have the runtime types [*[]TextBlockParam],
+// [*[]ToolResultBlockParamContentUnion], [*[]WebSearchResultBlockParam],
 // [*WebFetchToolResultErrorBlockParam], [*WebFetchBlockParam],
 // [*CodeExecutionToolResultErrorParam], [*CodeExecutionResultBlockParam],
 // [*EncryptedCodeExecutionResultBlockParam],
@@ -8150,8 +8150,8 @@ func (u contentBlockParamUnionContent) GetContent() (res contentBlockParamUnionC
 	return res
 }
 
-// Can have the runtime types [*DocumentBlockParam],
-// [_[]CodeExecutionOutputBlockParam], [_[]BashCodeExecutionOutputBlockParam],
+// Can have the runtime types [_DocumentBlockParam],
+// [_[]CodeExecutionOutputBlockParam], [*[]BashCodeExecutionOutputBlockParam],
 // [*string]
 type contentBlockParamUnionContentContent struct{ any }
 
@@ -10826,7 +10826,7 @@ func (u MessageParam) GetContent() (res messageParamContent) {
 	return
 }
 
-// Can have the runtime types [_[]ContentBlockParamUnion], [_[]TextBlockParam]
+// Can have the runtime types [*[]ContentBlockParamUnion], [*[]TextBlockParam]
 type messageParamContent struct{ any }
 
 // Use the following switch statement to get the type of the union:

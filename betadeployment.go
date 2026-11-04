@@ -588,8 +588,8 @@ func (u BetaManagedAgentsDeploymentInitialEventParamsUnion) GetContent() (res be
 }
 
 // Can have the runtime types
-// [_[]BetaManagedAgentsUserMessageEventParamsContentUnion],
-// [_[]BetaManagedAgentsSystemContentBlockParam]
+// [*[]BetaManagedAgentsUserMessageEventParamsContentUnion],
+// [*[]BetaManagedAgentsSystemContentBlockParam]
 type betaManagedAgentsDeploymentInitialEventParamsUnionContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -1411,8 +1411,8 @@ func (r *BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError) Unmars
 
 // A memory store attached to each session created from this deployment.
 type BetaManagedAgentsMemoryStoreResourceConfig struct {
-	// The memory store ID (memstore\_...). Must belong to the caller's organization
-	// and workspace.
+	// The memory store ID (memstore_...). Must belong to the caller's organization and
+	// workspace.
 	MemoryStoreID string               `json:"memory_store_id" api:"required"`
 	Type          constant.MemoryStore `json:"type" default:"memory_store"`
 	// Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts
@@ -1472,7 +1472,7 @@ func (r *BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError) Unmar
 // only cron is supported currently.
 type BetaManagedAgentsSchedule struct {
 	// 5-field POSIX cron expression: minute hour day-of-month month day-of-week (e.g.,
-	// "0 9 \* \* 1-5" for weekdays at 9am). Day-of-week is 0-7 where 0 and 7 both mean
+	// "0 9 * * 1-5" for weekdays at 9am). Day-of-week is 0-7 where 0 and 7 both mean
 	// Sunday. Extended cron syntax - seconds or year fields, and the special
 	// characters L, W, #, and ? - is not supported, nor are predefined shortcuts
 	// (@daily).
@@ -1512,7 +1512,7 @@ func (r *BetaManagedAgentsSchedule) UnmarshalJSON(data []byte) error {
 // The properties Expression, Timezone, Type are required.
 type BetaManagedAgentsScheduleParams struct {
 	// 5-field POSIX cron expression: minute hour day-of-month month day-of-week (e.g.,
-	// "0 9 \* \* 1-5" for weekdays at 9am). Day-of-week is 0-7 where 0 and 7 both mean
+	// "0 9 * * 1-5" for weekdays at 9am). Day-of-week is 0-7 where 0 and 7 both mean
 	// Sunday. Extended cron syntax - seconds or year fields, and the special
 	// characters L, W, #, and ? - is not supported, nor are predefined shortcuts
 	// (@daily).

@@ -355,8 +355,8 @@ func (r *BetaManagedAgentsGitHubRepositoryResourceCheckoutUnion) UnmarshalJSON(d
 
 // A memory store attached to an agent session.
 type BetaManagedAgentsMemoryStoreResource struct {
-	// The memory store ID (memstore\_...). Must belong to the caller's organization
-	// and workspace.
+	// The memory store ID (memstore_...). Must belong to the caller's organization and
+	// workspace.
 	MemoryStoreID string               `json:"memory_store_id" api:"required"`
 	Type          constant.MemoryStore `json:"type" default:"memory_store"`
 	// Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts

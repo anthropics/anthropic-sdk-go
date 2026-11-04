@@ -11527,8 +11527,8 @@ func (u BetaContentBlockParamUnion) GetContent() (res betaContentBlockParamUnion
 	return
 }
 
-// Can have the runtime types [_[]BetaTextBlockParam],
-// [_[]BetaToolResultBlockParamContentUnion], [*[]BetaWebSearchResultBlockParam],
+// Can have the runtime types [*[]BetaTextBlockParam],
+// [*[]BetaToolResultBlockParamContentUnion], [*[]BetaWebSearchResultBlockParam],
 // [*BetaWebFetchToolResultErrorBlockParam], [*BetaWebFetchBlockParam],
 // [*BetaAdvisorToolResultErrorParam], [*BetaAdvisorResultBlockParam],
 // [*BetaAdvisorRedactedResultBlockParam],
@@ -11832,9 +11832,9 @@ func (u betaContentBlockParamUnionContent) GetContent() (res betaContentBlockPar
 	return res
 }
 
-// Can have the runtime types [*BetaRequestDocumentBlockParam],
+// Can have the runtime types [_BetaRequestDocumentBlockParam],
 // [_[]BetaCodeExecutionOutputBlockParam],
-// [_[]BetaBashCodeExecutionOutputBlockParam], [*string]
+// [*[]BetaBashCodeExecutionOutputBlockParam], [*string]
 type betaContentBlockParamUnionContentContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -14725,8 +14725,8 @@ func (u BetaMessageParam) GetContent() (res betaMessageParamContent) {
 	return
 }
 
-// Can have the runtime types [_[]BetaContentBlockParamUnion],
-// [_[]BetaSystemMessageParamContentUnion]
+// Can have the runtime types [*[]BetaContentBlockParamUnion],
+// [*[]BetaSystemMessageParamContentUnion]
 type betaMessageParamContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -22230,7 +22230,7 @@ func (u BetaToolUnionParam) GetConfigs() (res betaToolUnionParamConfigs) {
 }
 
 // Can have the runtime types [*BetaBrowserToolsetConfigsParam],
-// [*BetaComputerToolsetConfigsParam], [\*map[string]BetaMCPToolConfigParam]
+// [*BetaComputerToolsetConfigsParam], [*map[string]BetaMCPToolConfigParam]
 type betaToolUnionParamConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -27619,7 +27619,7 @@ func (u BetaMessageCountTokensParamsToolUnion) GetConfigs() (res betaMessageCoun
 }
 
 // Can have the runtime types [*BetaBrowserToolsetConfigsParam],
-// [*BetaComputerToolsetConfigsParam], [\*map[string]BetaMCPToolConfigParam]
+// [*BetaComputerToolsetConfigsParam], [*map[string]BetaMCPToolConfigParam]
 type betaMessageCountTokensParamsToolUnionConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:

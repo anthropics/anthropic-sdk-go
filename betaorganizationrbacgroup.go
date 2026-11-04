@@ -125,14 +125,8 @@ func (r *BetaOrganizationRBACGroupService) ListAutoPaging(ctx context.Context, q
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400): A role attached to an RBAC
-//     Group in the request grants owner access, so this API does not add members to
-//     that group (directly or through an invite), remove its members, or delete it.
-//     Make the change in the organization's admin settings in Claude.
-//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
-//     finish checking whether an RBAC Group in the request grants owner access, so
-//     it made no change. Retrying the same request will not help. Make the change in
-//     the organization's admin settings in Claude.
+//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400)
+//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400)
 func (r *BetaOrganizationRBACGroupService) Delete(ctx context.Context, rbacGroupID string, opts ...option.RequestOption) (res *BetaDeletedRBACGroup, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if rbacGroupID == "" {

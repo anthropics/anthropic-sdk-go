@@ -225,9 +225,7 @@ func (r *BetaOrganizationPluginMarketplaceService) ListAutoPaging(ctx context.Co
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400): The request's `Content-Type`
-//     header names a charset other than UTF-8, ISO-8859-1 or US-ASCII. Send the
-//     request with no charset, or with one of these.
+//   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400)
 func (r *BetaOrganizationPluginMarketplaceService) ValidateArchive(ctx context.Context, params BetaOrganizationPluginMarketplaceValidateArchiveParams, opts ...option.RequestOption) (res *BetaPluginMarketplaceValidationReport, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

@@ -48,27 +48,13 @@ func NewBetaOrganizationInviteService(opts ...option.RequestOption) (r BetaOrgan
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeAlreadyMember] (HTTP 400): The email address already belongs to a
-//     user in the organization. The message names the user.
-//   - [ErrorCodeCannotInviteEmailsWithUnverifiedDomains] (HTTP 400): The email
-//     address's domain is not one of the verified domains of the organization's
-//     parent organization.
-//   - [ErrorCodeEmailDomainNotAllowed] (HTTP 400): The organization restricts
-//     invites to an allowed list of email domains, and the list is empty or does not
-//     include the email address's domain.
-//   - [ErrorCodeInviteAlreadyExists] (HTTP 400): A pending invite already exists for
-//     the email address. The message names the invite.
-//   - [ErrorCodeOrgMemberLimitExceeded] (HTTP 400): The organization has reached the
-//     member limit that Anthropic set for it. Pending invites count toward the
-//     limit.
-//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400): A role attached to an RBAC
-//     Group in the request grants owner access, so this API does not add members to
-//     that group (directly or through an invite), remove its members, or delete it.
-//     Make the change in the organization's admin settings in Claude.
-//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
-//     finish checking whether an RBAC Group in the request grants owner access, so
-//     it made no change. Retrying the same request will not help. Make the change in
-//     the organization's admin settings in Claude.
+//   - [ErrorCodeAlreadyMember] (HTTP 400)
+//   - [ErrorCodeCannotInviteEmailsWithUnverifiedDomains] (HTTP 400)
+//   - [ErrorCodeEmailDomainNotAllowed] (HTTP 400)
+//   - [ErrorCodeInviteAlreadyExists] (HTTP 400)
+//   - [ErrorCodeOrgMemberLimitExceeded] (HTTP 400)
+//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400)
+//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400)
 func (r *BetaOrganizationInviteService) New(ctx context.Context, body BetaOrganizationInviteNewParams, opts ...option.RequestOption) (res *BetaOrganizationInvite, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/invites"

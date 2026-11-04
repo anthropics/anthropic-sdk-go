@@ -50,18 +50,10 @@ func NewOrganizationWorkspaceService(opts ...option.RequestOption) (r Organizati
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeKeyProfileMismatch] (HTTP 400): The External Key is bound to a user
-//     profile, and the Workspace does not have that user profile. A Workspace can
-//     use only a key bound to its own user profile or a key that isn't bound to one.
-//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
-//     profile that does not exist in the organization or is no longer active. The
-//     request either names this user profile by ID, or names a resource, such as an
-//     External Key, that is bound to it.
-//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400): The request breaks the
-//     organization's Workspace Policy. The message says which rule it broke; an
-//     organization admin can see and change the policy in the Console.
-//   - [ErrorCodeExternalKeyChanged] (HTTP 409): The external key changed while the
-//     request was validating it. Send the request again.
+//   - [ErrorCodeKeyProfileMismatch] (HTTP 400)
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400)
+//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400)
+//   - [ErrorCodeExternalKeyChanged] (HTTP 409)
 func (r *OrganizationWorkspaceService) New(ctx context.Context, body OrganizationWorkspaceNewParams, opts ...option.RequestOption) (res *Workspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/workspaces"
@@ -88,18 +80,10 @@ func (r *OrganizationWorkspaceService) Get(ctx context.Context, workspaceID stri
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeKeyProfileMismatch] (HTTP 400): The External Key is bound to a user
-//     profile, and the Workspace does not have that user profile. A Workspace can
-//     use only a key bound to its own user profile or a key that isn't bound to one.
-//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
-//     profile that does not exist in the organization or is no longer active. The
-//     request either names this user profile by ID, or names a resource, such as an
-//     External Key, that is bound to it.
-//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400): The request breaks the
-//     organization's Workspace Policy. The message says which rule it broke; an
-//     organization admin can see and change the policy in the Console.
-//   - [ErrorCodeExternalKeyChanged] (HTTP 409): The external key changed while the
-//     request was validating it. Send the request again.
+//   - [ErrorCodeKeyProfileMismatch] (HTTP 400)
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400)
+//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400)
+//   - [ErrorCodeExternalKeyChanged] (HTTP 409)
 func (r *OrganizationWorkspaceService) Update(ctx context.Context, workspaceID string, body OrganizationWorkspaceUpdateParams, opts ...option.RequestOption) (res *Workspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {

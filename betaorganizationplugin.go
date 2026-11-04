@@ -90,21 +90,12 @@ func NewBetaOrganizationPluginService(opts ...option.RequestOption) (r BetaOrgan
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
-//     network access controls blocked the request to the workspace's
-//     customer-managed encryption key. The key itself may be healthy.
-//   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400): The request's `Content-Type`
-//     header names a charset other than UTF-8, ISO-8859-1 or US-ASCII. Send the
-//     request with no charset, or with one of these.
-//   - [ErrorCodeBetaPluginNameTaken] (HTTP 409): The marketplace already holds this
-//     name. `plugin_id` is the Plugin that holds it, and can be absent.
-//   - [ErrorCodeBetaSkillNameTaken] (HTTP 409): One of the Plugin's skills has the
-//     name of an organization skill. `skill_name` is that name.
-//   - [ErrorCodeBetaRegistrationPending] (HTTP 503): The Plugin version was stored
-//     but is not yet usable in claude.ai. `plugin_id` and `plugin_version_id`
-//     identify what was stored.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400)
+//   - [ErrorCodeBetaPluginNameTaken] (HTTP 409)
+//   - [ErrorCodeBetaSkillNameTaken] (HTTP 409)
+//   - [ErrorCodeBetaRegistrationPending] (HTTP 503)
 func (r *BetaOrganizationPluginService) New(ctx context.Context, params BetaOrganizationPluginNewParams, opts ...option.RequestOption) (res *BetaPlugin, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -199,17 +190,11 @@ func (r *BetaOrganizationPluginService) Get(ctx context.Context, pluginID string
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
-//     network access controls blocked the request to the workspace's
-//     customer-managed encryption key. The key itself may be healthy.
-//   - [ErrorCodeBetaScanFailed] (HTTP 400): The version in `plugin_version_id` did
-//     not pass its content scan, so it cannot be served.
-//   - [ErrorCodeBetaScanPending] (HTTP 409): The content scan of the version in
-//     `plugin_version_id` is still running. Retry once the scan finishes.
-//   - [ErrorCodeBetaSkillNameTaken] (HTTP 409): One of the Plugin's skills has the
-//     name of an organization skill. `skill_name` is that name.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeBetaScanFailed] (HTTP 400)
+//   - [ErrorCodeBetaScanPending] (HTTP 409)
+//   - [ErrorCodeBetaSkillNameTaken] (HTTP 409)
 func (r *BetaOrganizationPluginService) Update(ctx context.Context, pluginID string, params BetaOrganizationPluginUpdateParams, opts ...option.RequestOption) (res *BetaPlugin, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -330,8 +315,7 @@ func (r *BetaOrganizationPluginService) ListAutoPaging(ctx context.Context, para
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
 func (r *BetaOrganizationPluginService) Delete(ctx context.Context, pluginID string, body BetaOrganizationPluginDeleteParams, opts ...option.RequestOption) (res *BetaDeletedPlugin, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))

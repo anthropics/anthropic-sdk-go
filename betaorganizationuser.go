@@ -96,10 +96,8 @@ func (r *BetaOrganizationUserService) ListAutoPaging(ctx context.Context, query 
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeCannotRemoveLastMember] (HTTP 400): The user is the organization's
-//     only member. Add another member before removing this one.
-//   - [ErrorCodeConcurrentMembershipChange] (HTTP 409): Another change to the
-//     organization's members is in progress. Retry the request once it completes.
+//   - [ErrorCodeCannotRemoveLastMember] (HTTP 400)
+//   - [ErrorCodeConcurrentMembershipChange] (HTTP 409)
 func (r *BetaOrganizationUserService) Remove(ctx context.Context, userID string, opts ...option.RequestOption) (res *BetaOrganizationUserRemoveResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if userID == "" {

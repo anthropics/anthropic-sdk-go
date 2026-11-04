@@ -162,6 +162,7 @@ func TestLoadConfig_EnvFillsMissingWorkspaceID(t *testing.T) {
 		},
 	}, nil)
 	t.Setenv("ANTHROPIC_CONFIG_DIR", dir)
+	unsetEnv(t, "ANTHROPIC_BASE_URL")
 	t.Setenv(EnvIdentityTokenFile, tokenPath)
 	t.Setenv(EnvWorkspaceID, "wrkspc_from_env")
 

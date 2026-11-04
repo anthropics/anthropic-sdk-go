@@ -127,7 +127,7 @@ func (r *FileService) Delete(ctx context.Context, fileID string, body FileDelete
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s", url.PathEscape(fileID))
+	path := fmt.Sprintf("v1/files/%s", requestconfig.EscapePathSegment(fileID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.files.delete", "/v1/files/{file_id}"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -165,7 +165,7 @@ func (r *FileService) Download(ctx context.Context, fileID string, query FileDow
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s/content", url.PathEscape(fileID))
+	path := fmt.Sprintf("v1/files/%s/content", requestconfig.EscapePathSegment(fileID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.files.download", "/v1/files/{file_id}/content"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -197,7 +197,7 @@ func (r *FileService) GetMetadata(ctx context.Context, fileID string, query File
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s", url.PathEscape(fileID))
+	path := fmt.Sprintf("v1/files/%s", requestconfig.EscapePathSegment(fileID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.files.retrieve_metadata", "/v1/files/{file_id}"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err

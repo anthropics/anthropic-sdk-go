@@ -59,7 +59,7 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 		err = errors.New("missing required spend_limit_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limits/%s", url.PathEscape(spendLimitID))
+	path := fmt.Sprintf("v1/organizations/spend_limits/%s", requestconfig.EscapePathSegment(spendLimitID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.retrieve", "/v1/organizations/spend_limits/{spend_limit_id}"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit.id", spendLimitID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -153,7 +153,7 @@ func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLim
 		err = errors.New("missing required spend_limit_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limits/%s", url.PathEscape(spendLimitID))
+	path := fmt.Sprintf("v1/organizations/spend_limits/%s", requestconfig.EscapePathSegment(spendLimitID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.delete", "/v1/organizations/spend_limits/{spend_limit_id}"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit.id", spendLimitID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

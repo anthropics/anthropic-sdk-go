@@ -45,7 +45,7 @@ func (r *BetaOrganizationUserService) Get(ctx context.Context, userID string, op
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/users/%s", requestconfig.EscapePathSegment(userID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.retrieve", "/v1/organizations/users/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.user.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -59,7 +59,7 @@ func (r *BetaOrganizationUserService) Update(ctx context.Context, userID string,
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/users/%s", requestconfig.EscapePathSegment(userID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.update", "/v1/organizations/users/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.user.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
@@ -106,7 +106,7 @@ func (r *BetaOrganizationUserService) Remove(ctx context.Context, userID string,
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/users/%s", url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/users/%s", requestconfig.EscapePathSegment(userID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.remove", "/v1/organizations/users/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.user.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

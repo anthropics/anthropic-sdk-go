@@ -77,7 +77,7 @@ func (r *OrganizationWorkspaceService) Get(ctx context.Context, workspaceID stri
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.retrieve", "/v1/organizations/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -106,7 +106,7 @@ func (r *OrganizationWorkspaceService) Update(ctx context.Context, workspaceID s
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.update", "/v1/organizations/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -143,7 +143,7 @@ func (r *OrganizationWorkspaceService) Archive(ctx context.Context, workspaceID 
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.archive", "/v1/organizations/workspaces/{workspace_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

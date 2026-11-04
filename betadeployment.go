@@ -86,7 +86,7 @@ func (r *BetaDeploymentService) Get(ctx context.Context, deploymentID string, qu
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.retrieve", "/v1/deployments/{deployment_id}"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -114,7 +114,7 @@ func (r *BetaDeploymentService) Update(ctx context.Context, deploymentID string,
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.update", "/v1/deployments/{deployment_id}"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -180,7 +180,7 @@ func (r *BetaDeploymentService) Archive(ctx context.Context, deploymentID string
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s/archive", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s/archive", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.archive", "/v1/deployments/{deployment_id}/archive"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -208,7 +208,7 @@ func (r *BetaDeploymentService) Pause(ctx context.Context, deploymentID string, 
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s/pause", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s/pause", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.pause", "/v1/deployments/{deployment_id}/pause"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -236,7 +236,7 @@ func (r *BetaDeploymentService) Run(ctx context.Context, deploymentID string, bo
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s/run", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s/run", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.run", "/v1/deployments/{deployment_id}/run"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -264,7 +264,7 @@ func (r *BetaDeploymentService) Unpause(ctx context.Context, deploymentID string
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s/unpause", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s/unpause", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.unpause", "/v1/deployments/{deployment_id}/unpause"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

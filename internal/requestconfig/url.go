@@ -9,10 +9,10 @@ import (
 )
 
 // A dot segment is "." or "..", alone or followed by ";" and anything. A dot
-// may be "%2e" or "%2E", and a ";" may be "%3B" or "%3b", as [url.PathEscape]
-// writes it. PathEscape keeps dots, so ".." as a path parameter would change the
-// route. Some servers drop a segment's ";" and the rest before they route, so
-// "..;x" would too, and ";x" would become an empty segment.
+// may be "%2e" or "%2E", and a ";" may be "%3B" or "%3b". [EscapePathSegment]
+// keeps dots and ";", so ".." as a path parameter would change the route. Some
+// servers drop a segment's ";" and the rest before they route, so "..;x" would
+// too, and ";x" would become an empty segment.
 var dotSegmentRegexp = regexp.MustCompile(`^(?:\.|%2[eE]){1,2}(?:$|;|%3[bB])`)
 
 // ValidateRequestPath returns an error if u, a URL or a path, fails [url.Parse]
@@ -43,6 +43,18 @@ func ValidateRequestPath(u string) error {
 		}
 	}
 	return nil
+}
+
+var subDelimRestorer = strings.NewReplacer("%21", "!", "%27", "'", "%28", "(", "%29", ")", "%2A", "*", "%2C", ",", "%3B", ";")
+
+// EscapePathSegment percent-encodes every byte of s except ASCII letters,
+// digits and - . _ ~ ! $ & ' ( ) * + , ; = : @, which RFC 3986 allows in a
+// path segment. It encodes "/", so the result stays one segment.
+func EscapePathSegment(s string) string {
+	if !strings.ContainsAny(s, "!'()*,;") {
+		return url.PathEscape(s)
+	}
+	return subDelimRestorer.Replace(url.PathEscape(s))
 }
 
 // requestURLReference returns u in the form to resolve against the base URL.

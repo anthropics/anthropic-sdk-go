@@ -94,7 +94,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Get(ctx context.Context, d
 		err = errors.New("missing required destination_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", url.PathEscape(destinationID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", requestconfig.EscapePathSegment(destinationID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.retrieve", "/v1/organizations/telemetry_destinations/{destination_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -133,7 +133,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Update(ctx context.Context
 		err = errors.New("missing required destination_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", url.PathEscape(destinationID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", requestconfig.EscapePathSegment(destinationID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.update", "/v1/organizations/telemetry_destinations/{destination_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -211,7 +211,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Delete(ctx context.Context
 		err = errors.New("missing required destination_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", url.PathEscape(destinationID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", requestconfig.EscapePathSegment(destinationID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.delete", "/v1/organizations/telemetry_destinations/{destination_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -243,7 +243,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Test(ctx context.Context, 
 		err = errors.New("missing required destination_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/test", url.PathEscape(destinationID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/test", requestconfig.EscapePathSegment(destinationID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.test", "/v1/organizations/telemetry_destinations/{destination_id}/test"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

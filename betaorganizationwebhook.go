@@ -99,7 +99,7 @@ func (r *BetaOrganizationWebhookService) Get(ctx context.Context, webhookEndpoin
 		err = errors.New("missing required webhook_endpoint_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/webhooks/%s", url.PathEscape(webhookEndpointID))
+	path := fmt.Sprintf("v1/organizations/webhooks/%s", requestconfig.EscapePathSegment(webhookEndpointID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.webhooks.retrieve", "/v1/organizations/webhooks/{webhook_endpoint_id}"), requestconfig.WithSpanAttribute("anthropic.organization.webhook.id", webhookEndpointID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -131,7 +131,7 @@ func (r *BetaOrganizationWebhookService) Update(ctx context.Context, webhookEndp
 		err = errors.New("missing required webhook_endpoint_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/webhooks/%s", url.PathEscape(webhookEndpointID))
+	path := fmt.Sprintf("v1/organizations/webhooks/%s", requestconfig.EscapePathSegment(webhookEndpointID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.webhooks.update", "/v1/organizations/webhooks/{webhook_endpoint_id}"), requestconfig.WithSpanAttribute("anthropic.organization.webhook.id", webhookEndpointID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -220,7 +220,7 @@ func (r *BetaOrganizationWebhookService) Delete(ctx context.Context, webhookEndp
 		err = errors.New("missing required webhook_endpoint_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/webhooks/%s", url.PathEscape(webhookEndpointID))
+	path := fmt.Sprintf("v1/organizations/webhooks/%s", requestconfig.EscapePathSegment(webhookEndpointID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.webhooks.delete", "/v1/organizations/webhooks/{webhook_endpoint_id}"), requestconfig.WithSpanAttribute("anthropic.organization.webhook.id", webhookEndpointID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -253,7 +253,7 @@ func (r *BetaOrganizationWebhookService) RegenerateSigningSecret(ctx context.Con
 		err = errors.New("missing required webhook_endpoint_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/webhooks/%s/regenerate_signing_secret", url.PathEscape(webhookEndpointID))
+	path := fmt.Sprintf("v1/organizations/webhooks/%s/regenerate_signing_secret", requestconfig.EscapePathSegment(webhookEndpointID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.webhooks.regenerate_signing_secret", "/v1/organizations/webhooks/{webhook_endpoint_id}/regenerate_signing_secret"), requestconfig.WithSpanAttribute("anthropic.organization.webhook.id", webhookEndpointID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

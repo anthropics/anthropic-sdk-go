@@ -73,7 +73,7 @@ func (r *BetaModelService) Get(ctx context.Context, modelID string, query BetaMo
 		err = errors.New("missing required model_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/models/%s", url.PathEscape(modelID))
+	path := fmt.Sprintf("v1/models/%s", requestconfig.EscapePathSegment(modelID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.models.retrieve", "/v1/models/{model_id}"), requestconfig.WithSpanAttribute("anthropic.model.id", modelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)

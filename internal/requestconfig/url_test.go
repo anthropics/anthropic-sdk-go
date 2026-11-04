@@ -36,3 +36,20 @@ func TestValidateRequestPath(t *testing.T) {
 		}
 	}
 }
+
+func TestEscapePathSegment(t *testing.T) {
+	cases := map[string]struct{ s, want string }{
+		"ASCII letters and digits":              {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"},
+		"the unreserved marks":                  {"-._~", "-._~"},
+		"the sub-delimiters, : and @":           {"!$&'()*+,;=:@", "!$&'()*+,;=:@"},
+		"the other printable ASCII characters":  {" \"#%/<>?[\\]^`{|}", "%20%22%23%25%2F%3C%3E%3F%5B%5C%5D%5E%60%7B%7C%7D"},
+		"a sub-delimiter beside an escaped one": {"a;b/c", "a;b%2Fc"},
+		"a character outside ASCII":             {"é", "%C3%A9"},
+		"a caller's own escape":                 {"%3B", "%253B"},
+	}
+	for name, test := range cases {
+		if got := EscapePathSegment(test.s); got != test.want {
+			t.Errorf("%s: EscapePathSegment(%q) = %q, want %q", name, test.s, got, test.want)
+		}
+	}
+}

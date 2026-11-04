@@ -98,7 +98,7 @@ func (r *BetaOrganizationFederationIssuerService) Get(ctx context.Context, feder
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", url.PathEscape(federationIssuerID))
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", requestconfig.EscapePathSegment(federationIssuerID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.retrieve", "/v1/organizations/federation_issuers/{federation_issuer_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -133,7 +133,7 @@ func (r *BetaOrganizationFederationIssuerService) Update(ctx context.Context, fe
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", url.PathEscape(federationIssuerID))
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", requestconfig.EscapePathSegment(federationIssuerID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.update", "/v1/organizations/federation_issuers/{federation_issuer_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -216,7 +216,7 @@ func (r *BetaOrganizationFederationIssuerService) Archive(ctx context.Context, f
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s/archive", url.PathEscape(federationIssuerID))
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s/archive", requestconfig.EscapePathSegment(federationIssuerID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.archive", "/v1/organizations/federation_issuers/{federation_issuer_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

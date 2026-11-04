@@ -149,7 +149,7 @@ func (r *BetaFileService) Delete(ctx context.Context, fileID string, body BetaFi
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s", url.PathEscape(fileID))
+	path := fmt.Sprintf("v1/files/%s", requestconfig.EscapePathSegment(fileID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.files.delete", "/v1/files/{file_id}"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -198,7 +198,7 @@ func (r *BetaFileService) Download(ctx context.Context, fileID string, query Bet
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s/content", url.PathEscape(fileID))
+	path := fmt.Sprintf("v1/files/%s/content", requestconfig.EscapePathSegment(fileID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.files.download", "/v1/files/{file_id}/content"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -241,7 +241,7 @@ func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query 
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s", url.PathEscape(fileID))
+	path := fmt.Sprintf("v1/files/%s", requestconfig.EscapePathSegment(fileID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.files.retrieve_metadata", "/v1/files/{file_id}"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)

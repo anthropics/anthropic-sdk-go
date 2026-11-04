@@ -78,7 +78,7 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) New(ctx context.Context, 
 		err = errors.New("missing required bundle_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets", url.PathEscape(bundleID))
+	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets", requestconfig.EscapePathSegment(bundleID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.bundles.targets.create", "/v1/organizations/claude_tag/bundles/{bundle_id}/targets"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.id", bundleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -121,7 +121,7 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) Get(ctx context.Context, 
 		err = errors.New("missing required target_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets/%s", url.PathEscape(params.BundleID), url.PathEscape(targetID))
+	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets/%s", requestconfig.EscapePathSegment(params.BundleID), requestconfig.EscapePathSegment(targetID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.bundles.targets.retrieve", "/v1/organizations/claude_tag/bundles/{bundle_id}/targets/{target_id}"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.id", params.BundleID), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.target.id", targetID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -162,7 +162,7 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) List(ctx context.Context,
 		err = errors.New("missing required bundle_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets", url.PathEscape(bundleID))
+	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets", requestconfig.EscapePathSegment(bundleID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.bundles.targets.list", "/v1/organizations/claude_tag/bundles/{bundle_id}/targets", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.id", bundleID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -233,7 +233,7 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) Delete(ctx context.Contex
 		err = errors.New("missing required target_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets/%s", url.PathEscape(params.BundleID), url.PathEscape(targetID))
+	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets/%s", requestconfig.EscapePathSegment(params.BundleID), requestconfig.EscapePathSegment(targetID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.bundles.targets.delete", "/v1/organizations/claude_tag/bundles/{bundle_id}/targets/{target_id}"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.id", params.BundleID), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.target.id", targetID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

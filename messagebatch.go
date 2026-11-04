@@ -104,7 +104,7 @@ func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, qu
 		err = errors.New("missing required message_batch_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s", url.PathEscape(messageBatchID))
+	path := fmt.Sprintf("v1/messages/batches/%s", requestconfig.EscapePathSegment(messageBatchID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.retrieve", "/v1/messages/batches/{message_batch_id}"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -194,7 +194,7 @@ func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string,
 		err = errors.New("missing required message_batch_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s", url.PathEscape(messageBatchID))
+	path := fmt.Sprintf("v1/messages/batches/%s", requestconfig.EscapePathSegment(messageBatchID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.delete", "/v1/messages/batches/{message_batch_id}"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -232,7 +232,7 @@ func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string,
 		err = errors.New("missing required message_batch_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s/cancel", url.PathEscape(messageBatchID))
+	path := fmt.Sprintf("v1/messages/batches/%s/cancel", requestconfig.EscapePathSegment(messageBatchID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.cancel", "/v1/messages/batches/{message_batch_id}/cancel"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -273,7 +273,7 @@ func (r *MessageBatchService) ResultsStreaming(ctx context.Context, messageBatch
 		err = errors.New("missing required message_batch_id parameter")
 		return jsonl.NewStream[MessageBatchIndividualResponse](nil, err)
 	}
-	path := fmt.Sprintf("v1/messages/batches/%s/results", url.PathEscape(messageBatchID))
+	path := fmt.Sprintf("v1/messages/batches/%s/results", requestconfig.EscapePathSegment(messageBatchID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.results", "/v1/messages/batches/{message_batch_id}/results"), requestconfig.WithSpanAttribute("anthropic.message.batch.id", messageBatchID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
 	return jsonl.NewStream[MessageBatchIndividualResponse](raw, err)

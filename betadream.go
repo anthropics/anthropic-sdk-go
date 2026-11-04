@@ -102,7 +102,7 @@ func (r *BetaDreamService) Get(ctx context.Context, dreamID string, query BetaDr
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s", url.PathEscape(dreamID))
+	path := fmt.Sprintf("v1/dreams/%s", requestconfig.EscapePathSegment(dreamID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.retrieve", "/v1/dreams/{dream_id}"), requestconfig.WithSpanAttribute("anthropic.dream.id", dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -189,7 +189,7 @@ func (r *BetaDreamService) Archive(ctx context.Context, dreamID string, body Bet
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s/archive", url.PathEscape(dreamID))
+	path := fmt.Sprintf("v1/dreams/%s/archive", requestconfig.EscapePathSegment(dreamID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.archive", "/v1/dreams/{dream_id}/archive"), requestconfig.WithSpanAttribute("anthropic.dream.id", dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -226,7 +226,7 @@ func (r *BetaDreamService) Cancel(ctx context.Context, dreamID string, body Beta
 		err = errors.New("missing required dream_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/dreams/%s/cancel", url.PathEscape(dreamID))
+	path := fmt.Sprintf("v1/dreams/%s/cancel", requestconfig.EscapePathSegment(dreamID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.dreams.cancel", "/v1/dreams/{dream_id}/cancel"), requestconfig.WithSpanAttribute("anthropic.dream.id", dreamID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

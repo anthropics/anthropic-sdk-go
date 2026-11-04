@@ -48,7 +48,7 @@ func (r *OrganizationWorkspaceMemberService) Get(ctx context.Context, userID str
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", url.PathEscape(query.WorkspaceID), url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", requestconfig.EscapePathSegment(query.WorkspaceID), requestconfig.EscapePathSegment(userID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.members.retrieve", "/v1/organizations/workspaces/{workspace_id}/members/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", query.WorkspaceID), requestconfig.WithSpanAttribute("anthropic.organization.workspace.member.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -71,7 +71,7 @@ func (r *OrganizationWorkspaceMemberService) Update(ctx context.Context, userID 
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", url.PathEscape(params.WorkspaceID), url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", requestconfig.EscapePathSegment(params.WorkspaceID), requestconfig.EscapePathSegment(userID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.members.update", "/v1/organizations/workspaces/{workspace_id}/members/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", params.WorkspaceID), requestconfig.WithSpanAttribute("anthropic.organization.workspace.member.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -86,7 +86,7 @@ func (r *OrganizationWorkspaceMemberService) List(ctx context.Context, workspace
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.members.list", "/v1/organizations/workspaces/{workspace_id}/members", "after_id", "before_id", "limit"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
@@ -118,7 +118,7 @@ func (r *OrganizationWorkspaceMemberService) Add(ctx context.Context, workspaceI
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.members.add", "/v1/organizations/workspaces/{workspace_id}/members"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID), requestconfig.WithSpanCreatedID("anthropic.organization.workspace.member.id", &res, func(created *WorkspaceMember) string { return created.UserID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -135,7 +135,7 @@ func (r *OrganizationWorkspaceMemberService) Remove(ctx context.Context, userID 
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", url.PathEscape(body.WorkspaceID), url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", requestconfig.EscapePathSegment(body.WorkspaceID), requestconfig.EscapePathSegment(userID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.members.remove", "/v1/organizations/workspaces/{workspace_id}/members/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", body.WorkspaceID), requestconfig.WithSpanAttribute("anthropic.organization.workspace.member.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

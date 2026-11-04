@@ -64,7 +64,7 @@ func (r *OrganizationExternalKeyService) Get(ctx context.Context, externalKeyID 
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.retrieve", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -88,7 +88,7 @@ func (r *OrganizationExternalKeyService) Update(ctx context.Context, externalKey
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.update", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -140,7 +140,7 @@ func (r *OrganizationExternalKeyService) Delete(ctx context.Context, externalKey
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.delete", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -158,7 +158,7 @@ func (r *OrganizationExternalKeyService) Validate(ctx context.Context, externalK
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s/validate", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s/validate", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.validate", "/v1/organizations/external_keys/{external_key_id}/validate"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

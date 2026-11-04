@@ -86,7 +86,7 @@ func (r *BetaUserProfileService) Get(ctx context.Context, userProfileID string, 
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", requestconfig.EscapePathSegment(userProfileID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.retrieve", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -114,7 +114,7 @@ func (r *BetaUserProfileService) Update(ctx context.Context, userProfileID strin
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", requestconfig.EscapePathSegment(userProfileID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.update", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -180,7 +180,7 @@ func (r *BetaUserProfileService) Delete(ctx context.Context, userProfileID strin
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", requestconfig.EscapePathSegment(userProfileID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.delete", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -208,7 +208,7 @@ func (r *BetaUserProfileService) NewEnrollmentURL(ctx context.Context, userProfi
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s/enrollment_url", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s/enrollment_url", requestconfig.EscapePathSegment(userProfileID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.create_enrollment_url", "/v1/user_profiles/{user_profile_id}/enrollment_url"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

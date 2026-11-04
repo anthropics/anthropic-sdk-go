@@ -108,7 +108,7 @@ func (r *BetaOrganizationPluginVersionService) New(ctx context.Context, pluginID
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/versions", url.PathEscape(pluginID))
+	path := fmt.Sprintf("v1/organizations/plugins/%s/versions", requestconfig.EscapePathSegment(pluginID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.create", "/v1/organizations/plugins/{plugin_id}/versions"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID), requestconfig.WithSpanCreatedID("anthropic.organization.plugin.version.id", &res, func(created *BetaPluginVersion) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -148,7 +148,7 @@ func (r *BetaOrganizationPluginVersionService) Get(ctx context.Context, version 
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/versions/%s", url.PathEscape(params.PluginID), url.PathEscape(version))
+	path := fmt.Sprintf("v1/organizations/plugins/%s/versions/%s", requestconfig.EscapePathSegment(params.PluginID), requestconfig.EscapePathSegment(version))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.retrieve", "/v1/organizations/plugins/{plugin_id}/versions/{version}", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", params.PluginID), requestconfig.WithSpanAttribute("anthropic.organization.plugin.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -188,7 +188,7 @@ func (r *BetaOrganizationPluginVersionService) List(ctx context.Context, pluginI
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/versions", url.PathEscape(pluginID))
+	path := fmt.Sprintf("v1/organizations/plugins/%s/versions", requestconfig.EscapePathSegment(pluginID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.list", "/v1/organizations/plugins/{plugin_id}/versions", "limit", "organization_id", "page"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -280,7 +280,7 @@ func (r *BetaOrganizationPluginVersionService) Download(ctx context.Context, ver
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/versions/%s/content", url.PathEscape(params.PluginID), url.PathEscape(version))
+	path := fmt.Sprintf("v1/organizations/plugins/%s/versions/%s/content", requestconfig.EscapePathSegment(params.PluginID), requestconfig.EscapePathSegment(version))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.download", "/v1/organizations/plugins/{plugin_id}/versions/{version}/content", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", params.PluginID), requestconfig.WithSpanAttribute("anthropic.organization.plugin.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)

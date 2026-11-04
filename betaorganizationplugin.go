@@ -154,7 +154,7 @@ func (r *BetaOrganizationPluginService) Get(ctx context.Context, pluginID string
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s", url.PathEscape(pluginID))
+	path := fmt.Sprintf("v1/organizations/plugins/%s", requestconfig.EscapePathSegment(pluginID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.retrieve", "/v1/organizations/plugins/{plugin_id}", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -228,7 +228,7 @@ func (r *BetaOrganizationPluginService) Update(ctx context.Context, pluginID str
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s", url.PathEscape(pluginID))
+	path := fmt.Sprintf("v1/organizations/plugins/%s", requestconfig.EscapePathSegment(pluginID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.update", "/v1/organizations/plugins/{plugin_id}"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -350,7 +350,7 @@ func (r *BetaOrganizationPluginService) Delete(ctx context.Context, pluginID str
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s", url.PathEscape(pluginID))
+	path := fmt.Sprintf("v1/organizations/plugins/%s", requestconfig.EscapePathSegment(pluginID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.delete", "/v1/organizations/plugins/{plugin_id}"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

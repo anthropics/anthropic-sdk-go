@@ -49,7 +49,7 @@ func (r *BetaOrganizationRBACGroupMemberService) List(ctx context.Context, rbacG
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members", requestconfig.EscapePathSegment(rbacGroupID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.members.list", "/v1/organizations/rbac_groups/{rbac_group_id}/members", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
@@ -94,7 +94,7 @@ func (r *BetaOrganizationRBACGroupMemberService) Add(ctx context.Context, rbacGr
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members", requestconfig.EscapePathSegment(rbacGroupID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.members.add", "/v1/organizations/rbac_groups/{rbac_group_id}/members"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID), requestconfig.WithSpanCreatedID("anthropic.organization.rbac_group.member.id", &res, func(created *BetaRBACGroupMember) string { return created.UserID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
@@ -128,7 +128,7 @@ func (r *BetaOrganizationRBACGroupMemberService) Remove(ctx context.Context, use
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members/%s", url.PathEscape(body.RBACGroupID), url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s/members/%s", requestconfig.EscapePathSegment(body.RBACGroupID), requestconfig.EscapePathSegment(userID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.members.remove", "/v1/organizations/rbac_groups/{rbac_group_id}/members/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", body.RBACGroupID), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.member.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

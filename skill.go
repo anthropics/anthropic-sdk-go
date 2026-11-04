@@ -96,7 +96,7 @@ func (r *SkillService) Get(ctx context.Context, skillID string, query SkillGetPa
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s", url.PathEscape(skillID))
+	path := fmt.Sprintf("v1/skills/%s", requestconfig.EscapePathSegment(skillID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.retrieve", "/v1/skills/{skill_id}"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -172,7 +172,7 @@ func (r *SkillService) Delete(ctx context.Context, skillID string, body SkillDel
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s", url.PathEscape(skillID))
+	path := fmt.Sprintf("v1/skills/%s", requestconfig.EscapePathSegment(skillID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.delete", "/v1/skills/{skill_id}"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

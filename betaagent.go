@@ -88,7 +88,7 @@ func (r *BetaAgentService) Get(ctx context.Context, agentID string, params BetaA
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s", url.PathEscape(agentID))
+	path := fmt.Sprintf("v1/agents/%s", requestconfig.EscapePathSegment(agentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.retrieve", "/v1/agents/{agent_id}", "version"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -116,7 +116,7 @@ func (r *BetaAgentService) Update(ctx context.Context, agentID string, params Be
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s", url.PathEscape(agentID))
+	path := fmt.Sprintf("v1/agents/%s", requestconfig.EscapePathSegment(agentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.update", "/v1/agents/{agent_id}"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -182,7 +182,7 @@ func (r *BetaAgentService) Archive(ctx context.Context, agentID string, body Bet
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/archive", url.PathEscape(agentID))
+	path := fmt.Sprintf("v1/agents/%s/archive", requestconfig.EscapePathSegment(agentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.archive", "/v1/agents/{agent_id}/archive"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

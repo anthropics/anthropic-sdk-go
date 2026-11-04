@@ -80,7 +80,7 @@ func (r *OrganizationFederationRuleService) Get(ctx context.Context, federationR
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s", url.PathEscape(federationRuleID))
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s", requestconfig.EscapePathSegment(federationRuleID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.retrieve", "/v1/organizations/federation_rules/{federation_rule_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -113,7 +113,7 @@ func (r *OrganizationFederationRuleService) Update(ctx context.Context, federati
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s", url.PathEscape(federationRuleID))
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s", requestconfig.EscapePathSegment(federationRuleID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.update", "/v1/organizations/federation_rules/{federation_rule_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -178,7 +178,7 @@ func (r *OrganizationFederationRuleService) Archive(ctx context.Context, federat
 		err = errors.New("missing required federation_rule_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_rules/%s/archive", url.PathEscape(federationRuleID))
+	path := fmt.Sprintf("v1/organizations/federation_rules/%s/archive", requestconfig.EscapePathSegment(federationRuleID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.archive", "/v1/organizations/federation_rules/{federation_rule_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.federation_rule.id", federationRuleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

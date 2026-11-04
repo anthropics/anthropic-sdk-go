@@ -61,7 +61,7 @@ func (r *OrganizationRBACGroupService) Get(ctx context.Context, rbacGroupID stri
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", requestconfig.EscapePathSegment(rbacGroupID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.retrieve", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -78,7 +78,7 @@ func (r *OrganizationRBACGroupService) Update(ctx context.Context, rbacGroupID s
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", requestconfig.EscapePathSegment(rbacGroupID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.update", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -135,7 +135,7 @@ func (r *OrganizationRBACGroupService) Delete(ctx context.Context, rbacGroupID s
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", requestconfig.EscapePathSegment(rbacGroupID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.delete", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

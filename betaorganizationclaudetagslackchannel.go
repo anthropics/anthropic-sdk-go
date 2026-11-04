@@ -133,7 +133,7 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) Get(ctx context.Context, 
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/slack_channels/%s", url.PathEscape(id))
+	path := fmt.Sprintf("v1/organizations/claude_tag/slack_channels/%s", requestconfig.EscapePathSegment(id))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.slack_channels.retrieve", "/v1/organizations/claude_tag/slack_channels/{id}", "include_inherited"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.slack_channel.id", id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -183,7 +183,7 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) Update(ctx context.Contex
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/slack_channels/%s", url.PathEscape(id))
+	path := fmt.Sprintf("v1/organizations/claude_tag/slack_channels/%s", requestconfig.EscapePathSegment(id))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.slack_channels.update", "/v1/organizations/claude_tag/slack_channels/{id}"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.slack_channel.id", id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -316,7 +316,7 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) Delete(ctx context.Contex
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/slack_channels/%s", url.PathEscape(id))
+	path := fmt.Sprintf("v1/organizations/claude_tag/slack_channels/%s", requestconfig.EscapePathSegment(id))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.slack_channels.delete", "/v1/organizations/claude_tag/slack_channels/{id}"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.slack_channel.id", id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

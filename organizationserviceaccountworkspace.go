@@ -64,7 +64,7 @@ func (r *OrganizationServiceAccountWorkspaceService) List(ctx context.Context, s
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces", url.PathEscape(serviceAccountID))
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces", requestconfig.EscapePathSegment(serviceAccountID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.workspaces.list", "/v1/organizations/service_accounts/{service_account_id}/workspaces", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", serviceAccountID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
@@ -118,7 +118,7 @@ func (r *OrganizationServiceAccountWorkspaceService) Add(ctx context.Context, se
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces", url.PathEscape(serviceAccountID))
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces", requestconfig.EscapePathSegment(serviceAccountID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.workspaces.add", "/v1/organizations/service_accounts/{service_account_id}/workspaces"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", serviceAccountID), requestconfig.WithSpanCreatedID("anthropic.organization.service_account.workspace.id", &res, func(created *ServiceAccountWorkspaceMember) string { return created.WorkspaceID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -148,7 +148,7 @@ func (r *OrganizationServiceAccountWorkspaceService) Remove(ctx context.Context,
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces/%s", url.PathEscape(body.ServiceAccountID), url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s/workspaces/%s", requestconfig.EscapePathSegment(body.ServiceAccountID), requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.workspaces.remove", "/v1/organizations/service_accounts/{service_account_id}/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", body.ServiceAccountID), requestconfig.WithSpanAttribute("anthropic.organization.service_account.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

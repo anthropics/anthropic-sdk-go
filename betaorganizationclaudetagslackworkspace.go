@@ -77,7 +77,7 @@ func (r *BetaOrganizationClaudeTagSlackWorkspaceService) Get(ctx context.Context
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/slack_workspaces/%s", url.PathEscape(id))
+	path := fmt.Sprintf("v1/organizations/claude_tag/slack_workspaces/%s", requestconfig.EscapePathSegment(id))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.slack_workspaces.retrieve", "/v1/organizations/claude_tag/slack_workspaces/{id}", "include_inherited"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.slack_workspace.id", id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -126,7 +126,7 @@ func (r *BetaOrganizationClaudeTagSlackWorkspaceService) Update(ctx context.Cont
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/slack_workspaces/%s", url.PathEscape(id))
+	path := fmt.Sprintf("v1/organizations/claude_tag/slack_workspaces/%s", requestconfig.EscapePathSegment(id))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.slack_workspaces.update", "/v1/organizations/claude_tag/slack_workspaces/{id}"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.slack_workspace.id", id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)

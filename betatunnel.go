@@ -98,7 +98,7 @@ func (r *BetaTunnelService) Get(ctx context.Context, tunnelID string, query Beta
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s", url.PathEscape(tunnelID))
+	path := fmt.Sprintf("v1/tunnels/%s", requestconfig.EscapePathSegment(tunnelID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.tunnels.retrieve", "/v1/tunnels/{tunnel_id}"), requestconfig.WithSpanAttribute("anthropic.tunnel.id", tunnelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -184,7 +184,7 @@ func (r *BetaTunnelService) Archive(ctx context.Context, tunnelID string, body B
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/archive", url.PathEscape(tunnelID))
+	path := fmt.Sprintf("v1/tunnels/%s/archive", requestconfig.EscapePathSegment(tunnelID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.tunnels.archive", "/v1/tunnels/{tunnel_id}/archive"), requestconfig.WithSpanAttribute("anthropic.tunnel.id", tunnelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -220,7 +220,7 @@ func (r *BetaTunnelService) RevealToken(ctx context.Context, tunnelID string, bo
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/reveal_token", url.PathEscape(tunnelID))
+	path := fmt.Sprintf("v1/tunnels/%s/reveal_token", requestconfig.EscapePathSegment(tunnelID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.tunnels.reveal_token", "/v1/tunnels/{tunnel_id}/reveal_token"), requestconfig.WithSpanAttribute("anthropic.tunnel.id", tunnelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -255,7 +255,7 @@ func (r *BetaTunnelService) RotateToken(ctx context.Context, tunnelID string, pa
 		err = errors.New("missing required tunnel_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/tunnels/%s/rotate_token", url.PathEscape(tunnelID))
+	path := fmt.Sprintf("v1/tunnels/%s/rotate_token", requestconfig.EscapePathSegment(tunnelID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.tunnels.rotate_token", "/v1/tunnels/{tunnel_id}/rotate_token"), requestconfig.WithSpanAttribute("anthropic.tunnel.id", tunnelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)

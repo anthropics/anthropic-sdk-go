@@ -93,7 +93,7 @@ func (r *BetaSessionService) Get(ctx context.Context, sessionID string, query Be
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.retrieve", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -121,7 +121,7 @@ func (r *BetaSessionService) Update(ctx context.Context, sessionID string, param
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.update", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -187,7 +187,7 @@ func (r *BetaSessionService) Delete(ctx context.Context, sessionID string, body 
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.delete", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -215,7 +215,7 @@ func (r *BetaSessionService) Archive(ctx context.Context, sessionID string, body
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/archive", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/archive", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.archive", "/v1/sessions/{session_id}/archive"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

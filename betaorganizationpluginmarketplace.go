@@ -73,7 +73,7 @@ func (r *BetaOrganizationPluginMarketplaceService) Get(ctx context.Context, mark
 		err = errors.New("missing required marketplace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s", url.PathEscape(marketplaceID))
+	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s", requestconfig.EscapePathSegment(marketplaceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugin_marketplaces.retrieve", "/v1/organizations/plugin_marketplaces/{marketplace_id}", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin_marketplace.id", marketplaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -112,7 +112,7 @@ func (r *BetaOrganizationPluginMarketplaceService) Update(ctx context.Context, m
 		err = errors.New("missing required marketplace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s", url.PathEscape(marketplaceID))
+	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s", requestconfig.EscapePathSegment(marketplaceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugin_marketplaces.update", "/v1/organizations/plugin_marketplaces/{marketplace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.plugin_marketplace.id", marketplaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)

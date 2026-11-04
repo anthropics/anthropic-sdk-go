@@ -62,7 +62,7 @@ func (r *BetaOrganizationRBACGroupService) Get(ctx context.Context, rbacGroupID 
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", requestconfig.EscapePathSegment(rbacGroupID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.retrieve", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -80,7 +80,7 @@ func (r *BetaOrganizationRBACGroupService) Update(ctx context.Context, rbacGroup
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", requestconfig.EscapePathSegment(rbacGroupID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.update", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
@@ -139,7 +139,7 @@ func (r *BetaOrganizationRBACGroupService) Delete(ctx context.Context, rbacGroup
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", requestconfig.EscapePathSegment(rbacGroupID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.delete", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

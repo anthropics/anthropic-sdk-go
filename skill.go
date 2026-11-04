@@ -45,6 +45,25 @@ func NewSkillService(opts ...option.RequestOption) (r SkillService) {
 }
 
 // Create Skill
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
+//   - [ErrorCodeCMEKContextUnavailable] (HTTP 503): The workspace's encryption
+//     settings could not be read, so the request was refused. Retry in a few
+//     minutes.
 func (r *SkillService) New(ctx context.Context, params SkillNewParams, opts ...option.RequestOption) (res *Skill, err error) {
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -57,6 +76,17 @@ func (r *SkillService) New(ctx context.Context, params SkillNewParams, opts ...o
 }
 
 // Get Skill
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *SkillService) Get(ctx context.Context, skillID string, query SkillGetParams, opts ...option.RequestOption) (res *Skill, err error) {
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -66,13 +96,24 @@ func (r *SkillService) Get(ctx context.Context, skillID string, query SkillGetPa
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s", url.PathEscape(skillID))
+	path := fmt.Sprintf("v1/skills/%s", requestconfig.EscapePathSegment(skillID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.retrieve", "/v1/skills/{skill_id}"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // List Skills
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *SkillService) List(ctx context.Context, params SkillListParams, opts ...option.RequestOption) (res *pagination.PageCursor[Skill], err error) {
 	var raw *http.Response
 	if !param.IsOmitted(params.WorkspaceID) {
@@ -95,11 +136,33 @@ func (r *SkillService) List(ctx context.Context, params SkillListParams, opts ..
 }
 
 // List Skills
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *SkillService) ListAutoPaging(ctx context.Context, params SkillListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[Skill] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete Skill
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *SkillService) Delete(ctx context.Context, skillID string, body SkillDeleteParams, opts ...option.RequestOption) (res *DeletedSkill, err error) {
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -109,7 +172,7 @@ func (r *SkillService) Delete(ctx context.Context, skillID string, body SkillDel
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s", url.PathEscape(skillID))
+	path := fmt.Sprintf("v1/skills/%s", requestconfig.EscapePathSegment(skillID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.delete", "/v1/skills/{skill_id}"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

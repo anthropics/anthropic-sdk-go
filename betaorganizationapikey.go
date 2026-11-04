@@ -46,7 +46,7 @@ func (r *BetaOrganizationAPIKeyService) Get(ctx context.Context, apiKeyID string
 		err = errors.New("missing required api_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/api_keys/%s", url.PathEscape(apiKeyID))
+	path := fmt.Sprintf("v1/organizations/api_keys/%s", requestconfig.EscapePathSegment(apiKeyID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.api_keys.retrieve", "/v1/organizations/api_keys/{api_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.api_key.id", apiKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -54,13 +54,21 @@ func (r *BetaOrganizationAPIKeyService) Get(ctx context.Context, apiKeyID string
 }
 
 // Update API Key
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeOrgAPIKeyLimitExceeded] (HTTP 400): The organization has reached its
+//     limit of active API keys.
+//   - [ErrorCodeWorkspaceAPIKeyLimitExceeded] (HTTP 400): The workspace has reached
+//     its limit of active API keys.
 func (r *BetaOrganizationAPIKeyService) Update(ctx context.Context, apiKeyID string, body BetaOrganizationAPIKeyUpdateParams, opts ...option.RequestOption) (res *BetaAPIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if apiKeyID == "" {
 		err = errors.New("missing required api_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/api_keys/%s", url.PathEscape(apiKeyID))
+	path := fmt.Sprintf("v1/organizations/api_keys/%s", requestconfig.EscapePathSegment(apiKeyID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.api_keys.update", "/v1/organizations/api_keys/{api_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.api_key.id", apiKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)

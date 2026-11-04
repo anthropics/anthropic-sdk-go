@@ -38,7 +38,7 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 		Description: anthropic.String("A general-purpose starter agent."),
 		ExecutionIdentity: anthropic.BetaManagedAgentsExecutionIdentityParamsUnion{
 			OfAWSRole: &anthropic.BetaManagedAgentsAWSRoleExecutionIdentityParams{
-				RoleARN: "role_arn",
+				RoleARN: "arn:aws:iam::228601553692:role/T",
 			},
 		},
 		MCPServers: []anthropic.BetaManagedAgentsURLMCPServerParams{{
@@ -146,7 +146,7 @@ func TestBetaAgentUpdateWithOptionalParams(t *testing.T) {
 			Description: anthropic.String("updated"),
 			ExecutionIdentity: anthropic.BetaManagedAgentsExecutionIdentityParamsUnion{
 				OfAWSRole: &anthropic.BetaManagedAgentsAWSRoleExecutionIdentityParams{
-					RoleARN: "role_arn",
+					RoleARN: "arn:aws:iam::228601553692:role/T",
 				},
 			},
 			MCPServers: []anthropic.BetaManagedAgentsURLMCPServerParams{{

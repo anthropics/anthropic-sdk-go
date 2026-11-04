@@ -41,6 +41,14 @@ func NewOrganizationExternalKeyService(opts ...option.RequestOption) (r Organiza
 }
 
 // Create an external key config owned by the caller's organization.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
+//     profile that does not exist in the organization or is no longer active. The
+//     request either names this user profile by ID, or names a resource, such as an
+//     External Key, that is bound to it.
 func (r *OrganizationExternalKeyService) New(ctx context.Context, body OrganizationExternalKeyNewParams, opts ...option.RequestOption) (res *ExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/external_keys"
@@ -56,7 +64,7 @@ func (r *OrganizationExternalKeyService) Get(ctx context.Context, externalKeyID 
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.retrieve", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -67,13 +75,20 @@ func (r *OrganizationExternalKeyService) Get(ctx context.Context, externalKeyID 
 // `display_name` is always editable. `geo` and `provider_config` cannot be changed
 // once any workspace references this config, because previously encrypted data
 // requires the original key identity to decrypt.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400): The External Key can't be
+//     deleted or reconfigured while the organization's Workspace Policy lists it as
+//     an allowed key.
 func (r *OrganizationExternalKeyService) Update(ctx context.Context, externalKeyID string, body OrganizationExternalKeyUpdateParams, opts ...option.RequestOption) (res *ExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.update", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -112,13 +127,20 @@ func (r *OrganizationExternalKeyService) ListAutoPaging(ctx context.Context, que
 // Delete an external key config.
 //
 // The request is rejected if any workspace still references this config.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400): The External Key can't be
+//     deleted or reconfigured while the organization's Workspace Policy lists it as
+//     an allowed key.
 func (r *OrganizationExternalKeyService) Delete(ctx context.Context, externalKeyID string, opts ...option.RequestOption) (res *OrganizationExternalKeyDeleteResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.delete", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
@@ -136,7 +158,7 @@ func (r *OrganizationExternalKeyService) Validate(ctx context.Context, externalK
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s/validate", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s/validate", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.validate", "/v1/organizations/external_keys/{external_key_id}/validate"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -272,8 +294,7 @@ type ExternalKey struct {
 	CreatedAt  time.Time                  `json:"created_at" api:"required" format:"date-time"`
 	// Human-friendly display name. Null if none was set.
 	DisplayName string `json:"display_name" api:"required"`
-	// Data residency geo. Selects the region that handles this key's encrypt/decrypt
-	// roundtrips.
+	// Data residency geo. Selects the region this key is used in.
 	Geo string `json:"geo" api:"required"`
 	// KMS provider identity and auth coordinates.
 	ProviderConfig ExternalKeyProviderConfigUnion `json:"provider_config" api:"required"`

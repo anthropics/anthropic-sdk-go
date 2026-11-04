@@ -45,6 +45,17 @@ func NewBetaEnvironmentWorkService(opts ...option.RequestOption) (r BetaEnvironm
 // invoke them directly.
 //
 // Retrieve detailed information about a specific work item.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, params BetaEnvironmentWorkGetParams, opts ...option.RequestOption) (res *BetaSelfHostedWork, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -69,7 +80,7 @@ func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, par
 		err = errors.New("missing required work_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/%s", url.PathEscape(params.EnvironmentID), url.PathEscape(workID))
+	path := fmt.Sprintf("v1/environments/%s/work/%s", requestconfig.EscapePathSegment(params.EnvironmentID), requestconfig.EscapePathSegment(workID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.work.retrieve", "/v1/environments/{environment_id}/work/{work_id}"), requestconfig.WithSpanAttribute("anthropic.environment.id", params.EnvironmentID), requestconfig.WithSpanAttribute("anthropic.environment.work.id", workID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -82,6 +93,19 @@ func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, par
 // invoke them directly.
 //
 // Update work item metadata with merge semantics.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeBetaInvalidMetadata] (HTTP 400): `metadata` has too many keys, a key
+//     or value that is too long, or a reserved key. The message names each problem.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentWorkService) Update(ctx context.Context, workID string, params BetaEnvironmentWorkUpdateParams, opts ...option.RequestOption) (res *BetaSelfHostedWork, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -106,7 +130,7 @@ func (r *BetaEnvironmentWorkService) Update(ctx context.Context, workID string, 
 		err = errors.New("missing required work_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/%s", url.PathEscape(params.EnvironmentID), url.PathEscape(workID))
+	path := fmt.Sprintf("v1/environments/%s/work/%s", requestconfig.EscapePathSegment(params.EnvironmentID), requestconfig.EscapePathSegment(workID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.work.update", "/v1/environments/{environment_id}/work/{work_id}"), requestconfig.WithSpanAttribute("anthropic.environment.id", params.EnvironmentID), requestconfig.WithSpanAttribute("anthropic.environment.work.id", workID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -137,7 +161,7 @@ func (r *BetaEnvironmentWorkService) List(ctx context.Context, environmentID str
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s/work", requestconfig.EscapePathSegment(environmentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.work.list", "/v1/environments/{environment_id}/work", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -190,7 +214,7 @@ func (r *BetaEnvironmentWorkService) Ack(ctx context.Context, workID string, par
 		err = errors.New("missing required work_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/%s/ack", url.PathEscape(params.EnvironmentID), url.PathEscape(workID))
+	path := fmt.Sprintf("v1/environments/%s/work/%s/ack", requestconfig.EscapePathSegment(params.EnvironmentID), requestconfig.EscapePathSegment(workID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.work.ack", "/v1/environments/{environment_id}/work/{work_id}/ack"), requestconfig.WithSpanAttribute("anthropic.environment.id", params.EnvironmentID), requestconfig.WithSpanAttribute("anthropic.environment.work.id", workID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -203,6 +227,13 @@ func (r *BetaEnvironmentWorkService) Ack(ctx context.Context, workID string, par
 // invoke them directly.
 //
 // Record a heartbeat for a work item to maintain the lease.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaHeartbeatPreconditionFailed] (HTTP 412):
+//     `expected_last_heartbeat` does not match the stored heartbeat, so another
+//     worker may hold the lease.
 func (r *BetaEnvironmentWorkService) Heartbeat(ctx context.Context, workID string, params BetaEnvironmentWorkHeartbeatParams, opts ...option.RequestOption) (res *BetaSelfHostedWorkHeartbeatResponse, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -224,7 +255,7 @@ func (r *BetaEnvironmentWorkService) Heartbeat(ctx context.Context, workID strin
 		err = errors.New("missing required work_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/%s/heartbeat", url.PathEscape(params.EnvironmentID), url.PathEscape(workID))
+	path := fmt.Sprintf("v1/environments/%s/work/%s/heartbeat", requestconfig.EscapePathSegment(params.EnvironmentID), requestconfig.EscapePathSegment(workID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.work.heartbeat", "/v1/environments/{environment_id}/work/{work_id}/heartbeat", "desired_ttl_seconds", "expected_last_heartbeat"), requestconfig.WithSpanAttribute("anthropic.environment.id", params.EnvironmentID), requestconfig.WithSpanAttribute("anthropic.environment.work.id", workID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -257,7 +288,7 @@ func (r *BetaEnvironmentWorkService) Poll(ctx context.Context, environmentID str
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/poll", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s/work/poll", requestconfig.EscapePathSegment(environmentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.work.poll", "/v1/environments/{environment_id}/work/poll", "block_ms", "reclaim_older_than_ms"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -265,6 +296,17 @@ func (r *BetaEnvironmentWorkService) Poll(ctx context.Context, environmentID str
 }
 
 // Get statistics about the work queue for an environment.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID string, query BetaEnvironmentWorkStatsParams, opts ...option.RequestOption) (res *BetaSelfHostedWorkQueueStats, err error) {
 	if len(query.Betas) > 0 {
 		headerValues := make([]string, len(query.Betas))
@@ -285,7 +327,7 @@ func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID st
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/stats", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s/work/stats", requestconfig.EscapePathSegment(environmentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.work.stats", "/v1/environments/{environment_id}/work/stats"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -298,6 +340,17 @@ func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID st
 // invoke them directly.
 //
 // Stop a work item, initiating graceful or forced shutdown.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentWorkService) Stop(ctx context.Context, workID string, params BetaEnvironmentWorkStopParams, opts ...option.RequestOption) (res *BetaSelfHostedWork, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -322,7 +375,7 @@ func (r *BetaEnvironmentWorkService) Stop(ctx context.Context, workID string, pa
 		err = errors.New("missing required work_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/work/%s/stop", url.PathEscape(params.EnvironmentID), url.PathEscape(workID))
+	path := fmt.Sprintf("v1/environments/%s/work/%s/stop", requestconfig.EscapePathSegment(params.EnvironmentID), requestconfig.EscapePathSegment(workID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.work.stop", "/v1/environments/{environment_id}/work/{work_id}/stop"), requestconfig.WithSpanAttribute("anthropic.environment.id", params.EnvironmentID), requestconfig.WithSpanAttribute("anthropic.environment.work.id", workID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -369,7 +422,7 @@ const (
 // receive new messages. The Environment Manager polls for work items and executes
 // them on customer-hosted infrastructure.
 type BetaSelfHostedWork struct {
-	// Work identifier (e.g., 'work\_...')
+	// Work identifier (e.g., 'work_...')
 	ID string `json:"id" api:"required"`
 	// RFC 3339 timestamp when work was acknowledged by Environment Manager
 	AcknowledgedAt string `json:"acknowledged_at" api:"required"`
@@ -570,7 +623,7 @@ func (r *BetaSelfHostedWorkUpdateRequestParam) UnmarshalJSON(data []byte) error 
 // This resource type is used when work represents a session that needs to be
 // executed in a self-hosted environment.
 type BetaSessionWorkData struct {
-	// Session identifier (e.g., 'session\_...')
+	// Session identifier (e.g., 'session_...')
 	ID string `json:"id" api:"required"`
 	// Type of work data
 	Type constant.Session `json:"type" default:"session"`

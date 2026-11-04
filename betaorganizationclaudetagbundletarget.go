@@ -48,6 +48,19 @@ func NewBetaOrganizationClaudeTagBundleTargetService(opts ...option.RequestOptio
 // Bundle to a channel or workspace it is already attached to returns the existing
 // Bundle Target. The channel or workspace must be set up: attaching never sets a
 // channel up. A group direct message takes no Bundle and returns 400.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
+//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
+//     Claude Tag API are not enabled for the organization.
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
+//     organization's compliance configuration does not let Claude Tag store anything
+//     new.
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
+//     credential is not a scoped API key that is bound at the organization level.
 func (r *BetaOrganizationClaudeTagBundleTargetService) New(ctx context.Context, bundleID string, params BetaOrganizationClaudeTagBundleTargetNewParams, opts ...option.RequestOption) (res *BetaClaudeTagBundleTargetUnion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -65,7 +78,7 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) New(ctx context.Context, 
 		err = errors.New("missing required bundle_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets", url.PathEscape(bundleID))
+	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets", requestconfig.EscapePathSegment(bundleID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.bundles.targets.create", "/v1/organizations/claude_tag/bundles/{bundle_id}/targets"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.id", bundleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -74,6 +87,19 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) New(ctx context.Context, 
 
 // Get one Bundle Target. Returns 404 when `target_id` is the identifier of another
 // Bundle's Bundle Target, or the Bundle Target was detached.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
+//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
+//     Claude Tag API are not enabled for the organization.
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
+//     organization's compliance configuration does not let Claude Tag store anything
+//     new.
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
+//     credential is not a scoped API key that is bound at the organization level.
 func (r *BetaOrganizationClaudeTagBundleTargetService) Get(ctx context.Context, targetID string, params BetaOrganizationClaudeTagBundleTargetGetParams, opts ...option.RequestOption) (res *BetaClaudeTagBundleTargetUnion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -95,7 +121,7 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) Get(ctx context.Context, 
 		err = errors.New("missing required target_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets/%s", url.PathEscape(params.BundleID), url.PathEscape(targetID))
+	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets/%s", requestconfig.EscapePathSegment(params.BundleID), requestconfig.EscapePathSegment(targetID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.bundles.targets.retrieve", "/v1/organizations/claude_tag/bundles/{bundle_id}/targets/{target_id}"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.id", params.BundleID), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.target.id", targetID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -105,6 +131,19 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) Get(ctx context.Context, 
 // List the Slack channels and Slack workspaces a Bundle is attached to, newest
 // first by `created_at`. Only channels and workspaces the organization owns are
 // listed; a Bundle that is attached to anything else has no Bundle Target for it.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
+//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
+//     Claude Tag API are not enabled for the organization.
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
+//     organization's compliance configuration does not let Claude Tag store anything
+//     new.
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
+//     credential is not a scoped API key that is bound at the organization level.
 func (r *BetaOrganizationClaudeTagBundleTargetService) List(ctx context.Context, bundleID string, params BetaOrganizationClaudeTagBundleTargetListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaClaudeTagBundleTargetUnion], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -123,7 +162,7 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) List(ctx context.Context,
 		err = errors.New("missing required bundle_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets", url.PathEscape(bundleID))
+	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets", requestconfig.EscapePathSegment(bundleID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.bundles.targets.list", "/v1/organizations/claude_tag/bundles/{bundle_id}/targets", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.id", bundleID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -141,12 +180,38 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) List(ctx context.Context,
 // List the Slack channels and Slack workspaces a Bundle is attached to, newest
 // first by `created_at`. Only channels and workspaces the organization owns are
 // listed; a Bundle that is attached to anything else has no Bundle Target for it.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
+//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
+//     Claude Tag API are not enabled for the organization.
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
+//     organization's compliance configuration does not let Claude Tag store anything
+//     new.
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
+//     credential is not a scoped API key that is bound at the organization level.
 func (r *BetaOrganizationClaudeTagBundleTargetService) ListAutoPaging(ctx context.Context, bundleID string, params BetaOrganizationClaudeTagBundleTargetListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaClaudeTagBundleTargetUnion] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, bundleID, params, opts...))
 }
 
 // Detach a Bundle from a Slack channel or a Slack workspace. A repeated detach
 // returns 404.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
+//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
+//     Claude Tag API are not enabled for the organization.
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
+//     organization's compliance configuration does not let Claude Tag store anything
+//     new.
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
+//     credential is not a scoped API key that is bound at the organization level.
 func (r *BetaOrganizationClaudeTagBundleTargetService) Delete(ctx context.Context, targetID string, params BetaOrganizationClaudeTagBundleTargetDeleteParams, opts ...option.RequestOption) (res *BetaClaudeTagDeletedBundleTarget, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -168,7 +233,7 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) Delete(ctx context.Contex
 		err = errors.New("missing required target_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets/%s", url.PathEscape(params.BundleID), url.PathEscape(targetID))
+	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s/targets/%s", requestconfig.EscapePathSegment(params.BundleID), requestconfig.EscapePathSegment(targetID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.bundles.targets.delete", "/v1/organizations/claude_tag/bundles/{bundle_id}/targets/{target_id}"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.id", params.BundleID), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.target.id", targetID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

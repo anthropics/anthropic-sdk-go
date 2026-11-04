@@ -74,6 +74,23 @@ func NewBetaOrganizationPluginVersionService(opts ...option.RequestOption) (r Be
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400): The request's `Content-Type`
+//     header names a charset other than UTF-8, ISO-8859-1 or US-ASCII. Send the
+//     request with no charset, or with one of these.
+//   - [ErrorCodeBetaSkillNameTaken] (HTTP 409): One of the Plugin's skills has the
+//     name of an organization skill. `skill_name` is that name.
+//   - [ErrorCodeBetaRegistrationPending] (HTTP 503): The Plugin version was stored
+//     but is not yet usable in claude.ai. `plugin_id` and `plugin_version_id`
+//     identify what was stored.
 func (r *BetaOrganizationPluginVersionService) New(ctx context.Context, pluginID string, params BetaOrganizationPluginVersionNewParams, opts ...option.RequestOption) (res *BetaPluginVersion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -91,7 +108,7 @@ func (r *BetaOrganizationPluginVersionService) New(ctx context.Context, pluginID
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/versions", url.PathEscape(pluginID))
+	path := fmt.Sprintf("v1/organizations/plugins/%s/versions", requestconfig.EscapePathSegment(pluginID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.create", "/v1/organizations/plugins/{plugin_id}/versions"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID), requestconfig.WithSpanCreatedID("anthropic.organization.plugin.version.id", &res, func(created *BetaPluginVersion) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -131,7 +148,7 @@ func (r *BetaOrganizationPluginVersionService) Get(ctx context.Context, version 
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/versions/%s", url.PathEscape(params.PluginID), url.PathEscape(version))
+	path := fmt.Sprintf("v1/organizations/plugins/%s/versions/%s", requestconfig.EscapePathSegment(params.PluginID), requestconfig.EscapePathSegment(version))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.retrieve", "/v1/organizations/plugins/{plugin_id}/versions/{version}", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", params.PluginID), requestconfig.WithSpanAttribute("anthropic.organization.plugin.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -171,7 +188,7 @@ func (r *BetaOrganizationPluginVersionService) List(ctx context.Context, pluginI
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/versions", url.PathEscape(pluginID))
+	path := fmt.Sprintf("v1/organizations/plugins/%s/versions", requestconfig.EscapePathSegment(pluginID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.list", "/v1/organizations/plugins/{plugin_id}/versions", "limit", "organization_id", "page"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -233,6 +250,15 @@ func (r *BetaOrganizationPluginVersionService) ListAutoPaging(ctx context.Contex
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
 func (r *BetaOrganizationPluginVersionService) Download(ctx context.Context, version string, params BetaOrganizationPluginVersionDownloadParams, opts ...option.RequestOption) (res *http.Response, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -254,7 +280,7 @@ func (r *BetaOrganizationPluginVersionService) Download(ctx context.Context, ver
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s/versions/%s/content", url.PathEscape(params.PluginID), url.PathEscape(version))
+	path := fmt.Sprintf("v1/organizations/plugins/%s/versions/%s/content", requestconfig.EscapePathSegment(params.PluginID), requestconfig.EscapePathSegment(version))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.versions.download", "/v1/organizations/plugins/{plugin_id}/versions/{version}/content", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", params.PluginID), requestconfig.WithSpanAttribute("anthropic.organization.plugin.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -272,7 +298,12 @@ type BetaPluginVersion struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Who uploaded this version; null when not recorded.
 	CreatedBy BetaPluginVersionCreatedByUnion `json:"created_by" api:"required"`
-	// The manifest's description; null when it declares none.
+	// The manifest's description; null when it declares none. The value can be longer
+	// than 500 characters, the limit on `description` in an uploaded manifest. A
+	// description that the manifest takes from a `SKILL.md` is cut to its first 500
+	// characters. So if the manifest's description is the first 500 characters of
+	// exactly one distinct skill `description` in `components`, that skill
+	// `description` is returned instead.
 	Description string `json:"description" api:"required"`
 	// The manifest's display name; null when it declares none.
 	DisplayName string `json:"display_name" api:"required"`

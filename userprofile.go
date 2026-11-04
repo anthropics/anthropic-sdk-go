@@ -63,7 +63,7 @@ func (r *UserProfileService) Get(ctx context.Context, userProfileID string, quer
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", requestconfig.EscapePathSegment(userProfileID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.retrieve", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -79,7 +79,7 @@ func (r *UserProfileService) Update(ctx context.Context, userProfileID string, p
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", requestconfig.EscapePathSegment(userProfileID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.update", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -122,7 +122,7 @@ func (r *UserProfileService) Delete(ctx context.Context, userProfileID string, b
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s", requestconfig.EscapePathSegment(userProfileID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.delete", "/v1/user_profiles/{user_profile_id}"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

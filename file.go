@@ -43,6 +43,22 @@ func NewFileService(opts ...option.RequestOption) (r FileService) {
 }
 
 // List Files
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *FileService) List(ctx context.Context, params FileListParams, opts ...option.RequestOption) (res *pagination.PageCursor[FileMetadata], err error) {
 	var raw *http.Response
 	if !param.IsOmitted(params.WorkspaceID) {
@@ -65,11 +81,43 @@ func (r *FileService) List(ctx context.Context, params FileListParams, opts ...o
 }
 
 // List Files
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *FileService) ListAutoPaging(ctx context.Context, params FileListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[FileMetadata] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete File
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *FileService) Delete(ctx context.Context, fileID string, body FileDeleteParams, opts ...option.RequestOption) (res *DeletedFile, err error) {
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -79,13 +127,34 @@ func (r *FileService) Delete(ctx context.Context, fileID string, body FileDelete
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s", url.PathEscape(fileID))
+	path := fmt.Sprintf("v1/files/%s", requestconfig.EscapePathSegment(fileID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.files.delete", "/v1/files/{file_id}"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
 
 // Download File
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeFileNotDownloadable] (HTTP 400): The file has `downloadable: false`.
+//     Only files generated by a tool, such as the code execution tool, can be
+//     downloaded.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
+//   - [ErrorCodeFileExpired] (HTTP 404): The file's `expires_at` has passed, so its
+//     content is no longer available.
 func (r *FileService) Download(ctx context.Context, fileID string, query FileDownloadParams, opts ...option.RequestOption) (res *http.Response, err error) {
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -96,13 +165,29 @@ func (r *FileService) Download(ctx context.Context, fileID string, query FileDow
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s/content", url.PathEscape(fileID))
+	path := fmt.Sprintf("v1/files/%s/content", requestconfig.EscapePathSegment(fileID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.files.download", "/v1/files/{file_id}/content"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Get File Metadata
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *FileService) GetMetadata(ctx context.Context, fileID string, query FileGetMetadataParams, opts ...option.RequestOption) (res *FileMetadata, err error) {
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -112,13 +197,31 @@ func (r *FileService) GetMetadata(ctx context.Context, fileID string, query File
 		err = errors.New("missing required file_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/files/%s", url.PathEscape(fileID))
+	path := fmt.Sprintf("v1/files/%s", requestconfig.EscapePathSegment(fileID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.files.retrieve_metadata", "/v1/files/{file_id}"), requestconfig.WithSpanAttribute("anthropic.file.id", fileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Upload File
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
+//   - [ErrorCodeStorageQuotaExceeded] (HTTP 400): The organization's file storage
+//     quota is exhausted. Delete files to free up space, then retry the upload.
 func (r *FileService) Upload(ctx context.Context, params FileUploadParams, opts ...option.RequestOption) (res *FileMetadata, err error) {
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))

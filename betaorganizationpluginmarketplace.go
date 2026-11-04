@@ -73,7 +73,7 @@ func (r *BetaOrganizationPluginMarketplaceService) Get(ctx context.Context, mark
 		err = errors.New("missing required marketplace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s", url.PathEscape(marketplaceID))
+	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s", requestconfig.EscapePathSegment(marketplaceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugin_marketplaces.retrieve", "/v1/organizations/plugin_marketplaces/{marketplace_id}", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin_marketplace.id", marketplaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -112,7 +112,7 @@ func (r *BetaOrganizationPluginMarketplaceService) Update(ctx context.Context, m
 		err = errors.New("missing required marketplace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s", url.PathEscape(marketplaceID))
+	path := fmt.Sprintf("v1/organizations/plugin_marketplaces/%s", requestconfig.EscapePathSegment(marketplaceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugin_marketplaces.update", "/v1/organizations/plugin_marketplaces/{marketplace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.plugin_marketplace.id", marketplaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -221,6 +221,13 @@ func (r *BetaOrganizationPluginMarketplaceService) ListAutoPaging(ctx context.Co
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400): The request's `Content-Type`
+//     header names a charset other than UTF-8, ISO-8859-1 or US-ASCII. Send the
+//     request with no charset, or with one of these.
 func (r *BetaOrganizationPluginMarketplaceService) ValidateArchive(ctx context.Context, params BetaOrganizationPluginMarketplaceValidateArchiveParams, opts ...option.RequestOption) (res *BetaPluginMarketplaceValidationReport, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

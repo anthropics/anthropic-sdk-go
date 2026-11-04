@@ -157,6 +157,8 @@ func (o Options) Tracer() trace.Tracer {
 // response body was decoded ([EndAPICallSpan]), or, when the application reads
 // the body, once it has ([EndAPICallSpanWhenBodyEnds]).
 type APICall struct {
+	// Name is the name of the span: that of the SDK method.
+	Name    string
 	Span    trace.Span
 	Options Options
 	// Start is when the call started. It is kept beside the span, which cannot
@@ -201,7 +203,8 @@ func Guard(record func()) {
 
 // StartAPICallSpan starts the span of an API call under name, the name of the
 // SDK method, as a child of the span in ctx, with the attributes that attrs
-// returns, which the method has from its own arguments. It returns nil when
+// returns, which the method has from its own arguments, and with each of
+// [ClientAttributes] whose key is not among them. It returns nil when
 // opts turn the spans off, when name is empty because no SDK method made the
 // call, or when the span neither records nor has a trace context that goes on,
 // in the headers or, with the propagation off, in the context of the attempts:
@@ -217,7 +220,13 @@ func StartAPICallSpan(ctx context.Context, opts Options, name string, attrs func
 		return nil
 	}
 	start := time.Now()
-	spanCtx, span := tracer.Start(ctx, name, trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs()...))
+	attributes := attrs()
+	for _, kv := range ClientAttributes() {
+		if !slices.ContainsFunc(attributes, func(other attribute.KeyValue) bool { return other.Key == kv.Key }) {
+			attributes = append(attributes, kv)
+		}
+	}
+	spanCtx, span := tracer.Start(ctx, name, trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attributes...))
 	if !span.IsRecording() {
 		// With the propagation off, a valid context still reaches the spans that
 		// the application's HTTP instrumentation parents to this one.
@@ -229,7 +238,7 @@ func StartAPICallSpan(ctx context.Context, opts Options, name string, attrs func
 			return nil
 		}
 	}
-	return &APICall{Span: span, Options: opts, Start: start}
+	return &APICall{Name: name, Span: span, Options: opts, Start: start}
 }
 
 // ServerAttributes returns the server.address and server.port that the span of
@@ -340,7 +349,8 @@ func InjectTraceHeaders(call *APICall, req *http.Request) {
 // when the SDK sent the request again, and its status: ERROR with
 // error.type when the call failed, none when the application canceled the
 // context, and OK otherwise. The span of a body that the application has yet to
-// read ends through [EndAPICallSpanWhenBodyEnds] instead.
+// read ends through [EndAPICallSpanWhenBodyEnds] instead. A response also gives
+// the span [responseHeaderAttributes].
 //
 // It does nothing when the span is not recording.
 func EndAPICallSpan(call *APICall, err error) {
@@ -351,6 +361,8 @@ func EndAPICallSpan(call *APICall, err error) {
 		return
 	}
 	defer span.End()
+	// Guarded and first: a failure here costs nothing below, and one below does not cost these.
+	Guard(func() { setResponseHeaderAttributes(call) })
 	setResponseStatusCode(call)
 	setResendCount(call)
 	if err != nil {
@@ -367,8 +379,9 @@ func EndAPICallSpan(call *APICall, err error) {
 // status when the application closes the body before its end or cancels the
 // context. A stream of server-sent events needs its last event too for status OK,
 // and observer sees each event as the application decodes it. The span gets
-// http.response.status_code now, and http.request.resend_count now and again
-// when it ends. Without a body to read, the span ends now, with status OK.
+// http.response.status_code and [responseHeaderAttributes] now, and
+// http.request.resend_count now and again when it ends. Without a body to read,
+// the span ends now, with status OK.
 //
 // It does nothing when the span is not recording.
 func EndAPICallSpanWhenBodyEnds(call *APICall, observer StreamObserver) {
@@ -384,6 +397,8 @@ func EndAPICallSpanWhenBodyEnds(call *APICall, observer StreamObserver) {
 	}
 	// The body has the span before anything else can fail, so that the span ends.
 	res.Body = &ResponseBody{ReadCloser: res.Body, Call: call, observer: observer}
+	// Guarded and first: a failure here costs nothing below, and one below does not cost these.
+	Guard(func() { setResponseHeaderAttributes(call) })
 	setResponseStatusCode(call)
 	setResendCount(call)
 }

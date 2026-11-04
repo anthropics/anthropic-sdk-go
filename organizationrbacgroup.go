@@ -61,7 +61,7 @@ func (r *OrganizationRBACGroupService) Get(ctx context.Context, rbacGroupID stri
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", requestconfig.EscapePathSegment(rbacGroupID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.retrieve", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -78,7 +78,7 @@ func (r *OrganizationRBACGroupService) Update(ctx context.Context, rbacGroupID s
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", requestconfig.EscapePathSegment(rbacGroupID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.update", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -117,13 +117,25 @@ func (r *OrganizationRBACGroupService) ListAutoPaging(ctx context.Context, query
 // SCIM provisioning.
 //
 // The RBAC Groups API is available to Claude Enterprise organizations only.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400): A role attached to an RBAC
+//     Group in the request grants owner access, so this API does not add members to
+//     that group (directly or through an invite), remove its members, or delete it.
+//     Make the change in the organization's admin settings in Claude.
+//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
+//     finish checking whether an RBAC Group in the request grants owner access, so
+//     it made no change. Retrying the same request will not help. Make the change in
+//     the organization's admin settings in Claude.
 func (r *OrganizationRBACGroupService) Delete(ctx context.Context, rbacGroupID string, opts ...option.RequestOption) (res *DeletedRBACGroup, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if rbacGroupID == "" {
 		err = errors.New("missing required rbac_group_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", url.PathEscape(rbacGroupID))
+	path := fmt.Sprintf("v1/organizations/rbac_groups/%s", requestconfig.EscapePathSegment(rbacGroupID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.delete", "/v1/organizations/rbac_groups/{rbac_group_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_group.id", rbacGroupID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err

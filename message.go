@@ -50,6 +50,85 @@ func NewMessageService(opts ...option.RequestOption) (r MessageService) {
 // Learn more about the Messages API in our
 // [user guide](https://platform.claude.com/docs/en/get-started)
 //
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400): The tools available after a
+//     message exceed a limit on their number or their size.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeClaudeCodeVersionTooOld] (HTTP 400): The request comes from a Claude
+//     Code version older than the minimum that the requested model or the
+//     organization requires. Update Claude Code, then retry.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeCompactionBlockAmbiguous] (HTTP 400): `messages` holds more than one
+//     `compaction` block with content. Send only the block the conversation returned
+//     last.
+//   - [ErrorCodeCompactionBlockMisplaced] (HTTP 400): The `compaction` block is not
+//     the first block of the conversation, or is in a `system` message.
+//   - [ErrorCodeCompactionContentMismatch] (HTTP 400): The `compaction` block's
+//     `content` differs from the text its `signature` recorded.
+//   - [ErrorCodeCompactionIncompleteTurn] (HTTP 400): The compaction request ends on
+//     an `assistant` turn that is not finished.
+//   - [ErrorCodeCompactionNothingToSummarize] (HTTP 400): `messages` holds no `user`
+//     or `assistant` content to summarize or adopt.
+//   - [ErrorCodeCompactionSignatureInvalid] (HTTP 400): The `compaction` block's
+//     `signature` does not verify.
+//   - [ErrorCodeCompactionTooManyToolReferences] (HTTP 400): The conversation
+//     references more distinct tools than a `compaction` block can record.
+//   - [ErrorCodeCompactionToolChangesMismatch] (HTTP 400): The `compaction` block's
+//     `tool_changes` differs from what was returned with the block.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
+//   - [ErrorCodeRequestBodyEncodingInvalid] (HTTP 400): The request body is not
+//     valid for its `Content-Encoding`.
+//   - [ErrorCodeRequestBodyEncodingUnsupported] (HTTP 400): The request's
+//     `Content-Encoding` is not supported.
+//   - [ErrorCodeThreadAlreadyContinued] (HTTP 400): The response that
+//     `previous_message_id` names has already been continued, and each response can
+//     be continued only once. Continue from the Thread's most recent response `id`.
+//   - [ErrorCodeThreadContinueInFlight] (HTTP 400): Another request is still
+//     continuing from the same `previous_message_id`. Wait for it to complete and
+//     continue from its response `id`, or replay the full conversation with
+//     `thread: {"type": "create"}`.
+//   - [ErrorCodeThreadFingerprintMismatch] (HTTP 400): A field that must stay the
+//     same across a Thread's turns differs from the value stored with the Thread;
+//     the message names each such field. Send the stored values, or replay the full
+//     conversation with `thread: {"type": "create"}` to change them.
+//   - [ErrorCodeThreadUnsupportedRequest] (HTTP 400): The request combines `thread`
+//     with a request field or an organization setting that Threads do not support;
+//     `unsupported`, when present, names it. Send the full conversation without
+//     `thread`, or change that field.
+//   - [ErrorCodeToolNameConflict] (HTTP 400): A tool made available in `messages`
+//     takes a name that an available tool of another kind, or of another MCP server,
+//     already holds.
+//   - [ErrorCodeToolReferenceUnresolved] (HTTP 400): A tool change or MCP tool
+//     listing references a tool or MCP server that is not defined at that position
+//     in the conversation.
+//   - [ErrorCodeThreadNotFound] (HTTP 404): No usable Thread state was found for
+//     `previous_message_id`. Replay the full conversation with
+//     `thread: {"type": "create"}` to start a new Thread.
+//   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409): A custom skill the
+//     request names is stored under an encryption key state the workspace cannot
+//     currently decrypt.
+//   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413): The compressed request
+//     body exceeds the request size limit once decoded.
+//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429): The organization has crossed
+//     the monthly API usage threshold of its API tier.
+//   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503): The workspace's customer-managed
+//     encryption key could not be reached. Retry the request; if this continues,
+//     check that the key is available in your key management service, or contact
+//     Anthropic support.
+//   - [ErrorCodeCompactionUnavailable] (HTTP 529): The compaction could not be
+//     completed for a transient server reason. Retry the request.
+//
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts ...option.RequestOption) (res *Message, err error) {
 	if !param.IsOmitted(params.UserProfileID) {
@@ -58,6 +137,7 @@ func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts 
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 
@@ -84,6 +164,85 @@ func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts 
 // Learn more about the Messages API in our
 // [user guide](https://platform.claude.com/docs/en/get-started)
 //
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400): The tools available after a
+//     message exceed a limit on their number or their size.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeClaudeCodeVersionTooOld] (HTTP 400): The request comes from a Claude
+//     Code version older than the minimum that the requested model or the
+//     organization requires. Update Claude Code, then retry.
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeCompactionBlockAmbiguous] (HTTP 400): `messages` holds more than one
+//     `compaction` block with content. Send only the block the conversation returned
+//     last.
+//   - [ErrorCodeCompactionBlockMisplaced] (HTTP 400): The `compaction` block is not
+//     the first block of the conversation, or is in a `system` message.
+//   - [ErrorCodeCompactionContentMismatch] (HTTP 400): The `compaction` block's
+//     `content` differs from the text its `signature` recorded.
+//   - [ErrorCodeCompactionIncompleteTurn] (HTTP 400): The compaction request ends on
+//     an `assistant` turn that is not finished.
+//   - [ErrorCodeCompactionNothingToSummarize] (HTTP 400): `messages` holds no `user`
+//     or `assistant` content to summarize or adopt.
+//   - [ErrorCodeCompactionSignatureInvalid] (HTTP 400): The `compaction` block's
+//     `signature` does not verify.
+//   - [ErrorCodeCompactionTooManyToolReferences] (HTTP 400): The conversation
+//     references more distinct tools than a `compaction` block can record.
+//   - [ErrorCodeCompactionToolChangesMismatch] (HTTP 400): The `compaction` block's
+//     `tool_changes` differs from what was returned with the block.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
+//   - [ErrorCodeRequestBodyEncodingInvalid] (HTTP 400): The request body is not
+//     valid for its `Content-Encoding`.
+//   - [ErrorCodeRequestBodyEncodingUnsupported] (HTTP 400): The request's
+//     `Content-Encoding` is not supported.
+//   - [ErrorCodeThreadAlreadyContinued] (HTTP 400): The response that
+//     `previous_message_id` names has already been continued, and each response can
+//     be continued only once. Continue from the Thread's most recent response `id`.
+//   - [ErrorCodeThreadContinueInFlight] (HTTP 400): Another request is still
+//     continuing from the same `previous_message_id`. Wait for it to complete and
+//     continue from its response `id`, or replay the full conversation with
+//     `thread: {"type": "create"}`.
+//   - [ErrorCodeThreadFingerprintMismatch] (HTTP 400): A field that must stay the
+//     same across a Thread's turns differs from the value stored with the Thread;
+//     the message names each such field. Send the stored values, or replay the full
+//     conversation with `thread: {"type": "create"}` to change them.
+//   - [ErrorCodeThreadUnsupportedRequest] (HTTP 400): The request combines `thread`
+//     with a request field or an organization setting that Threads do not support;
+//     `unsupported`, when present, names it. Send the full conversation without
+//     `thread`, or change that field.
+//   - [ErrorCodeToolNameConflict] (HTTP 400): A tool made available in `messages`
+//     takes a name that an available tool of another kind, or of another MCP server,
+//     already holds.
+//   - [ErrorCodeToolReferenceUnresolved] (HTTP 400): A tool change or MCP tool
+//     listing references a tool or MCP server that is not defined at that position
+//     in the conversation.
+//   - [ErrorCodeThreadNotFound] (HTTP 404): No usable Thread state was found for
+//     `previous_message_id`. Replay the full conversation with
+//     `thread: {"type": "create"}` to start a new Thread.
+//   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409): A custom skill the
+//     request names is stored under an encryption key state the workspace cannot
+//     currently decrypt.
+//   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413): The compressed request
+//     body exceeds the request size limit once decoded.
+//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429): The organization has crossed
+//     the monthly API usage threshold of its API tier.
+//   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503): The workspace's customer-managed
+//     encryption key could not be reached. Retry the request; if this continues,
+//     check that the key is available in your key management service, or contact
+//     Anthropic support.
+//   - [ErrorCodeCompactionUnavailable] (HTTP 529): The compaction could not be
+//     completed for a transient server reason. Retry the request.
+//
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *MessageService) NewStreaming(ctx context.Context, params MessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[MessageStreamEventUnion]) {
 	var (
@@ -96,6 +255,7 @@ func (r *MessageService) NewStreaming(ctx context.Context, params MessageNewPara
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 	opts = append(opts, option.WithJSONSet("stream", true))
@@ -112,6 +272,48 @@ func (r *MessageService) NewStreaming(ctx context.Context, params MessageNewPara
 //
 // Learn more about token counting in our
 // [user guide](https://platform.claude.com/docs/en/build-with-claude/token-counting)
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400): The tools available after a
+//     message exceed a limit on their number or their size.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeCompactionBlockAmbiguous] (HTTP 400): `messages` holds more than one
+//     `compaction` block with content. Send only the block the conversation returned
+//     last.
+//   - [ErrorCodeCompactionBlockMisplaced] (HTTP 400): The `compaction` block is not
+//     the first block of the conversation, or is in a `system` message.
+//   - [ErrorCodeCompactionContentMismatch] (HTTP 400): The `compaction` block's
+//     `content` differs from the text its `signature` recorded.
+//   - [ErrorCodeCompactionNothingToSummarize] (HTTP 400): `messages` holds no `user`
+//     or `assistant` content to summarize or adopt.
+//   - [ErrorCodeCompactionSignatureInvalid] (HTTP 400): The `compaction` block's
+//     `signature` does not verify.
+//   - [ErrorCodeCompactionToolChangesMismatch] (HTTP 400): The `compaction` block's
+//     `tool_changes` differs from what was returned with the block.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
+//   - [ErrorCodeRequestBodyEncodingInvalid] (HTTP 400): The request body is not
+//     valid for its `Content-Encoding`.
+//   - [ErrorCodeRequestBodyEncodingUnsupported] (HTTP 400): The request's
+//     `Content-Encoding` is not supported.
+//   - [ErrorCodeToolNameConflict] (HTTP 400): A tool made available in `messages`
+//     takes a name that an available tool of another kind, or of another MCP server,
+//     already holds.
+//   - [ErrorCodeToolReferenceUnresolved] (HTTP 400): A tool change or MCP tool
+//     listing references a tool or MCP server that is not defined at that position
+//     in the conversation.
+//   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413): The compressed request
+//     body exceeds the request size limit once decoded.
+//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429): The organization has crossed
+//     the monthly API usage threshold of its API tier.
+//   - [ErrorCodeCompactionUnavailable] (HTTP 529): The compaction could not be
+//     completed for a transient server reason. Retry the request.
 func (r *MessageService) CountTokens(ctx context.Context, params MessageCountTokensParams, opts ...option.RequestOption) (res *MessageTokensCount, err error) {
 	if !param.IsOmitted(params.UserProfileID) {
 		opts = append(opts, option.WithHeader("anthropic-user-profile-id", fmt.Sprintf("%v", params.UserProfileID.Value)))
@@ -119,9 +321,10 @@ func (r *MessageService) CountTokens(ctx context.Context, params MessageCountTok
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens"
-	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"), countTokensSpan(string(params.Model), &res, func(count *MessageTokensCount) int64 { return count.InputTokens }))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -7687,8 +7890,8 @@ func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent)
 	return
 }
 
-// Can have the runtime types [_[]TextBlockParam],
-// [_[]ToolResultBlockParamContentUnion], [*[]WebSearchResultBlockParam],
+// Can have the runtime types [*[]TextBlockParam],
+// [*[]ToolResultBlockParamContentUnion], [*[]WebSearchResultBlockParam],
 // [*WebFetchToolResultErrorBlockParam], [*WebFetchBlockParam],
 // [*CodeExecutionToolResultErrorParam], [*CodeExecutionResultBlockParam],
 // [*EncryptedCodeExecutionResultBlockParam],
@@ -7954,7 +8157,7 @@ func (u contentBlockParamUnionContent) GetContent() (res contentBlockParamUnionC
 }
 
 // Can have the runtime types [*DocumentBlockParam],
-// [_[]CodeExecutionOutputBlockParam], [_[]BashCodeExecutionOutputBlockParam],
+// [*[]CodeExecutionOutputBlockParam], [*[]BashCodeExecutionOutputBlockParam],
 // [*string]
 type contentBlockParamUnionContentContent struct{ any }
 
@@ -10629,7 +10832,7 @@ func (u MessageParam) GetContent() (res messageParamContent) {
 	return
 }
 
-// Can have the runtime types [_[]ContentBlockParamUnion], [_[]TextBlockParam]
+// Can have the runtime types [*[]ContentBlockParamUnion], [*[]TextBlockParam]
 type messageParamContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -10793,10 +10996,10 @@ type OutputTokensDetails struct {
 	// thinking-block delimiter tokens.
 	//
 	// Reflects the raw reasoning the model produced, not the (possibly shorter)
-	// summarized thinking text returned in the response body. Computed by
-	// re-tokenizing the raw reasoning text, so it may differ from the model's exact
-	// generation count by a small number of tokens. Always ≤ `output_tokens`;
-	// `output_tokens - thinking_tokens` approximates the non-reasoning output.
+	// summarized thinking text returned in the response body. It may differ from the
+	// model's exact generation count by a small number of tokens. Always ≤
+	// `output_tokens`; `output_tokens - thinking_tokens` approximates the
+	// non-reasoning output.
 	ThinkingTokens int64 `json:"thinking_tokens" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -17845,7 +18048,7 @@ const (
 type MessageNewParams struct {
 	// The maximum number of tokens to generate before stopping.
 	//
-	// Note that our models may stop _before_ reaching this maximum. This parameter
+	// Note that our models may stop *before* reaching this maximum. This parameter
 	// only specifies the absolute maximum number of tokens to generate.
 	//
 	// Set to `0` to populate the

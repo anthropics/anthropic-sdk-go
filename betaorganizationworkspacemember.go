@@ -48,7 +48,7 @@ func (r *BetaOrganizationWorkspaceMemberService) Get(ctx context.Context, userID
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", url.PathEscape(query.WorkspaceID), url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", requestconfig.EscapePathSegment(query.WorkspaceID), requestconfig.EscapePathSegment(userID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.members.retrieve", "/v1/organizations/workspaces/{workspace_id}/members/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", query.WorkspaceID), requestconfig.WithSpanAttribute("anthropic.organization.workspace.member.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -56,6 +56,12 @@ func (r *BetaOrganizationWorkspaceMemberService) Get(ctx context.Context, userID
 }
 
 // Update Workspace Member
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeWorkspaceMemberLimitExceeded] (HTTP 400): The workspace has reached
+//     the member limit that Anthropic set for it.
 func (r *BetaOrganizationWorkspaceMemberService) Update(ctx context.Context, userID string, params BetaOrganizationWorkspaceMemberUpdateParams, opts ...option.RequestOption) (res *BetaWorkspaceMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if params.WorkspaceID == "" {
@@ -66,7 +72,7 @@ func (r *BetaOrganizationWorkspaceMemberService) Update(ctx context.Context, use
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", url.PathEscape(params.WorkspaceID), url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", requestconfig.EscapePathSegment(params.WorkspaceID), requestconfig.EscapePathSegment(userID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.members.update", "/v1/organizations/workspaces/{workspace_id}/members/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", params.WorkspaceID), requestconfig.WithSpanAttribute("anthropic.organization.workspace.member.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -82,7 +88,7 @@ func (r *BetaOrganizationWorkspaceMemberService) List(ctx context.Context, works
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.members.list", "/v1/organizations/workspaces/{workspace_id}/members", "after_id", "before_id", "limit"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
@@ -103,13 +109,19 @@ func (r *BetaOrganizationWorkspaceMemberService) ListAutoPaging(ctx context.Cont
 }
 
 // Create Workspace Member
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeWorkspaceMemberLimitExceeded] (HTTP 400): The workspace has reached
+//     the member limit that Anthropic set for it.
 func (r *BetaOrganizationWorkspaceMemberService) Add(ctx context.Context, workspaceID string, body BetaOrganizationWorkspaceMemberAddParams, opts ...option.RequestOption) (res *BetaWorkspaceMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.members.add", "/v1/organizations/workspaces/{workspace_id}/members"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID), requestconfig.WithSpanCreatedID("anthropic.organization.workspace.member.id", &res, func(created *BetaWorkspaceMember) string { return created.UserID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
@@ -127,7 +139,7 @@ func (r *BetaOrganizationWorkspaceMemberService) Remove(ctx context.Context, use
 		err = errors.New("missing required user_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", url.PathEscape(body.WorkspaceID), url.PathEscape(userID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/members/%s", requestconfig.EscapePathSegment(body.WorkspaceID), requestconfig.EscapePathSegment(userID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.members.remove", "/v1/organizations/workspaces/{workspace_id}/members/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", body.WorkspaceID), requestconfig.WithSpanAttribute("anthropic.organization.workspace.member.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

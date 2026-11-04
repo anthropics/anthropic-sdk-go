@@ -86,6 +86,25 @@ func NewBetaOrganizationPluginService(opts ...option.RequestOption) (r BetaOrgan
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400): The request's `Content-Type`
+//     header names a charset other than UTF-8, ISO-8859-1 or US-ASCII. Send the
+//     request with no charset, or with one of these.
+//   - [ErrorCodeBetaPluginNameTaken] (HTTP 409): The marketplace already holds this
+//     name. `plugin_id` is the Plugin that holds it, and can be absent.
+//   - [ErrorCodeBetaSkillNameTaken] (HTTP 409): One of the Plugin's skills has the
+//     name of an organization skill. `skill_name` is that name.
+//   - [ErrorCodeBetaRegistrationPending] (HTTP 503): The Plugin version was stored
+//     but is not yet usable in claude.ai. `plugin_id` and `plugin_version_id`
+//     identify what was stored.
 func (r *BetaOrganizationPluginService) New(ctx context.Context, params BetaOrganizationPluginNewParams, opts ...option.RequestOption) (res *BetaPlugin, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -135,7 +154,7 @@ func (r *BetaOrganizationPluginService) Get(ctx context.Context, pluginID string
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s", url.PathEscape(pluginID))
+	path := fmt.Sprintf("v1/organizations/plugins/%s", requestconfig.EscapePathSegment(pluginID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.retrieve", "/v1/organizations/plugins/{plugin_id}", "organization_id"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -176,6 +195,21 @@ func (r *BetaOrganizationPluginService) Get(ctx context.Context, pluginID string
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeBetaScanFailed] (HTTP 400): The version in `plugin_version_id` did
+//     not pass its content scan, so it cannot be served.
+//   - [ErrorCodeBetaScanPending] (HTTP 409): The content scan of the version in
+//     `plugin_version_id` is still running. Retry once the scan finishes.
+//   - [ErrorCodeBetaSkillNameTaken] (HTTP 409): One of the Plugin's skills has the
+//     name of an organization skill. `skill_name` is that name.
 func (r *BetaOrganizationPluginService) Update(ctx context.Context, pluginID string, params BetaOrganizationPluginUpdateParams, opts ...option.RequestOption) (res *BetaPlugin, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -193,7 +227,7 @@ func (r *BetaOrganizationPluginService) Update(ctx context.Context, pluginID str
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s", url.PathEscape(pluginID))
+	path := fmt.Sprintf("v1/organizations/plugins/%s", requestconfig.EscapePathSegment(pluginID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.update", "/v1/organizations/plugins/{plugin_id}"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -292,6 +326,12 @@ func (r *BetaOrganizationPluginService) ListAutoPaging(ctx context.Context, para
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
 func (r *BetaOrganizationPluginService) Delete(ctx context.Context, pluginID string, body BetaOrganizationPluginDeleteParams, opts ...option.RequestOption) (res *BetaDeletedPlugin, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -309,7 +349,7 @@ func (r *BetaOrganizationPluginService) Delete(ctx context.Context, pluginID str
 		err = errors.New("missing required plugin_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/plugins/%s", url.PathEscape(pluginID))
+	path := fmt.Sprintf("v1/organizations/plugins/%s", requestconfig.EscapePathSegment(pluginID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.plugins.delete", "/v1/organizations/plugins/{plugin_id}"), requestconfig.WithSpanAttribute("anthropic.organization.plugin.id", pluginID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -379,19 +419,22 @@ type BetaPlugin struct {
 	Owner BetaPluginOwnerUnion `json:"owner" api:"required"`
 	// How far the served version reaches, or `null` if it is not classified.
 	//
-	// `remote` means it declares an MCP server or a CLI. `privileged` means it
-	// declares no MCP server or CLI, but declares a hook, monitor, language server, or
-	// settings, or has a skill, command, or other Markdown file whose frontmatter
-	// pre-approves tools (`allowed-tools` with any value other than an empty one or
-	// one that names only `AskUserQuestion`, `TodoWrite`, and `ToolSearch`). Otherwise
-	// it is `contained`.
+	// `remote` means it declares an MCP server or a CLI, or something that counts as
+	// one. `privileged` means it is not `remote`, but declares a hook (of any type,
+	// even one that posts to a URL), monitor, language server, Claude Code workflow
+	// (any file in a `workflows/` folder at its root counts as one), or settings, or
+	// has a skill, command, or other Markdown file whose frontmatter pre-approves
+	// tools (`allowed-tools` with any value other than an empty one or one that names
+	// only `AskUserQuestion`, `TodoWrite`, and `ToolSearch`). Otherwise it is
+	// `contained`.
 	//
 	// If the frontmatter of a skill, command, or other Markdown file that could change
 	// the value could not be read, or was past a size limit, the version is `null` or
-	// `privileged` (or `remote`, if it declares an MCP server or a CLI), not
+	// `privileged` (or `remote`, if something else it declares makes it `remote`), not
 	// `contained`. The value is normally worked out when a version is stored, under
-	// the rules of that time, so an older version can be `null`, or `contained` where
-	// the same files stored today would be `privileged` or `null`.
+	// the rules of that time, so an older version can be `null`, `contained` where the
+	// same files stored today would be `privileged`, `remote`, or `null`, or
+	// `privileged` where they would be `remote`.
 	//
 	// Any of "contained", "privileged", "remote".
 	Reach BetaPluginReach `json:"reach" api:"required"`
@@ -590,19 +633,22 @@ func (r *BetaPluginOwnerUnion) UnmarshalJSON(data []byte) error {
 
 // How far the served version reaches, or `null` if it is not classified.
 //
-// `remote` means it declares an MCP server or a CLI. `privileged` means it
-// declares no MCP server or CLI, but declares a hook, monitor, language server, or
-// settings, or has a skill, command, or other Markdown file whose frontmatter
-// pre-approves tools (`allowed-tools` with any value other than an empty one or
-// one that names only `AskUserQuestion`, `TodoWrite`, and `ToolSearch`). Otherwise
-// it is `contained`.
+// `remote` means it declares an MCP server or a CLI, or something that counts as
+// one. `privileged` means it is not `remote`, but declares a hook (of any type,
+// even one that posts to a URL), monitor, language server, Claude Code workflow
+// (any file in a `workflows/` folder at its root counts as one), or settings, or
+// has a skill, command, or other Markdown file whose frontmatter pre-approves
+// tools (`allowed-tools` with any value other than an empty one or one that names
+// only `AskUserQuestion`, `TodoWrite`, and `ToolSearch`). Otherwise it is
+// `contained`.
 //
 // If the frontmatter of a skill, command, or other Markdown file that could change
 // the value could not be read, or was past a size limit, the version is `null` or
-// `privileged` (or `remote`, if it declares an MCP server or a CLI), not
+// `privileged` (or `remote`, if something else it declares makes it `remote`), not
 // `contained`. The value is normally worked out when a version is stored, under
-// the rules of that time, so an older version can be `null`, or `contained` where
-// the same files stored today would be `privileged` or `null`.
+// the rules of that time, so an older version can be `null`, `contained` where the
+// same files stored today would be `privileged`, `remote`, or `null`, or
+// `privileged` where they would be `remote`.
 type BetaPluginReach string
 
 const (

@@ -86,7 +86,7 @@ func (r *BetaDeploymentService) Get(ctx context.Context, deploymentID string, qu
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.retrieve", "/v1/deployments/{deployment_id}"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -114,7 +114,7 @@ func (r *BetaDeploymentService) Update(ctx context.Context, deploymentID string,
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.update", "/v1/deployments/{deployment_id}"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -180,7 +180,7 @@ func (r *BetaDeploymentService) Archive(ctx context.Context, deploymentID string
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s/archive", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s/archive", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.archive", "/v1/deployments/{deployment_id}/archive"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -208,7 +208,7 @@ func (r *BetaDeploymentService) Pause(ctx context.Context, deploymentID string, 
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s/pause", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s/pause", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.pause", "/v1/deployments/{deployment_id}/pause"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -236,7 +236,7 @@ func (r *BetaDeploymentService) Run(ctx context.Context, deploymentID string, bo
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s/run", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s/run", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.run", "/v1/deployments/{deployment_id}/run"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -264,7 +264,7 @@ func (r *BetaDeploymentService) Unpause(ctx context.Context, deploymentID string
 		err = errors.New("missing required deployment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployments/%s/unpause", url.PathEscape(deploymentID))
+	path := fmt.Sprintf("v1/deployments/%s/unpause", requestconfig.EscapePathSegment(deploymentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployments.unpause", "/v1/deployments/{deployment_id}/unpause"), requestconfig.WithSpanAttribute("anthropic.deployment.id", deploymentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -588,8 +588,8 @@ func (u BetaManagedAgentsDeploymentInitialEventParamsUnion) GetContent() (res be
 }
 
 // Can have the runtime types
-// [_[]BetaManagedAgentsUserMessageEventParamsContentUnion],
-// [_[]BetaManagedAgentsSystemContentBlockParam]
+// [*[]BetaManagedAgentsUserMessageEventParamsContentUnion],
+// [*[]BetaManagedAgentsSystemContentBlockParam]
 type betaManagedAgentsDeploymentInitialEventParamsUnionContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -1411,8 +1411,8 @@ func (r *BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError) Unmars
 
 // A memory store attached to each session created from this deployment.
 type BetaManagedAgentsMemoryStoreResourceConfig struct {
-	// The memory store ID (memstore\_...). Must belong to the caller's organization
-	// and workspace.
+	// The memory store ID (memstore_...). Must belong to the caller's organization and
+	// workspace.
 	MemoryStoreID string               `json:"memory_store_id" api:"required"`
 	Type          constant.MemoryStore `json:"type" default:"memory_store"`
 	// Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts
@@ -1472,7 +1472,7 @@ func (r *BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError) Unmar
 // only cron is supported currently.
 type BetaManagedAgentsSchedule struct {
 	// 5-field POSIX cron expression: minute hour day-of-month month day-of-week (e.g.,
-	// "0 9 \* \* 1-5" for weekdays at 9am). Day-of-week is 0-7 where 0 and 7 both mean
+	// "0 9 * * 1-5" for weekdays at 9am). Day-of-week is 0-7 where 0 and 7 both mean
 	// Sunday. Extended cron syntax - seconds or year fields, and the special
 	// characters L, W, #, and ? - is not supported, nor are predefined shortcuts
 	// (@daily).
@@ -1512,7 +1512,7 @@ func (r *BetaManagedAgentsSchedule) UnmarshalJSON(data []byte) error {
 // The properties Expression, Timezone, Type are required.
 type BetaManagedAgentsScheduleParams struct {
 	// 5-field POSIX cron expression: minute hour day-of-month month day-of-week (e.g.,
-	// "0 9 \* \* 1-5" for weekdays at 9am). Day-of-week is 0-7 where 0 and 7 both mean
+	// "0 9 * * 1-5" for weekdays at 9am). Day-of-week is 0-7 where 0 and 7 both mean
 	// Sunday. Extended cron syntax - seconds or year fields, and the special
 	// characters L, W, #, and ? - is not supported, nor are predefined shortcuts
 	// (@daily).

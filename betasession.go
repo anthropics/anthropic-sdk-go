@@ -62,11 +62,12 @@ func (r *BetaSessionService) New(ctx context.Context, params BetaSessionNewParam
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	path := "v1/sessions"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
-	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.create", "/v1/sessions"), sessionsCreateSpan(params, &res), requestconfig.WithSpanCreatedID("anthropic.session.id", &res, func(created *BetaManagedAgentsSession) string { return created.ID }))
+	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.create", "/v1/sessions"), sessionsCreateSpan(params), requestconfig.WithSpanCreatedID("anthropic.session.id", &res, func(created *BetaManagedAgentsSession) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -92,7 +93,7 @@ func (r *BetaSessionService) Get(ctx context.Context, sessionID string, query Be
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.retrieve", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -120,7 +121,7 @@ func (r *BetaSessionService) Update(ctx context.Context, sessionID string, param
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.update", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -186,7 +187,7 @@ func (r *BetaSessionService) Delete(ctx context.Context, sessionID string, body 
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.delete", "/v1/sessions/{session_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -214,7 +215,7 @@ func (r *BetaSessionService) Archive(ctx context.Context, sessionID string, body
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/archive", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/archive", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.archive", "/v1/sessions/{session_id}/archive"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -429,8 +430,8 @@ func (u BetaManagedAgentsAgentWithOverridesParamsToolUnion) GetConfigs() (res be
 	return
 }
 
-// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParamsUnion],
-// [_[]BetaManagedAgentsMCPToolConfigParams]
+// Can have the runtime types [*[]BetaManagedAgentsAgentToolConfigParamsUnion],
+// [*[]BetaManagedAgentsMCPToolConfigParams]
 type betaManagedAgentsAgentWithOverridesParamsToolUnionConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -889,8 +890,8 @@ func init() {
 //
 // The properties MemoryStoreID, Type are required.
 type BetaManagedAgentsMemoryStoreResourceParam struct {
-	// The memory store ID (memstore\_...). Must belong to the caller's organization
-	// and workspace.
+	// The memory store ID (memstore_...). Must belong to the caller's organization and
+	// workspace.
 	MemoryStoreID string `json:"memory_store_id" api:"required"`
 	// Per-attachment guidance for the agent on how to use this store. Rendered into
 	// the memory section of the system prompt. Max 4096 chars.
@@ -1169,7 +1170,7 @@ type BetaManagedAgentsOutcomeEvaluationResource struct {
 	Explanation string `json:"explanation" api:"required"`
 	// 0-indexed revision cycle the outcome is currently on.
 	Iteration int64 `json:"iteration" api:"required"`
-	// Server-generated outc\_ ID for this outcome.
+	// Server-generated outc_ ID for this outcome.
 	OutcomeID string `json:"outcome_id" api:"required"`
 	// Current evaluation state. `pending` before the agent begins work; `running`
 	// while producing or revising; `evaluating` while the grader scores;
@@ -1674,8 +1675,8 @@ func (u BetaManagedAgentsSessionAgentUpdateToolUnionParam) GetConfigs() (res bet
 	return
 }
 
-// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParamsUnion],
-// [_[]BetaManagedAgentsMCPToolConfigParams]
+// Can have the runtime types [*[]BetaManagedAgentsAgentToolConfigParamsUnion],
+// [*[]BetaManagedAgentsMCPToolConfigParams]
 type betaManagedAgentsSessionAgentUpdateToolUnionParamConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:

@@ -46,6 +46,22 @@ func NewOrganizationWorkspaceService(opts ...option.RequestOption) (r Organizati
 }
 
 // Create Workspace
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeKeyProfileMismatch] (HTTP 400): The External Key is bound to a user
+//     profile, and the Workspace does not have that user profile. A Workspace can
+//     use only a key bound to its own user profile or a key that isn't bound to one.
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
+//     profile that does not exist in the organization or is no longer active. The
+//     request either names this user profile by ID, or names a resource, such as an
+//     External Key, that is bound to it.
+//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400): The request breaks the
+//     organization's Workspace Policy. The message says which rule it broke; an
+//     organization admin can see and change the policy in the Console.
+//   - [ErrorCodeExternalKeyChanged] (HTTP 409): The external key changed while the
+//     request was validating it. Send the request again.
 func (r *OrganizationWorkspaceService) New(ctx context.Context, body OrganizationWorkspaceNewParams, opts ...option.RequestOption) (res *Workspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/workspaces"
@@ -61,20 +77,36 @@ func (r *OrganizationWorkspaceService) Get(ctx context.Context, workspaceID stri
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.retrieve", "/v1/organizations/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // Update Workspace
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeKeyProfileMismatch] (HTTP 400): The External Key is bound to a user
+//     profile, and the Workspace does not have that user profile. A Workspace can
+//     use only a key bound to its own user profile or a key that isn't bound to one.
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
+//     profile that does not exist in the organization or is no longer active. The
+//     request either names this user profile by ID, or names a resource, such as an
+//     External Key, that is bound to it.
+//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400): The request breaks the
+//     organization's Workspace Policy. The message says which rule it broke; an
+//     organization admin can see and change the policy in the Console.
+//   - [ErrorCodeExternalKeyChanged] (HTTP 409): The external key changed while the
+//     request was validating it. Send the request again.
 func (r *OrganizationWorkspaceService) Update(ctx context.Context, workspaceID string, body OrganizationWorkspaceUpdateParams, opts ...option.RequestOption) (res *Workspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.update", "/v1/organizations/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -86,7 +118,7 @@ func (r *OrganizationWorkspaceService) List(ctx context.Context, query Organizat
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/workspaces"
-	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.list", "/v1/organizations/workspaces", "after_id", "before_id", "include_archived", "include_default", "limit"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.list", "/v1/organizations/workspaces", "after_id", "before_id", "ids", "include_archived", "include_default", "limit"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -111,7 +143,7 @@ func (r *OrganizationWorkspaceService) Archive(ctx context.Context, workspaceID 
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.archive", "/v1/organizations/workspaces/{workspace_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
@@ -547,6 +579,10 @@ type OrganizationWorkspaceListParams struct {
 	//
 	// Defaults to `20`. Ranges from `1` to `1000`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Only the Workspaces with these IDs, at most 100. `include_archived` and
+	// `include_default` still apply, and IDs of Workspaces the caller can't list are
+	// left out.
+	IDs []string `query:"ids,omitzero" json:"-"`
 	paramObj
 }
 

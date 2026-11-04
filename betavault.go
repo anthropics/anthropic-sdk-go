@@ -86,7 +86,7 @@ func (r *BetaVaultService) Get(ctx context.Context, vaultID string, query BetaVa
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s", url.PathEscape(vaultID))
+	path := fmt.Sprintf("v1/vaults/%s", requestconfig.EscapePathSegment(vaultID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.retrieve", "/v1/vaults/{vault_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -114,7 +114,7 @@ func (r *BetaVaultService) Update(ctx context.Context, vaultID string, params Be
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s", url.PathEscape(vaultID))
+	path := fmt.Sprintf("v1/vaults/%s", requestconfig.EscapePathSegment(vaultID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.update", "/v1/vaults/{vault_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -180,7 +180,7 @@ func (r *BetaVaultService) Delete(ctx context.Context, vaultID string, body Beta
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s", url.PathEscape(vaultID))
+	path := fmt.Sprintf("v1/vaults/%s", requestconfig.EscapePathSegment(vaultID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.delete", "/v1/vaults/{vault_id}"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -208,7 +208,7 @@ func (r *BetaVaultService) Archive(ctx context.Context, vaultID string, body Bet
 		err = errors.New("missing required vault_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/vaults/%s/archive", url.PathEscape(vaultID))
+	path := fmt.Sprintf("v1/vaults/%s/archive", requestconfig.EscapePathSegment(vaultID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.archive", "/v1/vaults/{vault_id}/archive"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)

@@ -1,4 +1,4 @@
-# Claude SDK for Go
+# Anthropic SDK for Go
 
 <!-- x-release-please-start-version -->
 
@@ -6,7 +6,7 @@
 
 <!-- x-release-please-end -->
 
-The Claude SDK for Go provides access to the [Claude API](https://docs.anthropic.com/en/api/) from Go applications.
+The Anthropic SDK for Go provides access to the [Claude API](https://docs.anthropic.com/en/api/) from Go applications.
 
 ## Documentation
 

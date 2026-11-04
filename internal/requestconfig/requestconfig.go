@@ -87,7 +87,7 @@ func (s RequestOptionFunc) Apply(r *RequestConfig) error    { return s(r) }
 func (s PreRequestOptionFunc) Apply(r *RequestConfig) error { return s(r) }
 
 func NewRequestConfig(ctx context.Context, method string, u string, body any, dst any, opts ...RequestOption) (*RequestConfig, error) {
-	if err := validateRequestPath(u); err != nil {
+	if err := ValidateRequestPath(u); err != nil {
 		return nil, err
 	}
 	var reader io.Reader
@@ -179,6 +179,7 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 		Body:       reader,
 	}
 	cfg.ResponseBodyInto = dst
+	cfg.OpenTelemetry.responseBodyInto = dst
 	opts, err = resolveCredential(opts)
 	if err != nil {
 		return nil, err
@@ -238,7 +239,7 @@ type RequestConfig struct {
 	// ResponseBodyInto. If Destination is a []byte, then it will return the body as
 	// is.
 	ResponseBodyInto any
-	// ResponseInto copies the \*http.Response of the corresponding request into the
+	// ResponseInto copies the *http.Response of the corresponding request into the
 	// given address
 	ResponseInto **http.Response
 	Body         io.Reader

@@ -1064,6 +1064,12 @@ func TestTelemetryPanicsStayOutOfTheCall(t *testing.T) {
 			}
 		})
 	}
+	t.Run("the request attributes of the method", func(t *testing.T) {
+		p := &fakeTracerProvider{}
+		client := newTracedAPIClient(t, &tracedAPI{}, option.WithTracerProvider(p))
+		attrs := func() []attribute.KeyValue { failed("the request attributes"); return nil }
+		check(t, p, 1, func() error { return getCard(client, requestconfig.WithSpanRequestAttributes(attrs)) })
+	})
 	observers := map[string]func(*tracing.APICall) tracing.StreamObserver{
 		"StreamObserver": func(*tracing.APICall) tracing.StreamObserver {
 			failed("StreamObserver")

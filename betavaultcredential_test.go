@@ -103,7 +103,7 @@ func TestBetaVaultCredentialUpdateWithOptionalParams(t *testing.T) {
 			VaultID: "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			Auth: anthropic.BetaVaultCredentialUpdateParamsAuthUnion{
 				OfMCPOAuth: &anthropic.BetaManagedAgentsMCPOAuthUpdateParams{
-					AccessToken: anthropic.String("x"),
+					AccessToken: anthropic.String("access_token"),
 					ExpiresAt:   anthropic.Time(time.Now()),
 					Refresh: anthropic.BetaManagedAgentsMCPOAuthRefreshUpdateParams{
 						RefreshToken: anthropic.String("x"),

@@ -29,7 +29,7 @@ func TestBetaMemoryStoreMemoryNewWithOptionalParams(t *testing.T) {
 		"memory_store_id",
 		anthropic.BetaMemoryStoreMemoryNewParams{
 			Content:     anthropic.String("content"),
-			Path:        "xx",
+			Path:        "/P",
 			View:        anthropic.BetaManagedAgentsMemoryViewBasic,
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
@@ -96,9 +96,9 @@ func TestBetaMemoryStoreMemoryUpdateWithOptionalParams(t *testing.T) {
 			MemoryStoreID: "memory_store_id",
 			View:          anthropic.BetaManagedAgentsMemoryViewBasic,
 			Content:       anthropic.String("content"),
-			Path:          anthropic.String("xx"),
+			Path:          anthropic.String("/P"),
 			Precondition: anthropic.BetaManagedAgentsPreconditionParam{
-				ContentSha256: anthropic.String("content_sha256"),
+				ContentSha256: anthropic.String("210b9798eb53baa4e69d31c1071cf03d212b8ad0ca30cf321e0ea82e120aac26"),
 			},
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),

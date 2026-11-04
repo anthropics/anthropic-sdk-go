@@ -73,7 +73,7 @@ func (r *OrganizationServiceAccountService) Get(ctx context.Context, serviceAcco
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s", url.PathEscape(serviceAccountID))
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s", requestconfig.EscapePathSegment(serviceAccountID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.retrieve", "/v1/organizations/service_accounts/{service_account_id}"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -96,7 +96,7 @@ func (r *OrganizationServiceAccountService) Update(ctx context.Context, serviceA
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s", url.PathEscape(serviceAccountID))
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s", requestconfig.EscapePathSegment(serviceAccountID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.update", "/v1/organizations/service_accounts/{service_account_id}"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -161,7 +161,7 @@ func (r *OrganizationServiceAccountService) Archive(ctx context.Context, service
 		err = errors.New("missing required service_account_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/service_accounts/%s/archive", url.PathEscape(serviceAccountID))
+	path := fmt.Sprintf("v1/organizations/service_accounts/%s/archive", requestconfig.EscapePathSegment(serviceAccountID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.archive", "/v1/organizations/service_accounts/{service_account_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.service_account.id", serviceAccountID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

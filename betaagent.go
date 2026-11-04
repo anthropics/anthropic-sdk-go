@@ -88,7 +88,7 @@ func (r *BetaAgentService) Get(ctx context.Context, agentID string, params BetaA
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s", url.PathEscape(agentID))
+	path := fmt.Sprintf("v1/agents/%s", requestconfig.EscapePathSegment(agentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.retrieve", "/v1/agents/{agent_id}", "version"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -116,7 +116,7 @@ func (r *BetaAgentService) Update(ctx context.Context, agentID string, params Be
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s", url.PathEscape(agentID))
+	path := fmt.Sprintf("v1/agents/%s", requestconfig.EscapePathSegment(agentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.update", "/v1/agents/{agent_id}"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -182,7 +182,7 @@ func (r *BetaAgentService) Archive(ctx context.Context, agentID string, body Bet
 		err = errors.New("missing required agent_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/agents/%s/archive", url.PathEscape(agentID))
+	path := fmt.Sprintf("v1/agents/%s/archive", requestconfig.EscapePathSegment(agentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.agents.archive", "/v1/agents/{agent_id}/archive"), requestconfig.WithSpanAttribute("gen_ai.agent.id", agentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -3349,7 +3349,9 @@ type BetaManagedAgentsModelConfigParams struct {
 	// (`"high"`) or `{"type": "high"}`. On create, omitting it resolves the per-model
 	// default; on update, omitting it leaves the stored value unchanged.
 	Effort BetaManagedAgentsModelConfigParamsEffortUnion `json:"effort,omitzero"`
-	// Inference speed mode. Defaults to `standard`.
+	// Inference speed mode. `fast` provides significantly faster output token
+	// generation at premium pricing. Defaults to `standard`. Not all models support
+	// `fast`; invalid combinations are rejected at create time.
 	//
 	// Any of "standard", "fast".
 	Speed BetaManagedAgentsModelConfigParamsSpeed `json:"speed,omitzero"`
@@ -3442,7 +3444,9 @@ const (
 	BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevelMax BetaManagedAgentsModelConfigParamsEffortBetaManagedAgentsEffortLevel = "max"
 )
 
-// Inference speed mode. Defaults to `standard`.
+// Inference speed mode. `fast` provides significantly faster output token
+// generation at premium pricing. Defaults to `standard`. Not all models support
+// `fast`; invalid combinations are rejected at create time.
 type BetaManagedAgentsModelConfigParamsSpeed string
 
 const (
@@ -6612,8 +6616,8 @@ func (u BetaAgentNewParamsToolUnion) GetConfigs() (res betaAgentNewParamsToolUni
 	return
 }
 
-// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParamsUnion],
-// [_[]BetaManagedAgentsMCPToolConfigParams]
+// Can have the runtime types [*[]BetaManagedAgentsAgentToolConfigParamsUnion],
+// [*[]BetaManagedAgentsMCPToolConfigParams]
 type betaAgentNewParamsToolUnionConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -6880,8 +6884,8 @@ func (u BetaAgentUpdateParamsToolUnion) GetConfigs() (res betaAgentUpdateParamsT
 	return
 }
 
-// Can have the runtime types [_[]BetaManagedAgentsAgentToolConfigParamsUnion],
-// [_[]BetaManagedAgentsMCPToolConfigParams]
+// Can have the runtime types [*[]BetaManagedAgentsAgentToolConfigParamsUnion],
+// [*[]BetaManagedAgentsMCPToolConfigParams]
 type betaAgentUpdateParamsToolUnionConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:

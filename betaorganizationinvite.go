@@ -44,6 +44,31 @@ func NewBetaOrganizationInviteService(opts ...option.RequestOption) (r BetaOrgan
 // automatically consumes a seat from the lowest tier with availability; there is
 // no seat-tier parameter. When no seat is free the request fails with a 400 error
 // rather than purchasing a seat.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeAlreadyMember] (HTTP 400): The email address already belongs to a
+//     user in the organization. The message names the user.
+//   - [ErrorCodeCannotInviteEmailsWithUnverifiedDomains] (HTTP 400): The email
+//     address's domain is not one of the verified domains of the organization's
+//     parent organization.
+//   - [ErrorCodeEmailDomainNotAllowed] (HTTP 400): The organization restricts
+//     invites to an allowed list of email domains, and the list is empty or does not
+//     include the email address's domain.
+//   - [ErrorCodeInviteAlreadyExists] (HTTP 400): A pending invite already exists for
+//     the email address. The message names the invite.
+//   - [ErrorCodeOrgMemberLimitExceeded] (HTTP 400): The organization has reached the
+//     member limit that Anthropic set for it. Pending invites count toward the
+//     limit.
+//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400): A role attached to an RBAC
+//     Group in the request grants owner access, so this API does not add members to
+//     that group (directly or through an invite), remove its members, or delete it.
+//     Make the change in the organization's admin settings in Claude.
+//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
+//     finish checking whether an RBAC Group in the request grants owner access, so
+//     it made no change. Retrying the same request will not help. Make the change in
+//     the organization's admin settings in Claude.
 func (r *BetaOrganizationInviteService) New(ctx context.Context, body BetaOrganizationInviteNewParams, opts ...option.RequestOption) (res *BetaOrganizationInvite, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/invites"
@@ -60,7 +85,7 @@ func (r *BetaOrganizationInviteService) Get(ctx context.Context, inviteID string
 		err = errors.New("missing required invite_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/invites/%s", url.PathEscape(inviteID))
+	path := fmt.Sprintf("v1/organizations/invites/%s", requestconfig.EscapePathSegment(inviteID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.invites.retrieve", "/v1/organizations/invites/{invite_id}"), requestconfig.WithSpanAttribute("anthropic.organization.invite.id", inviteID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -99,7 +124,7 @@ func (r *BetaOrganizationInviteService) Delete(ctx context.Context, inviteID str
 		err = errors.New("missing required invite_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/invites/%s", url.PathEscape(inviteID))
+	path := fmt.Sprintf("v1/organizations/invites/%s", requestconfig.EscapePathSegment(inviteID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.invites.delete", "/v1/organizations/invites/{invite_id}"), requestconfig.WithSpanAttribute("anthropic.organization.invite.id", inviteID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)

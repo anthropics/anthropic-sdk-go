@@ -64,7 +64,7 @@ func (r *BetaSessionEventService) List(ctx context.Context, sessionID string, pa
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/events", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.events.list", "/v1/sessions/{session_id}/events", "created_at[gt]", "created_at[gte]", "created_at[lt]", "created_at[lte]", "limit", "order", "page", "types"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -105,7 +105,7 @@ func (r *BetaSessionEventService) Send(ctx context.Context, sessionID string, pa
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/events", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.events.send", "/v1/sessions/{session_id}/events"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -137,7 +137,7 @@ func (r *BetaSessionEventService) StreamEvents(ctx context.Context, sessionID st
 		err = errors.New("missing required session_id parameter")
 		return ssestream.NewStream[BetaManagedAgentsStreamSessionEventsUnion](nil, err)
 	}
-	path := fmt.Sprintf("v1/sessions/%s/events/stream", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/events/stream", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.events.stream", "/v1/sessions/{session_id}/events/stream", "event_deltas"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &raw, opts...)
@@ -2218,10 +2218,10 @@ func (u BetaManagedAgentsEventParamsUnion) GetContent() (res betaManagedAgentsEv
 }
 
 // Can have the runtime types
-// [_[]BetaManagedAgentsUserMessageEventParamsContentUnion],
-// [_[]BetaManagedAgentsUserCustomToolResultEventParamsContentUnion],
-// [_[]BetaManagedAgentsUserToolResultEventParamsContentUnion],
-// [_[]BetaManagedAgentsSystemContentBlockParam]
+// [*[]BetaManagedAgentsUserMessageEventParamsContentUnion],
+// [*[]BetaManagedAgentsUserCustomToolResultEventParamsContentUnion],
+// [*[]BetaManagedAgentsUserToolResultEventParamsContentUnion],
+// [*[]BetaManagedAgentsSystemContentBlockParam]
 type betaManagedAgentsEventParamsUnionContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -5734,7 +5734,7 @@ type BetaManagedAgentsSessionThreadStatusIdleEvent struct {
 	AgentName string `json:"agent_name" api:"required"`
 	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Public sthr\_ ID of the thread that went idle.
+	// Public sthr_ ID of the thread that went idle.
 	SessionThreadID string `json:"session_thread_id" api:"required"`
 	// Structured information about why the thread stopped. `null` when there is
 	// nothing more to report.
@@ -5874,7 +5874,7 @@ type BetaManagedAgentsSessionThreadStatusRescheduledEvent struct {
 	AgentName string `json:"agent_name" api:"required"`
 	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Public sthr\_ ID of the thread that is retrying.
+	// Public sthr_ ID of the thread that is retrying.
 	SessionThreadID string                                  `json:"session_thread_id" api:"required"`
 	Type            constant.SessionThreadStatusRescheduled `json:"type" default:"session.thread_status_rescheduled"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -5904,7 +5904,7 @@ type BetaManagedAgentsSessionThreadStatusRunningEvent struct {
 	AgentName string `json:"agent_name" api:"required"`
 	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Public sthr\_ ID of the thread that started running.
+	// Public sthr_ ID of the thread that started running.
 	SessionThreadID string                              `json:"session_thread_id" api:"required"`
 	Type            constant.SessionThreadStatusRunning `json:"type" default:"session.thread_status_running"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -5934,7 +5934,7 @@ type BetaManagedAgentsSessionThreadStatusTerminatedEvent struct {
 	AgentName string `json:"agent_name" api:"required"`
 	// Timestamp of the status transition.
 	ProcessedAt time.Time `json:"processed_at" api:"required" format:"date-time"`
-	// Public sthr\_ ID of the thread that terminated.
+	// Public sthr_ ID of the thread that terminated.
 	SessionThreadID string                                 `json:"session_thread_id" api:"required"`
 	Type            constant.SessionThreadStatusTerminated `json:"type" default:"session.thread_status_terminated"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].

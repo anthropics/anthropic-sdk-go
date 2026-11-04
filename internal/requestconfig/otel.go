@@ -31,6 +31,9 @@ type OpenTelemetryConfig struct {
 	// its own arguments: the IDs in the request's path. The request for a later
 	// page of a list has them too.
 	SpanAttributes []attribute.KeyValue
+	// spanRequestAttributes returns the attributes that the SDK method reads from
+	// its own parameters. It is nil for a method whose span has none.
+	spanRequestAttributes func() []attribute.KeyValue
 	// spanCreatedID returns the attribute for the ID of the object that the
 	// method created, once the response is decoded, and false when there is none.
 	// It is nil unless the method creates one object.
@@ -38,12 +41,17 @@ type OpenTelemetryConfig struct {
 	// spanRecorder is what the SDK method records on the span of its own. It is
 	// zero for a method that has nothing of its own to record.
 	spanRecorder SpanRecorder
+	// responseBodyInto is ResponseBodyInto as the SDK method set it, which an
+	// option of the application can replace. A **http.Response means that the
+	// method streams the response.
+	responseBodyInto any
 }
 
 // clone returns what a clone of the RequestConfig has of o: all of it but
-// spanCreatedID, which reads the object that this call decodes.
+// spanCreatedID and responseBodyInto, which are about the object that this
+// call decodes.
 func (o OpenTelemetryConfig) clone() OpenTelemetryConfig {
-	o.spanCreatedID = nil
+	o.spanCreatedID, o.responseBodyInto = nil, nil
 	return o
 }
 
@@ -106,6 +114,16 @@ func WithSpanAttribute(key, value string) RequestOption {
 	})
 }
 
+// WithSpanRequestAttributes returns a RequestOption that makes the call's
+// OpenTelemetry span start with what attrs returns: the attributes that the SDK
+// method reads from its own parameters.
+func WithSpanRequestAttributes(attrs func() []attribute.KeyValue) RequestOption {
+	return RequestOptionFunc(func(r *RequestConfig) error {
+		r.OpenTelemetry.spanRequestAttributes = attrs
+		return nil
+	})
+}
+
 // WithSpanCreatedID returns a RequestOption for a method that creates one object
 // and decodes it into *res: the call's OpenTelemetry span gets the attribute key
 // with the object's ID, which id reads from the decoded object. The attribute is
@@ -140,13 +158,15 @@ func (cfg *RequestConfig) sendInSpan() (err error) {
 	// The attempts run inside the span, so that the application's HTTP
 	// instrumentation parents their spans to it.
 	err = cfg.send(trace.ContextWithSpan(ctx, call.Span), call)
-	tracing.Guard(func() { telemetry.SetAPICallAttributes(call) })
 	if err == nil && cfg.OpenTelemetry.spanCreatedID != nil {
 		tracing.Guard(func() {
 			if id, ok := cfg.OpenTelemetry.spanCreatedID(); ok {
 				call.Span.SetAttributes(id)
 			}
 		})
+	}
+	if err == nil {
+		tracing.Guard(func() { cfg.setSpanResponseAttributes(call) })
 	}
 	if recorder.RecordResult != nil {
 		tracing.Guard(func() { recorder.RecordResult(call, err) })
@@ -171,7 +191,32 @@ func (cfg *RequestConfig) spanStartAttributes() []attribute.KeyValue {
 	if start := cfg.OpenTelemetry.spanRecorder.StartAttributes; start != nil {
 		tracing.Guard(func() { attrs = append(attrs, start(cfg.Request.Header)...) })
 	}
+	if request := cfg.OpenTelemetry.spanRequestAttributes; request != nil {
+		tracing.Guard(func() { attrs = append(attrs, request()...) })
+	}
+	_, streams := cfg.OpenTelemetry.responseBodyInto.(**http.Response)
+	tracing.Guard(func() {
+		attrs = append(attrs, tracing.SpanRequestAttributes(cfg.OpenTelemetry.SpanName, cfg.Request.Header, streams)...)
+	})
 	return attrs
+}
+
+// SetResponseBodyInto makes dst the value that the SDK decodes the body of the
+// response into, as NewRequestConfig does with its own. A next page calls it,
+// so that its span reads the body too.
+func (cfg *RequestConfig) SetResponseBodyInto(dst any) {
+	cfg.ResponseBodyInto, cfg.OpenTelemetry.responseBodyInto = dst, dst
+}
+
+// setSpanResponseAttributes sets on the span of call what it has of the body of
+// the response, when Execute decoded that body into the value of the SDK method.
+func (cfg *RequestConfig) setSpanResponseAttributes(call *tracing.APICall) {
+	if cfg.ResponseBodyInto == nil || cfg.ResponseBodyInto != cfg.OpenTelemetry.responseBodyInto || call.Response == nil {
+		return
+	}
+	if body, ok := call.Response.Body.(*bufferedBody); ok {
+		tracing.SetSpanResponseAttributes(call, body.contents)
+	}
 }
 
 // tracedDoer returns what sends one attempt through next, the HTTP client, and

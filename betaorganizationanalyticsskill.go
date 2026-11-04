@@ -115,8 +115,8 @@ type BetaOrganizationAnalyticsSkillListParams struct {
 	// of `organization`, `private`, or `public`; `skill_name` matches
 	// case-insensitively; `user_id` takes a tagged user id (`user_...`), as emitted in
 	// responses. An unsupported dimension returns 400. At most 100 entries.
-	// `chat_cowork_unified` is accepted as a `product` value only on deployments that
-	// offer Chat and Cowork unified.
+	// `chat_cowork_unified` is accepted as a `product` value only where Chat and
+	// Cowork unified is available.
 	Filter []string `query:"filter,omitzero" json:"-"`
 	// Dimensions to break results out by (e.g. `group_by[]=user_id`). Supported on
 	// this endpoint: `product`, `rbac_group_id`, `user_id`. Grouped rows carry the

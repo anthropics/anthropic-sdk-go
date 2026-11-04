@@ -66,9 +66,9 @@ func NewOrganizationInviteService(opts ...option.RequestOption) (r OrganizationI
 //     that group (directly or through an invite), remove its members, or delete it.
 //     Make the change in the organization's admin settings in Claude.
 //   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
-//     finish checking whether an RBAC Group in the request grants owner access (the
-//     check reached a fixed limit), so it made no change. Retrying the same request
-//     will not help. Make the change in the organization's admin settings in Claude.
+//     finish checking whether an RBAC Group in the request grants owner access, so
+//     it made no change. Retrying the same request will not help. Make the change in
+//     the organization's admin settings in Claude.
 func (r *OrganizationInviteService) New(ctx context.Context, body OrganizationInviteNewParams, opts ...option.RequestOption) (res *OrganizationInvite, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/invites"

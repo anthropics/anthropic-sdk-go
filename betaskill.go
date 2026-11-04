@@ -62,9 +62,9 @@ func NewBetaSkillService(opts ...option.RequestOption) (r BetaSkillService) {
 //     organization for trust and safety reasons. An organization disabled for any
 //     other reason, such as billing, does not get this code. `appeal_url`, when
 //     present, is where the organization can appeal.
-//   - [ErrorCodeCMEKContextUnavailable] (HTTP 503): The request's workspace
-//     encryption context could not be resolved, so the request was refused. Retry in
-//     a few minutes.
+//   - [ErrorCodeCMEKContextUnavailable] (HTTP 503): The workspace's encryption
+//     settings could not be read, so the request was refused. Retry in a few
+//     minutes.
 func (r *BetaSkillService) New(ctx context.Context, params BetaSkillNewParams, opts ...option.RequestOption) (res *BetaSkill, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

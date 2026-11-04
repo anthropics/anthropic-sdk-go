@@ -84,9 +84,9 @@ func (r *OrganizationRBACGroupMemberService) ListAutoPaging(ctx context.Context,
 //     that group (directly or through an invite), remove its members, or delete it.
 //     Make the change in the organization's admin settings in Claude.
 //   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
-//     finish checking whether an RBAC Group in the request grants owner access (the
-//     check reached a fixed limit), so it made no change. Retrying the same request
-//     will not help. Make the change in the organization's admin settings in Claude.
+//     finish checking whether an RBAC Group in the request grants owner access, so
+//     it made no change. Retrying the same request will not help. Make the change in
+//     the organization's admin settings in Claude.
 func (r *OrganizationRBACGroupMemberService) Add(ctx context.Context, rbacGroupID string, body OrganizationRBACGroupMemberAddParams, opts ...option.RequestOption) (res *RBACGroupMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if rbacGroupID == "" {
@@ -113,9 +113,9 @@ func (r *OrganizationRBACGroupMemberService) Add(ctx context.Context, rbacGroupI
 //     that group (directly or through an invite), remove its members, or delete it.
 //     Make the change in the organization's admin settings in Claude.
 //   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
-//     finish checking whether an RBAC Group in the request grants owner access (the
-//     check reached a fixed limit), so it made no change. Retrying the same request
-//     will not help. Make the change in the organization's admin settings in Claude.
+//     finish checking whether an RBAC Group in the request grants owner access, so
+//     it made no change. Retrying the same request will not help. Make the change in
+//     the organization's admin settings in Claude.
 func (r *OrganizationRBACGroupMemberService) Remove(ctx context.Context, userID string, body OrganizationRBACGroupMemberRemoveParams, opts ...option.RequestOption) (res *DeletedRBACGroupMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if body.RBACGroupID == "" {

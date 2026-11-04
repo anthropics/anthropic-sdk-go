@@ -218,9 +218,8 @@ const ErrorCodeOrganizationTypeNotSupported = apierror.ErrorCodeOrganizationType
 const ErrorCodeRBACGroupGrantsOwnerAccess = apierror.ErrorCodeRBACGroupGrantsOwnerAccess
 
 // The API could not finish checking whether an RBAC Group in the request grants
-// owner access (the check reached a fixed limit), so it made no change. Retrying
-// the same request will not help. Make the change in the organization's admin
-// settings in Claude.
+// owner access, so it made no change. Retrying the same request will not help.
+// Make the change in the organization's admin settings in Claude.
 //
 // Returned with HTTP status 400 and
 // [shared.RBACGroupOwnerAccessUnconfirmedErrorDetails] details.
@@ -238,8 +237,8 @@ const ErrorCodeRequestBodyEncodingInvalid = apierror.ErrorCodeRequestBodyEncodin
 // [shared.RequestBodyEncodingUnsupportedErrorDetails] details.
 const ErrorCodeRequestBodyEncodingUnsupported = apierror.ErrorCodeRequestBodyEncodingUnsupported
 
-// The content scan of the version in `plugin_version_id` failed, errored or
-// reached no verdict, so the version cannot be served.
+// The version in `plugin_version_id` did not pass its content scan, so it cannot
+// be served.
 //
 // Returned with HTTP status 400 and [shared.BetaScanFailedErrorDetails] details.
 const ErrorCodeBetaScanFailed = apierror.ErrorCodeBetaScanFailed
@@ -485,8 +484,8 @@ const ErrorCodeRequestBodyTooLargeAfterDecoding = apierror.ErrorCodeRequestBodyT
 // details.
 const ErrorCodeEnforcedSpendLimitReached = apierror.ErrorCodeEnforcedSpendLimitReached
 
-// The request's workspace encryption context could not be resolved, so the request
-// was refused. Retry in a few minutes.
+// The workspace's encryption settings could not be read, so the request was
+// refused. Retry in a few minutes.
 //
 // Returned with HTTP status 503 and [shared.CMEKContextUnavailableErrorDetails]
 // details.
@@ -535,8 +534,8 @@ type ClaudeCodeKeyCreatorNotMemberErrorDetails = shared.ClaudeCodeKeyCreatorNotM
 // This is an alias to an internal type.
 type ClaudeCodeVersionTooOldErrorDetails = shared.ClaudeCodeVersionTooOldErrorDetails
 
-// The request's workspace encryption context could not be resolved, so the request
-// was refused. Retry in a few minutes.
+// The workspace's encryption settings could not be read, so the request was
+// refused. Retry in a few minutes.
 //
 // This is an alias to an internal type.
 type CMEKContextUnavailableErrorDetails = shared.CMEKContextUnavailableErrorDetails
@@ -872,9 +871,8 @@ type OrgMemberLimitExceededErrorDetails = shared.OrgMemberLimitExceededErrorDeta
 type RBACGroupGrantsOwnerAccessErrorDetails = shared.RBACGroupGrantsOwnerAccessErrorDetails
 
 // The API could not finish checking whether an RBAC Group in the request grants
-// owner access (the check reached a fixed limit), so it made no change. Retrying
-// the same request will not help. Make the change in the organization's admin
-// settings in Claude.
+// owner access, so it made no change. Retrying the same request will not help.
+// Make the change in the organization's admin settings in Claude.
 //
 // This is an alias to an internal type.
 type RBACGroupOwnerAccessUnconfirmedErrorDetails = shared.RBACGroupOwnerAccessUnconfirmedErrorDetails
@@ -1018,8 +1016,8 @@ type BetaSkillNameTakenErrorDetails = shared.BetaSkillNameTakenErrorDetails
 // This is an alias to an internal type.
 type BetaRegistrationPendingErrorDetails = shared.BetaRegistrationPendingErrorDetails
 
-// The content scan of the version in `plugin_version_id` failed, errored or
-// reached no verdict, so the version cannot be served.
+// The version in `plugin_version_id` did not pass its content scan, so it cannot
+// be served.
 //
 // This is an alias to an internal type.
 type BetaScanFailedErrorDetails = shared.BetaScanFailedErrorDetails

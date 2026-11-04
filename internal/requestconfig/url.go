@@ -15,11 +15,11 @@ import (
 // which route the request is sent to.
 var dotSegmentRegexp = regexp.MustCompile(`^(?:\.|%2[eE]){1,2}$`)
 
-// validateRequestPath rejects request paths containing dot segments, which
-// could otherwise change the route a request resolves to. It checks the path
-// Go will send. When u is not fully escaped (it has a space, say), Go rebuilds
-// that path from the decoded text, so "%2e%2e%2f x" is sent as "../%20x".
-func validateRequestPath(u string) error {
+// ValidateRequestPath returns an error if u, a URL or a path, fails [url.Parse]
+// or would be sent with a path segment "." or ".." (a dot may also be %2e or
+// %2E), since such a segment could change the route. When u is not fully
+// escaped, Go re-escapes the decoded path: "%2e%2e%2f x" becomes "../%20x".
+func ValidateRequestPath(u string) error {
 	parsed, err := url.Parse(u)
 	if err != nil {
 		return err

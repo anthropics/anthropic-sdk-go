@@ -87,7 +87,7 @@ func (s RequestOptionFunc) Apply(r *RequestConfig) error    { return s(r) }
 func (s PreRequestOptionFunc) Apply(r *RequestConfig) error { return s(r) }
 
 func NewRequestConfig(ctx context.Context, method string, u string, body any, dst any, opts ...RequestOption) (*RequestConfig, error) {
-	if err := validateRequestPath(u); err != nil {
+	if err := ValidateRequestPath(u); err != nil {
 		return nil, err
 	}
 	var reader io.Reader

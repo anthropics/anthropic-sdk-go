@@ -45,7 +45,8 @@ func NewOrganizationInviteService(opts ...option.RequestOption) (r OrganizationI
 // no seat-tier parameter. When no seat is free the request fails with a 400 error
 // rather than purchasing a seat.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeAlreadyMember] (HTTP 400): The email address already belongs to a
 //     user in the organization. The message names the user.

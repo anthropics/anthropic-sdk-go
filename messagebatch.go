@@ -50,7 +50,8 @@ func NewMessageBatchService(opts ...option.RequestOption) (r MessageBatchService
 // Learn more about the Message Batches API in our
 // [user guide](https://platform.claude.com/docs/en/build-with-claude/batch-processing)
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -84,7 +85,8 @@ func (r *MessageBatchService) New(ctx context.Context, params MessageBatchNewPar
 // Learn more about the Message Batches API in our
 // [user guide](https://platform.claude.com/docs/en/build-with-claude/batch-processing)
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -114,7 +116,8 @@ func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, qu
 // Learn more about the Message Batches API in our
 // [user guide](https://platform.claude.com/docs/en/build-with-claude/batch-processing)
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -150,7 +153,8 @@ func (r *MessageBatchService) List(ctx context.Context, params MessageBatchListP
 // Learn more about the Message Batches API in our
 // [user guide](https://platform.claude.com/docs/en/build-with-claude/batch-processing)
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -171,7 +175,8 @@ func (r *MessageBatchService) ListAutoPaging(ctx context.Context, params Message
 // Learn more about the Message Batches API in our
 // [user guide](https://platform.claude.com/docs/en/build-with-claude/batch-processing)
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -208,7 +213,8 @@ func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string,
 // Learn more about the Message Batches API in our
 // [user guide](https://platform.claude.com/docs/en/build-with-claude/batch-processing)
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -241,7 +247,8 @@ func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string,
 // Learn more about the Message Batches API in our
 // [user guide](https://platform.claude.com/docs/en/build-with-claude/batch-processing)
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member

@@ -44,7 +44,8 @@ func NewBetaOrganizationClaudeTagBundleService(opts ...option.RequestOption) (r 
 // Get one Bundle. What the Bundle grants (connectors, repositories and
 // credentials) is never returned.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -82,7 +83,8 @@ func (r *BetaOrganizationClaudeTagBundleService) Get(ctx context.Context, bundle
 // List the organization's Bundles, newest first by `created_at`. A Bundle that
 // Claude Tag manages for itself is not listed.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -125,7 +127,8 @@ func (r *BetaOrganizationClaudeTagBundleService) List(ctx context.Context, param
 // List the organization's Bundles, newest first by `created_at`. A Bundle that
 // Claude Tag manages for itself is not listed.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.

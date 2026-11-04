@@ -46,7 +46,8 @@ func NewSkillService(opts ...option.RequestOption) (r SkillService) {
 
 // Create Skill
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -76,7 +77,8 @@ func (r *SkillService) New(ctx context.Context, params SkillNewParams, opts ...o
 
 // Get Skill
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -102,7 +104,8 @@ func (r *SkillService) Get(ctx context.Context, skillID string, query SkillGetPa
 
 // List Skills
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -134,7 +137,8 @@ func (r *SkillService) List(ctx context.Context, params SkillListParams, opts ..
 
 // List Skills
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -149,7 +153,8 @@ func (r *SkillService) ListAutoPaging(ctx context.Context, params SkillListParam
 
 // Delete Skill
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member

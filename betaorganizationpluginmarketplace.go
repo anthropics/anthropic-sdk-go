@@ -222,7 +222,8 @@ func (r *BetaOrganizationPluginMarketplaceService) ListAutoPaging(ctx context.Co
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400): The request's `Content-Type`
 //     header names a charset other than UTF-8, ISO-8859-1 or US-ASCII. Send the

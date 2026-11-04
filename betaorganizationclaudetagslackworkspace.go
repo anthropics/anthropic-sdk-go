@@ -48,7 +48,8 @@ func NewBetaOrganizationClaudeTagSlackWorkspaceService(opts ...option.RequestOpt
 // level that could not be read. Either way `sources` names the settings level each
 // value comes from.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -87,7 +88,8 @@ func (r *BetaOrganizationClaudeTagSlackWorkspaceService) Get(ctx context.Context
 // left out is unchanged, and a setting sent as null is cleared, so the workspace
 // inherits it. If any value is refused, no setting in the request is stored.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -140,7 +142,8 @@ func (r *BetaOrganizationClaudeTagSlackWorkspaceService) Update(ctx context.Cont
 // resolve against a settings level that could not be read. A `page` cursor resumes
 // only a request with the same `include_inherited`.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -189,7 +192,8 @@ func (r *BetaOrganizationClaudeTagSlackWorkspaceService) List(ctx context.Contex
 // resolve against a settings level that could not be read. A `page` cursor resumes
 // only a request with the same `include_inherited`.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.

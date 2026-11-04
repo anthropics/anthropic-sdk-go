@@ -51,7 +51,8 @@ func NewBetaOrganizationClaudeTagSlackChannelService(opts ...option.RequestOptio
 // stays set up with every setting unset, and the error's
 // `details.slack_channel_id` holds the channel's identifier.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaSlackChannelSetUpSettingsRefused] (HTTP 400): The request set
 //     the channel up, and `settings` was then refused. The channel stays set up with
@@ -103,7 +104,8 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) New(ctx context.Context, 
 // from, so a caller tells the channel's own value from an inherited one by its
 // source, not by whether it is null.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -143,7 +145,8 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) Get(ctx context.Context, 
 // inherits it. If any value is refused, no setting in the request is stored. A
 // group direct message takes no settings and returns 400.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -198,7 +201,8 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) Update(ctx context.Contex
 // settings level that could not be read. A `page` cursor resumes only a request
 // with the same `include_inherited`.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -249,7 +253,8 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) List(ctx context.Context,
 // settings level that could not be read. A `page` cursor resumes only a request
 // with the same `include_inherited`.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -279,7 +284,8 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) ListAutoPaging(ctx contex
 // returns, so a repeated removal returns 404. A group direct message returns 400,
 // and so does a channel that holds configuration this API does not manage.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.

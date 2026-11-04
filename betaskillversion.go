@@ -45,7 +45,8 @@ func NewBetaSkillVersionService(opts ...option.RequestOption) (r BetaSkillVersio
 
 // Create Skill Version
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -90,7 +91,8 @@ func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, param
 
 // Get Skill Version
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -131,7 +133,8 @@ func (r *BetaSkillVersionService) Get(ctx context.Context, version string, param
 
 // List Skill Versions
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -178,7 +181,8 @@ func (r *BetaSkillVersionService) List(ctx context.Context, skillID string, para
 
 // List Skill Versions
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -193,7 +197,8 @@ func (r *BetaSkillVersionService) ListAutoPaging(ctx context.Context, skillID st
 
 // Delete Skill Version
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member

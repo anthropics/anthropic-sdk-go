@@ -57,7 +57,8 @@ func (r *BetaOrganizationWorkspaceMemberService) Get(ctx context.Context, userID
 
 // Update Workspace Member
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeWorkspaceMemberLimitExceeded] (HTTP 400): The workspace has reached
 //     the member limit that Anthropic set for it.
@@ -109,7 +110,8 @@ func (r *BetaOrganizationWorkspaceMemberService) ListAutoPaging(ctx context.Cont
 
 // Create Workspace Member
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeWorkspaceMemberLimitExceeded] (HTTP 400): The workspace has reached
 //     the member limit that Anthropic set for it.

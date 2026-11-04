@@ -49,7 +49,8 @@ func NewBetaOrganizationClaudeTagBundleTargetService(opts ...option.RequestOptio
 // Bundle Target. The channel or workspace must be set up: attaching never sets a
 // channel up. A group direct message takes no Bundle and returns 400.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -87,7 +88,8 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) New(ctx context.Context, 
 // Get one Bundle Target. Returns 404 when `target_id` is the identifier of another
 // Bundle's Bundle Target, or the Bundle Target was detached.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -130,7 +132,8 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) Get(ctx context.Context, 
 // first by `created_at`. Only channels and workspaces the organization owns are
 // listed; a Bundle that is attached to anything else has no Bundle Target for it.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -178,7 +181,8 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) List(ctx context.Context,
 // first by `created_at`. Only channels and workspaces the organization owns are
 // listed; a Bundle that is attached to anything else has no Bundle Target for it.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
@@ -196,7 +200,8 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) ListAutoPaging(ctx contex
 // Detach a Bundle from a Slack channel or a Slack workspace. A repeated detach
 // returns 404.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
 //     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.

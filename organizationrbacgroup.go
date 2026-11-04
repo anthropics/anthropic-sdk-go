@@ -118,7 +118,8 @@ func (r *OrganizationRBACGroupService) ListAutoPaging(ctx context.Context, query
 //
 // The RBAC Groups API is available to Claude Enterprise organizations only.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400): A role attached to an RBAC
 //     Group in the request grants owner access, so this API does not add members to

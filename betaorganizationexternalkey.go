@@ -42,7 +42,8 @@ func NewBetaOrganizationExternalKeyService(opts ...option.RequestOption) (r Beta
 
 // Create an external key config owned by the caller's organization.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
 //     profile that does not exist in the organization or is no longer active. The
@@ -77,7 +78,8 @@ func (r *BetaOrganizationExternalKeyService) Get(ctx context.Context, externalKe
 // once any workspace references this config, because previously encrypted data
 // requires the original key identity to decrypt.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400): The External Key can't be
 //     deleted or reconfigured while the organization's Workspace Policy lists it as
@@ -130,7 +132,8 @@ func (r *BetaOrganizationExternalKeyService) ListAutoPaging(ctx context.Context,
 //
 // The request is rejected if any workspace still references this config.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400): The External Key can't be
 //     deleted or reconfigured while the organization's Workspace Policy lists it as

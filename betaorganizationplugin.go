@@ -87,7 +87,8 @@ func NewBetaOrganizationPluginService(opts ...option.RequestOption) (r BetaOrgan
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
 //     encryption key is disabled or revoked. Re-enable the key, then retry.
@@ -195,7 +196,8 @@ func (r *BetaOrganizationPluginService) Get(ctx context.Context, pluginID string
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
 //     encryption key is disabled or revoked. Re-enable the key, then retry.
@@ -326,7 +328,8 @@ func (r *BetaOrganizationPluginService) ListAutoPaging(ctx context.Context, para
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
 //     encryption key is disabled or revoked. Re-enable the key, then retry.

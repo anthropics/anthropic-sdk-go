@@ -47,7 +47,8 @@ func NewBetaOrganizationSpendLimitService(opts ...option.RequestOption) (r BetaO
 
 // Retrieve a spend limit by ID.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403): The
 //     organization cannot retrieve, set or delete spend limits with an Admin API
@@ -74,7 +75,8 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 // `rbac_group`, `organization_service`, `user`; within a type they come in a fixed
 // order that is not creation order.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
 //     support the organization's type. Each endpoint's description says which
@@ -117,7 +119,8 @@ func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params Bet
 // `rbac_group`, `organization_service`, `user`; within a type they come in a fixed
 // order that is not creation order.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
 //     support the organization's type. Each endpoint's description says which
@@ -135,7 +138,8 @@ func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, 
 // `usage_tier` limit. Deleting organization and workspace limits through the API
 // is in an early access preview.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaBillingFrozen] (HTTP 403): Anthropic has temporarily disabled
 //     billing changes for the user account the credential belongs to. Contact
@@ -165,7 +169,8 @@ func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLim
 // monthly and always carry an amount. Setting those limits is in an early access
 // preview. To request access, contact your Anthropic account team.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaBillingFrozen] (HTTP 403): Anthropic has temporarily disabled
 //     billing changes for the user account the credential belongs to. Contact

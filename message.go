@@ -50,7 +50,8 @@ func NewMessageService(opts ...option.RequestOption) (r MessageService) {
 // Learn more about the Messages API in our
 // [user guide](https://platform.claude.com/docs/en/get-started)
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400): The tools available after a
 //     message exceed a limit on their number or their size.
@@ -163,7 +164,8 @@ func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts 
 // Learn more about the Messages API in our
 // [user guide](https://platform.claude.com/docs/en/get-started)
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400): The tools available after a
 //     message exceed a limit on their number or their size.
@@ -271,7 +273,8 @@ func (r *MessageService) NewStreaming(ctx context.Context, params MessageNewPara
 // Learn more about token counting in our
 // [user guide](https://platform.claude.com/docs/en/build-with-claude/token-counting)
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400): The tools available after a
 //     message exceed a limit on their number or their size.

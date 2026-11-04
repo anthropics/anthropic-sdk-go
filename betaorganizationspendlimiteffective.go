@@ -40,7 +40,8 @@ func NewBetaOrganizationSpendLimitEffectiveService(opts ...option.RequestOption)
 // member's periods never split across pages. Supported for Claude Enterprise
 // organizations only, not for Claude Console organizations.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
 //     support the organization's type. Each endpoint's description says which
@@ -71,7 +72,8 @@ func (r *BetaOrganizationSpendLimitEffectiveService) List(ctx context.Context, q
 // member's periods never split across pages. Supported for Claude Enterprise
 // organizations only, not for Claude Console organizations.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
 //     support the organization's type. Each endpoint's description says which

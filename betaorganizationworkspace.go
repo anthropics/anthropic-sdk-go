@@ -48,7 +48,8 @@ func NewBetaOrganizationWorkspaceService(opts ...option.RequestOption) (r BetaOr
 
 // Create Workspace
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeKeyProfileMismatch] (HTTP 400): The External Key is bound to a user
 //     profile, and the Workspace does not have that user profile. A Workspace can
@@ -97,7 +98,8 @@ func (r *BetaOrganizationWorkspaceService) Get(ctx context.Context, workspaceID 
 
 // Update Workspace
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeKeyProfileMismatch] (HTTP 400): The External Key is bound to a user
 //     profile, and the Workspace does not have that user profile. A Workspace can

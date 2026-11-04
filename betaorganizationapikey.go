@@ -55,7 +55,8 @@ func (r *BetaOrganizationAPIKeyService) Get(ctx context.Context, apiKeyID string
 
 // Update API Key
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeOrgAPIKeyLimitExceeded] (HTTP 400): The organization has reached its
 //     limit of active API keys.

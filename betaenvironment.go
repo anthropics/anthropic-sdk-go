@@ -44,7 +44,8 @@ func NewBetaEnvironmentService(opts ...option.RequestOption) (r BetaEnvironmentS
 
 // Create a new environment with the specified configuration.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -80,7 +81,8 @@ func (r *BetaEnvironmentService) New(ctx context.Context, params BetaEnvironment
 
 // Retrieve a specific environment by ID.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -118,7 +120,8 @@ func (r *BetaEnvironmentService) Get(ctx context.Context, environmentID string, 
 
 // Update an existing environment's configuration.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -163,7 +166,8 @@ func (r *BetaEnvironmentService) Update(ctx context.Context, environmentID strin
 
 // List environments with pagination support.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -206,7 +210,8 @@ func (r *BetaEnvironmentService) List(ctx context.Context, params BetaEnvironmen
 
 // List environments with pagination support.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -221,7 +226,8 @@ func (r *BetaEnvironmentService) ListAutoPaging(ctx context.Context, params Beta
 
 // Delete an environment by ID. Returns a confirmation of the deletion.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -260,7 +266,8 @@ func (r *BetaEnvironmentService) Delete(ctx context.Context, environmentID strin
 // Archive an environment by ID. Archived environments cannot be used to create new
 // sessions.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member

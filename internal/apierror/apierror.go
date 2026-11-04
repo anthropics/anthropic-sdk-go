@@ -30,8 +30,6 @@ type Error struct {
 	Message string
 	// `error.details` from the response body, if present.
 	Details shared.ErrorDetailsUnion
-	// `error.details.error_code` from the response body, if present and a string.
-	ErrorCode ErrorCode
 
 	errorType shared.ErrorType
 }
@@ -57,9 +55,6 @@ func (r *Error) UnmarshalJSON(data []byte) error {
 	} {
 		apijson.UnmarshalRoot([]byte(body.Get(path).Raw), field)
 	}
-	if code := body.Get("error.details.error_code"); code.Type == gjson.String {
-		r.ErrorCode = ErrorCode(code.Str)
-	}
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -79,6 +74,15 @@ func (r *Error) Error() string {
 		msg += " " + body
 	}
 	return msg
+}
+
+// ErrorCode returns `error.details.error_code` from the response body, or "" if it
+// is absent or not a string.
+func (r *Error) ErrorCode() ErrorCode {
+	if code := gjson.Get(r.RawJSON(), "error.details.error_code"); code.Type == gjson.String {
+		return ErrorCode(code.Str)
+	}
+	return ""
 }
 
 // DumpRequest returns the request in HTTP/1.x wire format, with sensitive header

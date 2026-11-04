@@ -90,7 +90,8 @@ func (r *OrganizationUserService) ListAutoPaging(ctx context.Context, query Orga
 
 // Remove a member from the organization.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeCannotRemoveLastMember] (HTTP 400): The user is the organization's
 //     only member. Add another member before removing this one.

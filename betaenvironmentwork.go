@@ -46,7 +46,8 @@ func NewBetaEnvironmentWorkService(opts ...option.RequestOption) (r BetaEnvironm
 //
 // Retrieve detailed information about a specific work item.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -93,7 +94,8 @@ func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, par
 //
 // Update work item metadata with merge semantics.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -226,7 +228,8 @@ func (r *BetaEnvironmentWorkService) Ack(ctx context.Context, workID string, par
 //
 // Record a heartbeat for a work item to maintain the lease.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaHeartbeatPreconditionFailed] (HTTP 412):
 //     `expected_last_heartbeat` does not match the stored heartbeat, so another
@@ -294,7 +297,8 @@ func (r *BetaEnvironmentWorkService) Poll(ctx context.Context, environmentID str
 
 // Get statistics about the work queue for an environment.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member
@@ -337,7 +341,8 @@ func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID st
 //
 // Stop a work item, initiating graceful or forced shutdown.
 //
-// On failure, the [ErrorCode] of the returned [*Error] may be:
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
 //     the Claude Code workspace, and the user who created it is no longer a member

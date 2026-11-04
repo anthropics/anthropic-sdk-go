@@ -67,42 +67,6 @@ func (r *OrganizationService) Get(ctx context.Context, opts ...option.RequestOpt
 	return res, err
 }
 
-// Another change to the organization's members is in progress. Retry the request
-// once it completes.
-type ConcurrentMembershipChangeErrorDetails struct {
-	ErrorCode constant.ConcurrentMembershipChange `json:"error_code" default:"concurrent_membership_change"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ConcurrentMembershipChangeErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *ConcurrentMembershipChangeErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The organization has reached the member limit that Anthropic set for it. Pending
-// invites count toward the limit.
-type OrgMemberLimitExceededErrorDetails struct {
-	ErrorCode constant.OrgMemberLimitExceeded `json:"error_code" default:"org_member_limit_exceeded"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r OrgMemberLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *OrgMemberLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 type OrganizationInfo struct {
 	// ID of the Organization.
 	ID string `json:"id" api:"required" format:"uuid"`

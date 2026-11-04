@@ -221,6 +221,12 @@ func (r *BetaOrganizationPluginMarketplaceService) ListAutoPaging(ctx context.Co
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400): The request's `Content-Type`
+//     header names a charset other than UTF-8, ISO-8859-1 or US-ASCII. Send the
+//     request with no charset, or with one of these.
 func (r *BetaOrganizationPluginMarketplaceService) ValidateArchive(ctx context.Context, params BetaOrganizationPluginMarketplaceValidateArchiveParams, opts ...option.RequestOption) (res *BetaPluginMarketplaceValidationReport, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

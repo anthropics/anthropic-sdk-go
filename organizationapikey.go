@@ -53,6 +53,13 @@ func (r *OrganizationAPIKeyService) Get(ctx context.Context, apiKeyID string, op
 }
 
 // Update API Key
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeOrgAPIKeyLimitExceeded] (HTTP 400): The organization has reached its
+//     limit of active API keys.
+//   - [ErrorCodeWorkspaceAPIKeyLimitExceeded] (HTTP 400): The workspace has reached
+//     its limit of active API keys.
 func (r *OrganizationAPIKeyService) Update(ctx context.Context, apiKeyID string, body OrganizationAPIKeyUpdateParams, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if apiKeyID == "" {
@@ -388,40 +395,6 @@ type APIKeyWorkspaceScope struct {
 // Returns the unmodified JSON received from the API
 func (r APIKeyWorkspaceScope) RawJSON() string { return r.JSON.raw }
 func (r *APIKeyWorkspaceScope) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The organization has reached its limit of active API keys.
-type OrgAPIKeyLimitExceededErrorDetails struct {
-	ErrorCode constant.OrgAPIKeyLimitExceeded `json:"error_code" default:"org_api_key_limit_exceeded"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r OrgAPIKeyLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *OrgAPIKeyLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The workspace has reached its limit of active API keys.
-type WorkspaceAPIKeyLimitExceededErrorDetails struct {
-	ErrorCode constant.WorkspaceAPIKeyLimitExceeded `json:"error_code" default:"workspace_api_key_limit_exceeded"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r WorkspaceAPIKeyLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *WorkspaceAPIKeyLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

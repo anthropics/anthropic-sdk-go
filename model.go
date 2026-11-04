@@ -42,6 +42,16 @@ func NewModelService(opts ...option.RequestOption) (r ModelService) {
 //
 // The Models API response can be used to determine information about a specific
 // model or resolve a model alias to a model ID.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetParams, opts ...option.RequestOption) (res *ModelInfo, err error) {
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -61,6 +71,16 @@ func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetPa
 //
 // The Models API response can be used to determine which models are available for
 // use in the API. More recently released models are listed first.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *ModelService) List(ctx context.Context, params ModelListParams, opts ...option.RequestOption) (res *pagination.Page[ModelInfo], err error) {
 	var raw *http.Response
 	if !param.IsOmitted(params.WorkspaceID) {
@@ -86,6 +106,16 @@ func (r *ModelService) List(ctx context.Context, params ModelListParams, opts ..
 //
 // The Models API response can be used to determine which models are available for
 // use in the API. More recently released models are listed first.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *ModelService) ListAutoPaging(ctx context.Context, params ModelListParams, opts ...option.RequestOption) *pagination.PageAutoPager[ModelInfo] {
 	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }

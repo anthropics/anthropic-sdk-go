@@ -45,6 +45,16 @@ func NewBetaEnvironmentWorkService(opts ...option.RequestOption) (r BetaEnvironm
 // invoke them directly.
 //
 // Retrieve detailed information about a specific work item.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, params BetaEnvironmentWorkGetParams, opts ...option.RequestOption) (res *BetaSelfHostedWork, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -82,6 +92,18 @@ func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, par
 // invoke them directly.
 //
 // Update work item metadata with merge semantics.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeBetaInvalidMetadata] (HTTP 400): `metadata` has too many keys, a key
+//     or value that is too long, or a reserved key. The message names each problem.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentWorkService) Update(ctx context.Context, workID string, params BetaEnvironmentWorkUpdateParams, opts ...option.RequestOption) (res *BetaSelfHostedWork, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -203,6 +225,12 @@ func (r *BetaEnvironmentWorkService) Ack(ctx context.Context, workID string, par
 // invoke them directly.
 //
 // Record a heartbeat for a work item to maintain the lease.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeBetaHeartbeatPreconditionFailed] (HTTP 412):
+//     `expected_last_heartbeat` does not match the stored heartbeat, so another
+//     worker may hold the lease.
 func (r *BetaEnvironmentWorkService) Heartbeat(ctx context.Context, workID string, params BetaEnvironmentWorkHeartbeatParams, opts ...option.RequestOption) (res *BetaSelfHostedWorkHeartbeatResponse, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -265,6 +293,16 @@ func (r *BetaEnvironmentWorkService) Poll(ctx context.Context, environmentID str
 }
 
 // Get statistics about the work queue for an environment.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID string, query BetaEnvironmentWorkStatsParams, opts ...option.RequestOption) (res *BetaSelfHostedWorkQueueStats, err error) {
 	if len(query.Betas) > 0 {
 		headerValues := make([]string, len(query.Betas))
@@ -298,6 +336,16 @@ func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID st
 // invoke them directly.
 //
 // Stop a work item, initiating graceful or forced shutdown.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentWorkService) Stop(ctx context.Context, workID string, params BetaEnvironmentWorkStopParams, opts ...option.RequestOption) (res *BetaSelfHostedWork, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -362,27 +410,6 @@ type BetaHealthCheckWorkDataType string
 const (
 	BetaHealthCheckWorkDataTypeHealthcheck BetaHealthCheckWorkDataType = "healthcheck"
 )
-
-// `expected_last_heartbeat` does not match the stored heartbeat, so another worker
-// may hold the lease.
-type BetaHeartbeatPreconditionFailedErrorDetails struct {
-	// The lease as the server holds it.
-	CurrentState BetaWorkLeaseState                   `json:"current_state" api:"required"`
-	ErrorCode    constant.HeartbeatPreconditionFailed `json:"error_code" default:"heartbeat_precondition_failed"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		CurrentState respjson.Field
-		ErrorCode    respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaHeartbeatPreconditionFailedErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaHeartbeatPreconditionFailedErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
 
 // Work resource representing a unit of work in a self-hosted environment.
 //
@@ -609,46 +636,6 @@ func (r BetaSessionWorkData) RawJSON() string { return r.JSON.raw }
 func (r *BetaSessionWorkData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-// A work item's lease as the server holds it.
-type BetaWorkLeaseState struct {
-	// RFC 3339 timestamp of the stored heartbeat, or null if there has been none
-	LastHeartbeat string `json:"last_heartbeat" api:"required"`
-	// Always false: a refused heartbeat does not extend the lease
-	LeaseExtended bool `json:"lease_extended" api:"required"`
-	// Current state of the work item
-	//
-	// Any of "queued", "starting", "active", "stopping", "stopped".
-	State BetaWorkLeaseStateState `json:"state" api:"required"`
-	// TTL of the lease
-	TTLSeconds int64 `json:"ttl_seconds" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		LastHeartbeat respjson.Field
-		LeaseExtended respjson.Field
-		State         respjson.Field
-		TTLSeconds    respjson.Field
-		ExtraFields   map[string]respjson.Field
-		raw           string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaWorkLeaseState) RawJSON() string { return r.JSON.raw }
-func (r *BetaWorkLeaseState) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Current state of the work item
-type BetaWorkLeaseStateState string
-
-const (
-	BetaWorkLeaseStateStateQueued   BetaWorkLeaseStateState = "queued"
-	BetaWorkLeaseStateStateStarting BetaWorkLeaseStateState = "starting"
-	BetaWorkLeaseStateStateActive   BetaWorkLeaseStateState = "active"
-	BetaWorkLeaseStateStateStopping BetaWorkLeaseStateState = "stopping"
-	BetaWorkLeaseStateStateStopped  BetaWorkLeaseStateState = "stopped"
-)
 
 type BetaEnvironmentWorkGetParams struct {
 	EnvironmentID string `path:"environment_id" api:"required" json:"-"`

@@ -117,6 +117,17 @@ func (r *OrganizationRBACGroupService) ListAutoPaging(ctx context.Context, query
 // SCIM provisioning.
 //
 // The RBAC Groups API is available to Claude Enterprise organizations only.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400): A role attached to an RBAC
+//     Group in the request grants owner access, so this API does not add members to
+//     that group (directly or through an invite), remove its members, or delete it.
+//     Make the change in the organization's admin settings in Claude.
+//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
+//     finish checking whether an RBAC Group in the request grants owner access (the
+//     check reached a fixed limit), so it made no change. Retrying the same request
+//     will not help. Make the change in the organization's admin settings in Claude.
 func (r *OrganizationRBACGroupService) Delete(ctx context.Context, rbacGroupID string, opts ...option.RequestOption) (res *DeletedRBACGroup, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if rbacGroupID == "" {
@@ -203,46 +214,6 @@ const (
 	RBACGroupSourceTypeDirect RBACGroupSourceType = "direct"
 	RBACGroupSourceTypeSCIM   RBACGroupSourceType = "scim"
 )
-
-// A role attached to an RBAC Group in the request grants owner access, so this API
-// does not add members to that group (directly or through an invite), remove its
-// members, or delete it. Make the change in the organization's admin settings in
-// Claude.
-type RBACGroupGrantsOwnerAccessErrorDetails struct {
-	ErrorCode constant.RBACGroupGrantsOwnerAccess `json:"error_code" default:"rbac_group_grants_owner_access"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r RBACGroupGrantsOwnerAccessErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *RBACGroupGrantsOwnerAccessErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The API could not finish checking whether an RBAC Group in the request grants
-// owner access (the check reached a fixed limit), so it made no change. Retrying
-// the same request will not help. Make the change in the organization's admin
-// settings in Claude.
-type RBACGroupOwnerAccessUnconfirmedErrorDetails struct {
-	ErrorCode constant.RBACGroupOwnerAccessUnconfirmed `json:"error_code" default:"rbac_group_owner_access_unconfirmed"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r RBACGroupOwnerAccessUnconfirmedErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *RBACGroupOwnerAccessUnconfirmedErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
 
 type OrganizationRBACGroupNewParams struct {
 	// Name of the RBAC Group. Not uniqueness-enforced.

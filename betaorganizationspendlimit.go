@@ -46,6 +46,12 @@ func NewBetaOrganizationSpendLimitService(opts ...option.RequestOption) (r BetaO
 }
 
 // Retrieve a spend limit by ID.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403): The
+//     organization cannot retrieve, set or delete spend limits with an Admin API
+//     credential.
 func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitID string, opts ...option.RequestOption) (res *BetaSpendLimit, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if spendLimitID == "" {
@@ -67,6 +73,12 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 // limits are grouped by scope type, in the order `organization`, `seat_tier`,
 // `rbac_group`, `organization_service`, `user`; within a type they come in a fixed
 // order that is not creation order.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
+//     support the organization's type. Each endpoint's description says which
+//     organization types it supports.
 func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSpendLimit], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -104,6 +116,12 @@ func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params Bet
 // limits are grouped by scope type, in the order `organization`, `seat_tier`,
 // `rbac_group`, `organization_service`, `user`; within a type they come in a fixed
 // order that is not creation order.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
+//     support the organization's type. Each endpoint's description says which
+//     organization types it supports.
 func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSpendLimit] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
@@ -116,6 +134,15 @@ func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, 
 // Console organization deletes its organization and workspace limits, but not its
 // `usage_tier` limit. Deleting organization and workspace limits through the API
 // is in an early access preview.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeBetaBillingFrozen] (HTTP 403): Anthropic has temporarily disabled
+//     billing changes for the user account the credential belongs to. Contact
+//     support.
+//   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403): The
+//     organization cannot retrieve, set or delete spend limits with an Admin API
+//     credential.
 func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLimitID string, opts ...option.RequestOption) (res *BetaOrganizationSpendLimitDeleteResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if spendLimitID == "" {
@@ -137,6 +164,15 @@ func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLim
 // Console organization sets `organization` and `workspace` limits, which are
 // monthly and always carry an amount. Setting those limits is in an early access
 // preview. To request access, contact your Anthropic account team.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeBetaBillingFrozen] (HTTP 403): Anthropic has temporarily disabled
+//     billing changes for the user account the credential belongs to. Contact
+//     support.
+//   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403): The
+//     organization cannot retrieve, set or delete spend limits with an Admin API
+//     credential.
 func (r *BetaOrganizationSpendLimitService) Set(ctx context.Context, params BetaOrganizationSpendLimitSetParams, opts ...option.RequestOption) (res *BetaSpendLimit, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -613,24 +649,6 @@ func (r BetaSpendLimitWorkspaceScopeParam) MarshalJSON() (data []byte, err error
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *BetaSpendLimitWorkspaceScopeParam) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The organization cannot retrieve, set or delete spend limits with an Admin API
-// credential.
-type BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails struct {
-	ErrorCode constant.SpendLimitsAdminAPIWritesNotEnabled `json:"error_code" default:"spend_limits_admin_api_writes_not_enabled"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

@@ -41,6 +41,13 @@ func NewOrganizationExternalKeyService(opts ...option.RequestOption) (r Organiza
 }
 
 // Create an external key config owned by the caller's organization.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
+//     profile that does not exist in the organization or is no longer active. The
+//     request either names this user profile by ID, or names a resource, such as an
+//     External Key, that is bound to it.
 func (r *OrganizationExternalKeyService) New(ctx context.Context, body OrganizationExternalKeyNewParams, opts ...option.RequestOption) (res *ExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/external_keys"
@@ -67,6 +74,12 @@ func (r *OrganizationExternalKeyService) Get(ctx context.Context, externalKeyID 
 // `display_name` is always editable. `geo` and `provider_config` cannot be changed
 // once any workspace references this config, because previously encrypted data
 // requires the original key identity to decrypt.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400): The External Key can't be
+//     deleted or reconfigured while the organization's Workspace Policy lists it as
+//     an allowed key.
 func (r *OrganizationExternalKeyService) Update(ctx context.Context, externalKeyID string, body OrganizationExternalKeyUpdateParams, opts ...option.RequestOption) (res *ExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {
@@ -112,6 +125,12 @@ func (r *OrganizationExternalKeyService) ListAutoPaging(ctx context.Context, que
 // Delete an external key config.
 //
 // The request is rejected if any workspace still references this config.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400): The External Key can't be
+//     deleted or reconfigured while the organization's Workspace Policy lists it as
+//     an allowed key.
 func (r *OrganizationExternalKeyService) Delete(ctx context.Context, externalKeyID string, opts ...option.RequestOption) (res *OrganizationExternalKeyDeleteResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {
@@ -464,42 +483,6 @@ type ExternalKeyAttachedAttachment struct {
 // Returns the unmodified JSON received from the API
 func (r ExternalKeyAttachedAttachment) RawJSON() string { return r.JSON.raw }
 func (r *ExternalKeyAttachedAttachment) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The external key changed while the request was validating it. Send the request
-// again.
-type ExternalKeyChangedErrorDetails struct {
-	ErrorCode constant.ExternalKeyChanged `json:"error_code" default:"external_key_changed"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ExternalKeyChangedErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *ExternalKeyChangedErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The External Key can't be deleted or reconfigured while the organization's
-// Workspace Policy lists it as an allowed key.
-type ExternalKeyInWorkspacePolicyErrorDetails struct {
-	ErrorCode constant.ExternalKeyInWorkspacePolicy `json:"error_code" default:"external_key_in_workspace_policy"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r ExternalKeyInWorkspacePolicyErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *ExternalKeyInWorkspacePolicyErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

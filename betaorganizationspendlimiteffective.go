@@ -39,6 +39,12 @@ func NewBetaOrganizationSpendLimitEffectiveService(opts ...option.RequestOption)
 // the `source` scope the spend limit was inherited from. Paginates by member, so a
 // member's periods never split across pages. Supported for Claude Enterprise
 // organizations only, not for Claude Console organizations.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
+//     support the organization's type. Each endpoint's description says which
+//     organization types it supports.
 func (r *BetaOrganizationSpendLimitEffectiveService) List(ctx context.Context, query BetaOrganizationSpendLimitEffectiveListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSpendSummary], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
@@ -64,6 +70,12 @@ func (r *BetaOrganizationSpendLimitEffectiveService) List(ctx context.Context, q
 // the `source` scope the spend limit was inherited from. Paginates by member, so a
 // member's periods never split across pages. Supported for Claude Enterprise
 // organizations only, not for Claude Console organizations.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
+//     support the organization's type. Each endpoint's description says which
+//     organization types it supports.
 func (r *BetaOrganizationSpendLimitEffectiveService) ListAutoPaging(ctx context.Context, query BetaOrganizationSpendLimitEffectiveListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSpendSummary] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, query, opts...))
 }

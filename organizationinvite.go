@@ -44,6 +44,30 @@ func NewOrganizationInviteService(opts ...option.RequestOption) (r OrganizationI
 // automatically consumes a seat from the lowest tier with availability; there is
 // no seat-tier parameter. When no seat is free the request fails with a 400 error
 // rather than purchasing a seat.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeAlreadyMember] (HTTP 400): The email address already belongs to a
+//     user in the organization. The message names the user.
+//   - [ErrorCodeCannotInviteEmailsWithUnverifiedDomains] (HTTP 400): The email
+//     address's domain is not one of the verified domains of the organization's
+//     parent organization.
+//   - [ErrorCodeEmailDomainNotAllowed] (HTTP 400): The organization restricts
+//     invites to an allowed list of email domains, and the list is empty or does not
+//     include the email address's domain.
+//   - [ErrorCodeInviteAlreadyExists] (HTTP 400): A pending invite already exists for
+//     the email address. The message names the invite.
+//   - [ErrorCodeOrgMemberLimitExceeded] (HTTP 400): The organization has reached the
+//     member limit that Anthropic set for it. Pending invites count toward the
+//     limit.
+//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400): A role attached to an RBAC
+//     Group in the request grants owner access, so this API does not add members to
+//     that group (directly or through an invite), remove its members, or delete it.
+//     Make the change in the organization's admin settings in Claude.
+//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
+//     finish checking whether an RBAC Group in the request grants owner access (the
+//     check reached a fixed limit), so it made no change. Retrying the same request
+//     will not help. Make the change in the organization's admin settings in Claude.
 func (r *OrganizationInviteService) New(ctx context.Context, body OrganizationInviteNewParams, opts ...option.RequestOption) (res *OrganizationInvite, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/invites"
@@ -100,78 +124,6 @@ func (r *OrganizationInviteService) Delete(ctx context.Context, inviteID string,
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.invites.delete", "/v1/organizations/invites/{invite_id}"), requestconfig.WithSpanAttribute("anthropic.organization.invite.id", inviteID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
-}
-
-// The email address already belongs to a user in the organization. The message
-// names the user.
-type AlreadyMemberErrorDetails struct {
-	ErrorCode constant.AlreadyMember `json:"error_code" default:"already_member"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r AlreadyMemberErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *AlreadyMemberErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The email address's domain is not one of the verified domains of the
-// organization's parent organization.
-type CannotInviteEmailsWithUnverifiedDomainsErrorDetails struct {
-	ErrorCode constant.CannotInviteEmailsWithUnverifiedDomains `json:"error_code" default:"cannot_invite_emails_with_unverified_domains"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r CannotInviteEmailsWithUnverifiedDomainsErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *CannotInviteEmailsWithUnverifiedDomainsErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The organization restricts invites to an allowed list of email domains, and the
-// list is empty or does not include the email address's domain.
-type EmailDomainNotAllowedErrorDetails struct {
-	ErrorCode constant.EmailDomainNotAllowed `json:"error_code" default:"email_domain_not_allowed"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r EmailDomainNotAllowedErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *EmailDomainNotAllowedErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// A pending invite already exists for the email address. The message names the
-// invite.
-type InviteAlreadyExistsErrorDetails struct {
-	ErrorCode constant.InviteAlreadyExists `json:"error_code" default:"invite_already_exists"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r InviteAlreadyExistsErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *InviteAlreadyExistsErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 type OrganizationInvite struct {

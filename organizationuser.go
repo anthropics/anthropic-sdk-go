@@ -89,6 +89,13 @@ func (r *OrganizationUserService) ListAutoPaging(ctx context.Context, query Orga
 }
 
 // Remove a member from the organization.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeCannotRemoveLastMember] (HTTP 400): The user is the organization's
+//     only member. Add another member before removing this one.
+//   - [ErrorCodeConcurrentMembershipChange] (HTTP 409): Another change to the
+//     organization's members is in progress. Retry the request once it completes.
 func (r *OrganizationUserService) Remove(ctx context.Context, userID string, opts ...option.RequestOption) (res *OrganizationUserRemoveResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if userID == "" {
@@ -99,24 +106,6 @@ func (r *OrganizationUserService) Remove(ctx context.Context, userID string, opt
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.users.remove", "/v1/organizations/users/{user_id}"), requestconfig.WithSpanAttribute("anthropic.organization.user.id", userID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
-}
-
-// The user is the organization's only member. Add another member before removing
-// this one.
-type CannotRemoveLastMemberErrorDetails struct {
-	ErrorCode constant.CannotRemoveLastMember `json:"error_code" default:"cannot_remove_last_member"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r CannotRemoveLastMemberErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *CannotRemoveLastMemberErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
 }
 
 type OrganizationUser struct {

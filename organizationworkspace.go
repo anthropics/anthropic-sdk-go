@@ -46,6 +46,21 @@ func NewOrganizationWorkspaceService(opts ...option.RequestOption) (r Organizati
 }
 
 // Create Workspace
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeKeyProfileMismatch] (HTTP 400): The External Key is bound to a user
+//     profile, and the Workspace does not have that user profile. A Workspace can
+//     use only a key bound to its own user profile or a key that isn't bound to one.
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
+//     profile that does not exist in the organization or is no longer active. The
+//     request either names this user profile by ID, or names a resource, such as an
+//     External Key, that is bound to it.
+//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400): The request breaks the
+//     organization's Workspace Policy. The message says which rule it broke; an
+//     organization admin can see and change the policy in the Console.
+//   - [ErrorCodeExternalKeyChanged] (HTTP 409): The external key changed while the
+//     request was validating it. Send the request again.
 func (r *OrganizationWorkspaceService) New(ctx context.Context, body OrganizationWorkspaceNewParams, opts ...option.RequestOption) (res *Workspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/workspaces"
@@ -68,6 +83,21 @@ func (r *OrganizationWorkspaceService) Get(ctx context.Context, workspaceID stri
 }
 
 // Update Workspace
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeKeyProfileMismatch] (HTTP 400): The External Key is bound to a user
+//     profile, and the Workspace does not have that user profile. A Workspace can
+//     use only a key bound to its own user profile or a key that isn't bound to one.
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
+//     profile that does not exist in the organization or is no longer active. The
+//     request either names this user profile by ID, or names a resource, such as an
+//     External Key, that is bound to it.
+//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400): The request breaks the
+//     organization's Workspace Policy. The message says which rule it broke; an
+//     organization admin can see and change the policy in the Console.
+//   - [ErrorCodeExternalKeyChanged] (HTTP 409): The external key changed while the
+//     request was validating it. Send the request again.
 func (r *OrganizationWorkspaceService) Update(ctx context.Context, workspaceID string, body OrganizationWorkspaceUpdateParams, opts ...option.RequestOption) (res *Workspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
@@ -330,25 +360,6 @@ const (
 	DataResidencyUpdateConfigDefaultInferenceGeoUs     DataResidencyUpdateConfigDefaultInferenceGeo = "us"
 )
 
-// The External Key is bound to a user profile, and the Workspace does not have
-// that user profile. A Workspace can use only a key bound to its own user profile
-// or a key that isn't bound to one.
-type KeyProfileMismatchErrorDetails struct {
-	ErrorCode constant.KeyProfileMismatch `json:"error_code" default:"key_profile_mismatch"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r KeyProfileMismatchErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *KeyProfileMismatchErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 type NoBillingWorkspaceRole string
 
 const (
@@ -459,53 +470,6 @@ type WorkspaceMember struct {
 // Returns the unmodified JSON received from the API
 func (r WorkspaceMember) RawJSON() string { return r.JSON.raw }
 func (r *WorkspaceMember) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The workspace has reached the member limit that Anthropic set for it.
-type WorkspaceMemberLimitExceededErrorDetails struct {
-	ErrorCode constant.WorkspaceMemberLimitExceeded `json:"error_code" default:"workspace_member_limit_exceeded"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r WorkspaceMemberLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *WorkspaceMemberLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type WorkspacePolicyField string
-
-const (
-	WorkspacePolicyFieldExternalKeyID WorkspacePolicyField = "external_key_id"
-)
-
-// The request breaks the organization's Workspace Policy. The message says which
-// rule it broke; an organization admin can see and change the policy in the
-// Console.
-type WorkspacePolicyViolationErrorDetails struct {
-	ErrorCode constant.WorkspacePolicyViolation `json:"error_code" default:"workspace_policy_violation"`
-	// The request field the broken rule applies to.
-	//
-	// Any of "external_key_id".
-	Field WorkspacePolicyField `json:"field" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		Field       respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r WorkspacePolicyViolationErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *WorkspacePolicyViolationErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

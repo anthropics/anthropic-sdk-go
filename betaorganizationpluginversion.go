@@ -74,6 +74,22 @@ func NewBetaOrganizationPluginVersionService(opts ...option.RequestOption) (r Be
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400): The request's `Content-Type`
+//     header names a charset other than UTF-8, ISO-8859-1 or US-ASCII. Send the
+//     request with no charset, or with one of these.
+//   - [ErrorCodeBetaSkillNameTaken] (HTTP 409): One of the Plugin's skills has the
+//     name of an organization skill. `skill_name` is that name.
+//   - [ErrorCodeBetaRegistrationPending] (HTTP 503): The Plugin version was stored
+//     but is not yet usable in claude.ai. `plugin_id` and `plugin_version_id`
+//     identify what was stored.
 func (r *BetaOrganizationPluginVersionService) New(ctx context.Context, pluginID string, params BetaOrganizationPluginVersionNewParams, opts ...option.RequestOption) (res *BetaPluginVersion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -233,6 +249,14 @@ func (r *BetaOrganizationPluginVersionService) ListAutoPaging(ctx context.Contex
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
 func (r *BetaOrganizationPluginVersionService) Download(ctx context.Context, version string, params BetaOrganizationPluginVersionDownloadParams, opts ...option.RequestOption) (res *http.Response, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

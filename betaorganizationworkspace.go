@@ -47,6 +47,21 @@ func NewBetaOrganizationWorkspaceService(opts ...option.RequestOption) (r BetaOr
 }
 
 // Create Workspace
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeKeyProfileMismatch] (HTTP 400): The External Key is bound to a user
+//     profile, and the Workspace does not have that user profile. A Workspace can
+//     use only a key bound to its own user profile or a key that isn't bound to one.
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
+//     profile that does not exist in the organization or is no longer active. The
+//     request either names this user profile by ID, or names a resource, such as an
+//     External Key, that is bound to it.
+//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400): The request breaks the
+//     organization's Workspace Policy. The message says which rule it broke; an
+//     organization admin can see and change the policy in the Console.
+//   - [ErrorCodeExternalKeyChanged] (HTTP 409): The external key changed while the
+//     request was validating it. Send the request again.
 func (r *BetaOrganizationWorkspaceService) New(ctx context.Context, params BetaOrganizationWorkspaceNewParams, opts ...option.RequestOption) (res *BetaWorkspace, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -81,6 +96,21 @@ func (r *BetaOrganizationWorkspaceService) Get(ctx context.Context, workspaceID 
 }
 
 // Update Workspace
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeKeyProfileMismatch] (HTTP 400): The External Key is bound to a user
+//     profile, and the Workspace does not have that user profile. A Workspace can
+//     use only a key bound to its own user profile or a key that isn't bound to one.
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
+//     profile that does not exist in the organization or is no longer active. The
+//     request either names this user profile by ID, or names a resource, such as an
+//     External Key, that is bound to it.
+//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400): The request breaks the
+//     organization's Workspace Policy. The message says which rule it broke; an
+//     organization admin can see and change the policy in the Console.
+//   - [ErrorCodeExternalKeyChanged] (HTTP 409): The external key changed while the
+//     request was validating it. Send the request again.
 func (r *BetaOrganizationWorkspaceService) Update(ctx context.Context, workspaceID string, body BetaOrganizationWorkspaceUpdateParams, opts ...option.RequestOption) (res *BetaWorkspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {

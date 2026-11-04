@@ -86,6 +86,24 @@ func NewBetaOrganizationPluginService(opts ...option.RequestOption) (r BetaOrgan
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400): The request's `Content-Type`
+//     header names a charset other than UTF-8, ISO-8859-1 or US-ASCII. Send the
+//     request with no charset, or with one of these.
+//   - [ErrorCodeBetaPluginNameTaken] (HTTP 409): The marketplace already holds this
+//     name. `plugin_id` is the Plugin that holds it, and can be absent.
+//   - [ErrorCodeBetaSkillNameTaken] (HTTP 409): One of the Plugin's skills has the
+//     name of an organization skill. `skill_name` is that name.
+//   - [ErrorCodeBetaRegistrationPending] (HTTP 503): The Plugin version was stored
+//     but is not yet usable in claude.ai. `plugin_id` and `plugin_version_id`
+//     identify what was stored.
 func (r *BetaOrganizationPluginService) New(ctx context.Context, params BetaOrganizationPluginNewParams, opts ...option.RequestOption) (res *BetaPlugin, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -176,6 +194,21 @@ func (r *BetaOrganizationPluginService) Get(ctx context.Context, pluginID string
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
+//     network access controls blocked the request to the workspace's
+//     customer-managed encryption key. The key itself may be healthy.
+//   - [ErrorCodeBetaScanFailed] (HTTP 400): The content scan of the version in
+//     `plugin_version_id` failed, errored or reached no verdict, so the version
+//     cannot be served.
+//   - [ErrorCodeBetaScanPending] (HTTP 409): The content scan of the version in
+//     `plugin_version_id` is still running. Retry once the scan finishes.
+//   - [ErrorCodeBetaSkillNameTaken] (HTTP 409): One of the Plugin's skills has the
+//     name of an organization skill. `skill_name` is that name.
 func (r *BetaOrganizationPluginService) Update(ctx context.Context, pluginID string, params BetaOrganizationPluginUpdateParams, opts ...option.RequestOption) (res *BetaPlugin, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -292,6 +325,11 @@ func (r *BetaOrganizationPluginService) ListAutoPaging(ctx context.Context, para
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
+//     encryption key is disabled or revoked. Re-enable the key, then retry.
 func (r *BetaOrganizationPluginService) Delete(ctx context.Context, pluginID string, body BetaOrganizationPluginDeleteParams, opts ...option.RequestOption) (res *BetaDeletedPlugin, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -729,26 +767,6 @@ const (
 	BetaPluginContentScanStatusProcessing BetaPluginContentScanStatus = "processing"
 )
 
-// The marketplace already holds this name. `plugin_id` is the Plugin that holds
-// it, and can be absent.
-type BetaPluginNameTakenErrorDetails struct {
-	ErrorCode constant.PluginNameTaken `json:"error_code" default:"plugin_name_taken"`
-	PluginID  string                   `json:"plugin_id" api:"nullable"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		PluginID    respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaPluginNameTakenErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaPluginNameTakenErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 type BetaPluginOwnerOrganization struct {
 	// The Plugin lives in a plugin marketplace the organization owns.
 	Type constant.Organization `json:"type" default:"organization"`
@@ -864,88 +882,6 @@ type BetaPluginUserActor struct {
 // Returns the unmodified JSON received from the API
 func (r BetaPluginUserActor) RawJSON() string { return r.JSON.raw }
 func (r *BetaPluginUserActor) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The Plugin version was stored but is not yet usable in claude.ai. `plugin_id`
-// and `plugin_version_id` identify what was stored.
-type BetaRegistrationPendingErrorDetails struct {
-	ErrorCode       constant.RegistrationPending `json:"error_code" default:"registration_pending"`
-	PluginID        string                       `json:"plugin_id" api:"required"`
-	PluginVersionID string                       `json:"plugin_version_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode       respjson.Field
-		PluginID        respjson.Field
-		PluginVersionID respjson.Field
-		ExtraFields     map[string]respjson.Field
-		raw             string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaRegistrationPendingErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaRegistrationPendingErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The content scan of the version in `plugin_version_id` failed, errored or
-// reached no verdict, so the version cannot be served.
-type BetaScanFailedErrorDetails struct {
-	ErrorCode       constant.ScanFailed `json:"error_code" default:"scan_failed"`
-	PluginVersionID string              `json:"plugin_version_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode       respjson.Field
-		PluginVersionID respjson.Field
-		ExtraFields     map[string]respjson.Field
-		raw             string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaScanFailedErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaScanFailedErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// The content scan of the version in `plugin_version_id` is still running. Retry
-// once the scan finishes.
-type BetaScanPendingErrorDetails struct {
-	ErrorCode       constant.ScanPending `json:"error_code" default:"scan_pending"`
-	PluginVersionID string               `json:"plugin_version_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode       respjson.Field
-		PluginVersionID respjson.Field
-		ExtraFields     map[string]respjson.Field
-		raw             string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaScanPendingErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaScanPendingErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// One of the Plugin's skills has the name of an organization skill. `skill_name`
-// is that name.
-type BetaSkillNameTakenErrorDetails struct {
-	ErrorCode constant.SkillNameTaken `json:"error_code" default:"skill_name_taken"`
-	SkillName string                  `json:"skill_name" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		SkillName   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaSkillNameTakenErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaSkillNameTakenErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

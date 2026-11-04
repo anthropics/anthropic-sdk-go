@@ -41,6 +41,13 @@ func NewBetaOrganizationExternalKeyService(opts ...option.RequestOption) (r Beta
 }
 
 // Create an external key config owned by the caller's organization.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
+//     profile that does not exist in the organization or is no longer active. The
+//     request either names this user profile by ID, or names a resource, such as an
+//     External Key, that is bound to it.
 func (r *BetaOrganizationExternalKeyService) New(ctx context.Context, body BetaOrganizationExternalKeyNewParams, opts ...option.RequestOption) (res *BetaExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/external_keys"
@@ -69,6 +76,12 @@ func (r *BetaOrganizationExternalKeyService) Get(ctx context.Context, externalKe
 // `display_name` is always editable. `geo` and `provider_config` cannot be changed
 // once any workspace references this config, because previously encrypted data
 // requires the original key identity to decrypt.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400): The External Key can't be
+//     deleted or reconfigured while the organization's Workspace Policy lists it as
+//     an allowed key.
 func (r *BetaOrganizationExternalKeyService) Update(ctx context.Context, externalKeyID string, body BetaOrganizationExternalKeyUpdateParams, opts ...option.RequestOption) (res *BetaExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {
@@ -116,6 +129,12 @@ func (r *BetaOrganizationExternalKeyService) ListAutoPaging(ctx context.Context,
 // Delete an external key config.
 //
 // The request is rejected if any workspace still references this config.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400): The External Key can't be
+//     deleted or reconfigured while the organization's Workspace Policy lists it as
+//     an allowed key.
 func (r *BetaOrganizationExternalKeyService) Delete(ctx context.Context, externalKeyID string, opts ...option.RequestOption) (res *BetaOrganizationExternalKeyDeleteResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {

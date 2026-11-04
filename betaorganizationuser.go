@@ -92,6 +92,13 @@ func (r *BetaOrganizationUserService) ListAutoPaging(ctx context.Context, query 
 }
 
 // Remove a member from the organization.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeCannotRemoveLastMember] (HTTP 400): The user is the organization's
+//     only member. Add another member before removing this one.
+//   - [ErrorCodeConcurrentMembershipChange] (HTTP 409): Another change to the
+//     organization's members is in progress. Retry the request once it completes.
 func (r *BetaOrganizationUserService) Remove(ctx context.Context, userID string, opts ...option.RequestOption) (res *BetaOrganizationUserRemoveResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if userID == "" {

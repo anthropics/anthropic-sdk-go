@@ -43,6 +43,18 @@ func NewBetaEnvironmentService(opts ...option.RequestOption) (r BetaEnvironmentS
 }
 
 // Create a new environment with the specified configuration.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
+//   - [ErrorCodeBetaEnvironmentCreateDisabled] (HTTP 403): Anthropic has turned off
+//     creating environments for this organization. Existing environments still work.
 func (r *BetaEnvironmentService) New(ctx context.Context, params BetaEnvironmentNewParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -67,6 +79,16 @@ func (r *BetaEnvironmentService) New(ctx context.Context, params BetaEnvironment
 }
 
 // Retrieve a specific environment by ID.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentService) Get(ctx context.Context, environmentID string, query BetaEnvironmentGetParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
 	if len(query.Betas) > 0 {
 		headerValues := make([]string, len(query.Betas))
@@ -95,6 +117,23 @@ func (r *BetaEnvironmentService) Get(ctx context.Context, environmentID string, 
 }
 
 // Update an existing environment's configuration.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeBetaEnvironmentArchived] (HTTP 400): The environment is archived, so
+//     it cannot be updated.
+//   - [ErrorCodeBetaInvalidConfigTypeChange] (HTTP 400): `config.type` differs from
+//     the environment's stored type, which cannot change after creation.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
+//   - [ErrorCodeBetaEnvironmentUpdateDisabled] (HTTP 403): Anthropic has turned off
+//     updating environments for this organization. Existing environments still work
+//     as they are.
 func (r *BetaEnvironmentService) Update(ctx context.Context, environmentID string, params BetaEnvironmentUpdateParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -123,6 +162,16 @@ func (r *BetaEnvironmentService) Update(ctx context.Context, environmentID strin
 }
 
 // List environments with pagination support.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentService) List(ctx context.Context, params BetaEnvironmentListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaEnvironment], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -156,11 +205,31 @@ func (r *BetaEnvironmentService) List(ctx context.Context, params BetaEnvironmen
 }
 
 // List environments with pagination support.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentService) ListAutoPaging(ctx context.Context, params BetaEnvironmentListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaEnvironment] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete an environment by ID. Returns a confirmation of the deletion.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentService) Delete(ctx context.Context, environmentID string, body BetaEnvironmentDeleteParams, opts ...option.RequestOption) (res *BetaEnvironmentDeleteResponse, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -190,6 +259,16 @@ func (r *BetaEnvironmentService) Delete(ctx context.Context, environmentID strin
 
 // Archive an environment by ID. Archived environments cannot be used to create new
 // sessions.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
+//     the Claude Code workspace, and the user who created it is no longer a member
+//     of the organization or of that workspace.
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
+//     organization for trust and safety reasons. An organization disabled for any
+//     other reason, such as billing, does not get this code. `appeal_url`, when
+//     present, is where the organization can appeal.
 func (r *BetaEnvironmentService) Archive(ctx context.Context, environmentID string, body BetaEnvironmentArchiveParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -527,41 +606,6 @@ const (
 	BetaEnvironmentScopeAccount      BetaEnvironmentScope = "account"
 )
 
-// The environment is archived, so it cannot be updated.
-type BetaEnvironmentArchivedErrorDetails struct {
-	ErrorCode constant.EnvironmentArchivedErrorCode `json:"error_code" default:"environment_archived"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaEnvironmentArchivedErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaEnvironmentArchivedErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Anthropic has turned off creating environments for this organization. Existing
-// environments still work.
-type BetaEnvironmentCreateDisabledErrorDetails struct {
-	ErrorCode constant.EnvironmentCreateDisabled `json:"error_code" default:"environment_create_disabled"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaEnvironmentCreateDisabledErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaEnvironmentCreateDisabledErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // Response after deleting an environment.
 type BetaEnvironmentDeleteResponse struct {
 	// Environment identifier
@@ -580,77 +624,6 @@ type BetaEnvironmentDeleteResponse struct {
 // Returns the unmodified JSON received from the API
 func (r BetaEnvironmentDeleteResponse) RawJSON() string { return r.JSON.raw }
 func (r *BetaEnvironmentDeleteResponse) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// `settings.environment_id` names no Environment within the organization's reach.
-type BetaEnvironmentNotFoundErrorDetails struct {
-	ErrorCode constant.EnvironmentNotFound `json:"error_code" default:"environment_not_found"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaEnvironmentNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaEnvironmentNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// Anthropic has turned off updating environments for this organization. Existing
-// environments still work as they are.
-type BetaEnvironmentUpdateDisabledErrorDetails struct {
-	ErrorCode constant.EnvironmentUpdateDisabled `json:"error_code" default:"environment_update_disabled"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaEnvironmentUpdateDisabledErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaEnvironmentUpdateDisabledErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// `config.type` differs from the environment's stored type, which cannot change
-// after creation.
-type BetaInvalidConfigTypeChangeErrorDetails struct {
-	ErrorCode constant.InvalidConfigTypeChange `json:"error_code" default:"invalid_config_type_change"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaInvalidConfigTypeChangeErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaInvalidConfigTypeChangeErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-// `metadata` has too many keys, a key or value that is too long, or a reserved
-// key. The message names each problem.
-type BetaInvalidMetadataErrorDetails struct {
-	ErrorCode constant.InvalidMetadata `json:"error_code" default:"invalid_metadata"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaInvalidMetadataErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaInvalidMetadataErrorDetails) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

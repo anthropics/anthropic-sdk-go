@@ -14,6 +14,7 @@
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#CMEKKeyNetworkBlockedErrorDetails">CMEKKeyNetworkBlockedErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#CMEKKeyUnreachableErrorDetails">CMEKKeyUnreachableErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#EnforcedSpendLimitReachedErrorDetails">EnforcedSpendLimitReachedErrorDetails</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#ErrorDetailsUnion">ErrorDetailsUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#ErrorObjectUnion">ErrorObjectUnion</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#ErrorResponse">ErrorResponse</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#ErrorType">ErrorType</a>

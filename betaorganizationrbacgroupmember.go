@@ -76,6 +76,17 @@ func (r *BetaOrganizationRBACGroupMemberService) ListAutoPaging(ctx context.Cont
 // organization in the tenant uses SCIM provisioning.
 //
 // The RBAC Groups API is available to Claude Enterprise organizations only.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400): A role attached to an RBAC
+//     Group in the request grants owner access, so this API does not add members to
+//     that group (directly or through an invite), remove its members, or delete it.
+//     Make the change in the organization's admin settings in Claude.
+//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
+//     finish checking whether an RBAC Group in the request grants owner access (the
+//     check reached a fixed limit), so it made no change. Retrying the same request
+//     will not help. Make the change in the organization's admin settings in Claude.
 func (r *BetaOrganizationRBACGroupMemberService) Add(ctx context.Context, rbacGroupID string, body BetaOrganizationRBACGroupMemberAddParams, opts ...option.RequestOption) (res *BetaRBACGroupMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if rbacGroupID == "" {
@@ -94,6 +105,17 @@ func (r *BetaOrganizationRBACGroupMemberService) Add(ctx context.Context, rbacGr
 // organization in the tenant uses SCIM provisioning.
 //
 // The RBAC Groups API is available to Claude Enterprise organizations only.
+//
+// On failure, the [ErrorCode] of the returned [*Error] may be:
+//
+//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400): A role attached to an RBAC
+//     Group in the request grants owner access, so this API does not add members to
+//     that group (directly or through an invite), remove its members, or delete it.
+//     Make the change in the organization's admin settings in Claude.
+//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
+//     finish checking whether an RBAC Group in the request grants owner access (the
+//     check reached a fixed limit), so it made no change. Retrying the same request
+//     will not help. Make the change in the organization's admin settings in Claude.
 func (r *BetaOrganizationRBACGroupMemberService) Remove(ctx context.Context, userID string, body BetaOrganizationRBACGroupMemberRemoveParams, opts ...option.RequestOption) (res *BetaDeletedRBACGroupMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if body.RBACGroupID == "" {

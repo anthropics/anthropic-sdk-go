@@ -63,6 +63,7 @@ func NewOrganizationFederationRuleService(opts ...option.RequestOption) (r Organ
 func (r *OrganizationFederationRuleService) New(ctx context.Context, body OrganizationFederationRuleNewParams, opts ...option.RequestOption) (res *FederationRule, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/federation_rules"
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.rules.create", "/v1/organizations/federation_rules"), requestconfig.WithSpanCreatedID("anthropic.organization.federation_rule.id", &res, func(created *FederationRule) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err

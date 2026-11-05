@@ -63,6 +63,7 @@ func (r *BetaMemoryStoreMemoryService) New(ctx context.Context, memoryStoreID st
 	}
 	path := fmt.Sprintf("v1/memory_stores/%s/memories", requestconfig.EscapePathSegment(memoryStoreID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.memories.create", "/v1/memory_stores/{memory_store_id}/memories", "view"), requestconfig.WithSpanAttribute("gen_ai.memory.store.id", memoryStoreID), requestconfig.WithSpanCreatedID("gen_ai.memory.record.id", &res, func(created *BetaManagedAgentsMemory) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

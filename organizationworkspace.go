@@ -57,6 +57,7 @@ func NewOrganizationWorkspaceService(opts ...option.RequestOption) (r Organizati
 func (r *OrganizationWorkspaceService) New(ctx context.Context, body OrganizationWorkspaceNewParams, opts ...option.RequestOption) (res *Workspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/workspaces"
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.create", "/v1/organizations/workspaces"), requestconfig.WithSpanCreatedID("anthropic.organization.workspace.id", &res, func(created *Workspace) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err

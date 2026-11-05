@@ -50,6 +50,7 @@ func (r *BetaOrganizationExternalKeyService) New(ctx context.Context, body BetaO
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/external_keys"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.create", "/v1/organizations/external_keys"), requestconfig.WithSpanCreatedID("anthropic.organization.external_key.id", &res, func(created *BetaExternalKey) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err

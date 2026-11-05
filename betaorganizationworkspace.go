@@ -69,6 +69,7 @@ func (r *BetaOrganizationWorkspaceService) New(ctx context.Context, params BetaO
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/workspaces"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.create", "/v1/organizations/workspaces"), requestconfig.WithSpanCreatedID("anthropic.organization.workspace.id", &res, func(created *BetaWorkspace) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

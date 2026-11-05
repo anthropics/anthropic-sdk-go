@@ -219,6 +219,9 @@ func WithMiddleware(middlewares ...Middleware) RequestOption {
 // attempts to make. When given 0, the client only makes one request. By
 // default, the client retries two times.
 //
+// Methods that aren't safe to repeat, such as creates, retry only when the API can't have
+// processed the request.
+//
 // WithMaxRetries panics when retries is negative.
 func WithMaxRetries(retries int) RequestOption {
 	if retries < 0 {

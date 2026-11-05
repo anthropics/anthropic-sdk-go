@@ -72,6 +72,7 @@ func (r *BetaSkillService) New(ctx context.Context, params BetaSkillNewParams, o
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/skills"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.create", "/v1/skills"), requestconfig.WithSpanCreatedID("anthropic.skill.id", &res, func(created *BetaSkill) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

@@ -68,6 +68,7 @@ func (r *BetaEnvironmentService) New(ctx context.Context, params BetaEnvironment
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	path := "v1/environments"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.create", "/v1/environments"), requestconfig.WithSpanCreatedID("anthropic.environment.id", &res, func(created *BetaEnvironment) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

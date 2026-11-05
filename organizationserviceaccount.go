@@ -56,6 +56,7 @@ func NewOrganizationServiceAccountService(opts ...option.RequestOption) (r Organ
 func (r *OrganizationServiceAccountService) New(ctx context.Context, body OrganizationServiceAccountNewParams, opts ...option.RequestOption) (res *ServiceAccount, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/service_accounts"
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.create", "/v1/organizations/service_accounts"), requestconfig.WithSpanCreatedID("anthropic.organization.service_account.id", &res, func(created *ServiceAccount) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err

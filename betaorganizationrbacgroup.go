@@ -48,6 +48,7 @@ func (r *BetaOrganizationRBACGroupService) New(ctx context.Context, body BetaOrg
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/rbac_groups"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.create", "/v1/organizations/rbac_groups"), requestconfig.WithSpanCreatedID("anthropic.organization.rbac_group.id", &res, func(created *BetaRBACGroup) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err

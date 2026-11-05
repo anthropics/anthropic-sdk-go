@@ -74,6 +74,7 @@ func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, param
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions", requestconfig.EscapePathSegment(skillID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.create", "/v1/skills/{skill_id}/versions"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID), requestconfig.WithSpanCreatedID("anthropic.skill.version.id", &res, func(created *BetaSkillVersion) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

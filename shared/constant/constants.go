@@ -356,6 +356,7 @@ type PluginShare string                                        // Always "plugin
 type PluginVersion string                                      // Always "plugin_version"
 type PreviousMessageNotFound string                            // Always "previous_message_not_found"
 type ProgramError string                                       // Always "program_error"
+type RampLimitExceededErrorCode string                         // Always "ramp_limit_exceeded"
 type RateLimit string                                          // Always "rate_limit"
 type RateLimitError string                                     // Always "rate_limit_error"
 type RBACGroup string                                          // Always "rbac_group"
@@ -1084,7 +1085,10 @@ func (c PluginVersion) Default() PluginVersion { return "plugin_version" }
 func (c PreviousMessageNotFound) Default() PreviousMessageNotFound {
 	return "previous_message_not_found"
 }
-func (c ProgramError) Default() ProgramError         { return "program_error" }
+func (c ProgramError) Default() ProgramError { return "program_error" }
+func (c RampLimitExceededErrorCode) Default() RampLimitExceededErrorCode {
+	return "ramp_limit_exceeded"
+}
 func (c RateLimit) Default() RateLimit               { return "rate_limit" }
 func (c RateLimitError) Default() RateLimitError     { return "rate_limit_error" }
 func (c RBACGroup) Default() RBACGroup               { return "rbac_group" }
@@ -1834,6 +1838,7 @@ func (c PluginShare) MarshalJSON() ([]byte, error)                           { r
 func (c PluginVersion) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c PreviousMessageNotFound) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c ProgramError) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c RampLimitExceededErrorCode) MarshalJSON() ([]byte, error)            { return marshalString(c) }
 func (c RateLimit) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c RateLimitError) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c RBACGroup) MarshalJSON() ([]byte, error)                             { return marshalString(c) }

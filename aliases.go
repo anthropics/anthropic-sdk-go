@@ -484,6 +484,13 @@ const ErrorCodeRequestBodyTooLargeAfterDecoding = apierror.ErrorCodeRequestBodyT
 // details.
 const ErrorCodeEnforcedSpendLimitReached = apierror.ErrorCodeEnforcedSpendLimitReached
 
+// The request would exceed a ramp limit, which caps how fast usage can grow. Retry
+// after the time in the `retry-after` header.
+//
+// Returned with HTTP status 429 and [shared.RampLimitExceededErrorDetails]
+// details.
+const ErrorCodeRampLimitExceeded = apierror.ErrorCodeRampLimitExceeded
+
 // The workspace's encryption settings could not be read, so the request was
 // refused. Retry in a few minutes.
 //
@@ -639,6 +646,12 @@ type OverloadedError = shared.OverloadedError
 
 // This is an alias to an internal type.
 type PermissionError = shared.PermissionError
+
+// The request would exceed a ramp limit, which caps how fast usage can grow. Retry
+// after the time in the `retry-after` header.
+//
+// This is an alias to an internal type.
+type RampLimitExceededErrorDetails = shared.RampLimitExceededErrorDetails
 
 // This is an alias to an internal type.
 type RateLimitError = shared.RateLimitError

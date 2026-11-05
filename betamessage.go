@@ -78,6 +78,7 @@ func NewBetaMessageService(opts ...option.RequestOption) (r BetaMessageService) 
 //   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
 //   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
 //   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
+//   - [ErrorCodeRampLimitExceeded] (HTTP 429)
 //   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
 //   - [ErrorCodeCompactionUnavailable] (HTTP 529)
 //
@@ -164,6 +165,7 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 //   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
 //   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
 //   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
+//   - [ErrorCodeRampLimitExceeded] (HTTP 429)
 //   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
 //   - [ErrorCodeCompactionUnavailable] (HTTP 529)
 //

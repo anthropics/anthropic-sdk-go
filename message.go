@@ -79,6 +79,7 @@ func NewMessageService(opts ...option.RequestOption) (r MessageService) {
 //   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
 //   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
 //   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
+//   - [ErrorCodeRampLimitExceeded] (HTTP 429)
 //   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
 //   - [ErrorCodeCompactionUnavailable] (HTTP 529)
 //
@@ -146,6 +147,7 @@ func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts 
 //   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
 //   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
 //   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
+//   - [ErrorCodeRampLimitExceeded] (HTTP 429)
 //   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
 //   - [ErrorCodeCompactionUnavailable] (HTTP 529)
 //

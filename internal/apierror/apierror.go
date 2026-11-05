@@ -608,6 +608,13 @@ const (
 	// details.
 	ErrorCodeEnforcedSpendLimitReached ErrorCode = "enforced_spend_limit_reached"
 
+	// The request would exceed a ramp limit, which caps how fast usage can grow. Retry
+	// after the time in the `retry-after` header.
+	//
+	// Returned with HTTP status 429 and [shared.RampLimitExceededErrorDetails]
+	// details.
+	ErrorCodeRampLimitExceeded ErrorCode = "ramp_limit_exceeded"
+
 	// The workspace's encryption settings could not be read, so the request was
 	// refused. Retry in a few minutes.
 	//

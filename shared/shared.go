@@ -233,10 +233,11 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [ToolNameConflictErrorDetails], [ToolReferenceUnresolvedErrorDetails],
 // [ThreadNotFoundErrorDetails], [SkillReadBlockedUndecryptableErrorDetails],
 // [RequestBodyTooLargeAfterDecodingErrorDetails],
-// [EnforcedSpendLimitReachedErrorDetails], [CMEKKeyUnreachableErrorDetails],
-// [CompactionUnavailableErrorDetails], [StorageQuotaExceededErrorDetails],
-// [FileNotDownloadableErrorDetails], [FileExpiredErrorDetails],
-// [CMEKContextUnavailableErrorDetails], [OrgAPIKeyLimitExceededErrorDetails],
+// [EnforcedSpendLimitReachedErrorDetails], [RampLimitExceededErrorDetails],
+// [CMEKKeyUnreachableErrorDetails], [CompactionUnavailableErrorDetails],
+// [StorageQuotaExceededErrorDetails], [FileNotDownloadableErrorDetails],
+// [FileExpiredErrorDetails], [CMEKContextUnavailableErrorDetails],
+// [OrgAPIKeyLimitExceededErrorDetails],
 // [WorkspaceAPIKeyLimitExceededErrorDetails], [UserProfileNotFoundErrorDetails],
 // [ExternalKeyInWorkspacePolicyErrorDetails], [AlreadyMemberErrorDetails],
 // [CannotInviteEmailsWithUnverifiedDomainsErrorDetails],
@@ -282,10 +283,11 @@ type ErrorDetailsUnion struct {
 	// "thread_unsupported_request", "tool_name_conflict", "tool_reference_unresolved",
 	// "thread_not_found", "skill_read_blocked_undecryptable",
 	// "request_body_too_large_after_decoding", "enforced_spend_limit_reached",
-	// "cmek_key_unreachable", "compaction_unavailable", "storage_quota_exceeded",
-	// "file_not_downloadable", "file_expired", "cmek_context_unavailable",
-	// "org_api_key_limit_exceeded", "workspace_api_key_limit_exceeded",
-	// "user_profile_not_found", "external_key_in_workspace_policy", "already_member",
+	// "ramp_limit_exceeded", "cmek_key_unreachable", "compaction_unavailable",
+	// "storage_quota_exceeded", "file_not_downloadable", "file_expired",
+	// "cmek_context_unavailable", "org_api_key_limit_exceeded",
+	// "workspace_api_key_limit_exceeded", "user_profile_not_found",
+	// "external_key_in_workspace_policy", "already_member",
 	// "cannot_invite_emails_with_unverified_domains", "email_domain_not_allowed",
 	// "invite_already_exists", "org_member_limit_exceeded",
 	// "rbac_group_grants_owner_access", "rbac_group_owner_access_unconfirmed",
@@ -366,6 +368,7 @@ type anyErrorDetails interface {
 //	case shared.SkillReadBlockedUndecryptableErrorDetails:
 //	case shared.RequestBodyTooLargeAfterDecodingErrorDetails:
 //	case shared.EnforcedSpendLimitReachedErrorDetails:
+//	case shared.RampLimitExceededErrorDetails:
 //	case shared.CMEKKeyUnreachableErrorDetails:
 //	case shared.CompactionUnavailableErrorDetails:
 //	case shared.StorageQuotaExceededErrorDetails:
@@ -469,6 +472,8 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsRequestBodyTooLargeAfterDecoding()
 	case "enforced_spend_limit_reached":
 		return u.AsEnforcedSpendLimitReached()
+	case "ramp_limit_exceeded":
+		return u.AsRampLimitExceeded()
 	case "cmek_key_unreachable":
 		return u.AsCMEKKeyUnreachable()
 	case "compaction_unavailable":
@@ -691,6 +696,11 @@ func (u ErrorDetailsUnion) AsRequestBodyTooLargeAfterDecoding() (v RequestBodyTo
 }
 
 func (u ErrorDetailsUnion) AsEnforcedSpendLimitReached() (v EnforcedSpendLimitReachedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsRampLimitExceeded() (v RampLimitExceededErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1229,6 +1239,26 @@ func (r *PermissionError) UnmarshalJSON(data []byte) error {
 }
 
 func (PermissionError) ImplErrorObjectUnion() {}
+
+// The request would exceed a ramp limit, which caps how fast usage can grow. Retry
+// after the time in the `retry-after` header.
+type RampLimitExceededErrorDetails struct {
+	ErrorCode constant.RampLimitExceededErrorCode `json:"error_code" default:"ramp_limit_exceeded"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RampLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *RampLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (RampLimitExceededErrorDetails) ImplErrorDetailsUnion() {}
 
 type RateLimitError struct {
 	Message string                  `json:"message" api:"required"`

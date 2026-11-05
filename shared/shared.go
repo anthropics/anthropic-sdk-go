@@ -16,8 +16,11 @@ type paramUnion = param.APIUnion
 type paramObj = param.APIObject
 
 type APIErrorObject struct {
-	Message string            `json:"message" api:"required"`
-	Type    constant.APIError `json:"type" default:"api_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.APIError `json:"type" default:"api_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -36,8 +39,11 @@ func (r *APIErrorObject) UnmarshalJSON(data []byte) error {
 func (APIErrorObject) ImplErrorObjectUnion() {}
 
 type AuthenticationError struct {
-	Message string                       `json:"message" api:"required"`
-	Type    constant.AuthenticationError `json:"type" default:"authentication_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.AuthenticationError `json:"type" default:"authentication_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -56,8 +62,11 @@ func (r *AuthenticationError) UnmarshalJSON(data []byte) error {
 func (AuthenticationError) ImplErrorObjectUnion() {}
 
 type BillingError struct {
-	Message string                `json:"message" api:"required"`
-	Type    constant.BillingError `json:"type" default:"billing_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.BillingError `json:"type" default:"billing_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1098,8 +1107,11 @@ const (
 )
 
 type GatewayTimeoutError struct {
-	Message string                `json:"message" api:"required"`
-	Type    constant.TimeoutError `json:"type" default:"timeout_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.TimeoutError `json:"type" default:"timeout_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1118,8 +1130,11 @@ func (r *GatewayTimeoutError) UnmarshalJSON(data []byte) error {
 func (GatewayTimeoutError) ImplErrorObjectUnion() {}
 
 type InvalidRequestError struct {
-	Message string                       `json:"message" api:"required"`
-	Type    constant.InvalidRequestError `json:"type" default:"invalid_request_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.InvalidRequestError `json:"type" default:"invalid_request_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1138,8 +1153,11 @@ func (r *InvalidRequestError) UnmarshalJSON(data []byte) error {
 func (InvalidRequestError) ImplErrorObjectUnion() {}
 
 type NotFoundError struct {
-	Message string                 `json:"message" api:"required"`
-	Type    constant.NotFoundError `json:"type" default:"not_found_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.NotFoundError `json:"type" default:"not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1201,8 +1219,11 @@ func (r *OrganizationTypeNotSupportedErrorDetails) UnmarshalJSON(data []byte) er
 func (OrganizationTypeNotSupportedErrorDetails) ImplErrorDetailsUnion() {}
 
 type OverloadedError struct {
-	Message string                   `json:"message" api:"required"`
-	Type    constant.OverloadedError `json:"type" default:"overloaded_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.OverloadedError `json:"type" default:"overloaded_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1221,8 +1242,11 @@ func (r *OverloadedError) UnmarshalJSON(data []byte) error {
 func (OverloadedError) ImplErrorObjectUnion() {}
 
 type PermissionError struct {
-	Message string                   `json:"message" api:"required"`
-	Type    constant.PermissionError `json:"type" default:"permission_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.PermissionError `json:"type" default:"permission_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1261,8 +1285,11 @@ func (r *RampLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
 func (RampLimitExceededErrorDetails) ImplErrorDetailsUnion() {}
 
 type RateLimitError struct {
-	Message string                  `json:"message" api:"required"`
-	Type    constant.RateLimitError `json:"type" default:"rate_limit_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.RateLimitError `json:"type" default:"rate_limit_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field

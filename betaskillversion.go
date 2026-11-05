@@ -48,21 +48,11 @@ func NewBetaSkillVersionService(opts ...option.RequestOption) (r BetaSkillVersio
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
-//     network access controls blocked the request to the workspace's
-//     customer-managed encryption key. The key itself may be healthy.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
-//   - [ErrorCodeCMEKContextUnavailable] (HTTP 503): The workspace's encryption
-//     settings could not be read, so the request was refused. Retry in a few
-//     minutes.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeCMEKContextUnavailable] (HTTP 503)
 func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, params BetaSkillVersionNewParams, opts ...option.RequestOption) (res *BetaSkillVersion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -84,6 +74,7 @@ func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, param
 	}
 	path := fmt.Sprintf("v1/skills/%s/versions", requestconfig.EscapePathSegment(skillID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.create", "/v1/skills/{skill_id}/versions"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID), requestconfig.WithSpanCreatedID("anthropic.skill.version.id", &res, func(created *BetaSkillVersion) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -94,13 +85,8 @@ func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, param
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaSkillVersionService) Get(ctx context.Context, version string, params BetaSkillVersionGetParams, opts ...option.RequestOption) (res *BetaSkillVersion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -136,13 +122,8 @@ func (r *BetaSkillVersionService) Get(ctx context.Context, version string, param
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaSkillVersionService) List(ctx context.Context, skillID string, params BetaSkillVersionListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSkillVersion], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -184,13 +165,8 @@ func (r *BetaSkillVersionService) List(ctx context.Context, skillID string, para
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaSkillVersionService) ListAutoPaging(ctx context.Context, skillID string, params BetaSkillVersionListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSkillVersion] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, skillID, params, opts...))
 }
@@ -200,13 +176,8 @@ func (r *BetaSkillVersionService) ListAutoPaging(ctx context.Context, skillID st
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaSkillVersionService) Delete(ctx context.Context, version string, params BetaSkillVersionDeleteParams, opts ...option.RequestOption) (res *BetaDeletedSkillVersion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

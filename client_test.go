@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"slices"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"testing/iotest"
 	"time"
@@ -343,6 +345,36 @@ func TestErrorDumpRedactsSensitiveHeaders(t *testing.T) {
 	}
 	if got := apiErr.Request.Header.Get("X-Api-Key"); got != "dump-secret-key" {
 		t.Errorf("Expected the request's X-Api-Key header to be unchanged, got %q", got)
+	}
+}
+
+func TestErrorPrintsRequestOnlyIfPresent(t *testing.T) {
+	for name, test := range map[string]struct {
+		request *http.Request
+		want    string
+	}{
+		"no request": {nil, "429 Too Many Requests"},
+		"request":    {httptest.NewRequest(http.MethodPost, "https://example.com/cards", nil), `POST "https://example.com/cards": 429 Too Many Requests`},
+	} {
+		t.Run(name, func(t *testing.T) {
+			apiErr := &anthropic.Error{StatusCode: http.StatusTooManyRequests, Request: test.request}
+
+			got := apiErr.Error()
+
+			if got != test.want {
+				t.Errorf("Expected error %q, got %q", test.want, got)
+			}
+		})
+	}
+}
+
+func TestErrorWithoutRequestOrResponseDumpsNothing(t *testing.T) {
+	apiErr := &anthropic.Error{StatusCode: http.StatusTooManyRequests}
+
+	request, response := apiErr.DumpRequest(true), apiErr.DumpResponse(true)
+
+	if len(request) != 0 || len(response) != 0 {
+		t.Errorf("Expected empty dumps, got request %q and response %q", request, response)
 	}
 }
 
@@ -744,6 +776,179 @@ func TestEveryAttemptHasTheQualifiers(t *testing.T) {
 	want := []map[string]string{qualifiers, qualifiers, qualifiers, qualifiers}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Expected %v qualifiers, got %v", want, got)
+	}
+}
+
+func newConservativeRetriesRequest(baseURL string, httpClient *http.Client, opts ...option.RequestOption) (*requestconfig.RequestConfig, error) {
+	var res any
+	opts = append(
+		opts,
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithBaseURL(baseURL),
+		option.WithHTTPClient(httpClient),
+		requestconfig.WithConservativeRetries(),
+	)
+	return requestconfig.NewRequestConfig(context.Background(), http.MethodPost, "cards", nil, &res, opts...)
+}
+
+func sendWithConservativeRetries(baseURL string, httpClient *http.Client, opts ...option.RequestOption) error {
+	cfg, err := newConservativeRetriesRequest(baseURL, httpClient, opts...)
+	if err != nil {
+		return err
+	}
+	return cfg.Execute()
+}
+
+func TestConservativeRetriesResendOnlyOnRateLimit(t *testing.T) {
+	for _, c := range []struct {
+		status      int
+		shouldRetry string
+		attempts    int
+	}{
+		{http.StatusRequestTimeout, "", 1},
+		{http.StatusConflict, "", 1},
+		{http.StatusInternalServerError, "", 1},
+		{http.StatusServiceUnavailable, "", 1},
+		{http.StatusInternalServerError, "true", 1},
+		{http.StatusServiceUnavailable, "true", 1},
+		{http.StatusGatewayTimeout, "true", 1},
+		{529, "true", 1},
+		{http.StatusTooManyRequests, "", 3},
+		{http.StatusTooManyRequests, "true", 3},
+		{http.StatusTooManyRequests, "false", 1},
+	} {
+		attempts := 0
+		httpClient := &http.Client{Transport: &closureTransport{fn: func(req *http.Request) (*http.Response, error) {
+			attempts++
+			header := http.Header{"Retry-After-Ms": {"1"}, "X-Should-Retry": {c.shouldRetry}}
+			return &http.Response{StatusCode: c.status, Header: header}, nil
+		}}}
+
+		err := sendWithConservativeRetries("http://localhost", httpClient)
+
+		if err == nil {
+			t.Errorf("status %d: expected an error", c.status)
+		}
+		if attempts != c.attempts {
+			t.Errorf("status %d, x-should-retry %q: got %d attempts, want %d", c.status, c.shouldRetry, attempts, c.attempts)
+		}
+	}
+}
+
+func TestClonedRequestKeepsConservativeRetries(t *testing.T) {
+	attempts := 0
+	httpClient := &http.Client{Transport: &closureTransport{fn: func(req *http.Request) (*http.Response, error) {
+		attempts++
+		return &http.Response{StatusCode: http.StatusInternalServerError, Header: http.Header{"Retry-After-Ms": {"1"}}}, nil
+	}}}
+	cfg, err := newConservativeRetriesRequest("http://localhost", httpClient)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = cfg.Clone(context.Background()).Execute()
+
+	if err == nil {
+		t.Error("expected an error")
+	}
+	if attempts != 1 {
+		t.Errorf("got %d attempts, want 1", attempts)
+	}
+}
+
+func TestConservativeRetriesResendWhatWasNeverSent(t *testing.T) {
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Error("the request must not reach the server")
+	}))
+	defer server.Close()
+
+	for name, dial := range map[string]func(ctx context.Context, network, addr string) (net.Conn, error){
+		"dial": func(context.Context, string, string) (net.Conn, error) {
+			return nil, errors.New("connection refused")
+		},
+		"TLS handshake": (&net.Dialer{}).DialContext,
+	} {
+		var dials atomic.Int32
+		httpClient := &http.Client{Transport: &http.Transport{
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				dials.Add(1)
+				return dial(ctx, network, addr)
+			},
+		}}
+
+		err := sendWithConservativeRetries(server.URL, httpClient, option.WithMaxRetries(1))
+
+		if err == nil {
+			t.Errorf("%s: expected an error", name)
+		}
+		if got := dials.Load(); got != 2 {
+			t.Errorf("%s: got %d dials, want 2", name, got)
+		}
+	}
+}
+
+func TestConservativeRetriesDoNotResendWhatMayHaveBeenSent(t *testing.T) {
+	for name, c := range map[string]struct {
+		handler http.HandlerFunc
+		opts    []option.RequestOption
+	}{
+		"connection dropped before a response": {
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				panic(http.ErrAbortHandler)
+			},
+		},
+		"connection dropped part-way through the body": {
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Length", "100")
+				_, _ = w.Write([]byte("{"))
+				w.(http.Flusher).Flush()
+				panic(http.ErrAbortHandler)
+			},
+		},
+		"attempt timed out after it connected": {
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				<-r.Context().Done()
+			},
+			opts: []option.RequestOption{option.WithRequestTimeout(100 * time.Millisecond)},
+		},
+	} {
+		for _, http2 := range []bool{false, true} {
+			var attempts atomic.Int32
+			server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				attempts.Add(1)
+				c.handler(w, r)
+			}))
+			server.EnableHTTP2 = http2
+			server.StartTLS()
+
+			err := sendWithConservativeRetries(server.URL, server.Client(), c.opts...)
+
+			server.CloseClientConnections()
+			server.Close()
+			if err == nil {
+				t.Errorf("%s, HTTP/2 %v: expected an error", name, http2)
+			}
+			if got := attempts.Load(); got != 1 {
+				t.Errorf("%s, HTTP/2 %v: got %d attempts, want 1", name, http2, got)
+			}
+		}
+	}
+}
+
+func TestConservativeRetriesDoNotResendWithOtherTransports(t *testing.T) {
+	attempts := 0
+	httpClient := &http.Client{Transport: &closureTransport{fn: func(req *http.Request) (*http.Response, error) {
+		attempts++
+		return nil, errors.New("connection refused")
+	}}}
+
+	err := sendWithConservativeRetries("http://localhost", httpClient)
+
+	if err == nil {
+		t.Error("expected an error")
+	}
+	if attempts != 1 {
+		t.Errorf("got %d attempts, want 1", attempts)
 	}
 }
 

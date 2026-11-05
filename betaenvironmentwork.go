@@ -49,13 +49,8 @@ func NewBetaEnvironmentWorkService(opts ...option.RequestOption) (r BetaEnvironm
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, params BetaEnvironmentWorkGetParams, opts ...option.RequestOption) (res *BetaSelfHostedWork, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -97,15 +92,9 @@ func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, par
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeBetaInvalidMetadata] (HTTP 400): `metadata` has too many keys, a key
-//     or value that is too long, or a reserved key. The message names each problem.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeBetaInvalidMetadata] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaEnvironmentWorkService) Update(ctx context.Context, workID string, params BetaEnvironmentWorkUpdateParams, opts ...option.RequestOption) (res *BetaSelfHostedWork, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -231,9 +220,7 @@ func (r *BetaEnvironmentWorkService) Ack(ctx context.Context, workID string, par
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaHeartbeatPreconditionFailed] (HTTP 412):
-//     `expected_last_heartbeat` does not match the stored heartbeat, so another
-//     worker may hold the lease.
+//   - [ErrorCodeBetaHeartbeatPreconditionFailed] (HTTP 412)
 func (r *BetaEnvironmentWorkService) Heartbeat(ctx context.Context, workID string, params BetaEnvironmentWorkHeartbeatParams, opts ...option.RequestOption) (res *BetaSelfHostedWorkHeartbeatResponse, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -300,13 +287,8 @@ func (r *BetaEnvironmentWorkService) Poll(ctx context.Context, environmentID str
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID string, query BetaEnvironmentWorkStatsParams, opts ...option.RequestOption) (res *BetaSelfHostedWorkQueueStats, err error) {
 	if len(query.Betas) > 0 {
 		headerValues := make([]string, len(query.Betas))
@@ -344,13 +326,8 @@ func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID st
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaEnvironmentWorkService) Stop(ctx context.Context, workID string, params BetaEnvironmentWorkStopParams, opts ...option.RequestOption) (res *BetaSelfHostedWork, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

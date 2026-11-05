@@ -50,9 +50,7 @@ func NewBetaOrganizationSpendLimitService(opts ...option.RequestOption) (r BetaO
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403): The
-//     organization cannot retrieve, set or delete spend limits with an Admin API
-//     credential.
+//   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403)
 func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitID string, opts ...option.RequestOption) (res *BetaSpendLimit, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if spendLimitID == "" {
@@ -78,9 +76,7 @@ func (r *BetaOrganizationSpendLimitService) Get(ctx context.Context, spendLimitI
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
-//     support the organization's type. Each endpoint's description says which
-//     organization types it supports.
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400)
 func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSpendLimit], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -122,9 +118,7 @@ func (r *BetaOrganizationSpendLimitService) List(ctx context.Context, params Bet
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
-//     support the organization's type. Each endpoint's description says which
-//     organization types it supports.
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400)
 func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, params BetaOrganizationSpendLimitListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSpendLimit] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
@@ -141,12 +135,8 @@ func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, 
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaBillingFrozen] (HTTP 403): Anthropic has temporarily disabled
-//     billing changes for the user account the credential belongs to. Contact
-//     support.
-//   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403): The
-//     organization cannot retrieve, set or delete spend limits with an Admin API
-//     credential.
+//   - [ErrorCodeBetaBillingFrozen] (HTTP 403)
+//   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403)
 func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLimitID string, opts ...option.RequestOption) (res *BetaOrganizationSpendLimitDeleteResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if spendLimitID == "" {
@@ -172,12 +162,8 @@ func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLim
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaBillingFrozen] (HTTP 403): Anthropic has temporarily disabled
-//     billing changes for the user account the credential belongs to. Contact
-//     support.
-//   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403): The
-//     organization cannot retrieve, set or delete spend limits with an Admin API
-//     credential.
+//   - [ErrorCodeBetaBillingFrozen] (HTTP 403)
+//   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403)
 func (r *BetaOrganizationSpendLimitService) Set(ctx context.Context, params BetaOrganizationSpendLimitSetParams, opts ...option.RequestOption) (res *BetaSpendLimit, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

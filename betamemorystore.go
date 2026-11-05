@@ -62,6 +62,7 @@ func (r *BetaMemoryStoreService) New(ctx context.Context, params BetaMemoryStore
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "agent-memory-2026-07-22")}, opts...)
 	path := "v1/memory_stores"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.memory_stores.create", "/v1/memory_stores"), requestconfig.WithSpanCreatedID("gen_ai.memory.store.id", &res, func(created *BetaManagedAgentsMemoryStore) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

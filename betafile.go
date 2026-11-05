@@ -48,18 +48,10 @@ func NewBetaFileService(opts ...option.RequestOption) (r BetaFileService) {
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
-//     network access controls blocked the request to the workspace's
-//     customer-managed encryption key. The key itself may be healthy.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaFileService) List(ctx context.Context, params BetaFileListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaFileMetadata], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -97,18 +89,10 @@ func (r *BetaFileService) List(ctx context.Context, params BetaFileListParams, o
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
-//     network access controls blocked the request to the workspace's
-//     customer-managed encryption key. The key itself may be healthy.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaFileService) ListAutoPaging(ctx context.Context, params BetaFileListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaFileMetadata] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
@@ -118,18 +102,10 @@ func (r *BetaFileService) ListAutoPaging(ctx context.Context, params BetaFileLis
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
-//     network access controls blocked the request to the workspace's
-//     customer-managed encryption key. The key itself may be healthy.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaFileService) Delete(ctx context.Context, fileID string, body BetaFileDeleteParams, opts ...option.RequestOption) (res *BetaDeletedFile, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -161,23 +137,12 @@ func (r *BetaFileService) Delete(ctx context.Context, fileID string, body BetaFi
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
-//     network access controls blocked the request to the workspace's
-//     customer-managed encryption key. The key itself may be healthy.
-//   - [ErrorCodeFileNotDownloadable] (HTTP 400): The file has `downloadable: false`.
-//     Only files generated by a tool, such as the code execution tool, can be
-//     downloaded.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
-//   - [ErrorCodeFileExpired] (HTTP 404): The file's `expires_at` has passed, so its
-//     content is no longer available.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeFileNotDownloadable] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeFileExpired] (HTTP 404)
 func (r *BetaFileService) Download(ctx context.Context, fileID string, query BetaFileDownloadParams, opts ...option.RequestOption) (res *http.Response, err error) {
 	if len(query.Betas) > 0 {
 		headerValues := make([]string, len(query.Betas))
@@ -210,18 +175,10 @@ func (r *BetaFileService) Download(ctx context.Context, fileID string, query Bet
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
-//     network access controls blocked the request to the workspace's
-//     customer-managed encryption key. The key itself may be healthy.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query BetaFileGetMetadataParams, opts ...option.RequestOption) (res *BetaFileMetadata, err error) {
 	if len(query.Betas) > 0 {
 		headerValues := make([]string, len(query.Betas))
@@ -253,20 +210,11 @@ func (r *BetaFileService) GetMetadata(ctx context.Context, fileID string, query 
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400): The key management service's
-//     network access controls blocked the request to the workspace's
-//     customer-managed encryption key. The key itself may be healthy.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
-//   - [ErrorCodeStorageQuotaExceeded] (HTTP 400): The organization's file storage
-//     quota is exhausted. Delete files to free up space, then retry the upload.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeStorageQuotaExceeded] (HTTP 400)
 func (r *BetaFileService) Upload(ctx context.Context, params BetaFileUploadParams, opts ...option.RequestOption) (res *BetaFileMetadata, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

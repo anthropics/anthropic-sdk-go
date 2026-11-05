@@ -64,6 +64,7 @@ func (r *BetaVaultCredentialService) New(ctx context.Context, vaultID string, pa
 	}
 	path := fmt.Sprintf("v1/vaults/%s/credentials", requestconfig.EscapePathSegment(vaultID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.credentials.create", "/v1/vaults/{vault_id}/credentials"), requestconfig.WithSpanAttribute("anthropic.vault.id", vaultID), requestconfig.WithSpanCreatedID("anthropic.vault.credential.id", &res, func(created *BetaManagedAgentsCredential) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

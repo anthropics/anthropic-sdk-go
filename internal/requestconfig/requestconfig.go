@@ -10,10 +10,12 @@ import (
 	"math/rand"
 	"mime"
 	"net/http"
+	"net/http/httptrace"
 	"net/url"
 	"runtime"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/v2/internal"
@@ -230,11 +232,12 @@ type RequestConfig struct {
 	Middlewares    []middleware
 	// Qualifiers is what the SDK method that makes the API call sets with
 	// WithQualifiers.
-	Qualifiers    map[string]string
-	APIKey        string
-	AuthToken     string
-	WebhookKey    string
-	OpenTelemetry OpenTelemetryConfig
+	Qualifiers          map[string]string
+	ConservativeRetries bool
+	APIKey              string
+	AuthToken           string
+	WebhookKey          string
+	OpenTelemetry       OpenTelemetryConfig
 	// If ResponseBodyInto not nil, then we will attempt to deserialize into
 	// ResponseBodyInto. If Destination is a []byte, then it will return the body as
 	// is.
@@ -590,6 +593,11 @@ func (cfg *RequestConfig) send(ctx context.Context, call *tracing.APICall) (err 
 			}()
 		}
 
+		var attempt *attemptTrace
+		if cfg.ConservativeRetries {
+			attempt = &attemptTrace{}
+			ctx = httptrace.WithClientTrace(ctx, attempt.clientTrace())
+		}
 		// Set even when nil, so that a request made with the context of another has only its own.
 		req := cfg.Request.Clone(context.WithValue(ctx, qualifiersKey{}, cfg.Qualifiers))
 		if shouldSendRetryCount {
@@ -598,7 +606,7 @@ func (cfg *RequestConfig) send(ctx context.Context, call *tracing.APICall) (err 
 
 		lastAttempt := retryCount >= cfg.MaxRetries
 		res, err = handler(req)
-		retry := shouldRetry(cfg.Request, res)
+		retry := shouldRetry(cfg.Request, res) && attempt.safeToResend(res)
 		// The status and the headers say whether the response is retried, so only the body of
 		// a response that ends the call is read.
 		endsCall := lastAttempt || !retry
@@ -615,7 +623,7 @@ func (cfg *RequestConfig) send(ctx context.Context, call *tracing.APICall) (err 
 		if ctxErr := ctx.Err(); ctxErr != nil {
 			closeBody(res)
 			res, err, readErr = nil, ctxErr, nil
-			retry = shouldRetry(cfg.Request, nil)
+			retry = shouldRetry(cfg.Request, nil) && attempt.safeToResend(nil)
 			// The attempt has no response any more, so its span has no status code.
 			if call != nil {
 				call.Response = nil
@@ -624,7 +632,7 @@ func (cfg *RequestConfig) send(ctx context.Context, call *tracing.APICall) (err 
 		if readErr != nil {
 			// The response stays, for its status and headers.
 			err = readErr
-			retry = shouldRetryDroppedBody(cfg.Request, res)
+			retry = shouldRetryDroppedBody(cfg.Request, res) && attempt.safeToResend(nil)
 		}
 		if lastAttempt || !retry {
 			break
@@ -736,6 +744,42 @@ func (cfg *RequestConfig) decode(res *http.Response) error {
 	return nil
 }
 
+type attemptTrace struct {
+	gettingConn atomic.Bool
+	gotConn     atomic.Bool
+}
+
+func (t *attemptTrace) clientTrace() *httptrace.ClientTrace {
+	return &httptrace.ClientTrace{
+		GetConn: func(string) { t.gettingConn.Store(true) },
+		GotConn: func(httptrace.GotConnInfo) { t.gotConn.Store(true) },
+	}
+}
+
+// safeToResend reports whether sending the request again cannot apply it twice. It is always
+// so for a nil t, which is a request that is safe to retry. A nil res is an attempt without a
+// whole response.
+func (t *attemptTrace) safeToResend(res *http.Response) bool {
+	if t == nil {
+		return true
+	}
+	if res == nil {
+		// net/http went for a connection, through any DNS lookup, dial, proxy and TLS handshake,
+		// and got none, so it wrote nothing. Another transport calls neither hook, which proves nothing.
+		return t.gettingConn.Load() && !t.gotConn.Load()
+	}
+	return res.StatusCode == http.StatusTooManyRequests
+}
+
+// WithConservativeRetries retries a request only when the API can't have processed it, meaning
+// a 429 response or a connection that never opened. Methods that aren't safe to repeat use it.
+func WithConservativeRetries() RequestOption {
+	return RequestOptionFunc(func(r *RequestConfig) error {
+		r.ConservativeRetries = true
+		return nil
+	})
+}
+
 func ExecuteNewRequest(ctx context.Context, method string, u string, body any, dst any, opts ...RequestOption) error {
 	cfg, err := NewRequestConfig(ctx, method, u, body, dst, opts...)
 	if err != nil {
@@ -757,20 +801,21 @@ func (cfg *RequestConfig) Clone(ctx context.Context) *RequestConfig {
 		return nil
 	}
 	new := &RequestConfig{
-		MaxRetries:     cfg.MaxRetries,
-		RequestTimeout: cfg.RequestTimeout,
-		Context:        ctx,
-		Request:        req,
-		BaseURL:        cfg.BaseURL,
-		DefaultBaseURL: cfg.DefaultBaseURL,
-		CustomHTTPDoer: cfg.CustomHTTPDoer,
-		HTTPClient:     cfg.HTTPClient,
-		Middlewares:    cfg.Middlewares,
-		Qualifiers:     cfg.Qualifiers,
-		APIKey:         cfg.APIKey,
-		AuthToken:      cfg.AuthToken,
-		WebhookKey:     cfg.WebhookKey,
-		OpenTelemetry:  cfg.OpenTelemetry.clone(),
+		MaxRetries:          cfg.MaxRetries,
+		RequestTimeout:      cfg.RequestTimeout,
+		Context:             ctx,
+		Request:             req,
+		BaseURL:             cfg.BaseURL,
+		DefaultBaseURL:      cfg.DefaultBaseURL,
+		CustomHTTPDoer:      cfg.CustomHTTPDoer,
+		HTTPClient:          cfg.HTTPClient,
+		Middlewares:         cfg.Middlewares,
+		Qualifiers:          cfg.Qualifiers,
+		APIKey:              cfg.APIKey,
+		AuthToken:           cfg.AuthToken,
+		WebhookKey:          cfg.WebhookKey,
+		ConservativeRetries: cfg.ConservativeRetries,
+		OpenTelemetry:       cfg.OpenTelemetry.clone(),
 	}
 
 	return new

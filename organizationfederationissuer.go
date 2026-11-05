@@ -59,6 +59,7 @@ func NewOrganizationFederationIssuerService(opts ...option.RequestOption) (r Org
 func (r *OrganizationFederationIssuerService) New(ctx context.Context, body OrganizationFederationIssuerNewParams, opts ...option.RequestOption) (res *FederationIssuer, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/federation_issuers"
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.create", "/v1/organizations/federation_issuers"), requestconfig.WithSpanCreatedID("anthropic.organization.federation_issuer.id", &res, func(created *FederationIssuer) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err

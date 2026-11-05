@@ -47,6 +47,7 @@ func NewOrganizationRBACGroupService(opts ...option.RequestOption) (r Organizati
 func (r *OrganizationRBACGroupService) New(ctx context.Context, body OrganizationRBACGroupNewParams, opts ...option.RequestOption) (res *RBACGroup, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/rbac_groups"
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_groups.create", "/v1/organizations/rbac_groups"), requestconfig.WithSpanCreatedID("anthropic.organization.rbac_group.id", &res, func(created *RBACGroup) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -121,14 +122,8 @@ func (r *OrganizationRBACGroupService) ListAutoPaging(ctx context.Context, query
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400): A role attached to an RBAC
-//     Group in the request grants owner access, so this API does not add members to
-//     that group (directly or through an invite), remove its members, or delete it.
-//     Make the change in the organization's admin settings in Claude.
-//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400): The API could not
-//     finish checking whether an RBAC Group in the request grants owner access, so
-//     it made no change. Retrying the same request will not help. Make the change in
-//     the organization's admin settings in Claude.
+//   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400)
+//   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400)
 func (r *OrganizationRBACGroupService) Delete(ctx context.Context, rbacGroupID string, opts ...option.RequestOption) (res *DeletedRBACGroup, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if rbacGroupID == "" {

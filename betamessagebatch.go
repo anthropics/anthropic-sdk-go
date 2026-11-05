@@ -53,17 +53,10 @@ func NewBetaMessageBatchService(opts ...option.RequestOption) (r BetaMessageBatc
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
-//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429): The organization has crossed
-//     the monthly API usage threshold of its API tier.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
 func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBatchNewParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -100,13 +93,8 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string, query BetaMessageBatchGetParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	if len(query.Betas) > 0 {
 		headerValues := make([]string, len(query.Betas))
@@ -143,13 +131,8 @@ func (r *BetaMessageBatchService) Get(ctx context.Context, messageBatchID string
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBatchListParams, opts ...option.RequestOption) (res *pagination.Page[BetaMessageBatch], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -191,13 +174,8 @@ func (r *BetaMessageBatchService) List(ctx context.Context, params BetaMessageBa
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaMessageBatchService) ListAutoPaging(ctx context.Context, params BetaMessageBatchListParams, opts ...option.RequestOption) *pagination.PageAutoPager[BetaMessageBatch] {
 	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }
@@ -213,13 +191,8 @@ func (r *BetaMessageBatchService) ListAutoPaging(ctx context.Context, params Bet
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID string, body BetaMessageBatchDeleteParams, opts ...option.RequestOption) (res *BetaDeletedMessageBatch, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -263,13 +236,8 @@ func (r *BetaMessageBatchService) Delete(ctx context.Context, messageBatchID str
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID string, body BetaMessageBatchCancelParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -309,15 +277,9 @@ func (r *BetaMessageBatchService) Cancel(ctx context.Context, messageBatchID str
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaMessageBatchService) ResultsStreaming(ctx context.Context, messageBatchID string, query BetaMessageBatchResultsParams, opts ...option.RequestOption) (stream *jsonl.Stream[BetaMessageBatchIndividualResponse]) {
 	var (
 		raw *http.Response

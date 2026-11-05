@@ -54,27 +54,14 @@ func NewBetaOrganizationClaudeTagSlackChannelService(opts ...option.RequestOptio
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaSlackChannelSetUpSettingsRefused] (HTTP 400): The request set
-//     the channel up, and `settings` was then refused. The channel stays set up with
-//     every setting unset.
-//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
-//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
-//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
-//     Claude Tag API are not enabled for the organization.
-//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
-//     organization's compliance configuration does not let Claude Tag store anything
-//     new.
-//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
-//     credential is not a scoped API key that is bound at the organization level.
-//   - [ErrorCodeBetaEnvironmentNotFound] (HTTP 404): `settings.environment_id` names
-//     no Environment within the organization's reach.
-//   - [ErrorCodeBetaSlackChannelSetUpEnvironmentNotFound] (HTTP 404):
-//     `settings.environment_id` names no Environment within the organization's
-//     reach, and the request had set the channel up by then. The channel stays set
-//     up with every setting unset.
-//   - [ErrorCodeBetaSlackChannelSetUpSettingsConflict] (HTTP 409): The request set
-//     the channel up, and something else then changed the channel or removed it.
-//     Nothing of `settings` was stored.
+//   - [ErrorCodeBetaSlackChannelSetUpSettingsRefused] (HTTP 400)
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
+//   - [ErrorCodeBetaEnvironmentNotFound] (HTTP 404)
+//   - [ErrorCodeBetaSlackChannelSetUpEnvironmentNotFound] (HTTP 404)
+//   - [ErrorCodeBetaSlackChannelSetUpSettingsConflict] (HTTP 409)
 func (r *BetaOrganizationClaudeTagSlackChannelService) New(ctx context.Context, params BetaOrganizationClaudeTagSlackChannelNewParams, opts ...option.RequestOption) (res *BetaClaudeTagSlackChannel, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -107,15 +94,10 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) New(ctx context.Context, 
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
-//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
-//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
-//     Claude Tag API are not enabled for the organization.
-//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
-//     organization's compliance configuration does not let Claude Tag store anything
-//     new.
-//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
-//     credential is not a scoped API key that is bound at the organization level.
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagSlackChannelService) Get(ctx context.Context, id string, params BetaOrganizationClaudeTagSlackChannelGetParams, opts ...option.RequestOption) (res *BetaClaudeTagSlackChannel, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -148,24 +130,13 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) Get(ctx context.Context, 
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
-//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
-//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
-//     Claude Tag API are not enabled for the organization.
-//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
-//     organization's compliance configuration does not let Claude Tag store anything
-//     new.
-//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
-//     credential is not a scoped API key that is bound at the organization level.
-//   - [ErrorCodeBetaEnvironmentNotFound] (HTTP 404): `settings.environment_id` names
-//     no Environment within the organization's reach.
-//   - [ErrorCodeBetaSlackChannelSetUpEnvironmentNotFound] (HTTP 404):
-//     `settings.environment_id` names no Environment within the organization's
-//     reach, and the request had set the channel up by then. The channel stays set
-//     up with every setting unset.
-//   - [ErrorCodeBetaSlackChannelSetUpSettingsConflict] (HTTP 409): The request set
-//     the channel up, and something else then changed the channel or removed it.
-//     Nothing of `settings` was stored.
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
+//   - [ErrorCodeBetaEnvironmentNotFound] (HTTP 404)
+//   - [ErrorCodeBetaSlackChannelSetUpEnvironmentNotFound] (HTTP 404)
+//   - [ErrorCodeBetaSlackChannelSetUpSettingsConflict] (HTTP 409)
 func (r *BetaOrganizationClaudeTagSlackChannelService) Update(ctx context.Context, id string, params BetaOrganizationClaudeTagSlackChannelUpdateParams, opts ...option.RequestOption) (res *BetaClaudeTagSlackChannel, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -204,15 +175,10 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) Update(ctx context.Contex
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
-//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
-//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
-//     Claude Tag API are not enabled for the organization.
-//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
-//     organization's compliance configuration does not let Claude Tag store anything
-//     new.
-//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
-//     credential is not a scoped API key that is bound at the organization level.
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagSlackChannelService) List(ctx context.Context, params BetaOrganizationClaudeTagSlackChannelListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaClaudeTagSlackChannel], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -256,15 +222,10 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) List(ctx context.Context,
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
-//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
-//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
-//     Claude Tag API are not enabled for the organization.
-//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
-//     organization's compliance configuration does not let Claude Tag store anything
-//     new.
-//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
-//     credential is not a scoped API key that is bound at the organization level.
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagSlackChannelService) ListAutoPaging(ctx context.Context, params BetaOrganizationClaudeTagSlackChannelListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaClaudeTagSlackChannel] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
@@ -287,18 +248,11 @@ func (r *BetaOrganizationClaudeTagSlackChannelService) ListAutoPaging(ctx contex
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
-//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
-//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
-//     Claude Tag API are not enabled for the organization.
-//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
-//     organization's compliance configuration does not let Claude Tag store anything
-//     new.
-//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
-//     credential is not a scoped API key that is bound at the organization level.
-//   - [ErrorCodeBetaSlackChannelSetUpSettingsConflict] (HTTP 409): The request set
-//     the channel up, and something else then changed the channel or removed it.
-//     Nothing of `settings` was stored.
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
+//   - [ErrorCodeBetaSlackChannelSetUpSettingsConflict] (HTTP 409)
 func (r *BetaOrganizationClaudeTagSlackChannelService) Delete(ctx context.Context, id string, body BetaOrganizationClaudeTagSlackChannelDeleteParams, opts ...option.RequestOption) (res *BetaClaudeTagDeletedSlackChannel, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))

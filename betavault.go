@@ -60,6 +60,7 @@ func (r *BetaVaultService) New(ctx context.Context, params BetaVaultNewParams, o
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	path := "v1/vaults"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.vaults.create", "/v1/vaults"), requestconfig.WithSpanCreatedID("anthropic.vault.id", &res, func(created *BetaManagedAgentsVault) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

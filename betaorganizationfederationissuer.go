@@ -71,6 +71,7 @@ func (r *BetaOrganizationFederationIssuerService) New(ctx context.Context, param
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/federation_issuers"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.create", "/v1/organizations/federation_issuers"), requestconfig.WithSpanCreatedID("anthropic.organization.federation_issuer.id", &res, func(created *BetaFederationIssuer) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

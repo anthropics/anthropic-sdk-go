@@ -45,14 +45,12 @@ func NewBetaOrganizationExternalKeyService(opts ...option.RequestOption) (r Beta
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeUserProfileNotFound] (HTTP 400): The request depends on a user
-//     profile that does not exist in the organization or is no longer active. The
-//     request either names this user profile by ID, or names a resource, such as an
-//     External Key, that is bound to it.
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400)
 func (r *BetaOrganizationExternalKeyService) New(ctx context.Context, body BetaOrganizationExternalKeyNewParams, opts ...option.RequestOption) (res *BetaExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/external_keys"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.create", "/v1/organizations/external_keys"), requestconfig.WithSpanCreatedID("anthropic.organization.external_key.id", &res, func(created *BetaExternalKey) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -81,9 +79,7 @@ func (r *BetaOrganizationExternalKeyService) Get(ctx context.Context, externalKe
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400): The External Key can't be
-//     deleted or reconfigured while the organization's Workspace Policy lists it as
-//     an allowed key.
+//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400)
 func (r *BetaOrganizationExternalKeyService) Update(ctx context.Context, externalKeyID string, body BetaOrganizationExternalKeyUpdateParams, opts ...option.RequestOption) (res *BetaExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {
@@ -135,9 +131,7 @@ func (r *BetaOrganizationExternalKeyService) ListAutoPaging(ctx context.Context,
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400): The External Key can't be
-//     deleted or reconfigured while the organization's Workspace Policy lists it as
-//     an allowed key.
+//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400)
 func (r *BetaOrganizationExternalKeyService) Delete(ctx context.Context, externalKeyID string, opts ...option.RequestOption) (res *BetaOrganizationExternalKeyDeleteResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {

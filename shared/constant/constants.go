@@ -102,6 +102,12 @@ type Caller string                                             // Always "caller
 type Canceled string                                           // Always "canceled"
 type CannotInviteEmailsWithUnverifiedDomainsErrorCode string   // Always "cannot_invite_emails_with_unverified_domains"
 type CannotRemoveLastMemberErrorCode string                    // Always "cannot_remove_last_member"
+type BetaCannotSignOutManagedMemberErrorCode string            // Always "cannot_sign_out_managed_member"
+type BetaCannotSignOutMembershipAdminErrorCode string          // Always "cannot_sign_out_membership_admin"
+type BetaCannotSignOutOwnerErrorCode string                    // Always "cannot_sign_out_owner"
+type BetaCannotSignOutPrimaryOwnerErrorCode string             // Always "cannot_sign_out_primary_owner"
+type BetaCannotSignOutPrivilegedMemberErrorCode string         // Always "cannot_sign_out_privileged_member"
+type BetaCannotSignOutSelfErrorCode string                     // Always "cannot_sign_out_self"
 type ChannelOnly string                                        // Always "channel_only"
 type CharLocation string                                       // Always "char_location"
 type CitationsDelta string                                     // Always "citations_delta"
@@ -231,6 +237,8 @@ type ExternalKeyChangedErrorCode string                        // Always "extern
 type ExternalKeyDeleted string                                 // Always "external_key_deleted"
 type ExternalKeyInWorkspacePolicyErrorCode string              // Always "external_key_in_workspace_policy"
 type ExternalKeyValidation string                              // Always "external_key_validation"
+type ExternalKeyValidationFailedErrorCode string               // Always "external_key_validation_failed"
+type ExternalKeyValidationTimedOutErrorCode string             // Always "external_key_validation_timed_out"
 type Failure string                                            // Always "failure"
 type Fallback string                                           // Always "fallback"
 type FallbackMessage string                                    // Always "fallback_message"
@@ -338,6 +346,7 @@ type Organization string                                       // Always "organi
 type OrganizationDisabledError string                          // Always "organization_disabled_error"
 type BetaOrganizationLevelScopedAPIKeyRequiredErrorCode string // Always "organization_level_scoped_api_key_required"
 type OrganizationMember string                                 // Always "organization_member"
+type BetaOrganizationNotEnrolledInBetaErrorCode string         // Always "organization_not_enrolled_in_beta"
 type OrganizationOnHoldErrorCode string                        // Always "organization_on_hold"
 type OrganizationService string                                // Always "organization_service"
 type OrganizationTypeNotSupportedErrorCode string              // Always "organization_type_not_supported"
@@ -356,6 +365,7 @@ type PluginShare string                                        // Always "plugin
 type PluginVersion string                                      // Always "plugin_version"
 type PreviousMessageNotFound string                            // Always "previous_message_not_found"
 type ProgramError string                                       // Always "program_error"
+type RampLimitExceededErrorCode string                         // Always "ramp_limit_exceeded"
 type RateLimit string                                          // Always "rate_limit"
 type RateLimitError string                                     // Always "rate_limit_error"
 type RBACGroup string                                          // Always "rbac_group"
@@ -711,6 +721,24 @@ func (c CannotInviteEmailsWithUnverifiedDomainsErrorCode) Default() CannotInvite
 func (c CannotRemoveLastMemberErrorCode) Default() CannotRemoveLastMemberErrorCode {
 	return "cannot_remove_last_member"
 }
+func (c BetaCannotSignOutManagedMemberErrorCode) Default() BetaCannotSignOutManagedMemberErrorCode {
+	return "cannot_sign_out_managed_member"
+}
+func (c BetaCannotSignOutMembershipAdminErrorCode) Default() BetaCannotSignOutMembershipAdminErrorCode {
+	return "cannot_sign_out_membership_admin"
+}
+func (c BetaCannotSignOutOwnerErrorCode) Default() BetaCannotSignOutOwnerErrorCode {
+	return "cannot_sign_out_owner"
+}
+func (c BetaCannotSignOutPrimaryOwnerErrorCode) Default() BetaCannotSignOutPrimaryOwnerErrorCode {
+	return "cannot_sign_out_primary_owner"
+}
+func (c BetaCannotSignOutPrivilegedMemberErrorCode) Default() BetaCannotSignOutPrivilegedMemberErrorCode {
+	return "cannot_sign_out_privileged_member"
+}
+func (c BetaCannotSignOutSelfErrorCode) Default() BetaCannotSignOutSelfErrorCode {
+	return "cannot_sign_out_self"
+}
 func (c ChannelOnly) Default() ChannelOnly       { return "channel_only" }
 func (c CharLocation) Default() CharLocation     { return "char_location" }
 func (c CitationsDelta) Default() CitationsDelta { return "citations_delta" }
@@ -908,12 +936,18 @@ func (c ExternalKeyInWorkspacePolicyErrorCode) Default() ExternalKeyInWorkspaceP
 	return "external_key_in_workspace_policy"
 }
 func (c ExternalKeyValidation) Default() ExternalKeyValidation { return "external_key_validation" }
-func (c Failure) Default() Failure                             { return "failure" }
-func (c Fallback) Default() Fallback                           { return "fallback" }
-func (c FallbackMessage) Default() FallbackMessage             { return "fallback_message" }
-func (c FederatedActor) Default() FederatedActor               { return "federated_actor" }
-func (c FederationIssuer) Default() FederationIssuer           { return "federation_issuer" }
-func (c FederationRule) Default() FederationRule               { return "federation_rule" }
+func (c ExternalKeyValidationFailedErrorCode) Default() ExternalKeyValidationFailedErrorCode {
+	return "external_key_validation_failed"
+}
+func (c ExternalKeyValidationTimedOutErrorCode) Default() ExternalKeyValidationTimedOutErrorCode {
+	return "external_key_validation_timed_out"
+}
+func (c Failure) Default() Failure                   { return "failure" }
+func (c Fallback) Default() Fallback                 { return "fallback" }
+func (c FallbackMessage) Default() FallbackMessage   { return "fallback_message" }
+func (c FederatedActor) Default() FederatedActor     { return "federated_actor" }
+func (c FederationIssuer) Default() FederationIssuer { return "federation_issuer" }
+func (c FederationRule) Default() FederationRule     { return "federation_rule" }
 func (c FederationRuleWorkspace) Default() FederationRuleWorkspace {
 	return "federation_rule_workspace"
 }
@@ -1053,6 +1087,9 @@ func (c BetaOrganizationLevelScopedAPIKeyRequiredErrorCode) Default() BetaOrgani
 	return "organization_level_scoped_api_key_required"
 }
 func (c OrganizationMember) Default() OrganizationMember { return "organization_member" }
+func (c BetaOrganizationNotEnrolledInBetaErrorCode) Default() BetaOrganizationNotEnrolledInBetaErrorCode {
+	return "organization_not_enrolled_in_beta"
+}
 func (c OrganizationOnHoldErrorCode) Default() OrganizationOnHoldErrorCode {
 	return "organization_on_hold"
 }
@@ -1084,7 +1121,10 @@ func (c PluginVersion) Default() PluginVersion { return "plugin_version" }
 func (c PreviousMessageNotFound) Default() PreviousMessageNotFound {
 	return "previous_message_not_found"
 }
-func (c ProgramError) Default() ProgramError         { return "program_error" }
+func (c ProgramError) Default() ProgramError { return "program_error" }
+func (c RampLimitExceededErrorCode) Default() RampLimitExceededErrorCode {
+	return "ramp_limit_exceeded"
+}
 func (c RateLimit) Default() RateLimit               { return "rate_limit" }
 func (c RateLimitError) Default() RateLimitError     { return "rate_limit_error" }
 func (c RBACGroup) Default() RBACGroup               { return "rbac_group" }
@@ -1562,9 +1602,23 @@ func (c CannotInviteEmailsWithUnverifiedDomainsErrorCode) MarshalJSON() ([]byte,
 	return marshalString(c)
 }
 func (c CannotRemoveLastMemberErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
-func (c ChannelOnly) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
-func (c CharLocation) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
-func (c CitationsDelta) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c BetaCannotSignOutManagedMemberErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c BetaCannotSignOutMembershipAdminErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c BetaCannotSignOutOwnerErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c BetaCannotSignOutPrimaryOwnerErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c BetaCannotSignOutPrivilegedMemberErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c BetaCannotSignOutSelfErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c ChannelOnly) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c CharLocation) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c CitationsDelta) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c ClaudeCodeKeyCreatorNotMemberErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
@@ -1705,27 +1759,31 @@ func (c ExternalKeyChangedErrorCode) MarshalJSON() ([]byte, error)           { r
 func (c ExternalKeyDeleted) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c ExternalKeyInWorkspacePolicyErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c ExternalKeyValidation) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
-func (c Failure) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c Fallback) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
-func (c FallbackMessage) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c FederatedActor) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
-func (c FederationIssuer) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
-func (c FederationRule) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
-func (c FederationRuleWorkspace) MarshalJSON() ([]byte, error)               { return marshalString(c) }
-func (c FederationRuleWorkspaceDeleted) MarshalJSON() ([]byte, error)        { return marshalString(c) }
-func (c File) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
-func (c FileExpiredErrorCode) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c FileNotDownloadableErrorCode) MarshalJSON() ([]byte, error)          { return marshalString(c) }
-func (c FileNotFoundError) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
-func (c FileUpload) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
-func (c Files) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
-func (c Find) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
-func (c FormInput) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
-func (c GCP) MarshalJSON() ([]byte, error)                                   { return marshalString(c) }
-func (c GetPageText) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c GitHubRepository) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
-func (c Glob) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
-func (c Grep) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
+func (c ExternalKeyValidationFailedErrorCode) MarshalJSON() ([]byte, error)  { return marshalString(c) }
+func (c ExternalKeyValidationTimedOutErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c Failure) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c Fallback) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c FallbackMessage) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c FederatedActor) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c FederationIssuer) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c FederationRule) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c FederationRuleWorkspace) MarshalJSON() ([]byte, error)        { return marshalString(c) }
+func (c FederationRuleWorkspaceDeleted) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c File) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c FileExpiredErrorCode) MarshalJSON() ([]byte, error)           { return marshalString(c) }
+func (c FileNotDownloadableErrorCode) MarshalJSON() ([]byte, error)   { return marshalString(c) }
+func (c FileNotFoundError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c FileUpload) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c Files) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Find) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c FormInput) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c GCP) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c GetPageText) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c GitHubRepository) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c Glob) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c Grep) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c BetaHeartbeatPreconditionFailedErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
@@ -1815,7 +1873,10 @@ func (c OrganizationDisabledError) MarshalJSON() ([]byte, error)            { re
 func (c BetaOrganizationLevelScopedAPIKeyRequiredErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
-func (c OrganizationMember) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c OrganizationMember) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c BetaOrganizationNotEnrolledInBetaErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
 func (c OrganizationOnHoldErrorCode) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c OrganizationService) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c OrganizationTypeNotSupportedErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
@@ -1834,6 +1895,7 @@ func (c PluginShare) MarshalJSON() ([]byte, error)                           { r
 func (c PluginVersion) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c PreviousMessageNotFound) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c ProgramError) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c RampLimitExceededErrorCode) MarshalJSON() ([]byte, error)            { return marshalString(c) }
 func (c RateLimit) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c RateLimitError) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c RBACGroup) MarshalJSON() ([]byte, error)                             { return marshalString(c) }

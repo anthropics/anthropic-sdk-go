@@ -43,9 +43,7 @@ func NewBetaOrganizationSpendLimitEffectiveService(opts ...option.RequestOption)
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
-//     support the organization's type. Each endpoint's description says which
-//     organization types it supports.
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400)
 func (r *BetaOrganizationSpendLimitEffectiveService) List(ctx context.Context, query BetaOrganizationSpendLimitEffectiveListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSpendSummary], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
@@ -75,9 +73,7 @@ func (r *BetaOrganizationSpendLimitEffectiveService) List(ctx context.Context, q
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400): The endpoint does not
-//     support the organization's type. Each endpoint's description says which
-//     organization types it supports.
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400)
 func (r *BetaOrganizationSpendLimitEffectiveService) ListAutoPaging(ctx context.Context, query BetaOrganizationSpendLimitEffectiveListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSpendSummary] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, query, opts...))
 }

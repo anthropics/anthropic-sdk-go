@@ -68,6 +68,7 @@ func (r *BetaOrganizationServiceAccountService) New(ctx context.Context, params 
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/service_accounts"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.service_accounts.create", "/v1/organizations/service_accounts"), requestconfig.WithSpanCreatedID("anthropic.organization.service_account.id", &res, func(created *BetaServiceAccount) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

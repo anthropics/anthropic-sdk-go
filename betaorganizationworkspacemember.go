@@ -60,8 +60,7 @@ func (r *BetaOrganizationWorkspaceMemberService) Get(ctx context.Context, userID
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeWorkspaceMemberLimitExceeded] (HTTP 400): The workspace has reached
-//     the member limit that Anthropic set for it.
+//   - [ErrorCodeWorkspaceMemberLimitExceeded] (HTTP 400)
 func (r *BetaOrganizationWorkspaceMemberService) Update(ctx context.Context, userID string, params BetaOrganizationWorkspaceMemberUpdateParams, opts ...option.RequestOption) (res *BetaWorkspaceMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if params.WorkspaceID == "" {
@@ -113,8 +112,7 @@ func (r *BetaOrganizationWorkspaceMemberService) ListAutoPaging(ctx context.Cont
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeWorkspaceMemberLimitExceeded] (HTTP 400): The workspace has reached
-//     the member limit that Anthropic set for it.
+//   - [ErrorCodeWorkspaceMemberLimitExceeded] (HTTP 400)
 func (r *BetaOrganizationWorkspaceMemberService) Add(ctx context.Context, workspaceID string, body BetaOrganizationWorkspaceMemberAddParams, opts ...option.RequestOption) (res *BetaWorkspaceMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {

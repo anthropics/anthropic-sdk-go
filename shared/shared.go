@@ -16,8 +16,11 @@ type paramUnion = param.APIUnion
 type paramObj = param.APIObject
 
 type APIErrorObject struct {
-	Message string            `json:"message" api:"required"`
-	Type    constant.APIError `json:"type" default:"api_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.APIError `json:"type" default:"api_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -36,8 +39,11 @@ func (r *APIErrorObject) UnmarshalJSON(data []byte) error {
 func (APIErrorObject) ImplErrorObjectUnion() {}
 
 type AuthenticationError struct {
-	Message string                       `json:"message" api:"required"`
-	Type    constant.AuthenticationError `json:"type" default:"authentication_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.AuthenticationError `json:"type" default:"authentication_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -56,8 +62,11 @@ func (r *AuthenticationError) UnmarshalJSON(data []byte) error {
 func (AuthenticationError) ImplErrorObjectUnion() {}
 
 type BillingError struct {
-	Message string                `json:"message" api:"required"`
-	Type    constant.BillingError `json:"type" default:"billing_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.BillingError `json:"type" default:"billing_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -233,10 +242,11 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [ToolNameConflictErrorDetails], [ToolReferenceUnresolvedErrorDetails],
 // [ThreadNotFoundErrorDetails], [SkillReadBlockedUndecryptableErrorDetails],
 // [RequestBodyTooLargeAfterDecodingErrorDetails],
-// [EnforcedSpendLimitReachedErrorDetails], [CMEKKeyUnreachableErrorDetails],
-// [CompactionUnavailableErrorDetails], [StorageQuotaExceededErrorDetails],
-// [FileNotDownloadableErrorDetails], [FileExpiredErrorDetails],
-// [CMEKContextUnavailableErrorDetails], [OrgAPIKeyLimitExceededErrorDetails],
+// [EnforcedSpendLimitReachedErrorDetails], [RampLimitExceededErrorDetails],
+// [CMEKKeyUnreachableErrorDetails], [CompactionUnavailableErrorDetails],
+// [StorageQuotaExceededErrorDetails], [FileNotDownloadableErrorDetails],
+// [FileExpiredErrorDetails], [CMEKContextUnavailableErrorDetails],
+// [OrgAPIKeyLimitExceededErrorDetails],
 // [WorkspaceAPIKeyLimitExceededErrorDetails], [UserProfileNotFoundErrorDetails],
 // [ExternalKeyInWorkspacePolicyErrorDetails], [AlreadyMemberErrorDetails],
 // [CannotInviteEmailsWithUnverifiedDomainsErrorDetails],
@@ -244,15 +254,24 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [OrgMemberLimitExceededErrorDetails], [RBACGroupGrantsOwnerAccessErrorDetails],
 // [RBACGroupOwnerAccessUnconfirmedErrorDetails],
 // [CannotRemoveLastMemberErrorDetails], [ConcurrentMembershipChangeErrorDetails],
-// [KeyProfileMismatchErrorDetails], [WorkspacePolicyViolationErrorDetails],
-// [ExternalKeyChangedErrorDetails], [WorkspaceMemberLimitExceededErrorDetails],
+// [ExternalKeyValidationFailedErrorDetails],
+// [ExternalKeyValidationTimedOutErrorDetails], [KeyProfileMismatchErrorDetails],
+// [WorkspacePolicyViolationErrorDetails], [ExternalKeyChangedErrorDetails],
+// [WorkspaceMemberLimitExceededErrorDetails],
 // [OrganizationTypeNotSupportedErrorDetails],
 // [BetaEnvironmentCreateDisabledErrorDetails],
 // [BetaEnvironmentArchivedErrorDetails],
 // [BetaInvalidConfigTypeChangeErrorDetails],
 // [BetaEnvironmentUpdateDisabledErrorDetails],
 // [BetaHeartbeatPreconditionFailedErrorDetails],
-// [BetaInvalidMetadataErrorDetails], [BetaBillingFrozenErrorDetails],
+// [BetaInvalidMetadataErrorDetails], [BetaCannotSignOutPrimaryOwnerErrorDetails],
+// [BetaCannotSignOutSelfErrorDetails],
+// [BetaOrganizationNotEnrolledInBetaErrorDetails],
+// [BetaCannotSignOutManagedMemberErrorDetails],
+// [BetaCannotSignOutMembershipAdminErrorDetails],
+// [BetaCannotSignOutOwnerErrorDetails],
+// [BetaCannotSignOutPrivilegedMemberErrorDetails],
+// [BetaBillingFrozenErrorDetails],
 // [BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails],
 // [BetaUnsupportedCharsetErrorDetails], [BetaPluginNameTakenErrorDetails],
 // [BetaSkillNameTakenErrorDetails], [BetaRegistrationPendingErrorDetails],
@@ -282,19 +301,25 @@ type ErrorDetailsUnion struct {
 	// "thread_unsupported_request", "tool_name_conflict", "tool_reference_unresolved",
 	// "thread_not_found", "skill_read_blocked_undecryptable",
 	// "request_body_too_large_after_decoding", "enforced_spend_limit_reached",
-	// "cmek_key_unreachable", "compaction_unavailable", "storage_quota_exceeded",
-	// "file_not_downloadable", "file_expired", "cmek_context_unavailable",
-	// "org_api_key_limit_exceeded", "workspace_api_key_limit_exceeded",
-	// "user_profile_not_found", "external_key_in_workspace_policy", "already_member",
+	// "ramp_limit_exceeded", "cmek_key_unreachable", "compaction_unavailable",
+	// "storage_quota_exceeded", "file_not_downloadable", "file_expired",
+	// "cmek_context_unavailable", "org_api_key_limit_exceeded",
+	// "workspace_api_key_limit_exceeded", "user_profile_not_found",
+	// "external_key_in_workspace_policy", "already_member",
 	// "cannot_invite_emails_with_unverified_domains", "email_domain_not_allowed",
 	// "invite_already_exists", "org_member_limit_exceeded",
 	// "rbac_group_grants_owner_access", "rbac_group_owner_access_unconfirmed",
 	// "cannot_remove_last_member", "concurrent_membership_change",
+	// "external_key_validation_failed", "external_key_validation_timed_out",
 	// "key_profile_mismatch", "workspace_policy_violation", "external_key_changed",
 	// "workspace_member_limit_exceeded", "organization_type_not_supported",
 	// "environment_create_disabled", "environment_archived",
 	// "invalid_config_type_change", "environment_update_disabled",
-	// "heartbeat_precondition_failed", "invalid_metadata", "billing_frozen",
+	// "heartbeat_precondition_failed", "invalid_metadata",
+	// "cannot_sign_out_primary_owner", "cannot_sign_out_self",
+	// "organization_not_enrolled_in_beta", "cannot_sign_out_managed_member",
+	// "cannot_sign_out_membership_admin", "cannot_sign_out_owner",
+	// "cannot_sign_out_privileged_member", "billing_frozen",
 	// "spend_limits_admin_api_writes_not_enabled", "unsupported_charset",
 	// "plugin_name_taken", "skill_name_taken", "registration_pending", "scan_failed",
 	// "scan_pending", "slack_channel_set_up_settings_refused",
@@ -366,6 +391,7 @@ type anyErrorDetails interface {
 //	case shared.SkillReadBlockedUndecryptableErrorDetails:
 //	case shared.RequestBodyTooLargeAfterDecodingErrorDetails:
 //	case shared.EnforcedSpendLimitReachedErrorDetails:
+//	case shared.RampLimitExceededErrorDetails:
 //	case shared.CMEKKeyUnreachableErrorDetails:
 //	case shared.CompactionUnavailableErrorDetails:
 //	case shared.StorageQuotaExceededErrorDetails:
@@ -385,6 +411,8 @@ type anyErrorDetails interface {
 //	case shared.RBACGroupOwnerAccessUnconfirmedErrorDetails:
 //	case shared.CannotRemoveLastMemberErrorDetails:
 //	case shared.ConcurrentMembershipChangeErrorDetails:
+//	case shared.ExternalKeyValidationFailedErrorDetails:
+//	case shared.ExternalKeyValidationTimedOutErrorDetails:
 //	case shared.KeyProfileMismatchErrorDetails:
 //	case shared.WorkspacePolicyViolationErrorDetails:
 //	case shared.ExternalKeyChangedErrorDetails:
@@ -396,6 +424,13 @@ type anyErrorDetails interface {
 //	case shared.BetaEnvironmentUpdateDisabledErrorDetails:
 //	case shared.BetaHeartbeatPreconditionFailedErrorDetails:
 //	case shared.BetaInvalidMetadataErrorDetails:
+//	case shared.BetaCannotSignOutPrimaryOwnerErrorDetails:
+//	case shared.BetaCannotSignOutSelfErrorDetails:
+//	case shared.BetaOrganizationNotEnrolledInBetaErrorDetails:
+//	case shared.BetaCannotSignOutManagedMemberErrorDetails:
+//	case shared.BetaCannotSignOutMembershipAdminErrorDetails:
+//	case shared.BetaCannotSignOutOwnerErrorDetails:
+//	case shared.BetaCannotSignOutPrivilegedMemberErrorDetails:
 //	case shared.BetaBillingFrozenErrorDetails:
 //	case shared.BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails:
 //	case shared.BetaUnsupportedCharsetErrorDetails:
@@ -469,6 +504,8 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsRequestBodyTooLargeAfterDecoding()
 	case "enforced_spend_limit_reached":
 		return u.AsEnforcedSpendLimitReached()
+	case "ramp_limit_exceeded":
+		return u.AsRampLimitExceeded()
 	case "cmek_key_unreachable":
 		return u.AsCMEKKeyUnreachable()
 	case "compaction_unavailable":
@@ -507,6 +544,10 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsCannotRemoveLastMember()
 	case "concurrent_membership_change":
 		return u.AsConcurrentMembershipChange()
+	case "external_key_validation_failed":
+		return u.AsExternalKeyValidationFailed()
+	case "external_key_validation_timed_out":
+		return u.AsExternalKeyValidationTimedOut()
 	case "key_profile_mismatch":
 		return u.AsKeyProfileMismatch()
 	case "workspace_policy_violation":
@@ -529,6 +570,20 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsHeartbeatPreconditionFailed()
 	case "invalid_metadata":
 		return u.AsInvalidMetadata()
+	case "cannot_sign_out_primary_owner":
+		return u.AsCannotSignOutPrimaryOwner()
+	case "cannot_sign_out_self":
+		return u.AsCannotSignOutSelf()
+	case "organization_not_enrolled_in_beta":
+		return u.AsOrganizationNotEnrolledInBeta()
+	case "cannot_sign_out_managed_member":
+		return u.AsCannotSignOutManagedMember()
+	case "cannot_sign_out_membership_admin":
+		return u.AsCannotSignOutMembershipAdmin()
+	case "cannot_sign_out_owner":
+		return u.AsCannotSignOutOwner()
+	case "cannot_sign_out_privileged_member":
+		return u.AsCannotSignOutPrivilegedMember()
 	case "billing_frozen":
 		return u.AsBillingFrozen()
 	case "spend_limits_admin_api_writes_not_enabled":
@@ -695,6 +750,11 @@ func (u ErrorDetailsUnion) AsEnforcedSpendLimitReached() (v EnforcedSpendLimitRe
 	return
 }
 
+func (u ErrorDetailsUnion) AsRampLimitExceeded() (v RampLimitExceededErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 func (u ErrorDetailsUnion) AsCMEKKeyUnreachable() (v CMEKKeyUnreachableErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
@@ -790,6 +850,16 @@ func (u ErrorDetailsUnion) AsConcurrentMembershipChange() (v ConcurrentMembershi
 	return
 }
 
+func (u ErrorDetailsUnion) AsExternalKeyValidationFailed() (v ExternalKeyValidationFailedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsExternalKeyValidationTimedOut() (v ExternalKeyValidationTimedOutErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 func (u ErrorDetailsUnion) AsKeyProfileMismatch() (v KeyProfileMismatchErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
@@ -841,6 +911,41 @@ func (u ErrorDetailsUnion) AsHeartbeatPreconditionFailed() (v BetaHeartbeatPreco
 }
 
 func (u ErrorDetailsUnion) AsInvalidMetadata() (v BetaInvalidMetadataErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutPrimaryOwner() (v BetaCannotSignOutPrimaryOwnerErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutSelf() (v BetaCannotSignOutSelfErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsOrganizationNotEnrolledInBeta() (v BetaOrganizationNotEnrolledInBetaErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutManagedMember() (v BetaCannotSignOutManagedMemberErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutMembershipAdmin() (v BetaCannotSignOutMembershipAdminErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutOwner() (v BetaCannotSignOutOwnerErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutPrivilegedMember() (v BetaCannotSignOutPrivilegedMemberErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1088,8 +1193,11 @@ const (
 )
 
 type GatewayTimeoutError struct {
-	Message string                `json:"message" api:"required"`
-	Type    constant.TimeoutError `json:"type" default:"timeout_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.TimeoutError `json:"type" default:"timeout_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1108,8 +1216,11 @@ func (r *GatewayTimeoutError) UnmarshalJSON(data []byte) error {
 func (GatewayTimeoutError) ImplErrorObjectUnion() {}
 
 type InvalidRequestError struct {
-	Message string                       `json:"message" api:"required"`
-	Type    constant.InvalidRequestError `json:"type" default:"invalid_request_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.InvalidRequestError `json:"type" default:"invalid_request_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1128,8 +1239,11 @@ func (r *InvalidRequestError) UnmarshalJSON(data []byte) error {
 func (InvalidRequestError) ImplErrorObjectUnion() {}
 
 type NotFoundError struct {
-	Message string                 `json:"message" api:"required"`
-	Type    constant.NotFoundError `json:"type" default:"not_found_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.NotFoundError `json:"type" default:"not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1191,8 +1305,11 @@ func (r *OrganizationTypeNotSupportedErrorDetails) UnmarshalJSON(data []byte) er
 func (OrganizationTypeNotSupportedErrorDetails) ImplErrorDetailsUnion() {}
 
 type OverloadedError struct {
-	Message string                   `json:"message" api:"required"`
-	Type    constant.OverloadedError `json:"type" default:"overloaded_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.OverloadedError `json:"type" default:"overloaded_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1211,8 +1328,11 @@ func (r *OverloadedError) UnmarshalJSON(data []byte) error {
 func (OverloadedError) ImplErrorObjectUnion() {}
 
 type PermissionError struct {
-	Message string                   `json:"message" api:"required"`
-	Type    constant.PermissionError `json:"type" default:"permission_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.PermissionError `json:"type" default:"permission_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1230,9 +1350,32 @@ func (r *PermissionError) UnmarshalJSON(data []byte) error {
 
 func (PermissionError) ImplErrorObjectUnion() {}
 
+// The request would exceed a ramp limit, which caps how fast usage can grow. Retry
+// after the time in the `retry-after` header.
+type RampLimitExceededErrorDetails struct {
+	ErrorCode constant.RampLimitExceededErrorCode `json:"error_code" default:"ramp_limit_exceeded"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RampLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *RampLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (RampLimitExceededErrorDetails) ImplErrorDetailsUnion() {}
+
 type RateLimitError struct {
-	Message string                  `json:"message" api:"required"`
-	Type    constant.RateLimitError `json:"type" default:"rate_limit_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.RateLimitError `json:"type" default:"rate_limit_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -2007,6 +2150,46 @@ func (r *ConcurrentMembershipChangeErrorDetails) UnmarshalJSON(data []byte) erro
 
 func (ConcurrentMembershipChangeErrorDetails) ImplErrorDetailsUnion() {}
 
+// The External Key failed Anthropic's validation, so the request was refused. The
+// message gives the reason, if there is one.
+type ExternalKeyValidationFailedErrorDetails struct {
+	ErrorCode constant.ExternalKeyValidationFailedErrorCode `json:"error_code" default:"external_key_validation_failed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExternalKeyValidationFailedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ExternalKeyValidationFailedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (ExternalKeyValidationFailedErrorDetails) ImplErrorDetailsUnion() {}
+
+// Anthropic's validation of the External Key did not finish in time, so the
+// request was refused. Wait a moment, then send the request again.
+type ExternalKeyValidationTimedOutErrorDetails struct {
+	ErrorCode constant.ExternalKeyValidationTimedOutErrorCode `json:"error_code" default:"external_key_validation_timed_out"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExternalKeyValidationTimedOutErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ExternalKeyValidationTimedOutErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (ExternalKeyValidationTimedOutErrorDetails) ImplErrorDetailsUnion() {}
+
 // The External Key is bound to a user profile, and the Workspace does not have
 // that user profile. A Workspace can use only a key bound to its own user profile
 // or a key that isn't bound to one.
@@ -2260,6 +2443,146 @@ func (r *BetaInvalidMetadataErrorDetails) UnmarshalJSON(data []byte) error {
 }
 
 func (BetaInvalidMetadataErrorDetails) ImplErrorDetailsUnion() {}
+
+// The member is the organization's primary owner, whom no API key or token can
+// sign out.
+type BetaCannotSignOutPrimaryOwnerErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutPrimaryOwnerErrorCode `json:"error_code" default:"cannot_sign_out_primary_owner"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutPrimaryOwnerErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutPrimaryOwnerErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutPrimaryOwnerErrorDetails) ImplErrorDetailsUnion() {}
+
+// The member is the user the API key or token belongs to.
+type BetaCannotSignOutSelfErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutSelfErrorCode `json:"error_code" default:"cannot_sign_out_self"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutSelfErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutSelfErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutSelfErrorDetails) ImplErrorDetailsUnion() {}
+
+// The beta that the endpoint requires is not enabled for the organization. The
+// message names the beta value.
+type BetaOrganizationNotEnrolledInBetaErrorDetails struct {
+	ErrorCode constant.BetaOrganizationNotEnrolledInBetaErrorCode `json:"error_code" default:"organization_not_enrolled_in_beta"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaOrganizationNotEnrolledInBetaErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaOrganizationNotEnrolledInBetaErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaOrganizationNotEnrolledInBetaErrorDetails) ImplErrorDetailsUnion() {}
+
+// On a public-sector deployment, only an API key or token that belongs to a person
+// with owner permissions can sign out a member with the `managed` role.
+type BetaCannotSignOutManagedMemberErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutManagedMemberErrorCode `json:"error_code" default:"cannot_sign_out_managed_member"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutManagedMemberErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutManagedMemberErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutManagedMemberErrorDetails) ImplErrorDetailsUnion() {}
+
+// The member is a membership admin, and the person the API key or token belongs to
+// is not allowed to sign out membership admins.
+type BetaCannotSignOutMembershipAdminErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutMembershipAdminErrorCode `json:"error_code" default:"cannot_sign_out_membership_admin"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutMembershipAdminErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutMembershipAdminErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutMembershipAdminErrorDetails) ImplErrorDetailsUnion() {}
+
+// The member is an owner or has owner permissions, and this API key or token
+// cannot sign them out. In a Claude Enterprise organization, an API key with the
+// `write:members` scope can.
+type BetaCannotSignOutOwnerErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutOwnerErrorCode `json:"error_code" default:"cannot_sign_out_owner"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutOwnerErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutOwnerErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutOwnerErrorDetails) ImplErrorDetailsUnion() {}
+
+// This OAuth token cannot sign out a membership admin or a member whose roles
+// grant owner, user management, or identity and access management.
+type BetaCannotSignOutPrivilegedMemberErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutPrivilegedMemberErrorCode `json:"error_code" default:"cannot_sign_out_privileged_member"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutPrivilegedMemberErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutPrivilegedMemberErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutPrivilegedMemberErrorDetails) ImplErrorDetailsUnion() {}
 
 // Anthropic has temporarily disabled billing changes for the user account the
 // credential belongs to. Contact support.

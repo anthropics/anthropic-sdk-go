@@ -52,15 +52,10 @@ func NewBetaOrganizationClaudeTagBundleTargetService(opts ...option.RequestOptio
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
-//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
-//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
-//     Claude Tag API are not enabled for the organization.
-//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
-//     organization's compliance configuration does not let Claude Tag store anything
-//     new.
-//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
-//     credential is not a scoped API key that is bound at the organization level.
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagBundleTargetService) New(ctx context.Context, bundleID string, params BetaOrganizationClaudeTagBundleTargetNewParams, opts ...option.RequestOption) (res *BetaClaudeTagBundleTargetUnion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -91,15 +86,10 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) New(ctx context.Context, 
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
-//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
-//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
-//     Claude Tag API are not enabled for the organization.
-//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
-//     organization's compliance configuration does not let Claude Tag store anything
-//     new.
-//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
-//     credential is not a scoped API key that is bound at the organization level.
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagBundleTargetService) Get(ctx context.Context, targetID string, params BetaOrganizationClaudeTagBundleTargetGetParams, opts ...option.RequestOption) (res *BetaClaudeTagBundleTargetUnion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -135,15 +125,10 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) Get(ctx context.Context, 
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
-//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
-//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
-//     Claude Tag API are not enabled for the organization.
-//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
-//     organization's compliance configuration does not let Claude Tag store anything
-//     new.
-//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
-//     credential is not a scoped API key that is bound at the organization level.
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagBundleTargetService) List(ctx context.Context, bundleID string, params BetaOrganizationClaudeTagBundleTargetListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaClaudeTagBundleTargetUnion], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -184,15 +169,10 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) List(ctx context.Context,
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
-//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
-//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
-//     Claude Tag API are not enabled for the organization.
-//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
-//     organization's compliance configuration does not let Claude Tag store anything
-//     new.
-//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
-//     credential is not a scoped API key that is bound at the organization level.
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagBundleTargetService) ListAutoPaging(ctx context.Context, bundleID string, params BetaOrganizationClaudeTagBundleTargetListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaClaudeTagBundleTargetUnion] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, bundleID, params, opts...))
 }
@@ -203,15 +183,10 @@ func (r *BetaOrganizationClaudeTagBundleTargetService) ListAutoPaging(ctx contex
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403): The API key lacks the scope the
-//     request needs: `read:claude_tag` for a read, `write:claude_tag` for a change.
-//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403): Changes through the
-//     Claude Tag API are not enabled for the organization.
-//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403): The
-//     organization's compliance configuration does not let Claude Tag store anything
-//     new.
-//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403): The
-//     credential is not a scoped API key that is bound at the organization level.
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagBundleTargetService) Delete(ctx context.Context, targetID string, params BetaOrganizationClaudeTagBundleTargetDeleteParams, opts ...option.RequestOption) (res *BetaClaudeTagDeletedBundleTarget, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

@@ -53,17 +53,10 @@ func NewMessageBatchService(opts ...option.RequestOption) (r MessageBatchService
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
-//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429): The organization has crossed
-//     the monthly API usage threshold of its API tier.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
 func (r *MessageBatchService) New(ctx context.Context, params MessageBatchNewParams, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	if !param.IsOmitted(params.UserProfileID) {
 		opts = append(opts, option.WithHeader("anthropic-user-profile-id", fmt.Sprintf("%v", params.UserProfileID.Value)))
@@ -88,13 +81,8 @@ func (r *MessageBatchService) New(ctx context.Context, params MessageBatchNewPar
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, query MessageBatchGetParams, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -119,13 +107,8 @@ func (r *MessageBatchService) Get(ctx context.Context, messageBatchID string, qu
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *MessageBatchService) List(ctx context.Context, params MessageBatchListParams, opts ...option.RequestOption) (res *pagination.Page[MessageBatch], err error) {
 	var raw *http.Response
 	if !param.IsOmitted(params.WorkspaceID) {
@@ -156,13 +139,8 @@ func (r *MessageBatchService) List(ctx context.Context, params MessageBatchListP
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *MessageBatchService) ListAutoPaging(ctx context.Context, params MessageBatchListParams, opts ...option.RequestOption) *pagination.PageAutoPager[MessageBatch] {
 	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }
@@ -178,13 +156,8 @@ func (r *MessageBatchService) ListAutoPaging(ctx context.Context, params Message
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string, body MessageBatchDeleteParams, opts ...option.RequestOption) (res *DeletedMessageBatch, err error) {
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -216,13 +189,8 @@ func (r *MessageBatchService) Delete(ctx context.Context, messageBatchID string,
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string, body MessageBatchCancelParams, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))
@@ -250,15 +218,9 @@ func (r *MessageBatchService) Cancel(ctx context.Context, messageBatchID string,
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400): The API key belongs to
-//     the Claude Code workspace, and the user who created it is no longer a member
-//     of the organization or of that workspace.
-//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400): The workspace's customer-managed
-//     encryption key is disabled or revoked. Re-enable the key, then retry.
-//   - [ErrorCodeOrganizationOnHold] (HTTP 400): Anthropic has disabled the
-//     organization for trust and safety reasons. An organization disabled for any
-//     other reason, such as billing, does not get this code. `appeal_url`, when
-//     present, is where the organization can appeal.
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *MessageBatchService) ResultsStreaming(ctx context.Context, messageBatchID string, query MessageBatchResultsParams, opts ...option.RequestOption) (stream *jsonl.Stream[MessageBatchIndividualResponse]) {
 	var (
 		raw *http.Response

@@ -67,6 +67,7 @@ func (r *BetaOrganizationTelemetryDestinationService) New(ctx context.Context, p
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "telemetry-destinations-2026-08-11")}, opts...)
 	path := "v1/organizations/telemetry_destinations"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.create", "/v1/organizations/telemetry_destinations"), requestconfig.WithSpanCreatedID("anthropic.organization.telemetry_destination.id", &res, func(created *BetaTelemetryDestination) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

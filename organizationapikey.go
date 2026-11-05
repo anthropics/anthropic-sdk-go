@@ -57,10 +57,8 @@ func (r *OrganizationAPIKeyService) Get(ctx context.Context, apiKeyID string, op
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeOrgAPIKeyLimitExceeded] (HTTP 400): The organization has reached its
-//     limit of active API keys.
-//   - [ErrorCodeWorkspaceAPIKeyLimitExceeded] (HTTP 400): The workspace has reached
-//     its limit of active API keys.
+//   - [ErrorCodeOrgAPIKeyLimitExceeded] (HTTP 400)
+//   - [ErrorCodeWorkspaceAPIKeyLimitExceeded] (HTTP 400)
 func (r *OrganizationAPIKeyService) Update(ctx context.Context, apiKeyID string, body OrganizationAPIKeyUpdateParams, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if apiKeyID == "" {

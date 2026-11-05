@@ -75,6 +75,7 @@ func newClientWithVCR(t *testing.T, cassette string) anthropic.Client {
 	t.Helper()
 	httpClient, _ := testutil.NewVCRHTTPClient(t, cassette)
 	return anthropic.NewClient(
+		option.WithBaseURL("https://api.anthropic.com/"),
 		option.WithHTTPClient(httpClient),
 		option.WithAPIKey("test-key"),
 	)

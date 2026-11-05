@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.7.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.6.0...v2.7.0) (2026-11-05)
+
+### Features
+
+* **api:** add error code for ramp limit errors
+* **api:** add error codes for External Key validation failures
+* **api:** add support for signing organization members out everywhere
+
+
+### Bug Fixes
+
+* **client:** don't repeat creates when a retry could duplicate them
+* **client:** don't repeat RBAC group creates a retry could duplicate
+* **client:** stop panicking when a hand-built Error is printed
+
+
+### Chores
+
+* **docs:** describe the type and message of API errors
+* **internal:** tell contributors when a runtime type check belongs
+* **tests:** ignore an ambient ANTHROPIC_BASE_URL in the auth and tool runner tests
+
+
+### Documentation
+
+* **client:** describe the type, message, code and details of API errors
+* **client:** list each method's errors without their descriptions
+
 ## [2.6.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.5.0...v2.6.0) (2026-11-04)
 
 ### Features

@@ -50,6 +50,8 @@ func NewOrganizationWorkspaceService(opts ...option.RequestOption) (r Organizati
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
+//   - [ErrorCodeExternalKeyValidationFailed] (HTTP 400)
+//   - [ErrorCodeExternalKeyValidationTimedOut] (HTTP 400)
 //   - [ErrorCodeKeyProfileMismatch] (HTTP 400)
 //   - [ErrorCodeUserProfileNotFound] (HTTP 400)
 //   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400)
@@ -81,6 +83,8 @@ func (r *OrganizationWorkspaceService) Get(ctx context.Context, workspaceID stri
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
+//   - [ErrorCodeExternalKeyValidationFailed] (HTTP 400)
+//   - [ErrorCodeExternalKeyValidationTimedOut] (HTTP 400)
 //   - [ErrorCodeKeyProfileMismatch] (HTTP 400)
 //   - [ErrorCodeUserProfileNotFound] (HTTP 400)
 //   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400)

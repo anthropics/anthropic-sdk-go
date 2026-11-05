@@ -254,8 +254,10 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [OrgMemberLimitExceededErrorDetails], [RBACGroupGrantsOwnerAccessErrorDetails],
 // [RBACGroupOwnerAccessUnconfirmedErrorDetails],
 // [CannotRemoveLastMemberErrorDetails], [ConcurrentMembershipChangeErrorDetails],
-// [KeyProfileMismatchErrorDetails], [WorkspacePolicyViolationErrorDetails],
-// [ExternalKeyChangedErrorDetails], [WorkspaceMemberLimitExceededErrorDetails],
+// [ExternalKeyValidationFailedErrorDetails],
+// [ExternalKeyValidationTimedOutErrorDetails], [KeyProfileMismatchErrorDetails],
+// [WorkspacePolicyViolationErrorDetails], [ExternalKeyChangedErrorDetails],
+// [WorkspaceMemberLimitExceededErrorDetails],
 // [OrganizationTypeNotSupportedErrorDetails],
 // [BetaEnvironmentCreateDisabledErrorDetails],
 // [BetaEnvironmentArchivedErrorDetails],
@@ -301,6 +303,7 @@ type ErrorDetailsUnion struct {
 	// "invite_already_exists", "org_member_limit_exceeded",
 	// "rbac_group_grants_owner_access", "rbac_group_owner_access_unconfirmed",
 	// "cannot_remove_last_member", "concurrent_membership_change",
+	// "external_key_validation_failed", "external_key_validation_timed_out",
 	// "key_profile_mismatch", "workspace_policy_violation", "external_key_changed",
 	// "workspace_member_limit_exceeded", "organization_type_not_supported",
 	// "environment_create_disabled", "environment_archived",
@@ -397,6 +400,8 @@ type anyErrorDetails interface {
 //	case shared.RBACGroupOwnerAccessUnconfirmedErrorDetails:
 //	case shared.CannotRemoveLastMemberErrorDetails:
 //	case shared.ConcurrentMembershipChangeErrorDetails:
+//	case shared.ExternalKeyValidationFailedErrorDetails:
+//	case shared.ExternalKeyValidationTimedOutErrorDetails:
 //	case shared.KeyProfileMismatchErrorDetails:
 //	case shared.WorkspacePolicyViolationErrorDetails:
 //	case shared.ExternalKeyChangedErrorDetails:
@@ -521,6 +526,10 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsCannotRemoveLastMember()
 	case "concurrent_membership_change":
 		return u.AsConcurrentMembershipChange()
+	case "external_key_validation_failed":
+		return u.AsExternalKeyValidationFailed()
+	case "external_key_validation_timed_out":
+		return u.AsExternalKeyValidationTimedOut()
 	case "key_profile_mismatch":
 		return u.AsKeyProfileMismatch()
 	case "workspace_policy_violation":
@@ -805,6 +814,16 @@ func (u ErrorDetailsUnion) AsCannotRemoveLastMember() (v CannotRemoveLastMemberE
 }
 
 func (u ErrorDetailsUnion) AsConcurrentMembershipChange() (v ConcurrentMembershipChangeErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsExternalKeyValidationFailed() (v ExternalKeyValidationFailedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsExternalKeyValidationTimedOut() (v ExternalKeyValidationTimedOutErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2063,6 +2082,46 @@ func (r *ConcurrentMembershipChangeErrorDetails) UnmarshalJSON(data []byte) erro
 }
 
 func (ConcurrentMembershipChangeErrorDetails) ImplErrorDetailsUnion() {}
+
+// The External Key failed Anthropic's validation, so the request was refused. The
+// message gives the reason, if there is one.
+type ExternalKeyValidationFailedErrorDetails struct {
+	ErrorCode constant.ExternalKeyValidationFailedErrorCode `json:"error_code" default:"external_key_validation_failed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExternalKeyValidationFailedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ExternalKeyValidationFailedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (ExternalKeyValidationFailedErrorDetails) ImplErrorDetailsUnion() {}
+
+// Anthropic's validation of the External Key did not finish in time, so the
+// request was refused. Wait a moment, then send the request again.
+type ExternalKeyValidationTimedOutErrorDetails struct {
+	ErrorCode constant.ExternalKeyValidationTimedOutErrorCode `json:"error_code" default:"external_key_validation_timed_out"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ExternalKeyValidationTimedOutErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ExternalKeyValidationTimedOutErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (ExternalKeyValidationTimedOutErrorDetails) ImplErrorDetailsUnion() {}
 
 // The External Key is bound to a user profile, and the Workspace does not have
 // that user profile. A Workspace can use only a key bound to its own user profile

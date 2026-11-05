@@ -231,6 +231,8 @@ type ExternalKeyChangedErrorCode string                        // Always "extern
 type ExternalKeyDeleted string                                 // Always "external_key_deleted"
 type ExternalKeyInWorkspacePolicyErrorCode string              // Always "external_key_in_workspace_policy"
 type ExternalKeyValidation string                              // Always "external_key_validation"
+type ExternalKeyValidationFailedErrorCode string               // Always "external_key_validation_failed"
+type ExternalKeyValidationTimedOutErrorCode string             // Always "external_key_validation_timed_out"
 type Failure string                                            // Always "failure"
 type Fallback string                                           // Always "fallback"
 type FallbackMessage string                                    // Always "fallback_message"
@@ -909,12 +911,18 @@ func (c ExternalKeyInWorkspacePolicyErrorCode) Default() ExternalKeyInWorkspaceP
 	return "external_key_in_workspace_policy"
 }
 func (c ExternalKeyValidation) Default() ExternalKeyValidation { return "external_key_validation" }
-func (c Failure) Default() Failure                             { return "failure" }
-func (c Fallback) Default() Fallback                           { return "fallback" }
-func (c FallbackMessage) Default() FallbackMessage             { return "fallback_message" }
-func (c FederatedActor) Default() FederatedActor               { return "federated_actor" }
-func (c FederationIssuer) Default() FederationIssuer           { return "federation_issuer" }
-func (c FederationRule) Default() FederationRule               { return "federation_rule" }
+func (c ExternalKeyValidationFailedErrorCode) Default() ExternalKeyValidationFailedErrorCode {
+	return "external_key_validation_failed"
+}
+func (c ExternalKeyValidationTimedOutErrorCode) Default() ExternalKeyValidationTimedOutErrorCode {
+	return "external_key_validation_timed_out"
+}
+func (c Failure) Default() Failure                   { return "failure" }
+func (c Fallback) Default() Fallback                 { return "fallback" }
+func (c FallbackMessage) Default() FallbackMessage   { return "fallback_message" }
+func (c FederatedActor) Default() FederatedActor     { return "federated_actor" }
+func (c FederationIssuer) Default() FederationIssuer { return "federation_issuer" }
+func (c FederationRule) Default() FederationRule     { return "federation_rule" }
 func (c FederationRuleWorkspace) Default() FederationRuleWorkspace {
 	return "federation_rule_workspace"
 }
@@ -1709,27 +1717,31 @@ func (c ExternalKeyChangedErrorCode) MarshalJSON() ([]byte, error)           { r
 func (c ExternalKeyDeleted) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c ExternalKeyInWorkspacePolicyErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c ExternalKeyValidation) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
-func (c Failure) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c Fallback) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
-func (c FallbackMessage) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c FederatedActor) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
-func (c FederationIssuer) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
-func (c FederationRule) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
-func (c FederationRuleWorkspace) MarshalJSON() ([]byte, error)               { return marshalString(c) }
-func (c FederationRuleWorkspaceDeleted) MarshalJSON() ([]byte, error)        { return marshalString(c) }
-func (c File) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
-func (c FileExpiredErrorCode) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c FileNotDownloadableErrorCode) MarshalJSON() ([]byte, error)          { return marshalString(c) }
-func (c FileNotFoundError) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
-func (c FileUpload) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
-func (c Files) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
-func (c Find) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
-func (c FormInput) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
-func (c GCP) MarshalJSON() ([]byte, error)                                   { return marshalString(c) }
-func (c GetPageText) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c GitHubRepository) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
-func (c Glob) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
-func (c Grep) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
+func (c ExternalKeyValidationFailedErrorCode) MarshalJSON() ([]byte, error)  { return marshalString(c) }
+func (c ExternalKeyValidationTimedOutErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c Failure) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c Fallback) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c FallbackMessage) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c FederatedActor) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c FederationIssuer) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c FederationRule) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c FederationRuleWorkspace) MarshalJSON() ([]byte, error)        { return marshalString(c) }
+func (c FederationRuleWorkspaceDeleted) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c File) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c FileExpiredErrorCode) MarshalJSON() ([]byte, error)           { return marshalString(c) }
+func (c FileNotDownloadableErrorCode) MarshalJSON() ([]byte, error)   { return marshalString(c) }
+func (c FileNotFoundError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c FileUpload) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c Files) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Find) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c FormInput) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c GCP) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c GetPageText) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c GitHubRepository) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c Glob) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c Grep) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c BetaHeartbeatPreconditionFailedErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }

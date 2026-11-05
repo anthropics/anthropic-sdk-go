@@ -26,8 +26,15 @@ type Error struct {
 	Response    *http.Response
 	RequestID   string
 	WorkspaceID string
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	//
 	// `error.message` from the response body, if present.
 	Message string
+	// Machine-readable detail about the cause of the error. `error_code` names the
+	// cause; branch on it rather than on `message`. Absent when the error has no code.
+	// Treat an unrecognized `error_code` as the bare `type`.
+	//
 	// `error.details` from the response body, if present.
 	Details shared.ErrorDetailsUnion
 
@@ -78,6 +85,8 @@ func (r *Error) Error() string {
 
 // ErrorCode returns `error.details.error_code` from the response body, or "" if it
 // is absent or not a string.
+//
+// A stable code that names the cause.
 func (r *Error) ErrorCode() ErrorCode {
 	if code := gjson.Get(r.RawJSON(), "error.details.error_code"); code.Type == gjson.String {
 		return ErrorCode(code.Str)

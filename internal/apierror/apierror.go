@@ -70,7 +70,10 @@ func (r *Error) UnmarshalJSON(data []byte) error {
 func (r *Error) UnmarshalAPIJSON(data []byte) error { return r.UnmarshalJSON(data) }
 
 func (r *Error) Error() string {
-	msg := fmt.Sprintf("%s %q: %d %s", r.Request.Method, r.Request.URL, r.Response.StatusCode, http.StatusText(r.Response.StatusCode))
+	msg := fmt.Sprintf("%d %s", r.StatusCode, http.StatusText(r.StatusCode))
+	if r.Request != nil {
+		msg = fmt.Sprintf("%s %q: %s", r.Request.Method, r.Request.URL, msg)
+	}
 	if r.RequestID != "" {
 		msg += fmt.Sprintf(" (Request-ID: %s)", r.RequestID)
 	}
@@ -95,8 +98,11 @@ func (r *Error) ErrorCode() ErrorCode {
 }
 
 // DumpRequest returns the request in HTTP/1.x wire format, with sensitive header
-// values redacted.
+// values redacted, or nil if Request is nil.
 func (r *Error) DumpRequest(body bool) []byte {
+	if r.Request == nil {
+		return nil
+	}
 	if r.Request.GetBody != nil {
 		r.Request.Body, _ = r.Request.GetBody()
 	}
@@ -109,8 +115,11 @@ func (r *Error) DumpRequest(body bool) []byte {
 }
 
 // DumpResponse returns the response in HTTP/1.x wire format, with sensitive header
-// values redacted.
+// values redacted, or nil if Response is nil.
 func (r *Error) DumpResponse(body bool) []byte {
+	if r.Response == nil {
+		return nil
+	}
 	resp := *r.Response
 	resp.Header = RedactHeaders(r.Response.Header)
 	out, _ := httputil.DumpResponse(&resp, body)

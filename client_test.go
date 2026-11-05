@@ -346,6 +346,36 @@ func TestErrorDumpRedactsSensitiveHeaders(t *testing.T) {
 	}
 }
 
+func TestErrorPrintsRequestOnlyIfPresent(t *testing.T) {
+	for name, test := range map[string]struct {
+		request *http.Request
+		want    string
+	}{
+		"no request": {nil, "429 Too Many Requests"},
+		"request":    {httptest.NewRequest(http.MethodPost, "https://example.com/cards", nil), `POST "https://example.com/cards": 429 Too Many Requests`},
+	} {
+		t.Run(name, func(t *testing.T) {
+			apiErr := &anthropic.Error{StatusCode: http.StatusTooManyRequests, Request: test.request}
+
+			got := apiErr.Error()
+
+			if got != test.want {
+				t.Errorf("Expected error %q, got %q", test.want, got)
+			}
+		})
+	}
+}
+
+func TestErrorWithoutRequestOrResponseDumpsNothing(t *testing.T) {
+	apiErr := &anthropic.Error{StatusCode: http.StatusTooManyRequests}
+
+	request, response := apiErr.DumpRequest(true), apiErr.DumpResponse(true)
+
+	if len(request) != 0 || len(response) != 0 {
+		t.Errorf("Expected empty dumps, got request %q and response %q", request, response)
+	}
+}
+
 func TestContextCancel(t *testing.T) {
 	client := anthropic.NewClient(
 		option.WithAPIKey("my-anthropic-api-key"),

@@ -44,6 +44,19 @@ const ErrorCodeCannotInviteEmailsWithUnverifiedDomains = apierror.ErrorCodeCanno
 // details.
 const ErrorCodeCannotRemoveLastMember = apierror.ErrorCodeCannotRemoveLastMember
 
+// The member is the organization's primary owner, whom no API key or token can
+// sign out.
+//
+// Returned with HTTP status 400 and
+// [shared.BetaCannotSignOutPrimaryOwnerErrorDetails] details.
+const ErrorCodeBetaCannotSignOutPrimaryOwner = apierror.ErrorCodeBetaCannotSignOutPrimaryOwner
+
+// The member is the user the API key or token belongs to.
+//
+// Returned with HTTP status 400 and [shared.BetaCannotSignOutSelfErrorDetails]
+// details.
+const ErrorCodeBetaCannotSignOutSelf = apierror.ErrorCodeBetaCannotSignOutSelf
+
 // The API key belongs to the Claude Code workspace, and the user who created it is
 // no longer a member of the organization or of that workspace.
 //
@@ -207,6 +220,13 @@ const ErrorCodeOrgAPIKeyLimitExceeded = apierror.ErrorCodeOrgAPIKeyLimitExceeded
 // details.
 const ErrorCodeOrgMemberLimitExceeded = apierror.ErrorCodeOrgMemberLimitExceeded
 
+// The beta that the endpoint requires is not enabled for the organization. The
+// message names the beta value.
+//
+// Returned with HTTP status 400 and
+// [shared.BetaOrganizationNotEnrolledInBetaErrorDetails] details.
+const ErrorCodeBetaOrganizationNotEnrolledInBeta = apierror.ErrorCodeBetaOrganizationNotEnrolledInBeta
+
 // Anthropic has disabled the organization for trust and safety reasons. An
 // organization disabled for any other reason, such as billing, does not get this
 // code. `appeal_url`, when present, is where the organization can appeal.
@@ -365,6 +385,35 @@ const ErrorCodeBetaAPIKeyScopeMissing = apierror.ErrorCodeBetaAPIKeyScopeMissing
 // Returned with HTTP status 403 and [shared.BetaBillingFrozenErrorDetails]
 // details.
 const ErrorCodeBetaBillingFrozen = apierror.ErrorCodeBetaBillingFrozen
+
+// On a public-sector deployment, only an API key or token that belongs to a person
+// with owner permissions can sign out a member with the `managed` role.
+//
+// Returned with HTTP status 403 and
+// [shared.BetaCannotSignOutManagedMemberErrorDetails] details.
+const ErrorCodeBetaCannotSignOutManagedMember = apierror.ErrorCodeBetaCannotSignOutManagedMember
+
+// The member is a membership admin, and the person the API key or token belongs to
+// is not allowed to sign out membership admins.
+//
+// Returned with HTTP status 403 and
+// [shared.BetaCannotSignOutMembershipAdminErrorDetails] details.
+const ErrorCodeBetaCannotSignOutMembershipAdmin = apierror.ErrorCodeBetaCannotSignOutMembershipAdmin
+
+// The member is an owner or has owner permissions, and this API key or token
+// cannot sign them out. In a Claude Enterprise organization, an API key with the
+// `write:members` scope can.
+//
+// Returned with HTTP status 403 and [shared.BetaCannotSignOutOwnerErrorDetails]
+// details.
+const ErrorCodeBetaCannotSignOutOwner = apierror.ErrorCodeBetaCannotSignOutOwner
+
+// This OAuth token cannot sign out a membership admin or a member whose roles
+// grant owner, user management, or identity and access management.
+//
+// Returned with HTTP status 403 and
+// [shared.BetaCannotSignOutPrivilegedMemberErrorDetails] details.
+const ErrorCodeBetaCannotSignOutPrivilegedMember = apierror.ErrorCodeBetaCannotSignOutPrivilegedMember
 
 // Changes through the Claude Tag API are not enabled for the organization.
 //
@@ -1018,6 +1067,48 @@ const BetaWorkLeaseStateStateStopped = shared.BetaWorkLeaseStateStateStopped
 //
 // This is an alias to an internal type.
 type BetaInvalidMetadataErrorDetails = shared.BetaInvalidMetadataErrorDetails
+
+// The member is the organization's primary owner, whom no API key or token can
+// sign out.
+//
+// This is an alias to an internal type.
+type BetaCannotSignOutPrimaryOwnerErrorDetails = shared.BetaCannotSignOutPrimaryOwnerErrorDetails
+
+// The member is the user the API key or token belongs to.
+//
+// This is an alias to an internal type.
+type BetaCannotSignOutSelfErrorDetails = shared.BetaCannotSignOutSelfErrorDetails
+
+// The beta that the endpoint requires is not enabled for the organization. The
+// message names the beta value.
+//
+// This is an alias to an internal type.
+type BetaOrganizationNotEnrolledInBetaErrorDetails = shared.BetaOrganizationNotEnrolledInBetaErrorDetails
+
+// On a public-sector deployment, only an API key or token that belongs to a person
+// with owner permissions can sign out a member with the `managed` role.
+//
+// This is an alias to an internal type.
+type BetaCannotSignOutManagedMemberErrorDetails = shared.BetaCannotSignOutManagedMemberErrorDetails
+
+// The member is a membership admin, and the person the API key or token belongs to
+// is not allowed to sign out membership admins.
+//
+// This is an alias to an internal type.
+type BetaCannotSignOutMembershipAdminErrorDetails = shared.BetaCannotSignOutMembershipAdminErrorDetails
+
+// The member is an owner or has owner permissions, and this API key or token
+// cannot sign them out. In a Claude Enterprise organization, an API key with the
+// `write:members` scope can.
+//
+// This is an alias to an internal type.
+type BetaCannotSignOutOwnerErrorDetails = shared.BetaCannotSignOutOwnerErrorDetails
+
+// This OAuth token cannot sign out a membership admin or a member whose roles
+// grant owner, user management, or identity and access management.
+//
+// This is an alias to an internal type.
+type BetaCannotSignOutPrivilegedMemberErrorDetails = shared.BetaCannotSignOutPrivilegedMemberErrorDetails
 
 // Anthropic has temporarily disabled billing changes for the user account the
 // credential belongs to. Contact support.

@@ -264,7 +264,14 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [BetaInvalidConfigTypeChangeErrorDetails],
 // [BetaEnvironmentUpdateDisabledErrorDetails],
 // [BetaHeartbeatPreconditionFailedErrorDetails],
-// [BetaInvalidMetadataErrorDetails], [BetaBillingFrozenErrorDetails],
+// [BetaInvalidMetadataErrorDetails], [BetaCannotSignOutPrimaryOwnerErrorDetails],
+// [BetaCannotSignOutSelfErrorDetails],
+// [BetaOrganizationNotEnrolledInBetaErrorDetails],
+// [BetaCannotSignOutManagedMemberErrorDetails],
+// [BetaCannotSignOutMembershipAdminErrorDetails],
+// [BetaCannotSignOutOwnerErrorDetails],
+// [BetaCannotSignOutPrivilegedMemberErrorDetails],
+// [BetaBillingFrozenErrorDetails],
 // [BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails],
 // [BetaUnsupportedCharsetErrorDetails], [BetaPluginNameTakenErrorDetails],
 // [BetaSkillNameTakenErrorDetails], [BetaRegistrationPendingErrorDetails],
@@ -308,7 +315,11 @@ type ErrorDetailsUnion struct {
 	// "workspace_member_limit_exceeded", "organization_type_not_supported",
 	// "environment_create_disabled", "environment_archived",
 	// "invalid_config_type_change", "environment_update_disabled",
-	// "heartbeat_precondition_failed", "invalid_metadata", "billing_frozen",
+	// "heartbeat_precondition_failed", "invalid_metadata",
+	// "cannot_sign_out_primary_owner", "cannot_sign_out_self",
+	// "organization_not_enrolled_in_beta", "cannot_sign_out_managed_member",
+	// "cannot_sign_out_membership_admin", "cannot_sign_out_owner",
+	// "cannot_sign_out_privileged_member", "billing_frozen",
 	// "spend_limits_admin_api_writes_not_enabled", "unsupported_charset",
 	// "plugin_name_taken", "skill_name_taken", "registration_pending", "scan_failed",
 	// "scan_pending", "slack_channel_set_up_settings_refused",
@@ -413,6 +424,13 @@ type anyErrorDetails interface {
 //	case shared.BetaEnvironmentUpdateDisabledErrorDetails:
 //	case shared.BetaHeartbeatPreconditionFailedErrorDetails:
 //	case shared.BetaInvalidMetadataErrorDetails:
+//	case shared.BetaCannotSignOutPrimaryOwnerErrorDetails:
+//	case shared.BetaCannotSignOutSelfErrorDetails:
+//	case shared.BetaOrganizationNotEnrolledInBetaErrorDetails:
+//	case shared.BetaCannotSignOutManagedMemberErrorDetails:
+//	case shared.BetaCannotSignOutMembershipAdminErrorDetails:
+//	case shared.BetaCannotSignOutOwnerErrorDetails:
+//	case shared.BetaCannotSignOutPrivilegedMemberErrorDetails:
 //	case shared.BetaBillingFrozenErrorDetails:
 //	case shared.BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails:
 //	case shared.BetaUnsupportedCharsetErrorDetails:
@@ -552,6 +570,20 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsHeartbeatPreconditionFailed()
 	case "invalid_metadata":
 		return u.AsInvalidMetadata()
+	case "cannot_sign_out_primary_owner":
+		return u.AsCannotSignOutPrimaryOwner()
+	case "cannot_sign_out_self":
+		return u.AsCannotSignOutSelf()
+	case "organization_not_enrolled_in_beta":
+		return u.AsOrganizationNotEnrolledInBeta()
+	case "cannot_sign_out_managed_member":
+		return u.AsCannotSignOutManagedMember()
+	case "cannot_sign_out_membership_admin":
+		return u.AsCannotSignOutMembershipAdmin()
+	case "cannot_sign_out_owner":
+		return u.AsCannotSignOutOwner()
+	case "cannot_sign_out_privileged_member":
+		return u.AsCannotSignOutPrivilegedMember()
 	case "billing_frozen":
 		return u.AsBillingFrozen()
 	case "spend_limits_admin_api_writes_not_enabled":
@@ -879,6 +911,41 @@ func (u ErrorDetailsUnion) AsHeartbeatPreconditionFailed() (v BetaHeartbeatPreco
 }
 
 func (u ErrorDetailsUnion) AsInvalidMetadata() (v BetaInvalidMetadataErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutPrimaryOwner() (v BetaCannotSignOutPrimaryOwnerErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutSelf() (v BetaCannotSignOutSelfErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsOrganizationNotEnrolledInBeta() (v BetaOrganizationNotEnrolledInBetaErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutManagedMember() (v BetaCannotSignOutManagedMemberErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutMembershipAdmin() (v BetaCannotSignOutMembershipAdminErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutOwner() (v BetaCannotSignOutOwnerErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCannotSignOutPrivilegedMember() (v BetaCannotSignOutPrivilegedMemberErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2376,6 +2443,146 @@ func (r *BetaInvalidMetadataErrorDetails) UnmarshalJSON(data []byte) error {
 }
 
 func (BetaInvalidMetadataErrorDetails) ImplErrorDetailsUnion() {}
+
+// The member is the organization's primary owner, whom no API key or token can
+// sign out.
+type BetaCannotSignOutPrimaryOwnerErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutPrimaryOwnerErrorCode `json:"error_code" default:"cannot_sign_out_primary_owner"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutPrimaryOwnerErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutPrimaryOwnerErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutPrimaryOwnerErrorDetails) ImplErrorDetailsUnion() {}
+
+// The member is the user the API key or token belongs to.
+type BetaCannotSignOutSelfErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutSelfErrorCode `json:"error_code" default:"cannot_sign_out_self"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutSelfErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutSelfErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutSelfErrorDetails) ImplErrorDetailsUnion() {}
+
+// The beta that the endpoint requires is not enabled for the organization. The
+// message names the beta value.
+type BetaOrganizationNotEnrolledInBetaErrorDetails struct {
+	ErrorCode constant.BetaOrganizationNotEnrolledInBetaErrorCode `json:"error_code" default:"organization_not_enrolled_in_beta"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaOrganizationNotEnrolledInBetaErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaOrganizationNotEnrolledInBetaErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaOrganizationNotEnrolledInBetaErrorDetails) ImplErrorDetailsUnion() {}
+
+// On a public-sector deployment, only an API key or token that belongs to a person
+// with owner permissions can sign out a member with the `managed` role.
+type BetaCannotSignOutManagedMemberErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutManagedMemberErrorCode `json:"error_code" default:"cannot_sign_out_managed_member"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutManagedMemberErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutManagedMemberErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutManagedMemberErrorDetails) ImplErrorDetailsUnion() {}
+
+// The member is a membership admin, and the person the API key or token belongs to
+// is not allowed to sign out membership admins.
+type BetaCannotSignOutMembershipAdminErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutMembershipAdminErrorCode `json:"error_code" default:"cannot_sign_out_membership_admin"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutMembershipAdminErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutMembershipAdminErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutMembershipAdminErrorDetails) ImplErrorDetailsUnion() {}
+
+// The member is an owner or has owner permissions, and this API key or token
+// cannot sign them out. In a Claude Enterprise organization, an API key with the
+// `write:members` scope can.
+type BetaCannotSignOutOwnerErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutOwnerErrorCode `json:"error_code" default:"cannot_sign_out_owner"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutOwnerErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutOwnerErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutOwnerErrorDetails) ImplErrorDetailsUnion() {}
+
+// This OAuth token cannot sign out a membership admin or a member whose roles
+// grant owner, user management, or identity and access management.
+type BetaCannotSignOutPrivilegedMemberErrorDetails struct {
+	ErrorCode constant.BetaCannotSignOutPrivilegedMemberErrorCode `json:"error_code" default:"cannot_sign_out_privileged_member"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCannotSignOutPrivilegedMemberErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCannotSignOutPrivilegedMemberErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCannotSignOutPrivilegedMemberErrorDetails) ImplErrorDetailsUnion() {}
 
 // Anthropic has temporarily disabled billing changes for the user account the
 // credential belongs to. Contact support.

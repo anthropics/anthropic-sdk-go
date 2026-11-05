@@ -102,6 +102,12 @@ type Caller string                                             // Always "caller
 type Canceled string                                           // Always "canceled"
 type CannotInviteEmailsWithUnverifiedDomainsErrorCode string   // Always "cannot_invite_emails_with_unverified_domains"
 type CannotRemoveLastMemberErrorCode string                    // Always "cannot_remove_last_member"
+type BetaCannotSignOutManagedMemberErrorCode string            // Always "cannot_sign_out_managed_member"
+type BetaCannotSignOutMembershipAdminErrorCode string          // Always "cannot_sign_out_membership_admin"
+type BetaCannotSignOutOwnerErrorCode string                    // Always "cannot_sign_out_owner"
+type BetaCannotSignOutPrimaryOwnerErrorCode string             // Always "cannot_sign_out_primary_owner"
+type BetaCannotSignOutPrivilegedMemberErrorCode string         // Always "cannot_sign_out_privileged_member"
+type BetaCannotSignOutSelfErrorCode string                     // Always "cannot_sign_out_self"
 type ChannelOnly string                                        // Always "channel_only"
 type CharLocation string                                       // Always "char_location"
 type CitationsDelta string                                     // Always "citations_delta"
@@ -340,6 +346,7 @@ type Organization string                                       // Always "organi
 type OrganizationDisabledError string                          // Always "organization_disabled_error"
 type BetaOrganizationLevelScopedAPIKeyRequiredErrorCode string // Always "organization_level_scoped_api_key_required"
 type OrganizationMember string                                 // Always "organization_member"
+type BetaOrganizationNotEnrolledInBetaErrorCode string         // Always "organization_not_enrolled_in_beta"
 type OrganizationOnHoldErrorCode string                        // Always "organization_on_hold"
 type OrganizationService string                                // Always "organization_service"
 type OrganizationTypeNotSupportedErrorCode string              // Always "organization_type_not_supported"
@@ -714,6 +721,24 @@ func (c CannotInviteEmailsWithUnverifiedDomainsErrorCode) Default() CannotInvite
 func (c CannotRemoveLastMemberErrorCode) Default() CannotRemoveLastMemberErrorCode {
 	return "cannot_remove_last_member"
 }
+func (c BetaCannotSignOutManagedMemberErrorCode) Default() BetaCannotSignOutManagedMemberErrorCode {
+	return "cannot_sign_out_managed_member"
+}
+func (c BetaCannotSignOutMembershipAdminErrorCode) Default() BetaCannotSignOutMembershipAdminErrorCode {
+	return "cannot_sign_out_membership_admin"
+}
+func (c BetaCannotSignOutOwnerErrorCode) Default() BetaCannotSignOutOwnerErrorCode {
+	return "cannot_sign_out_owner"
+}
+func (c BetaCannotSignOutPrimaryOwnerErrorCode) Default() BetaCannotSignOutPrimaryOwnerErrorCode {
+	return "cannot_sign_out_primary_owner"
+}
+func (c BetaCannotSignOutPrivilegedMemberErrorCode) Default() BetaCannotSignOutPrivilegedMemberErrorCode {
+	return "cannot_sign_out_privileged_member"
+}
+func (c BetaCannotSignOutSelfErrorCode) Default() BetaCannotSignOutSelfErrorCode {
+	return "cannot_sign_out_self"
+}
 func (c ChannelOnly) Default() ChannelOnly       { return "channel_only" }
 func (c CharLocation) Default() CharLocation     { return "char_location" }
 func (c CitationsDelta) Default() CitationsDelta { return "citations_delta" }
@@ -1062,6 +1087,9 @@ func (c BetaOrganizationLevelScopedAPIKeyRequiredErrorCode) Default() BetaOrgani
 	return "organization_level_scoped_api_key_required"
 }
 func (c OrganizationMember) Default() OrganizationMember { return "organization_member" }
+func (c BetaOrganizationNotEnrolledInBetaErrorCode) Default() BetaOrganizationNotEnrolledInBetaErrorCode {
+	return "organization_not_enrolled_in_beta"
+}
 func (c OrganizationOnHoldErrorCode) Default() OrganizationOnHoldErrorCode {
 	return "organization_on_hold"
 }
@@ -1574,9 +1602,23 @@ func (c CannotInviteEmailsWithUnverifiedDomainsErrorCode) MarshalJSON() ([]byte,
 	return marshalString(c)
 }
 func (c CannotRemoveLastMemberErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
-func (c ChannelOnly) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
-func (c CharLocation) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
-func (c CitationsDelta) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c BetaCannotSignOutManagedMemberErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c BetaCannotSignOutMembershipAdminErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c BetaCannotSignOutOwnerErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c BetaCannotSignOutPrimaryOwnerErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c BetaCannotSignOutPrivilegedMemberErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c BetaCannotSignOutSelfErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c ChannelOnly) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c CharLocation) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c CitationsDelta) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
 func (c ClaudeCodeKeyCreatorNotMemberErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
@@ -1831,7 +1873,10 @@ func (c OrganizationDisabledError) MarshalJSON() ([]byte, error)            { re
 func (c BetaOrganizationLevelScopedAPIKeyRequiredErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
-func (c OrganizationMember) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c OrganizationMember) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c BetaOrganizationNotEnrolledInBetaErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
 func (c OrganizationOnHoldErrorCode) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c OrganizationService) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c OrganizationTypeNotSupportedErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }

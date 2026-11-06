@@ -567,6 +567,7 @@ type UserProfileDeleted string                                 // Always "user_p
 type UserProfileNotFoundErrorCode string                       // Always "user_profile_not_found"
 type UserProfileEnforcementActionOpened string                 // Always "user_profile.enforcement_action_opened"
 type UserProfileEnforcementActionResolved string               // Always "user_profile.enforcement_action_resolved"
+type UserProfileProgramStatusUpdated string                    // Always "user_profile.program_status_updated"
 type UserCustomToolResult string                               // Always "user.custom_tool_result"
 type UserDefineOutcome string                                  // Always "user.define_outcome"
 type UserInterrupt string                                      // Always "user.interrupt"
@@ -1442,6 +1443,9 @@ func (c UserProfileEnforcementActionOpened) Default() UserProfileEnforcementActi
 func (c UserProfileEnforcementActionResolved) Default() UserProfileEnforcementActionResolved {
 	return "user_profile.enforcement_action_resolved"
 }
+func (c UserProfileProgramStatusUpdated) Default() UserProfileProgramStatusUpdated {
+	return "user_profile.program_status_updated"
+}
 func (c UserCustomToolResult) Default() UserCustomToolResult { return "user.custom_tool_result" }
 func (c UserDefineOutcome) Default() UserDefineOutcome       { return "user.define_outcome" }
 func (c UserInterrupt) Default() UserInterrupt               { return "user.interrupt" }
@@ -2117,6 +2121,7 @@ func (c UserProfileDeleted) MarshalJSON() ([]byte, error)                    { r
 func (c UserProfileNotFoundErrorCode) MarshalJSON() ([]byte, error)          { return marshalString(c) }
 func (c UserProfileEnforcementActionOpened) MarshalJSON() ([]byte, error)    { return marshalString(c) }
 func (c UserProfileEnforcementActionResolved) MarshalJSON() ([]byte, error)  { return marshalString(c) }
+func (c UserProfileProgramStatusUpdated) MarshalJSON() ([]byte, error)       { return marshalString(c) }
 func (c UserCustomToolResult) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c UserDefineOutcome) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c UserInterrupt) MarshalJSON() ([]byte, error)                         { return marshalString(c) }

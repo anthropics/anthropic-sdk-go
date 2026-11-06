@@ -295,7 +295,8 @@ type BetaNewOrganizationWebhookEndpoint struct {
 	// The event types delivered to the endpoint.
 	//
 	// Any of "user_profile.enforcement_action_opened",
-	// "user_profile.enforcement_action_resolved".
+	// "user_profile.enforcement_action_resolved",
+	// "user_profile.program_status_updated".
 	EnabledEvents []string `json:"enabled_events" api:"required"`
 	// A short label for the endpoint. An empty string when none was given.
 	Name string `json:"name" api:"required"`
@@ -349,7 +350,8 @@ type BetaOrganizationWebhookEndpoint struct {
 	// The event types delivered to the endpoint.
 	//
 	// Any of "user_profile.enforcement_action_opened",
-	// "user_profile.enforcement_action_resolved".
+	// "user_profile.enforcement_action_resolved",
+	// "user_profile.program_status_updated".
 	EnabledEvents []string `json:"enabled_events" api:"required"`
 	// A short label for the endpoint. An empty string when none was given.
 	Name string `json:"name" api:"required"`
@@ -414,7 +416,8 @@ type BetaOrganizationWebhookNewParams struct {
 	// The event types to deliver to the endpoint. Must list at least one.
 	//
 	// Any of "user_profile.enforcement_action_opened",
-	// "user_profile.enforcement_action_resolved".
+	// "user_profile.enforcement_action_resolved",
+	// "user_profile.program_status_updated".
 	EnabledEvents []string `json:"enabled_events,omitzero" api:"required"`
 	// The HTTPS URL that deliveries are sent to.
 	URL string `json:"url" api:"required"`
@@ -454,7 +457,8 @@ type BetaOrganizationWebhookUpdateParams struct {
 	// list leaves it unchanged.
 	//
 	// Any of "user_profile.enforcement_action_opened",
-	// "user_profile.enforcement_action_resolved".
+	// "user_profile.enforcement_action_resolved",
+	// "user_profile.program_status_updated".
 	EnabledEvents []string `json:"enabled_events,omitzero"`
 	// `disabled` stops deliveries. `enabled` resumes them and clears
 	// `disabled_reason`. Events that happen while the endpoint is disabled are never

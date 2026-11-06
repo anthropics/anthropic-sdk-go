@@ -3896,8 +3896,8 @@ type CacheControlEphemeralParam struct {
 	//
 	// This may be one the following values:
 	//
-	// - `5m`: 5 minutes
-	// - `1h`: 1 hour
+	//   - `5m`: 5 minutes
+	//   - `1h`: 1 hour
 	//
 	// Defaults to `5m`. See
 	// [prompt caching pricing](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
@@ -3921,8 +3921,8 @@ func (r *CacheControlEphemeralParam) UnmarshalJSON(data []byte) error {
 //
 // This may be one the following values:
 //
-// - `5m`: 5 minutes
-// - `1h`: 1 hour
+//   - `5m`: 5 minutes
+//   - `1h`: 1 hour
 //
 // Defaults to `5m`. See
 // [prompt caching pricing](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
@@ -8994,15 +8994,15 @@ type Message struct {
 	//
 	// This may be one the following values:
 	//
-	// - `"end_turn"`: the model reached a natural stopping point
-	// - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
-	// - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
-	// - `"tool_use"`: the model invoked one or more tools
-	// - `"pause_turn"`: we paused a long-running turn. You may provide the response
-	//   back as-is in a subsequent request to let the model continue.
-	// - `"refusal"`: when streaming classifiers intervene to handle potential policy
-	//   violations
-	// - `"model_context_window_exceeded"`: we exceeded the model's context window
+	//   - `"end_turn"`: the model reached a natural stopping point
+	//   - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
+	//   - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
+	//   - `"tool_use"`: the model invoked one or more tools
+	//   - `"pause_turn"`: we paused a long-running turn. You may provide the response
+	//     back as-is in a subsequent request to let the model continue.
+	//   - `"refusal"`: when streaming classifiers intervene to handle potential policy
+	//     violations
+	//   - `"model_context_window_exceeded"`: we exceeded the model's context window
 	//
 	// In non-streaming mode this value is always non-null. In streaming mode, it is
 	// null in the `message_start` event and non-null otherwise.
@@ -18110,11 +18110,11 @@ type MessageNewParams struct {
 	//
 	// Each tool definition includes:
 	//
-	// - `name`: Name of the tool.
-	// - `description`: Optional, but strongly-recommended description of the tool.
-	// - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
-	//   tool `input` shape that the model will produce in `tool_use` output content
-	//   blocks.
+	//   - `name`: Name of the tool.
+	//   - `description`: Optional, but strongly-recommended description of the tool.
+	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//     tool `input` shape that the model will produce in `tool_use` output content
+	//     blocks.
 	//
 	// For example, if you defined `tools` as:
 	//
@@ -18347,11 +18347,11 @@ type MessageCountTokensParams struct {
 	//
 	// Each tool definition includes:
 	//
-	// - `name`: Name of the tool.
-	// - `description`: Optional, but strongly-recommended description of the tool.
-	// - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
-	//   tool `input` shape that the model will produce in `tool_use` output content
-	//   blocks.
+	//   - `name`: Name of the tool.
+	//   - `description`: Optional, but strongly-recommended description of the tool.
+	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//     tool `input` shape that the model will produce in `tool_use` output content
+	//     blocks.
 	//
 	// For example, if you defined `tools` as:
 	//

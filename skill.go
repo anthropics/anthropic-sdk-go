@@ -191,10 +191,10 @@ type Skill struct {
 	//
 	// Possible values:
 	//
-	// - `"custom"`: authored by the platform user; private to their workspace
-	// - `"anthropic"`: published by Anthropic; shared and read-only
-	// - `"anthropic_example"`: Anthropic-published sample Skill
-	// - `"plugin"`: resolved from an installed plugin
+	//   - `"custom"`: authored by the platform user; private to their workspace
+	//   - `"anthropic"`: published by Anthropic; shared and read-only
+	//   - `"anthropic_example"`: Anthropic-published sample Skill
+	//   - `"plugin"`: resolved from an installed plugin
 	Source SkillSource `json:"source" api:"required"`
 	// Object type.
 	//
@@ -227,10 +227,10 @@ type SkillSource struct {
 	//
 	// Possible values:
 	//
-	// - `"custom"`: authored by the platform user; private to their workspace
-	// - `"anthropic"`: published by Anthropic; shared and read-only
-	// - `"anthropic_example"`: Anthropic-published sample Skill
-	// - `"plugin"`: resolved from an installed plugin
+	//   - `"custom"`: authored by the platform user; private to their workspace
+	//   - `"anthropic"`: published by Anthropic; shared and read-only
+	//   - `"anthropic_example"`: Anthropic-published sample Skill
+	//   - `"plugin"`: resolved from an installed plugin
 	//
 	// Any of "custom", "anthropic", "anthropic_example", "plugin".
 	Type SkillSourceType `json:"type" api:"required"`
@@ -252,10 +252,10 @@ func (r *SkillSource) UnmarshalJSON(data []byte) error {
 //
 // Possible values:
 //
-// - `"custom"`: authored by the platform user; private to their workspace
-// - `"anthropic"`: published by Anthropic; shared and read-only
-// - `"anthropic_example"`: Anthropic-published sample Skill
-// - `"plugin"`: resolved from an installed plugin
+//   - `"custom"`: authored by the platform user; private to their workspace
+//   - `"anthropic"`: published by Anthropic; shared and read-only
+//   - `"anthropic_example"`: Anthropic-published sample Skill
+//   - `"plugin"`: resolved from an installed plugin
 type SkillSourceType string
 
 const (
@@ -324,8 +324,8 @@ type SkillListParams struct {
 	//
 	// If provided, only skills from the specified source will be returned:
 	//
-	// - `"custom"`: only return user-created skills
-	// - `"anthropic"`: only return Anthropic-created skills
+	//   - `"custom"`: only return user-created skills
+	//   - `"anthropic"`: only return Anthropic-created skills
 	Source param.Opt[string] `query:"source,omitzero" json:"-"`
 	// Number of results to return per page.
 	//

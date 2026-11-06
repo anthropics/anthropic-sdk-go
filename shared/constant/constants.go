@@ -401,6 +401,7 @@ type Restriction string                                        // Always "restri
 type RetriesExhausted string                                   // Always "retries_exhausted"
 type Retrying string                                           // Always "retrying"
 type RightClick string                                         // Always "right_click"
+type SandboxEgressRestrictedErrorCode string                   // Always "sandbox_egress_restricted"
 type BetaScanFailedErrorCode string                            // Always "scan_failed"
 type BetaScanPendingErrorCode string                           // Always "scan_pending"
 type Schedule string                                           // Always "schedule"
@@ -1174,12 +1175,15 @@ func (c RequestBodyEncodingUnsupportedErrorCode) Default() RequestBodyEncodingUn
 func (c RequestBodyTooLargeAfterDecodingErrorCode) Default() RequestBodyTooLargeAfterDecodingErrorCode {
 	return "request_body_too_large_after_decoding"
 }
-func (c RequiresAction) Default() RequiresAction                     { return "requires_action" }
-func (c Restrict) Default() Restrict                                 { return "restrict" }
-func (c Restriction) Default() Restriction                           { return "restriction" }
-func (c RetriesExhausted) Default() RetriesExhausted                 { return "retries_exhausted" }
-func (c Retrying) Default() Retrying                                 { return "retrying" }
-func (c RightClick) Default() RightClick                             { return "right_click" }
+func (c RequiresAction) Default() RequiresAction     { return "requires_action" }
+func (c Restrict) Default() Restrict                 { return "restrict" }
+func (c Restriction) Default() Restriction           { return "restriction" }
+func (c RetriesExhausted) Default() RetriesExhausted { return "retries_exhausted" }
+func (c Retrying) Default() Retrying                 { return "retrying" }
+func (c RightClick) Default() RightClick             { return "right_click" }
+func (c SandboxEgressRestrictedErrorCode) Default() SandboxEgressRestrictedErrorCode {
+	return "sandbox_egress_restricted"
+}
 func (c BetaScanFailedErrorCode) Default() BetaScanFailedErrorCode   { return "scan_failed" }
 func (c BetaScanPendingErrorCode) Default() BetaScanPendingErrorCode { return "scan_pending" }
 func (c Schedule) Default() Schedule                                 { return "schedule" }
@@ -1939,6 +1943,7 @@ func (c Restriction) MarshalJSON() ([]byte, error)                          { re
 func (c RetriesExhausted) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Retrying) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c RightClick) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c SandboxEgressRestrictedErrorCode) MarshalJSON() ([]byte, error)     { return marshalString(c) }
 func (c BetaScanFailedErrorCode) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c BetaScanPendingErrorCode) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c Schedule) MarshalJSON() ([]byte, error)                             { return marshalString(c) }

@@ -59,6 +59,7 @@ func (r *OrganizationAPIKeyService) Get(ctx context.Context, apiKeyID string, op
 //
 //   - [ErrorCodeOrgAPIKeyLimitExceeded] (HTTP 400)
 //   - [ErrorCodeWorkspaceAPIKeyLimitExceeded] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationAPIKeyService) Update(ctx context.Context, apiKeyID string, body OrganizationAPIKeyUpdateParams, opts ...option.RequestOption) (res *APIKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if apiKeyID == "" {

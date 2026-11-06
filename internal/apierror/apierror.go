@@ -583,6 +583,14 @@ const (
 	// [shared.BetaOrganizationLevelScopedAPIKeyRequiredErrorDetails] details.
 	ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired ErrorCode = "organization_level_scoped_api_key_required"
 
+	// The request came from a Claude sandbox with restricted network access, which is
+	// not allowed to make this change. Send it from outside the sandbox, or from a
+	// sandbox with unrestricted network access.
+	//
+	// Returned with HTTP status 403 and [shared.SandboxEgressRestrictedErrorDetails]
+	// details.
+	ErrorCodeSandboxEgressRestricted ErrorCode = "sandbox_egress_restricted"
+
 	// The organization cannot retrieve, set or delete spend limits with an Admin API
 	// credential.
 	//

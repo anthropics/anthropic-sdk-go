@@ -247,7 +247,8 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [StorageQuotaExceededErrorDetails], [FileNotDownloadableErrorDetails],
 // [FileExpiredErrorDetails], [CMEKContextUnavailableErrorDetails],
 // [OrgAPIKeyLimitExceededErrorDetails],
-// [WorkspaceAPIKeyLimitExceededErrorDetails], [UserProfileNotFoundErrorDetails],
+// [WorkspaceAPIKeyLimitExceededErrorDetails],
+// [SandboxEgressRestrictedErrorDetails], [UserProfileNotFoundErrorDetails],
 // [ExternalKeyInWorkspacePolicyErrorDetails], [AlreadyMemberErrorDetails],
 // [CannotInviteEmailsWithUnverifiedDomainsErrorDetails],
 // [EmailDomainNotAllowedErrorDetails], [InviteAlreadyExistsErrorDetails],
@@ -303,8 +304,8 @@ type ErrorDetailsUnion struct {
 	// "ramp_limit_exceeded", "cmek_key_unreachable", "compaction_unavailable",
 	// "storage_quota_exceeded", "file_not_downloadable", "file_expired",
 	// "cmek_context_unavailable", "org_api_key_limit_exceeded",
-	// "workspace_api_key_limit_exceeded", "user_profile_not_found",
-	// "external_key_in_workspace_policy", "already_member",
+	// "workspace_api_key_limit_exceeded", "sandbox_egress_restricted",
+	// "user_profile_not_found", "external_key_in_workspace_policy", "already_member",
 	// "cannot_invite_emails_with_unverified_domains", "email_domain_not_allowed",
 	// "invite_already_exists", "org_member_limit_exceeded",
 	// "rbac_group_grants_owner_access", "rbac_group_owner_access_unconfirmed",
@@ -399,6 +400,7 @@ type anyErrorDetails interface {
 //	case shared.CMEKContextUnavailableErrorDetails:
 //	case shared.OrgAPIKeyLimitExceededErrorDetails:
 //	case shared.WorkspaceAPIKeyLimitExceededErrorDetails:
+//	case shared.SandboxEgressRestrictedErrorDetails:
 //	case shared.UserProfileNotFoundErrorDetails:
 //	case shared.ExternalKeyInWorkspacePolicyErrorDetails:
 //	case shared.AlreadyMemberErrorDetails:
@@ -520,6 +522,8 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsOrgAPIKeyLimitExceeded()
 	case "workspace_api_key_limit_exceeded":
 		return u.AsWorkspaceAPIKeyLimitExceeded()
+	case "sandbox_egress_restricted":
+		return u.AsSandboxEgressRestricted()
 	case "user_profile_not_found":
 		return u.AsUserProfileNotFound()
 	case "external_key_in_workspace_policy":
@@ -787,6 +791,11 @@ func (u ErrorDetailsUnion) AsOrgAPIKeyLimitExceeded() (v OrgAPIKeyLimitExceededE
 }
 
 func (u ErrorDetailsUnion) AsWorkspaceAPIKeyLimitExceeded() (v WorkspaceAPIKeyLimitExceededErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsSandboxEgressRestricted() (v SandboxEgressRestrictedErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1440,6 +1449,27 @@ func (r *RequestBodyTooLargeAfterDecodingErrorDetails) UnmarshalJSON(data []byte
 }
 
 func (RequestBodyTooLargeAfterDecodingErrorDetails) ImplErrorDetailsUnion() {}
+
+// The request came from a Claude sandbox with restricted network access, which is
+// not allowed to make this change. Send it from outside the sandbox, or from a
+// sandbox with unrestricted network access.
+type SandboxEgressRestrictedErrorDetails struct {
+	ErrorCode constant.SandboxEgressRestrictedErrorCode `json:"error_code" default:"sandbox_egress_restricted"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SandboxEgressRestrictedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *SandboxEgressRestrictedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (SandboxEgressRestrictedErrorDetails) ImplErrorDetailsUnion() {}
 
 // The tools available after a message exceed a limit on their number or their
 // size.

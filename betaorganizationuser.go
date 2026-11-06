@@ -54,6 +54,11 @@ func (r *BetaOrganizationUserService) Get(ctx context.Context, userID string, op
 }
 
 // Update a member's organization role.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationUserService) Update(ctx context.Context, userID string, body BetaOrganizationUserUpdateParams, opts ...option.RequestOption) (res *BetaOrganizationUser, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if userID == "" {
@@ -98,6 +103,7 @@ func (r *BetaOrganizationUserService) ListAutoPaging(ctx context.Context, query 
 // [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeCannotRemoveLastMember] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 //   - [ErrorCodeConcurrentMembershipChange] (HTTP 409)
 func (r *BetaOrganizationUserService) Remove(ctx context.Context, userID string, opts ...option.RequestOption) (res *BetaOrganizationUserRemoveResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
@@ -148,6 +154,7 @@ func (r *BetaOrganizationUserService) Remove(ctx context.Context, userID string,
 //   - [ErrorCodeBetaCannotSignOutMembershipAdmin] (HTTP 403)
 //   - [ErrorCodeBetaCannotSignOutOwner] (HTTP 403)
 //   - [ErrorCodeBetaCannotSignOutPrivilegedMember] (HTTP 403)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationUserService) SignOut(ctx context.Context, userID string, body BetaOrganizationUserSignOutParams, opts ...option.RequestOption) (res *BetaOrganizationUser, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))

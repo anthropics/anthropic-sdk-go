@@ -112,6 +112,11 @@ func (r *OrganizationServiceAccountWorkspaceService) ListAutoPaging(ctx context.
 // already an explicit member of the workspace, its `workspace_role` is replaced
 // with the value supplied here. Archived workspaces return 400. Archived service
 // accounts cannot be added and are rejected.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationServiceAccountWorkspaceService) Add(ctx context.Context, serviceAccountID string, body OrganizationServiceAccountWorkspaceAddParams, opts ...option.RequestOption) (res *ServiceAccountWorkspaceMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if serviceAccountID == "" {
@@ -138,6 +143,11 @@ func (r *OrganizationServiceAccountWorkspaceService) Add(ctx context.Context, se
 // default-workspace membership returns 200 but is a no-op and the membership
 // persists; deleting an explicit default-workspace row reverts to the implicit
 // `workspace_user` membership. Archived workspaces return 400.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationServiceAccountWorkspaceService) Remove(ctx context.Context, workspaceID string, body OrganizationServiceAccountWorkspaceRemoveParams, opts ...option.RequestOption) (res *OrganizationServiceAccountWorkspaceRemoveResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if body.ServiceAccountID == "" {

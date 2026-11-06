@@ -44,6 +44,11 @@ func NewBetaOrganizationRBACGroupService(opts ...option.RequestOption) (r BetaOr
 // have source type `"direct"`.
 //
 // The RBAC Groups API is available to Claude Enterprise organizations only.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationRBACGroupService) New(ctx context.Context, body BetaOrganizationRBACGroupNewParams, opts ...option.RequestOption) (res *BetaRBACGroup, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/rbac_groups"
@@ -75,6 +80,11 @@ func (r *BetaOrganizationRBACGroupService) Get(ctx context.Context, rbacGroupID 
 // tenant uses SCIM provisioning.
 //
 // The RBAC Groups API is available to Claude Enterprise organizations only.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationRBACGroupService) Update(ctx context.Context, rbacGroupID string, body BetaOrganizationRBACGroupUpdateParams, opts ...option.RequestOption) (res *BetaRBACGroup, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if rbacGroupID == "" {
@@ -128,6 +138,7 @@ func (r *BetaOrganizationRBACGroupService) ListAutoPaging(ctx context.Context, q
 //
 //   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400)
 //   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationRBACGroupService) Delete(ctx context.Context, rbacGroupID string, opts ...option.RequestOption) (res *BetaDeletedRBACGroup, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if rbacGroupID == "" {

@@ -441,6 +441,14 @@ const ErrorCodeBetaEnvironmentUpdateDisabled = apierror.ErrorCodeBetaEnvironment
 // [shared.BetaOrganizationLevelScopedAPIKeyRequiredErrorDetails] details.
 const ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired = apierror.ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired
 
+// The request came from a Claude sandbox with restricted network access, which is
+// not allowed to make this change. Send it from outside the sandbox, or from a
+// sandbox with unrestricted network access.
+//
+// Returned with HTTP status 403 and [shared.SandboxEgressRestrictedErrorDetails]
+// details.
+const ErrorCodeSandboxEgressRestricted = apierror.ErrorCodeSandboxEgressRestricted
+
 // The organization cannot retrieve, set or delete spend limits with an Admin API
 // credential.
 //
@@ -726,6 +734,13 @@ type RequestBodyEncodingUnsupportedErrorDetails = shared.RequestBodyEncodingUnsu
 //
 // This is an alias to an internal type.
 type RequestBodyTooLargeAfterDecodingErrorDetails = shared.RequestBodyTooLargeAfterDecodingErrorDetails
+
+// The request came from a Claude sandbox with restricted network access, which is
+// not allowed to make this change. Send it from outside the sandbox, or from a
+// sandbox with unrestricted network access.
+//
+// This is an alias to an internal type.
+type SandboxEgressRestrictedErrorDetails = shared.SandboxEgressRestrictedErrorDetails
 
 // The tools available after a message exceed a limit on their number or their
 // size.

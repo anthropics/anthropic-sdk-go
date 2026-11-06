@@ -65,6 +65,11 @@ func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts
 // which serves its activity events, so such provisioning (including re-runs)
 // re-enables the Compliance API even after a `disabled` request. Automated
 // provisioning never disables compliance settings.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationComplianceSettingService) Update(ctx context.Context, body BetaOrganizationComplianceSettingUpdateParams, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/compliance_settings"

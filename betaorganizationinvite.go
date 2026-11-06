@@ -55,6 +55,7 @@ func NewBetaOrganizationInviteService(opts ...option.RequestOption) (r BetaOrgan
 //   - [ErrorCodeOrgMemberLimitExceeded] (HTTP 400)
 //   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400)
 //   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationInviteService) New(ctx context.Context, body BetaOrganizationInviteNewParams, opts ...option.RequestOption) (res *BetaOrganizationInvite, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/invites"
@@ -104,6 +105,11 @@ func (r *BetaOrganizationInviteService) ListAutoPaging(ctx context.Context, quer
 }
 
 // Delete a pending invite.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationInviteService) Delete(ctx context.Context, inviteID string, opts ...option.RequestOption) (res *BetaOrganizationInviteDeleteResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if inviteID == "" {

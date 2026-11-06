@@ -203,6 +203,11 @@ func (r *BetaOrganizationWebhookService) ListAutoPaging(ctx context.Context, par
 // endpoints on for each organization; until yours is on, requests also return
 // `404`. Organization webhook endpoints are in beta and are not available to
 // organizations with HIPAA readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationWebhookService) Delete(ctx context.Context, webhookEndpointID string, body BetaOrganizationWebhookDeleteParams, opts ...option.RequestOption) (res *BetaDeletedOrganizationWebhookEndpoint, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -236,6 +241,11 @@ func (r *BetaOrganizationWebhookService) Delete(ctx context.Context, webhookEndp
 // endpoints on for each organization; until yours is on, requests also return
 // `404`. Organization webhook endpoints are in beta and are not available to
 // organizations with HIPAA readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationWebhookService) RegenerateSigningSecret(ctx context.Context, webhookEndpointID string, body BetaOrganizationWebhookRegenerateSigningSecretParams, opts ...option.RequestOption) (res *BetaOrganizationWebhookEndpointSigningSecret, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))

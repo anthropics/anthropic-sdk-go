@@ -91,6 +91,11 @@ func (r *OrganizationSpendLimitIncreaseRequestService) ListAutoPaging(ctx contex
 // Writes a per-user spend limit at `amount` for the requester and transitions the
 // request to `approved`. `period` defaults to the period the member was blocked
 // on. Anthropic emails the requester unless `suppress_notification` is set.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationSpendLimitIncreaseRequestService) Approve(ctx context.Context, spendLimitIncreaseRequestID string, body OrganizationSpendLimitIncreaseRequestApproveParams, opts ...option.RequestOption) (res *OrganizationSpendLimitIncreaseRequestApproveResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if spendLimitIncreaseRequestID == "" {
@@ -107,6 +112,11 @@ func (r *OrganizationSpendLimitIncreaseRequestService) Approve(ctx context.Conte
 //
 // Idempotent on `denied`; denying an already-`approved` request returns 400.
 // Anthropic emails the requester unless `suppress_notification` is set.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationSpendLimitIncreaseRequestService) Deny(ctx context.Context, spendLimitIncreaseRequestID string, body OrganizationSpendLimitIncreaseRequestDenyParams, opts ...option.RequestOption) (res *SpendLimitIncreaseRequest, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if spendLimitIncreaseRequestID == "" {

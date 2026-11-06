@@ -114,6 +114,11 @@ func (r *BetaOrganizationFederationRuleWorkspaceService) ListAutoPaging(ctx cont
 // of the default workspace). Archived rules are rejected with 400. OAuth callers
 // may only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationFederationRuleWorkspaceService) Add(ctx context.Context, federationRuleID string, params BetaOrganizationFederationRuleWorkspaceAddParams, opts ...option.RequestOption) (res *BetaFederationRuleWorkspace, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -147,6 +152,11 @@ func (r *BetaOrganizationFederationRuleWorkspaceService) Add(ctx context.Context
 // Idempotent; succeeds even if the enablement was already removed. OAuth callers
 // may only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationFederationRuleWorkspaceService) Remove(ctx context.Context, workspaceID string, params BetaOrganizationFederationRuleWorkspaceRemoveParams, opts ...option.RequestOption) (res *BetaOrganizationFederationRuleWorkspaceRemoveResponse, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

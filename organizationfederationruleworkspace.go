@@ -102,6 +102,11 @@ func (r *OrganizationFederationRuleWorkspaceService) ListAutoPaging(ctx context.
 // of the default workspace). Archived rules are rejected with 400. OAuth callers
 // may only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationFederationRuleWorkspaceService) Add(ctx context.Context, federationRuleID string, body OrganizationFederationRuleWorkspaceAddParams, opts ...option.RequestOption) (res *FederationRuleWorkspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if federationRuleID == "" {
@@ -124,6 +129,11 @@ func (r *OrganizationFederationRuleWorkspaceService) Add(ctx context.Context, fe
 // Idempotent; succeeds even if the enablement was already removed. OAuth callers
 // may only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationFederationRuleWorkspaceService) Remove(ctx context.Context, workspaceID string, body OrganizationFederationRuleWorkspaceRemoveParams, opts ...option.RequestOption) (res *OrganizationFederationRuleWorkspaceRemoveResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if body.FederationRuleID == "" {

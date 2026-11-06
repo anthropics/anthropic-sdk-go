@@ -82,6 +82,7 @@ func (r *BetaOrganizationRBACGroupMemberService) ListAutoPaging(ctx context.Cont
 //
 //   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400)
 //   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationRBACGroupMemberService) Add(ctx context.Context, rbacGroupID string, body BetaOrganizationRBACGroupMemberAddParams, opts ...option.RequestOption) (res *BetaRBACGroupMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if rbacGroupID == "" {
@@ -106,6 +107,7 @@ func (r *BetaOrganizationRBACGroupMemberService) Add(ctx context.Context, rbacGr
 //
 //   - [ErrorCodeRBACGroupGrantsOwnerAccess] (HTTP 400)
 //   - [ErrorCodeRBACGroupOwnerAccessUnconfirmed] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationRBACGroupMemberService) Remove(ctx context.Context, userID string, body BetaOrganizationRBACGroupMemberRemoveParams, opts ...option.RequestOption) (res *BetaDeletedRBACGroupMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if body.RBACGroupID == "" {

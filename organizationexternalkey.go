@@ -46,6 +46,7 @@ func NewOrganizationExternalKeyService(opts ...option.RequestOption) (r Organiza
 // [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeUserProfileNotFound] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationExternalKeyService) New(ctx context.Context, body OrganizationExternalKeyNewParams, opts ...option.RequestOption) (res *ExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/external_keys"
@@ -78,6 +79,7 @@ func (r *OrganizationExternalKeyService) Get(ctx context.Context, externalKeyID 
 // [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationExternalKeyService) Update(ctx context.Context, externalKeyID string, body OrganizationExternalKeyUpdateParams, opts ...option.RequestOption) (res *ExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {
@@ -128,6 +130,7 @@ func (r *OrganizationExternalKeyService) ListAutoPaging(ctx context.Context, que
 // [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationExternalKeyService) Delete(ctx context.Context, externalKeyID string, opts ...option.RequestOption) (res *OrganizationExternalKeyDeleteResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {
@@ -146,6 +149,11 @@ func (r *OrganizationExternalKeyService) Delete(ctx context.Context, externalKey
 // and waits up to 30 seconds for the result. The response status is `success` if
 // the roundtrip succeeded, or `failure` with an error message if it failed or
 // timed out.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationExternalKeyService) Validate(ctx context.Context, externalKeyID string, opts ...option.RequestOption) (res *OrganizationExternalKeyValidateResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {

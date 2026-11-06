@@ -9,8 +9,6 @@ import (
 	"iter"
 	"net/http"
 	"strings"
-
-	"github.com/anthropics/anthropic-sdk-go/v2/internal/apierror"
 )
 
 type Decoder interface {
@@ -44,14 +42,6 @@ func NewDecoder(res *http.Response) Decoder {
 	if isTraced {
 		decoder = traced.TraceEvents(decoder)
 	}
-
-	// richDecoder needs the http request to provide helpful errors
-	// Aside from the error case there should be no difference
-	// from the underlying decoder.
-	if res.Request != nil {
-		return richErrorDecoder{Decoder: decoder, resp: res}
-	}
-
 	return decoder
 }
 
@@ -75,39 +65,8 @@ type tracedDecoder interface {
 }
 
 func asTracedDecoder(decoder Decoder) tracedDecoder {
-	if rich, ok := decoder.(richErrorDecoder); ok {
-		decoder = rich.Decoder
-	}
 	traced, _ := decoder.(tracedDecoder)
 	return traced
-}
-
-// richErrorDecoder wraps a Decoder and carries the original [*http.Response]
-// so that it can construct rich API errors from SSE error events.
-//
-// A richErrorDecoder is used by [Stream] to construct errors whenever possible.
-// [Stream] needs to rely on the underlying decoder, because the [Stream] has
-// no access to the original http request.
-//
-// There should be no other differences from the underlying decoder.
-type richErrorDecoder struct {
-	Decoder
-	resp *http.Response
-}
-
-func (d *richErrorDecoder) newAPIError(errorJSON []byte) error {
-	aerr := &apierror.Error{}
-	if d.resp != nil {
-		aerr.Request = d.resp.Request
-		aerr.Response = d.resp
-		aerr.StatusCode = d.resp.StatusCode
-		aerr.RequestID = d.resp.Header.Get("request-id")
-		aerr.WorkspaceID = d.resp.Header.Get("anthropic-workspace-id")
-	}
-	if aerr.UnmarshalJSON(errorJSON) != nil {
-		return fmt.Errorf("received error while streaming: %s", string(errorJSON))
-	}
-	return aerr
 }
 
 var decoderTypes = map[string](func(io.ReadCloser) Decoder){}
@@ -245,12 +204,7 @@ func (s *Stream[T]) Next() bool {
 		case "":
 			continue
 		case "error":
-			data := s.decoder.Event().Data
-			if ed, ok := s.decoder.(richErrorDecoder); ok {
-				s.err = ed.newAPIError(data)
-			} else {
-				s.err = fmt.Errorf("received error while streaming: %s", string(data))
-			}
+			s.err = fmt.Errorf("received error while streaming: %s", bytes.TrimSuffix(s.decoder.Event().Data, []byte("\n")))
 			return false
 		}
 

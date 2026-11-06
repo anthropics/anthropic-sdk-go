@@ -89,7 +89,8 @@ var _ io.Closer = (*BashSession)(nil)
 // token / environment key out of its own environment. When non-nil it FULLY
 // REPLACES that default — the mapping is used verbatim and is NOT merged with
 // the scrubbed process environment. PS1/PS2/TERM are always overlaid on the
-// chosen base so output stays clean and parseable regardless of the base.
+// chosen base so output stays clean and parseable regardless of the base, and
+// HISTFILE is always emptied so the shell neither loads nor saves a history file.
 func NewBashSession(dir string, env map[string]string) (*BashSession, error) {
 	cmd := exec.Command("/bin/bash", "--noprofile", "--norc")
 	cmd.Dir = dir
@@ -103,7 +104,7 @@ func NewBashSession(dir string, env map[string]string) (*BashSession, error) {
 			base = append(base, k+"="+v)
 		}
 	}
-	cmd.Env = append(base, "PS1=", "PS2=", "TERM=dumb")
+	cmd.Env = append(base, "PS1=", "PS2=", "TERM=dumb", "HISTFILE=")
 
 	p, err := pty.Start(cmd)
 	if err != nil {

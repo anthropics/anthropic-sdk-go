@@ -140,6 +140,33 @@ func TestBashNoTabCompletion(t *testing.T) {
 	}
 }
 
+func TestBashNoHistoryFile(t *testing.T) {
+	home := t.TempDir()
+	histFile := filepath.Join(home, ".bash_history")
+	const seeded = "echo from-the-operator\n"
+	require.NoError(t, os.WriteFile(histFile, []byte(seeded), 0o644))
+
+	sess, err := NewBashSession(t.TempDir(), map[string]string{"HOME": home})
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = sess.Close() })
+
+	t.Run("the shell does not load the history file", func(t *testing.T) {
+		out, code, err := sess.Exec(context.Background(), "history", 5*time.Second)
+		require.NoError(t, err)
+		require.Equal(t, 0, code)
+		require.NotContains(t, out, "from-the-operator")
+	})
+
+	t.Run("the shell does not save to the history file when it exits", func(t *testing.T) {
+		_, _, err := sess.Exec(context.Background(), "exit 0", 5*time.Second)
+		require.ErrorIs(t, err, ErrBashTerminated)
+
+		got, err := os.ReadFile(histFile)
+		require.NoError(t, err)
+		require.Equal(t, seeded, string(got))
+	})
+}
+
 func TestBashRestart(t *testing.T) {
 	tool := newBashTool(t, t.TempDir())
 

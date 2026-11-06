@@ -521,15 +521,8 @@ const (
 	// details.
 	ErrorCodeBetaAPIKeyScopeMissing ErrorCode = "api_key_scope_missing"
 
-	// Anthropic has temporarily disabled billing changes for the user account the
-	// credential belongs to. Contact support.
-	//
-	// Returned with HTTP status 403 and [shared.BetaBillingFrozenErrorDetails]
-	// details.
-	ErrorCodeBetaBillingFrozen ErrorCode = "billing_frozen"
-
-	// On a public-sector deployment, only an API key or token that belongs to a person
-	// with owner permissions can sign out a member with the `managed` role.
+	// The member has the `managed` role, and this API key or token cannot sign them
+	// out. The error message says which keys and tokens can.
 	//
 	// Returned with HTTP status 403 and
 	// [shared.BetaCannotSignOutManagedMemberErrorDetails] details.

@@ -135,7 +135,6 @@ func (r *BetaOrganizationSpendLimitService) ListAutoPaging(ctx context.Context, 
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaBillingFrozen] (HTTP 403)
 //   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403)
 func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLimitID string, opts ...option.RequestOption) (res *BetaOrganizationSpendLimitDeleteResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
@@ -162,7 +161,6 @@ func (r *BetaOrganizationSpendLimitService) Delete(ctx context.Context, spendLim
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
 //
-//   - [ErrorCodeBetaBillingFrozen] (HTTP 403)
 //   - [ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled] (HTTP 403)
 func (r *BetaOrganizationSpendLimitService) Set(ctx context.Context, params BetaOrganizationSpendLimitSetParams, opts ...option.RequestOption) (res *BetaSpendLimit, err error) {
 	if len(params.Betas) > 0 {

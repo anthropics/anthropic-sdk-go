@@ -90,7 +90,6 @@ type BashCodeExecutionToolResultError string                   // Always "bash_c
 type Batch string                                              // Always "batch"
 type BetweenTools string                                       // Always "between_tools"
 type BillingError string                                       // Always "billing_error"
-type BetaBillingFrozenErrorCode string                         // Always "billing_frozen"
 type Branch string                                             // Always "branch"
 type Browser string                                            // Always "browser"
 type BrowserState string                                       // Always "browser_state"
@@ -703,19 +702,18 @@ func (c BashCodeExecutionToolResult) Default() BashCodeExecutionToolResult {
 func (c BashCodeExecutionToolResultError) Default() BashCodeExecutionToolResultError {
 	return "bash_code_execution_tool_result_error"
 }
-func (c Batch) Default() Batch                                           { return "batch" }
-func (c BetweenTools) Default() BetweenTools                             { return "between_tools" }
-func (c BillingError) Default() BillingError                             { return "billing_error" }
-func (c BetaBillingFrozenErrorCode) Default() BetaBillingFrozenErrorCode { return "billing_frozen" }
-func (c Branch) Default() Branch                                         { return "branch" }
-func (c Browser) Default() Browser                                       { return "browser" }
-func (c BrowserState) Default() BrowserState                             { return "browser_state" }
-func (c BrowserToolset20260801) Default() BrowserToolset20260801         { return "browser_toolset_20260801" }
-func (c BudgetReached) Default() BudgetReached                           { return "budget_reached" }
-func (c Bundle) Default() Bundle                                         { return "bundle" }
-func (c BundleTargetDeleted) Default() BundleTargetDeleted               { return "bundle_target_deleted" }
-func (c Caller) Default() Caller                                         { return "caller" }
-func (c Canceled) Default() Canceled                                     { return "canceled" }
+func (c Batch) Default() Batch                                   { return "batch" }
+func (c BetweenTools) Default() BetweenTools                     { return "between_tools" }
+func (c BillingError) Default() BillingError                     { return "billing_error" }
+func (c Branch) Default() Branch                                 { return "branch" }
+func (c Browser) Default() Browser                               { return "browser" }
+func (c BrowserState) Default() BrowserState                     { return "browser_state" }
+func (c BrowserToolset20260801) Default() BrowserToolset20260801 { return "browser_toolset_20260801" }
+func (c BudgetReached) Default() BudgetReached                   { return "budget_reached" }
+func (c Bundle) Default() Bundle                                 { return "bundle" }
+func (c BundleTargetDeleted) Default() BundleTargetDeleted       { return "bundle_target_deleted" }
+func (c Caller) Default() Caller                                 { return "caller" }
+func (c Canceled) Default() Canceled                             { return "canceled" }
 func (c CannotInviteEmailsWithUnverifiedDomainsErrorCode) Default() CannotInviteEmailsWithUnverifiedDomainsErrorCode {
 	return "cannot_invite_emails_with_unverified_domains"
 }
@@ -1592,7 +1590,6 @@ func (c BashCodeExecutionToolResultError) MarshalJSON() ([]byte, error)     { re
 func (c Batch) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c BetweenTools) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c BillingError) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c BetaBillingFrozenErrorCode) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c Branch) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Browser) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c BrowserState) MarshalJSON() ([]byte, error)                         { return marshalString(c) }

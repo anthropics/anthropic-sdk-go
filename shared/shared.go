@@ -271,7 +271,6 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [BetaCannotSignOutMembershipAdminErrorDetails],
 // [BetaCannotSignOutOwnerErrorDetails],
 // [BetaCannotSignOutPrivilegedMemberErrorDetails],
-// [BetaBillingFrozenErrorDetails],
 // [BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails],
 // [BetaUnsupportedCharsetErrorDetails], [BetaPluginNameTakenErrorDetails],
 // [BetaSkillNameTakenErrorDetails], [BetaRegistrationPendingErrorDetails],
@@ -319,7 +318,7 @@ type ErrorDetailsUnion struct {
 	// "cannot_sign_out_primary_owner", "cannot_sign_out_self",
 	// "organization_not_enrolled_in_beta", "cannot_sign_out_managed_member",
 	// "cannot_sign_out_membership_admin", "cannot_sign_out_owner",
-	// "cannot_sign_out_privileged_member", "billing_frozen",
+	// "cannot_sign_out_privileged_member",
 	// "spend_limits_admin_api_writes_not_enabled", "unsupported_charset",
 	// "plugin_name_taken", "skill_name_taken", "registration_pending", "scan_failed",
 	// "scan_pending", "slack_channel_set_up_settings_refused",
@@ -431,7 +430,6 @@ type anyErrorDetails interface {
 //	case shared.BetaCannotSignOutMembershipAdminErrorDetails:
 //	case shared.BetaCannotSignOutOwnerErrorDetails:
 //	case shared.BetaCannotSignOutPrivilegedMemberErrorDetails:
-//	case shared.BetaBillingFrozenErrorDetails:
 //	case shared.BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails:
 //	case shared.BetaUnsupportedCharsetErrorDetails:
 //	case shared.BetaPluginNameTakenErrorDetails:
@@ -584,8 +582,6 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsCannotSignOutOwner()
 	case "cannot_sign_out_privileged_member":
 		return u.AsCannotSignOutPrivilegedMember()
-	case "billing_frozen":
-		return u.AsBillingFrozen()
 	case "spend_limits_admin_api_writes_not_enabled":
 		return u.AsSpendLimitsAdminAPIWritesNotEnabled()
 	case "unsupported_charset":
@@ -946,11 +942,6 @@ func (u ErrorDetailsUnion) AsCannotSignOutOwner() (v BetaCannotSignOutOwnerError
 }
 
 func (u ErrorDetailsUnion) AsCannotSignOutPrivilegedMember() (v BetaCannotSignOutPrivilegedMemberErrorDetails) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ErrorDetailsUnion) AsBillingFrozen() (v BetaBillingFrozenErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1726,7 +1717,6 @@ const (
 	ThreadUnsupportedFeatureNameHipaa             ThreadUnsupportedFeatureName = "hipaa"
 	ThreadUnsupportedFeatureNameInferenceHooks    ThreadUnsupportedFeatureName = "inference_hooks"
 	ThreadUnsupportedFeatureNameThinking          ThreadUnsupportedFeatureName = "thinking"
-	ThreadUnsupportedFeatureNameZdr               ThreadUnsupportedFeatureName = "zdr"
 )
 
 // A tool made available in `messages` takes a name that an available tool of
@@ -2503,8 +2493,8 @@ func (r *BetaOrganizationNotEnrolledInBetaErrorDetails) UnmarshalJSON(data []byt
 
 func (BetaOrganizationNotEnrolledInBetaErrorDetails) ImplErrorDetailsUnion() {}
 
-// On a public-sector deployment, only an API key or token that belongs to a person
-// with owner permissions can sign out a member with the `managed` role.
+// The member has the `managed` role, and this API key or token cannot sign them
+// out. The error message says which keys and tokens can.
 type BetaCannotSignOutManagedMemberErrorDetails struct {
 	ErrorCode constant.BetaCannotSignOutManagedMemberErrorCode `json:"error_code" default:"cannot_sign_out_managed_member"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -2583,26 +2573,6 @@ func (r *BetaCannotSignOutPrivilegedMemberErrorDetails) UnmarshalJSON(data []byt
 }
 
 func (BetaCannotSignOutPrivilegedMemberErrorDetails) ImplErrorDetailsUnion() {}
-
-// Anthropic has temporarily disabled billing changes for the user account the
-// credential belongs to. Contact support.
-type BetaBillingFrozenErrorDetails struct {
-	ErrorCode constant.BetaBillingFrozenErrorCode `json:"error_code" default:"billing_frozen"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaBillingFrozenErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaBillingFrozenErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (BetaBillingFrozenErrorDetails) ImplErrorDetailsUnion() {}
 
 // The organization cannot retrieve, set or delete spend limits with an Admin API
 // credential.

@@ -133,10 +133,10 @@ func (r *BetaOrganizationUserService) Remove(ctx context.Context, userID string,
 //
 // Every request must include the beta header
 // `anthropic-beta: admin-user-sign-out-2026-10-08`. A request without it returns
-// `400`. Sign-out is in beta. Anthropic turns it on for each organization and has
-// turned it on for every Claude Enterprise organization; until yours is on,
-// requests also return `400`. In a Claude Enterprise organization, an API key
-// needs the `write:members` scope; a key without it gets `403`.
+// `400`. Sign-out is in beta for Claude Enterprise organizations. In an
+// organization where it is not enabled, a request returns `400` with `error_code`
+// `organization_not_enrolled_in_beta`. In a Claude Enterprise organization, an API
+// key needs the `write:members` scope; a key without it gets `403`.
 //
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.

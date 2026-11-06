@@ -5,6 +5,8 @@ package agenttoolset
 import (
 	"context"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -57,6 +59,81 @@ func TestBashSessionPersistence(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.description, func(t *testing.T) {
 			out, isErr := runTool(t, tool, mustJSON(t, map[string]any{"command": tc.command}))
+			require.False(t, isErr, "unexpected error output: %q", out)
+			require.Equal(t, tc.want, strings.TrimSpace(out))
+		})
+	}
+}
+
+func TestBashNoHistoryExpansion(t *testing.T) {
+	tool := newBashTool(t, t.TempDir())
+
+	tests := []struct {
+		description string
+		command     string
+		want        string
+	}{
+		{
+			description: "first command gives the shell a previous command to refer to",
+			command:     "echo first",
+			want:        "first",
+		},
+		{
+			description: "a double exclamation mark is not replaced by the previous command",
+			command:     `echo "All done!!"`,
+			want:        "All done!!",
+		},
+		{
+			description: "a shebang in double quotes is written to the file unchanged",
+			command:     `echo "#!/bin/bash" > x.sh && cat x.sh`,
+			want:        "#!/bin/bash",
+		},
+		{
+			description: "an unquoted !$ is not replaced by the last word of the previous command",
+			command:     "echo !$",
+			want:        "!$",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			out, isErr := runTool(t, tool, mustJSON(t, map[string]any{"command": tc.command, "timeout_ms": 5000}))
+			require.False(t, isErr, "unexpected error output: %q", out)
+			require.Equal(t, tc.want, strings.TrimSpace(out))
+		})
+	}
+}
+
+func TestBashNoTabCompletion(t *testing.T) {
+	work := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(work, "only-file.txt"), nil, 0o644))
+	tool := newBashTool(t, work)
+
+	tests := []struct {
+		description string
+		command     string
+		want        string
+	}{
+		{
+			description: "a tab inside quotes reaches the command",
+			command:     "printf 'a\tb\\n'",
+			want:        "a\tb",
+		},
+		{
+			description: "a heredoc line starting with a tab keeps it and gains no file name",
+			command:     "cat <<'EOF'\nall:\n\tgo build\nEOF",
+			want:        "all:\n\tgo build",
+		},
+		{
+			description: "a tab between words separates them",
+			command:     "echo\tsep",
+			want:        "sep",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			out, isErr := runTool(t, tool, mustJSON(t, map[string]any{"command": tc.command, "timeout_ms": 5000}))
 			require.False(t, isErr, "unexpected error output: %q", out)
 			require.Equal(t, tc.want, strings.TrimSpace(out))
 		})

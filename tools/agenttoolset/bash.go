@@ -112,10 +112,10 @@ func NewBashSession(dir string, env map[string]string) (*BashSession, error) {
 
 	s := &BashSession{pty: p, cmd: cmd, done: make(chan struct{}), notify: make(chan struct{}, 1)}
 	go s.drain()
-	// Disable echo and job-control noise so output is just command results.
-	// This call must keep the PTY as its stdin (no </dev/null redirect):
-	// stty needs a terminal on fd 0 to set its modes.
-	_, _, _ = s.exec(context.Background(), "stty -echo 2>/dev/null; set +m", 5*time.Second, false)
+	// bash is interactive because it is on a PTY. Echo and job-control notices
+	// must be off or they mix into the output, and the line editor's history
+	// expansion and completion must be off or they rewrite the command text.
+	_, _, _ = s.exec(context.Background(), "stty -echo 2>/dev/null; set +m +H; bind 'set disable-completion on'", 5*time.Second, false)
 	return s, nil
 }
 

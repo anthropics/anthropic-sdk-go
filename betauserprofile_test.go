@@ -103,7 +103,7 @@ func TestBetaUserProfileUpdateWithOptionalParams(t *testing.T) {
 			ExternalID: anthropic.String("x"),
 			ExternalUserDetails: anthropic.BetaUserProfileExternalUserDetailsParams{
 				AccountStatus: anthropic.BetaUserProfileExternalUserDetailsParamsAccountStatusSuspended,
-				Country:       anthropic.String("country"),
+				Country:       anthropic.String("SE"),
 				EmailHash:     anthropic.String("x"),
 				EntityType:    anthropic.BetaUserProfileExternalUserDetailsParamsEntityTypeIndividual,
 				NameHash:      anthropic.String("x"),

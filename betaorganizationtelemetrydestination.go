@@ -67,6 +67,7 @@ func (r *BetaOrganizationTelemetryDestinationService) New(ctx context.Context, p
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "telemetry-destinations-2026-08-11")}, opts...)
 	path := "v1/organizations/telemetry_destinations"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.create", "/v1/organizations/telemetry_destinations"), requestconfig.WithSpanCreatedID("anthropic.organization.telemetry_destination.id", &res, func(created *BetaTelemetryDestination) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -94,7 +95,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Get(ctx context.Context, d
 		err = errors.New("missing required destination_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", url.PathEscape(destinationID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", requestconfig.EscapePathSegment(destinationID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.retrieve", "/v1/organizations/telemetry_destinations/{destination_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -133,7 +134,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Update(ctx context.Context
 		err = errors.New("missing required destination_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", url.PathEscape(destinationID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", requestconfig.EscapePathSegment(destinationID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.update", "/v1/organizations/telemetry_destinations/{destination_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -211,7 +212,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Delete(ctx context.Context
 		err = errors.New("missing required destination_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", url.PathEscape(destinationID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s", requestconfig.EscapePathSegment(destinationID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.delete", "/v1/organizations/telemetry_destinations/{destination_id}"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -243,7 +244,7 @@ func (r *BetaOrganizationTelemetryDestinationService) Test(ctx context.Context, 
 		err = errors.New("missing required destination_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/test", url.PathEscape(destinationID))
+	path := fmt.Sprintf("v1/organizations/telemetry_destinations/%s/test", requestconfig.EscapePathSegment(destinationID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.telemetry_destinations.test", "/v1/organizations/telemetry_destinations/{destination_id}/test"), requestconfig.WithSpanAttribute("anthropic.organization.telemetry_destination.id", destinationID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -1276,8 +1277,7 @@ type BetaOrganizationTelemetryDestinationNewParams struct {
 	// Request headers that the API sends with every delivery, typically your
 	// collector's authentication header (for example `authorization`).
 	//
-	// The API stores the values encrypted and never returns them. Reads show only
-	// `header_names`.
+	// The API never returns the values. Reads show only `header_names`.
 	//
 	// At most 20 headers. Names are at most 128 characters. Two names can't differ
 	// only in case. Values are printable ASCII, at most 4,096 characters, and can't

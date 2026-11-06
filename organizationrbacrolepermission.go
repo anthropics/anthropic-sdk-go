@@ -49,7 +49,7 @@ func (r *OrganizationRBACRolePermissionService) List(ctx context.Context, rbacRo
 		err = errors.New("missing required rbac_role_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_roles/%s/permissions", url.PathEscape(rbacRoleID))
+	path := fmt.Sprintf("v1/organizations/rbac_roles/%s/permissions", requestconfig.EscapePathSegment(rbacRoleID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_roles.permissions.list", "/v1/organizations/rbac_roles/{rbac_role_id}/permissions", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_role.id", rbacRoleID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
@@ -192,7 +192,7 @@ type RBACRolePermission struct {
 	// entitlement (`permission_*`), or a blanket capability-access mode —
 	// `capability_access_all` grants every product-feature entitlement except
 	// `inference_hooks_inspection`, which a role holds only through its own row, and
-	// `capability_access_all_ga` grants the generally-available subset of those as it
+	// `capability_access_all_ga` grants the subset of those for stable features as it
 	// stands at permission-check time; neither mode grants model-access entitlements.
 	// A consumer enumerating a role's per-feature grants should treat a blanket row as
 	// granting every product-feature entitlement it covers, or it will under-report

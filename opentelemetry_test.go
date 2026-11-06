@@ -300,6 +300,70 @@ func TestOpenTelemetryCompactionTokens(t *testing.T) {
 	}
 }
 
+// A string that a response has empty says nothing, so it sets no attribute.
+func TestOpenTelemetryEmptyResponseStrings(t *testing.T) {
+	const message = `{"id":"","type":"message","role":"assistant","model":"","content":[],"stop_reason":"",` +
+		`"usage":{"input_tokens":10,"output_tokens":5,"service_tier":""}}`
+	const stream = "event: message_start\n" +
+		`data: {"type":"message_start","message":{"id":"","type":"message","role":"assistant","model":"","content":[],` +
+		`"stop_reason":null,"usage":{"input_tokens":10,"output_tokens":1,"service_tier":""}}}` + "\n\n" +
+		"event: message_delta\n" +
+		`data: {"type":"message_delta","delta":{"stop_reason":""},"usage":{"output_tokens":5}}` + "\n\n" +
+		"event: message_stop\n" +
+		`data: {"type":"message_stop"}` + "\n\n"
+	ctx := context.Background()
+	betaParams := anthropic.BetaMessageNewParams{
+		Model:     "claude-requested",
+		MaxTokens: 16,
+		Messages:  []anthropic.BetaMessageParam{anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("hello"))},
+	}
+
+	for name, tc := range map[string]struct {
+		contentType, body string
+		call              func(client anthropic.Client) error
+	}{
+		"message": {"application/json", message, func(client anthropic.Client) error {
+			_, err := client.Messages.New(ctx, messageParams())
+			return err
+		}},
+		"beta message": {"application/json", message, func(client anthropic.Client) error {
+			_, err := client.Beta.Messages.New(ctx, betaParams)
+			return err
+		}},
+		"stream": {"text/event-stream", stream, func(client anthropic.Client) error {
+			events := client.Messages.NewStreaming(ctx, messageParams())
+			for events.Next() {
+			}
+			return events.Err()
+		}},
+		"beta stream": {"text/event-stream", stream, func(client anthropic.Client) error {
+			events := client.Beta.Messages.NewStreaming(ctx, betaParams)
+			for events.Next() {
+			}
+			return events.Err()
+		}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			client, recorder := newTracedClient(t, respond(200, tc.contentType, tc.body))
+			if err := tc.call(client); err != nil {
+				t.Fatal(err)
+			}
+			span := onlySpan(t, recorder)
+			wantAttrs(t, span, map[string]any{"gen_ai.usage.output_tokens": int64(5)})
+			for _, key := range []string{
+				"gen_ai.response.id",
+				"gen_ai.response.model",
+				"anthropic.message.stop_reason",
+				"anthropic.response.service_tier",
+			} {
+				if got, ok := attr(span, key); ok {
+					t.Errorf("%s is %q, want no attribute", key, got.Emit())
+				}
+			}
+		})
+	}
+}
+
 // TestOpenTelemetryResponseDecodedElsewhere covers the methods that record
 // attributes of their response. The application can have the body decoded into
 // a value of its own, and the method then has no response to read.
@@ -462,20 +526,24 @@ func TestOpenTelemetryRequestAttributes(t *testing.T) {
 		})
 	})
 
-	// The span reads the type that the request sends, whichever variant has it.
-	for name, thinking := range map[string]anthropic.ThinkingConfigParamUnion{
-		"between_tools": {OfBetweenTools: &anthropic.ThinkingConfigBetweenToolsParam{}},
-		"later_variant": param.Override[anthropic.ThinkingConfigParamUnion](map[string]any{"type": "later_variant"}),
+	// The span reads the type from the variant that has it, and none from a
+	// configuration that this version of the SDK has no variant for.
+	for name, tc := range map[string]struct {
+		thinking anthropic.ThinkingConfigParamUnion
+		want     any
+	}{
+		"between_tools": {anthropic.ThinkingConfigParamUnion{OfBetweenTools: &anthropic.ThinkingConfigBetweenToolsParam{}}, "between_tools"},
+		"later_variant": {param.Override[anthropic.ThinkingConfigParamUnion](map[string]any{"type": "later_variant"}), nil},
 	} {
 		t.Run(name+" thinking", func(t *testing.T) {
 			client, recorder := newTracedClient(t, respond(200, "application/json", messageJSON))
 			params := messageParams()
-			params.Thinking = thinking
+			params.Thinking = tc.thinking
 			if _, err := client.Messages.New(context.Background(), params); err != nil {
 				t.Fatal(err)
 			}
 			wantAttrs(t, onlySpan(t, recorder), map[string]any{
-				"anthropic.thinking.type":          name,
+				"anthropic.thinking.type":          tc.want,
 				"anthropic.thinking.budget_tokens": nil,
 			})
 		})
@@ -890,9 +958,10 @@ func (e encodings) MarshalJSON() ([]byte, error) {
 	return []byte("true"), nil
 }
 
-// With the spans off, a call does none of the work of a span: the parameters
-// are encoded for the request body, and not again for the span's attributes.
-func TestOpenTelemetryDisabledEncodesTheParametersOnce(t *testing.T) {
+// The attributes of a span cost no encoding of the parameters, with the spans on
+// or off: a span reads them from the fields of the parameters, and not from
+// their JSON. Content mode is apart: it records the messages as JSON.
+func TestOpenTelemetryEncodesTheParametersOnce(t *testing.T) {
 	var count int
 	thinking := anthropic.ThinkingConfigEnabledParam{BudgetTokens: 1024}
 	thinking.SetExtraFields(map[string]any{"counted": encodings{&count}})
@@ -907,7 +976,6 @@ func TestOpenTelemetryDisabledEncodesTheParametersOnce(t *testing.T) {
 		opts  []option.RequestOption
 		spans int
 	}{
-		// The span reads thinking.type from the encoded configuration.
 		"spans on":  {spans: 1},
 		"spans off": {opts: []option.RequestOption{option.WithoutOpenTelemetry()}},
 	} {
@@ -920,7 +988,7 @@ func TestOpenTelemetryDisabledEncodesTheParametersOnce(t *testing.T) {
 			if got := len(recorder.Started()); got != tc.spans {
 				t.Fatalf("got %d spans, want %d", got, tc.spans)
 			}
-			if (count > body) != (tc.spans > 0) || count < body {
+			if count != body {
 				t.Errorf("the thinking configuration was encoded %d times with %d spans, and %d times for the body alone", count, tc.spans, body)
 			}
 		})

@@ -7,10 +7,11 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 )
 
-// SetMessagesCreateResponseAttributes sets on the span of call the attributes
-// of the Message that a call to the Messages create method returned, whose JSON
-// is messageJSON, and in content mode its content. request is what
-// the span recorded of the call's parameters.
+// SetMessagesCreateResponseAttributes sets on the span of call what package
+// tracing does not read from the Message that a call to the Messages create
+// method returned, whose JSON is messageJSON: the attributes that are sums of
+// its token counts, and in content mode its content. request is what the span
+// keeps of the content of the call's request.
 func SetMessagesCreateResponseAttributes(call *tracing.APICall, request *MessagesCreateRequest, messageJSON string) {
 	if !call.Span.IsRecording() {
 		return
@@ -18,11 +19,10 @@ func SetMessagesCreateResponseAttributes(call *tracing.APICall, request *Message
 	// A failure to record telemetry must not fail the API call.
 	defer func() { tracing.HandleRecovered(recover()) }()
 
-	var message responseMessage
-	message.fromJSON(gjson.Parse(messageJSON))
-	attrs := message.attributes(true)
-	if call.Content() && message.content.Exists() {
-		attrs = append(attrs, outputContentAttributes(call, request, contentParts(message.content))...)
+	message := gjson.Parse(messageJSON)
+	attrs := tokenSumAttributes(message, true)
+	if content := message.Get("content"); call.Content() && content.Exists() {
+		attrs = append(attrs, outputContentAttributes(call, request, contentParts(content))...)
 	}
 	call.Span.SetAttributes(attrs...)
 }
@@ -44,97 +44,28 @@ func outputContentAttributes(call *tracing.APICall, request *MessagesCreateReque
 	return attrs
 }
 
-// usageFields are the fields of a Message's usage that the span reports.
-var usageFields = []string{
-	"input_tokens",
-	"output_tokens",
-	"cache_creation_input_tokens",
-	"cache_read_input_tokens",
-	"cache_creation.ephemeral_5m_input_tokens",
-	"cache_creation.ephemeral_1h_input_tokens",
-	"service_tier",
-	"output_tokens_details.thinking_tokens",
-}
-
-// responseMessage is what the span records of a Message: the response body, or
-// the Message that the SDK's accumulator built from a stream.
-type responseMessage struct {
-	id, model, stopReason string
-	usage                 map[string]gjson.Result
-	// iterations is usage.iterations: the usage of each step that made the Message.
-	iterations gjson.Result
-	content    gjson.Result
-}
-
-// fromJSON fills m from message, the JSON of a Message.
-func (m *responseMessage) fromJSON(message gjson.Result) {
-	m.id = message.Get("id").String()
-	m.model = message.Get("model").String()
-	if reason := message.Get("stop_reason"); reason.Type == gjson.String {
-		m.stopReason = reason.String()
-	}
-	m.content = message.Get("content")
-	usage := message.Get("usage")
-	m.iterations = usage.Get("iterations")
-	for _, field := range usageFields {
-		if v := usage.Get(field); v.Exists() && v.Type != gjson.Null {
-			if m.usage == nil {
-				m.usage = map[string]gjson.Result{}
-			}
-			m.usage[field] = v
-		}
-	}
-}
-
-// attributes returns the attributes that come from the Message. The ones whose
-// value the message_delta event of a stream ends are among them only when
-// complete is true: the Message is a response body, or its stream is past that event.
-func (m *responseMessage) attributes(complete bool) []attribute.KeyValue {
+// tokenSumAttributes returns the attributes of message, the JSON of a Message,
+// that are sums of its token counts. Those of its compactions are among them only
+// when complete is true: it is a response body, or a stream past message_delta.
+func tokenSumAttributes(message gjson.Result, complete bool) []attribute.KeyValue {
 	var attrs []attribute.KeyValue
-	if m.id != "" {
-		attrs = append(attrs, GenAIResponseIDKey.String(m.id))
+	usage := message.Get("usage")
+	// The conventions define the input tokens as the sum of these three.
+	inputTokens := func(usage gjson.Result) int64 {
+		return usage.Get("input_tokens").Int() + usage.Get("cache_read_input_tokens").Int() + usage.Get("cache_creation_input_tokens").Int()
 	}
-	if m.model != "" {
-		attrs = append(attrs, GenAIResponseModelKey.String(m.model))
+	if input := usage.Get("input_tokens"); input.Exists() && input.Type != gjson.Null {
+		attrs = append(attrs, GenAIUsageInputTokensKey.Int64(inputTokens(usage)))
 	}
-	if input, ok := m.usage["input_tokens"]; ok {
-		// The conventions define the input tokens as the sum of these three.
-		sum := input.Int() + m.usage["cache_read_input_tokens"].Int() + m.usage["cache_creation_input_tokens"].Int()
-		attrs = append(attrs, GenAIUsageInputTokensKey.Int64(sum))
-	}
-	for field, key := range map[string]attribute.Key{
-		"cache_creation_input_tokens":              GenAIUsageCacheWriteInputTokensKey,
-		"cache_creation.ephemeral_5m_input_tokens": AnthropicUsageCacheCreationEphemeral5mInputTokensKey,
-		"cache_creation.ephemeral_1h_input_tokens": AnthropicUsageCacheCreationEphemeral1hInputTokensKey,
-		"cache_read_input_tokens":                  GenAIUsageCacheReadInputTokensKey,
-	} {
-		if v, ok := m.usage[field]; ok {
-			attrs = append(attrs, key.Int64(v.Int()))
-		}
-	}
-	if tier, ok := m.usage["service_tier"]; ok {
-		attrs = append(attrs, AnthropicResponseServiceTierKey.String(tier.String()))
-	}
-	if !complete {
-		return attrs
-	}
-	if v, ok := m.usage["output_tokens"]; ok {
-		attrs = append(attrs, GenAIUsageOutputTokensKey.Int64(v.Int()))
-	}
-	if v, ok := m.usage["output_tokens_details.thinking_tokens"]; ok {
-		attrs = append(attrs, GenAIUsageReasoningOutputTokensKey.Int64(v.Int()))
-	}
-	if m.stopReason != "" {
-		attrs = append(attrs, AnthropicMessageStopReasonKey.String(m.stopReason))
-	}
-	compactions := m.iterations.Get(`#(type=="compaction")#`).Array()
-	if len(compactions) == 0 {
+	// usage.iterations has the usage of each step that made the Message.
+	compactions := usage.Get(`iterations.#(type=="compaction")#`).Array()
+	if !complete || len(compactions) == 0 {
 		return attrs
 	}
 	// The Message's own usage leaves out the tokens of its compactions.
 	var input, output int64
 	for _, usage := range compactions {
-		input += usage.Get("input_tokens").Int() + usage.Get("cache_read_input_tokens").Int() + usage.Get("cache_creation_input_tokens").Int()
+		input += inputTokens(usage)
 		output += usage.Get("output_tokens").Int()
 	}
 	return append(attrs, AnthropicUsageCompactionInputTokensKey.Int64(input), AnthropicUsageCompactionOutputTokensKey.Int64(output))

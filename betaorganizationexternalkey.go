@@ -41,10 +41,16 @@ func NewBetaOrganizationExternalKeyService(opts ...option.RequestOption) (r Beta
 }
 
 // Create an external key config owned by the caller's organization.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400)
 func (r *BetaOrganizationExternalKeyService) New(ctx context.Context, body BetaOrganizationExternalKeyNewParams, opts ...option.RequestOption) (res *BetaExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/external_keys"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.create", "/v1/organizations/external_keys"), requestconfig.WithSpanCreatedID("anthropic.organization.external_key.id", &res, func(created *BetaExternalKey) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -57,7 +63,7 @@ func (r *BetaOrganizationExternalKeyService) Get(ctx context.Context, externalKe
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.retrieve", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -69,13 +75,18 @@ func (r *BetaOrganizationExternalKeyService) Get(ctx context.Context, externalKe
 // `display_name` is always editable. `geo` and `provider_config` cannot be changed
 // once any workspace references this config, because previously encrypted data
 // requires the original key identity to decrypt.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400)
 func (r *BetaOrganizationExternalKeyService) Update(ctx context.Context, externalKeyID string, body BetaOrganizationExternalKeyUpdateParams, opts ...option.RequestOption) (res *BetaExternalKey, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.update", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
@@ -116,13 +127,18 @@ func (r *BetaOrganizationExternalKeyService) ListAutoPaging(ctx context.Context,
 // Delete an external key config.
 //
 // The request is rejected if any workspace still references this config.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeExternalKeyInWorkspacePolicy] (HTTP 400)
 func (r *BetaOrganizationExternalKeyService) Delete(ctx context.Context, externalKeyID string, opts ...option.RequestOption) (res *BetaOrganizationExternalKeyDeleteResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if externalKeyID == "" {
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.delete", "/v1/organizations/external_keys/{external_key_id}"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -141,7 +157,7 @@ func (r *BetaOrganizationExternalKeyService) Validate(ctx context.Context, exter
 		err = errors.New("missing required external_key_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/external_keys/%s/validate", url.PathEscape(externalKeyID))
+	path := fmt.Sprintf("v1/organizations/external_keys/%s/validate", requestconfig.EscapePathSegment(externalKeyID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.external_keys.validate", "/v1/organizations/external_keys/{external_key_id}/validate"), requestconfig.WithSpanAttribute("anthropic.organization.external_key.id", externalKeyID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -288,8 +304,7 @@ type BetaExternalKey struct {
 	CreatedAt  time.Time                      `json:"created_at" api:"required" format:"date-time"`
 	// Human-friendly display name. Null if none was set.
 	DisplayName string `json:"display_name" api:"required"`
-	// Data residency geo. Selects the region that handles this key's encrypt/decrypt
-	// roundtrips.
+	// Data residency geo. Selects the region this key is used in.
 	Geo string `json:"geo" api:"required"`
 	// KMS provider identity and auth coordinates.
 	ProviderConfig BetaExternalKeyProviderConfigUnion `json:"provider_config" api:"required"`

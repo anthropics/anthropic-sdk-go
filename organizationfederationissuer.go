@@ -59,6 +59,7 @@ func NewOrganizationFederationIssuerService(opts ...option.RequestOption) (r Org
 func (r *OrganizationFederationIssuerService) New(ctx context.Context, body OrganizationFederationIssuerNewParams, opts ...option.RequestOption) (res *FederationIssuer, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/federation_issuers"
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.create", "/v1/organizations/federation_issuers"), requestconfig.WithSpanCreatedID("anthropic.organization.federation_issuer.id", &res, func(created *FederationIssuer) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -76,7 +77,7 @@ func (r *OrganizationFederationIssuerService) Get(ctx context.Context, federatio
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", url.PathEscape(federationIssuerID))
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", requestconfig.EscapePathSegment(federationIssuerID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.retrieve", "/v1/organizations/federation_issuers/{federation_issuer_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -100,7 +101,7 @@ func (r *OrganizationFederationIssuerService) Update(ctx context.Context, federa
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", url.PathEscape(federationIssuerID))
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s", requestconfig.EscapePathSegment(federationIssuerID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.update", "/v1/organizations/federation_issuers/{federation_issuer_id}"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -161,7 +162,7 @@ func (r *OrganizationFederationIssuerService) Archive(ctx context.Context, feder
 		err = errors.New("missing required federation_issuer_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/federation_issuers/%s/archive", url.PathEscape(federationIssuerID))
+	path := fmt.Sprintf("v1/organizations/federation_issuers/%s/archive", requestconfig.EscapePathSegment(federationIssuerID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.federation.issuers.archive", "/v1/organizations/federation_issuers/{federation_issuer_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.federation_issuer.id", federationIssuerID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err

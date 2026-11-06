@@ -42,6 +42,12 @@ func NewModelService(opts ...option.RequestOption) (r ModelService) {
 //
 // The Models API response can be used to determine information about a specific
 // model or resolve a model alias to a model ID.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetParams, opts ...option.RequestOption) (res *ModelInfo, err error) {
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -51,7 +57,7 @@ func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetPa
 		err = errors.New("missing required model_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/models/%s", url.PathEscape(modelID))
+	path := fmt.Sprintf("v1/models/%s", requestconfig.EscapePathSegment(modelID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.models.retrieve", "/v1/models/{model_id}"), requestconfig.WithSpanAttribute("anthropic.model.id", modelID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -61,6 +67,12 @@ func (r *ModelService) Get(ctx context.Context, modelID string, query ModelGetPa
 //
 // The Models API response can be used to determine which models are available for
 // use in the API. More recently released models are listed first.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *ModelService) List(ctx context.Context, params ModelListParams, opts ...option.RequestOption) (res *pagination.Page[ModelInfo], err error) {
 	var raw *http.Response
 	if !param.IsOmitted(params.WorkspaceID) {
@@ -86,6 +98,12 @@ func (r *ModelService) List(ctx context.Context, params ModelListParams, opts ..
 //
 // The Models API response can be used to determine which models are available for
 // use in the API. More recently released models are listed first.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *ModelService) ListAutoPaging(ctx context.Context, params ModelListParams, opts ...option.RequestOption) *pagination.PageAutoPager[ModelInfo] {
 	return pagination.NewPageAutoPager(r.List(ctx, params, opts...))
 }

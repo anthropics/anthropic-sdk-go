@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/tidwall/gjson"
 	"go.opentelemetry.io/otel/attribute"
 
 	shimjson "github.com/anthropics/anthropic-sdk-go/v2/internal/encoding/json"
@@ -22,8 +21,8 @@ import (
 func messagesCreateSpan(params MessageNewParams, res **Message) option.RequestOption {
 	var request *telemetry.MessagesCreateRequest
 	return requestconfig.WithSpanRecorder("anthropic.messages.create", requestconfig.SpanRecorder{
-		StartAttributes: func(header http.Header) []attribute.KeyValue {
-			request = messagesCreateRequest(params, header, res == nil)
+		StartAttributes: func(http.Header) []attribute.KeyValue {
+			request = &telemetry.MessagesCreateRequest{HasOutputFormat: !param.IsOmitted(params.OutputConfig.Format)}
 			return telemetry.MessagesCreateStartAttributes(request)
 		},
 		RecordRequest: func(call *tracing.APICall) {
@@ -54,8 +53,8 @@ func messagesCreateSpan(params MessageNewParams, res **Message) option.RequestOp
 func betaMessagesCreateSpan(params BetaMessageNewParams, res **BetaMessage) option.RequestOption {
 	var request *telemetry.MessagesCreateRequest
 	return requestconfig.WithSpanRecorder("anthropic.messages.create", requestconfig.SpanRecorder{
-		StartAttributes: func(header http.Header) []attribute.KeyValue {
-			request = betaMessagesCreateRequest(params, header, res == nil)
+		StartAttributes: func(http.Header) []attribute.KeyValue {
+			request = &telemetry.MessagesCreateRequest{HasOutputFormat: !param.IsOmitted(params.OutputConfig.Format) || !param.IsOmitted(params.OutputFormat)}
 			return telemetry.MessagesCreateStartAttributes(request)
 		},
 		RecordRequest: func(call *tracing.APICall) {
@@ -81,23 +80,6 @@ func betaMessagesCreateSpan(params BetaMessageNewParams, res **BetaMessage) opti
 	})
 }
 
-// countTokensSpan returns the option that makes the OpenTelemetry span of a call
-// to a CountTokens method record model and the count that the method decodes
-// into *res, which inputTokens reads. *res stays nil when the application had
-// the body decoded into a value of its own.
-func countTokensSpan[T any](model string, res **T, inputTokens func(*T) int64) option.RequestOption {
-	return requestconfig.WithSpanRecorder("anthropic.messages.count_tokens", requestconfig.SpanRecorder{
-		StartAttributes: func(http.Header) []attribute.KeyValue {
-			return []attribute.KeyValue{telemetry.GenAIRequestModelKey.String(model)}
-		},
-		RecordResult: func(call *tracing.APICall, err error) {
-			if err == nil && *res != nil {
-				call.Span.SetAttributes(telemetry.AnthropicMessageCountTokensInputTokensKey.Int64(inputTokens(*res)))
-			}
-		},
-	})
-}
-
 // messageBatchesCreateSpan returns the option that makes the OpenTelemetry span
 // of a call to [MessageBatchService.New] or [BetaMessageBatchService.New] start
 // with requests, the number of requests of the batch.
@@ -107,51 +89,6 @@ func messageBatchesCreateSpan(requests int) option.RequestOption {
 			return []attribute.KeyValue{telemetry.AnthropicMessageBatchRequestCountKey.Int(requests)}
 		},
 	})
-}
-
-// messagesCreateRequest returns what the OpenTelemetry span of a call to
-// [MessageService.New] or [MessageService.NewStreaming] starts with of params.
-// header is the header of the request, and stream is whether the method streams
-// the Message.
-func messagesCreateRequest(params MessageNewParams, header http.Header, stream bool) *telemetry.MessagesCreateRequest {
-	return &telemetry.MessagesCreateRequest{
-		Model:                string(params.Model),
-		MaxTokens:            params.MaxTokens,
-		ServiceTier:          string(params.ServiceTier),
-		Effort:               string(params.OutputConfig.Effort),
-		ThinkingType:         thinkingType(params.Thinking),
-		ThinkingBudgetTokens: params.Thinking.GetBudgetTokens(),
-		HasOutputFormat:      !param.IsOmitted(params.OutputConfig.Format),
-		Stream:               stream,
-		Betas:                telemetry.BetaNames(header),
-	}
-}
-
-// betaMessagesCreateRequest is [messagesCreateRequest] for
-// [BetaMessageService.New] and [BetaMessageService.NewStreaming].
-func betaMessagesCreateRequest(params BetaMessageNewParams, header http.Header, stream bool) *telemetry.MessagesCreateRequest {
-	return &telemetry.MessagesCreateRequest{
-		Model:                string(params.Model),
-		MaxTokens:            params.MaxTokens,
-		ServiceTier:          string(params.ServiceTier),
-		Effort:               string(params.OutputConfig.Effort),
-		ThinkingType:         thinkingType(params.Thinking),
-		ThinkingBudgetTokens: params.Thinking.GetBudgetTokens(),
-		HasOutputFormat:      !param.IsOmitted(params.OutputConfig.Format) || !param.IsOmitted(params.OutputFormat),
-		Stream:               stream,
-		Betas:                telemetry.BetaNames(header),
-	}
-}
-
-// thinkingType returns thinking.type as the request sends it, read from the JSON
-// of thinking, the thinking configuration of the parameters. The type is sent
-// even when the application leaves it to its default, and a configuration that
-// this version of the SDK has no variant for has one too.
-func thinkingType(thinking any) string {
-	if param.IsOmitted(thinking) {
-		return ""
-	}
-	return gjson.GetBytes(marshalParams(thinking), "type").Str
 }
 
 // marshalParams returns the JSON of v, a value of the request parameters, as the

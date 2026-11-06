@@ -66,7 +66,7 @@ func (r *BetaSessionResourceService) Get(ctx context.Context, resourceID string,
 		err = errors.New("missing required resource_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources/%s", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	path := fmt.Sprintf("v1/sessions/%s/resources/%s", requestconfig.EscapePathSegment(params.SessionID), requestconfig.EscapePathSegment(resourceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.retrieve", "/v1/sessions/{session_id}/resources/{resource_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.resource.id", resourceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -98,7 +98,7 @@ func (r *BetaSessionResourceService) Update(ctx context.Context, resourceID stri
 		err = errors.New("missing required resource_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources/%s", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	path := fmt.Sprintf("v1/sessions/%s/resources/%s", requestconfig.EscapePathSegment(params.SessionID), requestconfig.EscapePathSegment(resourceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.update", "/v1/sessions/{session_id}/resources/{resource_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.resource.id", resourceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -127,7 +127,7 @@ func (r *BetaSessionResourceService) List(ctx context.Context, sessionID string,
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/resources", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.list", "/v1/sessions/{session_id}/resources", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -172,7 +172,7 @@ func (r *BetaSessionResourceService) Delete(ctx context.Context, resourceID stri
 		err = errors.New("missing required resource_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources/%s", url.PathEscape(params.SessionID), url.PathEscape(resourceID))
+	path := fmt.Sprintf("v1/sessions/%s/resources/%s", requestconfig.EscapePathSegment(params.SessionID), requestconfig.EscapePathSegment(resourceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.delete", "/v1/sessions/{session_id}/resources/{resource_id}"), requestconfig.WithSpanAttribute("anthropic.session.id", params.SessionID), requestconfig.WithSpanAttribute("anthropic.session.resource.id", resourceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -200,7 +200,7 @@ func (r *BetaSessionResourceService) Add(ctx context.Context, sessionID string, 
 		err = errors.New("missing required session_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/sessions/%s/resources", url.PathEscape(sessionID))
+	path := fmt.Sprintf("v1/sessions/%s/resources", requestconfig.EscapePathSegment(sessionID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.sessions.resources.add", "/v1/sessions/{session_id}/resources"), requestconfig.WithSpanAttribute("anthropic.session.id", sessionID), requestconfig.WithSpanCreatedID("anthropic.session.resource.id", &res, func(created *BetaManagedAgentsFileResource) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -355,8 +355,8 @@ func (r *BetaManagedAgentsGitHubRepositoryResourceCheckoutUnion) UnmarshalJSON(d
 
 // A memory store attached to an agent session.
 type BetaManagedAgentsMemoryStoreResource struct {
-	// The memory store ID (memstore\_...). Must belong to the caller's organization
-	// and workspace.
+	// The memory store ID (memstore_...). Must belong to the caller's organization and
+	// workspace.
 	MemoryStoreID string               `json:"memory_store_id" api:"required"`
 	Type          constant.MemoryStore `json:"type" default:"memory_store"`
 	// Access mode for the mounted store. Defaults to `read_write`. `read_only` mounts

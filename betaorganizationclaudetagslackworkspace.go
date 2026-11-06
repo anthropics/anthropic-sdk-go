@@ -47,6 +47,14 @@ func NewBetaOrganizationClaudeTagSlackWorkspaceService(opts ...option.RequestOpt
 // account, and the request fails with 503 rather than resolve against a settings
 // level that could not be read. Either way `sources` names the settings level each
 // value comes from.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagSlackWorkspaceService) Get(ctx context.Context, id string, params BetaOrganizationClaudeTagSlackWorkspaceGetParams, opts ...option.RequestOption) (res *BetaClaudeTagSlackWorkspace, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -64,7 +72,7 @@ func (r *BetaOrganizationClaudeTagSlackWorkspaceService) Get(ctx context.Context
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/slack_workspaces/%s", url.PathEscape(id))
+	path := fmt.Sprintf("v1/organizations/claude_tag/slack_workspaces/%s", requestconfig.EscapePathSegment(id))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.slack_workspaces.retrieve", "/v1/organizations/claude_tag/slack_workspaces/{id}", "include_inherited"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.slack_workspace.id", id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
@@ -74,6 +82,17 @@ func (r *BetaOrganizationClaudeTagSlackWorkspaceService) Get(ctx context.Context
 // Change the settings a Slack workspace stores. The update is partial: a setting
 // left out is unchanged, and a setting sent as null is cleared, so the workspace
 // inherits it. If any value is refused, no setting in the request is stored.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
+//   - [ErrorCodeBetaEnvironmentNotFound] (HTTP 404)
+//   - [ErrorCodeBetaSlackChannelSetUpEnvironmentNotFound] (HTTP 404)
+//   - [ErrorCodeBetaSlackChannelSetUpSettingsConflict] (HTTP 409)
 func (r *BetaOrganizationClaudeTagSlackWorkspaceService) Update(ctx context.Context, id string, params BetaOrganizationClaudeTagSlackWorkspaceUpdateParams, opts ...option.RequestOption) (res *BetaClaudeTagSlackWorkspace, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -91,7 +110,7 @@ func (r *BetaOrganizationClaudeTagSlackWorkspaceService) Update(ctx context.Cont
 		err = errors.New("missing required id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/slack_workspaces/%s", url.PathEscape(id))
+	path := fmt.Sprintf("v1/organizations/claude_tag/slack_workspaces/%s", requestconfig.EscapePathSegment(id))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.slack_workspaces.update", "/v1/organizations/claude_tag/slack_workspaces/{id}"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.slack_workspace.id", id))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -106,6 +125,14 @@ func (r *BetaOrganizationClaudeTagSlackWorkspaceService) Update(ctx context.Cont
 // `settings` holds what applies in it, and the request fails with 503 rather than
 // resolve against a settings level that could not be read. A `page` cursor resumes
 // only a request with the same `include_inherited`.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagSlackWorkspaceService) List(ctx context.Context, params BetaOrganizationClaudeTagSlackWorkspaceListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaClaudeTagSlackWorkspace], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -143,6 +170,14 @@ func (r *BetaOrganizationClaudeTagSlackWorkspaceService) List(ctx context.Contex
 // `settings` holds what applies in it, and the request fails with 503 rather than
 // resolve against a settings level that could not be read. A `page` cursor resumes
 // only a request with the same `include_inherited`.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagSlackWorkspaceService) ListAutoPaging(ctx context.Context, params BetaOrganizationClaudeTagSlackWorkspaceListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaClaudeTagSlackWorkspace] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }

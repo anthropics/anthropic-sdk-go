@@ -3,37 +3,23 @@
 package telemetry
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/anthropics/anthropic-sdk-go/v2/internal/tracing"
 )
 
-// SetAPICallAttributes sets on the span of call the anthropic.* attributes that
-// every API call has from the headers of its response. requestconfig calls it
-// once the call has a result. The span started with [APICallAttributes], and the
-// SDK methods set the attributes of their own requests and responses.
-func SetAPICallAttributes(call *tracing.APICall) {
-	res := call.Response
-	if res == nil || !call.Span.IsRecording() {
-		return
-	}
-	var attrs []attribute.KeyValue
-	for header, key := range responseHeaderAttributes {
-		if v := res.Header.Get(header); v != "" {
-			attrs = append(attrs, key.String(v))
-		}
-	}
-	call.Span.SetAttributes(attrs...)
-}
-
-// CommonAttributes returns the attributes that every span of opts has. A span
-// starts with them, so that a sampler sees them.
+// CommonAttributes returns the attributes that every span of opts has: those of
+// [tracing.ClientAttributes], with the provider of a third-party platform in
+// place of theirs, and the conversation ID. A span starts with them, so that a
+// sampler sees them.
 func CommonAttributes(opts tracing.Options) []attribute.KeyValue {
-	provider := opts.ProviderName
-	if provider == "" {
-		provider = ProviderAnthropic
+	attrs := tracing.ClientAttributes()
+	if opts.ProviderName != "" {
+		attrs = slices.DeleteFunc(attrs, func(kv attribute.KeyValue) bool { return kv.Key == GenAIProviderNameKey })
+		attrs = append(attrs, GenAIProviderNameKey.String(opts.ProviderName))
 	}
-	attrs := []attribute.KeyValue{GenAIProviderNameKey.String(provider)}
 	if opts.ConversationID != "" {
 		attrs = append(attrs, GenAIConversationIDKey.String(opts.ConversationID))
 	}
@@ -56,10 +42,4 @@ func APICallAttributes(opts tracing.Options, pathIDs []attribute.KeyValue) []att
 		}
 	}
 	return attrs
-}
-
-var responseHeaderAttributes = map[string]attribute.Key{
-	"request-id":                AnthropicRequestIDKey,
-	"anthropic-organization-id": AnthropicOrganizationIDKey,
-	"anthropic-workspace-id":    AnthropicWorkspaceIDKey,
 }

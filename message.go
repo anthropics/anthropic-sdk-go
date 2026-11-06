@@ -50,6 +50,39 @@ func NewMessageService(opts ...option.RequestOption) (r MessageService) {
 // Learn more about the Messages API in our
 // [user guide](https://platform.claude.com/docs/en/get-started)
 //
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400)
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeClaudeCodeVersionTooOld] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeCompactionBlockAmbiguous] (HTTP 400)
+//   - [ErrorCodeCompactionBlockMisplaced] (HTTP 400)
+//   - [ErrorCodeCompactionContentMismatch] (HTTP 400)
+//   - [ErrorCodeCompactionIncompleteTurn] (HTTP 400)
+//   - [ErrorCodeCompactionNothingToSummarize] (HTTP 400)
+//   - [ErrorCodeCompactionSignatureInvalid] (HTTP 400)
+//   - [ErrorCodeCompactionTooManyToolReferences] (HTTP 400)
+//   - [ErrorCodeCompactionToolChangesMismatch] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingInvalid] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingUnsupported] (HTTP 400)
+//   - [ErrorCodeThreadAlreadyContinued] (HTTP 400)
+//   - [ErrorCodeThreadContinueInFlight] (HTTP 400)
+//   - [ErrorCodeThreadFingerprintMismatch] (HTTP 400)
+//   - [ErrorCodeThreadUnsupportedRequest] (HTTP 400)
+//   - [ErrorCodeToolNameConflict] (HTTP 400)
+//   - [ErrorCodeToolReferenceUnresolved] (HTTP 400)
+//   - [ErrorCodeThreadNotFound] (HTTP 404)
+//   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
+//   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
+//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
+//   - [ErrorCodeRampLimitExceeded] (HTTP 429)
+//   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
+//   - [ErrorCodeCompactionUnavailable] (HTTP 529)
+//
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts ...option.RequestOption) (res *Message, err error) {
 	if !param.IsOmitted(params.UserProfileID) {
@@ -58,6 +91,7 @@ func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts 
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 
@@ -84,6 +118,39 @@ func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts 
 // Learn more about the Messages API in our
 // [user guide](https://platform.claude.com/docs/en/get-started)
 //
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400)
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeClaudeCodeVersionTooOld] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeCompactionBlockAmbiguous] (HTTP 400)
+//   - [ErrorCodeCompactionBlockMisplaced] (HTTP 400)
+//   - [ErrorCodeCompactionContentMismatch] (HTTP 400)
+//   - [ErrorCodeCompactionIncompleteTurn] (HTTP 400)
+//   - [ErrorCodeCompactionNothingToSummarize] (HTTP 400)
+//   - [ErrorCodeCompactionSignatureInvalid] (HTTP 400)
+//   - [ErrorCodeCompactionTooManyToolReferences] (HTTP 400)
+//   - [ErrorCodeCompactionToolChangesMismatch] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingInvalid] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingUnsupported] (HTTP 400)
+//   - [ErrorCodeThreadAlreadyContinued] (HTTP 400)
+//   - [ErrorCodeThreadContinueInFlight] (HTTP 400)
+//   - [ErrorCodeThreadFingerprintMismatch] (HTTP 400)
+//   - [ErrorCodeThreadUnsupportedRequest] (HTTP 400)
+//   - [ErrorCodeToolNameConflict] (HTTP 400)
+//   - [ErrorCodeToolReferenceUnresolved] (HTTP 400)
+//   - [ErrorCodeThreadNotFound] (HTTP 404)
+//   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
+//   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
+//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
+//   - [ErrorCodeRampLimitExceeded] (HTTP 429)
+//   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
+//   - [ErrorCodeCompactionUnavailable] (HTTP 529)
+//
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *MessageService) NewStreaming(ctx context.Context, params MessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[MessageStreamEventUnion]) {
 	var (
@@ -96,6 +163,7 @@ func (r *MessageService) NewStreaming(ctx context.Context, params MessageNewPara
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 	opts = append(opts, option.WithJSONSet("stream", true))
@@ -112,6 +180,26 @@ func (r *MessageService) NewStreaming(ctx context.Context, params MessageNewPara
 //
 // Learn more about token counting in our
 // [user guide](https://platform.claude.com/docs/en/build-with-claude/token-counting)
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400)
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCompactionBlockAmbiguous] (HTTP 400)
+//   - [ErrorCodeCompactionBlockMisplaced] (HTTP 400)
+//   - [ErrorCodeCompactionContentMismatch] (HTTP 400)
+//   - [ErrorCodeCompactionNothingToSummarize] (HTTP 400)
+//   - [ErrorCodeCompactionSignatureInvalid] (HTTP 400)
+//   - [ErrorCodeCompactionToolChangesMismatch] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingInvalid] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingUnsupported] (HTTP 400)
+//   - [ErrorCodeToolNameConflict] (HTTP 400)
+//   - [ErrorCodeToolReferenceUnresolved] (HTTP 400)
+//   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
+//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
+//   - [ErrorCodeCompactionUnavailable] (HTTP 529)
 func (r *MessageService) CountTokens(ctx context.Context, params MessageCountTokensParams, opts ...option.RequestOption) (res *MessageTokensCount, err error) {
 	if !param.IsOmitted(params.UserProfileID) {
 		opts = append(opts, option.WithHeader("anthropic-user-profile-id", fmt.Sprintf("%v", params.UserProfileID.Value)))
@@ -119,9 +207,10 @@ func (r *MessageService) CountTokens(ctx context.Context, params MessageCountTok
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens"
-	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"), countTokensSpan(string(params.Model), &res, func(count *MessageTokensCount) int64 { return count.InputTokens }))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -7687,8 +7776,8 @@ func (u ContentBlockParamUnion) GetContent() (res contentBlockParamUnionContent)
 	return
 }
 
-// Can have the runtime types [_[]TextBlockParam],
-// [_[]ToolResultBlockParamContentUnion], [*[]WebSearchResultBlockParam],
+// Can have the runtime types [*[]TextBlockParam],
+// [*[]ToolResultBlockParamContentUnion], [*[]WebSearchResultBlockParam],
 // [*WebFetchToolResultErrorBlockParam], [*WebFetchBlockParam],
 // [*CodeExecutionToolResultErrorParam], [*CodeExecutionResultBlockParam],
 // [*EncryptedCodeExecutionResultBlockParam],
@@ -7954,7 +8043,7 @@ func (u contentBlockParamUnionContent) GetContent() (res contentBlockParamUnionC
 }
 
 // Can have the runtime types [*DocumentBlockParam],
-// [_[]CodeExecutionOutputBlockParam], [_[]BashCodeExecutionOutputBlockParam],
+// [*[]CodeExecutionOutputBlockParam], [*[]BashCodeExecutionOutputBlockParam],
 // [*string]
 type contentBlockParamUnionContentContent struct{ any }
 
@@ -10629,7 +10718,7 @@ func (u MessageParam) GetContent() (res messageParamContent) {
 	return
 }
 
-// Can have the runtime types [_[]ContentBlockParamUnion], [_[]TextBlockParam]
+// Can have the runtime types [*[]ContentBlockParamUnion], [*[]TextBlockParam]
 type messageParamContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -10793,10 +10882,10 @@ type OutputTokensDetails struct {
 	// thinking-block delimiter tokens.
 	//
 	// Reflects the raw reasoning the model produced, not the (possibly shorter)
-	// summarized thinking text returned in the response body. Computed by
-	// re-tokenizing the raw reasoning text, so it may differ from the model's exact
-	// generation count by a small number of tokens. Always ≤ `output_tokens`;
-	// `output_tokens - thinking_tokens` approximates the non-reasoning output.
+	// summarized thinking text returned in the response body. It may differ from the
+	// model's exact generation count by a small number of tokens. Always ≤
+	// `output_tokens`; `output_tokens - thinking_tokens` approximates the
+	// non-reasoning output.
 	ThinkingTokens int64 `json:"thinking_tokens" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -17845,7 +17934,7 @@ const (
 type MessageNewParams struct {
 	// The maximum number of tokens to generate before stopping.
 	//
-	// Note that our models may stop _before_ reaching this maximum. This parameter
+	// Note that our models may stop *before* reaching this maximum. This parameter
 	// only specifies the absolute maximum number of tokens to generate.
 	//
 	// Set to `0` to populate the

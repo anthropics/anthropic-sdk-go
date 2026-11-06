@@ -32,11 +32,12 @@ func unsetEnv(t *testing.T, key string) {
 }
 
 // isolateAuthEnv points ANTHROPIC_CONFIG_DIR at a fresh temp dir and
-// unsets the federation env vars so a test is not affected by whatever
-// host profile or env state the developer has configured.
+// unsets ANTHROPIC_BASE_URL and the federation env vars so a test is not
+// affected by whatever host profile or env state the developer has configured.
 func isolateAuthEnv(t *testing.T) {
 	t.Helper()
 	t.Setenv("ANTHROPIC_CONFIG_DIR", t.TempDir())
+	unsetEnv(t, "ANTHROPIC_BASE_URL")
 	unsetEnv(t, "ANTHROPIC_PROFILE")
 	unsetEnv(t, "ANTHROPIC_FEDERATION_RULE_ID")
 	unsetEnv(t, "ANTHROPIC_ORGANIZATION_ID")
@@ -1619,7 +1620,6 @@ func isolateProfileEnv(t *testing.T) {
 	t.Helper()
 	unsetEnv(t, "ANTHROPIC_API_KEY")
 	unsetEnv(t, "ANTHROPIC_AUTH_TOKEN")
-	unsetEnv(t, "ANTHROPIC_BASE_URL")
 	isolateAuthEnv(t)
 }
 

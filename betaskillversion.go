@@ -44,6 +44,15 @@ func NewBetaSkillVersionService(opts ...option.RequestOption) (r BetaSkillVersio
 }
 
 // Create Skill Version
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeCMEKContextUnavailable] (HTTP 503)
 func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, params BetaSkillVersionNewParams, opts ...option.RequestOption) (res *BetaSkillVersion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -63,14 +72,21 @@ func (r *BetaSkillVersionService) New(ctx context.Context, skillID string, param
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions", url.PathEscape(skillID))
+	path := fmt.Sprintf("v1/skills/%s/versions", requestconfig.EscapePathSegment(skillID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.create", "/v1/skills/{skill_id}/versions"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID), requestconfig.WithSpanCreatedID("anthropic.skill.version.id", &res, func(created *BetaSkillVersion) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Get Skill Version
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaSkillVersionService) Get(ctx context.Context, version string, params BetaSkillVersionGetParams, opts ...option.RequestOption) (res *BetaSkillVersion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -94,7 +110,7 @@ func (r *BetaSkillVersionService) Get(ctx context.Context, version string, param
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions/%s", url.PathEscape(params.SkillID), url.PathEscape(version))
+	path := fmt.Sprintf("v1/skills/%s/versions/%s", requestconfig.EscapePathSegment(params.SkillID), requestconfig.EscapePathSegment(version))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.retrieve", "/v1/skills/{skill_id}/versions/{version}"), requestconfig.WithSpanAttribute("anthropic.skill.id", params.SkillID), requestconfig.WithSpanAttribute("anthropic.skill.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -102,6 +118,12 @@ func (r *BetaSkillVersionService) Get(ctx context.Context, version string, param
 }
 
 // List Skill Versions
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaSkillVersionService) List(ctx context.Context, skillID string, params BetaSkillVersionListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSkillVersion], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -123,7 +145,7 @@ func (r *BetaSkillVersionService) List(ctx context.Context, skillID string, para
 		err = errors.New("missing required skill_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions", url.PathEscape(skillID))
+	path := fmt.Sprintf("v1/skills/%s/versions", requestconfig.EscapePathSegment(skillID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.list", "/v1/skills/{skill_id}/versions", "limit", "page"), requestconfig.WithSpanAttribute("anthropic.skill.id", skillID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
@@ -139,11 +161,23 @@ func (r *BetaSkillVersionService) List(ctx context.Context, skillID string, para
 }
 
 // List Skill Versions
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaSkillVersionService) ListAutoPaging(ctx context.Context, skillID string, params BetaSkillVersionListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSkillVersion] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, skillID, params, opts...))
 }
 
 // Delete Skill Version
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaSkillVersionService) Delete(ctx context.Context, version string, params BetaSkillVersionDeleteParams, opts ...option.RequestOption) (res *BetaDeletedSkillVersion, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -167,7 +201,7 @@ func (r *BetaSkillVersionService) Delete(ctx context.Context, version string, pa
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions/%s", url.PathEscape(params.SkillID), url.PathEscape(version))
+	path := fmt.Sprintf("v1/skills/%s/versions/%s", requestconfig.EscapePathSegment(params.SkillID), requestconfig.EscapePathSegment(version))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.delete", "/v1/skills/{skill_id}/versions/{version}"), requestconfig.WithSpanAttribute("anthropic.skill.id", params.SkillID), requestconfig.WithSpanAttribute("anthropic.skill.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -199,7 +233,7 @@ func (r *BetaSkillVersionService) Download(ctx context.Context, version string, 
 		err = errors.New("missing required version parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/skills/%s/versions/%s/content", url.PathEscape(params.SkillID), url.PathEscape(version))
+	path := fmt.Sprintf("v1/skills/%s/versions/%s/content", requestconfig.EscapePathSegment(params.SkillID), requestconfig.EscapePathSegment(version))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.skills.versions.download", "/v1/skills/{skill_id}/versions/{version}/content"), requestconfig.WithSpanAttribute("anthropic.skill.id", params.SkillID), requestconfig.WithSpanAttribute("anthropic.skill.version.id", version))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)

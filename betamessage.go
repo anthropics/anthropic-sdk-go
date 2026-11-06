@@ -49,6 +49,39 @@ func NewBetaMessageService(opts ...option.RequestOption) (r BetaMessageService) 
 // Learn more about the Messages API in our
 // [user guide](https://platform.claude.com/docs/en/get-started)
 //
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400)
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeClaudeCodeVersionTooOld] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeCompactionBlockAmbiguous] (HTTP 400)
+//   - [ErrorCodeCompactionBlockMisplaced] (HTTP 400)
+//   - [ErrorCodeCompactionContentMismatch] (HTTP 400)
+//   - [ErrorCodeCompactionIncompleteTurn] (HTTP 400)
+//   - [ErrorCodeCompactionNothingToSummarize] (HTTP 400)
+//   - [ErrorCodeCompactionSignatureInvalid] (HTTP 400)
+//   - [ErrorCodeCompactionTooManyToolReferences] (HTTP 400)
+//   - [ErrorCodeCompactionToolChangesMismatch] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingInvalid] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingUnsupported] (HTTP 400)
+//   - [ErrorCodeThreadAlreadyContinued] (HTTP 400)
+//   - [ErrorCodeThreadContinueInFlight] (HTTP 400)
+//   - [ErrorCodeThreadFingerprintMismatch] (HTTP 400)
+//   - [ErrorCodeThreadUnsupportedRequest] (HTTP 400)
+//   - [ErrorCodeToolNameConflict] (HTTP 400)
+//   - [ErrorCodeToolReferenceUnresolved] (HTTP 400)
+//   - [ErrorCodeThreadNotFound] (HTTP 404)
+//   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
+//   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
+//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
+//   - [ErrorCodeRampLimitExceeded] (HTTP 429)
+//   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
+//   - [ErrorCodeCompactionUnavailable] (HTTP 529)
+//
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParams, opts ...option.RequestOption) (res *BetaMessage, err error) {
 	if len(params.Betas) > 0 {
@@ -67,6 +100,7 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 
@@ -102,6 +136,39 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 // Learn more about the Messages API in our
 // [user guide](https://platform.claude.com/docs/en/get-started)
 //
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400)
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeClaudeCodeVersionTooOld] (HTTP 400)
+//   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeCompactionBlockAmbiguous] (HTTP 400)
+//   - [ErrorCodeCompactionBlockMisplaced] (HTTP 400)
+//   - [ErrorCodeCompactionContentMismatch] (HTTP 400)
+//   - [ErrorCodeCompactionIncompleteTurn] (HTTP 400)
+//   - [ErrorCodeCompactionNothingToSummarize] (HTTP 400)
+//   - [ErrorCodeCompactionSignatureInvalid] (HTTP 400)
+//   - [ErrorCodeCompactionTooManyToolReferences] (HTTP 400)
+//   - [ErrorCodeCompactionToolChangesMismatch] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingInvalid] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingUnsupported] (HTTP 400)
+//   - [ErrorCodeThreadAlreadyContinued] (HTTP 400)
+//   - [ErrorCodeThreadContinueInFlight] (HTTP 400)
+//   - [ErrorCodeThreadFingerprintMismatch] (HTTP 400)
+//   - [ErrorCodeThreadUnsupportedRequest] (HTTP 400)
+//   - [ErrorCodeToolNameConflict] (HTTP 400)
+//   - [ErrorCodeToolReferenceUnresolved] (HTTP 400)
+//   - [ErrorCodeThreadNotFound] (HTTP 404)
+//   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
+//   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
+//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
+//   - [ErrorCodeRampLimitExceeded] (HTTP 429)
+//   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
+//   - [ErrorCodeCompactionUnavailable] (HTTP 529)
+//
 // Note: If you choose to set a timeout for this request, we recommend 10 minutes.
 func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessageNewParams, opts ...option.RequestOption) (stream *ssestream.Stream[BetaRawMessageStreamEventUnion]) {
 	var (
@@ -124,6 +191,7 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	warnIfThinkingEnabled(params.Model, params.Thinking.OfEnabled != nil)
 	opts = append(opts, option.WithJSONSet("stream", true))
@@ -141,6 +209,26 @@ func (r *BetaMessageService) NewStreaming(ctx context.Context, params BetaMessag
 //
 // Learn more about token counting in our
 // [user guide](https://platform.claude.com/docs/en/build-with-claude/token-counting)
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeAvailableToolsLimitExceeded] (HTTP 400)
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeCompactionBlockAmbiguous] (HTTP 400)
+//   - [ErrorCodeCompactionBlockMisplaced] (HTTP 400)
+//   - [ErrorCodeCompactionContentMismatch] (HTTP 400)
+//   - [ErrorCodeCompactionNothingToSummarize] (HTTP 400)
+//   - [ErrorCodeCompactionSignatureInvalid] (HTTP 400)
+//   - [ErrorCodeCompactionToolChangesMismatch] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingInvalid] (HTTP 400)
+//   - [ErrorCodeRequestBodyEncodingUnsupported] (HTTP 400)
+//   - [ErrorCodeToolNameConflict] (HTTP 400)
+//   - [ErrorCodeToolReferenceUnresolved] (HTTP 400)
+//   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
+//   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
+//   - [ErrorCodeCompactionUnavailable] (HTTP 529)
 func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessageCountTokensParams, opts ...option.RequestOption) (res *BetaMessageTokensCount, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -158,10 +246,11 @@ func (r *BetaMessageService) CountTokens(ctx context.Context, params BetaMessage
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
 	}
+	opts = append([]option.RequestOption{requestconfig.WithSpanRequestAttributes(params.spanAttributes)}, opts...)
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/count_tokens"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
-	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"), countTokensSpan(string(params.Model), &res, func(count *BetaMessageTokensCount) int64 { return count.InputTokens }))
+	opts = append(opts, requestconfig.WithSpan("anthropic.messages.count_tokens", "/v1/messages/count_tokens"))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
@@ -315,9 +404,9 @@ type BetaAdvisorTool20260301 struct {
 	// hits this cap, the returned advisor_result or advisor_redacted_result block
 	// carries stop_reason='max_tokens', and a truncation note is appended to the
 	// advice text the worker model sees (inside the encrypted blob in redacted mode).
-	// When set, the server also emits a remaining-tokens budget block in the advisor's
-	// prompt so the advisor self-shapes toward the cap. When omitted, the advisor
-	// model's default output cap applies and no budget block is emitted.
+	// When set, the API also passes the advisor its remaining-token budget, so the
+	// advisor shapes its output toward the cap. When omitted, the advisor model's
+	// default output cap applies and the API doesn't pass a budget.
 	MaxTokens int64 `json:"max_tokens" api:"nullable"`
 	// Maximum number of times the tool can be used in the API request.
 	MaxUses int64 `json:"max_uses" api:"nullable"`
@@ -366,9 +455,9 @@ type BetaAdvisorTool20260301Param struct {
 	// hits this cap, the returned advisor_result or advisor_redacted_result block
 	// carries stop_reason='max_tokens', and a truncation note is appended to the
 	// advice text the worker model sees (inside the encrypted blob in redacted mode).
-	// When set, the server also emits a remaining-tokens budget block in the advisor's
-	// prompt so the advisor self-shapes toward the cap. When omitted, the advisor
-	// model's default output cap applies and no budget block is emitted.
+	// When set, the API also passes the advisor its remaining-token budget, so the
+	// advisor shapes its output toward the cap. When omitted, the advisor model's
+	// default output cap applies and the API doesn't pass a budget.
 	MaxTokens param.Opt[int64] `json:"max_tokens,omitzero"`
 	// Maximum number of times the tool can be used in the API request.
 	MaxUses param.Opt[int64] `json:"max_uses,omitzero"`
@@ -11330,8 +11419,8 @@ func (u BetaContentBlockParamUnion) GetContent() (res betaContentBlockParamUnion
 	return
 }
 
-// Can have the runtime types [_[]BetaTextBlockParam],
-// [_[]BetaToolResultBlockParamContentUnion], [*[]BetaWebSearchResultBlockParam],
+// Can have the runtime types [*[]BetaTextBlockParam],
+// [*[]BetaToolResultBlockParamContentUnion], [*[]BetaWebSearchResultBlockParam],
 // [*BetaWebFetchToolResultErrorBlockParam], [*BetaWebFetchBlockParam],
 // [*BetaAdvisorToolResultErrorParam], [*BetaAdvisorResultBlockParam],
 // [*BetaAdvisorRedactedResultBlockParam],
@@ -11636,8 +11725,8 @@ func (u betaContentBlockParamUnionContent) GetContent() (res betaContentBlockPar
 }
 
 // Can have the runtime types [*BetaRequestDocumentBlockParam],
-// [_[]BetaCodeExecutionOutputBlockParam],
-// [_[]BetaBashCodeExecutionOutputBlockParam], [*string]
+// [*[]BetaCodeExecutionOutputBlockParam],
+// [*[]BetaBashCodeExecutionOutputBlockParam], [*string]
 type betaContentBlockParamUnionContentContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -12400,13 +12489,21 @@ func (r *BetaFallbackBlock) UnmarshalJSON(data []byte) error {
 // Accepted in `messages[].content` and not rendered into the prompt; not validated
 // against the request's `fallbacks` chain or top-level `model`.
 //
-// Echo the assistant turn back verbatim, including this block in its original
-// position. The block marks the boundary between content produced before and after
-// a fallback hop, and the server relies on that boundary to validate the turn:
-// when thinking runs flank the boundary, omitting the block merges them into one
-// span the server cannot validate (the request is rejected), and moving it into
-// the middle of a single run is likewise rejected; between non-thinking blocks the
-// block's placement has no validation effect.
+// When you send the assistant turn back, keep this block in its original position.
+// The block marks the boundary between content produced before and after a
+// fallback hop, and the server relies on that boundary to validate the turn: when
+// thinking runs flank the boundary, omitting the block merges them into one span
+// the server cannot validate (the request is rejected), and moving it into the
+// middle of a single run is likewise rejected; between non-thinking blocks the
+// block's placement has no effect on thinking validation.
+//
+// Some blocks from before the turn's final `fallback` block must be left out when
+// you send the turn back, and no `tool_result` is sent for a `tool_use` block you
+// left out.
+//
+// See the
+// [refusals and fallback guide](https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback#continuing-the-conversation)
+// to learn which blocks to keep.
 //
 // The properties From, To, Type are required.
 type BetaFallbackBlockParam struct {
@@ -14520,8 +14617,8 @@ func (u BetaMessageParam) GetContent() (res betaMessageParamContent) {
 	return
 }
 
-// Can have the runtime types [_[]BetaContentBlockParamUnion],
-// [_[]BetaSystemMessageParamContentUnion]
+// Can have the runtime types [*[]BetaContentBlockParamUnion],
+// [*[]BetaSystemMessageParamContentUnion]
 type betaMessageParamContent struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -14682,10 +14779,10 @@ type BetaOutputTokensDetails struct {
 	// thinking-block delimiter tokens.
 	//
 	// Reflects the raw reasoning the model produced, not the (possibly shorter)
-	// summarized thinking text returned in the response body. Computed by
-	// re-tokenizing the raw reasoning text, so it may differ from the model's exact
-	// generation count by a small number of tokens. Always ≤ `output_tokens`;
-	// `output_tokens - thinking_tokens` approximates the non-reasoning output.
+	// summarized thinking text returned in the response body. It may differ from the
+	// model's exact generation count by a small number of tokens. Always ≤
+	// `output_tokens`; `output_tokens - thinking_tokens` approximates the
+	// non-reasoning output.
 	ThinkingTokens int64 `json:"thinking_tokens" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -22025,7 +22122,7 @@ func (u BetaToolUnionParam) GetConfigs() (res betaToolUnionParamConfigs) {
 }
 
 // Can have the runtime types [*BetaBrowserToolsetConfigsParam],
-// [*BetaComputerToolsetConfigsParam], [\*map[string]BetaMCPToolConfigParam]
+// [*BetaComputerToolsetConfigsParam], [*map[string]BetaMCPToolConfigParam]
 type betaToolUnionParamConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:
@@ -26050,7 +26147,7 @@ const (
 type BetaMessageNewParams struct {
 	// The maximum number of tokens to generate before stopping.
 	//
-	// Note that our models may stop _before_ reaching this maximum. This parameter
+	// Note that our models may stop *before* reaching this maximum. This parameter
 	// only specifies the absolute maximum number of tokens to generate.
 	//
 	// Set to `0` to populate the
@@ -27414,7 +27511,7 @@ func (u BetaMessageCountTokensParamsToolUnion) GetConfigs() (res betaMessageCoun
 }
 
 // Can have the runtime types [*BetaBrowserToolsetConfigsParam],
-// [*BetaComputerToolsetConfigsParam], [\*map[string]BetaMCPToolConfigParam]
+// [*BetaComputerToolsetConfigsParam], [*map[string]BetaMCPToolConfigParam]
 type betaMessageCountTokensParamsToolUnionConfigs struct{ any }
 
 // Use the following switch statement to get the type of the union:

@@ -43,6 +43,13 @@ func NewBetaEnvironmentService(opts ...option.RequestOption) (r BetaEnvironmentS
 }
 
 // Create a new environment with the specified configuration.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeBetaEnvironmentCreateDisabled] (HTTP 403)
 func (r *BetaEnvironmentService) New(ctx context.Context, params BetaEnvironmentNewParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -61,12 +68,19 @@ func (r *BetaEnvironmentService) New(ctx context.Context, params BetaEnvironment
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "managed-agents-2026-04-01")}, opts...)
 	path := "v1/environments"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.create", "/v1/environments"), requestconfig.WithSpanCreatedID("anthropic.environment.id", &res, func(created *BetaEnvironment) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Retrieve a specific environment by ID.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaEnvironmentService) Get(ctx context.Context, environmentID string, query BetaEnvironmentGetParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
 	if len(query.Betas) > 0 {
 		headerValues := make([]string, len(query.Betas))
@@ -87,7 +101,7 @@ func (r *BetaEnvironmentService) Get(ctx context.Context, environmentID string, 
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s", requestconfig.EscapePathSegment(environmentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.retrieve", "/v1/environments/{environment_id}"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -95,6 +109,15 @@ func (r *BetaEnvironmentService) Get(ctx context.Context, environmentID string, 
 }
 
 // Update an existing environment's configuration.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeBetaEnvironmentArchived] (HTTP 400)
+//   - [ErrorCodeBetaInvalidConfigTypeChange] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeBetaEnvironmentUpdateDisabled] (HTTP 403)
 func (r *BetaEnvironmentService) Update(ctx context.Context, environmentID string, params BetaEnvironmentUpdateParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -115,7 +138,7 @@ func (r *BetaEnvironmentService) Update(ctx context.Context, environmentID strin
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s", requestconfig.EscapePathSegment(environmentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.update", "/v1/environments/{environment_id}"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
@@ -123,6 +146,12 @@ func (r *BetaEnvironmentService) Update(ctx context.Context, environmentID strin
 }
 
 // List environments with pagination support.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaEnvironmentService) List(ctx context.Context, params BetaEnvironmentListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaEnvironment], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -156,11 +185,23 @@ func (r *BetaEnvironmentService) List(ctx context.Context, params BetaEnvironmen
 }
 
 // List environments with pagination support.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaEnvironmentService) ListAutoPaging(ctx context.Context, params BetaEnvironmentListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaEnvironment] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete an environment by ID. Returns a confirmation of the deletion.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaEnvironmentService) Delete(ctx context.Context, environmentID string, body BetaEnvironmentDeleteParams, opts ...option.RequestOption) (res *BetaEnvironmentDeleteResponse, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -181,7 +222,7 @@ func (r *BetaEnvironmentService) Delete(ctx context.Context, environmentID strin
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s", requestconfig.EscapePathSegment(environmentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.delete", "/v1/environments/{environment_id}"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
@@ -190,6 +231,12 @@ func (r *BetaEnvironmentService) Delete(ctx context.Context, environmentID strin
 
 // Archive an environment by ID. Archived environments cannot be used to create new
 // sessions.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
+//   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 func (r *BetaEnvironmentService) Archive(ctx context.Context, environmentID string, body BetaEnvironmentArchiveParams, opts ...option.RequestOption) (res *BetaEnvironment, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -210,7 +257,7 @@ func (r *BetaEnvironmentService) Archive(ctx context.Context, environmentID stri
 		err = errors.New("missing required environment_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/environments/%s/archive", url.PathEscape(environmentID))
+	path := fmt.Sprintf("v1/environments/%s/archive", requestconfig.EscapePathSegment(environmentID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.environments.archive", "/v1/environments/{environment_id}/archive"), requestconfig.WithSpanAttribute("anthropic.environment.id", environmentID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -406,7 +453,7 @@ func init() {
 
 // Unified Environment resource for both cloud and self-hosted environments.
 type BetaEnvironment struct {
-	// Environment identifier (e.g., 'env\_...')
+	// Environment identifier (e.g., 'env_...')
 	ID string `json:"id" api:"required"`
 	// RFC 3339 timestamp when environment was archived, or null if not archived
 	ArchivedAt string `json:"archived_at" api:"required"`

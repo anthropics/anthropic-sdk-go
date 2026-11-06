@@ -43,6 +43,14 @@ func NewBetaOrganizationClaudeTagBundleService(opts ...option.RequestOption) (r 
 
 // Get one Bundle. What the Bundle grants (connectors, repositories and
 // credentials) is never returned.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagBundleService) Get(ctx context.Context, bundleID string, query BetaOrganizationClaudeTagBundleGetParams, opts ...option.RequestOption) (res *BetaClaudeTagBundle, err error) {
 	if len(query.Betas) > 0 {
 		headerValues := make([]string, len(query.Betas))
@@ -60,7 +68,7 @@ func (r *BetaOrganizationClaudeTagBundleService) Get(ctx context.Context, bundle
 		err = errors.New("missing required bundle_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s", url.PathEscape(bundleID))
+	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s", requestconfig.EscapePathSegment(bundleID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.bundles.retrieve", "/v1/organizations/claude_tag/bundles/{bundle_id}"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.id", bundleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -69,6 +77,14 @@ func (r *BetaOrganizationClaudeTagBundleService) Get(ctx context.Context, bundle
 
 // List the organization's Bundles, newest first by `created_at`. A Bundle that
 // Claude Tag manages for itself is not listed.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagBundleService) List(ctx context.Context, params BetaOrganizationClaudeTagBundleListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaClaudeTagBundle], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -100,6 +116,14 @@ func (r *BetaOrganizationClaudeTagBundleService) List(ctx context.Context, param
 
 // List the organization's Bundles, newest first by `created_at`. A Bundle that
 // Claude Tag manages for itself is not listed.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
 func (r *BetaOrganizationClaudeTagBundleService) ListAutoPaging(ctx context.Context, params BetaOrganizationClaudeTagBundleListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaClaudeTagBundle] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }

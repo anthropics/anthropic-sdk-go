@@ -75,7 +75,7 @@ func (r *Page[T]) GetNextPage() (res *Page[T], err error) {
 	}
 	var raw *http.Response
 	cfg.ResponseInto = &raw
-	cfg.ResponseBodyInto = &res
+	cfg.SetResponseBodyInto(&res)
 	err = cfg.Execute()
 	if err != nil {
 		return nil, err
@@ -191,7 +191,7 @@ func (r *TokenPage[T]) GetNextPage() (res *TokenPage[T], err error) {
 	}
 	var raw *http.Response
 	cfg.ResponseInto = &raw
-	cfg.ResponseBodyInto = &res
+	cfg.SetResponseBodyInto(&res)
 	err = cfg.Execute()
 	if err != nil {
 		return nil, err
@@ -298,7 +298,7 @@ func (r *PageCursor[T]) GetNextPage() (res *PageCursor[T], err error) {
 	}
 	var raw *http.Response
 	cfg.ResponseInto = &raw
-	cfg.ResponseBodyInto = &res
+	cfg.SetResponseBodyInto(&res)
 	err = cfg.Execute()
 	if err != nil {
 		return nil, err
@@ -417,7 +417,7 @@ func (r *BidirectionalPageCursor[T]) GetNextPage() (res *BidirectionalPageCursor
 	}
 	var raw *http.Response
 	cfg.ResponseInto = &raw
-	cfg.ResponseBodyInto = &res
+	cfg.SetResponseBodyInto(&res)
 	err = cfg.Execute()
 	if err != nil {
 		return nil, err
@@ -541,7 +541,7 @@ func (r *ReportPageCursor[T]) GetNextPage() (res *ReportPageCursor[T], err error
 	}
 	var raw *http.Response
 	cfg.ResponseInto = &raw
-	cfg.ResponseBodyInto = &res
+	cfg.SetResponseBodyInto(&res)
 	err = cfg.Execute()
 	if err != nil {
 		return nil, err

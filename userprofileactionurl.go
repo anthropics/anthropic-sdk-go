@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"slices"
 	"time"
 
@@ -47,7 +46,7 @@ func (r *UserProfileActionURLService) New(ctx context.Context, userProfileID str
 		err = errors.New("missing required user_profile_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/user_profiles/%s/action_urls", url.PathEscape(userProfileID))
+	path := fmt.Sprintf("v1/user_profiles/%s/action_urls", requestconfig.EscapePathSegment(userProfileID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.user_profiles.action_urls.create", "/v1/user_profiles/{user_profile_id}/action_urls"), requestconfig.WithSpanAttribute("anthropic.user_profile.id", userProfileID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

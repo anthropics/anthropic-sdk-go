@@ -50,7 +50,7 @@ func (r *OrganizationSpendLimitIncreaseRequestService) Get(ctx context.Context, 
 		err = errors.New("missing required spend_limit_increase_request_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s", url.PathEscape(spendLimitIncreaseRequestID))
+	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s", requestconfig.EscapePathSegment(spendLimitIncreaseRequestID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.increase_requests.retrieve", "/v1/organizations/spend_limit_increase_requests/{spend_limit_increase_request_id}"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit_increase_request.id", spendLimitIncreaseRequestID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -97,7 +97,7 @@ func (r *OrganizationSpendLimitIncreaseRequestService) Approve(ctx context.Conte
 		err = errors.New("missing required spend_limit_increase_request_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/approve", url.PathEscape(spendLimitIncreaseRequestID))
+	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/approve", requestconfig.EscapePathSegment(spendLimitIncreaseRequestID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.increase_requests.approve", "/v1/organizations/spend_limit_increase_requests/{spend_limit_increase_request_id}/approve"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit_increase_request.id", spendLimitIncreaseRequestID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -113,7 +113,7 @@ func (r *OrganizationSpendLimitIncreaseRequestService) Deny(ctx context.Context,
 		err = errors.New("missing required spend_limit_increase_request_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/deny", url.PathEscape(spendLimitIncreaseRequestID))
+	path := fmt.Sprintf("v1/organizations/spend_limit_increase_requests/%s/deny", requestconfig.EscapePathSegment(spendLimitIncreaseRequestID))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.spend_limits.increase_requests.deny", "/v1/organizations/spend_limit_increase_requests/{spend_limit_increase_request_id}/deny"), requestconfig.WithSpanAttribute("anthropic.organization.spend_limit_increase_request.id", spendLimitIncreaseRequestID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err

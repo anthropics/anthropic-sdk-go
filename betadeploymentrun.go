@@ -61,7 +61,7 @@ func (r *BetaDeploymentRunService) Get(ctx context.Context, deploymentRunID stri
 		err = errors.New("missing required deployment_run_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/deployment_runs/%s", url.PathEscape(deploymentRunID))
+	path := fmt.Sprintf("v1/deployment_runs/%s", requestconfig.EscapePathSegment(deploymentRunID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.deployment_runs.retrieve", "/v1/deployment_runs/{deployment_run_id}"), requestconfig.WithSpanAttribute("anthropic.deployment_run.id", deploymentRunID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)

@@ -120,14 +120,18 @@ const (
 	AnthropicBetaSpendLimitReads2026_09_26              AnthropicBeta = "spend-limit-reads-2026-09-26"
 	AnthropicBetaTelemetryDestinations2026_08_11        AnthropicBeta = "telemetry-destinations-2026-08-11"
 	AnthropicBetaWebhooks2026_10_07                     AnthropicBeta = "webhooks-2026-10-07"
+	AnthropicBetaAdminUserSignOut2026_10_08             AnthropicBeta = "admin-user-sign-out-2026-10-08"
 	AnthropicBetaMessageThreads2026_08_12               AnthropicBeta = "message-threads-2026-08-12"
 	AnthropicBetaAnalyticsUsageCost2026_08_24           AnthropicBeta = "analytics-usage-cost-2026-08-24"
 	AnthropicBetaExperimentalClaudeTag2026_10_21        AnthropicBeta = "experimental-claude-tag-2026-10-21"
 )
 
 type BetaAPIError struct {
-	Message string            `json:"message" api:"required"`
-	Type    constant.APIError `json:"type" default:"api_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.APIError `json:"type" default:"api_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -144,8 +148,11 @@ func (r *BetaAPIError) UnmarshalJSON(data []byte) error {
 }
 
 type BetaAuthenticationError struct {
-	Message string                       `json:"message" api:"required"`
-	Type    constant.AuthenticationError `json:"type" default:"authentication_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.AuthenticationError `json:"type" default:"authentication_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -162,8 +169,11 @@ func (r *BetaAuthenticationError) UnmarshalJSON(data []byte) error {
 }
 
 type BetaBillingError struct {
-	Message string                `json:"message" api:"required"`
-	Type    constant.BillingError `json:"type" default:"billing_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.BillingError `json:"type" default:"billing_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -334,8 +344,11 @@ func (r *BetaErrorResponse) UnmarshalJSON(data []byte) error {
 }
 
 type BetaGatewayTimeoutError struct {
-	Message string                `json:"message" api:"required"`
-	Type    constant.TimeoutError `json:"type" default:"timeout_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.TimeoutError `json:"type" default:"timeout_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -352,8 +365,11 @@ func (r *BetaGatewayTimeoutError) UnmarshalJSON(data []byte) error {
 }
 
 type BetaInvalidRequestError struct {
-	Message string                       `json:"message" api:"required"`
-	Type    constant.InvalidRequestError `json:"type" default:"invalid_request_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.InvalidRequestError `json:"type" default:"invalid_request_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -431,8 +447,11 @@ func (r *BetaMonetaryAmountParam) UnmarshalJSON(data []byte) error {
 }
 
 type BetaNotFoundError struct {
-	Message string                 `json:"message" api:"required"`
-	Type    constant.NotFoundError `json:"type" default:"not_found_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.NotFoundError `json:"type" default:"not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -449,8 +468,11 @@ func (r *BetaNotFoundError) UnmarshalJSON(data []byte) error {
 }
 
 type BetaOverloadedError struct {
-	Message string                   `json:"message" api:"required"`
-	Type    constant.OverloadedError `json:"type" default:"overloaded_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.OverloadedError `json:"type" default:"overloaded_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -467,8 +489,11 @@ func (r *BetaOverloadedError) UnmarshalJSON(data []byte) error {
 }
 
 type BetaPermissionError struct {
-	Message string                   `json:"message" api:"required"`
-	Type    constant.PermissionError `json:"type" default:"permission_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.PermissionError `json:"type" default:"permission_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -485,8 +510,11 @@ func (r *BetaPermissionError) UnmarshalJSON(data []byte) error {
 }
 
 type BetaRateLimitError struct {
-	Message string                  `json:"message" api:"required"`
-	Type    constant.RateLimitError `json:"type" default:"rate_limit_error"`
+	// A human-readable explanation of the error. Its wording can change, so don't
+	// match on it.
+	Message string `json:"message" api:"required"`
+	// The broad category of the error.
+	Type constant.RateLimitError `json:"type" default:"rate_limit_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field

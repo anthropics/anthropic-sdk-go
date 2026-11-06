@@ -49,7 +49,7 @@ func (r *BetaOrganizationRBACRoleService) Get(ctx context.Context, rbacRoleID st
 		err = errors.New("missing required rbac_role_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/rbac_roles/%s", url.PathEscape(rbacRoleID))
+	path := fmt.Sprintf("v1/organizations/rbac_roles/%s", requestconfig.EscapePathSegment(rbacRoleID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.rbac_roles.retrieve", "/v1/organizations/rbac_roles/{rbac_role_id}"), requestconfig.WithSpanAttribute("anthropic.organization.rbac_role.id", rbacRoleID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)

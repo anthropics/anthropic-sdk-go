@@ -47,6 +47,16 @@ func NewBetaOrganizationWorkspaceService(opts ...option.RequestOption) (r BetaOr
 }
 
 // Create Workspace
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeExternalKeyValidationFailed] (HTTP 400)
+//   - [ErrorCodeExternalKeyValidationTimedOut] (HTTP 400)
+//   - [ErrorCodeKeyProfileMismatch] (HTTP 400)
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400)
+//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400)
+//   - [ErrorCodeExternalKeyChanged] (HTTP 409)
 func (r *BetaOrganizationWorkspaceService) New(ctx context.Context, params BetaOrganizationWorkspaceNewParams, opts ...option.RequestOption) (res *BetaWorkspace, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -61,6 +71,7 @@ func (r *BetaOrganizationWorkspaceService) New(ctx context.Context, params BetaO
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/workspaces"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.create", "/v1/organizations/workspaces"), requestconfig.WithSpanCreatedID("anthropic.organization.workspace.id", &res, func(created *BetaWorkspace) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
@@ -73,7 +84,7 @@ func (r *BetaOrganizationWorkspaceService) Get(ctx context.Context, workspaceID 
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.retrieve", "/v1/organizations/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
@@ -81,13 +92,23 @@ func (r *BetaOrganizationWorkspaceService) Get(ctx context.Context, workspaceID 
 }
 
 // Update Workspace
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeExternalKeyValidationFailed] (HTTP 400)
+//   - [ErrorCodeExternalKeyValidationTimedOut] (HTTP 400)
+//   - [ErrorCodeKeyProfileMismatch] (HTTP 400)
+//   - [ErrorCodeUserProfileNotFound] (HTTP 400)
+//   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400)
+//   - [ErrorCodeExternalKeyChanged] (HTTP 409)
 func (r *BetaOrganizationWorkspaceService) Update(ctx context.Context, workspaceID string, body BetaOrganizationWorkspaceUpdateParams, opts ...option.RequestOption) (res *BetaWorkspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.update", "/v1/organizations/workspaces/{workspace_id}"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
@@ -101,7 +122,7 @@ func (r *BetaOrganizationWorkspaceService) List(ctx context.Context, query BetaO
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/workspaces"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
-	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.list", "/v1/organizations/workspaces", "after_id", "before_id", "include_archived", "include_default", "limit"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.list", "/v1/organizations/workspaces", "after_id", "before_id", "ids", "include_archived", "include_default", "limit"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -126,7 +147,7 @@ func (r *BetaOrganizationWorkspaceService) Archive(ctx context.Context, workspac
 		err = errors.New("missing required workspace_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/organizations/workspaces/%s/archive", requestconfig.EscapePathSegment(workspaceID))
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.workspaces.archive", "/v1/organizations/workspaces/{workspace_id}/archive"), requestconfig.WithSpanAttribute("anthropic.organization.workspace.id", workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
@@ -565,6 +586,10 @@ type BetaOrganizationWorkspaceListParams struct {
 	//
 	// Defaults to `20`. Ranges from `1` to `1000`.
 	Limit param.Opt[int64] `query:"limit,omitzero" json:"-"`
+	// Only the Workspaces with these IDs, at most 100. `include_archived` and
+	// `include_default` still apply, and IDs of Workspaces the caller can't list are
+	// left out.
+	IDs []string `query:"ids,omitzero" json:"-"`
 	paramObj
 }
 

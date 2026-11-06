@@ -879,8 +879,8 @@ func TestBetaMessageThread_Send_SendsEveryFieldAsNewDoes(t *testing.T) {
 		},
 		"given to a tool runner": func(t *testing.T, client Client, want *BetaMessageNewParams) {
 			setEveryField(t, &BetaMessageThreadCreateParams{}, want)
-			// The runner takes its tools apart from the params, and refuses Compaction.
-			want.Tools, want.Compaction = []BetaToolUnionParam{}, BetaCompactionConfigUnionParam{}
+			// The runner refuses Compaction.
+			want.Compaction = BetaCompactionConfigUnionParam{}
 			_, err := client.Beta.Messages.NewToolRunner(nil, BetaToolRunnerParams{BetaMessageNewParams: *want}).NextMessage(context.Background())
 			require.NoError(t, err)
 		},

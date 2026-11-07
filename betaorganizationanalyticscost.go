@@ -61,7 +61,7 @@ func (r *BetaOrganizationAnalyticsCostService) List(ctx context.Context, params 
 	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "analytics-usage-cost-2026-08-24"), option.WithResponseInto(&raw)}, opts...)
 	path := "v1/organizations/analytics/cost"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
-	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.cost.list", "/v1/organizations/analytics/cost", "actor_ids", "actor_types", "agent_ids", "api_key_ids", "claude_tag_categories", "claude_tag_user_ids", "context_windows", "deployment_ids", "ending_at", "environment_ids", "exclude_deleted_users", "group_by", "inference_geos", "limit", "models", "order", "order_by", "page", "products", "rbac_group_ids", "service_tiers", "session_ids", "slack_channel_ids", "speeds", "starting_at", "time_bucket_width", "user_profile_ids", "workspace_ids"))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.analytics.cost.list", "/v1/organizations/analytics/cost", "actor_ids", "actor_types", "agent_ids", "api_key_ids", "claude_tag_categories", "claude_tag_user_ids", "context_windows", "deployment_ids", "ending_at", "environment_ids", "exclude_deleted_users", "group_by", "inference_geos", "limit", "models", "order", "order_by", "organization_ids", "page", "products", "rbac_group_ids", "service_tiers", "session_ids", "slack_channel_ids", "speeds", "starting_at", "time_bucket_width", "user_profile_ids", "workspace_ids"))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -153,6 +153,9 @@ type BetaAnalyticsCostGroup struct {
 	// is in `group_by[]`; it can also be null on grouped rows whose usage or cost is
 	// not attributed to a specific model, such as code execution.
 	Model string `json:"model" api:"required"`
+	// UUID of the child organization the usage belongs to, on a parent organization's
+	// report across its children. Null unless `organization_id` is in `group_by[]`.
+	OrganizationID string `json:"organization_id" api:"required"`
 	// Product surface that produced the usage or cost. Null unless product is in
 	// `group_by[]`; it can also be null on grouped rows whose usage cannot be
 	// attributed to a known surface. Values include `chat`, `claude_code`, `cowork`,
@@ -222,6 +225,7 @@ type BetaAnalyticsCostGroup struct {
 		EnvironmentID     respjson.Field
 		InferenceGeo      respjson.Field
 		Model             respjson.Field
+		OrganizationID    respjson.Field
 		Product           respjson.Field
 		RBACGroupID       respjson.Field
 		ServiceTier       respjson.Field
@@ -257,6 +261,7 @@ const (
 	BetaAnalyticsCostGroupByEnvironmentID     BetaAnalyticsCostGroupBy = "environment_id"
 	BetaAnalyticsCostGroupByInferenceGeo      BetaAnalyticsCostGroupBy = "inference_geo"
 	BetaAnalyticsCostGroupByModel             BetaAnalyticsCostGroupBy = "model"
+	BetaAnalyticsCostGroupByOrganizationID    BetaAnalyticsCostGroupBy = "organization_id"
 	BetaAnalyticsCostGroupByProduct           BetaAnalyticsCostGroupBy = "product"
 	BetaAnalyticsCostGroupByRBACGroupID       BetaAnalyticsCostGroupBy = "rbac_group_id"
 	BetaAnalyticsCostGroupByServiceTier       BetaAnalyticsCostGroupBy = "service_tier"
@@ -415,6 +420,11 @@ type BetaOrganizationAnalyticsCostListParams struct {
 	// Models to include. Defaults to all models. Use `group_by[]=model` to break out
 	// per-model values.
 	Models []string `query:"models,omitzero" json:"-"`
+	// Filter a parent organization's report to specific child organizations, by
+	// organization UUID or `org_` ID; an ID that is not one of its child organizations
+	// matches nothing. Requires an API key created at the parent organization level.
+	// Use `group_by[]=organization_id` to break out per-organization values.
+	OrganizationIDs []string `query:"organization_ids,omitzero" json:"-"`
 	// Product surfaces to include. Defaults to all products.
 	Products []BetaAnalyticsUsageCostProductFilter `query:"products,omitzero" json:"-"`
 	// Filter to usage attributed to specific RBAC groups. Accepts tagged RBAC group

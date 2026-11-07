@@ -44,6 +44,7 @@ func TestBetaOrganizationAnalyticsCostListWithOptionalParams(t *testing.T) {
 		Models:              []string{"string"},
 		Order:               anthropic.BetaAnalyticsUsageCostSortOrderAsc,
 		OrderBy:             anthropic.BetaAnalyticsCostOrderByAmount,
+		OrganizationIDs:     []string{"12345678-1234-5678-1234-567812345678"},
 		Page:                anthropic.String("page"),
 		Products:            []anthropic.BetaAnalyticsUsageCostProductFilter{anthropic.BetaAnalyticsUsageCostProductFilterChat},
 		RBACGroupIDs:        []string{"rbac_group_012rppKaSVsmTo6NqRDXQXNF"},

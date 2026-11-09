@@ -57,6 +57,11 @@ func NewBetaOrganizationFederationIssuerService(opts ...option.RequestOption) (r
 // Anthropic can fetch the discovery document; for `explicit_url` and `inline`
 // modes the issuer URL is only matched as the JWT's `iss` claim and is not
 // fetched.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationFederationIssuerService) New(ctx context.Context, params BetaOrganizationFederationIssuerNewParams, opts ...option.RequestOption) (res *BetaFederationIssuer, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -118,6 +123,11 @@ func (r *BetaOrganizationFederationIssuerService) Get(ctx context.Context, feder
 //
 // Updating an issuer that backs a rule with a scope outside `workspace:developer`
 // or `workspace:inference` requires a Console session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationFederationIssuerService) Update(ctx context.Context, federationIssuerID string, params BetaOrganizationFederationIssuerUpdateParams, opts ...option.RequestOption) (res *BetaFederationIssuer, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -201,6 +211,11 @@ func (r *BetaOrganizationFederationIssuerService) ListAutoPaging(ctx context.Con
 // Rejected with 400 if any live (non-archived) federation rule still references
 // the issuer; archive those rules first (a rule's issuer cannot be changed), or
 // recreate them against another issuer.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationFederationIssuerService) Archive(ctx context.Context, federationIssuerID string, body BetaOrganizationFederationIssuerArchiveParams, opts ...option.RequestOption) (res *BetaFederationIssuer, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))

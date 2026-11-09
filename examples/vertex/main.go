@@ -41,7 +41,11 @@ func main() {
 		panic(err)
 	}
 
-	println("[assistant]: " + message.Content[0].Text + message.StopSequence)
+	for _, block := range message.Content {
+		if block.Type == "text" {
+			println("[assistant]: " + block.Text + message.StopSequence)
+		}
+	}
 }
 
 func getenv(key, fallback string) string {

@@ -56,6 +56,11 @@ func NewOrganizationFederationIssuerService(opts ...option.RequestOption) (r Org
 // Anthropic can fetch the discovery document; for `explicit_url` and `inline`
 // modes the issuer URL is only matched as the JWT's `iss` claim and is not
 // fetched.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationFederationIssuerService) New(ctx context.Context, body OrganizationFederationIssuerNewParams, opts ...option.RequestOption) (res *FederationIssuer, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/federation_issuers"
@@ -95,6 +100,11 @@ func (r *OrganizationFederationIssuerService) Get(ctx context.Context, federatio
 //
 // Updating an issuer that backs a rule with a scope outside `workspace:developer`
 // or `workspace:inference` requires a Console session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationFederationIssuerService) Update(ctx context.Context, federationIssuerID string, body OrganizationFederationIssuerUpdateParams, opts ...option.RequestOption) (res *FederationIssuer, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if federationIssuerID == "" {
@@ -156,6 +166,11 @@ func (r *OrganizationFederationIssuerService) ListAutoPaging(ctx context.Context
 // Rejected with 400 if any live (non-archived) federation rule still references
 // the issuer; archive those rules first (a rule's issuer cannot be changed), or
 // recreate them against another issuer.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationFederationIssuerService) Archive(ctx context.Context, federationIssuerID string, opts ...option.RequestOption) (res *FederationIssuer, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if federationIssuerID == "" {

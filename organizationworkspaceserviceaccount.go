@@ -78,6 +78,11 @@ func (r *OrganizationWorkspaceServiceAccountService) Get(ctx context.Context, se
 // service account explicitly with
 // `POST /workspaces/{workspace_id}/service_accounts`. Archived workspaces
 // return 400. Archived service accounts cannot be updated and are rejected.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationWorkspaceServiceAccountService) Update(ctx context.Context, serviceAccountID string, params OrganizationWorkspaceServiceAccountUpdateParams, opts ...option.RequestOption) (res *ServiceAccountWorkspaceMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if params.WorkspaceID == "" {
@@ -158,6 +163,11 @@ func (r *OrganizationWorkspaceServiceAccountService) ListAutoPaging(ctx context.
 // service account is already an explicit member of the workspace, its
 // `workspace_role` is replaced with the value supplied here. Archived workspaces
 // return 400. Archived service accounts cannot be added and are rejected.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationWorkspaceServiceAccountService) Add(ctx context.Context, workspaceID string, body OrganizationWorkspaceServiceAccountAddParams, opts ...option.RequestOption) (res *ServiceAccountWorkspaceMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
@@ -182,6 +192,11 @@ func (r *OrganizationWorkspaceServiceAccountService) Add(ctx context.Context, wo
 // no-op and the membership persists; deleting an explicit default-workspace row
 // reverts to the implicit `workspace_user` membership. Archived workspaces
 // return 400.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationWorkspaceServiceAccountService) Remove(ctx context.Context, serviceAccountID string, body OrganizationWorkspaceServiceAccountRemoveParams, opts ...option.RequestOption) (res *OrganizationWorkspaceServiceAccountRemoveResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if body.WorkspaceID == "" {

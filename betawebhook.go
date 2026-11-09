@@ -529,7 +529,8 @@ func (r *UnwrapWebhookEvent) UnmarshalJSON(data []byte) error {
 // [BetaWebhookMemoryStoreDeletedEventData],
 // [BetaWebhookSessionBudgetReachedEventData],
 // [BetaWebhookUserProfileEnforcementActionOpenedEventData],
-// [BetaWebhookUserProfileEnforcementActionResolvedEventData].
+// [BetaWebhookUserProfileEnforcementActionResolvedEventData],
+// [BetaWebhookUserProfileProgramStatusUpdatedEventData].
 //
 // Use the [BetaWebhookEventDataUnion.AsAny] method to switch on the variant.
 //
@@ -553,7 +554,8 @@ type BetaWebhookEventDataUnion struct {
 	// "environment.archived", "environment.deleted", "memory_store.created",
 	// "memory_store.archived", "memory_store.deleted", "session.budget_reached",
 	// "user_profile.enforcement_action_opened",
-	// "user_profile.enforcement_action_resolved".
+	// "user_profile.enforcement_action_resolved",
+	// "user_profile.program_status_updated".
 	Type                string `json:"type"`
 	WorkspaceID         string `json:"workspace_id"`
 	SessionThreadID     string `json:"session_thread_id"`
@@ -624,6 +626,7 @@ func (BetaWebhookMemoryStoreDeletedEventData) implBetaWebhookEventDataUnion()   
 func (BetaWebhookSessionBudgetReachedEventData) implBetaWebhookEventDataUnion()                 {}
 func (BetaWebhookUserProfileEnforcementActionOpenedEventData) implBetaWebhookEventDataUnion()   {}
 func (BetaWebhookUserProfileEnforcementActionResolvedEventData) implBetaWebhookEventDataUnion() {}
+func (BetaWebhookUserProfileProgramStatusUpdatedEventData) implBetaWebhookEventDataUnion()      {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -674,6 +677,7 @@ func (BetaWebhookUserProfileEnforcementActionResolvedEventData) implBetaWebhookE
 //	case anthropic.BetaWebhookSessionBudgetReachedEventData:
 //	case anthropic.BetaWebhookUserProfileEnforcementActionOpenedEventData:
 //	case anthropic.BetaWebhookUserProfileEnforcementActionResolvedEventData:
+//	case anthropic.BetaWebhookUserProfileProgramStatusUpdatedEventData:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -771,6 +775,8 @@ func (u BetaWebhookEventDataUnion) AsAny() anyBetaWebhookEventData {
 		return u.AsUserProfileEnforcementActionOpened()
 	case "user_profile.enforcement_action_resolved":
 		return u.AsUserProfileEnforcementActionResolved()
+	case "user_profile.program_status_updated":
+		return u.AsUserProfileProgramStatusUpdated()
 	}
 	return nil
 }
@@ -1001,6 +1007,11 @@ func (u BetaWebhookEventDataUnion) AsUserProfileEnforcementActionOpened() (v Bet
 }
 
 func (u BetaWebhookEventDataUnion) AsUserProfileEnforcementActionResolved() (v BetaWebhookUserProfileEnforcementActionResolvedEventData) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWebhookEventDataUnion) AsUserProfileProgramStatusUpdated() (v BetaWebhookUserProfileProgramStatusUpdatedEventData) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1526,6 +1537,27 @@ type BetaWebhookUserProfileEnforcementActionResolvedEventData struct {
 // Returns the unmodified JSON received from the API
 func (r BetaWebhookUserProfileEnforcementActionResolvedEventData) RawJSON() string { return r.JSON.raw }
 func (r *BetaWebhookUserProfileEnforcementActionResolvedEventData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaWebhookUserProfileProgramStatusUpdatedEventData struct {
+	// ID of the user profile that triggered the event.
+	ID             string                                   `json:"id" api:"required"`
+	OrganizationID string                                   `json:"organization_id" api:"required"`
+	Type           constant.UserProfileProgramStatusUpdated `json:"type" default:"user_profile.program_status_updated"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID             respjson.Field
+		OrganizationID respjson.Field
+		Type           respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWebhookUserProfileProgramStatusUpdatedEventData) RawJSON() string { return r.JSON.raw }
+func (r *BetaWebhookUserProfileProgramStatusUpdatedEventData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

@@ -90,7 +90,6 @@ type BashCodeExecutionToolResultError string                   // Always "bash_c
 type Batch string                                              // Always "batch"
 type BetweenTools string                                       // Always "between_tools"
 type BillingError string                                       // Always "billing_error"
-type BetaBillingFrozenErrorCode string                         // Always "billing_frozen"
 type Branch string                                             // Always "branch"
 type Browser string                                            // Always "browser"
 type BrowserState string                                       // Always "browser_state"
@@ -402,6 +401,7 @@ type Restriction string                                        // Always "restri
 type RetriesExhausted string                                   // Always "retries_exhausted"
 type Retrying string                                           // Always "retrying"
 type RightClick string                                         // Always "right_click"
+type SandboxEgressRestrictedErrorCode string                   // Always "sandbox_egress_restricted"
 type BetaScanFailedErrorCode string                            // Always "scan_failed"
 type BetaScanPendingErrorCode string                           // Always "scan_pending"
 type Schedule string                                           // Always "schedule"
@@ -567,6 +567,7 @@ type UserProfileDeleted string                                 // Always "user_p
 type UserProfileNotFoundErrorCode string                       // Always "user_profile_not_found"
 type UserProfileEnforcementActionOpened string                 // Always "user_profile.enforcement_action_opened"
 type UserProfileEnforcementActionResolved string               // Always "user_profile.enforcement_action_resolved"
+type UserProfileProgramStatusUpdated string                    // Always "user_profile.program_status_updated"
 type UserCustomToolResult string                               // Always "user.custom_tool_result"
 type UserDefineOutcome string                                  // Always "user.define_outcome"
 type UserInterrupt string                                      // Always "user.interrupt"
@@ -702,19 +703,18 @@ func (c BashCodeExecutionToolResult) Default() BashCodeExecutionToolResult {
 func (c BashCodeExecutionToolResultError) Default() BashCodeExecutionToolResultError {
 	return "bash_code_execution_tool_result_error"
 }
-func (c Batch) Default() Batch                                           { return "batch" }
-func (c BetweenTools) Default() BetweenTools                             { return "between_tools" }
-func (c BillingError) Default() BillingError                             { return "billing_error" }
-func (c BetaBillingFrozenErrorCode) Default() BetaBillingFrozenErrorCode { return "billing_frozen" }
-func (c Branch) Default() Branch                                         { return "branch" }
-func (c Browser) Default() Browser                                       { return "browser" }
-func (c BrowserState) Default() BrowserState                             { return "browser_state" }
-func (c BrowserToolset20260801) Default() BrowserToolset20260801         { return "browser_toolset_20260801" }
-func (c BudgetReached) Default() BudgetReached                           { return "budget_reached" }
-func (c Bundle) Default() Bundle                                         { return "bundle" }
-func (c BundleTargetDeleted) Default() BundleTargetDeleted               { return "bundle_target_deleted" }
-func (c Caller) Default() Caller                                         { return "caller" }
-func (c Canceled) Default() Canceled                                     { return "canceled" }
+func (c Batch) Default() Batch                                   { return "batch" }
+func (c BetweenTools) Default() BetweenTools                     { return "between_tools" }
+func (c BillingError) Default() BillingError                     { return "billing_error" }
+func (c Branch) Default() Branch                                 { return "branch" }
+func (c Browser) Default() Browser                               { return "browser" }
+func (c BrowserState) Default() BrowserState                     { return "browser_state" }
+func (c BrowserToolset20260801) Default() BrowserToolset20260801 { return "browser_toolset_20260801" }
+func (c BudgetReached) Default() BudgetReached                   { return "budget_reached" }
+func (c Bundle) Default() Bundle                                 { return "bundle" }
+func (c BundleTargetDeleted) Default() BundleTargetDeleted       { return "bundle_target_deleted" }
+func (c Caller) Default() Caller                                 { return "caller" }
+func (c Canceled) Default() Canceled                             { return "canceled" }
 func (c CannotInviteEmailsWithUnverifiedDomainsErrorCode) Default() CannotInviteEmailsWithUnverifiedDomainsErrorCode {
 	return "cannot_invite_emails_with_unverified_domains"
 }
@@ -1175,12 +1175,15 @@ func (c RequestBodyEncodingUnsupportedErrorCode) Default() RequestBodyEncodingUn
 func (c RequestBodyTooLargeAfterDecodingErrorCode) Default() RequestBodyTooLargeAfterDecodingErrorCode {
 	return "request_body_too_large_after_decoding"
 }
-func (c RequiresAction) Default() RequiresAction                     { return "requires_action" }
-func (c Restrict) Default() Restrict                                 { return "restrict" }
-func (c Restriction) Default() Restriction                           { return "restriction" }
-func (c RetriesExhausted) Default() RetriesExhausted                 { return "retries_exhausted" }
-func (c Retrying) Default() Retrying                                 { return "retrying" }
-func (c RightClick) Default() RightClick                             { return "right_click" }
+func (c RequiresAction) Default() RequiresAction     { return "requires_action" }
+func (c Restrict) Default() Restrict                 { return "restrict" }
+func (c Restriction) Default() Restriction           { return "restriction" }
+func (c RetriesExhausted) Default() RetriesExhausted { return "retries_exhausted" }
+func (c Retrying) Default() Retrying                 { return "retrying" }
+func (c RightClick) Default() RightClick             { return "right_click" }
+func (c SandboxEgressRestrictedErrorCode) Default() SandboxEgressRestrictedErrorCode {
+	return "sandbox_egress_restricted"
+}
 func (c BetaScanFailedErrorCode) Default() BetaScanFailedErrorCode   { return "scan_failed" }
 func (c BetaScanPendingErrorCode) Default() BetaScanPendingErrorCode { return "scan_pending" }
 func (c Schedule) Default() Schedule                                 { return "schedule" }
@@ -1442,6 +1445,9 @@ func (c UserProfileEnforcementActionOpened) Default() UserProfileEnforcementActi
 func (c UserProfileEnforcementActionResolved) Default() UserProfileEnforcementActionResolved {
 	return "user_profile.enforcement_action_resolved"
 }
+func (c UserProfileProgramStatusUpdated) Default() UserProfileProgramStatusUpdated {
+	return "user_profile.program_status_updated"
+}
 func (c UserCustomToolResult) Default() UserCustomToolResult { return "user.custom_tool_result" }
 func (c UserDefineOutcome) Default() UserDefineOutcome       { return "user.define_outcome" }
 func (c UserInterrupt) Default() UserInterrupt               { return "user.interrupt" }
@@ -1588,7 +1594,6 @@ func (c BashCodeExecutionToolResultError) MarshalJSON() ([]byte, error)     { re
 func (c Batch) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c BetweenTools) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c BillingError) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c BetaBillingFrozenErrorCode) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c Branch) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Browser) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c BrowserState) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
@@ -1938,6 +1943,7 @@ func (c Restriction) MarshalJSON() ([]byte, error)                          { re
 func (c RetriesExhausted) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Retrying) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c RightClick) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c SandboxEgressRestrictedErrorCode) MarshalJSON() ([]byte, error)     { return marshalString(c) }
 func (c BetaScanFailedErrorCode) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c BetaScanPendingErrorCode) MarshalJSON() ([]byte, error)             { return marshalString(c) }
 func (c Schedule) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -2117,6 +2123,7 @@ func (c UserProfileDeleted) MarshalJSON() ([]byte, error)                    { r
 func (c UserProfileNotFoundErrorCode) MarshalJSON() ([]byte, error)          { return marshalString(c) }
 func (c UserProfileEnforcementActionOpened) MarshalJSON() ([]byte, error)    { return marshalString(c) }
 func (c UserProfileEnforcementActionResolved) MarshalJSON() ([]byte, error)  { return marshalString(c) }
+func (c UserProfileProgramStatusUpdated) MarshalJSON() ([]byte, error)       { return marshalString(c) }
 func (c UserCustomToolResult) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c UserDefineOutcome) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c UserInterrupt) MarshalJSON() ([]byte, error)                         { return marshalString(c) }

@@ -27,5 +27,9 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(message.Content[0].Text)
+	for _, block := range message.Content {
+		if block.Type == "text" {
+			fmt.Println(block.Text)
+		}
+	}
 }

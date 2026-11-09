@@ -90,6 +90,11 @@ func (r *BetaOrganizationWorkspaceServiceAccountService) Get(ctx context.Context
 // service account explicitly with
 // `POST /workspaces/{workspace_id}/service_accounts`. Archived workspaces
 // return 400. Archived service accounts cannot be updated and are rejected.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationWorkspaceServiceAccountService) Update(ctx context.Context, serviceAccountID string, params BetaOrganizationWorkspaceServiceAccountUpdateParams, opts ...option.RequestOption) (res *BetaServiceAccountWorkspaceMember, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -192,6 +197,11 @@ func (r *BetaOrganizationWorkspaceServiceAccountService) ListAutoPaging(ctx cont
 // service account is already an explicit member of the workspace, its
 // `workspace_role` is replaced with the value supplied here. Archived workspaces
 // return 400. Archived service accounts cannot be added and are rejected.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationWorkspaceServiceAccountService) Add(ctx context.Context, workspaceID string, params BetaOrganizationWorkspaceServiceAccountAddParams, opts ...option.RequestOption) (res *BetaServiceAccountWorkspaceMember, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -227,6 +237,11 @@ func (r *BetaOrganizationWorkspaceServiceAccountService) Add(ctx context.Context
 // no-op and the membership persists; deleting an explicit default-workspace row
 // reverts to the implicit `workspace_user` membership. Archived workspaces
 // return 400.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationWorkspaceServiceAccountService) Remove(ctx context.Context, serviceAccountID string, params BetaOrganizationWorkspaceServiceAccountRemoveParams, opts ...option.RequestOption) (res *BetaOrganizationWorkspaceServiceAccountRemoveResponse, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

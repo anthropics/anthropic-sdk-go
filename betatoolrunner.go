@@ -138,11 +138,15 @@ func (s *toolRunnerLoopSpan) stopDropped() {
 
 func newBetaToolRunnerBase(messageService *BetaMessageService, tools []BetaTool, params BetaToolRunnerParams, opts []option.RequestOption) betaToolRunnerBase {
 	toolMap := make(map[string]BetaTool)
-	apiTools := make([]BetaToolUnionParam, len(tools))
+	apiTools := append(make([]BetaToolUnionParam, 0, len(params.Tools)+len(tools)), params.Tools...)
 
-	for i, tool := range tools {
+	for _, tool := range tools {
 		toolMap[tool.Name()] = tool
-		apiTools[i] = betaToolDefinition(tool)
+		if !slices.ContainsFunc(params.Tools, func(definition BetaToolUnionParam) bool {
+			return definitionName(definition) == tool.Name()
+		}) {
+			apiTools = append(apiTools, betaToolDefinition(tool))
+		}
 	}
 
 	// Add tools to the API params

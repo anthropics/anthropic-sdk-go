@@ -245,7 +245,7 @@ func (s *Stream[T]) Next() bool {
 		case "":
 			continue
 		case "error":
-			data := s.decoder.Event().Data
+			data := bytes.TrimSuffix(s.decoder.Event().Data, []byte("\n"))
 			if ed, ok := s.decoder.(richErrorDecoder); ok {
 				s.err = ed.newAPIError(data)
 			} else {

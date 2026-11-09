@@ -1496,6 +1496,48 @@ func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
 	}
 }
 
+func TestStreamErrorHasNoTrailingNewline(t *testing.T) {
+	data := `{"message":"overloaded"}`
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithHTTPClient(&http.Client{
+			Transport: &closureTransport{
+				fn: func(req *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Request:    req,
+						Body:       io.NopCloser(strings.NewReader("event: error\ndata: " + data + "\n\n")),
+					}, nil
+				},
+			},
+		}),
+	)
+
+	stream := client.Messages.NewStreaming(context.Background(), anthropic.MessageNewParams{
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{{
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
+		}},
+		Model: anthropic.ModelClaudeOpus5_5,
+	})
+	for stream.Next() {
+	}
+
+	err := stream.Err()
+	if err == nil {
+		t.Fatal("Expected the error event to end the stream with an error")
+	}
+	if got := err.Error(); !strings.HasSuffix(got, data) {
+		t.Errorf("Expected the error to end with %q, got %q", data, got)
+	}
+}
+
 type readerFunc func([]byte) (int, error)
 
 func (f readerFunc) Read(p []byte) (int, error) { return f(p) }

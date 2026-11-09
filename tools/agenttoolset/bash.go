@@ -89,7 +89,8 @@ var _ io.Closer = (*BashSession)(nil)
 // token / environment key out of its own environment. When non-nil it FULLY
 // REPLACES that default — the mapping is used verbatim and is NOT merged with
 // the scrubbed process environment. PS1/PS2/TERM are always overlaid on the
-// chosen base so output stays clean and parseable regardless of the base.
+// chosen base so output stays clean and parseable regardless of the base, and
+// HISTFILE is always emptied so the shell neither loads nor saves a history file.
 func NewBashSession(dir string, env map[string]string) (*BashSession, error) {
 	cmd := exec.Command("/bin/bash", "--noprofile", "--norc")
 	cmd.Dir = dir
@@ -103,7 +104,7 @@ func NewBashSession(dir string, env map[string]string) (*BashSession, error) {
 			base = append(base, k+"="+v)
 		}
 	}
-	cmd.Env = append(base, "PS1=", "PS2=", "TERM=dumb")
+	cmd.Env = append(base, "PS1=", "PS2=", "TERM=dumb", "HISTFILE=")
 
 	p, err := pty.Start(cmd)
 	if err != nil {
@@ -112,10 +113,10 @@ func NewBashSession(dir string, env map[string]string) (*BashSession, error) {
 
 	s := &BashSession{pty: p, cmd: cmd, done: make(chan struct{}), notify: make(chan struct{}, 1)}
 	go s.drain()
-	// Disable echo and job-control noise so output is just command results.
-	// This call must keep the PTY as its stdin (no </dev/null redirect):
-	// stty needs a terminal on fd 0 to set its modes.
-	_, _, _ = s.exec(context.Background(), "stty -echo 2>/dev/null; set +m", 5*time.Second, false)
+	// bash is interactive because it is on a PTY. Echo and job-control notices
+	// must be off or they mix into the output, and the line editor's history
+	// expansion and completion must be off or they rewrite the command text.
+	_, _, _ = s.exec(context.Background(), "stty -echo 2>/dev/null; set +m +H; bind 'set disable-completion on'", 5*time.Second, false)
 	return s, nil
 }
 

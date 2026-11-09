@@ -53,6 +53,11 @@ func NewOrganizationServiceAccountService(opts ...option.RequestOption) (r Organ
 // `organization_role` is `admin`. Creating an `admin`-role service account
 // requires an interactive credential (a user OAuth token or a Console session) — a
 // workload may only create `developer`-role service accounts.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationServiceAccountService) New(ctx context.Context, body OrganizationServiceAccountNewParams, opts ...option.RequestOption) (res *ServiceAccount, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/service_accounts"
@@ -91,6 +96,11 @@ func (r *OrganizationServiceAccountService) Get(ctx context.Context, serviceAcco
 // changed. Archived service accounts cannot be updated; this returns 400. Setting
 // `organization_role` to `admin` (even when unchanged) requires an interactive
 // credential (a user OAuth token or a Console session).
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationServiceAccountService) Update(ctx context.Context, serviceAccountID string, body OrganizationServiceAccountUpdateParams, opts ...option.RequestOption) (res *ServiceAccount, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if serviceAccountID == "" {
@@ -156,6 +166,11 @@ func (r *OrganizationServiceAccountService) ListAutoPaging(ctx context.Context, 
 // `archived_at`. Rejected with 400 if any live (non-archived) federation rule
 // still targets this service account, same as issuer archival; archive those rules
 // first or change their target to another service account.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationServiceAccountService) Archive(ctx context.Context, serviceAccountID string, opts ...option.RequestOption) (res *ServiceAccount, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if serviceAccountID == "" {

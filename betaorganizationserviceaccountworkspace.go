@@ -124,6 +124,11 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) ListAutoPaging(ctx cont
 // already an explicit member of the workspace, its `workspace_role` is replaced
 // with the value supplied here. Archived workspaces return 400. Archived service
 // accounts cannot be added and are rejected.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationServiceAccountWorkspaceService) Add(ctx context.Context, serviceAccountID string, params BetaOrganizationServiceAccountWorkspaceAddParams, opts ...option.RequestOption) (res *BetaServiceAccountWorkspaceMember, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -161,6 +166,11 @@ func (r *BetaOrganizationServiceAccountWorkspaceService) Add(ctx context.Context
 // default-workspace membership returns 200 but is a no-op and the membership
 // persists; deleting an explicit default-workspace row reverts to the implicit
 // `workspace_user` membership. Archived workspaces return 400.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationServiceAccountWorkspaceService) Remove(ctx context.Context, workspaceID string, params BetaOrganizationServiceAccountWorkspaceRemoveParams, opts ...option.RequestOption) (res *BetaOrganizationServiceAccountWorkspaceRemoveResponse, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

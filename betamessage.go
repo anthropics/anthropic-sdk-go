@@ -5633,8 +5633,8 @@ type BetaCacheControlEphemeral struct {
 	//
 	// This may be one the following values:
 	//
-	// - `5m`: 5 minutes
-	// - `1h`: 1 hour
+	//   - `5m`: 5 minutes
+	//   - `1h`: 1 hour
 	//
 	// Defaults to `5m`. See
 	// [prompt caching pricing](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
@@ -5671,8 +5671,8 @@ func (r BetaCacheControlEphemeral) ToParam() BetaCacheControlEphemeralParam {
 //
 // This may be one the following values:
 //
-// - `5m`: 5 minutes
-// - `1h`: 1 hour
+//   - `5m`: 5 minutes
+//   - `1h`: 1 hour
 //
 // Defaults to `5m`. See
 // [prompt caching pricing](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
@@ -5697,8 +5697,8 @@ type BetaCacheControlEphemeralParam struct {
 	//
 	// This may be one the following values:
 	//
-	// - `5m`: 5 minutes
-	// - `1h`: 1 hour
+	//   - `5m`: 5 minutes
+	//   - `1h`: 1 hour
 	//
 	// Defaults to `5m`. See
 	// [prompt caching pricing](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
@@ -12877,16 +12877,16 @@ type BetaFallbackParam struct {
 	// Output parameters for the fallback attempt that uses this `fallbacks` entry's
 	// `model`, combined with the request's `output_config` one field at a time.
 	//
-	// - `format`: If you leave it out, the attempt uses the request's `format`. If you
-	//   set it to `null`, the attempt runs without a format.
-	// - `effort`: If you leave it out, the attempt uses the request's `effort` when
-	//   `model` supports that level with the attempt's `thinking`. If the request
-	//   doesn't set `effort`, if `model` doesn't support the level, or if you set
-	//   `effort` to `null`, the attempt runs at the default effort of `model`.
-	// - `task_budget`: If you leave it out, the attempt uses the request's
-	//   `task_budget` when `model` accepts a task budget of that size. If the request
-	//   doesn't set `task_budget`, if `model` doesn't accept it, or if you set
-	//   `task_budget` to `null`, the attempt runs without a task budget.
+	//   - `format`: If you leave it out, the attempt uses the request's `format`. If you
+	//     set it to `null`, the attempt runs without a format.
+	//   - `effort`: If you leave it out, the attempt uses the request's `effort` when
+	//     `model` supports that level with the attempt's `thinking`. If the request
+	//     doesn't set `effort`, if `model` doesn't support the level, or if you set
+	//     `effort` to `null`, the attempt runs at the default effort of `model`.
+	//   - `task_budget`: If you leave it out, the attempt uses the request's
+	//     `task_budget` when `model` accepts a task budget of that size. If the request
+	//     doesn't set `task_budget`, if `model` doesn't accept it, or if you set
+	//     `task_budget` to `null`, the attempt runs without a task budget.
 	//
 	// Set `output_config` to `null` to run the attempt without a format or a task
 	// budget, at the default effort of `model`.
@@ -14335,15 +14335,15 @@ type BetaMessage struct {
 	//
 	// This may be one the following values:
 	//
-	// - `"end_turn"`: the model reached a natural stopping point
-	// - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
-	// - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
-	// - `"tool_use"`: the model invoked one or more tools
-	// - `"pause_turn"`: we paused a long-running turn. You may provide the response
-	//   back as-is in a subsequent request to let the model continue.
-	// - `"refusal"`: when streaming classifiers intervene to handle potential policy
-	//   violations
-	// - `"model_context_window_exceeded"`: we exceeded the model's context window
+	//   - `"end_turn"`: the model reached a natural stopping point
+	//   - `"max_tokens"`: we exceeded the requested `max_tokens` or the model's maximum
+	//   - `"stop_sequence"`: one of your provided custom `stop_sequences` was generated
+	//   - `"tool_use"`: the model invoked one or more tools
+	//   - `"pause_turn"`: we paused a long-running turn. You may provide the response
+	//     back as-is in a subsequent request to let the model continue.
+	//   - `"refusal"`: when streaming classifiers intervene to handle potential policy
+	//     violations
+	//   - `"model_context_window_exceeded"`: we exceeded the model's context window
 	//
 	// In non-streaming mode this value is always non-null. In streaming mode, it is
 	// null in the `message_start` event and non-null otherwise.
@@ -14443,8 +14443,8 @@ type BetaMessageDeltaUsage struct {
 	// (model sampling iterations, such as the turns of a server-side tool use loop),
 	// this allows you to:
 	//
-	// - Calculate the context window size from the last `message` entry
-	// - Understand token accumulation across server-side tool use loops
+	//   - Calculate the context window size from the last `message` entry
+	//   - Understand token accumulation across server-side tool use loops
 	//
 	// A `compaction` entry reports the token usage of the compaction operation itself
 	// — the server-side request that summarizes the context being closed — NOT the
@@ -23704,8 +23704,8 @@ type BetaUsage struct {
 	// (model sampling iterations, such as the turns of a server-side tool use loop),
 	// this allows you to:
 	//
-	// - Calculate the context window size from the last `message` entry
-	// - Understand token accumulation across server-side tool use loops
+	//   - Calculate the context window size from the last `message` entry
+	//   - Understand token accumulation across server-side tool use loops
 	//
 	// A `compaction` entry reports the token usage of the compaction operation itself
 	// — the server-side request that summarizes the context being closed — NOT the
@@ -26381,11 +26381,11 @@ type BetaMessageNewParams struct {
 	//
 	// Each tool definition includes:
 	//
-	// - `name`: Name of the tool.
-	// - `description`: Optional, but strongly-recommended description of the tool.
-	// - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
-	//   tool `input` shape that the model will produce in `tool_use` output content
-	//   blocks.
+	//   - `name`: Name of the tool.
+	//   - `description`: Optional, but strongly-recommended description of the tool.
+	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//     tool `input` shape that the model will produce in `tool_use` output content
+	//     blocks.
 	//
 	// For example, if you defined `tools` as:
 	//
@@ -26693,11 +26693,11 @@ type BetaMessageCountTokensParams struct {
 	//
 	// Each tool definition includes:
 	//
-	// - `name`: Name of the tool.
-	// - `description`: Optional, but strongly-recommended description of the tool.
-	// - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
-	//   tool `input` shape that the model will produce in `tool_use` output content
-	//   blocks.
+	//   - `name`: Name of the tool.
+	//   - `description`: Optional, but strongly-recommended description of the tool.
+	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//     tool `input` shape that the model will produce in `tool_use` output content
+	//     blocks.
 	//
 	// For example, if you defined `tools` as:
 	//

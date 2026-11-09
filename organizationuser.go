@@ -52,6 +52,11 @@ func (r *OrganizationUserService) Get(ctx context.Context, userID string, opts .
 }
 
 // Update a member's organization role.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationUserService) Update(ctx context.Context, userID string, body OrganizationUserUpdateParams, opts ...option.RequestOption) (res *OrganizationUser, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if userID == "" {
@@ -94,6 +99,7 @@ func (r *OrganizationUserService) ListAutoPaging(ctx context.Context, query Orga
 // [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeCannotRemoveLastMember] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 //   - [ErrorCodeConcurrentMembershipChange] (HTTP 409)
 func (r *OrganizationUserService) Remove(ctx context.Context, userID string, opts ...option.RequestOption) (res *OrganizationUserRemoveResponse, err error) {
 	opts = slices.Concat(r.Options, opts)

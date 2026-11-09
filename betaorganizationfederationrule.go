@@ -61,6 +61,11 @@ func NewBetaOrganizationFederationRuleService(opts ...option.RequestOption) (r B
 // of those identity claims (e.g. `claims.repository_owner`). OAuth callers may
 // only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationFederationRuleService) New(ctx context.Context, params BetaOrganizationFederationRuleNewParams, opts ...option.RequestOption) (res *BetaFederationRule, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -131,6 +136,11 @@ func (r *BetaOrganizationFederationRuleService) Get(ctx context.Context, federat
 // request. OAuth callers may only manage rules whose `oauth_scope` is
 // `workspace:developer` or `workspace:inference`; other scopes require a Console
 // session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationFederationRuleService) Update(ctx context.Context, federationRuleID string, params BetaOrganizationFederationRuleUpdateParams, opts ...option.RequestOption) (res *BetaFederationRule, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -218,6 +228,11 @@ func (r *BetaOrganizationFederationRuleService) ListAutoPaging(ctx context.Conte
 // already minted before archive remain valid until they expire. OAuth callers may
 // only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationFederationRuleService) Archive(ctx context.Context, federationRuleID string, body BetaOrganizationFederationRuleArchiveParams, opts ...option.RequestOption) (res *BetaFederationRule, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))

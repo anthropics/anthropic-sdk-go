@@ -233,11 +233,11 @@ type BetaMessageThreadSendParams struct {
 	//
 	// Each tool definition includes:
 	//
-	// - `name`: Name of the tool.
-	// - `description`: Optional, but strongly-recommended description of the tool.
-	// - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
-	//   tool `input` shape that the model will produce in `tool_use` output content
-	//   blocks.
+	//   - `name`: Name of the tool.
+	//   - `description`: Optional, but strongly-recommended description of the tool.
+	//   - `input_schema`: [JSON schema](https://json-schema.org/draft/2020-12) for the
+	//     tool `input` shape that the model will produce in `tool_use` output content
+	//     blocks.
 	//
 	// For example, if you defined `tools` as:
 	//

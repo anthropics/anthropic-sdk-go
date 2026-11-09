@@ -61,6 +61,7 @@ func (r *BetaOrganizationWorkspaceMemberService) Get(ctx context.Context, userID
 // [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeWorkspaceMemberLimitExceeded] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationWorkspaceMemberService) Update(ctx context.Context, userID string, params BetaOrganizationWorkspaceMemberUpdateParams, opts ...option.RequestOption) (res *BetaWorkspaceMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if params.WorkspaceID == "" {
@@ -113,6 +114,7 @@ func (r *BetaOrganizationWorkspaceMemberService) ListAutoPaging(ctx context.Cont
 // [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeWorkspaceMemberLimitExceeded] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationWorkspaceMemberService) Add(ctx context.Context, workspaceID string, body BetaOrganizationWorkspaceMemberAddParams, opts ...option.RequestOption) (res *BetaWorkspaceMember, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
@@ -127,6 +129,11 @@ func (r *BetaOrganizationWorkspaceMemberService) Add(ctx context.Context, worksp
 }
 
 // Delete Workspace Member
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationWorkspaceMemberService) Remove(ctx context.Context, userID string, body BetaOrganizationWorkspaceMemberRemoveParams, opts ...option.RequestOption) (res *BetaOrganizationWorkspaceMemberRemoveResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if body.WorkspaceID == "" {

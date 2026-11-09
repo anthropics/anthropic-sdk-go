@@ -247,7 +247,8 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [StorageQuotaExceededErrorDetails], [FileNotDownloadableErrorDetails],
 // [FileExpiredErrorDetails], [CMEKContextUnavailableErrorDetails],
 // [OrgAPIKeyLimitExceededErrorDetails],
-// [WorkspaceAPIKeyLimitExceededErrorDetails], [UserProfileNotFoundErrorDetails],
+// [WorkspaceAPIKeyLimitExceededErrorDetails],
+// [SandboxEgressRestrictedErrorDetails], [UserProfileNotFoundErrorDetails],
 // [ExternalKeyInWorkspacePolicyErrorDetails], [AlreadyMemberErrorDetails],
 // [CannotInviteEmailsWithUnverifiedDomainsErrorDetails],
 // [EmailDomainNotAllowedErrorDetails], [InviteAlreadyExistsErrorDetails],
@@ -271,7 +272,6 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [BetaCannotSignOutMembershipAdminErrorDetails],
 // [BetaCannotSignOutOwnerErrorDetails],
 // [BetaCannotSignOutPrivilegedMemberErrorDetails],
-// [BetaBillingFrozenErrorDetails],
 // [BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails],
 // [BetaUnsupportedCharsetErrorDetails], [BetaPluginNameTakenErrorDetails],
 // [BetaSkillNameTakenErrorDetails], [BetaRegistrationPendingErrorDetails],
@@ -304,8 +304,8 @@ type ErrorDetailsUnion struct {
 	// "ramp_limit_exceeded", "cmek_key_unreachable", "compaction_unavailable",
 	// "storage_quota_exceeded", "file_not_downloadable", "file_expired",
 	// "cmek_context_unavailable", "org_api_key_limit_exceeded",
-	// "workspace_api_key_limit_exceeded", "user_profile_not_found",
-	// "external_key_in_workspace_policy", "already_member",
+	// "workspace_api_key_limit_exceeded", "sandbox_egress_restricted",
+	// "user_profile_not_found", "external_key_in_workspace_policy", "already_member",
 	// "cannot_invite_emails_with_unverified_domains", "email_domain_not_allowed",
 	// "invite_already_exists", "org_member_limit_exceeded",
 	// "rbac_group_grants_owner_access", "rbac_group_owner_access_unconfirmed",
@@ -319,7 +319,7 @@ type ErrorDetailsUnion struct {
 	// "cannot_sign_out_primary_owner", "cannot_sign_out_self",
 	// "organization_not_enrolled_in_beta", "cannot_sign_out_managed_member",
 	// "cannot_sign_out_membership_admin", "cannot_sign_out_owner",
-	// "cannot_sign_out_privileged_member", "billing_frozen",
+	// "cannot_sign_out_privileged_member",
 	// "spend_limits_admin_api_writes_not_enabled", "unsupported_charset",
 	// "plugin_name_taken", "skill_name_taken", "registration_pending", "scan_failed",
 	// "scan_pending", "slack_channel_set_up_settings_refused",
@@ -400,6 +400,7 @@ type anyErrorDetails interface {
 //	case shared.CMEKContextUnavailableErrorDetails:
 //	case shared.OrgAPIKeyLimitExceededErrorDetails:
 //	case shared.WorkspaceAPIKeyLimitExceededErrorDetails:
+//	case shared.SandboxEgressRestrictedErrorDetails:
 //	case shared.UserProfileNotFoundErrorDetails:
 //	case shared.ExternalKeyInWorkspacePolicyErrorDetails:
 //	case shared.AlreadyMemberErrorDetails:
@@ -431,7 +432,6 @@ type anyErrorDetails interface {
 //	case shared.BetaCannotSignOutMembershipAdminErrorDetails:
 //	case shared.BetaCannotSignOutOwnerErrorDetails:
 //	case shared.BetaCannotSignOutPrivilegedMemberErrorDetails:
-//	case shared.BetaBillingFrozenErrorDetails:
 //	case shared.BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails:
 //	case shared.BetaUnsupportedCharsetErrorDetails:
 //	case shared.BetaPluginNameTakenErrorDetails:
@@ -522,6 +522,8 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsOrgAPIKeyLimitExceeded()
 	case "workspace_api_key_limit_exceeded":
 		return u.AsWorkspaceAPIKeyLimitExceeded()
+	case "sandbox_egress_restricted":
+		return u.AsSandboxEgressRestricted()
 	case "user_profile_not_found":
 		return u.AsUserProfileNotFound()
 	case "external_key_in_workspace_policy":
@@ -584,8 +586,6 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsCannotSignOutOwner()
 	case "cannot_sign_out_privileged_member":
 		return u.AsCannotSignOutPrivilegedMember()
-	case "billing_frozen":
-		return u.AsBillingFrozen()
 	case "spend_limits_admin_api_writes_not_enabled":
 		return u.AsSpendLimitsAdminAPIWritesNotEnabled()
 	case "unsupported_charset":
@@ -795,6 +795,11 @@ func (u ErrorDetailsUnion) AsWorkspaceAPIKeyLimitExceeded() (v WorkspaceAPIKeyLi
 	return
 }
 
+func (u ErrorDetailsUnion) AsSandboxEgressRestricted() (v SandboxEgressRestrictedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 func (u ErrorDetailsUnion) AsUserProfileNotFound() (v UserProfileNotFoundErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
@@ -946,11 +951,6 @@ func (u ErrorDetailsUnion) AsCannotSignOutOwner() (v BetaCannotSignOutOwnerError
 }
 
 func (u ErrorDetailsUnion) AsCannotSignOutPrivilegedMember() (v BetaCannotSignOutPrivilegedMemberErrorDetails) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u ErrorDetailsUnion) AsBillingFrozen() (v BetaBillingFrozenErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1450,6 +1450,27 @@ func (r *RequestBodyTooLargeAfterDecodingErrorDetails) UnmarshalJSON(data []byte
 
 func (RequestBodyTooLargeAfterDecodingErrorDetails) ImplErrorDetailsUnion() {}
 
+// The request came from a Claude sandbox with restricted network access, which is
+// not allowed to make this change. Send it from outside the sandbox, or from a
+// sandbox with unrestricted network access.
+type SandboxEgressRestrictedErrorDetails struct {
+	ErrorCode constant.SandboxEgressRestrictedErrorCode `json:"error_code" default:"sandbox_egress_restricted"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r SandboxEgressRestrictedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *SandboxEgressRestrictedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (SandboxEgressRestrictedErrorDetails) ImplErrorDetailsUnion() {}
+
 // The tools available after a message exceed a limit on their number or their
 // size.
 type AvailableToolsLimitExceededErrorDetails struct {
@@ -1726,7 +1747,6 @@ const (
 	ThreadUnsupportedFeatureNameHipaa             ThreadUnsupportedFeatureName = "hipaa"
 	ThreadUnsupportedFeatureNameInferenceHooks    ThreadUnsupportedFeatureName = "inference_hooks"
 	ThreadUnsupportedFeatureNameThinking          ThreadUnsupportedFeatureName = "thinking"
-	ThreadUnsupportedFeatureNameZdr               ThreadUnsupportedFeatureName = "zdr"
 )
 
 // A tool made available in `messages` takes a name that an available tool of
@@ -2503,8 +2523,8 @@ func (r *BetaOrganizationNotEnrolledInBetaErrorDetails) UnmarshalJSON(data []byt
 
 func (BetaOrganizationNotEnrolledInBetaErrorDetails) ImplErrorDetailsUnion() {}
 
-// On a public-sector deployment, only an API key or token that belongs to a person
-// with owner permissions can sign out a member with the `managed` role.
+// The member has the `managed` role, and this API key or token cannot sign them
+// out. The error message says which keys and tokens can.
 type BetaCannotSignOutManagedMemberErrorDetails struct {
 	ErrorCode constant.BetaCannotSignOutManagedMemberErrorCode `json:"error_code" default:"cannot_sign_out_managed_member"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -2583,26 +2603,6 @@ func (r *BetaCannotSignOutPrivilegedMemberErrorDetails) UnmarshalJSON(data []byt
 }
 
 func (BetaCannotSignOutPrivilegedMemberErrorDetails) ImplErrorDetailsUnion() {}
-
-// Anthropic has temporarily disabled billing changes for the user account the
-// credential belongs to. Contact support.
-type BetaBillingFrozenErrorDetails struct {
-	ErrorCode constant.BetaBillingFrozenErrorCode `json:"error_code" default:"billing_frozen"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		ErrorCode   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r BetaBillingFrozenErrorDetails) RawJSON() string { return r.JSON.raw }
-func (r *BetaBillingFrozenErrorDetails) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (BetaBillingFrozenErrorDetails) ImplErrorDetailsUnion() {}
 
 // The organization cannot retrieve, set or delete spend limits with an Admin API
 // credential.

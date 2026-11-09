@@ -831,6 +831,26 @@ func TestDefinitionName(t *testing.T) {
 	}
 }
 
+func TestBetaToolRunner_KeepsTheToolsInParamsAndAddsTheDefinitionsTheyLack(t *testing.T) {
+	server, requests := scriptedMessagesServer(t, endTurnJSON)
+	client := newTestToolRunnerClient(server)
+	params := newCappedRunnerParams(0)
+	params.Tools = []BetaToolUnionParam{
+		{OfWebSearchTool20250305: &BetaWebSearchTool20250305Param{MaxUses: Int(3)}},
+		{OfTool: &BetaToolParam{Name: "weather", Description: String("the caller's definition")}},
+	}
+	tools := []BetaTool{&stubBetaTool{name: "weather"}, &stubBetaTool{name: "time"}}
+
+	if _, err := client.Beta.Messages.NewToolRunner(tools, params).RunToCompletion(context.Background()); err != nil {
+		t.Fatalf("RunToCompletion: %v", err)
+	}
+
+	sent := gjson.GetBytes(requests()[0], "tools")
+	requireJSONEqual(t, sent.Get("#.name").Raw, `["web_search","weather","time"]`)
+	requireJSONEqual(t, sent.Get("0").Raw, `{"type":"web_search_20250305","name":"web_search","max_uses":3}`)
+	requireJSONEqual(t, sent.Get("1.description").Raw, `"the caller's definition"`)
+}
+
 // A change made on the turn a compaction is requested goes out in the
 // compaction request, and its tool still runs once the response has replaced
 // the history.

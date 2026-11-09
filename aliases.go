@@ -379,15 +379,8 @@ const ErrorCodeWorkspacePolicyViolation = apierror.ErrorCodeWorkspacePolicyViola
 // details.
 const ErrorCodeBetaAPIKeyScopeMissing = apierror.ErrorCodeBetaAPIKeyScopeMissing
 
-// Anthropic has temporarily disabled billing changes for the user account the
-// credential belongs to. Contact support.
-//
-// Returned with HTTP status 403 and [shared.BetaBillingFrozenErrorDetails]
-// details.
-const ErrorCodeBetaBillingFrozen = apierror.ErrorCodeBetaBillingFrozen
-
-// On a public-sector deployment, only an API key or token that belongs to a person
-// with owner permissions can sign out a member with the `managed` role.
+// The member has the `managed` role, and this API key or token cannot sign them
+// out. The error message says which keys and tokens can.
 //
 // Returned with HTTP status 403 and
 // [shared.BetaCannotSignOutManagedMemberErrorDetails] details.
@@ -447,6 +440,14 @@ const ErrorCodeBetaEnvironmentUpdateDisabled = apierror.ErrorCodeBetaEnvironment
 // Returned with HTTP status 403 and
 // [shared.BetaOrganizationLevelScopedAPIKeyRequiredErrorDetails] details.
 const ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired = apierror.ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired
+
+// The request came from a Claude sandbox with restricted network access, which is
+// not allowed to make this change. Send it from outside the sandbox, or from a
+// sandbox with unrestricted network access.
+//
+// Returned with HTTP status 403 and [shared.SandboxEgressRestrictedErrorDetails]
+// details.
+const ErrorCodeSandboxEgressRestricted = apierror.ErrorCodeSandboxEgressRestricted
 
 // The organization cannot retrieve, set or delete spend limits with an Admin API
 // credential.
@@ -734,6 +735,13 @@ type RequestBodyEncodingUnsupportedErrorDetails = shared.RequestBodyEncodingUnsu
 // This is an alias to an internal type.
 type RequestBodyTooLargeAfterDecodingErrorDetails = shared.RequestBodyTooLargeAfterDecodingErrorDetails
 
+// The request came from a Claude sandbox with restricted network access, which is
+// not allowed to make this change. Send it from outside the sandbox, or from a
+// sandbox with unrestricted network access.
+//
+// This is an alias to an internal type.
+type SandboxEgressRestrictedErrorDetails = shared.SandboxEgressRestrictedErrorDetails
+
 // The tools available after a message exceed a limit on their number or their
 // size.
 //
@@ -834,9 +842,6 @@ const ThreadUnsupportedFeatureNameInferenceHooks = shared.ThreadUnsupportedFeatu
 
 // Equals "thinking"
 const ThreadUnsupportedFeatureNameThinking = shared.ThreadUnsupportedFeatureNameThinking
-
-// Equals "zdr"
-const ThreadUnsupportedFeatureNameZdr = shared.ThreadUnsupportedFeatureNameZdr
 
 // A tool made available in `messages` takes a name that an available tool of
 // another kind, or of another MCP server, already holds.
@@ -1085,8 +1090,8 @@ type BetaCannotSignOutSelfErrorDetails = shared.BetaCannotSignOutSelfErrorDetail
 // This is an alias to an internal type.
 type BetaOrganizationNotEnrolledInBetaErrorDetails = shared.BetaOrganizationNotEnrolledInBetaErrorDetails
 
-// On a public-sector deployment, only an API key or token that belongs to a person
-// with owner permissions can sign out a member with the `managed` role.
+// The member has the `managed` role, and this API key or token cannot sign them
+// out. The error message says which keys and tokens can.
 //
 // This is an alias to an internal type.
 type BetaCannotSignOutManagedMemberErrorDetails = shared.BetaCannotSignOutManagedMemberErrorDetails
@@ -1109,12 +1114,6 @@ type BetaCannotSignOutOwnerErrorDetails = shared.BetaCannotSignOutOwnerErrorDeta
 //
 // This is an alias to an internal type.
 type BetaCannotSignOutPrivilegedMemberErrorDetails = shared.BetaCannotSignOutPrivilegedMemberErrorDetails
-
-// Anthropic has temporarily disabled billing changes for the user account the
-// credential belongs to. Contact support.
-//
-// This is an alias to an internal type.
-type BetaBillingFrozenErrorDetails = shared.BetaBillingFrozenErrorDetails
 
 // The organization cannot retrieve, set or delete spend limits with an Admin API
 // credential.

@@ -96,6 +96,7 @@ rawTool, err := toolrunner.NewBetaToolFromBytes(
 		// ...
 	},
 )
+```
 
 ## Tool Runner
 

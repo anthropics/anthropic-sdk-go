@@ -60,6 +60,11 @@ func NewOrganizationFederationRuleService(opts ...option.RequestOption) (r Organ
 // of those identity claims (e.g. `claims.repository_owner`). OAuth callers may
 // only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationFederationRuleService) New(ctx context.Context, body OrganizationFederationRuleNewParams, opts ...option.RequestOption) (res *FederationRule, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/federation_rules"
@@ -108,6 +113,11 @@ func (r *OrganizationFederationRuleService) Get(ctx context.Context, federationR
 // request. OAuth callers may only manage rules whose `oauth_scope` is
 // `workspace:developer` or `workspace:inference`; other scopes require a Console
 // session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationFederationRuleService) Update(ctx context.Context, federationRuleID string, body OrganizationFederationRuleUpdateParams, opts ...option.RequestOption) (res *FederationRule, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if federationRuleID == "" {
@@ -173,6 +183,11 @@ func (r *OrganizationFederationRuleService) ListAutoPaging(ctx context.Context, 
 // already minted before archive remain valid until they expire. OAuth callers may
 // only manage rules whose `oauth_scope` is `workspace:developer` or
 // `workspace:inference`; other scopes require a Console session.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationFederationRuleService) Archive(ctx context.Context, federationRuleID string, opts ...option.RequestOption) (res *FederationRule, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if federationRuleID == "" {

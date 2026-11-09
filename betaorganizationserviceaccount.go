@@ -54,6 +54,11 @@ func NewBetaOrganizationServiceAccountService(opts ...option.RequestOption) (r B
 // `organization_role` is `admin`. Creating an `admin`-role service account
 // requires an interactive credential (a user OAuth token or a Console session) — a
 // workload may only create `developer`-role service accounts.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationServiceAccountService) New(ctx context.Context, params BetaOrganizationServiceAccountNewParams, opts ...option.RequestOption) (res *BetaServiceAccount, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -114,6 +119,11 @@ func (r *BetaOrganizationServiceAccountService) Get(ctx context.Context, service
 // changed. Archived service accounts cannot be updated; this returns 400. Setting
 // `organization_role` to `admin` (even when unchanged) requires an interactive
 // credential (a user OAuth token or a Console session).
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationServiceAccountService) Update(ctx context.Context, serviceAccountID string, params BetaOrganizationServiceAccountUpdateParams, opts ...option.RequestOption) (res *BetaServiceAccount, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -201,6 +211,11 @@ func (r *BetaOrganizationServiceAccountService) ListAutoPaging(ctx context.Conte
 // `archived_at`. Rejected with 400 if any live (non-archived) federation rule
 // still targets this service account, same as issuer archival; archive those rules
 // first or change their target to another service account.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationServiceAccountService) Archive(ctx context.Context, serviceAccountID string, body BetaOrganizationServiceAccountArchiveParams, opts ...option.RequestOption) (res *BetaServiceAccount, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))

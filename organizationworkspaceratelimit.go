@@ -48,6 +48,11 @@ func NewOrganizationWorkspaceRateLimitService(opts ...option.RequestOption) (r O
 // Returns the targeted group's entry with this request applied, in the shape
 // `GET /v1/organizations/workspaces/{workspace_id}/rate_limits` returns. Changes
 // take effect within about an hour.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *OrganizationWorkspaceRateLimitService) Update(ctx context.Context, rateLimitID string, params OrganizationWorkspaceRateLimitUpdateParams, opts ...option.RequestOption) (res *WorkspaceRateLimit, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if params.WorkspaceID == "" {

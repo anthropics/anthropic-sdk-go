@@ -30,6 +30,8 @@
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#RequestBodyEncodingInvalidErrorDetails">RequestBodyEncodingInvalidErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#RequestBodyEncodingUnsupportedErrorDetails">RequestBodyEncodingUnsupportedErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#RequestBodyTooLargeAfterDecodingErrorDetails">RequestBodyTooLargeAfterDecodingErrorDetails</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#SandboxEgressRestrictedErrorDetails">SandboxEgressRestrictedErrorDetails</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ErrorCode">ErrorCode</a>
 
 # Messages
 
@@ -2468,6 +2470,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaWebhookSessionUpdatedEventData">BetaWebhookSessionUpdatedEventData</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaWebhookUserProfileEnforcementActionOpenedEventData">BetaWebhookUserProfileEnforcementActionOpenedEventData</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaWebhookUserProfileEnforcementActionResolvedEventData">BetaWebhookUserProfileEnforcementActionResolvedEventData</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaWebhookUserProfileProgramStatusUpdatedEventData">BetaWebhookUserProfileProgramStatusUpdatedEventData</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaWebhookVaultArchivedEventData">BetaWebhookVaultArchivedEventData</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaWebhookVaultCreatedEventData">BetaWebhookVaultCreatedEventData</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaWebhookVaultCredentialArchivedEventData">BetaWebhookVaultCredentialArchivedEventData</a>
@@ -2583,7 +2586,6 @@ Methods:
 
 Response Types:
 
-- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaBillingFrozenErrorDetails">BetaBillingFrozenErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganization">BetaOrganization</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaOrganizationRole">BetaOrganizationRole</a>
 

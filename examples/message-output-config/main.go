@@ -29,7 +29,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("[assistant]:", first.Content[0].Text)
+	for _, block := range first.Content {
+		if block.Type == "text" {
+			fmt.Println("[assistant]:", block.Text)
+		}
+	}
 
 	// Raise the effort for the rest of the conversation. NewBetaSystemMessage
 	// with no blocks serializes as {"role":"system","content":[],"output_config":{...}};
@@ -51,5 +55,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("[assistant, effort=high]:", second.Content[0].Text)
+	for _, block := range second.Content {
+		if block.Type == "text" {
+			fmt.Println("[assistant, effort=high]:", block.Text)
+		}
+	}
 }

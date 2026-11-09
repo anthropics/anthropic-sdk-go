@@ -88,9 +88,9 @@ type RBACRole struct {
 	ID string `json:"id" api:"required"`
 	// RFC 3339 datetime string indicating when the RBAC Role was created.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Name of the RBAC Role. For a role created by Anthropic, this name can differ
-	// from the label claude.ai shows, and Anthropic may change the name. To keep a
-	// lasting reference to a role, store its `id`.
+	// Name of the RBAC Role. For a role created by Anthropic, this is Anthropic's name
+	// for the access that the role grants. Anthropic may change this name, so to keep
+	// a lasting reference to a role, store its `id`.
 	DisplayName string `json:"display_name" api:"required"`
 	// Object type.
 	//

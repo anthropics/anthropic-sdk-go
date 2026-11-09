@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.8.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.7.0...v2.8.0) (2026-11-09)
+
+### Features
+
+* **api:** accept user_profile.program_status_updated on organization webhook endpoints
+* **api:** add claude-fable-5-2 and claude-mythos-5-2
+* **api:** add parent organization filtering and grouping to the usage and cost reports
+* **api:** add the sandbox_egress_restricted error to Admin API write methods
+* **api:** add the user_profile.program_status_updated webhook event
+
+
+### Bug Fixes
+
+* **streaming:** drop the trailing newline from stream error messages
+* **tools:** keep bash tool commands out of the shell history file
+* **tools:** keep server tools passed in params when using the beta tool runner
+* **tools:** run bash tool commands containing ! or tabs as written
+
+
+### Chores
+
+* **api:** remove some error detail types and update descriptions
+* **docs:** say when a work heartbeat does not compare its value
+* **docs:** update model descriptions
+* **internal:** generate the stream error decoder
+
+
+### Documentation
+
+* **client:** list error code types in api.md
+* **examples:** print every text block in the reply
+* show lists in doc comments as lists
+
 ## [2.7.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.6.0...v2.7.0) (2026-11-05)
 
 ### Features

@@ -12,6 +12,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -31,9 +32,11 @@ func TestBedrockURLEncoding(t *testing.T) {
 	testCases := []struct {
 		name            string
 		model           string
+		omitModel       bool
 		stream          bool
 		expectedPath    string
 		expectedRawPath string
+		expectedErr     string
 	}{
 		{
 			name:            "regular model name",
@@ -54,21 +57,123 @@ func TestBedrockURLEncoding(t *testing.T) {
 			model:           "arn:aws:bedrock:us-east-1:947123456126:application-inference-profile/xv9example4b",
 			stream:          false,
 			expectedPath:    "/model/arn:aws:bedrock:us-east-1:947123456126:application-inference-profile/xv9example4b/invoke",
-			expectedRawPath: "/model/arn%3Aaws%3Abedrock%3Aus-east-1%3A947123456126%3Aapplication-inference-profile%2Fxv9example4b/invoke",
+			expectedRawPath: "/model/arn:aws:bedrock:us-east-1:947123456126:application-inference-profile%2Fxv9example4b/invoke",
 		},
 		{
 			name:            "inference profile ARN with streaming",
 			model:           "arn:aws:bedrock:us-east-1:947123456126:application-inference-profile/xv9example4b",
 			stream:          true,
 			expectedPath:    "/model/arn:aws:bedrock:us-east-1:947123456126:application-inference-profile/xv9example4b/invoke-with-response-stream",
-			expectedRawPath: "/model/arn%3Aaws%3Abedrock%3Aus-east-1%3A947123456126%3Aapplication-inference-profile%2Fxv9example4b/invoke-with-response-stream",
+			expectedRawPath: "/model/arn:aws:bedrock:us-east-1:947123456126:application-inference-profile%2Fxv9example4b/invoke-with-response-stream",
 		},
 		{
 			name:            "foundation model ARN with colons",
 			model:           "arn:aws:bedrock:us-east-1:123456789012:foundation-model/anthropic.claude-3-sonnet-20240229-v1:0",
 			stream:          false,
 			expectedPath:    "/model/arn:aws:bedrock:us-east-1:123456789012:foundation-model/anthropic.claude-3-sonnet-20240229-v1:0/invoke",
-			expectedRawPath: "/model/arn%3Aaws%3Abedrock%3Aus-east-1%3A123456789012%3Afoundation-model%2Fanthropic.claude-3-sonnet-20240229-v1%3A0/invoke",
+			expectedRawPath: "/model/arn:aws:bedrock:us-east-1:123456789012:foundation-model%2Fanthropic.claude-3-sonnet-20240229-v1:0/invoke",
+		},
+		{
+			name:            "model ID with a colon",
+			model:           "anthropic.claude-sonnet-4-5-20250929-v1:0",
+			stream:          false,
+			expectedPath:    "/model/anthropic.claude-sonnet-4-5-20250929-v1:0/invoke",
+			expectedRawPath: "/model/anthropic.claude-sonnet-4-5-20250929-v1:0/invoke",
+		},
+		{
+			name:            "system-defined inference profile ARN",
+			model:           "arn:aws:bedrock:us-east-1:123456789012:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+			stream:          true,
+			expectedPath:    "/model/arn:aws:bedrock:us-east-1:123456789012:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0/invoke-with-response-stream",
+			expectedRawPath: "/model/arn:aws:bedrock:us-east-1:123456789012:inference-profile%2Fus.anthropic.claude-sonnet-4-5-20250929-v1:0/invoke-with-response-stream",
+		},
+		{
+			name:            "model name with a space and slashes",
+			model:           "x /..",
+			stream:          false,
+			expectedPath:    "/model/x /../invoke",
+			expectedRawPath: "/model/x%20%2F../invoke",
+		},
+		{
+			name:            "model name with a plus sign",
+			model:           "a+b",
+			stream:          false,
+			expectedPath:    "/model/a+b/invoke",
+			expectedRawPath: "/model/a+b/invoke",
+		},
+		{
+			name:        "parent directory dot segment",
+			model:       "..",
+			stream:      false,
+			expectedErr: `constructed path "/model/../invoke" contains dot segment ".." which is not allowed`,
+		},
+		{
+			name:        "current directory dot segment with streaming",
+			model:       ".",
+			stream:      true,
+			expectedErr: `constructed path "/model/./invoke-with-response-stream" contains dot segment "." which is not allowed`,
+		},
+		{
+			name:        "parent directory dot segment with parameters",
+			model:       "..;x",
+			stream:      false,
+			expectedErr: `constructed path "/model/..;x/invoke" contains dot segment "..;x" which is not allowed`,
+		},
+		{
+			name:        "current directory dot segment with parameters",
+			model:       ".;x",
+			stream:      false,
+			expectedErr: `constructed path "/model/.;x/invoke" contains dot segment ".;x" which is not allowed`,
+		},
+		{
+			name:        "parent directory dot segment with empty parameters and streaming",
+			model:       "..;",
+			stream:      true,
+			expectedErr: `constructed path "/model/..;/invoke-with-response-stream" contains dot segment "..;" which is not allowed`,
+		},
+		{
+			name:            "model name with a semicolon",
+			model:           "a;b",
+			stream:          false,
+			expectedPath:    "/model/a;b/invoke",
+			expectedRawPath: "/model/a;b/invoke",
+		},
+		{
+			name:            "model name with a dot segment after a semicolon",
+			model:           "x;..",
+			stream:          false,
+			expectedPath:    "/model/x;../invoke",
+			expectedRawPath: "/model/x;../invoke",
+		},
+		{
+			name:        "empty model",
+			model:       "",
+			stream:      false,
+			expectedErr: "missing required model parameter",
+		},
+		{
+			name:        "model with only parameters",
+			model:       ";x",
+			stream:      false,
+			expectedErr: `constructed path "/model/;x/invoke" contains segment ";x" which starts with ";" and is not allowed`,
+		},
+		{
+			name:        "model with only a semicolon and streaming",
+			model:       ";",
+			stream:      true,
+			expectedErr: `constructed path "/model/;/invoke-with-response-stream" contains segment ";" which starts with ";" and is not allowed`,
+		},
+		{
+			name:        "model with only a named parameter",
+			model:       ";a=b",
+			stream:      false,
+			expectedErr: `constructed path "/model/;a=b/invoke" contains segment ";a=b" which starts with ";" and is not allowed`,
+		},
+		{
+			name:        "no model in the body",
+			omitModel:   true,
+			stream:      true,
+			expectedErr: "missing required model parameter",
 		},
 	}
 
@@ -96,6 +201,9 @@ func TestBedrockURLEncoding(t *testing.T) {
 					{"role": "user", "content": "Hello"},
 				},
 			}
+			if tc.omitModel {
+				delete(requestBody, "model")
+			}
 
 			bodyBytes, err := json.Marshal(requestBody)
 			if err != nil {
@@ -110,7 +218,10 @@ func TestBedrockURLEncoding(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			// Apply middleware
+			sent := false
 			_, err = middleware(req, func(r *http.Request) (*http.Response, error) {
+				sent = true
+
 				// Verify the URL paths are set correctly
 				if r.URL.Path != tc.expectedPath {
 					t.Errorf("Expected Path %q, got %q", tc.expectedPath, r.URL.Path)
@@ -134,10 +245,73 @@ func TestBedrockURLEncoding(t *testing.T) {
 				}, nil
 			})
 
+			if tc.expectedErr != "" {
+				if err == nil || !strings.Contains(err.Error(), tc.expectedErr) {
+					t.Errorf("Expected error containing %q, got %v", tc.expectedErr, err)
+				}
+				if sent {
+					t.Error("Expected no request to be sent")
+				}
+				return
+			}
+
 			if err != nil {
 				t.Fatalf("Middleware failed: %v", err)
 			}
 		})
+	}
+}
+
+func TestBedrockClientModelInRequestPath(t *testing.T) {
+	// An empty wire path means the request is refused.
+	for model, wirePath := range map[string]string{
+		";x":         "",
+		".;x":        "",
+		"..;x":       "",
+		"../x":       "/model/..%2Fx/",
+		"a;b":        "/model/a;b/",
+		"a!'()*,;/b": "/model/a!'()*,;%2Fb/",
+	} {
+		for _, stream := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%q, stream %t", model, stream), func(t *testing.T) {
+				var sent []string
+				client := newUserProfileTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+					sent = append(sent, r.RequestURI)
+					w.Header().Set("Content-Type", "application/json")
+					w.Write([]byte(`{}`))
+				})
+
+				params := anthropic.MessageNewParams{
+					Model:     anthropic.Model(model),
+					MaxTokens: 1,
+					Messages:  []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))},
+				}
+				var err error
+				method := "invoke"
+				if stream {
+					method = "invoke-with-response-stream"
+					events := client.Messages.NewStreaming(context.Background(), params)
+					for events.Next() {
+					}
+					err = events.Err()
+				} else {
+					_, err = client.Messages.New(context.Background(), params)
+				}
+
+				if wirePath == "" {
+					if err == nil {
+						t.Error("Expected an error")
+					}
+					if len(sent) != 0 {
+						t.Errorf("Expected no request to be sent, got %q", sent)
+					}
+					return
+				}
+				if want := []string{wirePath + method}; !slices.Equal(sent, want) {
+					t.Errorf("Expected wire paths %q, got %q", want, sent)
+				}
+			})
+		}
 	}
 }
 

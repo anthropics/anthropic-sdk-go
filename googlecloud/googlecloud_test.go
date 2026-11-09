@@ -550,6 +550,192 @@ func TestDerivedBaseURLLocationFromEnv(t *testing.T) {
 	}
 }
 
+func TestDerivedBaseURLEscapesEachValue(t *testing.T) {
+	const gateway = "https://claude.googleapis.com/v1/projects/"
+	tests := []struct {
+		name string
+		cfg  ClientConfig
+		// want is the workspace URL, then the organization URL.
+		want []string
+	}{
+		{
+			name: "ordinary values are unchanged",
+			cfg:  ClientConfig{Project: "my-project", Location: "global", WorkspaceID: "wrkspc_01AbCdEf"},
+			want: []string{
+				gateway + "my-project/locations/global/workspaces/wrkspc_01AbCdEf/invoke/v1/messages",
+				gateway + "my-project/locations/global/claudeOrganization/invoke/v1/organizations/workspaces",
+			},
+		},
+		{
+			name: "domain-scoped project is unchanged",
+			cfg:  ClientConfig{Project: "example.com:my-project", Location: "us-central1", WorkspaceID: "wrkspc_01AbCdEf"},
+			want: []string{
+				gateway + "example.com:my-project/locations/us-central1/workspaces/wrkspc_01AbCdEf/invoke/v1/messages",
+				gateway + "example.com:my-project/locations/us-central1/claudeOrganization/invoke/v1/organizations/workspaces",
+			},
+		},
+		{
+			name: "project with a slash",
+			cfg:  ClientConfig{Project: "a/b", Location: "global", WorkspaceID: "wrkspc_01AbCdEf"},
+			want: []string{
+				gateway + "a%2Fb/locations/global/workspaces/wrkspc_01AbCdEf/invoke/v1/messages",
+				gateway + "a%2Fb/locations/global/claudeOrganization/invoke/v1/organizations/workspaces",
+			},
+		},
+		{
+			name: "location with a slash",
+			cfg:  ClientConfig{Project: "my-project", Location: "a/b", WorkspaceID: "wrkspc_01AbCdEf"},
+			want: []string{
+				gateway + "my-project/locations/a%2Fb/workspaces/wrkspc_01AbCdEf/invoke/v1/messages",
+				gateway + "my-project/locations/a%2Fb/claudeOrganization/invoke/v1/organizations/workspaces",
+			},
+		},
+		{
+			name: "workspace ID with a slash",
+			cfg:  ClientConfig{Project: "my-project", Location: "global", WorkspaceID: "a/b"},
+			want: []string{
+				gateway + "my-project/locations/global/workspaces/a%2Fb/invoke/v1/messages",
+				gateway + "my-project/locations/global/claudeOrganization/invoke/v1/organizations/workspaces",
+			},
+		},
+		{
+			name: "workspace ID with parent segments",
+			cfg:  ClientConfig{Project: "my-project", Location: "global", WorkspaceID: "w/../../x"},
+			want: []string{
+				gateway + "my-project/locations/global/workspaces/w%2F..%2F..%2Fx/invoke/v1/messages",
+				gateway + "my-project/locations/global/claudeOrganization/invoke/v1/organizations/workspaces",
+			},
+		},
+		{
+			name: "parent segments inside each value",
+			cfg:  ClientConfig{Project: "../x", Location: "../y", WorkspaceID: "../z"},
+			want: []string{
+				gateway + "..%2Fx/locations/..%2Fy/workspaces/..%2Fz/invoke/v1/messages",
+				gateway + "..%2Fx/locations/..%2Fy/claudeOrganization/invoke/v1/organizations/workspaces",
+			},
+		},
+		{
+			name: "a semicolon in each value",
+			cfg:  ClientConfig{Project: "a;b", Location: "a;b", WorkspaceID: "a;b"},
+			want: []string{
+				gateway + "a;b/locations/a;b/workspaces/a;b/invoke/v1/messages",
+				gateway + "a;b/locations/a;b/claudeOrganization/invoke/v1/organizations/workspaces",
+			},
+		},
+		{
+			name: "semicolons that follow no dot segment",
+			cfg:  ClientConfig{Project: "a;b", Location: "...;x", WorkspaceID: "x;.."},
+			want: []string{
+				gateway + "a;b/locations/...;x/workspaces/x;../invoke/v1/messages",
+				gateway + "a;b/locations/...;x/claudeOrganization/invoke/v1/organizations/workspaces",
+			},
+		},
+		{
+			name: "the other characters that are sent as they are",
+			cfg:  ClientConfig{Project: "a!'()*,;/b", Location: "c!'()*,;/d", WorkspaceID: "e!'()*,;/f"},
+			want: []string{
+				gateway + "a!'()*,;%2Fb/locations/c!'()*,;%2Fd/workspaces/e!'()*,;%2Ff/invoke/v1/messages",
+				gateway + "a!'()*,;%2Fb/locations/c!'()*,;%2Fd/claudeOrganization/invoke/v1/organizations/workspaces",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			clearEnv(t)
+			tt.cfg.SkipAuth = true
+			client, err := NewClient(context.Background(), tt.cfg)
+			if err != nil {
+				t.Fatalf("NewClient failed: %v", err)
+			}
+
+			var captured []capturedRequest
+			if err := newMessage(client, recordRequests(&captured)); err != nil {
+				t.Fatalf("request failed: %v", err)
+			}
+			if err := listWorkspaces(client, recordRequests(&captured)); err != nil {
+				t.Fatalf("request failed: %v", err)
+			}
+			if got := requestedURLs(captured); !slices.Equal(got, tt.want) {
+				t.Errorf("requested %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDerivedBaseURLRefusesDotSegments(t *testing.T) {
+	for _, segment := range []string{".", "..", "..;x", ".;x", "..;"} {
+		for name, cfg := range map[string]ClientConfig{
+			"project":      {Project: segment, Location: "global", WorkspaceID: "wrkspc_01AbCdEf"},
+			"location":     {Project: "my-project", Location: segment, WorkspaceID: "wrkspc_01AbCdEf"},
+			"workspace ID": {Project: "my-project", Location: "global", WorkspaceID: segment},
+		} {
+			t.Run(name+" "+segment, func(t *testing.T) {
+				clearEnv(t)
+				cfg.SkipAuth = true
+				client, err := NewClient(context.Background(), cfg)
+				want := `contains dot segment "` + segment + `" which is not allowed`
+				if client != nil || err == nil || !strings.Contains(err.Error(), want) {
+					t.Fatalf("NewClient returned a client: %t, error: %v; want no client and an error containing %q", client != nil, err, want)
+				}
+			})
+		}
+	}
+}
+
+func TestDerivedBaseURLRefusesValuesWithOnlyParameters(t *testing.T) {
+	for _, segment := range []string{";x", ";", ";a=b"} {
+		for name, cfg := range map[string]ClientConfig{
+			"project":  {Project: segment, Location: "global", WorkspaceID: "wrkspc_01AbCdEf"},
+			"location": {Project: "my-project", Location: segment, WorkspaceID: "wrkspc_01AbCdEf"},
+		} {
+			t.Run(name+" "+segment, func(t *testing.T) {
+				clearEnv(t)
+				cfg.SkipAuth = true
+				client, err := NewClient(context.Background(), cfg)
+				want := `contains segment "` + segment + `" which starts with ";" and is not allowed`
+				if client != nil || err == nil || !strings.Contains(err.Error(), want) {
+					t.Fatalf("NewClient returned a client: %t, error: %v; want no client and an error containing %q", client != nil, err, want)
+				}
+			})
+		}
+	}
+}
+
+func TestDerivedBaseURLSendsNoValueWithNoNameBeforeSemicolon(t *testing.T) {
+	for _, value := range []string{";x", ".;x", "..;x"} {
+		for name, tt := range map[string]struct {
+			cfg  ClientConfig
+			call func(*Client, ...option.RequestOption) error
+		}{
+			"project, workspace route":      {ClientConfig{Project: value, Location: "global", WorkspaceID: "wrkspc_01AbCdEf"}, newMessage},
+			"project, organization route":   {ClientConfig{Project: value, Location: "global", WorkspaceID: "wrkspc_01AbCdEf"}, listWorkspaces},
+			"location, workspace route":     {ClientConfig{Project: "my-project", Location: value, WorkspaceID: "wrkspc_01AbCdEf"}, newMessage},
+			"location, organization route":  {ClientConfig{Project: "my-project", Location: value, WorkspaceID: "wrkspc_01AbCdEf"}, listWorkspaces},
+			"workspace ID, workspace route": {ClientConfig{Project: "my-project", Location: "global", WorkspaceID: value}, newMessage},
+		} {
+			t.Run(name+" "+value, func(t *testing.T) {
+				clearEnv(t)
+				tt.cfg.SkipAuth = true
+				client, err := NewClient(context.Background(), tt.cfg)
+				if err != nil {
+					if client != nil {
+						t.Error("NewClient returned a client and an error")
+					}
+					return
+				}
+
+				var captured []capturedRequest
+				if err := tt.call(client, recordRequests(&captured), option.WithMaxRetries(0)); err == nil {
+					t.Error("expected an error")
+				}
+				if len(captured) != 0 {
+					t.Errorf("requested %q, want no request", requestedURLs(captured))
+				}
+			})
+		}
+	}
+}
+
 func TestOrganizationRouteFollowsPagination(t *testing.T) {
 	client := newDerivedTestClient(t, ClientConfig{})
 
@@ -587,8 +773,9 @@ func TestOrganizationRouteFollowsPagination(t *testing.T) {
 
 func TestOrganizationRouteNeedsNoWorkspaceID(t *testing.T) {
 	for name, cfg := range map[string]ClientConfig{
-		"bearer":   {},
-		"SkipAuth": {SkipAuth: true},
+		"bearer":          {},
+		"SkipAuth":        {SkipAuth: true},
+		"only parameters": {WorkspaceID: ";x"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			client := newDerivedTestClient(t, cfg)
@@ -637,6 +824,24 @@ func TestWorkspaceRouteWithoutWorkspaceIDFailsBeforeSending(t *testing.T) {
 	}
 }
 
+func TestWorkspaceRouteRefusesWorkspaceIDWithOnlyParameters(t *testing.T) {
+	for _, workspaceID := range []string{";x", ";", ";a=b"} {
+		t.Run(workspaceID, func(t *testing.T) {
+			client := newDerivedTestClient(t, ClientConfig{WorkspaceID: workspaceID})
+
+			var captured []capturedRequest
+			err := newMessage(client, recordRequests(&captured), option.WithMaxRetries(0))
+			want := `contains segment "` + workspaceID + `" which starts with ";" and is not allowed`
+			if err == nil || !strings.Contains(err.Error(), want) {
+				t.Errorf("error = %v, want one containing %q", err, want)
+			}
+			if len(captured) != 0 {
+				t.Errorf("requested %q, want no request", requestedURLs(captured))
+			}
+		})
+	}
+}
+
 func TestWorkspaceRouteWithoutWorkspaceIDFetchesNoToken(t *testing.T) {
 	var fetched bool
 	client := newDerivedTestClient(t, ClientConfig{
@@ -668,6 +873,7 @@ func TestExplicitBaseURLTakesEveryRoute(t *testing.T) {
 	}{
 		{name: "ClientConfig.BaseURL", cfg: ClientConfig{BaseURL: "https://proxy.example.com", WorkspaceID: "wrkspc_123"}},
 		{name: "ClientConfig.BaseURL without workspace ID", cfg: ClientConfig{BaseURL: "https://proxy.example.com"}},
+		{name: "ClientConfig.BaseURL with unused values", cfg: ClientConfig{BaseURL: "https://proxy.example.com", Project: ";x", Location: ";x", WorkspaceID: "..;x"}},
 		{name: "environment variable", cfg: ClientConfig{Project: "my-project", WorkspaceID: "wrkspc_123"}, env: "https://proxy.example.com"},
 		{name: "environment variable without workspace ID", cfg: ClientConfig{Project: "my-project"}, env: "https://proxy.example.com"},
 		{

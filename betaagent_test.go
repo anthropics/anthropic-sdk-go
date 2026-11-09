@@ -49,12 +49,33 @@ func TestBetaAgentNewWithOptionalParams(t *testing.T) {
 			"foo": "bar",
 		},
 		Multiagent: anthropic.BetaManagedAgentsMultiagentParamsUnion{
-			OfCoordinator: &anthropic.BetaManagedAgentsMultiagentCoordinatorParams{
-				Agents: []anthropic.BetaManagedAgentsMultiagentRosterEntryParamsUnion{{
-					OfString: anthropic.String("agent_011CZkYqphY8vELVzwCUpqiQ"),
-				}, {
-					OfBetaManagedAgentsMultiagentSelfs: &anthropic.BetaManagedAgentsMultiagentSelfParams{},
-				}},
+			OfMultiagent20261001: &anthropic.BetaManagedAgentsMultiagent20261001Params{
+				Advisor: anthropic.BetaManagedAgentsMultiagentAdvisorParamsUnion{
+					OfDisabled: &anthropic.BetaManagedAgentsMultiagentAdvisorDisabledParams{},
+				},
+				Subagents: anthropic.BetaManagedAgentsMultiagentSubagentsParamsUnion{
+					OfEnabled: &anthropic.BetaManagedAgentsMultiagentSubagentsEnabledParams{
+						InlineAgents: anthropic.BetaManagedAgentsMultiagentInlineAgentsParamsUnion{
+							OfDisabled: &anthropic.BetaManagedAgentsMultiagentInlineAgentsDisabledParams{},
+						},
+						PredefinedAgents: []anthropic.BetaManagedAgentsMultiagentPredefinedAgentParamsUnion{{
+							OfString: anthropic.String("agent_011CZkYqphY8vELVzwCUpqiQ"),
+						}},
+					},
+				},
+				Workflows: anthropic.BetaManagedAgentsMultiagentWorkflowsParamsUnion{
+					OfEnabled: &anthropic.BetaManagedAgentsMultiagentWorkflowsEnabledParams{
+						InlineAgents: anthropic.BetaManagedAgentsMultiagentInlineAgentsParamsUnion{
+							OfDisabled: &anthropic.BetaManagedAgentsMultiagentInlineAgentsDisabledParams{},
+						},
+						PredefinedAgents: []anthropic.BetaManagedAgentsMultiagentPredefinedAgentParamsUnion{{
+							OfBetaManagedAgentsAgents: &anthropic.BetaManagedAgentsAgentParams{
+								ID:      "agent_011CZkYqphY8vELVzwCUpqiQ",
+								Version: anthropic.Int(1),
+							},
+						}},
+					},
+				},
 			},
 		},
 		Skills: []anthropic.BetaManagedAgentsSkillParamsUnion{{

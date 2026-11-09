@@ -10783,6 +10783,12 @@ func (r *MetadataParam) UnmarshalJSON(data []byte) error {
 type Model = string
 
 const (
+	// Frontier intelligence for ambitious tasks across coding, scientific discovery,
+	// and enterprise workflows
+	ModelClaudeFable5_2 Model = "claude-fable-5-2"
+	// Our most capable model for cybersecurity and biology research, available through
+	// trusted access programs
+	ModelClaudeMythos5_2 Model = "claude-mythos-5-2"
 	// Fastest model for high-volume, real-time tasks
 	ModelClaudeHaiku5_5 Model = "claude-haiku-5-5"
 	// Efficient model for coding and agents

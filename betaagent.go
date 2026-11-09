@@ -3150,6 +3150,9 @@ func (r *BetaManagedAgentsMCPToolsetParams) UnmarshalJSON(data []byte) error {
 type BetaManagedAgentsModel = string
 
 const (
+	// Frontier intelligence for ambitious tasks across coding, scientific discovery,
+	// and enterprise workflows
+	BetaManagedAgentsModelClaudeFable5_2 BetaManagedAgentsModel = "claude-fable-5-2"
 	// Fastest model for high-volume, real-time tasks
 	BetaManagedAgentsModelClaudeHaiku5_5 BetaManagedAgentsModel = "claude-haiku-5-5"
 	// Efficient model for coding and agents

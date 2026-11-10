@@ -33,12 +33,13 @@ const cloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
 const locationURLTemplate = "https://claude.googleapis.com/v1/projects/%[1]s/locations/%[2]s"
 
 // baseURLTemplate is the gateway base URL; override via BaseURL if needed.
-// %[3]s is the workspace ID.
-const baseURLTemplate = locationURLTemplate + "/workspaces/%[3]s/invoke"
+// %[3]s is the workspace ID. Both base URLs end in "/": option.WithBaseURL adds
+// a missing one to the decoded path only, and Go then drops the escaped path.
+const baseURLTemplate = locationURLTemplate + "/workspaces/%[3]s/invoke/"
 
 // organizationBaseURLTemplate is the gateway base URL of organization-level
 // routes, which are served outside any workspace.
-const organizationBaseURLTemplate = locationURLTemplate + "/claudeOrganization/invoke"
+const organizationBaseURLTemplate = locationURLTemplate + "/claudeOrganization/invoke/"
 
 // organizationPathPrefix is the path prefix of organization-level routes.
 const organizationPathPrefix = "/v1/organizations/"
@@ -102,6 +103,15 @@ func createClientOptions(ctx context.Context, cfg ClientConfig) ([]option.Reques
 	case resolved.BaseURL != "":
 		baseURL = option.WithBaseURL(resolved.BaseURL)
 	case resolved.Project != "":
+		// Like a missing workspace ID, one with only ";" parameters is refused
+		// by the routes that need it, not here.
+		workspaceID := resolved.WorkspaceID
+		if requestconfig.IsEmptySegment(workspaceID) {
+			workspaceID = ""
+		}
+		if err := requestconfig.ValidateRequestPath(deriveBaseURL(resolved.Project, resolved.Location, workspaceID)); err != nil {
+			return nil, fmt.Errorf("googlecloud: %v", err)
+		}
 		baseURL = withDerivedBaseURL(resolved.Project, resolved.Location, resolved.WorkspaceID)
 	default:
 		return nil, fmt.Errorf("googlecloud: no project found; set Project, set the %s environment variable, or configure application default credentials with a project", envProject)
@@ -139,8 +149,13 @@ func bearerMiddleware(ts oauth2.TokenSource) option.Middleware {
 // organization endpoint for organization-level routes, the workspace endpoint
 // for every other route. A base URL set by a later option takes every route.
 func withDerivedBaseURL(project, location, workspaceID string) option.RequestOption {
-	organization := option.WithBaseURL(fmt.Sprintf(organizationBaseURLTemplate, project, location))
-	workspace := option.WithBaseURL(deriveBaseURL(project, location, workspaceID))
+	organization := option.WithBaseURL(fmt.Sprintf(organizationBaseURLTemplate, requestconfig.EscapePathSegment(project), requestconfig.EscapePathSegment(location)))
+	workspaceURL := deriveBaseURL(project, location, workspaceID)
+	workspace := option.WithBaseURL(workspaceURL)
+	workspaceErr := requestconfig.ValidateRequestPath(workspaceURL)
+	if workspaceID == "" {
+		workspaceErr = fmt.Errorf("no workspace ID found; set WorkspaceID or the %s environment variable", envWorkspaceID)
+	}
 
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		if isOrganizationPath(r.Request.URL.Path) {
@@ -149,17 +164,17 @@ func withDerivedBaseURL(project, location, workspaceID string) option.RequestOpt
 		if err := r.Apply(workspace); err != nil {
 			return err
 		}
-		if workspaceID != "" {
+		if workspaceErr == nil {
 			return nil
 		}
 
 		// Options that follow this one can still replace the base URL, so the
-		// missing workspace ID is reported from a middleware, which runs after
-		// all of them and before the request is sent.
+		// workspace ID is refused from a middleware, which runs after all of
+		// them and before the request is sent.
 		derived := r.BaseURL
 		return r.Apply(option.WithMiddleware(func(req *http.Request, next option.MiddlewareNext) (*http.Response, error) {
 			if r.BaseURL == derived {
-				return nil, fmt.Errorf("googlecloud: no workspace ID found; set WorkspaceID or the %s environment variable", envWorkspaceID)
+				return nil, fmt.Errorf("googlecloud: %v", workspaceErr)
 			}
 			return next(req)
 		}))
@@ -176,7 +191,7 @@ func isOrganizationPath(path string) bool {
 }
 
 func deriveBaseURL(project, location, workspaceID string) string {
-	return fmt.Sprintf(baseURLTemplate, project, location, workspaceID)
+	return fmt.Sprintf(baseURLTemplate, requestconfig.EscapePathSegment(project), requestconfig.EscapePathSegment(location), requestconfig.EscapePathSegment(workspaceID))
 }
 
 func firstNonEmpty(vals ...string) string {

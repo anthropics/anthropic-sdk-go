@@ -411,6 +411,35 @@ func (r *AnalyticsClaudeCodeMetrics) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// Claude Tag activity metrics for a single linked user on a given day.
+type AnalyticsClaudeTagMetrics struct {
+	// 1 on a day the user was active in Claude Tag in Slack, otherwise 0. Summed over
+	// the window in date-range mode, so it is the number of active days; on grouped
+	// rows, the total of each member's active days. Null when Claude Tag data cannot
+	// be read for the request. Otherwise, 0 on a row filtered by project, and null on
+	// any other row when no covered day was measured.
+	ActiveDayCount int64 `json:"active_day_count" api:"required"`
+	// Number of the user's Slack messages that made them active: @-mentions, direct
+	// messages, group direct message asks, and thread posts Claude answered. Other
+	// messages are not counted. Null when Claude Tag data cannot be read for the
+	// request. Otherwise, 0 on a row filtered by project, and null on any other row
+	// when no covered day was measured.
+	ActiveMessageCount int64 `json:"active_message_count" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ActiveDayCount     respjson.Field
+		ActiveMessageCount respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r AnalyticsClaudeTagMetrics) RawJSON() string { return r.JSON.raw }
+func (r *AnalyticsClaudeTagMetrics) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Per-connector activity data for a given day.
 type AnalyticsConnectorActivity struct {
 	// Claude.ai activity metrics for a single connector on a given day.
@@ -1329,6 +1358,30 @@ type AnalyticsSingleDayActivitySummary struct {
 	// from the response while the per-product breakdown is not enabled for this
 	// organization.
 	ClaudeDesignWeeklyActiveUserCount int64 `json:"claude_design_weekly_active_user_count" api:"nullable"`
+	// Number of Slack users active in Claude Tag on the requested day. Counts distinct
+	// Slack users, including users who have not linked a Claude account, so it can
+	// exceed `daily_active_user_count` and `assigned_seat_count`. Null on a day with
+	// no measured value, when Claude Tag data cannot be read for the request, and when
+	// the response is scoped to an RBAC group, because an unlinked user belongs to no
+	// group. Omitted from the response on deployments that do not offer Claude Tag
+	// reporting.
+	ClaudeTagDailyActiveUserCount int64 `json:"claude_tag_daily_active_user_count" api:"nullable"`
+	// Number of Slack users active in Claude Tag in the 28-day rolling window. Counts
+	// distinct Slack users, including users who have not linked a Claude account, so
+	// it can exceed `daily_active_user_count` and `assigned_seat_count`. Null on a day
+	// with no measured value, when Claude Tag data cannot be read for the request, and
+	// when the response is scoped to an RBAC group, because an unlinked user belongs
+	// to no group. Omitted from the response on deployments that do not offer Claude
+	// Tag reporting.
+	ClaudeTagMonthlyActiveUserCount int64 `json:"claude_tag_monthly_active_user_count" api:"nullable"`
+	// Number of Slack users active in Claude Tag in the 7-day rolling window. Counts
+	// distinct Slack users, including users who have not linked a Claude account, so
+	// it can exceed `daily_active_user_count` and `assigned_seat_count`. Null on a day
+	// with no measured value, when Claude Tag data cannot be read for the request, and
+	// when the response is scoped to an RBAC group, because an unlinked user belongs
+	// to no group. Omitted from the response on deployments that do not offer Claude
+	// Tag reporting.
+	ClaudeTagWeeklyActiveUserCount int64 `json:"claude_tag_weekly_active_user_count" api:"nullable"`
 	// Number of users with Claude in Office activity on the requested day. Omitted
 	// from the response while the per-product breakdown is not enabled for this
 	// organization.
@@ -1386,6 +1439,9 @@ type AnalyticsSingleDayActivitySummary struct {
 		ClaudeDesignDailyActiveUserCount        respjson.Field
 		ClaudeDesignMonthlyActiveUserCount      respjson.Field
 		ClaudeDesignWeeklyActiveUserCount       respjson.Field
+		ClaudeTagDailyActiveUserCount           respjson.Field
+		ClaudeTagMonthlyActiveUserCount         respjson.Field
+		ClaudeTagWeeklyActiveUserCount          respjson.Field
 		OfficeAgentDailyActiveUserCount         respjson.Field
 		OfficeAgentMonthlyActiveUserCount       respjson.Field
 		OfficeAgentWeeklyActiveUserCount        respjson.Field
@@ -1897,6 +1953,11 @@ type AnalyticsUserActivity struct {
 	// `sessions` (Cowork activity). Omitted from the response where Chat and Cowork
 	// unified is not available.
 	ChatCoworkUnifiedMetrics AnalyticsChatCoworkUnifiedMetrics `json:"chat_cowork_unified_metrics" api:"nullable"`
+	// Claude Tag activity in Slack by a user who has linked a Claude account. Activity
+	// by Slack users who have not linked an account appears only in the `/summaries`
+	// Claude Tag counts, so these rows do not add up to those counts. Omitted from the
+	// response on deployments that do not offer Claude Tag reporting.
+	ClaudeTagMetrics AnalyticsClaudeTagMetrics `json:"claude_tag_metrics" api:"nullable"`
 	// Most recent UTC day (YYYY-MM-DD) on which the user had any counted activity,
 	// within the requested window: equal to the requested `date` in single-day mode,
 	// and to the latest active day from `starting_date` (inclusive) to `ending_date`
@@ -1927,6 +1988,7 @@ type AnalyticsUserActivity struct {
 		User                     respjson.Field
 		WebSearchCount           respjson.Field
 		ChatCoworkUnifiedMetrics respjson.Field
+		ClaudeTagMetrics         respjson.Field
 		LastActivityDate         respjson.Field
 		RBACGroupID              respjson.Field
 		RBACGroupName            respjson.Field

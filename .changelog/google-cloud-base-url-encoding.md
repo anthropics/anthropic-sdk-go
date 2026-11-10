@@ -1,0 +1,1 @@
+fix(google-cloud): percent-encode the project, location and workspace ID in the base URL, so a "/" in one no longer adds path segments, and return an error when one is "." or "..". The characters ! ' ( ) * in one are no longer percent-encoded, as in other path parameters

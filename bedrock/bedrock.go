@@ -12,7 +12,6 @@ import (
 	"io"
 	"mime"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -347,8 +346,18 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 					method = "invoke"
 				}
 
+				// An empty segment changes which URL is requested, as a dot segment does.
+				if model == "" {
+					return nil, errors.New("bedrock: missing required model parameter")
+				}
+				rawPath := fmt.Sprintf("/model/%s/%s", requestconfig.EscapePathSegment(model), method)
+				if err := requestconfig.ValidateRequestPath(rawPath); err != nil {
+					return nil, fmt.Errorf("bedrock: %v", err)
+				}
+
 				r.URL.Path = fmt.Sprintf("/model/%s/%s", model, method)
-				r.URL.RawPath = fmt.Sprintf("/model/%s/%s", url.QueryEscape(model), method)
+				// Go ignores a RawPath that does not decode to Path.
+				r.URL.RawPath = rawPath
 			}
 
 			reader := bytes.NewReader(body)

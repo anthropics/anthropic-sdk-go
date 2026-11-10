@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"golang.org/x/oauth2"
@@ -43,7 +44,7 @@ const cloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
 //
 // [Application Default Credentials]: https://cloud.google.com/docs/authentication/application-default-credentials
 func WithGoogleAuth(ctx context.Context, region string, projectID string, scopes ...string) sdkoption.RequestOption {
-	if region == "" {
+	if requestconfig.IsEmptySegment(region) {
 		panic("region must be provided")
 	}
 	if len(scopes) == 0 {
@@ -143,6 +144,16 @@ func authorizeClient(client *http.Client, creds *google.Credentials) *http.Clien
 }
 
 func vertexMiddleware(region, projectID string) sdkoption.Middleware {
+	// Go keeps RawPath only while it decodes to Path.
+	modelsPath := fmt.Sprintf("/v1/projects/%s/locations/%s/publishers/anthropic/models/", projectID, region)
+	modelsRawPath := fmt.Sprintf("/v1/projects/%s/locations/%s/publishers/anthropic/models/", requestconfig.EscapePathSegment(projectID), requestconfig.EscapePathSegment(region))
+	var pathErr error
+	if region == "" {
+		pathErr = errors.New("vertex: missing required region parameter")
+	} else if err := requestconfig.ValidateRequestPath(modelsRawPath); err != nil {
+		pathErr = fmt.Errorf("vertex: %v", err)
+	}
+
 	return func(r *http.Request, next sdkoption.MiddlewareNext) (*http.Response, error) {
 		if strings.Contains(r.URL.Path, "/v1/user_profiles") {
 			return nil, errors.New("vertex: Vertex AI does not serve the User Profiles API; manage user profiles with a first-party client")
@@ -171,6 +182,9 @@ func vertexMiddleware(region, projectID string) sdkoption.Middleware {
 				if projectID == "" {
 					return nil, fmt.Errorf("no projectId was given and it could not be resolved from credentials")
 				}
+				if pathErr != nil {
+					return nil, pathErr
+				}
 
 				model := gjson.GetBytes(body, "model").String()
 				stream := gjson.GetBytes(body, "stream").Bool()
@@ -182,15 +196,30 @@ func vertexMiddleware(region, projectID string) sdkoption.Middleware {
 					specifier = "streamRawPredict"
 				}
 
-				r.URL.Path = fmt.Sprintf("/v1/projects/%s/locations/%s/publishers/anthropic/models/%s:%s", projectID, region, model, specifier)
+				if model == "" {
+					return nil, errors.New("vertex: missing required model parameter")
+				}
+				// The specifier keeps a model of ".." from being a dot segment, but not "..;x".
+				// The model's ";" is escaped: a server that drops ";" and the rest of a segment would drop the specifier.
+				rawPath := modelsRawPath + url.PathEscape(model) + ":" + specifier
+				if err := requestconfig.ValidateRequestPath(rawPath); err != nil {
+					return nil, fmt.Errorf("vertex: %v", err)
+				}
+
+				r.URL.Path = modelsPath + model + ":" + specifier
+				r.URL.RawPath = rawPath
 			}
 
 			if isJSON && r.URL.Path == "/v1/messages/count_tokens" && r.Method == http.MethodPost {
 				if projectID == "" {
 					return nil, fmt.Errorf("no projectId was given and it could not be resolved from credentials")
 				}
+				if pathErr != nil {
+					return nil, pathErr
+				}
 
-				r.URL.Path = fmt.Sprintf("/v1/projects/%s/locations/%s/publishers/anthropic/models/count-tokens:rawPredict", projectID, region)
+				r.URL.Path = modelsPath + "count-tokens:rawPredict"
+				r.URL.RawPath = modelsRawPath + "count-tokens:rawPredict"
 			}
 
 			reader := bytes.NewReader(body)

@@ -74,6 +74,474 @@ func TestBaseURLForRegion(t *testing.T) {
 	}
 }
 
+func TestVertexURLEncoding(t *testing.T) {
+	testCases := []struct {
+		name         string
+		model        string
+		stream       bool
+		expectedPath string
+	}{
+		{
+			name:         "model name with version",
+			model:        "claude-sonnet-4-5@20250929",
+			expectedPath: "/v1/projects/test-project/locations/us-central1/publishers/anthropic/models/claude-sonnet-4-5@20250929:rawPredict",
+		},
+		{
+			name:         "model name with slashes",
+			model:        "../../x",
+			expectedPath: "/v1/projects/test-project/locations/us-central1/publishers/anthropic/models/..%2F..%2Fx:rawPredict",
+		},
+		{
+			name:         "model name with a semicolon",
+			model:        "a;b",
+			expectedPath: "/v1/projects/test-project/locations/us-central1/publishers/anthropic/models/a%3Bb:rawPredict",
+		},
+		{
+			name:         "model name with a semicolon and streaming",
+			model:        "a;b",
+			stream:       true,
+			expectedPath: "/v1/projects/test-project/locations/us-central1/publishers/anthropic/models/a%3Bb:streamRawPredict",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var wirePath string
+			client := newUserProfileTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+				wirePath = r.RequestURI
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte(`{}`))
+			})
+
+			params := anthropic.MessageNewParams{
+				Model:     anthropic.Model(tc.model),
+				MaxTokens: 1,
+				Messages: []anthropic.MessageParam{
+					anthropic.NewUserMessage(anthropic.NewTextBlock("hi")),
+				},
+			}
+			var err error
+			if tc.stream {
+				events := client.Messages.NewStreaming(context.Background(), params)
+				for events.Next() {
+				}
+				err = events.Err()
+			} else {
+				_, err = client.Messages.New(context.Background(), params)
+			}
+			if err != nil {
+				t.Fatalf("Request failed: %v", err)
+			}
+
+			if wirePath != tc.expectedPath {
+				t.Errorf("Expected wire path %q, got %q", tc.expectedPath, wirePath)
+			}
+		})
+	}
+}
+
+func TestVertexRefusesEmptyModel(t *testing.T) {
+	for name, opt := range map[string]sdkoption.RequestOption{
+		"empty model":          sdkoption.WithJSONSet("model", ""),
+		"null model":           sdkoption.WithJSONSet("model", nil),
+		"no model in the body": sdkoption.WithJSONDel("model"),
+	} {
+		for _, stream := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s, stream %t", name, stream), func(t *testing.T) {
+				var wirePath string
+				client := newUserProfileTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+					wirePath = r.RequestURI
+					w.Header().Set("Content-Type", "application/json")
+					w.Write([]byte(`{}`))
+				})
+
+				params := anthropic.MessageNewParams{
+					MaxTokens: 1,
+					Messages:  []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))},
+				}
+				var err error
+				if stream {
+					events := client.Messages.NewStreaming(context.Background(), params, opt)
+					for events.Next() {
+					}
+					err = events.Err()
+				} else {
+					_, err = client.Messages.New(context.Background(), params, opt)
+				}
+
+				if want := "vertex: missing required model parameter"; err == nil || !strings.Contains(err.Error(), want) {
+					t.Errorf("Expected error containing %q, got %v", want, err)
+				}
+				if wirePath != "" {
+					t.Errorf("Expected no request to be sent, got %q", wirePath)
+				}
+			})
+		}
+	}
+}
+
+func TestVertexProjectAndRegionURLEncoding(t *testing.T) {
+	testCases := []struct {
+		name         string
+		projectID    string
+		region       string
+		model        string
+		countTokens  bool
+		expectedPath string
+		expectedErr  string
+	}{
+		{
+			name:         "ordinary project and region",
+			projectID:    "my-proj-123",
+			region:       "us-east5",
+			model:        "claude-sonnet-4-5@20250929",
+			expectedPath: "/v1/projects/my-proj-123/locations/us-east5/publishers/anthropic/models/claude-sonnet-4-5@20250929:rawPredict",
+		},
+		{
+			name:         "domain-scoped project",
+			projectID:    "example.com:my-proj",
+			region:       "us-east5",
+			model:        "claude-sonnet-4-5@20250929",
+			expectedPath: "/v1/projects/example.com:my-proj/locations/us-east5/publishers/anthropic/models/claude-sonnet-4-5@20250929:rawPredict",
+		},
+		{
+			name:         "project with a slash",
+			projectID:    "a/b",
+			region:       "us-east5",
+			model:        "claude-sonnet-4-5@20250929",
+			expectedPath: "/v1/projects/a%2Fb/locations/us-east5/publishers/anthropic/models/claude-sonnet-4-5@20250929:rawPredict",
+		},
+		{
+			name:         "project with a slash counting tokens",
+			projectID:    "a/b",
+			region:       "us-east5",
+			model:        "claude-sonnet-4-5@20250929",
+			countTokens:  true,
+			expectedPath: "/v1/projects/a%2Fb/locations/us-east5/publishers/anthropic/models/count-tokens:rawPredict",
+		},
+		{
+			name:         "project with a space keeps the model escaped",
+			projectID:    "my proj",
+			region:       "us-east5",
+			model:        "../../x",
+			expectedPath: "/v1/projects/my%20proj/locations/us-east5/publishers/anthropic/models/..%2F..%2Fx:rawPredict",
+		},
+		{
+			name:         "parent segments inside each value",
+			projectID:    "../x",
+			region:       "../y",
+			model:        "../z",
+			expectedPath: "/v1/projects/..%2Fx/locations/..%2Fy/publishers/anthropic/models/..%2Fz:rawPredict",
+		},
+		{
+			name:        "project dot segment",
+			projectID:   "..",
+			region:      "us-east5",
+			model:       "claude-sonnet-4-5@20250929",
+			expectedErr: `contains dot segment ".." which is not allowed`,
+		},
+		{
+			name:        "region dot segment",
+			projectID:   "my-proj-123",
+			region:      "..",
+			model:       "claude-sonnet-4-5@20250929",
+			expectedErr: `contains dot segment ".." which is not allowed`,
+		},
+		{
+			name:        "region dot segment counting tokens",
+			projectID:   "my-proj-123",
+			region:      ".",
+			model:       "claude-sonnet-4-5@20250929",
+			countTokens: true,
+			expectedErr: `contains dot segment "." which is not allowed`,
+		},
+		{
+			name:        "project dot segment with parameters",
+			projectID:   "..;x",
+			region:      "us-east5",
+			model:       "claude-sonnet-4-5@20250929",
+			expectedErr: `contains dot segment "..;x" which is not allowed`,
+		},
+		{
+			name:        "region dot segment with parameters",
+			projectID:   "my-proj-123",
+			region:      ".;x",
+			model:       "claude-sonnet-4-5@20250929",
+			expectedErr: `contains dot segment ".;x" which is not allowed`,
+		},
+		{
+			name:        "region dot segment with empty parameters counting tokens",
+			projectID:   "my-proj-123",
+			region:      "..;",
+			model:       "claude-sonnet-4-5@20250929",
+			countTokens: true,
+			expectedErr: `contains dot segment "..;" which is not allowed`,
+		},
+		{
+			name:        "model dot segment with parameters",
+			projectID:   "my-proj-123",
+			region:      "us-east5",
+			model:       "..;x",
+			expectedErr: `contains dot segment "..%3Bx:rawPredict" which is not allowed`,
+		},
+		{
+			name:         "model of two dots is not a dot segment",
+			projectID:    "my-proj-123",
+			region:       "us-east5",
+			model:        "..",
+			expectedPath: "/v1/projects/my-proj-123/locations/us-east5/publishers/anthropic/models/..:rawPredict",
+		},
+		{
+			name:        "project with only parameters",
+			projectID:   ";x",
+			region:      "us-east5",
+			model:       "claude-sonnet-4-5@20250929",
+			expectedErr: `contains segment ";x" which starts with ";" and is not allowed`,
+		},
+		{
+			name:        "project with only a semicolon counting tokens",
+			projectID:   ";",
+			region:      "us-east5",
+			model:       "claude-sonnet-4-5@20250929",
+			countTokens: true,
+			expectedErr: `contains segment ";" which starts with ";" and is not allowed`,
+		},
+		{
+			name:        "region with only parameters",
+			projectID:   "my-proj-123",
+			region:      ";x",
+			model:       "claude-sonnet-4-5@20250929",
+			expectedErr: `contains segment ";x" which starts with ";" and is not allowed`,
+		},
+		{
+			name:        "region with only parameters counting tokens",
+			projectID:   "my-proj-123",
+			region:      ";x",
+			model:       "claude-sonnet-4-5@20250929",
+			countTokens: true,
+			expectedErr: `contains segment ";x" which starts with ";" and is not allowed`,
+		},
+		{
+			name:        "region with only a semicolon",
+			projectID:   "my-proj-123",
+			region:      ";",
+			model:       "claude-sonnet-4-5@20250929",
+			expectedErr: `contains segment ";" which starts with ";" and is not allowed`,
+		},
+		{
+			name:        "region with only a semicolon counting tokens",
+			projectID:   "my-proj-123",
+			region:      ";",
+			model:       "claude-sonnet-4-5@20250929",
+			countTokens: true,
+			expectedErr: `contains segment ";" which starts with ";" and is not allowed`,
+		},
+		{
+			name:        "empty region",
+			projectID:   "my-proj-123",
+			region:      "",
+			model:       "claude-sonnet-4-5@20250929",
+			expectedErr: "vertex: missing required region parameter",
+		},
+		{
+			name:        "empty region counting tokens",
+			projectID:   "my-proj-123",
+			region:      "",
+			model:       "claude-sonnet-4-5@20250929",
+			countTokens: true,
+			expectedErr: "vertex: missing required region parameter",
+		},
+		{
+			name:        "model with only parameters",
+			projectID:   "my-proj-123",
+			region:      "us-east5",
+			model:       ";x",
+			expectedErr: `contains segment "%3Bx:rawPredict" which starts with ";" and is not allowed`,
+		},
+		{
+			name:        "model with only a named parameter",
+			projectID:   "my-proj-123",
+			region:      "us-east5",
+			model:       ";a=b",
+			expectedErr: `contains segment "%3Ba=b:rawPredict" which starts with ";" and is not allowed`,
+		},
+		{
+			name:         "a semicolon is escaped in the model only",
+			projectID:    "a;b",
+			region:       "a;b",
+			model:        "a;b",
+			expectedPath: "/v1/projects/a;b/locations/a;b/publishers/anthropic/models/a%3Bb:rawPredict",
+		},
+		{
+			name:         "semicolons elsewhere",
+			projectID:    "a;b",
+			region:       "x;..",
+			model:        "...;x",
+			expectedPath: "/v1/projects/a;b/locations/x;../publishers/anthropic/models/...%3Bx:rawPredict",
+		},
+		{
+			name:         "semicolons elsewhere counting tokens",
+			projectID:    "a;b",
+			region:       "x;..",
+			model:        "claude-sonnet-4-5@20250929",
+			countTokens:  true,
+			expectedPath: "/v1/projects/a;b/locations/x;../publishers/anthropic/models/count-tokens:rawPredict",
+		},
+		{
+			name:         "the other characters that are sent as they are, except in the model",
+			projectID:    "a!'()*,;/b",
+			region:       "c!'()*,;/d",
+			model:        "e!'()*,;/f",
+			expectedPath: "/v1/projects/a!'()*,;%2Fb/locations/c!'()*,;%2Fd/publishers/anthropic/models/e%21%27%28%29%2A%2C%3B%2Ff:rawPredict",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("ANTHROPIC_API_KEY", "")
+
+			var wirePath string
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				wirePath = r.RequestURI
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte(`{}`))
+			}))
+			defer server.Close()
+
+			creds := &google.Credentials{
+				TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: "fake"}),
+			}
+			client := anthropic.NewClient(
+				WithCredentials(context.Background(), tc.region, tc.projectID, creds),
+				sdkoption.WithBaseURL(server.URL),
+				sdkoption.WithMaxRetries(0),
+			)
+
+			messages := []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))}
+			var err error
+			if tc.countTokens {
+				_, err = client.Messages.CountTokens(context.Background(), anthropic.MessageCountTokensParams{
+					Model:    anthropic.Model(tc.model),
+					Messages: messages,
+				})
+			} else {
+				_, err = client.Messages.New(context.Background(), anthropic.MessageNewParams{
+					Model:     anthropic.Model(tc.model),
+					MaxTokens: 1,
+					Messages:  messages,
+				})
+			}
+
+			if tc.expectedErr != "" {
+				if err == nil || !strings.Contains(err.Error(), tc.expectedErr) {
+					t.Errorf("Expected error containing %q, got %v", tc.expectedErr, err)
+				}
+				if wirePath != "" {
+					t.Errorf("Expected no request to be sent, got %q", wirePath)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("Request failed: %v", err)
+			}
+			if wirePath != tc.expectedPath {
+				t.Errorf("Expected wire path %q, got %q", tc.expectedPath, wirePath)
+			}
+		})
+	}
+}
+
+func TestVertexRefusesValuesWithNoNameBeforeSemicolon(t *testing.T) {
+	const ordinaryModel = "claude-sonnet-4-5@20250929"
+	messages := []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))}
+
+	calls := map[string]func(client anthropic.Client, model string) error{
+		"new": func(client anthropic.Client, model string) error {
+			_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+				Model:     anthropic.Model(model),
+				MaxTokens: 1,
+				Messages:  messages,
+			})
+			return err
+		},
+		"stream": func(client anthropic.Client, model string) error {
+			events := client.Messages.NewStreaming(context.Background(), anthropic.MessageNewParams{
+				Model:     anthropic.Model(model),
+				MaxTokens: 1,
+				Messages:  messages,
+			})
+			for events.Next() {
+			}
+			return events.Err()
+		},
+		"count tokens": func(client anthropic.Client, model string) error {
+			_, err := client.Messages.CountTokens(context.Background(), anthropic.MessageCountTokensParams{
+				Model:    anthropic.Model(model),
+				Messages: messages,
+			})
+			return err
+		},
+	}
+
+	for _, value := range []string{";x", ".;x", "..;x"} {
+		for name, tc := range map[string]struct {
+			projectID, region, model string
+			calls                    []string
+		}{
+			"project": {value, "us-east5", ordinaryModel, []string{"new", "stream", "count tokens"}},
+			"region":  {"my-proj-123", value, ordinaryModel, []string{"new", "stream", "count tokens"}},
+			// The count tokens path does not hold the model.
+			"model": {"my-proj-123", "us-east5", value, []string{"new", "stream"}},
+		} {
+			for _, call := range tc.calls {
+				t.Run(fmt.Sprintf("%s %q, %s", name, value, call), func(t *testing.T) {
+					t.Setenv("ANTHROPIC_API_KEY", "")
+
+					var sent []string
+					server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						sent = append(sent, r.RequestURI)
+						w.Header().Set("Content-Type", "application/json")
+						w.Write([]byte(`{}`))
+					}))
+					defer server.Close()
+
+					creds := &google.Credentials{
+						TokenSource: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: "fake"}),
+					}
+					client := anthropic.NewClient(
+						WithCredentials(context.Background(), tc.region, tc.projectID, creds),
+						sdkoption.WithBaseURL(server.URL),
+						sdkoption.WithMaxRetries(0),
+					)
+
+					if err := calls[call](client, tc.model); err == nil {
+						t.Error("Expected an error")
+					}
+					if len(sent) != 0 {
+						t.Errorf("Expected no request to be sent, got %q", sent)
+					}
+				})
+			}
+		}
+	}
+}
+
+func TestWithGoogleAuthRefusesEmptyRegion(t *testing.T) {
+	for _, region := range []string{"", ";x", ";"} {
+		t.Run(region, func(t *testing.T) {
+			defer func() {
+				if got := recover(); got != "region must be provided" {
+					t.Errorf("WithGoogleAuth panicked with %v, want %q", got, "region must be provided")
+				}
+			}()
+			// No credentials can be found, so a region that is let through panics with another value.
+			t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", filepath.Join(t.TempDir(), "missing.json"))
+			WithGoogleAuth(context.Background(), region, "my-proj-123")
+		})
+	}
+}
+
 // TestVertexUserMiddlewareObservesAnthropicShape verifies the documented
 // ordering: middleware registered before the Vertex option observes the
 // Anthropic-shaped request, while the wire receives the rewritten Vertex

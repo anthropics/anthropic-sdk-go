@@ -37,6 +37,9 @@ func TestBetaOrganizationClaudeTagSlackChannelNewWithOptionalParams(t *testing.T
 			},
 			Instructions: anthropic.String("instructions"),
 			Model:        anthropic.String("x"),
+			ReplyMode: anthropic.BetaClaudeTagReplyModeUnionParam{
+				OfAutomatic: &anthropic.BetaClaudeTagReplyModeAutomaticParam{},
+			},
 		},
 		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 	})
@@ -104,6 +107,9 @@ func TestBetaOrganizationClaudeTagSlackChannelUpdateWithOptionalParams(t *testin
 				},
 				Instructions: anthropic.String("instructions"),
 				Model:        anthropic.String("x"),
+				ReplyMode: anthropic.BetaClaudeTagReplyModeUnionParam{
+					OfAutomatic: &anthropic.BetaClaudeTagReplyModeAutomaticParam{},
+				},
 			},
 			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
 		},

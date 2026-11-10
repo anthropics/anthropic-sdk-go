@@ -332,6 +332,358 @@ func (r *BetaClaudeTagGuestPolicyRestrictParam) UnmarshalJSON(data []byte) error
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// BetaClaudeTagReplyModeUnion contains all possible properties and values from
+// [BetaClaudeTagReplyModeAutomatic], [BetaClaudeTagReplyModeMentionOnly],
+// [BetaClaudeTagReplyModeAlwaysAwake], [BetaClaudeTagReplyModeThread].
+//
+// Use the [BetaClaudeTagReplyModeUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaClaudeTagReplyModeUnion struct {
+	// Any of "automatic", "mention_only", "always_awake", "thread".
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+// anyBetaClaudeTagReplyMode is implemented by each variant of
+// [BetaClaudeTagReplyModeUnion] to add type safety for the return type of
+// [BetaClaudeTagReplyModeUnion.AsAny]
+type anyBetaClaudeTagReplyMode interface {
+	implBetaClaudeTagReplyModeUnion()
+}
+
+func (BetaClaudeTagReplyModeAutomatic) implBetaClaudeTagReplyModeUnion()   {}
+func (BetaClaudeTagReplyModeMentionOnly) implBetaClaudeTagReplyModeUnion() {}
+func (BetaClaudeTagReplyModeAlwaysAwake) implBetaClaudeTagReplyModeUnion() {}
+func (BetaClaudeTagReplyModeThread) implBetaClaudeTagReplyModeUnion()      {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaClaudeTagReplyModeUnion.AsAny().(type) {
+//	case anthropic.BetaClaudeTagReplyModeAutomatic:
+//	case anthropic.BetaClaudeTagReplyModeMentionOnly:
+//	case anthropic.BetaClaudeTagReplyModeAlwaysAwake:
+//	case anthropic.BetaClaudeTagReplyModeThread:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaClaudeTagReplyModeUnion) AsAny() anyBetaClaudeTagReplyMode {
+	switch u.Type {
+	case "automatic":
+		return u.AsAutomatic()
+	case "mention_only":
+		return u.AsMentionOnly()
+	case "always_awake":
+		return u.AsAlwaysAwake()
+	case "thread":
+		return u.AsThread()
+	}
+	return nil
+}
+
+func (u BetaClaudeTagReplyModeUnion) AsAutomatic() (v BetaClaudeTagReplyModeAutomatic) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaClaudeTagReplyModeUnion) AsMentionOnly() (v BetaClaudeTagReplyModeMentionOnly) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaClaudeTagReplyModeUnion) AsAlwaysAwake() (v BetaClaudeTagReplyModeAlwaysAwake) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaClaudeTagReplyModeUnion) AsThread() (v BetaClaudeTagReplyModeThread) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaClaudeTagReplyModeUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaClaudeTagReplyModeUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaClaudeTagReplyModeUnion to a
+// BetaClaudeTagReplyModeUnionParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaClaudeTagReplyModeUnionParam.Overrides()
+func (r BetaClaudeTagReplyModeUnion) ToParam() BetaClaudeTagReplyModeUnionParam {
+	return param.Override[BetaClaudeTagReplyModeUnionParam](json.RawMessage(r.RawJSON()))
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type BetaClaudeTagReplyModeUnionParam struct {
+	OfAutomatic   *BetaClaudeTagReplyModeAutomaticParam   `json:",omitzero,inline"`
+	OfMentionOnly *BetaClaudeTagReplyModeMentionOnlyParam `json:",omitzero,inline"`
+	OfAlwaysAwake *BetaClaudeTagReplyModeAlwaysAwakeParam `json:",omitzero,inline"`
+	OfThread      *BetaClaudeTagReplyModeThreadParam      `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u BetaClaudeTagReplyModeUnionParam) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfAutomatic, u.OfMentionOnly, u.OfAlwaysAwake, u.OfThread)
+}
+func (u *BetaClaudeTagReplyModeUnionParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *BetaClaudeTagReplyModeUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfAutomatic) {
+		return u.OfAutomatic
+	} else if !param.IsOmitted(u.OfMentionOnly) {
+		return u.OfMentionOnly
+	} else if !param.IsOmitted(u.OfAlwaysAwake) {
+		return u.OfAlwaysAwake
+	} else if !param.IsOmitted(u.OfThread) {
+		return u.OfThread
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u BetaClaudeTagReplyModeUnionParam) GetType() *string {
+	if vt := u.OfAutomatic; vt != nil {
+		return paramutil.AddrOrDefault(vt.Type)
+	} else if vt := u.OfMentionOnly; vt != nil {
+		return paramutil.AddrOrDefault(vt.Type)
+	} else if vt := u.OfAlwaysAwake; vt != nil {
+		return paramutil.AddrOrDefault(vt.Type)
+	} else if vt := u.OfThread; vt != nil {
+		return paramutil.AddrOrDefault(vt.Type)
+	}
+	return nil
+}
+
+func init() {
+	apijson.RegisterUnion[BetaClaudeTagReplyModeUnionParam](
+		"type",
+		apijson.Discriminator[BetaClaudeTagReplyModeAutomaticParam]("automatic"),
+		apijson.Discriminator[BetaClaudeTagReplyModeMentionOnlyParam]("mention_only"),
+		apijson.Discriminator[BetaClaudeTagReplyModeAlwaysAwakeParam]("always_awake"),
+		apijson.Discriminator[BetaClaudeTagReplyModeThreadParam]("thread"),
+	)
+}
+
+// Like `automatic`, but Claude never pauses on its own. Available where it is
+// enabled for the channel.
+type BetaClaudeTagReplyModeAlwaysAwake struct {
+	Type constant.AlwaysAwake `json:"type" default:"always_awake"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaClaudeTagReplyModeAlwaysAwake) RawJSON() string { return r.JSON.raw }
+func (r *BetaClaudeTagReplyModeAlwaysAwake) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaClaudeTagReplyModeAlwaysAwake to a
+// BetaClaudeTagReplyModeAlwaysAwakeParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaClaudeTagReplyModeAlwaysAwakeParam.Overrides()
+func (r BetaClaudeTagReplyModeAlwaysAwake) ToParam() BetaClaudeTagReplyModeAlwaysAwakeParam {
+	return param.Override[BetaClaudeTagReplyModeAlwaysAwakeParam](json.RawMessage(r.RawJSON()))
+}
+
+func NewBetaClaudeTagReplyModeAlwaysAwakeParam() BetaClaudeTagReplyModeAlwaysAwakeParam {
+	return BetaClaudeTagReplyModeAlwaysAwakeParam{
+		Type: "always_awake",
+	}
+}
+
+// Like `automatic`, but Claude never pauses on its own. Available where it is
+// enabled for the channel.
+//
+// This struct has a constant value, construct it with
+// [NewBetaClaudeTagReplyModeAlwaysAwakeParam].
+type BetaClaudeTagReplyModeAlwaysAwakeParam struct {
+	Type constant.AlwaysAwake `json:"type" default:"always_awake"`
+	paramObj
+}
+
+func (r BetaClaudeTagReplyModeAlwaysAwakeParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaClaudeTagReplyModeAlwaysAwakeParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaClaudeTagReplyModeAlwaysAwakeParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Claude reads along and joins in when it can help, and pauses on its own in quiet
+// or busy channels.
+type BetaClaudeTagReplyModeAutomatic struct {
+	Type constant.Automatic `json:"type" default:"automatic"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaClaudeTagReplyModeAutomatic) RawJSON() string { return r.JSON.raw }
+func (r *BetaClaudeTagReplyModeAutomatic) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaClaudeTagReplyModeAutomatic to a
+// BetaClaudeTagReplyModeAutomaticParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaClaudeTagReplyModeAutomaticParam.Overrides()
+func (r BetaClaudeTagReplyModeAutomatic) ToParam() BetaClaudeTagReplyModeAutomaticParam {
+	return param.Override[BetaClaudeTagReplyModeAutomaticParam](json.RawMessage(r.RawJSON()))
+}
+
+func NewBetaClaudeTagReplyModeAutomaticParam() BetaClaudeTagReplyModeAutomaticParam {
+	return BetaClaudeTagReplyModeAutomaticParam{
+		Type: "automatic",
+	}
+}
+
+// Claude reads along and joins in when it can help, and pauses on its own in quiet
+// or busy channels.
+//
+// This struct has a constant value, construct it with
+// [NewBetaClaudeTagReplyModeAutomaticParam].
+type BetaClaudeTagReplyModeAutomaticParam struct {
+	Type constant.Automatic `json:"type" default:"automatic"`
+	paramObj
+}
+
+func (r BetaClaudeTagReplyModeAutomaticParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaClaudeTagReplyModeAutomaticParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaClaudeTagReplyModeAutomaticParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Claude replies only when it is @-mentioned.
+type BetaClaudeTagReplyModeMentionOnly struct {
+	Type constant.MentionOnly `json:"type" default:"mention_only"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaClaudeTagReplyModeMentionOnly) RawJSON() string { return r.JSON.raw }
+func (r *BetaClaudeTagReplyModeMentionOnly) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaClaudeTagReplyModeMentionOnly to a
+// BetaClaudeTagReplyModeMentionOnlyParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaClaudeTagReplyModeMentionOnlyParam.Overrides()
+func (r BetaClaudeTagReplyModeMentionOnly) ToParam() BetaClaudeTagReplyModeMentionOnlyParam {
+	return param.Override[BetaClaudeTagReplyModeMentionOnlyParam](json.RawMessage(r.RawJSON()))
+}
+
+func NewBetaClaudeTagReplyModeMentionOnlyParam() BetaClaudeTagReplyModeMentionOnlyParam {
+	return BetaClaudeTagReplyModeMentionOnlyParam{
+		Type: "mention_only",
+	}
+}
+
+// Claude replies only when it is @-mentioned.
+//
+// This struct has a constant value, construct it with
+// [NewBetaClaudeTagReplyModeMentionOnlyParam].
+type BetaClaudeTagReplyModeMentionOnlyParam struct {
+	Type constant.MentionOnly `json:"type" default:"mention_only"`
+	paramObj
+}
+
+func (r BetaClaudeTagReplyModeMentionOnlyParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaClaudeTagReplyModeMentionOnlyParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaClaudeTagReplyModeMentionOnlyParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Every new top-level message in the channel gets its own reply from Claude, in a
+// thread under it. Available where it is enabled for the channel, and only once
+// Claude has been used in the channel.
+type BetaClaudeTagReplyModeThread struct {
+	Type constant.Thread `json:"type" default:"thread"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaClaudeTagReplyModeThread) RawJSON() string { return r.JSON.raw }
+func (r *BetaClaudeTagReplyModeThread) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// ToParam converts this BetaClaudeTagReplyModeThread to a
+// BetaClaudeTagReplyModeThreadParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// BetaClaudeTagReplyModeThreadParam.Overrides()
+func (r BetaClaudeTagReplyModeThread) ToParam() BetaClaudeTagReplyModeThreadParam {
+	return param.Override[BetaClaudeTagReplyModeThreadParam](json.RawMessage(r.RawJSON()))
+}
+
+func NewBetaClaudeTagReplyModeThreadParam() BetaClaudeTagReplyModeThreadParam {
+	return BetaClaudeTagReplyModeThreadParam{
+		Type: "thread",
+	}
+}
+
+// Every new top-level message in the channel gets its own reply from Claude, in a
+// thread under it. Available where it is enabled for the channel, and only once
+// Claude has been used in the channel.
+//
+// This struct has a constant value, construct it with
+// [NewBetaClaudeTagReplyModeThreadParam].
+type BetaClaudeTagReplyModeThreadParam struct {
+	Type constant.Thread `json:"type" default:"thread"`
+	paramObj
+}
+
+func (r BetaClaudeTagReplyModeThreadParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaClaudeTagReplyModeThreadParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaClaudeTagReplyModeThreadParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // BetaClaudeTagSettingSourceUnion contains all possible properties and values from
 // [BetaClaudeTagSlackChannelSettingSource],
 // [BetaClaudeTagSlackWorkspaceSettingSource],
@@ -458,6 +810,9 @@ type BetaClaudeTagSettingSources struct {
 	Instructions []BetaClaudeTagSettingSourceUnion `json:"instructions" api:"required"`
 	// The settings level `model` comes from.
 	Model BetaClaudeTagSettingSourceUnion `json:"model" api:"required"`
+	// The settings level `reply_mode` comes from: the channel when it stores one. With
+	// `include_inherited=true` and no stored mode it is `default`.
+	ReplyMode BetaClaudeTagSettingSourceUnion `json:"reply_mode" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Enabled       respjson.Field
@@ -465,6 +820,7 @@ type BetaClaudeTagSettingSources struct {
 		GuestPolicy   respjson.Field
 		Instructions  respjson.Field
 		Model         respjson.Field
+		ReplyMode     respjson.Field
 		ExtraFields   map[string]respjson.Field
 		raw           string
 	} `json:"-"`
@@ -478,8 +834,9 @@ func (r *BetaClaudeTagSettingSources) UnmarshalJSON(data []byte) error {
 
 // Claude Tag settings. Without `include_inherited`, a setting that is null is not
 // set on the settings level and is inherited. With it, `enabled` and
-// `guest_policy` are never null, and `instructions`, `model` and `environment_id`
-// are null when no settings level sets them.
+// `guest_policy` are never null, `instructions`, `model` and `environment_id` are
+// null when no settings level sets them, and `reply_mode` is null unless the
+// channel itself stores one.
 type BetaClaudeTagSettings struct {
 	// Whether Claude is on. The nearest settings level that sets it decides.
 	Enabled bool `json:"enabled" api:"required"`
@@ -497,6 +854,12 @@ type BetaClaudeTagSettings struct {
 	// nearest settings level that sets it decides. When none does, Claude uses the
 	// product's default model.
 	Model string `json:"model" api:"required"`
+	// How Claude takes part in the channel. Only a channel stores one, and no settings
+	// level passes one on, so it is always null on a workspace. Null on a channel
+	// means the channel stores none yet: Claude then follows the reply mode chosen in
+	// Slack, if one was, else `automatic`. A stored reply mode can be changed but
+	// never cleared.
+	ReplyMode BetaClaudeTagReplyModeUnion `json:"reply_mode" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Enabled       respjson.Field
@@ -504,6 +867,7 @@ type BetaClaudeTagSettings struct {
 		GuestPolicy   respjson.Field
 		Instructions  respjson.Field
 		Model         respjson.Field
+		ReplyMode     respjson.Field
 		ExtraFields   map[string]respjson.Field
 		raw           string
 	} `json:"-"`
@@ -522,7 +886,9 @@ type BetaClaudeTagSettingsCreateParam struct {
 	// workspace stores `false`. Null clears it.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
 	// The environment Claude's sessions run in: the identifier of an active
-	// environment of the organization, starting with `env_`. Null clears it.
+	// environment of the organization, starting with `env_`, or of a self-hosted
+	// runner pool of the organization that every member may use, starting with
+	// `ccpool_`. Null clears it.
 	EnvironmentID param.Opt[string] `json:"environment_id,omitzero"`
 	// Instructions for Claude, up to 8,192 characters after leading and trailing white
 	// space is trimmed. Null or blank text clears them.
@@ -532,6 +898,14 @@ type BetaClaudeTagSettingsCreateParam struct {
 	Model param.Opt[string] `json:"model,omitzero"`
 	// What Claude does in a channel while a Slack guest is in it. Null clears it.
 	GuestPolicy BetaClaudeTagGuestPolicyUnionParam `json:"guest_policy,omitzero"`
+	// How Claude takes part in the channel: `automatic`, `mention_only`,
+	// `always_awake` or `thread`. Only a channel takes one: an update of a workspace
+	// that sends a value is refused, and one that sends null changes nothing. Null
+	// never clears it: sent to a channel that stores none it changes nothing, and sent
+	// to a channel that stores one it is refused, because a stored reply mode can be
+	// changed but never cleared; a caller that wants Claude's default behavior sends
+	// `automatic`.
+	ReplyMode BetaClaudeTagReplyModeUnionParam `json:"reply_mode,omitzero"`
 	paramObj
 }
 
@@ -550,7 +924,9 @@ type BetaClaudeTagSettingsUpdateParam struct {
 	// workspace stores `false`. Null clears it.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
 	// The environment Claude's sessions run in: the identifier of an active
-	// environment of the organization, starting with `env_`. Null clears it.
+	// environment of the organization, starting with `env_`, or of a self-hosted
+	// runner pool of the organization that every member may use, starting with
+	// `ccpool_`. Null clears it.
 	EnvironmentID param.Opt[string] `json:"environment_id,omitzero"`
 	// Instructions for Claude, up to 8,192 characters after leading and trailing white
 	// space is trimmed. Null or blank text clears them.
@@ -560,6 +936,14 @@ type BetaClaudeTagSettingsUpdateParam struct {
 	Model param.Opt[string] `json:"model,omitzero"`
 	// What Claude does in a channel while a Slack guest is in it. Null clears it.
 	GuestPolicy BetaClaudeTagGuestPolicyUnionParam `json:"guest_policy,omitzero"`
+	// How Claude takes part in the channel: `automatic`, `mention_only`,
+	// `always_awake` or `thread`. Only a channel takes one: an update of a workspace
+	// that sends a value is refused, and one that sends null changes nothing. Null
+	// never clears it: sent to a channel that stores none it changes nothing, and sent
+	// to a channel that stores one it is refused, because a stored reply mode can be
+	// changed but never cleared; a caller that wants Claude's default behavior sends
+	// `automatic`.
+	ReplyMode BetaClaudeTagReplyModeUnionParam `json:"reply_mode,omitzero"`
 	paramObj
 }
 

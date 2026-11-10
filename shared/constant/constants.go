@@ -61,6 +61,7 @@ type Allow string                                              // Always "allow"
 type AlreadyMemberErrorCode string                             // Always "already_member"
 type AlwaysAllow string                                        // Always "always_allow"
 type AlwaysAsk string                                          // Always "always_ask"
+type AlwaysAwake string                                        // Always "always_awake"
 type Anthropic string                                          // Always "anthropic"
 type Any string                                                // Always "any"
 type APIActor string                                           // Always "api_actor"
@@ -74,6 +75,7 @@ type Assistant string                                          // Always "assist
 type Attached string                                           // Always "attached"
 type AuthenticationError string                                // Always "authentication_error"
 type Auto string                                               // Always "auto"
+type Automatic string                                          // Always "automatic"
 type AvailableToolsLimitExceededErrorCode string               // Always "available_tools_limit_exceeded"
 type AWS string                                                // Always "aws"
 type AWSRole string                                            // Always "aws_role"
@@ -315,6 +317,7 @@ type MemoryStoreArchived string                                // Always "memory
 type MemoryStoreCreated string                                 // Always "memory_store.created"
 type MemoryStoreDeleted string                                 // Always "memory_store.deleted"
 type MemoryVersion string                                      // Always "memory_version"
+type MentionOnly string                                        // Always "mention_only"
 type Message string                                            // Always "message"
 type MessageBatch string                                       // Always "message_batch"
 type MessageBatchDeleted string                                // Always "message_batch_deleted"
@@ -519,6 +522,7 @@ type ThinkingDelta string                                      // Always "thinki
 type ThinkingDropped string                                    // Always "thinking_dropped"
 type ThinkingMismatchAllowed string                            // Always "thinking_mismatch_allowed"
 type ThinkingTurns string                                      // Always "thinking_turns"
+type Thread string                                             // Always "thread"
 type ThreadAlreadyContinuedErrorCode string                    // Always "thread_already_continued"
 type ThreadContinueInFlightErrorCode string                    // Always "thread_continue_in_flight"
 type ThreadFingerprintMismatchErrorCode string                 // Always "thread_fingerprint_mismatch"
@@ -665,6 +669,7 @@ func (c Allow) Default() Allow                                   { return "allow
 func (c AlreadyMemberErrorCode) Default() AlreadyMemberErrorCode { return "already_member" }
 func (c AlwaysAllow) Default() AlwaysAllow                       { return "always_allow" }
 func (c AlwaysAsk) Default() AlwaysAsk                           { return "always_ask" }
+func (c AlwaysAwake) Default() AlwaysAwake                       { return "always_awake" }
 func (c Anthropic) Default() Anthropic                           { return "anthropic" }
 func (c Any) Default() Any                                       { return "any" }
 func (c APIActor) Default() APIActor                             { return "api_actor" }
@@ -680,6 +685,7 @@ func (c Assistant) Default() Assistant                     { return "assistant" 
 func (c Attached) Default() Attached                       { return "attached" }
 func (c AuthenticationError) Default() AuthenticationError { return "authentication_error" }
 func (c Auto) Default() Auto                               { return "auto" }
+func (c Automatic) Default() Automatic                     { return "automatic" }
 func (c AvailableToolsLimitExceededErrorCode) Default() AvailableToolsLimitExceededErrorCode {
 	return "available_tools_limit_exceeded"
 }
@@ -1047,6 +1053,7 @@ func (c MemoryStoreArchived) Default() MemoryStoreArchived     { return "memory_
 func (c MemoryStoreCreated) Default() MemoryStoreCreated       { return "memory_store.created" }
 func (c MemoryStoreDeleted) Default() MemoryStoreDeleted       { return "memory_store.deleted" }
 func (c MemoryVersion) Default() MemoryVersion                 { return "memory_version" }
+func (c MentionOnly) Default() MentionOnly                     { return "mention_only" }
 func (c Message) Default() Message                             { return "message" }
 func (c MessageBatch) Default() MessageBatch                   { return "message_batch" }
 func (c MessageBatchDeleted) Default() MessageBatchDeleted     { return "message_batch_deleted" }
@@ -1373,6 +1380,7 @@ func (c ThinkingMismatchAllowed) Default() ThinkingMismatchAllowed {
 	return "thinking_mismatch_allowed"
 }
 func (c ThinkingTurns) Default() ThinkingTurns { return "thinking_turns" }
+func (c Thread) Default() Thread               { return "thread" }
 func (c ThreadAlreadyContinuedErrorCode) Default() ThreadAlreadyContinuedErrorCode {
 	return "thread_already_continued"
 }
@@ -1565,6 +1573,7 @@ func (c Allow) MarshalJSON() ([]byte, error)                                { re
 func (c AlreadyMemberErrorCode) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c AlwaysAllow) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c AlwaysAsk) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c AlwaysAwake) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Anthropic) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Any) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
 func (c APIActor) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
@@ -1578,6 +1587,7 @@ func (c Assistant) MarshalJSON() ([]byte, error)                            { re
 func (c Attached) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c AuthenticationError) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Auto) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
+func (c Automatic) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c AvailableToolsLimitExceededErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c AWS) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
 func (c AWSRole) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
@@ -1847,6 +1857,7 @@ func (c MemoryStoreArchived) MarshalJSON() ([]byte, error)                  { re
 func (c MemoryStoreCreated) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c MemoryStoreDeleted) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c MemoryVersion) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c MentionOnly) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Message) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c MessageBatch) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c MessageBatchDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
@@ -2075,6 +2086,7 @@ func (c ThinkingDelta) MarshalJSON() ([]byte, error)                         { r
 func (c ThinkingDropped) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c ThinkingMismatchAllowed) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c ThinkingTurns) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c Thread) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c ThreadAlreadyContinuedErrorCode) MarshalJSON() ([]byte, error)       { return marshalString(c) }
 func (c ThreadContinueInFlightErrorCode) MarshalJSON() ([]byte, error)       { return marshalString(c) }
 func (c ThreadFingerprintMismatchErrorCode) MarshalJSON() ([]byte, error)    { return marshalString(c) }

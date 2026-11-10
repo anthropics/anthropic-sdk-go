@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.9.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.8.0...v2.9.0) (2026-11-10)
+
+### Features
+
+* **api:** add Claude Tag metrics to the analytics summaries and users reports
+* **api:** add reply_mode to Claude Tag Slack channel settings
+
+
+### Bug Fixes
+
+* **bedrock:** return an error when the model is empty, "." or "..", and fully escape a model that contains a space, so neither can send the request to a different URL. The model ID's ":" is now sent as it is in the request path rather than as "%3A"; Amazon Bedrock accepts both. The characters ! $ & ' ( ) * + , ; = @ are no longer percent-encoded either, as in other path parameters
+* **client:** in the bedrock, vertex and googlecloud packages, return an error for a model, project, region, location or workspace ID that has nothing, "." or ".." before its first ";", such as ";x", ".;x" or "..;x", because some servers drop the ";" and what follows it and read what is left as an empty or dot segment. Only the routes that need a workspace ID return the error for a googlecloud workspace ID such as ";x". An empty region passed to vertex.WithCredentials, which was sent as "/locations//publishers", is now an error too, and vertex.WithGoogleAuth panics for a region such as ";x", as it does for an empty one
+* **google-cloud:** percent-encode the project, location and workspace ID in the base URL, so a "/" in one no longer adds path segments, and return an error when one is "." or "..". The characters ! ' ( ) * in one are no longer percent-encoded, as in other path parameters
+* **vertex:** percent-encode the project ID, region and model in the request path, so a "/" in one no longer adds path segments, and return an error when the project ID or region is "." or "..". The characters ! ' ( ) * in the project ID or region are no longer percent-encoded, as in other path parameters
+* **vertex:** return an error when the model of a Messages request is empty, null or missing, instead of sending the request to ".../publishers/anthropic/models/:rawPredict"
+
+
+### Chores
+
+* **docs:** clarify display_name for RBAC Roles created by Anthropic
+* **docs:** clarify plugin delete and skill name conflict descriptions
+* **docs:** clarify when to omit user_profile_id on external keys
+* **docs:** note that Claude Tag settings accept self-hosted runner pools
+* **docs:** update model descriptions
+
+
+### Documentation
+
+* **examples:** show multiagent when creating a Managed Agents agent
+
 ## [2.8.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.7.0...v2.8.0) (2026-11-09)
 
 ### Features

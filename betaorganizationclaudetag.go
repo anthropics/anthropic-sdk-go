@@ -886,7 +886,9 @@ type BetaClaudeTagSettingsCreateParam struct {
 	// workspace stores `false`. Null clears it.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
 	// The environment Claude's sessions run in: the identifier of an active
-	// environment of the organization, starting with `env_`. Null clears it.
+	// environment of the organization, starting with `env_`, or of a self-hosted
+	// runner pool of the organization that every member may use, starting with
+	// `ccpool_`. Null clears it.
 	EnvironmentID param.Opt[string] `json:"environment_id,omitzero"`
 	// Instructions for Claude, up to 8,192 characters after leading and trailing white
 	// space is trimmed. Null or blank text clears them.
@@ -922,7 +924,9 @@ type BetaClaudeTagSettingsUpdateParam struct {
 	// workspace stores `false`. Null clears it.
 	Enabled param.Opt[bool] `json:"enabled,omitzero"`
 	// The environment Claude's sessions run in: the identifier of an active
-	// environment of the organization, starting with `env_`. Null clears it.
+	// environment of the organization, starting with `env_`, or of a self-hosted
+	// runner pool of the organization that every member may use, starting with
+	// `ccpool_`. Null clears it.
 	EnvironmentID param.Opt[string] `json:"environment_id,omitzero"`
 	// Instructions for Claude, up to 8,192 characters after leading and trailing white
 	// space is trimmed. Null or blank text clears them.

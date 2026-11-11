@@ -3,6 +3,7 @@ package agenttoolset
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 
 	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
 )
@@ -17,6 +19,25 @@ import (
 // defaultMaxFileBytes is the read/edit size cap used when
 // AgentToolContext.MaxFileBytes is unset (zero).
 const defaultMaxFileBytes = 256 * 1024
+
+// defaultMaxImageBase64Bytes bounds the base64-encoded form; defaultMaxPDFBytes
+// bounds raw PDF bytes before base64 encoding.
+const (
+	defaultMaxImageBase64Bytes = 5 * 1024 * 1024
+	defaultMaxPDFBytes         = 20 * 1024 * 1024
+	pdfMediaType               = "application/pdf"
+)
+
+// binaryMediaTypes maps lowercase extensions to the media types read returns as
+// content blocks; a test pins the values to the generated source-param types.
+var binaryMediaTypes = map[string]string{
+	".png":  string(anthropic.BetaBase64ImageSourceMediaTypeImagePNG),
+	".jpg":  string(anthropic.BetaBase64ImageSourceMediaTypeImageJPEG),
+	".jpeg": string(anthropic.BetaBase64ImageSourceMediaTypeImageJPEG),
+	".gif":  string(anthropic.BetaBase64ImageSourceMediaTypeImageGIF),
+	".webp": string(anthropic.BetaBase64ImageSourceMediaTypeImageWebP),
+	".pdf":  pdfMediaType,
+}
 
 // readChunkBytes is how much readRangeStreaming reads from the file at a time.
 const readChunkBytes = 64 * 1024
@@ -51,8 +72,8 @@ func BetaReadTool(env *AgentToolContext) anthropic.BetaTool {
 				"description": "[start_line, end_line] 1-indexed inclusive",
 			},
 		}, "file_path"),
-		env: env,
-		run: execRead,
+		env:       env,
+		runBlocks: execRead,
 	}
 }
 
@@ -88,49 +109,116 @@ func BetaEditTool(env *AgentToolContext) anthropic.BetaTool {
 	}
 }
 
-func execRead(_ context.Context, raw json.RawMessage, env *AgentToolContext) (string, bool) {
+func toolErrorf(format string, a ...any) error {
+	return &ToolError{Content: fmt.Sprintf(format, a...)}
+}
+
+func notUTF8ReadError(filePath string) error {
+	return toolErrorf("read: %s: not valid UTF-8 text (binary files are only supported for image/PDF extensions)", filePath)
+}
+
+// readBinaryBlock applies the media size cap (tightened by an explicit positive
+// MaxFileBytes) before reading path into a base64 image or document block.
+func readBinaryBlock(path, filePath string, size int64, mediaType string, env *AgentToolContext) ([]anthropic.BetaToolResultBlockParamContentUnion, error) {
+	var (
+		limit  int64
+		capped bool
+	)
+	if mediaType == pdfMediaType {
+		limit, capped = resolveMaxBytes(env.MaxPDFBytes, defaultMaxPDFBytes)
+	} else {
+		if b64Cap, ok := resolveMaxBytes(env.MaxImageBase64Bytes, defaultMaxImageBase64Bytes); ok {
+			limit, capped = (b64Cap/4)*3, true
+		}
+	}
+	if env.MaxFileBytes > 0 && (!capped || env.MaxFileBytes < limit) {
+		limit, capped = env.MaxFileBytes, true
+	}
+	if capped && size > limit {
+		return nil, toolErrorf("read: %s is %d bytes, exceeds %d-byte limit for image/PDF files.", filePath, size, limit)
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return nil, toolErrorf("read %s: %s", filePath, fsErrorMessage(err))
+	}
+	encoded := base64.StdEncoding.EncodeToString(raw)
+	if mediaType == pdfMediaType {
+		return []anthropic.BetaToolResultBlockParamContentUnion{{
+			OfDocument: &anthropic.BetaRequestDocumentBlockParam{
+				Source: anthropic.BetaRequestDocumentBlockSourceUnionParam{
+					OfBase64: &anthropic.BetaBase64PDFSourceParam{Data: encoded},
+				},
+			},
+		}}, nil
+	}
+	return []anthropic.BetaToolResultBlockParamContentUnion{{
+		OfImage: &anthropic.BetaImageBlockParam{
+			Source: anthropic.BetaImageBlockParamSourceUnion{
+				OfBase64: &anthropic.BetaBase64ImageSourceParam{
+					Data:      encoded,
+					MediaType: anthropic.BetaBase64ImageSourceMediaType(mediaType),
+				},
+			},
+		},
+	}}, nil
+}
+
+func execRead(_ context.Context, raw json.RawMessage, env *AgentToolContext) ([]anthropic.BetaToolResultBlockParamContentUnion, error) {
 	var in anthropic.BetaManagedAgentsAgentToolset20260401ReadInput
 	if err := json.Unmarshal(raw, &in); err != nil {
-		return errorf("invalid read input: %v", err)
+		return nil, toolErrorf("invalid read input: %v", err)
 	}
 	if in.FilePath == "" {
-		return errorf("read: file_path is required")
+		return nil, toolErrorf("read: file_path is required")
 	}
 	path, err := resolvePath(env, in.FilePath)
 	if err != nil {
-		return errorf("read: %v", err)
+		return nil, toolErrorf("read: %v", err)
 	}
 	if len(in.ViewRange) != 0 && len(in.ViewRange) != 2 {
-		return errorf("read: view_range must be [start_line, end_line]")
+		return nil, toolErrorf("read: view_range must be [start_line, end_line]")
 	}
 	// Stat before any open: the size cap stops a multi-GB file from OOM'ing
 	// the runner, and the mode check rejects FIFOs/devices/dirs before
 	// open() can block on them.
 	info, err := os.Stat(path)
 	if err != nil {
-		return errorf("read %s: %s", in.FilePath, fsErrorMessage(err))
+		return nil, toolErrorf("read %s: %s", in.FilePath, fsErrorMessage(err))
 	}
 	if !info.Mode().IsRegular() {
-		return errorf("read: %s is not a regular file", in.FilePath)
+		return nil, toolErrorf("read: %s is not a regular file", in.FilePath)
+	}
+	if mediaType, ok := binaryMediaTypes[strings.ToLower(filepath.Ext(path))]; ok {
+		if len(in.ViewRange) != 0 {
+			return nil, toolErrorf("read: view_range is not supported for image/PDF files")
+		}
+		return readBinaryBlock(path, in.FilePath, info.Size(), mediaType, env)
 	}
 	if limit, capped := resolveMaxBytes(env.MaxFileBytes, defaultMaxFileBytes); capped && info.Size() > limit {
 		if len(in.ViewRange) == 0 {
-			return errorf("read: %s is %d bytes, exceeds %d-byte limit. Use the view_range parameter to read specific line ranges, e.g. view_range: [1, 500].",
+			return nil, toolErrorf("read: %s is %d bytes, exceeds %d-byte limit. Use the view_range parameter to read specific line ranges, e.g. view_range: [1, 500].",
 				in.FilePath, info.Size(), limit)
 		}
-		return readRangeStreaming(path, in.FilePath, in.ViewRange[0], in.ViewRange[1], limit)
+		out, err := readRangeStreaming(path, in.FilePath, in.ViewRange[0], in.ViewRange[1], limit)
+		if err != nil {
+			return nil, err
+		}
+		return textResult(out), nil
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return errorf("read %s: %s", in.FilePath, fsErrorMessage(err))
+		return nil, toolErrorf("read %s: %s", in.FilePath, fsErrorMessage(err))
+	}
+	if !utf8.Valid(data) {
+		return nil, notUTF8ReadError(in.FilePath)
 	}
 	if len(in.ViewRange) == 0 {
-		return string(data), false
+		return textResult(string(data)), nil
 	}
 	lines := strings.Split(string(data), "\n")
 	start := max(0, int(in.ViewRange[0])-1)
 	if start >= len(lines) {
-		return "", false
+		return textResult(""), nil
 	}
 	end := len(lines)
 	if endLine := int(in.ViewRange[1]); endLine > 0 && endLine < end {
@@ -138,21 +226,21 @@ func execRead(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 	}
 	// An inverted range selects nothing; without this lines[start:end] panics.
 	if end < start {
-		return "", false
+		return textResult(""), nil
 	}
-	return strings.Join(lines[start:end], "\n"), false
+	return textResult(strings.Join(lines[start:end], "\n")), nil
 }
 
 // readRangeStreaming returns lines [startLine, endLine] of the file at path,
 // capping the selected bytes at limit.
-func readRangeStreaming(path, filePath string, startLine, endLine, limit int64) (string, bool) {
+func readRangeStreaming(path, filePath string, startLine, endLine, limit int64) (string, error) {
 	lines := newLineRangeCollector(filePath, startLine, endLine, limit)
 	if lines.rangeIsEmpty() {
-		return "", false
+		return "", nil
 	}
 	f, err := os.Open(path)
 	if err != nil {
-		return errorf("read %s: %s", filePath, fsErrorMessage(err))
+		return "", toolErrorf("read %s: %s", filePath, fsErrorMessage(err))
 	}
 	defer f.Close()
 	// Raw byte chunks rather than bufio.Scanner or ReadString: a single huge
@@ -162,19 +250,22 @@ func readRangeStreaming(path, filePath string, startLine, endLine, limit int64) 
 	for {
 		n, readErr := f.Read(chunk)
 		if err := lines.collectFrom(chunk[:n]); err != nil {
-			return err.Error(), true
+			return "", err
 		}
 		if readErr == io.EOF {
 			break
 		}
 		if readErr != nil {
-			return errorf("read %s: %s", filePath, fsErrorMessage(readErr))
+			return "", toolErrorf("read %s: %s", filePath, fsErrorMessage(readErr))
 		}
 		if lines.rangeIsCollected() {
 			break
 		}
 	}
-	return lines.text(), false
+	if !utf8.Valid(lines.collected) {
+		return "", notUTF8ReadError(filePath)
+	}
+	return lines.text(), nil
 }
 
 // lineRangeCollector collects the bytes of lines [startLine, endLine] from
@@ -313,6 +404,9 @@ func execEdit(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return errorf("edit %s: %s", in.FilePath, fsErrorMessage(err))
+	}
+	if !utf8.Valid(data) {
+		return errorf("edit: %s: not valid UTF-8 text (cannot edit binary files)", in.FilePath)
 	}
 	content := string(data)
 

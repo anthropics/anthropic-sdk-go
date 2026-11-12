@@ -24,6 +24,7 @@
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#OrganizationOnHoldErrorDetails">OrganizationOnHoldErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#OrganizationTypeNotSupportedErrorDetails">OrganizationTypeNotSupportedErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#OverloadedError">OverloadedError</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#ParentOrganizationRequiredErrorDetails">ParentOrganizationRequiredErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#PermissionError">PermissionError</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#RampLimitExceededErrorDetails">RampLimitExceededErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#RateLimitError">RateLimitError</a>
@@ -586,6 +587,7 @@ Response Types:
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrgMemberLimitExceededErrorDetails">OrgMemberLimitExceededErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationInfo">OrganizationInfo</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#OrganizationRole">OrganizationRole</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACRoleNotFoundErrorDetails">RBACRoleNotFoundErrorDetails</a>
 
 Methods:
 
@@ -1062,6 +1064,9 @@ Methods:
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACRole">RBACRole</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACRoleSourceUnion">RBACRoleSourceUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACRoleSourceBuiltIn">RBACRoleSourceBuiltIn</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#RBACRoleSourceCustom">RBACRoleSourceCustom</a>
 
 Methods:
 
@@ -3162,6 +3167,9 @@ Methods:
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaRBACRole">BetaRBACRole</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaRBACRoleSourceUnion">BetaRBACRoleSourceUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaRBACRoleSourceBuiltIn">BetaRBACRoleSourceBuiltIn</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaRBACRoleSourceCustom">BetaRBACRoleSourceCustom</a>
 
 Methods:
 

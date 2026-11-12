@@ -242,6 +242,13 @@ const ErrorCodeOrganizationOnHold = apierror.ErrorCodeOrganizationOnHold
 // [shared.OrganizationTypeNotSupportedErrorDetails] details.
 const ErrorCodeOrganizationTypeNotSupported = apierror.ErrorCodeOrganizationTypeNotSupported
 
+// The endpoint serves only organizations that belong to a parent organization, and
+// this organization belongs to none.
+//
+// Returned with HTTP status 400 and
+// [shared.ParentOrganizationRequiredErrorDetails] details.
+const ErrorCodeParentOrganizationRequired = apierror.ErrorCodeParentOrganizationRequired
+
 // A role attached to an RBAC Group in the request grants owner access, so this API
 // does not add members to that group (directly or through an invite), remove its
 // members, or delete it. Make the change in the organization's admin settings in
@@ -466,6 +473,11 @@ const ErrorCodeBetaEnvironmentNotFound = apierror.ErrorCodeBetaEnvironmentNotFou
 //
 // Returned with HTTP status 404 and [shared.FileExpiredErrorDetails] details.
 const ErrorCodeFileExpired = apierror.ErrorCodeFileExpired
+
+// No RBAC Role with this ID was found.
+//
+// Returned with HTTP status 404 and [shared.RBACRoleNotFoundErrorDetails] details.
+const ErrorCodeRBACRoleNotFound = apierror.ErrorCodeRBACRoleNotFound
 
 // `settings.environment_id` names no Environment within the organization's reach,
 // and the request had set the channel up by then. The channel stays set up with
@@ -707,6 +719,12 @@ type OrganizationTypeNotSupportedErrorDetails = shared.OrganizationTypeNotSuppor
 
 // This is an alias to an internal type.
 type OverloadedError = shared.OverloadedError
+
+// The endpoint serves only organizations that belong to a parent organization, and
+// this organization belongs to none.
+//
+// This is an alias to an internal type.
+type ParentOrganizationRequiredErrorDetails = shared.ParentOrganizationRequiredErrorDetails
 
 // This is an alias to an internal type.
 type PermissionError = shared.PermissionError
@@ -1012,6 +1030,11 @@ type ExternalKeyChangedErrorDetails = shared.ExternalKeyChangedErrorDetails
 //
 // This is an alias to an internal type.
 type WorkspaceMemberLimitExceededErrorDetails = shared.WorkspaceMemberLimitExceededErrorDetails
+
+// No RBAC Role with this ID was found.
+//
+// This is an alias to an internal type.
+type RBACRoleNotFoundErrorDetails = shared.RBACRoleNotFoundErrorDetails
 
 // Anthropic has turned off creating environments for this organization. Existing
 // environments still work.

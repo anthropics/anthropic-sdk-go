@@ -384,6 +384,13 @@ const (
 	// [shared.OrganizationTypeNotSupportedErrorDetails] details.
 	ErrorCodeOrganizationTypeNotSupported ErrorCode = "organization_type_not_supported"
 
+	// The endpoint serves only organizations that belong to a parent organization, and
+	// this organization belongs to none.
+	//
+	// Returned with HTTP status 400 and
+	// [shared.ParentOrganizationRequiredErrorDetails] details.
+	ErrorCodeParentOrganizationRequired ErrorCode = "parent_organization_required"
+
 	// A role attached to an RBAC Group in the request grants owner access, so this API
 	// does not add members to that group (directly or through an invite), remove its
 	// members, or delete it. Make the change in the organization's admin settings in
@@ -608,6 +615,11 @@ const (
 	//
 	// Returned with HTTP status 404 and [shared.FileExpiredErrorDetails] details.
 	ErrorCodeFileExpired ErrorCode = "file_expired"
+
+	// No RBAC Role with this ID was found.
+	//
+	// Returned with HTTP status 404 and [shared.RBACRoleNotFoundErrorDetails] details.
+	ErrorCodeRBACRoleNotFound ErrorCode = "rbac_role_not_found"
 
 	// `settings.environment_id` names no Environment within the organization's reach,
 	// and the request had set the channel up by then. The channel stays set up with

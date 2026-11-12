@@ -260,6 +260,7 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [WorkspacePolicyViolationErrorDetails], [ExternalKeyChangedErrorDetails],
 // [WorkspaceMemberLimitExceededErrorDetails],
 // [OrganizationTypeNotSupportedErrorDetails],
+// [ParentOrganizationRequiredErrorDetails], [RBACRoleNotFoundErrorDetails],
 // [BetaEnvironmentCreateDisabledErrorDetails],
 // [BetaEnvironmentArchivedErrorDetails],
 // [BetaInvalidConfigTypeChangeErrorDetails],
@@ -313,6 +314,7 @@ type ErrorDetailsUnion struct {
 	// "external_key_validation_failed", "external_key_validation_timed_out",
 	// "key_profile_mismatch", "workspace_policy_violation", "external_key_changed",
 	// "workspace_member_limit_exceeded", "organization_type_not_supported",
+	// "parent_organization_required", "rbac_role_not_found",
 	// "environment_create_disabled", "environment_archived",
 	// "invalid_config_type_change", "environment_update_disabled",
 	// "heartbeat_precondition_failed", "invalid_metadata",
@@ -419,6 +421,8 @@ type anyErrorDetails interface {
 //	case shared.ExternalKeyChangedErrorDetails:
 //	case shared.WorkspaceMemberLimitExceededErrorDetails:
 //	case shared.OrganizationTypeNotSupportedErrorDetails:
+//	case shared.ParentOrganizationRequiredErrorDetails:
+//	case shared.RBACRoleNotFoundErrorDetails:
 //	case shared.BetaEnvironmentCreateDisabledErrorDetails:
 //	case shared.BetaEnvironmentArchivedErrorDetails:
 //	case shared.BetaInvalidConfigTypeChangeErrorDetails:
@@ -560,6 +564,10 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsWorkspaceMemberLimitExceeded()
 	case "organization_type_not_supported":
 		return u.AsOrganizationTypeNotSupported()
+	case "parent_organization_required":
+		return u.AsParentOrganizationRequired()
+	case "rbac_role_not_found":
+		return u.AsRBACRoleNotFound()
 	case "environment_create_disabled":
 		return u.AsEnvironmentCreateDisabled()
 	case "environment_archived":
@@ -886,6 +894,16 @@ func (u ErrorDetailsUnion) AsWorkspaceMemberLimitExceeded() (v WorkspaceMemberLi
 }
 
 func (u ErrorDetailsUnion) AsOrganizationTypeNotSupported() (v OrganizationTypeNotSupportedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsParentOrganizationRequired() (v ParentOrganizationRequiredErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsRBACRoleNotFound() (v RBACRoleNotFoundErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1326,6 +1344,26 @@ func (r *OverloadedError) UnmarshalJSON(data []byte) error {
 }
 
 func (OverloadedError) ImplErrorObjectUnion() {}
+
+// The endpoint serves only organizations that belong to a parent organization, and
+// this organization belongs to none.
+type ParentOrganizationRequiredErrorDetails struct {
+	ErrorCode constant.ParentOrganizationRequiredErrorCode `json:"error_code" default:"parent_organization_required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ParentOrganizationRequiredErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ParentOrganizationRequiredErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (ParentOrganizationRequiredErrorDetails) ImplErrorDetailsUnion() {}
 
 type PermissionError struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
@@ -2301,6 +2339,25 @@ func (r *WorkspaceMemberLimitExceededErrorDetails) UnmarshalJSON(data []byte) er
 }
 
 func (WorkspaceMemberLimitExceededErrorDetails) ImplErrorDetailsUnion() {}
+
+// No RBAC Role with this ID was found.
+type RBACRoleNotFoundErrorDetails struct {
+	ErrorCode constant.RBACRoleNotFoundErrorCode `json:"error_code" default:"rbac_role_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RBACRoleNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *RBACRoleNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (RBACRoleNotFoundErrorDetails) ImplErrorDetailsUnion() {}
 
 // Anthropic has turned off creating environments for this organization. Existing
 // environments still work.

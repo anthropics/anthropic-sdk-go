@@ -25,10 +25,10 @@ func TestBetaOrganizationWebhookNewWithOptionalParams(t *testing.T) {
 		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Webhooks.New(context.TODO(), anthropic.BetaOrganizationWebhookNewParams{
-		EnabledEvents: []string{"user_profile.enforcement_action_opened"},
-		URL:           "x",
+		EnabledEvents: []string{"user_profile.enforcement_action_opened", "user_profile.enforcement_action_resolved"},
+		URL:           "https://example.com/anthropic-webhooks",
 		Description:   anthropic.String("description"),
-		Name:          anthropic.String("name"),
+		Name:          anthropic.String("Enforcement actions"),
 		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {

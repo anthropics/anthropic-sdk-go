@@ -35,8 +35,8 @@ const (
 var credentialEnvPrefixes = []string{"ANTHROPIC_"}
 
 // scrubbedEnviron returns os.Environ() with every credential-bearing variable
-// (see credentialEnvPrefixes) removed, so the bash tool cannot leak the
-// runner's credentials into a command's environment.
+// (see credentialEnvPrefixes) removed, so the processes the bash and grep tools
+// start do not get the runner's credentials.
 func scrubbedEnviron() []string {
 	src := os.Environ()
 	out := make([]string, 0, len(src))
@@ -47,7 +47,7 @@ func scrubbedEnviron() []string {
 		}
 		scrub := false
 		for _, prefix := range credentialEnvPrefixes {
-			if strings.HasPrefix(name, prefix) {
+			if strings.HasPrefix(strings.ToUpper(name), prefix) {
 				scrub = true
 				break
 			}

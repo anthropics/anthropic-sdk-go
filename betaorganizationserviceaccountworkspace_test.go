@@ -30,7 +30,7 @@ func TestBetaOrganizationServiceAccountWorkspaceListWithOptionalParams(t *testin
 		anthropic.BetaOrganizationServiceAccountWorkspaceListParams{
 			Limit: anthropic.Int(1),
 			Page:  anthropic.String("page"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -61,7 +61,7 @@ func TestBetaOrganizationServiceAccountWorkspaceAddWithOptionalParams(t *testing
 		anthropic.BetaOrganizationServiceAccountWorkspaceAddParams{
 			WorkspaceID:   "workspace_id",
 			WorkspaceRole: anthropic.BetaNoBillingWorkspaceRoleWorkspaceAdmin,
-			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -91,7 +91,7 @@ func TestBetaOrganizationServiceAccountWorkspaceRemoveWithOptionalParams(t *test
 		"workspace_id",
 		anthropic.BetaOrganizationServiceAccountWorkspaceRemoveParams{
 			ServiceAccountID: "service_account_id",
-			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

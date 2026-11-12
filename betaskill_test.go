@@ -29,7 +29,7 @@ func TestBetaSkillNewWithOptionalParams(t *testing.T) {
 	_, err := client.Beta.Skills.New(context.TODO(), anthropic.BetaSkillNewParams{
 		Files:       []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
 		DisplayName: anthropic.String("display_name"),
-		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
@@ -58,7 +58,7 @@ func TestBetaSkillGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"skill_id",
 		anthropic.BetaSkillGetParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -88,7 +88,7 @@ func TestBetaSkillListWithOptionalParams(t *testing.T) {
 		Limit:       anthropic.Int(1),
 		Page:        anthropic.String("page"),
 		Source:      anthropic.String("source"),
-		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
@@ -117,7 +117,7 @@ func TestBetaSkillDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"skill_id",
 		anthropic.BetaSkillDeleteParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

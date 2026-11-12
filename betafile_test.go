@@ -33,7 +33,7 @@ func TestBetaFileListWithOptionalParams(t *testing.T) {
 		Limit:       anthropic.Int(1),
 		Page:        anthropic.String("page"),
 		ScopeID:     anthropic.String("scope_id"),
-		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
@@ -62,7 +62,7 @@ func TestBetaFileDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"file_id",
 		anthropic.BetaFileDeleteParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -91,7 +91,7 @@ func TestBetaFileDownloadWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"file_id",
 		anthropic.BetaFileDownloadParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -134,7 +134,7 @@ func TestBetaFileGetMetadataWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"file_id",
 		anthropic.BetaFileGetMetadataParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -163,7 +163,7 @@ func TestBetaFileUploadWithOptionalParams(t *testing.T) {
 	_, err := client.Beta.Files.Upload(context.TODO(), anthropic.BetaFileUploadParams{
 		File:             io.Reader(bytes.NewBuffer([]byte("Example data"))),
 		ExpiresInSeconds: anthropic.Int(3600),
-		Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID:      anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {

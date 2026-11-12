@@ -56,7 +56,7 @@ func TestBetaSessionNewWithOptionalParams(t *testing.T) {
 		}},
 		Title:       anthropic.String("Order #1234 inquiry"),
 		VaultIDs:    []string{"string"},
-		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
@@ -85,7 +85,7 @@ func TestBetaSessionGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"sesn_011CZkZAtmR3yMPDzynEDxu7",
 		anthropic.BetaSessionGetParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -151,7 +151,7 @@ func TestBetaSessionUpdateWithOptionalParams(t *testing.T) {
 			},
 			Title:       anthropic.String("Order #1234 inquiry"),
 			VaultIDs:    []string{"string"},
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -191,7 +191,7 @@ func TestBetaSessionListWithOptionalParams(t *testing.T) {
 		Order:           anthropic.BetaSessionListParamsOrderAsc,
 		Page:            anthropic.String("page"),
 		Statuses:        []string{"rescheduling"},
-		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID:     anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
@@ -220,7 +220,7 @@ func TestBetaSessionDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"sesn_011CZkZAtmR3yMPDzynEDxu7",
 		anthropic.BetaSessionDeleteParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -250,7 +250,7 @@ func TestBetaSessionArchiveWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"sesn_011CZkZAtmR3yMPDzynEDxu7",
 		anthropic.BetaSessionArchiveParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

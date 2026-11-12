@@ -29,7 +29,7 @@ func TestBetaDeploymentRunGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"deployment_run_id",
 		anthropic.BetaDeploymentRunGetParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -65,7 +65,7 @@ func TestBetaDeploymentRunListWithOptionalParams(t *testing.T) {
 		Limit:        anthropic.Int(0),
 		Page:         anthropic.String("page"),
 		TriggerType:  anthropic.BetaManagedAgentsTriggerTypeSchedule,
-		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID:  anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {

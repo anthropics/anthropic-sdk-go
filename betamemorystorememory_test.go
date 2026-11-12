@@ -31,7 +31,7 @@ func TestBetaMemoryStoreMemoryNewWithOptionalParams(t *testing.T) {
 			Content:     anthropic.String("content"),
 			Path:        "/P",
 			View:        anthropic.BetaManagedAgentsMemoryViewBasic,
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -63,7 +63,7 @@ func TestBetaMemoryStoreMemoryGetWithOptionalParams(t *testing.T) {
 		anthropic.BetaMemoryStoreMemoryGetParams{
 			MemoryStoreID: "memory_store_id",
 			View:          anthropic.BetaManagedAgentsMemoryViewBasic,
-			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -100,7 +100,7 @@ func TestBetaMemoryStoreMemoryUpdateWithOptionalParams(t *testing.T) {
 			Precondition: anthropic.BetaManagedAgentsPreconditionParam{
 				ContentSha256: anthropic.String("210b9798eb53baa4e69d31c1071cf03d212b8ad0ca30cf321e0ea82e120aac26"),
 			},
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -135,7 +135,7 @@ func TestBetaMemoryStoreMemoryListWithOptionalParams(t *testing.T) {
 			Page:        anthropic.String("page"),
 			PathPrefix:  anthropic.String("path_prefix"),
 			View:        anthropic.BetaManagedAgentsMemoryViewBasic,
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -167,7 +167,7 @@ func TestBetaMemoryStoreMemoryDeleteWithOptionalParams(t *testing.T) {
 		anthropic.BetaMemoryStoreMemoryDeleteParams{
 			MemoryStoreID:         "memory_store_id",
 			ExpectedContentSha256: anthropic.String("expected_content_sha256"),
-			Betas:                 []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:                 []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID:           anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

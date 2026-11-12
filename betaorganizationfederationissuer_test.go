@@ -35,7 +35,7 @@ func TestBetaOrganizationFederationIssuerNewWithOptionalParams(t *testing.T) {
 			},
 		},
 		MaxJWTLifetimeSeconds: anthropic.Int(1),
-		Betas:                 []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:                 []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -63,7 +63,7 @@ func TestBetaOrganizationFederationIssuerGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"federation_issuer_id",
 		anthropic.BetaOrganizationFederationIssuerGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -103,7 +103,7 @@ func TestBetaOrganizationFederationIssuerUpdateWithOptionalParams(t *testing.T) 
 			JWKSPollingDisabled:   anthropic.Bool(true),
 			MaxJWTLifetimeSeconds: anthropic.Int(1),
 			Name:                  anthropic.String("x"),
-			Betas:                 []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:                 []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -132,7 +132,7 @@ func TestBetaOrganizationFederationIssuerListWithOptionalParams(t *testing.T) {
 		IncludeArchived: anthropic.Bool(true),
 		Limit:           anthropic.Int(1),
 		Page:            anthropic.String("page"),
-		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -160,7 +160,7 @@ func TestBetaOrganizationFederationIssuerArchiveWithOptionalParams(t *testing.T)
 		context.TODO(),
 		"federation_issuer_id",
 		anthropic.BetaOrganizationFederationIssuerArchiveParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

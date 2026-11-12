@@ -29,7 +29,7 @@ func TestBetaSessionResourceGetWithOptionalParams(t *testing.T) {
 		"sesrsc_011CZkZBJq5dWxk9fVLNcPht",
 		anthropic.BetaSessionResourceGetParams{
 			SessionID:   "sesn_011CZkZAtmR3yMPDzynEDxu7",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -61,7 +61,7 @@ func TestBetaSessionResourceUpdateWithOptionalParams(t *testing.T) {
 		anthropic.BetaSessionResourceUpdateParams{
 			SessionID:          "sesn_011CZkZAtmR3yMPDzynEDxu7",
 			AuthorizationToken: "ghp_exampletoken",
-			Betas:              []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:              []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID:        anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -93,7 +93,7 @@ func TestBetaSessionResourceListWithOptionalParams(t *testing.T) {
 		anthropic.BetaSessionResourceListParams{
 			Limit:       anthropic.Int(0),
 			Page:        anthropic.String("page"),
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -124,7 +124,7 @@ func TestBetaSessionResourceDeleteWithOptionalParams(t *testing.T) {
 		"sesrsc_011CZkZBJq5dWxk9fVLNcPht",
 		anthropic.BetaSessionResourceDeleteParams{
 			SessionID:   "sesn_011CZkZAtmR3yMPDzynEDxu7",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -158,7 +158,7 @@ func TestBetaSessionResourceAddWithOptionalParams(t *testing.T) {
 				FileID:    "file_011CNha8iCJcU1wXNR6q4V8w",
 				MountPath: anthropic.String("/uploads/receipt.pdf"),
 			},
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

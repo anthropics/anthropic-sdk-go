@@ -39,7 +39,7 @@ func TestBetaOrganizationTelemetryDestinationNewWithOptionalParams(t *testing.T)
 			EndpointURL:     anthropic.String("endpoint_url"),
 			MaxContentBytes: anthropic.Int(0),
 		},
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -67,7 +67,7 @@ func TestBetaOrganizationTelemetryDestinationGetWithOptionalParams(t *testing.T)
 		context.TODO(),
 		"destination_id",
 		anthropic.BetaOrganizationTelemetryDestinationGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -113,7 +113,7 @@ func TestBetaOrganizationTelemetryDestinationUpdateWithOptionalParams(t *testing
 			Workspaces: anthropic.BetaTelemetryDestinationWorkspacesParamsUnion{
 				OfAll: &anthropic.BetaTelemetryDestinationWorkspacesAllParams{},
 			},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -142,7 +142,7 @@ func TestBetaOrganizationTelemetryDestinationListWithOptionalParams(t *testing.T
 		Limit:        anthropic.Int(0),
 		Page:         anthropic.String("page"),
 		WorkspaceIDs: []string{"string"},
-		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -170,7 +170,7 @@ func TestBetaOrganizationTelemetryDestinationDeleteWithOptionalParams(t *testing
 		context.TODO(),
 		"destination_id",
 		anthropic.BetaOrganizationTelemetryDestinationDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -199,7 +199,7 @@ func TestBetaOrganizationTelemetryDestinationTestWithOptionalParams(t *testing.T
 		context.TODO(),
 		"destination_id",
 		anthropic.BetaOrganizationTelemetryDestinationTestParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

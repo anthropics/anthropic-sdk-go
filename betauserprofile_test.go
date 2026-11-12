@@ -40,7 +40,7 @@ func TestBetaUserProfileNewWithOptionalParams(t *testing.T) {
 		ExternalUserOnboardedAt: anthropic.Time(time.Now()),
 		Metadata:                map[string]string{},
 		Name:                    anthropic.String("Example User"),
-		Betas:                   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:                   []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID:             anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
@@ -69,7 +69,7 @@ func TestBetaUserProfileGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"uprof_011CZkZCu8hGbp5mYRQgUmz9",
 		anthropic.BetaUserProfileGetParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -115,7 +115,7 @@ func TestBetaUserProfileUpdateWithOptionalParams(t *testing.T) {
 				"foo": "string",
 			},
 			Name:        anthropic.String("x"),
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -146,7 +146,7 @@ func TestBetaUserProfileListWithOptionalParams(t *testing.T) {
 		Order:       anthropic.BetaUserProfileListParamsOrderAsc,
 		OrderBy:     anthropic.BetaUserProfileListParamsOrderByCreatedAt,
 		Page:        anthropic.String("page"),
-		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
@@ -175,7 +175,7 @@ func TestBetaUserProfileDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"uprof_011CZkZCu8hGbp5mYRQgUmz9",
 		anthropic.BetaUserProfileDeleteParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -205,7 +205,7 @@ func TestBetaUserProfileNewEnrollmentURLWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"uprof_011CZkZCu8hGbp5mYRQgUmz9",
 		anthropic.BetaUserProfileNewEnrollmentURLParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

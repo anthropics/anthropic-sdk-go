@@ -30,7 +30,7 @@ func TestBetaOrganizationTelemetryDestinationWorkspaceListWithOptionalParams(t *
 		anthropic.BetaOrganizationTelemetryDestinationWorkspaceListParams{
 			Limit: anthropic.Int(0),
 			Page:  anthropic.String("page"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -60,7 +60,7 @@ func TestBetaOrganizationTelemetryDestinationWorkspaceAddWithOptionalParams(t *t
 		"workspace_id",
 		anthropic.BetaOrganizationTelemetryDestinationWorkspaceAddParams{
 			DestinationID: "destination_id",
-			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -90,7 +90,7 @@ func TestBetaOrganizationTelemetryDestinationWorkspaceRemoveWithOptionalParams(t
 		"workspace_id",
 		anthropic.BetaOrganizationTelemetryDestinationWorkspaceRemoveParams{
 			DestinationID: "destination_id",
-			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

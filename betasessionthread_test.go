@@ -29,7 +29,7 @@ func TestBetaSessionThreadGetWithOptionalParams(t *testing.T) {
 		"sthr_011CZkZVWa6oJjw1rgXZpnBt",
 		anthropic.BetaSessionThreadGetParams{
 			SessionID:   "sesn_011CZkZAtmR3yMPDzynEDxu7",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -62,7 +62,7 @@ func TestBetaSessionThreadListWithOptionalParams(t *testing.T) {
 			Limit:       anthropic.Int(0),
 			Page:        anthropic.String("page"),
 			Statuses:    []anthropic.BetaManagedAgentsSessionThreadStatus{anthropic.BetaManagedAgentsSessionThreadStatusRunning},
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -93,7 +93,7 @@ func TestBetaSessionThreadArchiveWithOptionalParams(t *testing.T) {
 		"sthr_011CZkZVWa6oJjw1rgXZpnBt",
 		anthropic.BetaSessionThreadArchiveParams{
 			SessionID:   "sesn_011CZkZAtmR3yMPDzynEDxu7",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

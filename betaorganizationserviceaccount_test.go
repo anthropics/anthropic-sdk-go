@@ -28,7 +28,7 @@ func TestBetaOrganizationServiceAccountNewWithOptionalParams(t *testing.T) {
 		Name:             "ci-deploy-bot",
 		Description:      anthropic.String("description"),
 		OrganizationRole: anthropic.BetaOrganizationServiceAccountNewParamsOrganizationRoleAdmin,
-		Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -56,7 +56,7 @@ func TestBetaOrganizationServiceAccountGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"service_account_id",
 		anthropic.BetaOrganizationServiceAccountGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -87,7 +87,7 @@ func TestBetaOrganizationServiceAccountUpdateWithOptionalParams(t *testing.T) {
 		anthropic.BetaOrganizationServiceAccountUpdateParams{
 			Description:      anthropic.String("description"),
 			OrganizationRole: anthropic.BetaOrganizationServiceAccountUpdateParamsOrganizationRoleAdmin,
-			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -116,7 +116,7 @@ func TestBetaOrganizationServiceAccountListWithOptionalParams(t *testing.T) {
 		IncludeArchived: anthropic.Bool(true),
 		Limit:           anthropic.Int(1),
 		Page:            anthropic.String("page"),
-		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -144,7 +144,7 @@ func TestBetaOrganizationServiceAccountArchiveWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"service_account_id",
 		anthropic.BetaOrganizationServiceAccountArchiveParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

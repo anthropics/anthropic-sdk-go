@@ -31,7 +31,7 @@ func TestBetaMemoryStoreMemoryVersionGetWithOptionalParams(t *testing.T) {
 		anthropic.BetaMemoryStoreMemoryVersionGetParams{
 			MemoryStoreID: "memory_store_id",
 			View:          anthropic.BetaManagedAgentsMemoryViewBasic,
-			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -71,7 +71,7 @@ func TestBetaMemoryStoreMemoryVersionListWithOptionalParams(t *testing.T) {
 			ServiceAccountID: anthropic.String("service_account_id"),
 			SessionID:        anthropic.String("session_id"),
 			View:             anthropic.BetaManagedAgentsMemoryViewBasic,
-			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID:      anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -102,7 +102,7 @@ func TestBetaMemoryStoreMemoryVersionRedactWithOptionalParams(t *testing.T) {
 		"memory_version_id",
 		anthropic.BetaMemoryStoreMemoryVersionRedactParams{
 			MemoryStoreID: "memory_store_id",
-			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

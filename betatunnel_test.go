@@ -26,7 +26,7 @@ func TestBetaTunnelNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Tunnels.New(context.TODO(), anthropic.BetaTunnelNewParams{
 		DisplayName: anthropic.String("x"),
-		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
@@ -55,7 +55,7 @@ func TestBetaTunnelGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"tunnel_id",
 		anthropic.BetaTunnelGetParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -85,7 +85,7 @@ func TestBetaTunnelListWithOptionalParams(t *testing.T) {
 		IncludeArchived: anthropic.Bool(true),
 		Limit:           anthropic.Int(0),
 		Page:            anthropic.String("page"),
-		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID:     anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
@@ -114,7 +114,7 @@ func TestBetaTunnelArchiveWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"tunnel_id",
 		anthropic.BetaTunnelArchiveParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -144,7 +144,7 @@ func TestBetaTunnelRevealTokenWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"tunnel_id",
 		anthropic.BetaTunnelRevealTokenParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -175,7 +175,7 @@ func TestBetaTunnelRotateTokenWithOptionalParams(t *testing.T) {
 		"tunnel_id",
 		anthropic.BetaTunnelRotateTokenParams{
 			Reason:      anthropic.String("reason"),
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

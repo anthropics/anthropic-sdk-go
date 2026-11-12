@@ -29,7 +29,7 @@ func TestBetaTunnelCertificateNewWithOptionalParams(t *testing.T) {
 		"tunnel_id",
 		anthropic.BetaTunnelCertificateNewParams{
 			CACertificatePEM: "ca_certificate_pem",
-			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID:      anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -60,7 +60,7 @@ func TestBetaTunnelCertificateGetWithOptionalParams(t *testing.T) {
 		"certificate_id",
 		anthropic.BetaTunnelCertificateGetParams{
 			TunnelID:    "tunnel_id",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -93,7 +93,7 @@ func TestBetaTunnelCertificateListWithOptionalParams(t *testing.T) {
 			IncludeArchived: anthropic.Bool(true),
 			Limit:           anthropic.Int(0),
 			Page:            anthropic.String("page"),
-			Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID:     anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -124,7 +124,7 @@ func TestBetaTunnelCertificateArchiveWithOptionalParams(t *testing.T) {
 		"certificate_id",
 		anthropic.BetaTunnelCertificateArchiveParams{
 			TunnelID:    "tunnel_id",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

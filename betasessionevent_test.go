@@ -37,7 +37,7 @@ func TestBetaSessionEventListWithOptionalParams(t *testing.T) {
 			Order:        anthropic.BetaSessionEventListParamsOrderAsc,
 			Page:         anthropic.String("page"),
 			Types:        []anthropic.BetaManagedAgentsSessionEventType{anthropic.BetaManagedAgentsSessionEventTypeUserMessage},
-			Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID:  anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -76,7 +76,7 @@ func TestBetaSessionEventSendWithOptionalParams(t *testing.T) {
 					}},
 				},
 			}},
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

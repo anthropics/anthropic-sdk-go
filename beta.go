@@ -68,7 +68,6 @@ func NewBetaService(opts ...option.RequestOption) (r BetaService) {
 type AnthropicBeta = string
 
 const (
-	AnthropicBetaMessageBatches2024_09_24               AnthropicBeta = "message-batches-2024-09-24"
 	AnthropicBetaComputerUse2024_10_22                  AnthropicBeta = "computer-use-2024-10-22"
 	AnthropicBetaComputerUse2025_01_24                  AnthropicBeta = "computer-use-2025-01-24"
 	AnthropicBetaOutput128k2025_02_19                   AnthropicBeta = "output-128k-2025-02-19"
@@ -115,6 +114,8 @@ const (
 	AnthropicBetaMessageThreads2026_08_12               AnthropicBeta = "message-threads-2026-08-12"
 	AnthropicBetaAnalyticsUsageCost2026_08_24           AnthropicBeta = "analytics-usage-cost-2026-08-24"
 	AnthropicBetaExperimentalClaudeTag2026_10_21        AnthropicBeta = "experimental-claude-tag-2026-10-21"
+	// Deprecated: This value is no longer needed. Remove it from your requests.
+	AnthropicBetaMessageBatches2024_09_24 AnthropicBeta = "message-batches-2024-09-24"
 	// Deprecated: This value is no longer needed. Remove it from your requests.
 	AnthropicBetaPromptCaching2024_07_31 AnthropicBeta = "prompt-caching-2024-07-31"
 	// Deprecated: This value is no longer needed. Remove it from your requests.

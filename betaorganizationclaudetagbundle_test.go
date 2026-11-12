@@ -28,7 +28,7 @@ func TestBetaOrganizationClaudeTagBundleGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"capp_011CZkZjLP1cWxj5EtMmdgbq",
 		anthropic.BetaOrganizationClaudeTagBundleGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -56,7 +56,7 @@ func TestBetaOrganizationClaudeTagBundleListWithOptionalParams(t *testing.T) {
 	_, err := client.Beta.Organization.ClaudeTag.Bundles.List(context.TODO(), anthropic.BetaOrganizationClaudeTagBundleListParams{
 		Limit: anthropic.Int(0),
 		Page:  anthropic.String("page"),
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

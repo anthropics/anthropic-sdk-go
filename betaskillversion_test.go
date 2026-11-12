@@ -33,7 +33,7 @@ func TestBetaSkillVersionNewWithOptionalParams(t *testing.T) {
 		"skill_id",
 		anthropic.BetaSkillVersionNewParams{
 			Files:       []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -64,7 +64,7 @@ func TestBetaSkillVersionGetWithOptionalParams(t *testing.T) {
 		"version",
 		anthropic.BetaSkillVersionGetParams{
 			SkillID:     "skill_id",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -96,7 +96,7 @@ func TestBetaSkillVersionListWithOptionalParams(t *testing.T) {
 		anthropic.BetaSkillVersionListParams{
 			Limit:       anthropic.Int(1),
 			Page:        anthropic.String("page"),
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -127,7 +127,7 @@ func TestBetaSkillVersionDeleteWithOptionalParams(t *testing.T) {
 		"version",
 		anthropic.BetaSkillVersionDeleteParams{
 			SkillID:     "skill_id",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -157,7 +157,7 @@ func TestBetaSkillVersionDownloadWithOptionalParams(t *testing.T) {
 		"version",
 		anthropic.BetaSkillVersionDownloadParams{
 			SkillID:     "skill_id",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

@@ -32,7 +32,7 @@ func TestBetaOrganizationPluginInstallationSettingListWithOptionalParams(t *test
 			OrganizationID: anthropic.String("organization_id"),
 			Page:           anthropic.String("page"),
 			TargetType:     anthropic.BetaOrganizationPluginInstallationSettingListParamsTargetTypeOrganization,
-			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -62,7 +62,7 @@ func TestBetaOrganizationPluginInstallationSettingRemoveWithOptionalParams(t *te
 		"target",
 		anthropic.BetaOrganizationPluginInstallationSettingRemoveParams{
 			PluginID: "plugin_id",
-			Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -93,7 +93,7 @@ func TestBetaOrganizationPluginInstallationSettingSetWithOptionalParams(t *testi
 		anthropic.BetaOrganizationPluginInstallationSettingSetParams{
 			PluginID:               "plugin_id",
 			InstallationPreference: anthropic.BetaOrganizationPluginInstallationSettingSetParamsInstallationPreferenceRequired,
-			Betas:                  []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:                  []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

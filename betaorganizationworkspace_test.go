@@ -41,7 +41,7 @@ func TestBetaOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
 			"team": "platform",
 		},
 		UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
-		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

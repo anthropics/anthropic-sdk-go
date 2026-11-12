@@ -225,7 +225,7 @@ func execGrep(ctx context.Context, raw json.RawMessage, env *AgentToolContext) (
 
 func runRipgrep(ctx context.Context, rg, pattern, path string) (string, bool) {
 	// --max-filesize bounds per-file size; cappedBuffer bounds total stdout.
-	cmd := exec.CommandContext(ctx, rg, "-n", "--no-heading",
+	cmd := exec.CommandContext(ctx, rg, "--no-config", "-n", "--no-heading",
 		"--max-filesize", fmt.Sprintf("%d", grepMaxFileBytes),
 		"-e", pattern, "--", path)
 	stdout := newCappedBuffer(grepOutputLimit)

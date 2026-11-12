@@ -3,7 +3,9 @@ package agenttoolset
 import (
 	"context"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -243,6 +245,45 @@ func TestExecGrepSkipsSymlinks(t *testing.T) {
 	require.False(t, isErr, "output=%q", out)
 	require.Equal(t, "no matches", out,
 		"grep must not follow a symlink out of the workdir; %q leaked", out)
+}
+
+func TestExecGrepIgnoresRipgrepConfig(t *testing.T) {
+	if _, err := exec.LookPath("rg"); err != nil {
+		t.Skip("ripgrep is not on PATH")
+	}
+	work := t.TempDir()
+	outside := t.TempDir()
+	config := filepath.Join(outside, "ripgreprc")
+	require.NoError(t, os.WriteFile(config, []byte("--follow\n"), 0o644))
+	t.Setenv("RIPGREP_CONFIG_PATH", config)
+	require.NoError(t, os.WriteFile(filepath.Join(work, "notes.txt"), []byte("needle"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(outside, "secret.txt"), []byte("needle"), 0o600))
+	require.NoError(t, os.Symlink(filepath.Join(outside, "secret.txt"), filepath.Join(work, "leak")))
+
+	out, isErr := execGrep(context.Background(), mustJSON(t, map[string]any{"pattern": "needle"}), &AgentToolContext{Workdir: work})
+	require.False(t, isErr, "output=%q", out)
+	require.Contains(t, out, "notes.txt")
+	require.NotContains(t, out, "leak")
+}
+
+func TestExecGrepPassesNoConfigToRipgrep(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the stand-in rg is a shell script")
+	}
+	bin := t.TempDir()
+	args := filepath.Join(bin, "args")
+	script := "#!/bin/sh\nprintf '%s\\n' \"$@\" >\"$RG_ARGS\"\nexit 1\n"
+	require.NoError(t, os.WriteFile(filepath.Join(bin, "rg"), []byte(script), 0o755))
+	t.Setenv("PATH", bin)
+	t.Setenv("RG_ARGS", args)
+
+	out, isErr := execGrep(context.Background(), mustJSON(t, map[string]any{"pattern": "needle"}), &AgentToolContext{Workdir: t.TempDir()})
+	require.False(t, isErr, "output=%q", out)
+	require.Equal(t, "no matches", out)
+
+	got, err := os.ReadFile(args)
+	require.NoError(t, err)
+	require.Contains(t, strings.Split(string(got), "\n"), "--no-config")
 }
 
 // TestGlobMatchDeepDoublestarBacktracking checks that a pattern alternating

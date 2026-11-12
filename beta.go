@@ -69,24 +69,17 @@ type AnthropicBeta = string
 
 const (
 	AnthropicBetaMessageBatches2024_09_24               AnthropicBeta = "message-batches-2024-09-24"
-	AnthropicBetaPromptCaching2024_07_31                AnthropicBeta = "prompt-caching-2024-07-31"
 	AnthropicBetaComputerUse2024_10_22                  AnthropicBeta = "computer-use-2024-10-22"
 	AnthropicBetaComputerUse2025_01_24                  AnthropicBeta = "computer-use-2025-01-24"
-	AnthropicBetaPDFs2024_09_25                         AnthropicBeta = "pdfs-2024-09-25"
-	AnthropicBetaTokenCounting2024_11_01                AnthropicBeta = "token-counting-2024-11-01"
-	AnthropicBetaTokenEfficientTools2025_02_19          AnthropicBeta = "token-efficient-tools-2025-02-19"
 	AnthropicBetaOutput128k2025_02_19                   AnthropicBeta = "output-128k-2025-02-19"
-	AnthropicBetaFilesAPI2025_04_14                     AnthropicBeta = "files-api-2025-04-14"
 	AnthropicBetaMCPClient2025_04_04                    AnthropicBeta = "mcp-client-2025-04-04"
 	AnthropicBetaMCPClient2025_11_20                    AnthropicBeta = "mcp-client-2025-11-20"
 	AnthropicBetaDevFullThinking2025_05_14              AnthropicBeta = "dev-full-thinking-2025-05-14"
 	AnthropicBetaInterleavedThinking2025_05_14          AnthropicBeta = "interleaved-thinking-2025-05-14"
 	AnthropicBetaCodeExecution2025_05_22                AnthropicBeta = "code-execution-2025-05-22"
-	AnthropicBetaExtendedCacheTTL2025_04_11             AnthropicBeta = "extended-cache-ttl-2025-04-11"
 	AnthropicBetaContext1m2025_08_07                    AnthropicBeta = "context-1m-2025-08-07"
 	AnthropicBetaContextManagement2025_06_27            AnthropicBeta = "context-management-2025-06-27"
 	AnthropicBetaModelContextWindowExceeded2025_08_26   AnthropicBeta = "model-context-window-exceeded-2025-08-26"
-	AnthropicBetaSkills2025_10_02                       AnthropicBeta = "skills-2025-10-02"
 	AnthropicBetaFastMode2026_02_01                     AnthropicBeta = "fast-mode-2026-02-01"
 	AnthropicBetaOutput300k2026_03_24                   AnthropicBeta = "output-300k-2026-03-24"
 	AnthropicBetaUserProfiles2026_03_24                 AnthropicBeta = "user-profiles-2026-03-24"
@@ -94,7 +87,6 @@ const (
 	AnthropicBetaUserProfiles2026_09_04                 AnthropicBeta = "user-profiles-2026-09-04"
 	AnthropicBetaAdvisorTool2026_03_01                  AnthropicBeta = "advisor-tool-2026-03-01"
 	AnthropicBetaManagedAgents2026_04_01                AnthropicBeta = "managed-agents-2026-04-01"
-	AnthropicBetaCacheDiagnosis2026_04_07               AnthropicBeta = "cache-diagnosis-2026-04-07"
 	AnthropicBetaDreaming2026_04_21                     AnthropicBeta = "dreaming-2026-04-21"
 	AnthropicBetaThinkingTokenCount2026_05_13           AnthropicBeta = "thinking-token-count-2026-05-13"
 	AnthropicBetaServerSideFallback2026_06_01           AnthropicBeta = "server-side-fallback-2026-06-01"
@@ -109,7 +101,6 @@ const (
 	AnthropicBetaStructuredOutputs2025_11_13            AnthropicBeta = "structured-outputs-2025-11-13"
 	AnthropicBetaTaskBudgets2026_03_13                  AnthropicBeta = "task-budgets-2026-03-13"
 	AnthropicBetaThinkingDisplayUpdates2026_08_18       AnthropicBeta = "thinking-display-updates-2026-08-18"
-	AnthropicBetaCEUserManagement2026_07_13             AnthropicBeta = "ce-user-management-2026-07-13"
 	AnthropicBetaMidConversationOutputConfig2026_07_01  AnthropicBeta = "mid-conversation-output-config-2026-07-01"
 	AnthropicBetaThinkingBindingControls2026_08_01      AnthropicBeta = "thinking-binding-controls-2026-08-01"
 	AnthropicBetaMidConversationSystemClearAt2026_08_21 AnthropicBeta = "mid-conversation-system-clear-at-2026-08-21"
@@ -124,6 +115,28 @@ const (
 	AnthropicBetaMessageThreads2026_08_12               AnthropicBeta = "message-threads-2026-08-12"
 	AnthropicBetaAnalyticsUsageCost2026_08_24           AnthropicBeta = "analytics-usage-cost-2026-08-24"
 	AnthropicBetaExperimentalClaudeTag2026_10_21        AnthropicBeta = "experimental-claude-tag-2026-10-21"
+	// Deprecated: This value is no longer needed. Remove it from your requests.
+	AnthropicBetaPromptCaching2024_07_31 AnthropicBeta = "prompt-caching-2024-07-31"
+	// Deprecated: This value is no longer needed. Remove it from your requests.
+	AnthropicBetaPDFs2024_09_25 AnthropicBeta = "pdfs-2024-09-25"
+	// Deprecated: This value is no longer needed. Remove it from your requests.
+	AnthropicBetaTokenCounting2024_11_01 AnthropicBeta = "token-counting-2024-11-01"
+	// Deprecated: This value is no longer needed. Remove it from your requests.
+	AnthropicBetaTokenEfficientTools2025_02_19 AnthropicBeta = "token-efficient-tools-2025-02-19"
+	// Deprecated: Sending this value selects the beta response shapes. Removing it
+	// moves you to the current shapes, so follow the migration steps:
+	// https://platform.claude.com/docs/en/build-with-claude/files#migrate-from-files-api-2025-04-14
+	AnthropicBetaFilesAPI2025_04_14 AnthropicBeta = "files-api-2025-04-14"
+	// Deprecated: This value is no longer needed. Remove it from your requests.
+	AnthropicBetaExtendedCacheTTL2025_04_11 AnthropicBeta = "extended-cache-ttl-2025-04-11"
+	// Deprecated: Sending this value selects the beta response shapes. Removing it
+	// moves you to the current shapes, so follow the migration steps:
+	// https://platform.claude.com/docs/en/build-with-claude/skills-guide#migrate-from-skills-2025-10-02
+	AnthropicBetaSkills2025_10_02 AnthropicBeta = "skills-2025-10-02"
+	// Deprecated: This value is no longer needed. Remove it from your requests.
+	AnthropicBetaCacheDiagnosis2026_04_07 AnthropicBeta = "cache-diagnosis-2026-04-07"
+	// Deprecated: This value is no longer needed. Remove it from your requests.
+	AnthropicBetaCEUserManagement2026_07_13 AnthropicBeta = "ce-user-management-2026-07-13"
 )
 
 type BetaAPIError struct {

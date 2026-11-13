@@ -184,6 +184,64 @@ func TestExecWrite(t *testing.T) {
 	})
 }
 
+func filePerm(t *testing.T, path string) os.FileMode {
+	t.Helper()
+	info, err := os.Stat(path)
+	require.NoError(t, err)
+	return info.Mode().Perm()
+}
+
+func TestExecWriteCreatesFilesAndDirectoriesOwnerOnly(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("unix permission bits")
+	}
+	work := t.TempDir()
+	env := &AgentToolContext{Workdir: work}
+
+	_, isErr := execWrite(context.Background(), mustJSON(t, map[string]any{"file_path": "a/b/new.txt", "content": "secret"}), env)
+	require.False(t, isErr)
+	require.Equal(t, os.FileMode(0o600), filePerm(t, filepath.Join(work, "a", "b", "new.txt")))
+	require.Equal(t, os.FileMode(0o700), filePerm(t, filepath.Join(work, "a", "b")))
+	require.Equal(t, os.FileMode(0o700), filePerm(t, filepath.Join(work, "a")))
+}
+
+func TestExecWriteAndEditKeepAnExistingFilesMode(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("unix permission bits")
+	}
+	work := t.TempDir()
+	env := &AgentToolContext{Workdir: work}
+
+	t.Run("write over an existing file keeps its mode instead of resetting it", func(t *testing.T) {
+		path := filepath.Join(work, "shared.txt")
+		require.NoError(t, os.WriteFile(path, []byte("v1"), 0o644))
+		require.NoError(t, os.Chmod(path, 0o640))
+		_, isErr := execWrite(context.Background(), mustJSON(t, map[string]any{"file_path": "shared.txt", "content": "v2"}), env)
+		require.False(t, isErr)
+		require.Equal(t, os.FileMode(0o640), filePerm(t, path))
+		data, err := os.ReadFile(path)
+		require.NoError(t, err)
+		require.Equal(t, "v2", string(data))
+	})
+
+	t.Run("edit keeps an executable script executable", func(t *testing.T) {
+		path := filepath.Join(work, "run.sh")
+		require.NoError(t, os.WriteFile(path, []byte("#!/bin/sh\necho old\n"), 0o644))
+		require.NoError(t, os.Chmod(path, 0o755))
+		_, isErr := execEdit(context.Background(), mustJSON(t, map[string]any{"file_path": "run.sh", "old_string": "old", "new_string": "new"}), env)
+		require.False(t, isErr)
+		require.Equal(t, os.FileMode(0o755), filePerm(t, path))
+	})
+
+	t.Run("edit keeps an owner-only file owner-only", func(t *testing.T) {
+		path := filepath.Join(work, "private.txt")
+		require.NoError(t, os.WriteFile(path, []byte("old"), 0o600))
+		_, isErr := execEdit(context.Background(), mustJSON(t, map[string]any{"file_path": "private.txt", "old_string": "old", "new_string": "new"}), env)
+		require.False(t, isErr)
+		require.Equal(t, os.FileMode(0o600), filePerm(t, path))
+	})
+}
+
 func TestExecReadRejectsSymlinkLoop(t *testing.T) {
 	work, _ := symlinkLoopFixture(t)
 	tool := BetaReadTool(&AgentToolContext{Workdir: work})

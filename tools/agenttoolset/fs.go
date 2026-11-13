@@ -279,11 +279,11 @@ func execWrite(_ context.Context, raw json.RawMessage, env *AgentToolContext) (s
 		return errorf("write: %v", err)
 	}
 	if dir := filepath.Dir(path); dir != "" {
-		if err := os.MkdirAll(dir, 0o755); err != nil {
+		if err := os.MkdirAll(dir, 0o700); err != nil {
 			return errorf("write %s: mkdir: %s", in.FilePath, fsErrorMessage(err))
 		}
 	}
-	if err := atomicWriteFile(path, []byte(in.Content), 0o644); err != nil {
+	if err := atomicWriteFile(path, []byte(in.Content)); err != nil {
 		return errorf("write %s: %s", in.FilePath, fsErrorMessage(err))
 	}
 	return fmt.Sprintf("wrote %d bytes to %s", len(in.Content), in.FilePath), false
@@ -342,7 +342,7 @@ func execEdit(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 		}
 		updated = strings.Replace(content, in.OldString, in.NewString, 1)
 	}
-	if err := atomicWriteFile(path, []byte(updated), 0o644); err != nil {
+	if err := atomicWriteFile(path, []byte(updated)); err != nil {
 		return errorf("edit %s: %s", in.FilePath, fsErrorMessage(err))
 	}
 	return fmt.Sprintf("edited %s (%d replacement(s))", in.FilePath, count), false
@@ -353,7 +353,11 @@ func execEdit(_ context.Context, raw json.RawMessage, env *AgentToolContext) (st
 // file and a failed write leaves the original intact. The write/edit file tools
 // go through this; rename is atomic only within a single filesystem, which
 // holds here because the temp file is created alongside the destination.
-func atomicWriteFile(path string, data []byte, perm os.FileMode) error {
+func atomicWriteFile(path string, data []byte) error {
+	perm := os.FileMode(0o600)
+	if info, err := os.Stat(path); err == nil {
+		perm = info.Mode().Perm()
+	}
 	dir := filepath.Dir(path)
 	tmp, err := os.CreateTemp(dir, ".agenttoolset-*")
 	if err != nil {

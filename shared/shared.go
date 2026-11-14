@@ -284,7 +284,8 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [BetaOrganizationLevelScopedAPIKeyRequiredErrorDetails],
 // [BetaEnvironmentNotFoundErrorDetails],
 // [BetaSlackChannelSetUpEnvironmentNotFoundErrorDetails],
-// [BetaSlackChannelSetUpSettingsConflictErrorDetails].
+// [BetaSlackChannelSetUpSettingsConflictErrorDetails],
+// [BetaBundleAttachmentNotSupportedErrorDetails], [BetaBundleOnCallErrorDetails].
 //
 // Use the [ErrorDetailsUnion.AsAny] method to switch on the variant.
 //
@@ -329,7 +330,8 @@ type ErrorDetailsUnion struct {
 	// "compliance_configuration_restricted",
 	// "organization_level_scoped_api_key_required", "environment_not_found",
 	// "slack_channel_set_up_environment_not_found",
-	// "slack_channel_set_up_settings_conflict".
+	// "slack_channel_set_up_settings_conflict", "bundle_attachment_not_supported",
+	// "bundle_on_call".
 	ErrorCode string `json:"error_code"`
 	// This field is from variant [OrganizationOnHoldErrorDetails].
 	AppealURL string `json:"appeal_url"`
@@ -451,6 +453,8 @@ type anyErrorDetails interface {
 //	case shared.BetaEnvironmentNotFoundErrorDetails:
 //	case shared.BetaSlackChannelSetUpEnvironmentNotFoundErrorDetails:
 //	case shared.BetaSlackChannelSetUpSettingsConflictErrorDetails:
+//	case shared.BetaBundleAttachmentNotSupportedErrorDetails:
+//	case shared.BetaBundleOnCallErrorDetails:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -624,6 +628,10 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsSlackChannelSetUpEnvironmentNotFound()
 	case "slack_channel_set_up_settings_conflict":
 		return u.AsSlackChannelSetUpSettingsConflict()
+	case "bundle_attachment_not_supported":
+		return u.AsBundleAttachmentNotSupported()
+	case "bundle_on_call":
+		return u.AsBundleOnCall()
 	}
 	return nil
 }
@@ -1044,6 +1052,16 @@ func (u ErrorDetailsUnion) AsSlackChannelSetUpEnvironmentNotFound() (v BetaSlack
 }
 
 func (u ErrorDetailsUnion) AsSlackChannelSetUpSettingsConflict() (v BetaSlackChannelSetUpSettingsConflictErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsBundleAttachmentNotSupported() (v BetaBundleAttachmentNotSupportedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsBundleOnCall() (v BetaBundleOnCallErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -2981,3 +2999,43 @@ func (r *BetaSlackChannelSetUpSettingsConflictErrorDetails) UnmarshalJSON(data [
 }
 
 func (BetaSlackChannelSetUpSettingsConflictErrorDetails) ImplErrorDetailsUnion() {}
+
+// The Bundle has an attachment this API does not support editing, so its
+// instructions can be changed only in claude.ai.
+type BetaBundleAttachmentNotSupportedErrorDetails struct {
+	ErrorCode constant.BetaBundleAttachmentNotSupportedErrorCode `json:"error_code" default:"bundle_attachment_not_supported"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaBundleAttachmentNotSupportedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaBundleAttachmentNotSupportedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaBundleAttachmentNotSupportedErrorDetails) ImplErrorDetailsUnion() {}
+
+// This Bundle's instructions are managed in claude.ai and can't be changed through
+// the API.
+type BetaBundleOnCallErrorDetails struct {
+	ErrorCode constant.BetaBundleOnCallErrorCode `json:"error_code" default:"bundle_on_call"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaBundleOnCallErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaBundleOnCallErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaBundleOnCallErrorDetails) ImplErrorDetailsUnion() {}

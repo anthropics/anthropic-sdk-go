@@ -99,6 +99,8 @@ type BrowserToolset20260801 string                             // Always "browse
 type BudgetReached string                                      // Always "budget_reached"
 type BuiltIn string                                            // Always "built_in"
 type Bundle string                                             // Always "bundle"
+type BetaBundleAttachmentNotSupportedErrorCode string          // Always "bundle_attachment_not_supported"
+type BetaBundleOnCallErrorCode string                          // Always "bundle_on_call"
 type BundleTargetDeleted string                                // Always "bundle_target_deleted"
 type Caller string                                             // Always "caller"
 type Canceled string                                           // Always "canceled"
@@ -722,9 +724,13 @@ func (c BrowserToolset20260801) Default() BrowserToolset20260801 { return "brows
 func (c BudgetReached) Default() BudgetReached                   { return "budget_reached" }
 func (c BuiltIn) Default() BuiltIn                               { return "built_in" }
 func (c Bundle) Default() Bundle                                 { return "bundle" }
-func (c BundleTargetDeleted) Default() BundleTargetDeleted       { return "bundle_target_deleted" }
-func (c Caller) Default() Caller                                 { return "caller" }
-func (c Canceled) Default() Canceled                             { return "canceled" }
+func (c BetaBundleAttachmentNotSupportedErrorCode) Default() BetaBundleAttachmentNotSupportedErrorCode {
+	return "bundle_attachment_not_supported"
+}
+func (c BetaBundleOnCallErrorCode) Default() BetaBundleOnCallErrorCode { return "bundle_on_call" }
+func (c BundleTargetDeleted) Default() BundleTargetDeleted             { return "bundle_target_deleted" }
+func (c Caller) Default() Caller                                       { return "caller" }
+func (c Canceled) Default() Canceled                                   { return "canceled" }
 func (c CannotInviteEmailsWithUnverifiedDomainsErrorCode) Default() CannotInviteEmailsWithUnverifiedDomainsErrorCode {
 	return "cannot_invite_emails_with_unverified_domains"
 }
@@ -1619,9 +1625,13 @@ func (c BrowserToolset20260801) MarshalJSON() ([]byte, error)               { re
 func (c BudgetReached) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c BuiltIn) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Bundle) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c BundleTargetDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c Caller) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c Canceled) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c BetaBundleAttachmentNotSupportedErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c BetaBundleOnCallErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c BundleTargetDeleted) MarshalJSON() ([]byte, error)       { return marshalString(c) }
+func (c Caller) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c Canceled) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c CannotInviteEmailsWithUnverifiedDomainsErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }

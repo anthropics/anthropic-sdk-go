@@ -30,6 +30,19 @@ const ErrorCodeAlreadyMember = apierror.ErrorCodeAlreadyMember
 // [shared.AvailableToolsLimitExceededErrorDetails] details.
 const ErrorCodeAvailableToolsLimitExceeded = apierror.ErrorCodeAvailableToolsLimitExceeded
 
+// The Bundle has an attachment this API does not support editing, so its
+// instructions can be changed only in claude.ai.
+//
+// Returned with HTTP status 400 and
+// [shared.BetaBundleAttachmentNotSupportedErrorDetails] details.
+const ErrorCodeBetaBundleAttachmentNotSupported = apierror.ErrorCodeBetaBundleAttachmentNotSupported
+
+// This Bundle's instructions are managed in claude.ai and can't be changed through
+// the API.
+//
+// Returned with HTTP status 400 and [shared.BetaBundleOnCallErrorDetails] details.
+const ErrorCodeBetaBundleOnCall = apierror.ErrorCodeBetaBundleOnCall
+
 // The email address's domain is not one of the verified domains of the
 // organization's parent organization.
 //
@@ -1225,6 +1238,18 @@ type BetaSlackChannelSetUpEnvironmentNotFoundErrorDetails = shared.BetaSlackChan
 //
 // This is an alias to an internal type.
 type BetaSlackChannelSetUpSettingsConflictErrorDetails = shared.BetaSlackChannelSetUpSettingsConflictErrorDetails
+
+// The Bundle has an attachment this API does not support editing, so its
+// instructions can be changed only in claude.ai.
+//
+// This is an alias to an internal type.
+type BetaBundleAttachmentNotSupportedErrorDetails = shared.BetaBundleAttachmentNotSupportedErrorDetails
+
+// This Bundle's instructions are managed in claude.ai and can't be changed through
+// the API.
+//
+// This is an alias to an internal type.
+type BetaBundleOnCallErrorDetails = shared.BetaBundleOnCallErrorDetails
 
 // Backward-compatible type aliases for renamed types.
 // These ensure existing code continues to compile after

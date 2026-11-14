@@ -172,6 +172,19 @@ const (
 	// [shared.AvailableToolsLimitExceededErrorDetails] details.
 	ErrorCodeAvailableToolsLimitExceeded ErrorCode = "available_tools_limit_exceeded"
 
+	// The Bundle has an attachment this API does not support editing, so its
+	// instructions can be changed only in claude.ai.
+	//
+	// Returned with HTTP status 400 and
+	// [shared.BetaBundleAttachmentNotSupportedErrorDetails] details.
+	ErrorCodeBetaBundleAttachmentNotSupported ErrorCode = "bundle_attachment_not_supported"
+
+	// This Bundle's instructions are managed in claude.ai and can't be changed through
+	// the API.
+	//
+	// Returned with HTTP status 400 and [shared.BetaBundleOnCallErrorDetails] details.
+	ErrorCodeBetaBundleOnCall ErrorCode = "bundle_on_call"
+
 	// The email address's domain is not one of the verified domains of the
 	// organization's parent organization.
 	//

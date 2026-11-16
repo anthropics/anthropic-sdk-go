@@ -2814,6 +2814,696 @@ func TestSessionToolRunner_ReconcileInterruptForCallMissingFromHistoryLetsRunner
 	require.NoError(t, r.Close())
 }
 
+// An interrupt that the runner reads before its history read fails still
+// releases the held call.
+func TestSessionToolRunner_InterruptInFailedHistoryReadReleasesHeldCall(t *testing.T) {
+	call := processedAt(askToolUseEvt("tu", "echo", map[string]any{}, "ask"), "2026-05-11T12:00:00Z")
+
+	server := newSessionEventsServer(t)
+	serveReconnect(server, []map[string]any{call},
+		[]map[string]any{call, interruptEvt("evt_int", "2026-05-11T12:00:05Z", "")}, true,
+		[]map[string]any{idleEndTurnEvt("evt_idle")})
+	requireStopsOnIdleWithoutRunning(t, server)
+}
+
+// ===== terminated session threads =====
+//
+// The server writes no result for a tool call that is open when its session
+// thread terminates, and it rejects a client's result for that call. The
+// tool_use event stays in history with no result, so the runner must skip it
+// rather than dispatch it on each reconcile.
+
+func inThread(ev map[string]any, threadID string) map[string]any {
+	ev["session_thread_id"] = threadID
+	return ev
+}
+
+func threadTerminatedEvt(threadID string) map[string]any {
+	return threadEvt("evt_term_"+threadID, "session.thread_status_terminated", threadID, "worker")
+}
+
+// serveSessionEvents makes server answer the list with history, and stream live
+// on a connection that it holds open.
+func serveSessionEvents(server *sessionEventsServer, history, live []map[string]any) {
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(eventList(history...)))
+	}
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamWriter(w, r, sseLines(live...), true)
+	}
+}
+
+// serveReconnect makes server answer the first list with no events, send early
+// on the first stream and drop it. Each later list gets history, whose next
+// page fails if nextPageFails, and each later stream gets live and stays open.
+func serveReconnect(server *sessionEventsServer, early, history []map[string]any, nextPageFails bool, live []map[string]any) {
+	var streams atomic.Int32
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		if streams.Add(1) == 1 {
+			streamWriter(w, r, sseLines(early...), false)
+			return
+		}
+		streamWriter(w, r, sseLines(live...), true)
+	}
+	var lists atomic.Int32
+	server.HandleList = func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("page") != "" {
+			http.Error(w, "unavailable", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if lists.Add(1) == 1 {
+			_, _ = w.Write([]byte(emptyEventList()))
+			return
+		}
+		page := map[string]any{"data": history}
+		if nextPageFails {
+			page["next_page"] = "page_2"
+		}
+		body, _ := json.Marshal(page)
+		_, _ = w.Write(body)
+	}
+}
+
+// streamInTwoParts writes first at once and second once gate is closed, then
+// holds the connection open.
+func streamInTwoParts(w http.ResponseWriter, r *http.Request, first []string, gate <-chan struct{}, second []string) {
+	streamWriter(w, r, first, false)
+	select {
+	case <-gate:
+	case <-r.Context().Done():
+		return
+	}
+	for _, ev := range second {
+		_, _ = io.WriteString(w, ev)
+	}
+	w.(http.Flusher).Flush()
+	<-r.Context().Done()
+}
+
+// A runner that attaches after the thread terminated finds the open calls in
+// history. They must not run, and they must not keep it from its idle stop.
+func TestSessionToolRunner_CallsOfTerminatedThreadInHistoryAreNotRun(t *testing.T) {
+	server := newSessionEventsServer(t)
+	serveSessionEvents(server, []map[string]any{
+		inThread(toolUseEvt("tu", "echo", map[string]any{}), "sthr_ended"),
+		inThread(customToolUseEvt("ctu", "echo", map[string]any{}), "sthr_ended"),
+		idleRequiresActionEvt("evt_waiting", "tu", "ctu"),
+		threadTerminatedEvt("sthr_ended"),
+		idleEndTurnEvt("evt_idle"),
+	}, nil)
+	requireStopsOnIdleWithoutRunning(t, server)
+}
+
+// A client can archive a child thread once the session is idle. Another idle
+// need not follow the thread's terminated event, so the event must leave the
+// countdown as it is.
+func TestSessionToolRunner_ThreadTerminationAfterEndTurnLetsRunnerStop(t *testing.T) {
+	ending := []map[string]any{idleEndTurnEvt("evt_idle"), threadTerminatedEvt("sthr_ended")}
+
+	t.Run("in history", func(t *testing.T) {
+		server := newSessionEventsServer(t)
+		serveSessionEvents(server, append([]map[string]any{inThread(toolUseEvt("tu", "echo", map[string]any{}), "sthr_ended")}, ending...), nil)
+		requireStopsOnIdleWithoutRunning(t, server)
+	})
+
+	t.Run("on the live stream", func(t *testing.T) {
+		server := newSessionEventsServer(t)
+		serveSessionEvents(server, nil, ending)
+		requireStopsOnIdleWithoutRunning(t, server)
+	})
+}
+
+// The event neither starts the countdown after an idle that leaves the turn
+// open, nor keeps it going once the session runs again.
+func TestSessionToolRunner_ThreadTerminationDoesNotStartIdleCountdown(t *testing.T) {
+	for name, events := range map[string][]map[string]any{
+		"after a requires_action idle": {
+			idleRequiresActionEvt("evt_idle", "evt_elsewhere"),
+			threadTerminatedEvt("sthr_ended"),
+		},
+		"before the session runs again": {
+			idleEndTurnEvt("evt_idle"),
+			threadTerminatedEvt("sthr_ended"),
+			plainEvt("evt_running", "session.status_running"),
+		},
+	} {
+		for place, serve := range map[string]func(*sessionEventsServer){
+			"in history":         func(s *sessionEventsServer) { serveSessionEvents(s, events, nil) },
+			"on the live stream": func(s *sessionEventsServer) { serveSessionEvents(s, nil, events) },
+		} {
+			t.Run(name+" "+place, func(t *testing.T) {
+				server := newSessionEventsServer(t)
+				serve(server)
+
+				ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+				defer cancel()
+				r := newShortIdleRunner(t, ctx, server.Client(), nil, 100*time.Millisecond)
+				for r.Next() {
+					t.Fatalf("unexpected yield: %+v", r.Current())
+				}
+				require.NoError(t, r.Err(), "only the test's context may end the run")
+			})
+		}
+	}
+}
+
+// The runner yields an unowned call and a denied call of a live thread so that
+// the caller can observe them. It yields neither for a terminated thread, and
+// the unowned call does not keep it from its idle stop.
+func TestSessionToolRunner_UnownedOrDeniedCallOfTerminatedThreadIsNotYielded(t *testing.T) {
+	for name, call := range map[string]map[string]any{
+		"unowned": toolUseEvt("tu", "not_ours", map[string]any{}),
+		"denied":  askToolUseEvt("tu", "echo", map[string]any{}, "deny"),
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			serveSessionEvents(server, []map[string]any{
+				inThread(call, "sthr_ended"),
+				threadTerminatedEvt("sthr_ended"),
+				idleEndTurnEvt("evt_idle"),
+			}, nil)
+			requireStopsOnIdleWithoutRunning(t, server)
+		})
+	}
+}
+
+// Only the terminated thread's calls are skipped: the open calls of another
+// child thread and of the primary thread still run and post.
+func TestSessionToolRunner_CallsOfLiveThreadsRunBesideTheCallOfATerminatedThread(t *testing.T) {
+	server := newSessionEventsServer(t)
+	serveSessionEvents(server, []map[string]any{
+		threadEvt("evt_primary", "session.thread_status_running", "sthr_primary", "lead"),
+		inThread(toolUseEvt("tu_ended", "echo", map[string]any{}), "sthr_ended"),
+		threadTerminatedEvt("sthr_ended"),
+		inThread(toolUseEvt("tu_child", "echo", map[string]any{}), "sthr_live"),
+		toolUseEvt("tu_primary", "echo", map[string]any{}),
+	}, nil)
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+
+	echo := &stubBetaTool{name: "echo"}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 0)
+
+	for _, id := range []string{"tu_child", "tu_primary"} {
+		require.True(t, r.Next(), "%s must run: %v", id, r.Err())
+		require.Equal(t, id, r.Current().ToolUseID)
+		require.True(t, r.Current().Posted)
+	}
+	require.NoError(t, r.Close())
+	require.Equal(t, int32(2), echo.runs.Load())
+}
+
+// When a session thread terminates while one of its calls runs, the runner
+// cancels the tool's context, posts no result and yields the call with
+// Posted=false. The approved call of the same thread that waits behind it does
+// not run, and it stops holding the idle countdown.
+func TestSessionToolRunner_ThreadTerminationCancelsRunningTool(t *testing.T) {
+	started := make(chan struct{})
+	var startOnce sync.Once
+
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamInTwoParts(w, r, sseLines(
+			inThread(toolUseEvt("tu_running", "slow", map[string]any{}), "sthr_ended"),
+			inThread(askToolUseEvt("tu_queued", "slow", map[string]any{}, "ask"), "sthr_ended"),
+			toolConfirmationEvt("tu_queued", "allow"),
+		), started, sseLines(threadTerminatedEvt("sthr_ended"), idleEndTurnEvt("evt_idle")))
+	}
+	server.HandleSend = func(http.ResponseWriter, *http.Request) {
+		t.Error("a result was posted for a call of a terminated thread")
+	}
+
+	var toolErr atomic.Value
+	slow := &stubBetaTool{name: "slow", run: func(ctx context.Context, _ json.RawMessage) (string, bool) {
+		startOnce.Do(func() { close(started) })
+		select {
+		case <-ctx.Done():
+			toolErr.Store(ctx.Err())
+		case <-time.After(3 * time.Second):
+		}
+		return "finished", false
+	}}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{slow}, 100*time.Millisecond)
+
+	require.True(t, r.Next(), "the call whose tool ran must still be yielded: %v", r.Err())
+	call := r.Current()
+	require.Equal(t, "tu_running", call.ToolUseID)
+	require.False(t, call.Posted)
+	require.Empty(t, call.Result.ToolUseID, "no result event may be built for the call")
+	err, _ := toolErr.Load().(error)
+	require.ErrorIs(t, err, context.Canceled, "the thread's termination must cancel the running tool's context")
+
+	for r.Next() {
+		t.Fatalf("unexpected yield: %+v", r.Current())
+	}
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout, "the queued call must stop holding the countdown")
+	require.Equal(t, int32(1), slow.runs.Load())
+}
+
+// The termination of one thread leaves the running tool of another alone. The
+// runner yields the denied call that follows the termination as soon as it reads
+// it, which shows that it has read the termination.
+func TestSessionToolRunner_ThreadTerminationLeavesToolOfLiveThreadRunning(t *testing.T) {
+	started, release := make(chan struct{}), make(chan struct{})
+
+	server := newSessionEventsServer(t)
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		streamInTwoParts(w, r,
+			sseLines(inThread(toolUseEvt("tu_live", "slow", map[string]any{}), "sthr_live")),
+			started,
+			sseLines(threadTerminatedEvt("sthr_ended"), askToolUseEvt("tu_denied", "slow", map[string]any{}, "deny")))
+	}
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+
+	slow := &stubBetaTool{name: "slow", run: func(ctx context.Context, _ json.RawMessage) (string, bool) {
+		close(started)
+		select {
+		case <-ctx.Done():
+			return "cancelled", true
+		case <-release:
+			return "finished", false
+		}
+	}}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{slow}, 0)
+
+	require.True(t, r.Next(), "the denied call must be yielded: %v", r.Err())
+	require.Equal(t, "tu_denied", r.Current().ToolUseID)
+	close(release)
+	require.True(t, r.Next(), "the live thread's call must be yielded: %v", r.Err())
+	call := r.Current()
+	require.Equal(t, "tu_live", call.ToolUseID)
+	require.False(t, call.IsError, "the tool's context must not be cancelled")
+	require.True(t, call.Posted)
+	require.NoError(t, r.Close())
+}
+
+// The server takes no result for an ask-gated call once its thread has
+// terminated, so the runner does not hold it, and it stops once MaxIdle has
+// passed.
+func TestSessionToolRunner_AskCallOfTerminatedThreadDoesNotBlockIdleStop(t *testing.T) {
+	call := inThread(askToolUseEvt("tu", "echo", map[string]any{}, "ask"), "sthr_ended")
+	terminated := threadTerminatedEvt("sthr_ended")
+	idle := idleEndTurnEvt("evt_idle")
+
+	for name, live := range map[string][]map[string]any{
+		"terminated after the call":  {call, terminated, idle},
+		"terminated before the call": {terminated, call, idle},
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			serveSessionEvents(server, nil, live)
+			requireStopsOnIdleWithoutRunning(t, server)
+		})
+	}
+
+	// The stream drops while the call is held, and the history that the runner
+	// reads when it reconnects has the termination.
+	for name, tc := range map[string]struct {
+		history       []map[string]any
+		nextPageFails bool
+		live          []map[string]any
+	}{
+		"terminated in history after a reconnect":      {history: []map[string]any{call, terminated, idle}},
+		"terminated in a history read that then fails": {history: []map[string]any{call, terminated}, nextPageFails: true, live: []map[string]any{idle}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			serveReconnect(server, []map[string]any{call}, tc.history, tc.nextPageFails, tc.live)
+			requireStopsOnIdleWithoutRunning(t, server)
+		})
+	}
+}
+
+// The idle that a held call deferred is from before the stream dropped. If the
+// history read then fails, the session may have gone on since, so the release
+// of the held call must not start the countdown.
+func TestSessionToolRunner_ReleaseAfterFailedHistoryReadDoesNotStartIdleCountdown(t *testing.T) {
+	call := inThread(askToolUseEvt("tu", "echo", map[string]any{}, "ask"), "sthr_ended")
+	idle := idleEndTurnEvt("evt_idle")
+	terminated := threadTerminatedEvt("sthr_ended")
+	interrupt := interruptEvt("evt_int", "2026-05-11T12:00:05Z", "")
+	running := plainEvt("evt_running", "session.status_running")
+
+	for name, tc := range map[string]struct{ history, live []map[string]any }{
+		"terminated in the history":      {history: []map[string]any{call, idle, terminated}},
+		"interrupted in the history":     {history: []map[string]any{call, idle, interrupt}},
+		"terminated on the live stream":  {history: []map[string]any{call, idle, running}, live: []map[string]any{terminated}},
+		"interrupted on the live stream": {history: []map[string]any{call, idle, running}, live: []map[string]any{interrupt}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			serveReconnect(server, []map[string]any{call, idle}, tc.history, true, tc.live)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), nil, 100*time.Millisecond)
+			for r.Next() {
+				t.Fatalf("unexpected yield: %+v", r.Current())
+			}
+			require.NoError(t, r.Err(), "only the test's context may end the run")
+		})
+	}
+}
+
+// An allowed call defers the idle until the dispatch loop has finished with it.
+// If the call is invalidated after a failed history read, its end must not start
+// the countdown, so the runner still serves a later call. It stops on the next idle.
+func TestSessionToolRunner_EndOfAllowedCallAfterFailedHistoryReadDoesNotStartIdleCountdown(t *testing.T) {
+	const maxIdle = 100 * time.Millisecond
+	ahead := toolUseEvt("tu_ahead", "slow", map[string]any{})
+	call := inThread(askToolUseEvt("tu", "slow", map[string]any{}, "ask"), "sthr_ended")
+	idle := idleEndTurnEvt("evt_idle")
+	allow := toolConfirmationEvt("tu", "allow")
+	terminated := threadTerminatedEvt("sthr_ended")
+	interrupt := interruptEvt("evt_int", "2026-05-11T12:00:05Z", "")
+	later := processedAt(toolUseEvt("tu_later", "echo", map[string]any{}), "2026-05-11T12:00:10Z")
+
+	for name, tc := range map[string]struct {
+		early, live []map[string]any
+		ending      map[string]any
+	}{
+		"running, allowed before the drop":       {early: []map[string]any{call, idle, allow}, ending: terminated},
+		"running, allowed after the failed read": {early: []map[string]any{call, idle}, live: []map[string]any{allow}, ending: terminated},
+		"queued, allowed before the drop":        {early: []map[string]any{ahead, call, idle, allow}, ending: terminated},
+		"queued, allowed after the failed read":  {early: []map[string]any{ahead, call, idle}, live: []map[string]any{allow}, ending: terminated},
+		"running, interrupted":                   {early: []map[string]any{call, idle, allow}, ending: interrupt},
+		"queued, interrupted":                    {early: []map[string]any{ahead, call, idle, allow}, ending: interrupt},
+	} {
+		t.Run(name, func(t *testing.T) {
+			started, finish := make(chan struct{}), make(chan struct{})
+			var startOnce sync.Once
+
+			server := newSessionEventsServer(t)
+			serveReconnect(server, tc.early, tc.early, true, nil)
+			firstStream := server.HandleStream
+			var streams atomic.Int32
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				if streams.Add(1) == 1 {
+					firstStream(w, r)
+					return
+				}
+				streamWriter(w, r, sseLines(tc.live...), false)
+				write := func(events ...map[string]any) {
+					_, _ = io.WriteString(w, strings.Join(sseLines(events...), ""))
+					w.(http.Flusher).Flush()
+				}
+				select {
+				case <-started:
+				case <-r.Context().Done():
+					return
+				}
+				write(tc.ending)
+				sleepCtx(r.Context(), maxIdle)
+				close(finish)
+				sleepCtx(r.Context(), 4*maxIdle)
+				write(later, idleEndTurnEvt("evt_idle_2"))
+				<-r.Context().Done()
+			}
+			server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(sendOK()))
+			}
+
+			slow := &stubBetaTool{name: "slow", run: func(ctx context.Context, _ json.RawMessage) (string, bool) {
+				startOnce.Do(func() { close(started) })
+				select {
+				case <-ctx.Done():
+				case <-finish:
+				}
+				return "finished", false
+			}}
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{slow, &stubBetaTool{name: "echo"}}, maxIdle)
+
+			var yielded []string
+			for r.Next() {
+				yielded = append(yielded, r.Current().ToolUseID)
+			}
+			require.Contains(t, yielded, "tu_later", "the runner must stay attached until the later call")
+			require.ErrorIs(t, r.Err(), ErrIdleTimeout, "the allowed call must stop holding the countdown")
+		})
+	}
+}
+
+// After a failed history read, a termination on the live stream cancels the
+// countdown of an idle from before the failure, whether it runs or is deferred.
+func TestSessionToolRunner_TerminationAfterFailedHistoryReadCancelsIdleCountdown(t *testing.T) {
+	idle := idleEndTurnEvt("evt_idle")
+	terminated := threadTerminatedEvt("sthr_ended")
+
+	call := inThread(askToolUseEvt("tu", "echo", map[string]any{}, "ask"), "sthr_ended")
+
+	for name, tc := range map[string]struct{ early, live, afterYield []map[string]any }{
+		"running": {early: []map[string]any{idle}, live: []map[string]any{terminated}},
+		"deferred by a call of a live thread": {
+			early: []map[string]any{askToolUseEvt("tu", "echo", map[string]any{}, "ask"), idle},
+			live:  []map[string]any{terminated, toolConfirmationEvt("tu", "deny")},
+		},
+		"started by a denial after the failure": {
+			early: []map[string]any{call, idle},
+			live:  []map[string]any{toolConfirmationEvt("tu", "deny"), terminated},
+		},
+		"started by an allowed call that posted its result after the failure": {
+			early:      []map[string]any{call, idle},
+			live:       []map[string]any{toolConfirmationEvt("tu", "allow")},
+			afterYield: []map[string]any{terminated},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			yielded := make(chan struct{})
+			server := newSessionEventsServer(t)
+			serveReconnect(server, tc.early, tc.early, true, nil)
+			var streams atomic.Int32
+			server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+				if streams.Add(1) == 1 {
+					streamWriter(w, r, sseLines(tc.early...), false)
+					return
+				}
+				streamInTwoParts(w, r, sseLines(tc.live...), yielded, sseLines(tc.afterYield...))
+			}
+			server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(sendOK()))
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{&stubBetaTool{name: "echo"}}, 2*time.Second)
+			var yieldOnce sync.Once
+			posted := false
+			for r.Next() {
+				posted = posted || r.Current().Posted
+				yieldOnce.Do(func() { close(yielded) })
+			}
+			require.Equal(t, tc.afterYield != nil, posted, "only the allowed call posts a result")
+			require.NoError(t, r.Err(), "only the test's context may end the run")
+		})
+	}
+}
+
+// After a failed history read, a termination on the live stream cancels the
+// countdown. The next history read that completes starts it again, because only
+// the termination follows the idle there.
+func TestSessionToolRunner_WholeHistoryReadAfterFailedOneLetsRunnerStop(t *testing.T) {
+	const maxIdle = 2 * time.Second
+	idle := idleEndTurnEvt("evt_idle")
+	terminated := threadTerminatedEvt("sthr_ended")
+
+	server := newSessionEventsServer(t)
+	var streams, lists atomic.Int32
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		switch streams.Add(1) {
+		case 1:
+			streamWriter(w, r, sseLines(idle), false)
+		case 2:
+			streamWriter(w, r, sseLines(terminated), false)
+			sleepCtx(r.Context(), maxIdle)
+		default:
+			streamWriter(w, r, nil, true)
+		}
+	}
+	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
+		history := eventList(idle, terminated)
+		switch lists.Add(1) {
+		case 1:
+			history = emptyEventList()
+		case 2:
+			http.Error(w, "unavailable", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(history))
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	r := newShortIdleRunner(t, ctx, server.Client(), nil, maxIdle)
+	for r.Next() {
+	}
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout)
+	require.Equal(t, int32(3), lists.Load(), "the runner must stay attached until the third history read")
+}
+
+// A tool can ignore the cancellation of its context. If its thread terminated
+// before the stream dropped and it returns after the failed history read, the
+// end of its call must not start the countdown.
+func TestSessionToolRunner_ToolThatOutlivesFailedHistoryReadDoesNotStartIdleCountdown(t *testing.T) {
+	started, finish := make(chan struct{}), make(chan struct{})
+	var startOnce, finishOnce sync.Once
+	early := []map[string]any{
+		inThread(askToolUseEvt("tu", "slow", map[string]any{}, "ask"), "sthr_ended"),
+		idleEndTurnEvt("evt_idle"),
+		toolConfirmationEvt("tu", "allow"),
+	}
+
+	server := newSessionEventsServer(t)
+	serveReconnect(server, nil, early, true, nil)
+	var streams atomic.Int32
+	server.HandleStream = func(w http.ResponseWriter, r *http.Request) {
+		if streams.Add(1) == 1 {
+			streamWriter(w, r, sseLines(early...), false)
+			select {
+			case <-started:
+				_, _ = io.WriteString(w, sseLines(threadTerminatedEvt("sthr_ended"))[0])
+			case <-r.Context().Done():
+			}
+			return
+		}
+		streamWriter(w, r, nil, false)
+		sleepCtx(r.Context(), 100*time.Millisecond)
+		finishOnce.Do(func() { close(finish) })
+		<-r.Context().Done()
+	}
+	server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(sendOK()))
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
+	defer cancel()
+	slow := &stubBetaTool{name: "slow", run: func(context.Context, json.RawMessage) (string, bool) {
+		startOnce.Do(func() { close(started) })
+		select {
+		case <-finish:
+		case <-ctx.Done():
+		}
+		return "finished", false
+	}}
+	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{slow}, 100*time.Millisecond)
+	require.True(t, r.Next(), "the call must be yielded once its tool returns: %v", r.Err())
+	for r.Next() {
+	}
+	require.NoError(t, r.Err(), "only the test's context may end the run")
+}
+
+// A termination on the first page of the history cancels the running tool at
+// once, so the call ends while the page that fails is still in flight.
+func TestSessionToolRunner_CallCancelledDuringFailedHistoryRead(t *testing.T) {
+	idle := idleEndTurnEvt("evt_idle")
+
+	for name, tc := range map[string]struct {
+		early, live []map[string]any
+		wantErr     error
+	}{
+		"an allowed call does not start the countdown": {
+			early: []map[string]any{
+				inThread(askToolUseEvt("tu", "slow", map[string]any{}, "ask"), "sthr_ended"),
+				idle,
+				toolConfirmationEvt("tu", "allow"),
+			},
+		},
+		"an allowed call in the queue behind it does not start the countdown": {
+			early: []map[string]any{
+				inThread(toolUseEvt("tu_ahead", "slow", map[string]any{}), "sthr_ended"),
+				inThread(askToolUseEvt("tu", "slow", map[string]any{}, "ask"), "sthr_ended"),
+				idle,
+				toolConfirmationEvt("tu", "allow"),
+			},
+		},
+		"an ungated call leaves the countdown that another call deferred": {
+			early: []map[string]any{
+				inThread(toolUseEvt("tu", "slow", map[string]any{}), "sthr_ended"),
+				askToolUseEvt("tu_held", "slow", map[string]any{}, "ask"),
+				idle,
+			},
+			live:    []map[string]any{toolConfirmationEvt("tu_held", "deny")},
+			wantErr: ErrIdleTimeout,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			serveReconnect(server, tc.early, append(slices.Clip(tc.early), threadTerminatedEvt("sthr_ended")), true, tc.live)
+			list := server.HandleList
+			server.HandleList = func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Query().Get("page") != "" {
+					sleepCtx(r.Context(), 50*time.Millisecond)
+				}
+				list(w, r)
+			}
+			server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(sendOK()))
+			}
+
+			slow := &stubBetaTool{name: "slow", run: func(ctx context.Context, _ json.RawMessage) (string, bool) {
+				<-ctx.Done()
+				return "cancelled", true
+			}}
+			ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{slow}, 100*time.Millisecond)
+			for r.Next() {
+			}
+			require.ErrorIs(t, r.Err(), tc.wantErr)
+		})
+	}
+}
+
+// After a failed history read the runner still stops: on a countdown that is
+// already running, on a denial of the held call, on the end of the allowed call,
+// and on a later idle.
+func TestSessionToolRunner_FailedHistoryReadStillLetsRunnerStop(t *testing.T) {
+	call := inThread(askToolUseEvt("tu", "echo", map[string]any{}, "ask"), "sthr_ended")
+	idle := idleEndTurnEvt("evt_idle")
+
+	for name, tc := range map[string]struct{ early, live []map[string]any }{
+		"running countdown":          {early: []map[string]any{idle}},
+		"denial":                     {early: []map[string]any{call, idle}, live: []map[string]any{toolConfirmationEvt("tu", "deny")}},
+		"allowed call that finishes": {early: []map[string]any{call, idle}, live: []map[string]any{toolConfirmationEvt("tu", "allow")}},
+		"later idle and termination": {early: []map[string]any{call, idle}, live: []map[string]any{idleEndTurnEvt("evt_idle_2"), threadTerminatedEvt("sthr_ended")}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := newSessionEventsServer(t)
+			serveReconnect(server, tc.early, tc.early, true, tc.live)
+			server.HandleSend = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(sendOK()))
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{&stubBetaTool{name: "echo"}}, time.Second)
+			for r.Next() {
+			}
+			require.ErrorIs(t, r.Err(), ErrIdleTimeout)
+		})
+	}
+}
+
 // ===== custom tool calls go through the same gate =====
 
 func askCustomToolUseEvt(id, name string, input map[string]any, permission string) map[string]any {
@@ -2970,7 +3660,7 @@ func TestSessionToolRunner_ResultFromAnotherClientReleasesHeldCall(t *testing.T)
 
 func requireStopsOnIdleWithoutRunning(t *testing.T, server *sessionEventsServer) {
 	t.Helper()
-	server.HandleSend = func(http.ResponseWriter, *http.Request) { t.Error("an already answered call posted a result") }
+	server.HandleSend = func(http.ResponseWriter, *http.Request) { t.Error("a call that needs no result posted one") }
 
 	echo := &stubBetaTool{name: "echo"}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -2978,8 +3668,8 @@ func requireStopsOnIdleWithoutRunning(t *testing.T, server *sessionEventsServer)
 	r := newShortIdleRunner(t, ctx, server.Client(), []BetaTool{echo}, 100*time.Millisecond)
 
 	for r.Next() {
-		t.Fatalf("unexpected yield for an already answered call: %+v", r.Current())
+		t.Fatalf("unexpected yield for a call that needs no result: %+v", r.Current())
 	}
-	require.ErrorIs(t, r.Err(), ErrIdleTimeout, "the hold must end with the call's result")
+	require.ErrorIs(t, r.Err(), ErrIdleTimeout, "the runner must stop once the idle countdown runs out")
 	require.Equal(t, int32(0), echo.runs.Load())
 }

@@ -1126,6 +1126,39 @@ const (
 	BetaBashCodeExecutionToolResultErrorParamErrorCodeOutputFileTooLarge    BetaBashCodeExecutionToolResultErrorParamErrorCode = "output_file_too_large"
 )
 
+// Who is billed for a request.
+type BetaBillTo string
+
+const (
+	BetaBillToSelf        BetaBillTo = "self"
+	BetaBillToUserProfile BetaBillTo = "user_profile"
+)
+
+// Declares which organization is billed for the request.
+//
+// The property Type is required.
+type BetaBillingPolicyParam struct {
+	// Who is billed. `self`, the default, bills your organization, as if
+	// `billing_policy` were omitted. `user_profile` bills the customer behind the user
+	// profile the request names; if that customer has not linked an Anthropic
+	// organization to the profile, or has not allowed your organization to bill it,
+	// the request is rejected rather than billed to you.
+	//
+	// Any of "self", "user_profile".
+	BillTo BetaBillTo `json:"bill_to,omitzero"`
+	// This field can be elided, and will marshal its zero value as "billing_policy".
+	Type constant.BillingPolicy `json:"type" default:"billing_policy"`
+	paramObj
+}
+
+func (r BetaBillingPolicyParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaBillingPolicyParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaBillingPolicyParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // BetaBrowserClickTargetUnion contains all possible properties and values from
 // [BetaBrowserCoordinateTarget], [BetaBrowserRefTarget].
 //
@@ -26293,6 +26326,14 @@ type BetaMessageNewParams struct {
 	// response so only the new turn's messages are sent. The response shape is
 	// unchanged.
 	Thread BetaMessageThreadParamUnion `json:"thread,omitzero"`
+	// Declares which organization is billed for this request.
+	// `{"type": "billing_policy", "bill_to": "user_profile"}` bills the customer
+	// behind the user profile named in the `anthropic-user-profile-id` header, instead
+	// of your organization. If that customer has not linked an Anthropic organization
+	// to the profile, or has not allowed your organization to bill it, the request is
+	// rejected rather than billed to you. Omit the field, or send `"bill_to": "self"`
+	// (the default), to be billed as usual.
+	BillingPolicy BetaBillingPolicyParam `json:"billing_policy,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -26630,6 +26671,11 @@ type BetaMessageCountTokensParams struct {
 	//
 	// Any of "standard", "fast".
 	Speed BetaMessageCountTokensParamsSpeed `json:"speed,omitzero"`
+	// Declares which organization is billed when this body is sent to `/v1/messages`.
+	// Accepted here so that you can count the tokens of the exact body you will send,
+	// and otherwise ignored: counting tokens bills nobody, so no user profile is
+	// required.
+	BillingPolicy BetaBillingPolicyParam `json:"billing_policy,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`

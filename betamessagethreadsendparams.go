@@ -153,6 +153,14 @@ type BetaMessageThreadSendParams struct {
 	//
 	// Any of "standard", "fast".
 	Speed BetaMessageNewParamsSpeed `json:"speed,omitzero"`
+	// Declares which organization is billed for this request.
+	// `{"type": "billing_policy", "bill_to": "user_profile"}` bills the customer
+	// behind the user profile named in the `anthropic-user-profile-id` header, instead
+	// of your organization. If that customer has not linked an Anthropic organization
+	// to the profile, or has not allowed your organization to bill it, the request is
+	// rejected rather than billed to you. Omit the field, or send `"bill_to": "self"`
+	// (the default), to be billed as usual.
+	BillingPolicy BetaBillingPolicyParam `json:"billing_policy,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -320,6 +328,7 @@ func (r BetaMessageThreadSendParams) toBetaMessageNewParams() (params BetaMessag
 	params.FallbackCreditToken = r.FallbackCreditToken
 	params.Fallbacks = r.Fallbacks
 	params.Speed = r.Speed
+	params.BillingPolicy = r.BillingPolicy
 	params.CacheControl = r.CacheControl
 	params.Compaction = r.Compaction
 	params.ContextManagement = r.ContextManagement
@@ -348,6 +357,7 @@ func (r BetaMessageNewParams) toBetaMessageThreadSendParams() (params BetaMessag
 	params.FallbackCreditToken = r.FallbackCreditToken
 	params.Fallbacks = r.Fallbacks
 	params.Speed = r.Speed
+	params.BillingPolicy = r.BillingPolicy
 	params.CacheControl = r.CacheControl
 	params.Compaction = r.Compaction
 	params.ContextManagement = r.ContextManagement

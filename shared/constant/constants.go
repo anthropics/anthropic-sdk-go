@@ -92,6 +92,7 @@ type BashCodeExecutionToolResultError string                   // Always "bash_c
 type Batch string                                              // Always "batch"
 type BetweenTools string                                       // Always "between_tools"
 type BillingError string                                       // Always "billing_error"
+type BillingPolicy string                                      // Always "billing_policy"
 type Branch string                                             // Always "branch"
 type Browser string                                            // Always "browser"
 type BrowserState string                                       // Always "browser_state"
@@ -717,6 +718,7 @@ func (c BashCodeExecutionToolResultError) Default() BashCodeExecutionToolResultE
 func (c Batch) Default() Batch                                   { return "batch" }
 func (c BetweenTools) Default() BetweenTools                     { return "between_tools" }
 func (c BillingError) Default() BillingError                     { return "billing_error" }
+func (c BillingPolicy) Default() BillingPolicy                   { return "billing_policy" }
 func (c Branch) Default() Branch                                 { return "branch" }
 func (c Browser) Default() Browser                               { return "browser" }
 func (c BrowserState) Default() BrowserState                     { return "browser_state" }
@@ -1618,6 +1620,7 @@ func (c BashCodeExecutionToolResultError) MarshalJSON() ([]byte, error)     { re
 func (c Batch) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c BetweenTools) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c BillingError) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c BillingPolicy) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Branch) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Browser) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c BrowserState) MarshalJSON() ([]byte, error)                         { return marshalString(c) }

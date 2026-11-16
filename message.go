@@ -17942,8 +17942,8 @@ func (r *WebSearchToolResultErrorObject) UnmarshalJSON(data []byte) error {
 // WebSearchToolResultErrorObject
 type WebSearchToolResultError = WebSearchToolResultErrorObject
 
-// Deprecated: WebSearchToolRequestError has been renamed to
-// WebSearchToolRequestErrorObject
+// Deprecated: WebSearchToolRequestErrorParam has been renamed to
+// WebSearchToolRequestErrorObjectParam
 type WebSearchToolRequestErrorParam = WebSearchToolRequestErrorObjectParam
 
 // Deprecated: CodeExecutionToolResultError has been renamed to

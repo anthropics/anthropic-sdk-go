@@ -547,7 +547,7 @@ func (r *BetaRateLimitErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Deprecated: BetaError has been renamed to BetaErrorObject
+// Deprecated: BetaErrorUnion has been renamed to BetaErrorObjectUnion
 type BetaErrorUnion = BetaErrorObjectUnion
 
 // Deprecated: BetaAPIError has been renamed to BetaAPIErrorObject

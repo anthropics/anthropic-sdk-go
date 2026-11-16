@@ -9352,128 +9352,132 @@ func (r *BetaManagedAgentsWorkflowRunStatusRunningEvent) UnmarshalJSON(data []by
 // BetaManagedAgentsUnknownErrorObject
 type BetaManagedAgentsUnknownError = BetaManagedAgentsUnknownErrorObject
 
-// Deprecated: BetaManagedAgentsUnknownError has been renamed to
-// BetaManagedAgentsUnknownErrorObject
+// Deprecated: BetaManagedAgentsUnknownErrorRetryStatusUnion has been renamed to
+// BetaManagedAgentsUnknownErrorObjectRetryStatusUnion
 type BetaManagedAgentsUnknownErrorRetryStatusUnion = BetaManagedAgentsUnknownErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsModelOverloadedError has been renamed to
 // BetaManagedAgentsModelOverloadedErrorObject
 type BetaManagedAgentsModelOverloadedError = BetaManagedAgentsModelOverloadedErrorObject
 
-// Deprecated: BetaManagedAgentsModelOverloadedError has been renamed to
-// BetaManagedAgentsModelOverloadedErrorObject
+// Deprecated: BetaManagedAgentsModelOverloadedErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion
 type BetaManagedAgentsModelOverloadedErrorRetryStatusUnion = BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsModelRateLimitedError has been renamed to
 // BetaManagedAgentsModelRateLimitedErrorObject
 type BetaManagedAgentsModelRateLimitedError = BetaManagedAgentsModelRateLimitedErrorObject
 
-// Deprecated: BetaManagedAgentsModelRateLimitedError has been renamed to
-// BetaManagedAgentsModelRateLimitedErrorObject
+// Deprecated: BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion
 type BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion = BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsModelRequestFailedError has been renamed to
 // BetaManagedAgentsModelRequestFailedErrorObject
 type BetaManagedAgentsModelRequestFailedError = BetaManagedAgentsModelRequestFailedErrorObject
 
-// Deprecated: BetaManagedAgentsModelRequestFailedError has been renamed to
-// BetaManagedAgentsModelRequestFailedErrorObject
+// Deprecated: BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion
 type BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion = BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsMCPConnectionFailedError has been renamed to
 // BetaManagedAgentsMCPConnectionFailedErrorObject
 type BetaManagedAgentsMCPConnectionFailedError = BetaManagedAgentsMCPConnectionFailedErrorObject
 
-// Deprecated: BetaManagedAgentsMCPConnectionFailedError has been renamed to
-// BetaManagedAgentsMCPConnectionFailedErrorObject
+// Deprecated: BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion
 type BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion = BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsMCPAuthenticationFailedError has been renamed to
 // BetaManagedAgentsMCPAuthenticationFailedErrorObject
 type BetaManagedAgentsMCPAuthenticationFailedError = BetaManagedAgentsMCPAuthenticationFailedErrorObject
 
-// Deprecated: BetaManagedAgentsMCPAuthenticationFailedError has been renamed to
-// BetaManagedAgentsMCPAuthenticationFailedErrorObject
+// Deprecated: BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion has
+// been renamed to
+// BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion
 type BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion = BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsBillingError has been renamed to
 // BetaManagedAgentsBillingErrorObject
 type BetaManagedAgentsBillingError = BetaManagedAgentsBillingErrorObject
 
-// Deprecated: BetaManagedAgentsBillingError has been renamed to
-// BetaManagedAgentsBillingErrorObject
+// Deprecated: BetaManagedAgentsBillingErrorRetryStatusUnion has been renamed to
+// BetaManagedAgentsBillingErrorObjectRetryStatusUnion
 type BetaManagedAgentsBillingErrorRetryStatusUnion = BetaManagedAgentsBillingErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsToolUseLimitReachedError has been renamed to
 // BetaManagedAgentsToolUseLimitReachedErrorObject
 type BetaManagedAgentsToolUseLimitReachedError = BetaManagedAgentsToolUseLimitReachedErrorObject
 
-// Deprecated: BetaManagedAgentsToolUseLimitReachedError has been renamed to
-// BetaManagedAgentsToolUseLimitReachedErrorObject
+// Deprecated: BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion
 type BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion = BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsCompactionLimitReachedError has been renamed to
 // BetaManagedAgentsCompactionLimitReachedErrorObject
 type BetaManagedAgentsCompactionLimitReachedError = BetaManagedAgentsCompactionLimitReachedErrorObject
 
-// Deprecated: BetaManagedAgentsCompactionLimitReachedError has been renamed to
-// BetaManagedAgentsCompactionLimitReachedErrorObject
+// Deprecated: BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion has
+// been renamed to
+// BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion
 type BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion = BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsCredentialHostUnreachableError has been renamed to
 // BetaManagedAgentsCredentialHostUnreachableErrorObject
 type BetaManagedAgentsCredentialHostUnreachableError = BetaManagedAgentsCredentialHostUnreachableErrorObject
 
-// Deprecated: BetaManagedAgentsCredentialHostUnreachableError has been renamed to
-// BetaManagedAgentsCredentialHostUnreachableErrorObject
+// Deprecated: BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion has
+// been renamed to
+// BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion
 type BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion = BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsRepositoryAuthenticationError has been renamed to
 // BetaManagedAgentsRepositoryAuthenticationErrorObject
 type BetaManagedAgentsRepositoryAuthenticationError = BetaManagedAgentsRepositoryAuthenticationErrorObject
 
-// Deprecated: BetaManagedAgentsRepositoryAuthenticationError has been renamed to
-// BetaManagedAgentsRepositoryAuthenticationErrorObject
+// Deprecated: BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion has
+// been renamed to
+// BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion
 type BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion = BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsRepositoryForbiddenError has been renamed to
 // BetaManagedAgentsRepositoryForbiddenErrorObject
 type BetaManagedAgentsRepositoryForbiddenError = BetaManagedAgentsRepositoryForbiddenErrorObject
 
-// Deprecated: BetaManagedAgentsRepositoryForbiddenError has been renamed to
-// BetaManagedAgentsRepositoryForbiddenErrorObject
+// Deprecated: BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion
 type BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion = BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsRepositoryNotFoundError has been renamed to
 // BetaManagedAgentsRepositoryNotFoundErrorObject
 type BetaManagedAgentsRepositoryNotFoundError = BetaManagedAgentsRepositoryNotFoundErrorObject
 
-// Deprecated: BetaManagedAgentsRepositoryNotFoundError has been renamed to
-// BetaManagedAgentsRepositoryNotFoundErrorObject
+// Deprecated: BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion
 type BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion = BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsRepositoryCheckoutError has been renamed to
 // BetaManagedAgentsRepositoryCheckoutErrorObject
 type BetaManagedAgentsRepositoryCheckoutError = BetaManagedAgentsRepositoryCheckoutErrorObject
 
-// Deprecated: BetaManagedAgentsRepositoryCheckoutError has been renamed to
-// BetaManagedAgentsRepositoryCheckoutErrorObject
+// Deprecated: BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion
 type BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion = BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsRepositoryCloneError has been renamed to
 // BetaManagedAgentsRepositoryCloneErrorObject
 type BetaManagedAgentsRepositoryCloneError = BetaManagedAgentsRepositoryCloneErrorObject
 
-// Deprecated: BetaManagedAgentsRepositoryCloneError has been renamed to
-// BetaManagedAgentsRepositoryCloneErrorObject
+// Deprecated: BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion
 type BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion = BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion
 
 // Deprecated: BetaManagedAgentsWorkflowRunResultError has been renamed to
 // BetaManagedAgentsWorkflowRunResultErrorObject
 type BetaManagedAgentsWorkflowRunResultError = BetaManagedAgentsWorkflowRunResultErrorObject
 
-// Deprecated: BetaManagedAgentsWorkflowRunError has been renamed to
-// BetaManagedAgentsWorkflowRunErrorObject
+// Deprecated: BetaManagedAgentsWorkflowRunErrorUnion has been renamed to
+// BetaManagedAgentsWorkflowRunErrorObjectUnion
 type BetaManagedAgentsWorkflowRunErrorUnion = BetaManagedAgentsWorkflowRunErrorObjectUnion
 
 // Deprecated: BetaManagedAgentsTimeoutWorkflowRunError has been renamed to

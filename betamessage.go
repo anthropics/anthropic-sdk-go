@@ -26181,8 +26181,8 @@ func (r *BetaWebSearchToolResultErrorObject) UnmarshalJSON(data []byte) error {
 // BetaWebSearchToolResultErrorObject
 type BetaWebSearchToolResultError = BetaWebSearchToolResultErrorObject
 
-// Deprecated: BetaWebSearchToolRequestError has been renamed to
-// BetaWebSearchToolRequestErrorObject
+// Deprecated: BetaWebSearchToolRequestErrorParam has been renamed to
+// BetaWebSearchToolRequestErrorObjectParam
 type BetaWebSearchToolRequestErrorParam = BetaWebSearchToolRequestErrorObjectParam
 
 // Deprecated: BetaCodeExecutionToolResultError has been renamed to
@@ -26193,116 +26193,126 @@ type BetaCodeExecutionToolResultError = BetaCodeExecutionToolResultErrorObject
 // BetaBashCodeExecutionToolResultErrorObject
 type BetaBashCodeExecutionToolResultError = BetaBashCodeExecutionToolResultErrorObject
 
-// Deprecated: BetaBashCodeExecutionToolResultError has been renamed to
-// BetaBashCodeExecutionToolResultErrorObject
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCode has been renamed to
+// BetaBashCodeExecutionToolResultErrorObjectErrorCode
 type BetaBashCodeExecutionToolResultErrorErrorCode = BetaBashCodeExecutionToolResultErrorObjectErrorCode
 
-// Deprecated: BetaBashCodeExecutionToolResultError has been renamed to
-// BetaBashCodeExecutionToolResultErrorObject
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCodeInvalidToolInput has
+// been renamed to
+// BetaBashCodeExecutionToolResultErrorObjectErrorCodeInvalidToolInput
 const BetaBashCodeExecutionToolResultErrorErrorCodeInvalidToolInput = BetaBashCodeExecutionToolResultErrorObjectErrorCodeInvalidToolInput
 
-// Deprecated: BetaBashCodeExecutionToolResultError has been renamed to
-// BetaBashCodeExecutionToolResultErrorObject
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCodeUnavailable has been
+// renamed to BetaBashCodeExecutionToolResultErrorObjectErrorCodeUnavailable
 const BetaBashCodeExecutionToolResultErrorErrorCodeUnavailable = BetaBashCodeExecutionToolResultErrorObjectErrorCodeUnavailable
 
-// Deprecated: BetaBashCodeExecutionToolResultError has been renamed to
-// BetaBashCodeExecutionToolResultErrorObject
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCodeTooManyRequests has
+// been renamed to
+// BetaBashCodeExecutionToolResultErrorObjectErrorCodeTooManyRequests
 const BetaBashCodeExecutionToolResultErrorErrorCodeTooManyRequests = BetaBashCodeExecutionToolResultErrorObjectErrorCodeTooManyRequests
 
-// Deprecated: BetaBashCodeExecutionToolResultError has been renamed to
-// BetaBashCodeExecutionToolResultErrorObject
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCodeExecutionTimeExceeded
+// has been renamed to
+// BetaBashCodeExecutionToolResultErrorObjectErrorCodeExecutionTimeExceeded
 const BetaBashCodeExecutionToolResultErrorErrorCodeExecutionTimeExceeded = BetaBashCodeExecutionToolResultErrorObjectErrorCodeExecutionTimeExceeded
 
-// Deprecated: BetaBashCodeExecutionToolResultError has been renamed to
-// BetaBashCodeExecutionToolResultErrorObject
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCodeOutputFileTooLarge has
+// been renamed to
+// BetaBashCodeExecutionToolResultErrorObjectErrorCodeOutputFileTooLarge
 const BetaBashCodeExecutionToolResultErrorErrorCodeOutputFileTooLarge = BetaBashCodeExecutionToolResultErrorObjectErrorCodeOutputFileTooLarge
 
 // Deprecated: BetaTextEditorCodeExecutionToolResultError has been renamed to
 // BetaTextEditorCodeExecutionToolResultErrorObject
 type BetaTextEditorCodeExecutionToolResultError = BetaTextEditorCodeExecutionToolResultErrorObject
 
-// Deprecated: BetaTextEditorCodeExecutionToolResultError has been renamed to
-// BetaTextEditorCodeExecutionToolResultErrorObject
+// Deprecated: BetaTextEditorCodeExecutionToolResultErrorErrorCode has been renamed
+// to BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode
 type BetaTextEditorCodeExecutionToolResultErrorErrorCode = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode
 
-// Deprecated: BetaTextEditorCodeExecutionToolResultError has been renamed to
-// BetaTextEditorCodeExecutionToolResultErrorObject
+// Deprecated: BetaTextEditorCodeExecutionToolResultErrorErrorCodeInvalidToolInput
+// has been renamed to
+// BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeInvalidToolInput
 const BetaTextEditorCodeExecutionToolResultErrorErrorCodeInvalidToolInput = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeInvalidToolInput
 
-// Deprecated: BetaTextEditorCodeExecutionToolResultError has been renamed to
-// BetaTextEditorCodeExecutionToolResultErrorObject
+// Deprecated: BetaTextEditorCodeExecutionToolResultErrorErrorCodeUnavailable has
+// been renamed to
+// BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeUnavailable
 const BetaTextEditorCodeExecutionToolResultErrorErrorCodeUnavailable = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeUnavailable
 
-// Deprecated: BetaTextEditorCodeExecutionToolResultError has been renamed to
-// BetaTextEditorCodeExecutionToolResultErrorObject
+// Deprecated: BetaTextEditorCodeExecutionToolResultErrorErrorCodeTooManyRequests
+// has been renamed to
+// BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeTooManyRequests
 const BetaTextEditorCodeExecutionToolResultErrorErrorCodeTooManyRequests = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeTooManyRequests
 
-// Deprecated: BetaTextEditorCodeExecutionToolResultError has been renamed to
-// BetaTextEditorCodeExecutionToolResultErrorObject
+// Deprecated:
+// BetaTextEditorCodeExecutionToolResultErrorErrorCodeExecutionTimeExceeded has
+// been renamed to
+// BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeExecutionTimeExceeded
 const BetaTextEditorCodeExecutionToolResultErrorErrorCodeExecutionTimeExceeded = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeExecutionTimeExceeded
 
-// Deprecated: BetaTextEditorCodeExecutionToolResultError has been renamed to
-// BetaTextEditorCodeExecutionToolResultErrorObject
+// Deprecated: BetaTextEditorCodeExecutionToolResultErrorErrorCodeFileNotFound has
+// been renamed to
+// BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeFileNotFound
 const BetaTextEditorCodeExecutionToolResultErrorErrorCodeFileNotFound = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeFileNotFound
 
 // Deprecated: BetaToolSearchToolResultError has been renamed to
 // BetaToolSearchToolResultErrorObject
 type BetaToolSearchToolResultError = BetaToolSearchToolResultErrorObject
 
-// Deprecated: BetaToolSearchToolResultError has been renamed to
-// BetaToolSearchToolResultErrorObject
+// Deprecated: BetaToolSearchToolResultErrorErrorCode has been renamed to
+// BetaToolSearchToolResultErrorObjectErrorCode
 type BetaToolSearchToolResultErrorErrorCode = BetaToolSearchToolResultErrorObjectErrorCode
 
-// Deprecated: BetaToolSearchToolResultError has been renamed to
-// BetaToolSearchToolResultErrorObject
+// Deprecated: BetaToolSearchToolResultErrorErrorCodeInvalidToolInput has been
+// renamed to BetaToolSearchToolResultErrorObjectErrorCodeInvalidToolInput
 const BetaToolSearchToolResultErrorErrorCodeInvalidToolInput = BetaToolSearchToolResultErrorObjectErrorCodeInvalidToolInput
 
-// Deprecated: BetaToolSearchToolResultError has been renamed to
-// BetaToolSearchToolResultErrorObject
+// Deprecated: BetaToolSearchToolResultErrorErrorCodeUnavailable has been renamed
+// to BetaToolSearchToolResultErrorObjectErrorCodeUnavailable
 const BetaToolSearchToolResultErrorErrorCodeUnavailable = BetaToolSearchToolResultErrorObjectErrorCodeUnavailable
 
-// Deprecated: BetaToolSearchToolResultError has been renamed to
-// BetaToolSearchToolResultErrorObject
+// Deprecated: BetaToolSearchToolResultErrorErrorCodeTooManyRequests has been
+// renamed to BetaToolSearchToolResultErrorObjectErrorCodeTooManyRequests
 const BetaToolSearchToolResultErrorErrorCodeTooManyRequests = BetaToolSearchToolResultErrorObjectErrorCodeTooManyRequests
 
-// Deprecated: BetaToolSearchToolResultError has been renamed to
-// BetaToolSearchToolResultErrorObject
+// Deprecated: BetaToolSearchToolResultErrorErrorCodeExecutionTimeExceeded has been
+// renamed to BetaToolSearchToolResultErrorObjectErrorCodeExecutionTimeExceeded
 const BetaToolSearchToolResultErrorErrorCodeExecutionTimeExceeded = BetaToolSearchToolResultErrorObjectErrorCodeExecutionTimeExceeded
 
 // Deprecated: BetaAdvisorToolResultError has been renamed to
 // BetaAdvisorToolResultErrorObject
 type BetaAdvisorToolResultError = BetaAdvisorToolResultErrorObject
 
-// Deprecated: BetaAdvisorToolResultError has been renamed to
-// BetaAdvisorToolResultErrorObject
+// Deprecated: BetaAdvisorToolResultErrorErrorCode has been renamed to
+// BetaAdvisorToolResultErrorObjectErrorCode
 type BetaAdvisorToolResultErrorErrorCode = BetaAdvisorToolResultErrorObjectErrorCode
 
-// Deprecated: BetaAdvisorToolResultError has been renamed to
-// BetaAdvisorToolResultErrorObject
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeMaxUsesExceeded has been renamed
+// to BetaAdvisorToolResultErrorObjectErrorCodeMaxUsesExceeded
 const BetaAdvisorToolResultErrorErrorCodeMaxUsesExceeded = BetaAdvisorToolResultErrorObjectErrorCodeMaxUsesExceeded
 
-// Deprecated: BetaAdvisorToolResultError has been renamed to
-// BetaAdvisorToolResultErrorObject
+// Deprecated: BetaAdvisorToolResultErrorErrorCodePromptTooLong has been renamed to
+// BetaAdvisorToolResultErrorObjectErrorCodePromptTooLong
 const BetaAdvisorToolResultErrorErrorCodePromptTooLong = BetaAdvisorToolResultErrorObjectErrorCodePromptTooLong
 
-// Deprecated: BetaAdvisorToolResultError has been renamed to
-// BetaAdvisorToolResultErrorObject
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeTooManyRequests has been renamed
+// to BetaAdvisorToolResultErrorObjectErrorCodeTooManyRequests
 const BetaAdvisorToolResultErrorErrorCodeTooManyRequests = BetaAdvisorToolResultErrorObjectErrorCodeTooManyRequests
 
-// Deprecated: BetaAdvisorToolResultError has been renamed to
-// BetaAdvisorToolResultErrorObject
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeOverloaded has been renamed to
+// BetaAdvisorToolResultErrorObjectErrorCodeOverloaded
 const BetaAdvisorToolResultErrorErrorCodeOverloaded = BetaAdvisorToolResultErrorObjectErrorCodeOverloaded
 
-// Deprecated: BetaAdvisorToolResultError has been renamed to
-// BetaAdvisorToolResultErrorObject
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeUnavailable has been renamed to
+// BetaAdvisorToolResultErrorObjectErrorCodeUnavailable
 const BetaAdvisorToolResultErrorErrorCodeUnavailable = BetaAdvisorToolResultErrorObjectErrorCodeUnavailable
 
-// Deprecated: BetaAdvisorToolResultError has been renamed to
-// BetaAdvisorToolResultErrorObject
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeExecutionTimeExceeded has been
+// renamed to BetaAdvisorToolResultErrorObjectErrorCodeExecutionTimeExceeded
 const BetaAdvisorToolResultErrorErrorCodeExecutionTimeExceeded = BetaAdvisorToolResultErrorObjectErrorCodeExecutionTimeExceeded
 
-// Deprecated: BetaAdvisorToolResultError has been renamed to
-// BetaAdvisorToolResultErrorObject
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeModelNotFound has been renamed to
+// BetaAdvisorToolResultErrorObjectErrorCodeModelNotFound
 const BetaAdvisorToolResultErrorErrorCodeModelNotFound = BetaAdvisorToolResultErrorObjectErrorCodeModelNotFound
 
 type BetaMessageNewParams struct {

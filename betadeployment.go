@@ -1830,8 +1830,8 @@ type BetaManagedAgentsVaultArchivedDeploymentPausedReasonError = BetaManagedAgen
 // to BetaManagedAgentsUnknownDeploymentPausedReasonErrorObject
 type BetaManagedAgentsUnknownDeploymentPausedReasonError = BetaManagedAgentsUnknownDeploymentPausedReasonErrorObject
 
-// Deprecated: BetaManagedAgentsDeploymentPausedReasonError has been renamed to
-// BetaManagedAgentsDeploymentPausedReasonErrorObject
+// Deprecated: BetaManagedAgentsDeploymentPausedReasonErrorUnion has been renamed
+// to BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion
 type BetaManagedAgentsDeploymentPausedReasonErrorUnion = BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion
 
 type BetaDeploymentNewParams struct {

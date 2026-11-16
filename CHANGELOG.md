@@ -1,5 +1,53 @@
 # Changelog
 
+## [2.10.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.9.0...v2.10.0) (2026-11-16)
+
+### Features
+
+* **api:** add source and error codes to the RBAC Role read endpoints
+* **api:** add Update Bundle, which sets a Claude Tag Bundle's instructions, and return instructions on Bundle
+
+
+### Bug Fixes
+
+* **tools:** fully resolve file tool paths that pass through a dangling symlink
+* **tools:** ignore ripgrep config files in the agent toolset's grep tool
+* **tools:** look for a NUL byte before the grep tool's built-in search reads a whole file
+
+  The built-in search of `grep` still skips a file with a NUL byte in its first 512 bytes, and now looks before it reads the rest. A file that reports a size of 0 but holds far more, such as `/proc/self/pagemap`, used to be read whole and could exhaust memory. `read`, `edit` and the built-in search now also apply their size limit to the bytes a file yields, not only to the size it reports.
+
+* **tools:** make agent toolset files and directories owner-only
+
+  The `write` tool now creates files as `0600` and directories as `0700` (they were `0644` and `0755`), and a downloaded skill's directory is `0700`. A process that runs as another user, such as a sidecar or a web server, can no longer read them. A file that `write` or `edit` replaces now keeps its permission bits, where before it was reset to `0644`. To share a file with another user, create it with the permissions you want before the agent writes to it, or run `chmod` afterwards.
+
+* **tools:** pass over an rg inside the directories the agent toolset's file tools can write
+
+  `grep` passes over an `rg` that resolves to somewhere inside `Workdir` or `AllowedRoots`, whatever the letter case or Unicode form. It uses the next `rg` on `PATH`, or the built-in search when there is none. On Windows only `rg.exe` is used, and an `rg.cmd` or `rg.bat` wrapper is passed over. With a `Workdir` that holds every `rg` on the host, such as `/`, every search is a built-in search. `rg` no longer gets the `ANTHROPIC_*` variables of the process, like the shell of `bash`, and both now drop them whatever the letter case of the name.
+
+
+### Performance Improvements
+
+* **client:** speed up JSON decoding of request param types
+
+
+### Chores
+
+* **api:** deprecate old beta header values
+
+  The API still accepts these values, but a later release removes them from the SDKs. Delete `prompt-caching-2024-07-31`, `pdfs-2024-09-25`, `token-counting-2024-11-01`, `token-efficient-tools-2025-02-19`, `extended-cache-ttl-2025-04-11`, `cache-diagnosis-2026-04-07` and `ce-user-management-2026-07-13` from your requests. `files-api-2025-04-14` and `skills-2025-10-02` select the beta response shapes, so follow the Files API and Skills migration guides before you delete them.
+
+  In C#, the `AnthropicBeta` enum's members have new numbers, so code compiled against an earlier SDK version sends a different beta value, with no error, until you rebuild it.
+
+* **api:** stop sending an old beta header on batch requests
+
+  `beta.messages.batches` no longer sends `message-batches-2024-09-24`, which the API doesn't need. If your client sets a default `anthropic-beta` header, these requests now send it, where in some SDKs the old value replaced it. The API still accepts the old value. If you set it yourself, delete it: a later release removes it from the SDKs.
+
+* **docs:** add an example value for the workspace name
+* **docs:** clarify when the auto permission policy denies a tool call
+* **docs:** clarify which workspaces an external key can be attached to
+* **docs:** recommend multiagent_20261001 over the coordinator type
+* **docs:** say when organization_id is required on plugin reads
+
 ## [2.9.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.8.0...v2.9.0) (2026-11-10)
 
 ### Features

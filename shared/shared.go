@@ -38,7 +38,7 @@ func (r *APIErrorObject) UnmarshalJSON(data []byte) error {
 
 func (APIErrorObject) ImplErrorObjectUnion() {}
 
-type AuthenticationError struct {
+type AuthenticationErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -54,14 +54,14 @@ type AuthenticationError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r AuthenticationError) RawJSON() string { return r.JSON.raw }
-func (r *AuthenticationError) UnmarshalJSON(data []byte) error {
+func (r AuthenticationErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *AuthenticationErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (AuthenticationError) ImplErrorObjectUnion() {}
+func (AuthenticationErrorObject) ImplErrorObjectUnion() {}
 
-type BillingError struct {
+type BillingErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -77,12 +77,12 @@ type BillingError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BillingError) RawJSON() string { return r.JSON.raw }
-func (r *BillingError) UnmarshalJSON(data []byte) error {
+func (r BillingErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BillingErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (BillingError) ImplErrorObjectUnion() {}
+func (BillingErrorObject) ImplErrorObjectUnion() {}
 
 // The API key belongs to the Claude Code workspace, and the user who created it is
 // no longer a member of the organization or of that workspace.
@@ -1074,9 +1074,9 @@ func (r *ErrorDetailsUnion) UnmarshalJSON(data []byte) error {
 }
 
 // ErrorObjectUnion contains all possible properties and values from
-// [InvalidRequestError], [AuthenticationError], [BillingError], [PermissionError],
-// [NotFoundError], [RateLimitError], [GatewayTimeoutError], [APIErrorObject],
-// [OverloadedError].
+// [InvalidRequestErrorObject], [AuthenticationErrorObject], [BillingErrorObject],
+// [PermissionErrorObject], [NotFoundErrorObject], [RateLimitErrorObject],
+// [GatewayTimeoutErrorObject], [APIErrorObject], [OverloadedErrorObject].
 //
 // Use the [ErrorObjectUnion.AsAny] method to switch on the variant.
 //
@@ -1103,15 +1103,15 @@ type anyErrorObject interface {
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ErrorObjectUnion.AsAny().(type) {
-//	case shared.InvalidRequestError:
-//	case shared.AuthenticationError:
-//	case shared.BillingError:
-//	case shared.PermissionError:
-//	case shared.NotFoundError:
-//	case shared.RateLimitError:
-//	case shared.GatewayTimeoutError:
+//	case shared.InvalidRequestErrorObject:
+//	case shared.AuthenticationErrorObject:
+//	case shared.BillingErrorObject:
+//	case shared.PermissionErrorObject:
+//	case shared.NotFoundErrorObject:
+//	case shared.RateLimitErrorObject:
+//	case shared.GatewayTimeoutErrorObject:
 //	case shared.APIErrorObject:
-//	case shared.OverloadedError:
+//	case shared.OverloadedErrorObject:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1139,37 +1139,37 @@ func (u ErrorObjectUnion) AsAny() anyErrorObject {
 	return nil
 }
 
-func (u ErrorObjectUnion) AsInvalidRequestError() (v InvalidRequestError) {
+func (u ErrorObjectUnion) AsInvalidRequestError() (v InvalidRequestErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsAuthenticationError() (v AuthenticationError) {
+func (u ErrorObjectUnion) AsAuthenticationError() (v AuthenticationErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsBillingError() (v BillingError) {
+func (u ErrorObjectUnion) AsBillingError() (v BillingErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsPermissionError() (v PermissionError) {
+func (u ErrorObjectUnion) AsPermissionError() (v PermissionErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsNotFoundError() (v NotFoundError) {
+func (u ErrorObjectUnion) AsNotFoundError() (v NotFoundErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsRateLimitError() (v RateLimitError) {
+func (u ErrorObjectUnion) AsRateLimitError() (v RateLimitErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsTimeoutError() (v GatewayTimeoutError) {
+func (u ErrorObjectUnion) AsTimeoutError() (v GatewayTimeoutErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1179,7 +1179,7 @@ func (u ErrorObjectUnion) AsAPIError() (v APIErrorObject) {
 	return
 }
 
-func (u ErrorObjectUnion) AsOverloadedError() (v OverloadedError) {
+func (u ErrorObjectUnion) AsOverloadedError() (v OverloadedErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1228,7 +1228,7 @@ const (
 	ErrorTypeConflictError                 ErrorType = "conflict_error"
 )
 
-type GatewayTimeoutError struct {
+type GatewayTimeoutErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1244,14 +1244,14 @@ type GatewayTimeoutError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r GatewayTimeoutError) RawJSON() string { return r.JSON.raw }
-func (r *GatewayTimeoutError) UnmarshalJSON(data []byte) error {
+func (r GatewayTimeoutErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *GatewayTimeoutErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (GatewayTimeoutError) ImplErrorObjectUnion() {}
+func (GatewayTimeoutErrorObject) ImplErrorObjectUnion() {}
 
-type InvalidRequestError struct {
+type InvalidRequestErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1267,14 +1267,14 @@ type InvalidRequestError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r InvalidRequestError) RawJSON() string { return r.JSON.raw }
-func (r *InvalidRequestError) UnmarshalJSON(data []byte) error {
+func (r InvalidRequestErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *InvalidRequestErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (InvalidRequestError) ImplErrorObjectUnion() {}
+func (InvalidRequestErrorObject) ImplErrorObjectUnion() {}
 
-type NotFoundError struct {
+type NotFoundErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1290,12 +1290,12 @@ type NotFoundError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r NotFoundError) RawJSON() string { return r.JSON.raw }
-func (r *NotFoundError) UnmarshalJSON(data []byte) error {
+func (r NotFoundErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *NotFoundErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (NotFoundError) ImplErrorObjectUnion() {}
+func (NotFoundErrorObject) ImplErrorObjectUnion() {}
 
 // Anthropic has disabled the organization for trust and safety reasons. An
 // organization disabled for any other reason, such as billing, does not get this
@@ -1340,7 +1340,7 @@ func (r *OrganizationTypeNotSupportedErrorDetails) UnmarshalJSON(data []byte) er
 
 func (OrganizationTypeNotSupportedErrorDetails) ImplErrorDetailsUnion() {}
 
-type OverloadedError struct {
+type OverloadedErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1356,12 +1356,12 @@ type OverloadedError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r OverloadedError) RawJSON() string { return r.JSON.raw }
-func (r *OverloadedError) UnmarshalJSON(data []byte) error {
+func (r OverloadedErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *OverloadedErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (OverloadedError) ImplErrorObjectUnion() {}
+func (OverloadedErrorObject) ImplErrorObjectUnion() {}
 
 // The endpoint serves only organizations that belong to a parent organization, and
 // this organization belongs to none.
@@ -1383,7 +1383,7 @@ func (r *ParentOrganizationRequiredErrorDetails) UnmarshalJSON(data []byte) erro
 
 func (ParentOrganizationRequiredErrorDetails) ImplErrorDetailsUnion() {}
 
-type PermissionError struct {
+type PermissionErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1399,12 +1399,12 @@ type PermissionError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r PermissionError) RawJSON() string { return r.JSON.raw }
-func (r *PermissionError) UnmarshalJSON(data []byte) error {
+func (r PermissionErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *PermissionErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (PermissionError) ImplErrorObjectUnion() {}
+func (PermissionErrorObject) ImplErrorObjectUnion() {}
 
 // The request would exceed a ramp limit, which caps how fast usage can grow. Retry
 // after the time in the `retry-after` header.
@@ -1426,7 +1426,7 @@ func (r *RampLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
 
 func (RampLimitExceededErrorDetails) ImplErrorDetailsUnion() {}
 
-type RateLimitError struct {
+type RateLimitErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1442,12 +1442,12 @@ type RateLimitError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r RateLimitError) RawJSON() string { return r.JSON.raw }
-func (r *RateLimitError) UnmarshalJSON(data []byte) error {
+func (r RateLimitErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *RateLimitErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (RateLimitError) ImplErrorObjectUnion() {}
+func (RateLimitErrorObject) ImplErrorObjectUnion() {}
 
 // The request body is not valid for its `Content-Encoding`.
 type RequestBodyEncodingInvalidErrorDetails struct {
@@ -3039,3 +3039,27 @@ func (r *BetaBundleOnCallErrorDetails) UnmarshalJSON(data []byte) error {
 }
 
 func (BetaBundleOnCallErrorDetails) ImplErrorDetailsUnion() {}
+
+// Deprecated: AuthenticationError has been renamed to AuthenticationErrorObject
+type AuthenticationError = AuthenticationErrorObject
+
+// Deprecated: InvalidRequestError has been renamed to InvalidRequestErrorObject
+type InvalidRequestError = InvalidRequestErrorObject
+
+// Deprecated: BillingError has been renamed to BillingErrorObject
+type BillingError = BillingErrorObject
+
+// Deprecated: GatewayTimeoutError has been renamed to GatewayTimeoutErrorObject
+type GatewayTimeoutError = GatewayTimeoutErrorObject
+
+// Deprecated: NotFoundError has been renamed to NotFoundErrorObject
+type NotFoundError = NotFoundErrorObject
+
+// Deprecated: OverloadedError has been renamed to OverloadedErrorObject
+type OverloadedError = OverloadedErrorObject
+
+// Deprecated: PermissionError has been renamed to PermissionErrorObject
+type PermissionError = PermissionErrorObject
+
+// Deprecated: RateLimitError has been renamed to RateLimitErrorObject
+type RateLimitError = RateLimitErrorObject

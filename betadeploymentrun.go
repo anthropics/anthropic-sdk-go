@@ -107,7 +107,7 @@ func (r *BetaDeploymentRunService) ListAutoPaging(ctx context.Context, params Be
 }
 
 // The deployment's agent was archived.
-type BetaManagedAgentsAgentArchivedRunError struct {
+type BetaManagedAgentsAgentArchivedRunErrorObject struct {
 	// Human-readable error description.
 	Message string                      `json:"message" api:"required"`
 	Type    constant.AgentArchivedError `json:"type" default:"agent_archived_error"`
@@ -121,8 +121,8 @@ type BetaManagedAgentsAgentArchivedRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsAgentArchivedRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsAgentArchivedRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsAgentArchivedRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsAgentArchivedRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -169,22 +169,22 @@ func (r *BetaManagedAgentsDeploymentRun) UnmarshalJSON(data []byte) error {
 }
 
 // BetaManagedAgentsDeploymentRunErrorUnion contains all possible properties and
-// values from [BetaManagedAgentsEnvironmentArchivedRunError],
-// [BetaManagedAgentsAgentArchivedRunError],
-// [BetaManagedAgentsEnvironmentNotFoundRunError],
-// [BetaManagedAgentsVaultNotFoundRunError],
-// [BetaManagedAgentsVaultArchivedRunError],
-// [BetaManagedAgentsFileNotFoundRunError],
-// [BetaManagedAgentsMemoryStoreArchivedRunError],
-// [BetaManagedAgentsSkillNotFoundRunError],
-// [BetaManagedAgentsSessionResourceNotFoundRunError],
-// [BetaManagedAgentsWorkspaceArchivedRunError],
-// [BetaManagedAgentsOrganizationDisabledRunError],
-// [BetaManagedAgentsSessionRateLimitedRunError],
-// [BetaManagedAgentsSessionCreationRejectedRunError],
-// [BetaManagedAgentsUnknownRunError],
-// [BetaManagedAgentsSelfHostedResourcesUnsupportedRunError],
-// [BetaManagedAgentsMCPEgressBlockedRunError].
+// values from [BetaManagedAgentsEnvironmentArchivedRunErrorObject],
+// [BetaManagedAgentsAgentArchivedRunErrorObject],
+// [BetaManagedAgentsEnvironmentNotFoundRunErrorObject],
+// [BetaManagedAgentsVaultNotFoundRunErrorObject],
+// [BetaManagedAgentsVaultArchivedRunErrorObject],
+// [BetaManagedAgentsFileNotFoundRunErrorObject],
+// [BetaManagedAgentsMemoryStoreArchivedRunErrorObject],
+// [BetaManagedAgentsSkillNotFoundRunErrorObject],
+// [BetaManagedAgentsSessionResourceNotFoundRunErrorObject],
+// [BetaManagedAgentsWorkspaceArchivedRunErrorObject],
+// [BetaManagedAgentsOrganizationDisabledRunErrorObject],
+// [BetaManagedAgentsSessionRateLimitedRunErrorObject],
+// [BetaManagedAgentsSessionCreationRejectedRunErrorObject],
+// [BetaManagedAgentsUnknownRunErrorObject],
+// [BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorObject],
+// [BetaManagedAgentsMCPEgressBlockedRunErrorObject].
 //
 // Use the [BetaManagedAgentsDeploymentRunErrorUnion.AsAny] method to switch on the
 // variant.
@@ -214,45 +214,52 @@ type anyBetaManagedAgentsDeploymentRunError interface {
 	implBetaManagedAgentsDeploymentRunErrorUnion()
 }
 
-func (BetaManagedAgentsEnvironmentArchivedRunError) implBetaManagedAgentsDeploymentRunErrorUnion() {}
-func (BetaManagedAgentsAgentArchivedRunError) implBetaManagedAgentsDeploymentRunErrorUnion()       {}
-func (BetaManagedAgentsEnvironmentNotFoundRunError) implBetaManagedAgentsDeploymentRunErrorUnion() {}
-func (BetaManagedAgentsVaultNotFoundRunError) implBetaManagedAgentsDeploymentRunErrorUnion()       {}
-func (BetaManagedAgentsVaultArchivedRunError) implBetaManagedAgentsDeploymentRunErrorUnion()       {}
-func (BetaManagedAgentsFileNotFoundRunError) implBetaManagedAgentsDeploymentRunErrorUnion()        {}
-func (BetaManagedAgentsMemoryStoreArchivedRunError) implBetaManagedAgentsDeploymentRunErrorUnion() {}
-func (BetaManagedAgentsSkillNotFoundRunError) implBetaManagedAgentsDeploymentRunErrorUnion()       {}
-func (BetaManagedAgentsSessionResourceNotFoundRunError) implBetaManagedAgentsDeploymentRunErrorUnion() {
+func (BetaManagedAgentsEnvironmentArchivedRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {
 }
-func (BetaManagedAgentsWorkspaceArchivedRunError) implBetaManagedAgentsDeploymentRunErrorUnion()    {}
-func (BetaManagedAgentsOrganizationDisabledRunError) implBetaManagedAgentsDeploymentRunErrorUnion() {}
-func (BetaManagedAgentsSessionRateLimitedRunError) implBetaManagedAgentsDeploymentRunErrorUnion()   {}
-func (BetaManagedAgentsSessionCreationRejectedRunError) implBetaManagedAgentsDeploymentRunErrorUnion() {
+func (BetaManagedAgentsAgentArchivedRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {}
+func (BetaManagedAgentsEnvironmentNotFoundRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {
 }
-func (BetaManagedAgentsUnknownRunError) implBetaManagedAgentsDeploymentRunErrorUnion() {}
-func (BetaManagedAgentsSelfHostedResourcesUnsupportedRunError) implBetaManagedAgentsDeploymentRunErrorUnion() {
+func (BetaManagedAgentsVaultNotFoundRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {}
+func (BetaManagedAgentsVaultArchivedRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {}
+func (BetaManagedAgentsFileNotFoundRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion()  {}
+func (BetaManagedAgentsMemoryStoreArchivedRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {
 }
-func (BetaManagedAgentsMCPEgressBlockedRunError) implBetaManagedAgentsDeploymentRunErrorUnion() {}
+func (BetaManagedAgentsSkillNotFoundRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {}
+func (BetaManagedAgentsSessionResourceNotFoundRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {
+}
+func (BetaManagedAgentsWorkspaceArchivedRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {
+}
+func (BetaManagedAgentsOrganizationDisabledRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {
+}
+func (BetaManagedAgentsSessionRateLimitedRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {
+}
+func (BetaManagedAgentsSessionCreationRejectedRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {
+}
+func (BetaManagedAgentsUnknownRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {}
+func (BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {
+}
+func (BetaManagedAgentsMCPEgressBlockedRunErrorObject) implBetaManagedAgentsDeploymentRunErrorUnion() {
+}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsDeploymentRunErrorUnion.AsAny().(type) {
-//	case anthropic.BetaManagedAgentsEnvironmentArchivedRunError:
-//	case anthropic.BetaManagedAgentsAgentArchivedRunError:
-//	case anthropic.BetaManagedAgentsEnvironmentNotFoundRunError:
-//	case anthropic.BetaManagedAgentsVaultNotFoundRunError:
-//	case anthropic.BetaManagedAgentsVaultArchivedRunError:
-//	case anthropic.BetaManagedAgentsFileNotFoundRunError:
-//	case anthropic.BetaManagedAgentsMemoryStoreArchivedRunError:
-//	case anthropic.BetaManagedAgentsSkillNotFoundRunError:
-//	case anthropic.BetaManagedAgentsSessionResourceNotFoundRunError:
-//	case anthropic.BetaManagedAgentsWorkspaceArchivedRunError:
-//	case anthropic.BetaManagedAgentsOrganizationDisabledRunError:
-//	case anthropic.BetaManagedAgentsSessionRateLimitedRunError:
-//	case anthropic.BetaManagedAgentsSessionCreationRejectedRunError:
-//	case anthropic.BetaManagedAgentsUnknownRunError:
-//	case anthropic.BetaManagedAgentsSelfHostedResourcesUnsupportedRunError:
-//	case anthropic.BetaManagedAgentsMCPEgressBlockedRunError:
+//	case anthropic.BetaManagedAgentsEnvironmentArchivedRunErrorObject:
+//	case anthropic.BetaManagedAgentsAgentArchivedRunErrorObject:
+//	case anthropic.BetaManagedAgentsEnvironmentNotFoundRunErrorObject:
+//	case anthropic.BetaManagedAgentsVaultNotFoundRunErrorObject:
+//	case anthropic.BetaManagedAgentsVaultArchivedRunErrorObject:
+//	case anthropic.BetaManagedAgentsFileNotFoundRunErrorObject:
+//	case anthropic.BetaManagedAgentsMemoryStoreArchivedRunErrorObject:
+//	case anthropic.BetaManagedAgentsSkillNotFoundRunErrorObject:
+//	case anthropic.BetaManagedAgentsSessionResourceNotFoundRunErrorObject:
+//	case anthropic.BetaManagedAgentsWorkspaceArchivedRunErrorObject:
+//	case anthropic.BetaManagedAgentsOrganizationDisabledRunErrorObject:
+//	case anthropic.BetaManagedAgentsSessionRateLimitedRunErrorObject:
+//	case anthropic.BetaManagedAgentsSessionCreationRejectedRunErrorObject:
+//	case anthropic.BetaManagedAgentsUnknownRunErrorObject:
+//	case anthropic.BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorObject:
+//	case anthropic.BetaManagedAgentsMCPEgressBlockedRunErrorObject:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -294,82 +301,82 @@ func (u BetaManagedAgentsDeploymentRunErrorUnion) AsAny() anyBetaManagedAgentsDe
 	return nil
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsEnvironmentArchivedError() (v BetaManagedAgentsEnvironmentArchivedRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsEnvironmentArchivedError() (v BetaManagedAgentsEnvironmentArchivedRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsAgentArchivedError() (v BetaManagedAgentsAgentArchivedRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsAgentArchivedError() (v BetaManagedAgentsAgentArchivedRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsEnvironmentNotFoundError() (v BetaManagedAgentsEnvironmentNotFoundRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsEnvironmentNotFoundError() (v BetaManagedAgentsEnvironmentNotFoundRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsVaultNotFoundError() (v BetaManagedAgentsVaultNotFoundRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsVaultNotFoundError() (v BetaManagedAgentsVaultNotFoundRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsVaultArchivedError() (v BetaManagedAgentsVaultArchivedRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsVaultArchivedError() (v BetaManagedAgentsVaultArchivedRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsFileNotFoundError() (v BetaManagedAgentsFileNotFoundRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsFileNotFoundError() (v BetaManagedAgentsFileNotFoundRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsMemoryStoreArchivedError() (v BetaManagedAgentsMemoryStoreArchivedRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsMemoryStoreArchivedError() (v BetaManagedAgentsMemoryStoreArchivedRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsSkillNotFoundError() (v BetaManagedAgentsSkillNotFoundRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsSkillNotFoundError() (v BetaManagedAgentsSkillNotFoundRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsSessionResourceNotFoundError() (v BetaManagedAgentsSessionResourceNotFoundRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsSessionResourceNotFoundError() (v BetaManagedAgentsSessionResourceNotFoundRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsWorkspaceArchivedError() (v BetaManagedAgentsWorkspaceArchivedRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsWorkspaceArchivedError() (v BetaManagedAgentsWorkspaceArchivedRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsOrganizationDisabledError() (v BetaManagedAgentsOrganizationDisabledRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsOrganizationDisabledError() (v BetaManagedAgentsOrganizationDisabledRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsSessionRateLimitedError() (v BetaManagedAgentsSessionRateLimitedRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsSessionRateLimitedError() (v BetaManagedAgentsSessionRateLimitedRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsSessionCreationRejectedError() (v BetaManagedAgentsSessionCreationRejectedRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsSessionCreationRejectedError() (v BetaManagedAgentsSessionCreationRejectedRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsUnknownError() (v BetaManagedAgentsUnknownRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsUnknownError() (v BetaManagedAgentsUnknownRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsSelfHostedResourcesUnsupportedError() (v BetaManagedAgentsSelfHostedResourcesUnsupportedRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsSelfHostedResourcesUnsupportedError() (v BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentRunErrorUnion) AsMCPEgressBlockedError() (v BetaManagedAgentsMCPEgressBlockedRunError) {
+func (u BetaManagedAgentsDeploymentRunErrorUnion) AsMCPEgressBlockedError() (v BetaManagedAgentsMCPEgressBlockedRunErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -382,7 +389,7 @@ func (r *BetaManagedAgentsDeploymentRunErrorUnion) UnmarshalJSON(data []byte) er
 }
 
 // The deployment's environment was archived.
-type BetaManagedAgentsEnvironmentArchivedRunError struct {
+type BetaManagedAgentsEnvironmentArchivedRunErrorObject struct {
 	// Human-readable error description.
 	Message string                            `json:"message" api:"required"`
 	Type    constant.EnvironmentArchivedError `json:"type" default:"environment_archived_error"`
@@ -396,13 +403,13 @@ type BetaManagedAgentsEnvironmentArchivedRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsEnvironmentArchivedRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsEnvironmentArchivedRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsEnvironmentArchivedRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsEnvironmentArchivedRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The deployment's environment no longer exists.
-type BetaManagedAgentsEnvironmentNotFoundRunError struct {
+type BetaManagedAgentsEnvironmentNotFoundRunErrorObject struct {
 	// Human-readable error description.
 	Message string                            `json:"message" api:"required"`
 	Type    constant.EnvironmentNotFoundError `json:"type" default:"environment_not_found_error"`
@@ -416,13 +423,13 @@ type BetaManagedAgentsEnvironmentNotFoundRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsEnvironmentNotFoundRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsEnvironmentNotFoundRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsEnvironmentNotFoundRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsEnvironmentNotFoundRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A file resource referenced by the deployment no longer exists.
-type BetaManagedAgentsFileNotFoundRunError struct {
+type BetaManagedAgentsFileNotFoundRunErrorObject struct {
 	// Human-readable error description.
 	Message string                     `json:"message" api:"required"`
 	Type    constant.FileNotFoundError `json:"type" default:"file_not_found_error"`
@@ -436,8 +443,8 @@ type BetaManagedAgentsFileNotFoundRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsFileNotFoundRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsFileNotFoundRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsFileNotFoundRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsFileNotFoundRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -461,7 +468,7 @@ func (r *BetaManagedAgentsManualTriggerContext) UnmarshalJSON(data []byte) error
 
 // An MCP server host used by the deployment's agent is blocked by the
 // environment's network policy.
-type BetaManagedAgentsMCPEgressBlockedRunError struct {
+type BetaManagedAgentsMCPEgressBlockedRunErrorObject struct {
 	// Human-readable error description.
 	Message string                         `json:"message" api:"required"`
 	Type    constant.MCPEgressBlockedError `json:"type" default:"mcp_egress_blocked_error"`
@@ -475,13 +482,13 @@ type BetaManagedAgentsMCPEgressBlockedRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsMCPEgressBlockedRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsMCPEgressBlockedRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsMCPEgressBlockedRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsMCPEgressBlockedRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A memory store referenced by the deployment is archived.
-type BetaManagedAgentsMemoryStoreArchivedRunError struct {
+type BetaManagedAgentsMemoryStoreArchivedRunErrorObject struct {
 	// Human-readable error description.
 	Message string                            `json:"message" api:"required"`
 	Type    constant.MemoryStoreArchivedError `json:"type" default:"memory_store_archived_error"`
@@ -495,13 +502,13 @@ type BetaManagedAgentsMemoryStoreArchivedRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsMemoryStoreArchivedRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsMemoryStoreArchivedRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsMemoryStoreArchivedRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsMemoryStoreArchivedRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The deployment's organization is disabled.
-type BetaManagedAgentsOrganizationDisabledRunError struct {
+type BetaManagedAgentsOrganizationDisabledRunErrorObject struct {
 	// Human-readable error description.
 	Message string                             `json:"message" api:"required"`
 	Type    constant.OrganizationDisabledError `json:"type" default:"organization_disabled_error"`
@@ -515,8 +522,8 @@ type BetaManagedAgentsOrganizationDisabledRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsOrganizationDisabledRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsOrganizationDisabledRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsOrganizationDisabledRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsOrganizationDisabledRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -544,7 +551,7 @@ func (r *BetaManagedAgentsScheduleTriggerContext) UnmarshalJSON(data []byte) err
 
 // The deployment configures resources, but its environment is self-hosted and
 // cannot mount them.
-type BetaManagedAgentsSelfHostedResourcesUnsupportedRunError struct {
+type BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorObject struct {
 	// Human-readable error description.
 	Message string                                       `json:"message" api:"required"`
 	Type    constant.SelfHostedResourcesUnsupportedError `json:"type" default:"self_hosted_resources_unsupported_error"`
@@ -558,13 +565,15 @@ type BetaManagedAgentsSelfHostedResourcesUnsupportedRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsSelfHostedResourcesUnsupportedRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsSelfHostedResourcesUnsupportedRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorObject) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The session create request was rejected with a non-retryable validation error.
-type BetaManagedAgentsSessionCreationRejectedRunError struct {
+type BetaManagedAgentsSessionCreationRejectedRunErrorObject struct {
 	// Human-readable error description.
 	Message string                                `json:"message" api:"required"`
 	Type    constant.SessionCreationRejectedError `json:"type" default:"session_creation_rejected_error"`
@@ -578,14 +587,14 @@ type BetaManagedAgentsSessionCreationRejectedRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsSessionCreationRejectedRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsSessionCreationRejectedRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsSessionCreationRejectedRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSessionCreationRejectedRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // Session creation was rejected due to rate limiting. The schedule keeps firing;
 // subsequent runs may succeed.
-type BetaManagedAgentsSessionRateLimitedRunError struct {
+type BetaManagedAgentsSessionRateLimitedRunErrorObject struct {
 	// Human-readable error description.
 	Message string                           `json:"message" api:"required"`
 	Type    constant.SessionRateLimitedError `json:"type" default:"session_rate_limited_error"`
@@ -599,13 +608,13 @@ type BetaManagedAgentsSessionRateLimitedRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsSessionRateLimitedRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsSessionRateLimitedRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsSessionRateLimitedRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSessionRateLimitedRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A referenced resource no longer exists and its kind was not reported.
-type BetaManagedAgentsSessionResourceNotFoundRunError struct {
+type BetaManagedAgentsSessionResourceNotFoundRunErrorObject struct {
 	// Human-readable error description.
 	Message string                                `json:"message" api:"required"`
 	Type    constant.SessionResourceNotFoundError `json:"type" default:"session_resource_not_found_error"`
@@ -619,13 +628,13 @@ type BetaManagedAgentsSessionResourceNotFoundRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsSessionResourceNotFoundRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsSessionResourceNotFoundRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsSessionResourceNotFoundRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSessionResourceNotFoundRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A skill referenced by the deployment's agent no longer exists.
-type BetaManagedAgentsSkillNotFoundRunError struct {
+type BetaManagedAgentsSkillNotFoundRunErrorObject struct {
 	// Human-readable error description.
 	Message string                      `json:"message" api:"required"`
 	Type    constant.SkillNotFoundError `json:"type" default:"skill_not_found_error"`
@@ -639,8 +648,8 @@ type BetaManagedAgentsSkillNotFoundRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsSkillNotFoundRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsSkillNotFoundRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsSkillNotFoundRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsSkillNotFoundRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -722,7 +731,7 @@ const (
 
 // An unknown or unexpected error caused the run to fail. A fallback variant;
 // clients that do not recognize a new error type can match on message alone.
-type BetaManagedAgentsUnknownRunError struct {
+type BetaManagedAgentsUnknownRunErrorObject struct {
 	// Human-readable error description.
 	Message string                `json:"message" api:"required"`
 	Type    constant.UnknownError `json:"type" default:"unknown_error"`
@@ -736,13 +745,13 @@ type BetaManagedAgentsUnknownRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsUnknownRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsUnknownRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsUnknownRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsUnknownRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A vault referenced by the deployment is archived.
-type BetaManagedAgentsVaultArchivedRunError struct {
+type BetaManagedAgentsVaultArchivedRunErrorObject struct {
 	// Human-readable error description.
 	Message string                      `json:"message" api:"required"`
 	Type    constant.VaultArchivedError `json:"type" default:"vault_archived_error"`
@@ -756,13 +765,13 @@ type BetaManagedAgentsVaultArchivedRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsVaultArchivedRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsVaultArchivedRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsVaultArchivedRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsVaultArchivedRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A vault referenced by the deployment no longer exists.
-type BetaManagedAgentsVaultNotFoundRunError struct {
+type BetaManagedAgentsVaultNotFoundRunErrorObject struct {
 	// Human-readable error description.
 	Message string                      `json:"message" api:"required"`
 	Type    constant.VaultNotFoundError `json:"type" default:"vault_not_found_error"`
@@ -776,13 +785,13 @@ type BetaManagedAgentsVaultNotFoundRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsVaultNotFoundRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsVaultNotFoundRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsVaultNotFoundRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsVaultNotFoundRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The deployment's workspace was archived.
-type BetaManagedAgentsWorkspaceArchivedRunError struct {
+type BetaManagedAgentsWorkspaceArchivedRunErrorObject struct {
 	// Human-readable error description.
 	Message string                          `json:"message" api:"required"`
 	Type    constant.WorkspaceArchivedError `json:"type" default:"workspace_archived_error"`
@@ -796,10 +805,74 @@ type BetaManagedAgentsWorkspaceArchivedRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsWorkspaceArchivedRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsWorkspaceArchivedRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsWorkspaceArchivedRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsWorkspaceArchivedRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Deprecated: BetaManagedAgentsEnvironmentArchivedRunError has been renamed to
+// BetaManagedAgentsEnvironmentArchivedRunErrorObject
+type BetaManagedAgentsEnvironmentArchivedRunError = BetaManagedAgentsEnvironmentArchivedRunErrorObject
+
+// Deprecated: BetaManagedAgentsAgentArchivedRunError has been renamed to
+// BetaManagedAgentsAgentArchivedRunErrorObject
+type BetaManagedAgentsAgentArchivedRunError = BetaManagedAgentsAgentArchivedRunErrorObject
+
+// Deprecated: BetaManagedAgentsEnvironmentNotFoundRunError has been renamed to
+// BetaManagedAgentsEnvironmentNotFoundRunErrorObject
+type BetaManagedAgentsEnvironmentNotFoundRunError = BetaManagedAgentsEnvironmentNotFoundRunErrorObject
+
+// Deprecated: BetaManagedAgentsVaultNotFoundRunError has been renamed to
+// BetaManagedAgentsVaultNotFoundRunErrorObject
+type BetaManagedAgentsVaultNotFoundRunError = BetaManagedAgentsVaultNotFoundRunErrorObject
+
+// Deprecated: BetaManagedAgentsVaultArchivedRunError has been renamed to
+// BetaManagedAgentsVaultArchivedRunErrorObject
+type BetaManagedAgentsVaultArchivedRunError = BetaManagedAgentsVaultArchivedRunErrorObject
+
+// Deprecated: BetaManagedAgentsFileNotFoundRunError has been renamed to
+// BetaManagedAgentsFileNotFoundRunErrorObject
+type BetaManagedAgentsFileNotFoundRunError = BetaManagedAgentsFileNotFoundRunErrorObject
+
+// Deprecated: BetaManagedAgentsMemoryStoreArchivedRunError has been renamed to
+// BetaManagedAgentsMemoryStoreArchivedRunErrorObject
+type BetaManagedAgentsMemoryStoreArchivedRunError = BetaManagedAgentsMemoryStoreArchivedRunErrorObject
+
+// Deprecated: BetaManagedAgentsSkillNotFoundRunError has been renamed to
+// BetaManagedAgentsSkillNotFoundRunErrorObject
+type BetaManagedAgentsSkillNotFoundRunError = BetaManagedAgentsSkillNotFoundRunErrorObject
+
+// Deprecated: BetaManagedAgentsSessionResourceNotFoundRunError has been renamed to
+// BetaManagedAgentsSessionResourceNotFoundRunErrorObject
+type BetaManagedAgentsSessionResourceNotFoundRunError = BetaManagedAgentsSessionResourceNotFoundRunErrorObject
+
+// Deprecated: BetaManagedAgentsWorkspaceArchivedRunError has been renamed to
+// BetaManagedAgentsWorkspaceArchivedRunErrorObject
+type BetaManagedAgentsWorkspaceArchivedRunError = BetaManagedAgentsWorkspaceArchivedRunErrorObject
+
+// Deprecated: BetaManagedAgentsOrganizationDisabledRunError has been renamed to
+// BetaManagedAgentsOrganizationDisabledRunErrorObject
+type BetaManagedAgentsOrganizationDisabledRunError = BetaManagedAgentsOrganizationDisabledRunErrorObject
+
+// Deprecated: BetaManagedAgentsSessionRateLimitedRunError has been renamed to
+// BetaManagedAgentsSessionRateLimitedRunErrorObject
+type BetaManagedAgentsSessionRateLimitedRunError = BetaManagedAgentsSessionRateLimitedRunErrorObject
+
+// Deprecated: BetaManagedAgentsSessionCreationRejectedRunError has been renamed to
+// BetaManagedAgentsSessionCreationRejectedRunErrorObject
+type BetaManagedAgentsSessionCreationRejectedRunError = BetaManagedAgentsSessionCreationRejectedRunErrorObject
+
+// Deprecated: BetaManagedAgentsUnknownRunError has been renamed to
+// BetaManagedAgentsUnknownRunErrorObject
+type BetaManagedAgentsUnknownRunError = BetaManagedAgentsUnknownRunErrorObject
+
+// Deprecated: BetaManagedAgentsSelfHostedResourcesUnsupportedRunError has been
+// renamed to BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorObject
+type BetaManagedAgentsSelfHostedResourcesUnsupportedRunError = BetaManagedAgentsSelfHostedResourcesUnsupportedRunErrorObject
+
+// Deprecated: BetaManagedAgentsMCPEgressBlockedRunError has been renamed to
+// BetaManagedAgentsMCPEgressBlockedRunErrorObject
+type BetaManagedAgentsMCPEgressBlockedRunError = BetaManagedAgentsMCPEgressBlockedRunErrorObject
 
 type BetaDeploymentRunGetParams struct {
 	// Optional header to select the Workspace for this request. The value is a

@@ -613,10 +613,10 @@ const ErrorCodeCompactionUnavailable = apierror.ErrorCodeCompactionUnavailable
 type APIErrorObject = shared.APIErrorObject
 
 // This is an alias to an internal type.
-type AuthenticationError = shared.AuthenticationError
+type AuthenticationErrorObject = shared.AuthenticationErrorObject
 
 // This is an alias to an internal type.
-type BillingError = shared.BillingError
+type BillingErrorObject = shared.BillingErrorObject
 
 // The API key belongs to the Claude Code workspace, and the user who created it is
 // no longer a member of the organization or of that workspace.
@@ -709,13 +709,13 @@ const ErrorTypeMemoryPathConflictError = shared.ErrorTypeMemoryPathConflictError
 const ErrorTypeConflictError = shared.ErrorTypeConflictError
 
 // This is an alias to an internal type.
-type GatewayTimeoutError = shared.GatewayTimeoutError
+type GatewayTimeoutErrorObject = shared.GatewayTimeoutErrorObject
 
 // This is an alias to an internal type.
-type InvalidRequestError = shared.InvalidRequestError
+type InvalidRequestErrorObject = shared.InvalidRequestErrorObject
 
 // This is an alias to an internal type.
-type NotFoundError = shared.NotFoundError
+type NotFoundErrorObject = shared.NotFoundErrorObject
 
 // Anthropic has disabled the organization for trust and safety reasons. An
 // organization disabled for any other reason, such as billing, does not get this
@@ -731,7 +731,7 @@ type OrganizationOnHoldErrorDetails = shared.OrganizationOnHoldErrorDetails
 type OrganizationTypeNotSupportedErrorDetails = shared.OrganizationTypeNotSupportedErrorDetails
 
 // This is an alias to an internal type.
-type OverloadedError = shared.OverloadedError
+type OverloadedErrorObject = shared.OverloadedErrorObject
 
 // The endpoint serves only organizations that belong to a parent organization, and
 // this organization belongs to none.
@@ -740,7 +740,7 @@ type OverloadedError = shared.OverloadedError
 type ParentOrganizationRequiredErrorDetails = shared.ParentOrganizationRequiredErrorDetails
 
 // This is an alias to an internal type.
-type PermissionError = shared.PermissionError
+type PermissionErrorObject = shared.PermissionErrorObject
 
 // The request would exceed a ramp limit, which caps how fast usage can grow. Retry
 // after the time in the `retry-after` header.
@@ -749,7 +749,7 @@ type PermissionError = shared.PermissionError
 type RampLimitExceededErrorDetails = shared.RampLimitExceededErrorDetails
 
 // This is an alias to an internal type.
-type RateLimitError = shared.RateLimitError
+type RateLimitErrorObject = shared.RateLimitErrorObject
 
 // The request body is not valid for its `Content-Encoding`.
 //
@@ -1250,6 +1250,46 @@ type BetaBundleAttachmentNotSupportedErrorDetails = shared.BetaBundleAttachmentN
 //
 // This is an alias to an internal type.
 type BetaBundleOnCallErrorDetails = shared.BetaBundleOnCallErrorDetails
+
+// Deprecated: AuthenticationError has been renamed to AuthenticationErrorObject
+//
+// This is an alias to an internal type.
+type AuthenticationError = shared.AuthenticationError
+
+// Deprecated: InvalidRequestError has been renamed to InvalidRequestErrorObject
+//
+// This is an alias to an internal type.
+type InvalidRequestError = shared.InvalidRequestError
+
+// Deprecated: BillingError has been renamed to BillingErrorObject
+//
+// This is an alias to an internal type.
+type BillingError = shared.BillingError
+
+// Deprecated: GatewayTimeoutError has been renamed to GatewayTimeoutErrorObject
+//
+// This is an alias to an internal type.
+type GatewayTimeoutError = shared.GatewayTimeoutError
+
+// Deprecated: NotFoundError has been renamed to NotFoundErrorObject
+//
+// This is an alias to an internal type.
+type NotFoundError = shared.NotFoundError
+
+// Deprecated: OverloadedError has been renamed to OverloadedErrorObject
+//
+// This is an alias to an internal type.
+type OverloadedError = shared.OverloadedError
+
+// Deprecated: PermissionError has been renamed to PermissionErrorObject
+//
+// This is an alias to an internal type.
+type PermissionError = shared.PermissionError
+
+// Deprecated: RateLimitError has been renamed to RateLimitErrorObject
+//
+// This is an alias to an internal type.
+type RateLimitError = shared.RateLimitError
 
 // Backward-compatible type aliases for renamed types.
 // These ensure existing code continues to compile after

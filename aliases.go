@@ -212,9 +212,9 @@ const ErrorCodeBetaInvalidMetadata = apierror.ErrorCodeBetaInvalidMetadata
 // details.
 const ErrorCodeInviteAlreadyExists = apierror.ErrorCodeInviteAlreadyExists
 
-// The External Key is bound to a user profile, and the Workspace does not have
-// that user profile. A Workspace can use only a key bound to its own user profile
-// or a key that isn't bound to one.
+// After this request, the External Key and the Workspace would not have the same
+// user profile. A key and its Workspace must have the same user profile, or both
+// have none.
 //
 // Returned with HTTP status 400 and [shared.KeyProfileMismatchErrorDetails]
 // details.
@@ -1013,9 +1013,9 @@ type ExternalKeyValidationFailedErrorDetails = shared.ExternalKeyValidationFaile
 // This is an alias to an internal type.
 type ExternalKeyValidationTimedOutErrorDetails = shared.ExternalKeyValidationTimedOutErrorDetails
 
-// The External Key is bound to a user profile, and the Workspace does not have
-// that user profile. A Workspace can use only a key bound to its own user profile
-// or a key that isn't bound to one.
+// After this request, the External Key and the Workspace would not have the same
+// user profile. A key and its Workspace must have the same user profile, or both
+// have none.
 //
 // This is an alias to an internal type.
 type KeyProfileMismatchErrorDetails = shared.KeyProfileMismatchErrorDetails

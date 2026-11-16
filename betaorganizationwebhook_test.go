@@ -87,7 +87,7 @@ func TestBetaOrganizationWebhookUpdateWithOptionalParams(t *testing.T) {
 		"webhook_endpoint_id",
 		anthropic.BetaOrganizationWebhookUpdateParams{
 			Description:   anthropic.String("description"),
-			EnabledEvents: []string{"user_profile.enforcement_action_opened"},
+			EnabledEvents: []string{"external_key.failed"},
 			Name:          anthropic.String("name"),
 			State:         anthropic.BetaOrganizationWebhookUpdateParamsStateDisabled,
 			URL:           anthropic.String("x"),

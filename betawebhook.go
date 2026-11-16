@@ -530,7 +530,9 @@ func (r *UnwrapWebhookEvent) UnmarshalJSON(data []byte) error {
 // [BetaWebhookSessionBudgetReachedEventData],
 // [BetaWebhookUserProfileEnforcementActionOpenedEventData],
 // [BetaWebhookUserProfileEnforcementActionResolvedEventData],
-// [BetaWebhookUserProfileProgramStatusUpdatedEventData].
+// [BetaWebhookUserProfileProgramStatusUpdatedEventData],
+// [BetaWebhookExternalKeyFailedEventData],
+// [BetaWebhookExternalKeyRecoveredEventData].
 //
 // Use the [BetaWebhookEventDataUnion.AsAny] method to switch on the variant.
 //
@@ -555,7 +557,8 @@ type BetaWebhookEventDataUnion struct {
 	// "memory_store.archived", "memory_store.deleted", "session.budget_reached",
 	// "user_profile.enforcement_action_opened",
 	// "user_profile.enforcement_action_resolved",
-	// "user_profile.program_status_updated".
+	// "user_profile.program_status_updated", "external_key.failed",
+	// "external_key.recovered".
 	Type                string `json:"type"`
 	WorkspaceID         string `json:"workspace_id"`
 	SessionThreadID     string `json:"session_thread_id"`
@@ -627,6 +630,8 @@ func (BetaWebhookSessionBudgetReachedEventData) implBetaWebhookEventDataUnion() 
 func (BetaWebhookUserProfileEnforcementActionOpenedEventData) implBetaWebhookEventDataUnion()   {}
 func (BetaWebhookUserProfileEnforcementActionResolvedEventData) implBetaWebhookEventDataUnion() {}
 func (BetaWebhookUserProfileProgramStatusUpdatedEventData) implBetaWebhookEventDataUnion()      {}
+func (BetaWebhookExternalKeyFailedEventData) implBetaWebhookEventDataUnion()                    {}
+func (BetaWebhookExternalKeyRecoveredEventData) implBetaWebhookEventDataUnion()                 {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -678,6 +683,8 @@ func (BetaWebhookUserProfileProgramStatusUpdatedEventData) implBetaWebhookEventD
 //	case anthropic.BetaWebhookUserProfileEnforcementActionOpenedEventData:
 //	case anthropic.BetaWebhookUserProfileEnforcementActionResolvedEventData:
 //	case anthropic.BetaWebhookUserProfileProgramStatusUpdatedEventData:
+//	case anthropic.BetaWebhookExternalKeyFailedEventData:
+//	case anthropic.BetaWebhookExternalKeyRecoveredEventData:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -777,6 +784,10 @@ func (u BetaWebhookEventDataUnion) AsAny() anyBetaWebhookEventData {
 		return u.AsUserProfileEnforcementActionResolved()
 	case "user_profile.program_status_updated":
 		return u.AsUserProfileProgramStatusUpdated()
+	case "external_key.failed":
+		return u.AsExternalKeyFailed()
+	case "external_key.recovered":
+		return u.AsExternalKeyRecovered()
 	}
 	return nil
 }
@@ -1016,10 +1027,62 @@ func (u BetaWebhookEventDataUnion) AsUserProfileProgramStatusUpdated() (v BetaWe
 	return
 }
 
+func (u BetaWebhookEventDataUnion) AsExternalKeyFailed() (v BetaWebhookExternalKeyFailedEventData) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWebhookEventDataUnion) AsExternalKeyRecovered() (v BetaWebhookExternalKeyRecoveredEventData) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaWebhookEventDataUnion) RawJSON() string { return u.JSON.raw }
 
 func (r *BetaWebhookEventDataUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaWebhookExternalKeyFailedEventData struct {
+	// ID (`ekey_...`) of the external key that stopped working or works again.
+	ID             string                     `json:"id" api:"required"`
+	OrganizationID string                     `json:"organization_id" api:"required"`
+	Type           constant.ExternalKeyFailed `json:"type" default:"external_key.failed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID             respjson.Field
+		OrganizationID respjson.Field
+		Type           respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWebhookExternalKeyFailedEventData) RawJSON() string { return r.JSON.raw }
+func (r *BetaWebhookExternalKeyFailedEventData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaWebhookExternalKeyRecoveredEventData struct {
+	// ID (`ekey_...`) of the external key that stopped working or works again.
+	ID             string                        `json:"id" api:"required"`
+	OrganizationID string                        `json:"organization_id" api:"required"`
+	Type           constant.ExternalKeyRecovered `json:"type" default:"external_key.recovered"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID             respjson.Field
+		OrganizationID respjson.Field
+		Type           respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWebhookExternalKeyRecoveredEventData) RawJSON() string { return r.JSON.raw }
+func (r *BetaWebhookExternalKeyRecoveredEventData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

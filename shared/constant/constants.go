@@ -244,6 +244,8 @@ type ExternalKeyInWorkspacePolicyErrorCode string              // Always "extern
 type ExternalKeyValidation string                              // Always "external_key_validation"
 type ExternalKeyValidationFailedErrorCode string               // Always "external_key_validation_failed"
 type ExternalKeyValidationTimedOutErrorCode string             // Always "external_key_validation_timed_out"
+type ExternalKeyFailed string                                  // Always "external_key.failed"
+type ExternalKeyRecovered string                               // Always "external_key.recovered"
 type Failure string                                            // Always "failure"
 type Fallback string                                           // Always "fallback"
 type FallbackMessage string                                    // Always "fallback_message"
@@ -960,12 +962,14 @@ func (c ExternalKeyValidationFailedErrorCode) Default() ExternalKeyValidationFai
 func (c ExternalKeyValidationTimedOutErrorCode) Default() ExternalKeyValidationTimedOutErrorCode {
 	return "external_key_validation_timed_out"
 }
-func (c Failure) Default() Failure                   { return "failure" }
-func (c Fallback) Default() Fallback                 { return "fallback" }
-func (c FallbackMessage) Default() FallbackMessage   { return "fallback_message" }
-func (c FederatedActor) Default() FederatedActor     { return "federated_actor" }
-func (c FederationIssuer) Default() FederationIssuer { return "federation_issuer" }
-func (c FederationRule) Default() FederationRule     { return "federation_rule" }
+func (c ExternalKeyFailed) Default() ExternalKeyFailed       { return "external_key.failed" }
+func (c ExternalKeyRecovered) Default() ExternalKeyRecovered { return "external_key.recovered" }
+func (c Failure) Default() Failure                           { return "failure" }
+func (c Fallback) Default() Fallback                         { return "fallback" }
+func (c FallbackMessage) Default() FallbackMessage           { return "fallback_message" }
+func (c FederatedActor) Default() FederatedActor             { return "federated_actor" }
+func (c FederationIssuer) Default() FederationIssuer         { return "federation_issuer" }
+func (c FederationRule) Default() FederationRule             { return "federation_rule" }
 func (c FederationRuleWorkspace) Default() FederationRuleWorkspace {
 	return "federation_rule_workspace"
 }
@@ -1800,6 +1804,8 @@ func (c ExternalKeyValidationFailedErrorCode) MarshalJSON() ([]byte, error)  { r
 func (c ExternalKeyValidationTimedOutErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
+func (c ExternalKeyFailed) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c ExternalKeyRecovered) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c Failure) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Fallback) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c FallbackMessage) MarshalJSON() ([]byte, error)                { return marshalString(c) }

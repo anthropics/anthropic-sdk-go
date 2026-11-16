@@ -80,7 +80,7 @@ func scriptWorkServer(t *testing.T, server *fakeWorkServer, work string) {
 	}
 	server.HandleSessionGet = func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"agent":{"skills":[]}}`))
+		_, _ = w.Write([]byte(`{"status":"running","agent":{"skills":[]}}`))
 	}
 	server.HandleList = func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

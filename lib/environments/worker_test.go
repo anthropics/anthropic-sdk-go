@@ -143,6 +143,60 @@ func TestEnvironmentWorker_SkipsNonSessionItem(t *testing.T) {
 	require.Equal(t, int32(1), stops.Load())
 }
 
+// A terminated session accepts no tool result, so the worker only force-stops
+// its work item, even when the session has a memory store and the item has no
+// sessions token, which makes the worker fail a live session's item.
+func TestEnvironmentWorker_TerminatedSessionIsOnlyForceStopped(t *testing.T) {
+	memoryStore := `{"type":"memory_store","memory_store_id":"memstore_1","name":"Notes"}`
+	tests := []struct {
+		description string
+		resources   string
+		secret      string
+	}{
+		{"no memory store", "", ""},
+		{"a memory store and no sessions token", memoryStore, ""},
+		{"a memory store and a sessions token", memoryStore, encodeSecret(t, map[string]any{"sessions_token": "tok"})},
+	}
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			clearCredentialEnv(t)
+			server := newFakeWorkServer(t)
+			scriptWorkServer(t, server, "")
+			server.HandleSessionGet = func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`{"status":"terminated","agent":{"skills":[{"type":"custom","skill_id":"skill_1","version":"1"}]},"resources":[` + tc.resources + `]}`))
+			}
+			worker := NewEnvironmentWorker(server.Client(), EnvironmentWorkerOptions{
+				EnvironmentID:  "env_1",
+				EnvironmentKey: "env_key",
+				Workdir:        t.TempDir(),
+				Logger:         silentLogger,
+			})
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+
+			require.NoError(t, worker.HandleItem(ctx, HandleItemOptions{
+				WorkID:        "work_1",
+				EnvironmentID: "env_1",
+				SessionID:     "sesn_test",
+				WorkSecret:    tc.secret,
+			}))
+
+			var calls []string
+			for _, c := range server.Calls() {
+				if !strings.HasSuffix(c.path, "/heartbeat") {
+					calls = append(calls, c.method+" "+c.path)
+				}
+			}
+			require.Equal(t, []string{
+				"GET /v1/sessions/sesn_test",
+				"POST /v1/environments/env_1/work/work_1/stop",
+			}, calls)
+			require.Contains(t, callsEndingIn(server.Calls(), "/stop")[0].body, `"force":true`)
+		})
+	}
+}
+
 // customHeaderName/customHeaderValue stand in for a caller-supplied
 // proxy/routing header that must reach every request the self-hosted runner
 // issues when threaded through EnvironmentWorkerOptions.RequestOptions.

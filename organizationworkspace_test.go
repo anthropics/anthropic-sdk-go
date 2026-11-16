@@ -25,7 +25,7 @@ func TestOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Organization.Workspaces.New(context.TODO(), anthropic.OrganizationWorkspaceNewParams{
-		Name: "x",
+		Name: "Workspace Name",
 		DataResidency: anthropic.DataResidencyCreateConfigParam{
 			AllowedInferenceGeos: anthropic.DataResidencyCreateConfigAllowedInferenceGeosUnionParam{
 				OfUnrestricted: constant.ValueOf[constant.Unrestricted](),
@@ -96,7 +96,7 @@ func TestOrganizationWorkspaceUpdateWithOptionalParams(t *testing.T) {
 			},
 			DisplayColor:  anthropic.String("#6C5BB9"),
 			ExternalKeyID: anthropic.String("ekey_01SDCCSbTxrXDpWc1phhtcfK"),
-			Name:          anthropic.String("x"),
+			Name:          anthropic.String("Workspace Name"),
 			Tags: map[string]string{
 				"env":  "prod",
 				"team": "platform",

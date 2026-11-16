@@ -41,6 +41,13 @@ func NewOrganizationRBACRolePermissionService(opts ...option.RequestOption) (r O
 // List the permissions an RBAC Role grants.
 //
 // The RBAC Roles API is available to Claude Enterprise organizations only.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400)
+//   - [ErrorCodeParentOrganizationRequired] (HTTP 400)
+//   - [ErrorCodeRBACRoleNotFound] (HTTP 404)
 func (r *OrganizationRBACRolePermissionService) List(ctx context.Context, rbacRoleID string, query OrganizationRBACRolePermissionListParams, opts ...option.RequestOption) (res *pagination.PageCursor[RBACRolePermission], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
@@ -66,6 +73,13 @@ func (r *OrganizationRBACRolePermissionService) List(ctx context.Context, rbacRo
 // List the permissions an RBAC Role grants.
 //
 // The RBAC Roles API is available to Claude Enterprise organizations only.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400)
+//   - [ErrorCodeParentOrganizationRequired] (HTTP 400)
+//   - [ErrorCodeRBACRoleNotFound] (HTTP 404)
 func (r *OrganizationRBACRolePermissionService) ListAutoPaging(ctx context.Context, rbacRoleID string, query OrganizationRBACRolePermissionListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[RBACRolePermission] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, rbacRoleID, query, opts...))
 }

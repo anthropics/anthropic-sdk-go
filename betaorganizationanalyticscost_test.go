@@ -55,7 +55,7 @@ func TestBetaOrganizationAnalyticsCostListWithOptionalParams(t *testing.T) {
 		TimeBucketWidth:     anthropic.BetaAnalyticsTimeBucketWidthDay,
 		UserProfileIDs:      []string{"uprof_01M33NeYUQK2WV9PpYcsPHLi"},
 		WorkspaceIDs:        []string{"wrkspc_01JwQvzr7rXLA5AGx3HKfFUJ"},
-		Betas:               []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:               []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

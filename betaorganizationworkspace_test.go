@@ -26,7 +26,7 @@ func TestBetaOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
 		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Workspaces.New(context.TODO(), anthropic.BetaOrganizationWorkspaceNewParams{
-		Name: "x",
+		Name: "Workspace Name",
 		DataResidency: anthropic.BetaDataResidencyCreateConfigParam{
 			AllowedInferenceGeos: anthropic.BetaDataResidencyCreateConfigAllowedInferenceGeosUnionParam{
 				OfUnrestricted: constant.ValueOf[constant.Unrestricted](),
@@ -41,7 +41,7 @@ func TestBetaOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
 			"team": "platform",
 		},
 		UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
-		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -100,7 +100,7 @@ func TestBetaOrganizationWorkspaceUpdateWithOptionalParams(t *testing.T) {
 			},
 			DisplayColor:  anthropic.String("#6C5BB9"),
 			ExternalKeyID: anthropic.String("ekey_01SDCCSbTxrXDpWc1phhtcfK"),
-			Name:          anthropic.String("x"),
+			Name:          anthropic.String("Workspace Name"),
 			Tags: map[string]string{
 				"env":  "prod",
 				"team": "platform",

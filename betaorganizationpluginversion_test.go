@@ -34,7 +34,7 @@ func TestBetaOrganizationPluginVersionNewWithOptionalParams(t *testing.T) {
 		anthropic.BetaOrganizationPluginVersionNewParams{
 			Files:        []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
 			ReleaseNotes: anthropic.String("release_notes"),
-			Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:        []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -65,7 +65,7 @@ func TestBetaOrganizationPluginVersionGetWithOptionalParams(t *testing.T) {
 		anthropic.BetaOrganizationPluginVersionGetParams{
 			PluginID:       "plugin_id",
 			OrganizationID: anthropic.String("organization_id"),
-			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -97,7 +97,7 @@ func TestBetaOrganizationPluginVersionListWithOptionalParams(t *testing.T) {
 			Limit:          anthropic.Int(1),
 			OrganizationID: anthropic.String("organization_id"),
 			Page:           anthropic.String("page"),
-			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -127,7 +127,7 @@ func TestBetaOrganizationPluginVersionDownloadWithOptionalParams(t *testing.T) {
 		anthropic.BetaOrganizationPluginVersionDownloadParams{
 			PluginID:       "plugin_id",
 			OrganizationID: anthropic.String("organization_id"),
-			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

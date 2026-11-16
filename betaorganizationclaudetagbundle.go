@@ -75,6 +75,46 @@ func (r *BetaOrganizationClaudeTagBundleService) Get(ctx context.Context, bundle
 	return res, err
 }
 
+// Change a Bundle's instructions. The update is partial: a field left out is
+// unchanged, and `instructions` sent as null or as an empty string clears them.
+// The later of two updates wins. Sessions that start after the change use the new
+// instructions; sessions already running keep the ones they started with. Some
+// Bundles are managed in claude.ai, and an update of one returns 400.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeBetaBundleAttachmentNotSupported] (HTTP 400)
+//   - [ErrorCodeBetaBundleOnCall] (HTTP 400)
+//   - [ErrorCodeBetaAPIKeyScopeMissing] (HTTP 403)
+//   - [ErrorCodeBetaClaudeTagWritesNotEnabled] (HTTP 403)
+//   - [ErrorCodeBetaComplianceConfigurationRestricted] (HTTP 403)
+//   - [ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired] (HTTP 403)
+//   - [ErrorCodeBetaSlackChannelSetUpSettingsConflict] (HTTP 409)
+func (r *BetaOrganizationClaudeTagBundleService) Update(ctx context.Context, bundleID string, params BetaOrganizationClaudeTagBundleUpdateParams, opts ...option.RequestOption) (res *BetaClaudeTagBundle, err error) {
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
+	}
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("anthropic-beta", "experimental-claude-tag-2026-10-21")}, opts...)
+	if bundleID == "" {
+		err = errors.New("missing required bundle_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/organizations/claude_tag/bundles/%s", requestconfig.EscapePathSegment(bundleID))
+	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithSpan("anthropic.organization.claude_tag.bundles.update", "/v1/organizations/claude_tag/bundles/{bundle_id}"), requestconfig.WithSpanAttribute("anthropic.organization.claude_tag.bundle.id", bundleID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
+	return res, err
+}
+
 // List the organization's Bundles, newest first by `created_at`. A Bundle that
 // Claude Tag manages for itself is not listed.
 //
@@ -130,7 +170,7 @@ func (r *BetaOrganizationClaudeTagBundleService) ListAutoPaging(ctx context.Cont
 
 // A named set of access that Claude can use in a Slack channel or a Slack
 // workspace: connectors, repositories and credentials. Created and edited in
-// claude.ai.
+// claude.ai; Update Bundle also changes its instructions.
 type BetaClaudeTagBundle struct {
 	// The Bundle's identifier. Starts with `capp_`.
 	ID string `json:"id" api:"required"`
@@ -139,20 +179,24 @@ type BetaClaudeTagBundle struct {
 	// What the Bundle is for. Null when it has none. Read-only.
 	Description string `json:"description" api:"required"`
 	// The Bundle's name. Always set. Read-only.
-	DisplayName string          `json:"display_name" api:"required"`
-	Type        constant.Bundle `json:"type" default:"bundle"`
+	DisplayName string `json:"display_name" api:"required"`
+	// Instructions for Claude, added to the instructions of every session that can use
+	// the Bundle. Null when it has none.
+	Instructions string          `json:"instructions" api:"required"`
+	Type         constant.Bundle `json:"type" default:"bundle"`
 	// Time of the last change to the Bundle.
 	UpdatedAt time.Time `json:"updated_at" api:"required" format:"date-time"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ID          respjson.Field
-		CreatedAt   respjson.Field
-		Description respjson.Field
-		DisplayName respjson.Field
-		Type        respjson.Field
-		UpdatedAt   respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		ID           respjson.Field
+		CreatedAt    respjson.Field
+		Description  respjson.Field
+		DisplayName  respjson.Field
+		Instructions respjson.Field
+		Type         respjson.Field
+		UpdatedAt    respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
 	} `json:"-"`
 }
 
@@ -167,6 +211,24 @@ type BetaOrganizationClaudeTagBundleGetParams struct {
 	// `experimental-claude-tag-2026-10-21` in this header.
 	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
+}
+
+type BetaOrganizationClaudeTagBundleUpdateParams struct {
+	// Instructions for Claude, up to 10,000 bytes (UTF-8), added to the instructions
+	// of every session that can use the Bundle. Null or an empty string clears them.
+	Instructions param.Opt[string] `json:"instructions,omitzero"`
+	// This endpoint is in beta: requests must send
+	// `experimental-claude-tag-2026-10-21` in this header.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
+	paramObj
+}
+
+func (r BetaOrganizationClaudeTagBundleUpdateParams) MarshalJSON() (data []byte, err error) {
+	type shadow BetaOrganizationClaudeTagBundleUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaOrganizationClaudeTagBundleUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type BetaOrganizationClaudeTagBundleListParams struct {

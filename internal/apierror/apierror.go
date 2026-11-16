@@ -172,6 +172,19 @@ const (
 	// [shared.AvailableToolsLimitExceededErrorDetails] details.
 	ErrorCodeAvailableToolsLimitExceeded ErrorCode = "available_tools_limit_exceeded"
 
+	// The Bundle has an attachment this API does not support editing, so its
+	// instructions can be changed only in claude.ai.
+	//
+	// Returned with HTTP status 400 and
+	// [shared.BetaBundleAttachmentNotSupportedErrorDetails] details.
+	ErrorCodeBetaBundleAttachmentNotSupported ErrorCode = "bundle_attachment_not_supported"
+
+	// This Bundle's instructions are managed in claude.ai and can't be changed through
+	// the API.
+	//
+	// Returned with HTTP status 400 and [shared.BetaBundleOnCallErrorDetails] details.
+	ErrorCodeBetaBundleOnCall ErrorCode = "bundle_on_call"
+
 	// The email address's domain is not one of the verified domains of the
 	// organization's parent organization.
 	//
@@ -341,9 +354,9 @@ const (
 	// details.
 	ErrorCodeInviteAlreadyExists ErrorCode = "invite_already_exists"
 
-	// The External Key is bound to a user profile, and the Workspace does not have
-	// that user profile. A Workspace can use only a key bound to its own user profile
-	// or a key that isn't bound to one.
+	// After this request, the External Key and the Workspace would not have the same
+	// user profile. A key and its Workspace must have the same user profile, or both
+	// have none.
 	//
 	// Returned with HTTP status 400 and [shared.KeyProfileMismatchErrorDetails]
 	// details.
@@ -383,6 +396,13 @@ const (
 	// Returned with HTTP status 400 and
 	// [shared.OrganizationTypeNotSupportedErrorDetails] details.
 	ErrorCodeOrganizationTypeNotSupported ErrorCode = "organization_type_not_supported"
+
+	// The endpoint serves only organizations that belong to a parent organization, and
+	// this organization belongs to none.
+	//
+	// Returned with HTTP status 400 and
+	// [shared.ParentOrganizationRequiredErrorDetails] details.
+	ErrorCodeParentOrganizationRequired ErrorCode = "parent_organization_required"
 
 	// A role attached to an RBAC Group in the request grants owner access, so this API
 	// does not add members to that group (directly or through an invite), remove its
@@ -608,6 +628,11 @@ const (
 	//
 	// Returned with HTTP status 404 and [shared.FileExpiredErrorDetails] details.
 	ErrorCodeFileExpired ErrorCode = "file_expired"
+
+	// No RBAC Role with this ID was found.
+	//
+	// Returned with HTTP status 404 and [shared.RBACRoleNotFoundErrorDetails] details.
+	ErrorCodeRBACRoleNotFound ErrorCode = "rbac_role_not_found"
 
 	// `settings.environment_id` names no Environment within the organization's reach,
 	// and the request had set the channel up by then. The channel stays set up with

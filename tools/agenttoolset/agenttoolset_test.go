@@ -289,6 +289,74 @@ func TestResolvePathConfinesSymlinks(t *testing.T) {
 	require.Equal(t, filepath.Join(canonicalRoot(work), "newdir", "f.txt"), got)
 }
 
+// TestResolvePathAfterALinkToAMissingPath covers a path that goes on past a
+// symlink whose target does not exist but reads like a directory that does.
+func TestResolvePathAfterALinkToAMissingPath(t *testing.T) {
+	fixture := func(t *testing.T) (env *AgentToolContext, absWork, outside string) {
+		t.Helper()
+		work := t.TempDir()
+		outside = t.TempDir()
+		require.NoError(t, os.WriteFile(filepath.Join(outside, "secret.txt"), []byte("SECRET"), 0o644))
+		require.NoError(t, os.MkdirAll(filepath.Join(work, "deep", "dir"), 0o755))
+		require.NoError(t, os.Mkdir(filepath.Join(work, "t"), 0o755))
+		for name, target := range map[string]string{
+			"s":                 "deep/dir",
+			"deep/dir/relative": "../t",
+			"spelled":           "s/../t",
+			"t/leaf":            filepath.Join(outside, "secret.txt"),
+			"t/d":               outside,
+		} {
+			require.NoError(t, os.Symlink(target, filepath.Join(work, name)))
+		}
+		return &AgentToolContext{Workdir: work}, canonicalRoot(work), outside
+	}
+
+	t.Run("the target is taken from the directory that holds the link", func(t *testing.T) {
+		env, absWork, _ := fixture(t)
+		for _, rest := range []string{"leaf", "d/new.txt"} {
+			got, err := resolvePath(env, "s/relative/"+rest)
+			require.NoError(t, err)
+			require.Equal(t, filepath.Join(absWork, "deep", "t", rest), got)
+		}
+	})
+
+	for _, input := range []string{"spelled/leaf", "spelled/d/new.txt", "spelled/d/missing/new.txt"} {
+		t.Run("the symlinks after the link are followed in "+input, func(t *testing.T) {
+			env, _, _ := fixture(t)
+			_, err := resolvePath(env, input)
+			require.EqualError(t, err, fmt.Sprintf("path %q is outside the session's working directory", input))
+		})
+	}
+
+	for _, link := range []string{"spelled", "s/relative"} {
+		t.Run("the file tools stay in the workdir through "+link, func(t *testing.T) {
+			env, _, outside := fixture(t)
+			calls := []struct {
+				tool  anthropic.BetaTool
+				input map[string]any
+			}{
+				{BetaReadTool(env), map[string]any{"file_path": link + "/leaf"}},
+				{BetaEditTool(env), map[string]any{"file_path": link + "/leaf", "old_string": "SECRET", "new_string": "x"}},
+				{BetaGrepTool(env), map[string]any{"pattern": "SECRET", "path": link + "/leaf"}},
+				{BetaGrepTool(env), map[string]any{"pattern": "SECRET", "path": link + "/d"}},
+				{BetaGlobTool(env), map[string]any{"pattern": "*", "path": link + "/d"}},
+				{BetaWriteTool(env), map[string]any{"file_path": link + "/leaf", "content": "x"}},
+				{BetaWriteTool(env), map[string]any{"file_path": link + "/d/new.txt", "content": "x"}},
+			}
+			for _, call := range calls {
+				out, _ := runTool(t, call.tool, mustJSON(t, call.input))
+				require.NotRegexp(t, "(?i)secret", out)
+			}
+			entries, err := os.ReadDir(outside)
+			require.NoError(t, err)
+			require.Len(t, entries, 1)
+			content, err := os.ReadFile(filepath.Join(outside, "secret.txt"))
+			require.NoError(t, err)
+			require.Equal(t, "SECRET", string(content))
+		})
+	}
+}
+
 // symlinkLoopFixture lays out, under a fresh workdir: loop_a <-> loop_b,
 // self -> self, evil_link -> <outside>/secret.txt, and L -> loop_a/../evil_link.
 // It returns the workdir and the outside directory.

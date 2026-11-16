@@ -3,7 +3,9 @@ package agenttoolset
 import (
 	"context"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -243,6 +245,145 @@ func TestExecGrepSkipsSymlinks(t *testing.T) {
 	require.False(t, isErr, "output=%q", out)
 	require.Equal(t, "no matches", out,
 		"grep must not follow a symlink out of the workdir; %q leaked", out)
+}
+
+func TestExecGrepIgnoresRipgrepConfig(t *testing.T) {
+	if _, err := exec.LookPath("rg"); err != nil {
+		t.Skip("ripgrep is not on PATH")
+	}
+	work := t.TempDir()
+	outside := t.TempDir()
+	config := filepath.Join(outside, "ripgreprc")
+	require.NoError(t, os.WriteFile(config, []byte("--follow\n"), 0o644))
+	t.Setenv("RIPGREP_CONFIG_PATH", config)
+	require.NoError(t, os.WriteFile(filepath.Join(work, "notes.txt"), []byte("needle"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(outside, "secret.txt"), []byte("needle"), 0o600))
+	require.NoError(t, os.Symlink(filepath.Join(outside, "secret.txt"), filepath.Join(work, "leak")))
+
+	out, isErr := execGrep(context.Background(), mustJSON(t, map[string]any{"pattern": "needle"}), &AgentToolContext{Workdir: work})
+	require.False(t, isErr, "output=%q", out)
+	require.Contains(t, out, "notes.txt")
+	require.NotContains(t, out, "leak")
+}
+
+func TestExecGrepPassesNoConfigToRipgrep(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the stand-in rg is a shell script")
+	}
+	bin := t.TempDir()
+	args := filepath.Join(bin, "args")
+	script := "#!/bin/sh\nprintf '%s\\n' \"$@\" >\"$RG_ARGS\"\nexit 1\n"
+	require.NoError(t, os.WriteFile(filepath.Join(bin, "rg"), []byte(script), 0o755))
+	t.Setenv("PATH", bin)
+	t.Setenv("RG_ARGS", args)
+
+	out, isErr := execGrep(context.Background(), mustJSON(t, map[string]any{"pattern": "needle"}), &AgentToolContext{Workdir: t.TempDir()})
+	require.False(t, isErr, "output=%q", out)
+	require.Equal(t, "no matches", out)
+
+	got, err := os.ReadFile(args)
+	require.NoError(t, err)
+	require.Contains(t, strings.Split(string(got), "\n"), "--no-config")
+}
+
+func TestGrepRunsOnlyARipgrepOutsideThePermittedRoots(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the stand-in rg is a shell script")
+	}
+	host := t.TempDir()
+	at := func(rel string) string { return filepath.Join(host, rel) }
+	for _, dir := range []string{"work/bin", "WORK/bin", "allowed/bin", "caf\u00e9", "cafe\u0301/bin", "system", "linked-file", "linked-batch"} {
+		require.NoError(t, os.MkdirAll(at(dir), 0o755))
+	}
+	for _, file := range []string{"work/bin/rg", "WORK/bin/rg", "allowed/bin/rg", "cafe\u0301/bin/rg", "system/rg", "system/rg.CMD"} {
+		require.NoError(t, os.WriteFile(at(file), []byte("#!/bin/sh\necho \"$0\"\n"), 0o755))
+	}
+	require.NoError(t, os.Symlink(at("work/bin"), at("linked-dir")))
+	require.NoError(t, os.Symlink(at("system"), at("linked-system")))
+	require.NoError(t, os.Symlink(at("system/rg.CMD"), at("linked-batch/rg")))
+	require.NoError(t, os.Symlink(at("work/bin/rg"), at("linked-file/rg")))
+	require.NoError(t, os.Symlink("loop", at("loop")))
+	require.NoError(t, os.WriteFile(at("work/a.txt"), []byte("alpha\nbeta\n"), 0o644))
+	t.Chdir(at("system"))
+
+	ripgrep := filepath.Join(canonicalRoot(at("system")), "rg") + "\n"
+	builtIn := filepath.Join(canonicalRoot(at("work")), "a.txt") + ":2:beta"
+
+	for _, tc := range []struct {
+		description  string
+		path         []string
+		allowedRoots []string
+		want         string
+	}{
+		{description: "rg outside the workdir and the allowed roots", path: []string{at("system")}, want: ripgrep},
+		{description: "rg in the current directory with an empty allowed root", path: []string{at("system")}, allowedRoots: []string{""}, want: ripgrep},
+		{description: "rg outside behind a symlink is started by its real path", path: []string{at("linked-system")}, want: ripgrep},
+		{description: "rg in the workdir", path: []string{at("work/bin")}, want: builtIn},
+		{description: "rg in the workdir spelled in another letter case", path: []string{at("WORK/bin")}, want: builtIn},
+		{description: "rg in an allowed root", path: []string{at("allowed/bin")}, want: builtIn},
+		{description: "rg in an allowed root spelled in another Unicode form", path: []string{at("cafe\u0301/bin")}, allowedRoots: []string{at("caf\u00e9")}, want: builtIn},
+		{description: "rg outside after that one", path: []string{at("cafe\u0301/bin"), at("system")}, allowedRoots: []string{at("caf\u00e9")}, want: ripgrep},
+		{description: "PATH entry that is a symlink into the workdir", path: []string{at("linked-dir")}, want: builtIn},
+		{description: "rg that is a symlink into the workdir", path: []string{at("linked-file")}, want: builtIn},
+		{description: "rg that is a symlink to a batch file", path: []string{at("linked-batch")}, want: builtIn},
+		{description: "relative PATH entry", path: []string{"../system"}, want: builtIn},
+		{
+			description: "rg outside after the ones that are passed over",
+			path:        []string{at("work/bin"), at("allowed/bin"), at("linked-dir"), at("linked-file"), at("linked-batch"), "../system", at("system")},
+			want:        ripgrep,
+		},
+		{description: "allowed root that cannot be resolved", path: []string{at("system")}, allowedRoots: []string{at("loop")}, want: builtIn},
+	} {
+		t.Run(tc.description, func(t *testing.T) {
+			t.Setenv("PATH", strings.Join(tc.path, string(filepath.ListSeparator)))
+			env := &AgentToolContext{Workdir: at("work"), AllowedRoots: append([]string{at("allowed")}, tc.allowedRoots...)}
+			out, isErr := runTool(t, BetaGrepTool(env), mustJSON(t, map[string]any{"pattern": "beta"}))
+			require.False(t, isErr, "output=%q", out)
+			require.Equal(t, tc.want, out)
+		})
+	}
+}
+
+func TestGrepStartsRipgrepUnderTheNameRg(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the stand-in rg is a link to /bin/sh")
+	}
+	bin := t.TempDir()
+	require.NoError(t, os.Symlink("/bin/sh", filepath.Join(bin, "rg")))
+	t.Setenv("PATH", bin)
+
+	out, isErr := runTool(t, BetaGrepTool(&AgentToolContext{Workdir: t.TempDir()}), mustJSON(t, map[string]any{"pattern": "needle"}))
+	require.True(t, isErr, "output=%q", out)
+	require.Regexp(t, `^grep: rg failed: exit status \d+: rg: `, out)
+}
+
+func TestGrepKeepsCredentialsFromRipgrep(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the stand-in rg is a shell script")
+	}
+	bin := t.TempDir()
+	script := "#!/bin/sh\necho \"key=[$ANTHROPIC_API_KEY] mixed=[$Anthropic_Fake] kept=[$KEPT]\"\n"
+	require.NoError(t, os.WriteFile(filepath.Join(bin, "rg"), []byte(script), 0o755))
+	t.Setenv("PATH", bin)
+	t.Setenv("ANTHROPIC_API_KEY", "sk-ant-should-not-leak")
+	t.Setenv("Anthropic_Fake", "should-not-leak")
+	t.Setenv("KEPT", "kept")
+
+	out, isErr := runTool(t, BetaGrepTool(&AgentToolContext{Workdir: t.TempDir()}), mustJSON(t, map[string]any{"pattern": "needle"}))
+	require.False(t, isErr, "output=%q", out)
+	require.Equal(t, "key=[] mixed=[] kept=[kept]\n", out)
+}
+
+func TestGrepBuiltInSearchSniffsAFileBeforeReadingAllOfIt(t *testing.T) {
+	f, err := os.Open("/proc/self/pagemap")
+	if err != nil {
+		t.Skip("needs a readable /proc/self/pagemap")
+	}
+	require.NoError(t, f.Close())
+	t.Setenv("PATH", "")
+	out, isErr := runTool(t, BetaGrepTool(&AgentToolContext{Workdir: "/"}), mustJSON(t, map[string]any{"pattern": "needle", "path": "/proc/self/pagemap"}))
+	require.False(t, isErr, "output=%q", out)
+	require.Equal(t, "no matches", out)
 }
 
 // TestGlobMatchDeepDoublestarBacktracking checks that a pattern alternating

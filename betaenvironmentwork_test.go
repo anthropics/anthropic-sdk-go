@@ -29,7 +29,7 @@ func TestBetaEnvironmentWorkGetWithOptionalParams(t *testing.T) {
 		"work_id",
 		anthropic.BetaEnvironmentWorkGetParams{
 			EnvironmentID: "env_011CZkZ9X2dpNyB7HsEFoRfW",
-			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -65,7 +65,7 @@ func TestBetaEnvironmentWorkUpdateWithOptionalParams(t *testing.T) {
 					"foo": "string",
 				},
 			},
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -97,7 +97,7 @@ func TestBetaEnvironmentWorkListWithOptionalParams(t *testing.T) {
 		anthropic.BetaEnvironmentWorkListParams{
 			Limit: anthropic.Int(1),
 			Page:  anthropic.String("page"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -127,7 +127,7 @@ func TestBetaEnvironmentWorkAckWithOptionalParams(t *testing.T) {
 		"work_id",
 		anthropic.BetaEnvironmentWorkAckParams{
 			EnvironmentID: "env_011CZkZ9X2dpNyB7HsEFoRfW",
-			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -159,7 +159,7 @@ func TestBetaEnvironmentWorkHeartbeatWithOptionalParams(t *testing.T) {
 			EnvironmentID:         "env_011CZkZ9X2dpNyB7HsEFoRfW",
 			DesiredTTLSeconds:     anthropic.Int(0),
 			ExpectedLastHeartbeat: anthropic.String("expected_last_heartbeat"),
-			Betas:                 []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:                 []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -190,7 +190,7 @@ func TestBetaEnvironmentWorkPollWithOptionalParams(t *testing.T) {
 		anthropic.BetaEnvironmentWorkPollParams{
 			BlockMs:            anthropic.Int(1),
 			ReclaimOlderThanMs: anthropic.Int(1),
-			Betas:              []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:              []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			AnthropicWorkerID:  anthropic.String("Anthropic-Worker-ID"),
 		},
 	)
@@ -220,7 +220,7 @@ func TestBetaEnvironmentWorkStatsWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"env_011CZkZ9X2dpNyB7HsEFoRfW",
 		anthropic.BetaEnvironmentWorkStatsParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -254,7 +254,7 @@ func TestBetaEnvironmentWorkStopWithOptionalParams(t *testing.T) {
 			BetaSelfHostedWorkStopRequest: anthropic.BetaSelfHostedWorkStopRequestParam{
 				Force: anthropic.Bool(true),
 			},
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

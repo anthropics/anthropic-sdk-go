@@ -187,7 +187,7 @@ func TestBetaMessageNewWithOptionalParams(t *testing.T) {
 				Type:   anthropic.BetaToolTypeCustom,
 			},
 		}},
-		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		UserProfileID: anthropic.String("anthropic-user-profile-id"),
 		WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
@@ -346,7 +346,7 @@ func TestBetaMessageCountTokensWithOptionalParams(t *testing.T) {
 				Type:   anthropic.BetaToolTypeCustom,
 			},
 		}},
-		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		UserProfileID: anthropic.String("anthropic-user-profile-id"),
 		WorkspaceID:   anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})

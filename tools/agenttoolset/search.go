@@ -1,6 +1,7 @@
 package agenttoolset
 
 import (
+	"bufio"
 	"bytes"
 	"cmp"
 	"context"
@@ -12,10 +13,12 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 
 	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
+	"golang.org/x/text/unicode/norm"
 )
 
 const (
@@ -43,7 +46,10 @@ func BetaGlobTool(env *AgentToolContext) anthropic.BetaTool {
 }
 
 // BetaGrepTool returns an anthropic.BetaTool that searches file contents under
-// env.Workdir or an allowed root.
+// env.Workdir or an allowed root. It searches with the first rg on PATH whose
+// real path is outside env.Workdir and the allowed roots, or with a built-in
+// search when there is none. On Windows that is rg.exe, never a batch file. rg
+// does not get the ANTHROPIC_* variables of the process.
 func BetaGrepTool(env *AgentToolContext) anthropic.BetaTool {
 	return &funcTool{
 		name:        "grep",
@@ -217,19 +223,64 @@ func execGrep(ctx context.Context, raw json.RawMessage, env *AgentToolContext) (
 		return errorf("grep: %v", err)
 	}
 
-	if rg, err := exec.LookPath("rg"); err == nil {
-		return runRipgrep(ctx, rg, in.Pattern, searchPath)
+	name := "rg"
+	if runtime.GOOS == "windows" {
+		name = "rg.exe"
+	}
+	for _, dir := range filepath.SplitList(os.Getenv("PATH")) {
+		if !filepath.IsAbs(dir) {
+			continue
+		}
+		rg := filepath.Join(dir, name)
+		// On Windows LookPath also tries rg with each PATHEXT suffix added.
+		if found, err := exec.LookPath(rg); err != nil || found != rg {
+			continue
+		}
+		real, ok := outsidePermittedRoots(env, rg)
+		// cmd.exe unquotes the arguments of a batch file by rules of its own.
+		if ext := strings.ToLower(filepath.Ext(real)); !ok || ext == ".bat" || ext == ".cmd" {
+			continue
+		}
+		return runRipgrep(ctx, real, in.Pattern, searchPath)
 	}
 	return runWalkGrep(in.Pattern, searchPath)
 }
 
+// Letter case and Unicode form are ignored, because refusing too much is safer than refusing too little.
+func outsidePermittedRoots(env *AgentToolContext, file string) (string, bool) {
+	real, err := canonicalize(file)
+	if err != nil {
+		return "", false
+	}
+	holds := func(r string) bool {
+		root, err := canonicalize(absOrSelf(r))
+		return err != nil || within(fold(real), fold(root))
+	}
+	if holds(env.Workdir) {
+		return "", false
+	}
+	for _, r := range env.AllowedRoots {
+		if r != "" && holds(r) {
+			return "", false
+		}
+	}
+	return real, true
+}
+
+func fold(path string) string {
+	return norm.NFC.String(strings.ToLower(path))
+}
+
 func runRipgrep(ctx context.Context, rg, pattern, path string) (string, bool) {
 	// --max-filesize bounds per-file size; cappedBuffer bounds total stdout.
-	cmd := exec.CommandContext(ctx, rg, "-n", "--no-heading",
+	cmd := exec.CommandContext(ctx, rg, "--no-config", "-n", "--no-heading",
 		"--max-filesize", fmt.Sprintf("%d", grepMaxFileBytes),
 		"-e", pattern, "--", path)
 	stdout := newCappedBuffer(grepOutputLimit)
 	var stderr bytes.Buffer
+	// A link called rg may lead to a program that goes by the name it was started under.
+	cmd.Args[0] = "rg"
+	cmd.Env = scrubbedEnviron()
 	cmd.Stdout = stdout
 	cmd.Stderr = &stderr
 	err := cmd.Run()
@@ -298,7 +349,7 @@ func runWalkGrep(pattern, root string) (string, bool) {
 		// Skip symlinks entirely: a symlink inside the workdir pointing at,
 		// say, /etc/shadow must not be read (or descended into) by grep.
 		// WalkDir never follows symlinks for traversal, but it still hands
-		// the link entry to the callback as a non-dir, so os.ReadFile below
+		// the link entry to the callback as a non-dir, so os.Open below
 		// would follow it. Only descend real dirs, only read real files.
 		if d.Type()&fs.ModeSymlink != 0 {
 			return nil
@@ -318,15 +369,22 @@ func runWalkGrep(pattern, root string) (string, bool) {
 		}
 		// Stat before reading so a multi-GB file can't OOM the runner. Go's
 		// regexp is RE2 (linear-time) so there is no ReDoS line-length concern.
-		if info, err := d.Info(); err != nil || info.Size() > grepMaxFileBytes {
+		info, err := d.Info()
+		if err != nil || info.Size() > grepMaxFileBytes {
 			return nil
 		}
-		data, err := os.ReadFile(path)
+		f, err := os.Open(path)
 		if err != nil {
 			return nil
 		}
-		sniff := min(len(data), 512)
-		if bytes.IndexByte(data[:sniff], 0) >= 0 {
+		defer f.Close()
+		// Sniffed before the rest is read: a file under /proc reports a size of 0.
+		r := bufio.NewReader(f)
+		if sniff, _ := r.Peek(512); bytes.IndexByte(sniff, 0) >= 0 {
+			return nil
+		}
+		data, over, err := readAtMost(r, info.Size(), grepMaxFileBytes)
+		if err != nil || over {
 			return nil
 		}
 		for i, line := range strings.Split(string(data), "\n") {

@@ -36,7 +36,7 @@ func extractSkillArchive(archivePath, dest string) (retErr error) {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(root, 0o755); err != nil {
+	if err := os.MkdirAll(root, 0o700); err != nil {
 		return err
 	}
 	// extractSkillArchive creates dest, so it owns cleaning it up on failure:

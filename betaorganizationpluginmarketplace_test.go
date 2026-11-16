@@ -31,7 +31,7 @@ func TestBetaOrganizationPluginMarketplaceGetWithOptionalParams(t *testing.T) {
 		"marketplace_id",
 		anthropic.BetaOrganizationPluginMarketplaceGetParams{
 			OrganizationID: anthropic.String("organization_id"),
-			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -61,7 +61,7 @@ func TestBetaOrganizationPluginMarketplaceUpdateWithOptionalParams(t *testing.T)
 		"marketplace_id",
 		anthropic.BetaOrganizationPluginMarketplaceUpdateParams{
 			DefaultInstallationPreference: anthropic.BetaOrganizationPluginMarketplaceUpdateParamsDefaultInstallationPreferenceAvailable,
-			Betas:                         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:                         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -92,7 +92,7 @@ func TestBetaOrganizationPluginMarketplaceListWithOptionalParams(t *testing.T) {
 		OwnerType:      anthropic.BetaOrganizationPluginMarketplaceListParamsOwnerTypeOrganization,
 		Page:           anthropic.String("page"),
 		Source:         anthropic.BetaOrganizationPluginMarketplaceListParamsSourceDirectory,
-		Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -118,7 +118,7 @@ func TestBetaOrganizationPluginMarketplaceValidateArchiveWithOptionalParams(t *t
 	)
 	_, err := client.Beta.Organization.PluginMarketplaces.ValidateArchive(context.TODO(), anthropic.BetaOrganizationPluginMarketplaceValidateArchiveParams{
 		Archive: io.Reader(bytes.NewBuffer([]byte("Example data"))),
-		Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:   []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -145,7 +145,7 @@ func TestBetaOrganizationPluginMarketplaceValidateRepositoryWithOptionalParams(t
 	_, err := client.Beta.Organization.PluginMarketplaces.ValidateRepository(context.TODO(), anthropic.BetaOrganizationPluginMarketplaceValidateRepositoryParams{
 		RepositoryURL: "https://github.com/example-org/example-marketplace",
 		Ref:           anthropic.String("main"),
-		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

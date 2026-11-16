@@ -1421,7 +1421,9 @@ func (r *BetaManagedAgentsAnthropicSkillParams) UnmarshalJSON(data []byte) error
 // The server decides each tool call individually: it judges, from the tool, its
 // input, and the session content so far, whether the call is safe to execute or
 // high-risk, and evaluates it to allow when judged safe and to deny when judged
-// high-risk. A call the server cannot reach a judgement on evaluates to ask.
+// high-risk. A call the server cannot reach a judgement on evaluates to ask, or
+// for some causes to deny, for example when the organization is out of credits or
+// has reached a spend limit.
 type BetaManagedAgentsAutoPolicy struct {
 	Type constant.Auto `json:"type" default:"auto"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -1457,7 +1459,9 @@ func NewBetaManagedAgentsAutoPolicyParam() BetaManagedAgentsAutoPolicyParam {
 // The server decides each tool call individually: it judges, from the tool, its
 // input, and the session content so far, whether the call is safe to execute or
 // high-risk, and evaluates it to allow when judged safe and to deny when judged
-// high-risk. A call the server cannot reach a judgement on evaluates to ask.
+// high-risk. A call the server cannot reach a judgement on evaluates to ask, or
+// for some causes to deny, for example when the organization is out of credits or
+// has reached a spend limit.
 //
 // This struct has a constant value, construct it with
 // [NewBetaManagedAgentsAutoPolicyParam].
@@ -3752,8 +3756,9 @@ func (r *BetaManagedAgentsMultiagentCoordinatorAgentUnion) UnmarshalJSON(data []
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// A coordinator topology: the session's primary thread orchestrates work by
-// spawning session threads, each running an agent drawn from the `agents` roster.
+// Recommendation: use `multiagent_20261001` instead of `coordinator`. A
+// coordinator topology: the session's primary thread orchestrates work by spawning
+// session threads, each running an agent drawn from the `agents` roster.
 //
 // The properties Agents, Type are required.
 type BetaManagedAgentsMultiagentCoordinatorParams struct {

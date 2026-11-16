@@ -29,7 +29,7 @@ func TestBetaOrganizationClaudeTagSlackWorkspaceGetWithOptionalParams(t *testing
 		"slws_01Hq8TzW5mKc2YbX7vNd4RfJ",
 		anthropic.BetaOrganizationClaudeTagSlackWorkspaceGetParams{
 			IncludeInherited: anthropic.Bool(true),
-			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -70,7 +70,7 @@ func TestBetaOrganizationClaudeTagSlackWorkspaceUpdateWithOptionalParams(t *test
 					OfAutomatic: &anthropic.BetaClaudeTagReplyModeAutomaticParam{},
 				},
 			},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -100,7 +100,7 @@ func TestBetaOrganizationClaudeTagSlackWorkspaceListWithOptionalParams(t *testin
 		Limit:            anthropic.Int(0),
 		Page:             anthropic.String("page"),
 		SlackWorkspaceID: anthropic.String("slack_workspace_id"),
-		Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

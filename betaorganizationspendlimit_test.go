@@ -52,7 +52,7 @@ func TestBetaOrganizationSpendLimitListWithOptionalParams(t *testing.T) {
 		Page:        anthropic.String("page"),
 		ScopeType:   []string{"organization"},
 		WorkspaceID: anthropic.String("workspace_id"),
-		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -107,7 +107,7 @@ func TestBetaOrganizationSpendLimitSetWithOptionalParams(t *testing.T) {
 			},
 		},
 		Period: anthropic.BetaSpendLimitPeriodMonthly,
-		Betas:  []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:  []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

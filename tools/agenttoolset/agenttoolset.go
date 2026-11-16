@@ -43,6 +43,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 
@@ -384,8 +385,16 @@ func canonicalize(abs string) (string, error) {
 				return "", err
 			}
 			if !filepath.IsAbs(dest) {
-				dest = filepath.Join(filepath.Dir(prefix), dest)
+				parent, err := filepath.EvalSymlinks(filepath.Dir(prefix))
+				if err != nil {
+					return "", err
+				}
+				dest = filepath.Join(parent, dest)
 			}
+			for _, name := range slices.Backward(tail) {
+				dest = filepath.Join(dest, name)
+			}
+			tail = nil
 			prefix = filepath.Clean(dest)
 		case lerr == nil:
 			return "", evalErr

@@ -61,7 +61,7 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 			Timezone:   "America/Los_Angeles",
 		},
 		VaultIDs:    []string{"string"},
-		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
@@ -90,7 +90,7 @@ func TestBetaDeploymentGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"depl_011CZkZcDH3vPqd7xnEfwTai",
 		anthropic.BetaDeploymentGetParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -155,7 +155,7 @@ func TestBetaDeploymentUpdateWithOptionalParams(t *testing.T) {
 				Timezone:   "America/Los_Angeles",
 			},
 			VaultIDs:    []string{"string"},
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -189,7 +189,7 @@ func TestBetaDeploymentListWithOptionalParams(t *testing.T) {
 		Limit:           anthropic.Int(0),
 		Page:            anthropic.String("page"),
 		Status:          anthropic.BetaManagedAgentsDeploymentStatusActive,
-		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		WorkspaceID:     anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 	})
 	if err != nil {
@@ -218,7 +218,7 @@ func TestBetaDeploymentArchiveWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"depl_011CZkZcDH3vPqd7xnEfwTai",
 		anthropic.BetaDeploymentArchiveParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -248,7 +248,7 @@ func TestBetaDeploymentPauseWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"depl_011CZkZcDH3vPqd7xnEfwTai",
 		anthropic.BetaDeploymentPauseParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -278,7 +278,7 @@ func TestBetaDeploymentRunWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"depl_011CZkZcDH3vPqd7xnEfwTai",
 		anthropic.BetaDeploymentRunParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)
@@ -308,7 +308,7 @@ func TestBetaDeploymentUnpauseWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"depl_011CZkZcDH3vPqd7xnEfwTai",
 		anthropic.BetaDeploymentUnpauseParams{
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

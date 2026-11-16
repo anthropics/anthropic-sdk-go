@@ -3,6 +3,7 @@ package agenttoolset
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	anthropic "github.com/anthropics/anthropic-sdk-go/v2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -179,6 +181,64 @@ func TestExecWrite(t *testing.T) {
 		require.False(t, isErr)
 		data, _ := os.ReadFile(filepath.Join(work, "ow.txt"))
 		require.Equal(t, "second", string(data))
+	})
+}
+
+func filePerm(t *testing.T, path string) os.FileMode {
+	t.Helper()
+	info, err := os.Stat(path)
+	require.NoError(t, err)
+	return info.Mode().Perm()
+}
+
+func TestExecWriteCreatesFilesAndDirectoriesOwnerOnly(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("unix permission bits")
+	}
+	work := t.TempDir()
+	env := &AgentToolContext{Workdir: work}
+
+	_, isErr := execWrite(context.Background(), mustJSON(t, map[string]any{"file_path": "a/b/new.txt", "content": "secret"}), env)
+	require.False(t, isErr)
+	require.Equal(t, os.FileMode(0o600), filePerm(t, filepath.Join(work, "a", "b", "new.txt")))
+	require.Equal(t, os.FileMode(0o700), filePerm(t, filepath.Join(work, "a", "b")))
+	require.Equal(t, os.FileMode(0o700), filePerm(t, filepath.Join(work, "a")))
+}
+
+func TestExecWriteAndEditKeepAnExistingFilesMode(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("unix permission bits")
+	}
+	work := t.TempDir()
+	env := &AgentToolContext{Workdir: work}
+
+	t.Run("write over an existing file keeps its mode instead of resetting it", func(t *testing.T) {
+		path := filepath.Join(work, "shared.txt")
+		require.NoError(t, os.WriteFile(path, []byte("v1"), 0o644))
+		require.NoError(t, os.Chmod(path, 0o640))
+		_, isErr := execWrite(context.Background(), mustJSON(t, map[string]any{"file_path": "shared.txt", "content": "v2"}), env)
+		require.False(t, isErr)
+		require.Equal(t, os.FileMode(0o640), filePerm(t, path))
+		data, err := os.ReadFile(path)
+		require.NoError(t, err)
+		require.Equal(t, "v2", string(data))
+	})
+
+	t.Run("edit keeps an executable script executable", func(t *testing.T) {
+		path := filepath.Join(work, "run.sh")
+		require.NoError(t, os.WriteFile(path, []byte("#!/bin/sh\necho old\n"), 0o644))
+		require.NoError(t, os.Chmod(path, 0o755))
+		_, isErr := execEdit(context.Background(), mustJSON(t, map[string]any{"file_path": "run.sh", "old_string": "old", "new_string": "new"}), env)
+		require.False(t, isErr)
+		require.Equal(t, os.FileMode(0o755), filePerm(t, path))
+	})
+
+	t.Run("edit keeps an owner-only file owner-only", func(t *testing.T) {
+		path := filepath.Join(work, "private.txt")
+		require.NoError(t, os.WriteFile(path, []byte("old"), 0o600))
+		_, isErr := execEdit(context.Background(), mustJSON(t, map[string]any{"file_path": "private.txt", "old_string": "old", "new_string": "new"}), env)
+		require.False(t, isErr)
+		require.Equal(t, os.FileMode(0o600), filePerm(t, path))
 	})
 }
 
@@ -574,6 +634,96 @@ func TestExecReadRejectsDirectoryEvenWhenUncapped(t *testing.T) {
 	out, isErr := runTool(t, BetaReadTool(&AgentToolContext{Workdir: work, MaxFileBytes: -1}), mustJSON(t, map[string]any{"file_path": "sub"}))
 	require.True(t, isErr)
 	require.Contains(t, out, "not a regular file")
+}
+
+func TestReadAndEditCapAFileThatHoldsMoreThanItReports(t *testing.T) {
+	const file = "/proc/self/status"
+	capped := &AgentToolContext{Workdir: "/", MaxFileBytes: 64}
+	uncapped := &AgentToolContext{Workdir: "/", MaxFileBytes: -1}
+
+	for _, tc := range []struct {
+		description string
+		tool        anthropic.BetaTool
+		input       map[string]any
+		wantErr     bool
+		wantPrefix  string
+	}{
+		{
+			description: "read",
+			tool:        BetaReadTool(capped),
+			input:       map[string]any{"file_path": file},
+			wantErr:     true,
+			wantPrefix:  "read: /proc/self/status holds more than the 64-byte limit.",
+		},
+		{
+			description: "edit",
+			tool:        BetaEditTool(capped),
+			input:       map[string]any{"file_path": file, "old_string": "zzz_absent", "new_string": "x"},
+			wantErr:     true,
+			wantPrefix:  "edit: /proc/self/status holds more than the 64-byte limit.",
+		},
+		{
+			description: "read with view_range",
+			tool:        BetaReadTool(capped),
+			input:       map[string]any{"file_path": file, "view_range": []int{1, 1}},
+			wantPrefix:  "Name:\t",
+		},
+		{
+			description: "read with the cap turned off",
+			tool:        BetaReadTool(uncapped),
+			input:       map[string]any{"file_path": file},
+			wantPrefix:  "Name:\t",
+		},
+	} {
+		t.Run(tc.description, func(t *testing.T) {
+			f, err := os.Open(tc.input["file_path"].(string))
+			if err != nil {
+				t.Skip("needs a readable /proc")
+			}
+			require.NoError(t, f.Close())
+			out, isErr := runTool(t, tc.tool, mustJSON(t, tc.input))
+			require.Equal(t, tc.wantErr, isErr, "output=%q", out)
+			require.True(t, strings.HasPrefix(out, tc.wantPrefix), "output=%q", out)
+		})
+	}
+}
+
+func TestReadAtMost(t *testing.T) {
+	const limit = 1000
+
+	t.Run("stops one byte past the limit of a reader with no end", func(t *testing.T) {
+		r := &endlessReader{failAfter: limit + 64*1024}
+		data, over, err := readAtMost(r, 0, limit)
+		require.NoError(t, err)
+		require.True(t, over)
+		require.Len(t, data, limit+1)
+		require.Equal(t, limit+1, r.handedOut)
+	})
+
+	t.Run("returns all of a reader that ends at the limit", func(t *testing.T) {
+		want := strings.Repeat("a", limit)
+		data, over, err := readAtMost(strings.NewReader(want), 0, limit)
+		require.NoError(t, err)
+		require.False(t, over)
+		require.Equal(t, want, string(data))
+	})
+}
+
+// endlessReader fails once it has handed out failAfter bytes, so that an
+// unbounded read of it fails a test instead of exhausting memory.
+type endlessReader struct {
+	handedOut, failAfter int
+}
+
+func (r *endlessReader) Read(p []byte) (int, error) {
+	if r.handedOut > r.failAfter {
+		return 0, errors.New("read far past the limit")
+	}
+	for i := range p {
+		p[i] = 'a'
+	}
+	r.handedOut += len(p)
+	return len(p), nil
 }
 
 // TestFileToolsConfinementMatrix drives the full path policy through the real

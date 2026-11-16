@@ -31,7 +31,7 @@ func TestBetaOrganizationPluginNewWithOptionalParams(t *testing.T) {
 		Files:         []io.Reader{io.Reader(bytes.NewBuffer([]byte("Example data")))},
 		MarketplaceID: anthropic.String("marketplace_id"),
 		ReleaseNotes:  anthropic.String("release_notes"),
-		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -60,7 +60,7 @@ func TestBetaOrganizationPluginGetWithOptionalParams(t *testing.T) {
 		"plugin_id",
 		anthropic.BetaOrganizationPluginGetParams{
 			OrganizationID: anthropic.String("organization_id"),
-			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -90,7 +90,7 @@ func TestBetaOrganizationPluginUpdateWithOptionalParams(t *testing.T) {
 		"plugin_id",
 		anthropic.BetaOrganizationPluginUpdateParams{
 			ServedVersionID: "pluginver_01KaZmQpRsTuVwXyZ2b4c6d8",
-			Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -126,7 +126,7 @@ func TestBetaOrganizationPluginListWithOptionalParams(t *testing.T) {
 		OwnerType:      anthropic.BetaOrganizationPluginListParamsOwnerTypeOrganization,
 		OwnerUserID:    anthropic.String("owner_user_id"),
 		Page:           anthropic.String("page"),
-		Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -154,7 +154,7 @@ func TestBetaOrganizationPluginDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"plugin_id",
 		anthropic.BetaOrganizationPluginDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

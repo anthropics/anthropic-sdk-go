@@ -30,6 +30,19 @@ const ErrorCodeAlreadyMember = apierror.ErrorCodeAlreadyMember
 // [shared.AvailableToolsLimitExceededErrorDetails] details.
 const ErrorCodeAvailableToolsLimitExceeded = apierror.ErrorCodeAvailableToolsLimitExceeded
 
+// The Bundle has an attachment this API does not support editing, so its
+// instructions can be changed only in claude.ai.
+//
+// Returned with HTTP status 400 and
+// [shared.BetaBundleAttachmentNotSupportedErrorDetails] details.
+const ErrorCodeBetaBundleAttachmentNotSupported = apierror.ErrorCodeBetaBundleAttachmentNotSupported
+
+// This Bundle's instructions are managed in claude.ai and can't be changed through
+// the API.
+//
+// Returned with HTTP status 400 and [shared.BetaBundleOnCallErrorDetails] details.
+const ErrorCodeBetaBundleOnCall = apierror.ErrorCodeBetaBundleOnCall
+
 // The email address's domain is not one of the verified domains of the
 // organization's parent organization.
 //
@@ -199,9 +212,9 @@ const ErrorCodeBetaInvalidMetadata = apierror.ErrorCodeBetaInvalidMetadata
 // details.
 const ErrorCodeInviteAlreadyExists = apierror.ErrorCodeInviteAlreadyExists
 
-// The External Key is bound to a user profile, and the Workspace does not have
-// that user profile. A Workspace can use only a key bound to its own user profile
-// or a key that isn't bound to one.
+// After this request, the External Key and the Workspace would not have the same
+// user profile. A key and its Workspace must have the same user profile, or both
+// have none.
 //
 // Returned with HTTP status 400 and [shared.KeyProfileMismatchErrorDetails]
 // details.
@@ -241,6 +254,13 @@ const ErrorCodeOrganizationOnHold = apierror.ErrorCodeOrganizationOnHold
 // Returned with HTTP status 400 and
 // [shared.OrganizationTypeNotSupportedErrorDetails] details.
 const ErrorCodeOrganizationTypeNotSupported = apierror.ErrorCodeOrganizationTypeNotSupported
+
+// The endpoint serves only organizations that belong to a parent organization, and
+// this organization belongs to none.
+//
+// Returned with HTTP status 400 and
+// [shared.ParentOrganizationRequiredErrorDetails] details.
+const ErrorCodeParentOrganizationRequired = apierror.ErrorCodeParentOrganizationRequired
 
 // A role attached to an RBAC Group in the request grants owner access, so this API
 // does not add members to that group (directly or through an invite), remove its
@@ -466,6 +486,11 @@ const ErrorCodeBetaEnvironmentNotFound = apierror.ErrorCodeBetaEnvironmentNotFou
 //
 // Returned with HTTP status 404 and [shared.FileExpiredErrorDetails] details.
 const ErrorCodeFileExpired = apierror.ErrorCodeFileExpired
+
+// No RBAC Role with this ID was found.
+//
+// Returned with HTTP status 404 and [shared.RBACRoleNotFoundErrorDetails] details.
+const ErrorCodeRBACRoleNotFound = apierror.ErrorCodeRBACRoleNotFound
 
 // `settings.environment_id` names no Environment within the organization's reach,
 // and the request had set the channel up by then. The channel stays set up with
@@ -707,6 +732,12 @@ type OrganizationTypeNotSupportedErrorDetails = shared.OrganizationTypeNotSuppor
 
 // This is an alias to an internal type.
 type OverloadedError = shared.OverloadedError
+
+// The endpoint serves only organizations that belong to a parent organization, and
+// this organization belongs to none.
+//
+// This is an alias to an internal type.
+type ParentOrganizationRequiredErrorDetails = shared.ParentOrganizationRequiredErrorDetails
 
 // This is an alias to an internal type.
 type PermissionError = shared.PermissionError
@@ -982,9 +1013,9 @@ type ExternalKeyValidationFailedErrorDetails = shared.ExternalKeyValidationFaile
 // This is an alias to an internal type.
 type ExternalKeyValidationTimedOutErrorDetails = shared.ExternalKeyValidationTimedOutErrorDetails
 
-// The External Key is bound to a user profile, and the Workspace does not have
-// that user profile. A Workspace can use only a key bound to its own user profile
-// or a key that isn't bound to one.
+// After this request, the External Key and the Workspace would not have the same
+// user profile. A key and its Workspace must have the same user profile, or both
+// have none.
 //
 // This is an alias to an internal type.
 type KeyProfileMismatchErrorDetails = shared.KeyProfileMismatchErrorDetails
@@ -1012,6 +1043,11 @@ type ExternalKeyChangedErrorDetails = shared.ExternalKeyChangedErrorDetails
 //
 // This is an alias to an internal type.
 type WorkspaceMemberLimitExceededErrorDetails = shared.WorkspaceMemberLimitExceededErrorDetails
+
+// No RBAC Role with this ID was found.
+//
+// This is an alias to an internal type.
+type RBACRoleNotFoundErrorDetails = shared.RBACRoleNotFoundErrorDetails
 
 // Anthropic has turned off creating environments for this organization. Existing
 // environments still work.
@@ -1202,6 +1238,18 @@ type BetaSlackChannelSetUpEnvironmentNotFoundErrorDetails = shared.BetaSlackChan
 //
 // This is an alias to an internal type.
 type BetaSlackChannelSetUpSettingsConflictErrorDetails = shared.BetaSlackChannelSetUpSettingsConflictErrorDetails
+
+// The Bundle has an attachment this API does not support editing, so its
+// instructions can be changed only in claude.ai.
+//
+// This is an alias to an internal type.
+type BetaBundleAttachmentNotSupportedErrorDetails = shared.BetaBundleAttachmentNotSupportedErrorDetails
+
+// This Bundle's instructions are managed in claude.ai and can't be changed through
+// the API.
+//
+// This is an alias to an internal type.
+type BetaBundleOnCallErrorDetails = shared.BetaBundleOnCallErrorDetails
 
 // Backward-compatible type aliases for renamed types.
 // These ensure existing code continues to compile after

@@ -2,6 +2,7 @@ package anthropic
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -43,6 +44,13 @@ func NewOrganizationRBACRoleService(opts ...option.RequestOption) (r Organizatio
 // Retrieve an RBAC Role by ID.
 //
 // The RBAC Roles API is available to Claude Enterprise organizations only.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400)
+//   - [ErrorCodeParentOrganizationRequired] (HTTP 400)
+//   - [ErrorCodeRBACRoleNotFound] (HTTP 404)
 func (r *OrganizationRBACRoleService) Get(ctx context.Context, rbacRoleID string, opts ...option.RequestOption) (res *RBACRole, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if rbacRoleID == "" {
@@ -58,6 +66,12 @@ func (r *OrganizationRBACRoleService) Get(ctx context.Context, rbacRoleID string
 // List RBAC Roles in the organization.
 //
 // The RBAC Roles API is available to Claude Enterprise organizations only.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400)
+//   - [ErrorCodeParentOrganizationRequired] (HTTP 400)
 func (r *OrganizationRBACRoleService) List(ctx context.Context, query OrganizationRBACRoleListParams, opts ...option.RequestOption) (res *pagination.PageCursor[RBACRole], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
@@ -79,6 +93,12 @@ func (r *OrganizationRBACRoleService) List(ctx context.Context, query Organizati
 // List RBAC Roles in the organization.
 //
 // The RBAC Roles API is available to Claude Enterprise organizations only.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeOrganizationTypeNotSupported] (HTTP 400)
+//   - [ErrorCodeParentOrganizationRequired] (HTTP 400)
 func (r *OrganizationRBACRoleService) ListAutoPaging(ctx context.Context, query OrganizationRBACRoleListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[RBACRole] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, query, opts...))
 }
@@ -88,10 +108,13 @@ type RBACRole struct {
 	ID string `json:"id" api:"required"`
 	// RFC 3339 datetime string indicating when the RBAC Role was created.
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Name of the RBAC Role. For a role created by Anthropic, this is Anthropic's name
-	// for the access that the role grants. Anthropic may change this name, so to keep
-	// a lasting reference to a role, store its `id`.
+	// Name of the RBAC Role. For a built-in role, this is Anthropic's name for the
+	// access that the role grants. Anthropic may change this name, so to keep a
+	// lasting reference to a role, store its `id`.
 	DisplayName string `json:"display_name" api:"required"`
+	// Whether the RBAC Role is built-in or custom. More values of `type` may be added,
+	// so do not treat every role that is not `built_in` as `custom`.
+	Source RBACRoleSourceUnion `json:"source" api:"required"`
 	// Object type.
 	//
 	// For RBAC Roles, this is always `"rbac_role"`.
@@ -103,6 +126,7 @@ type RBACRole struct {
 		ID          respjson.Field
 		CreatedAt   respjson.Field
 		DisplayName respjson.Field
+		Source      respjson.Field
 		Type        respjson.Field
 		UpdatedAt   respjson.Field
 		ExtraFields map[string]respjson.Field
@@ -113,6 +137,100 @@ type RBACRole struct {
 // Returns the unmodified JSON received from the API
 func (r RBACRole) RawJSON() string { return r.JSON.raw }
 func (r *RBACRole) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// RBACRoleSourceUnion contains all possible properties and values from
+// [RBACRoleSourceBuiltIn], [RBACRoleSourceCustom].
+//
+// Use the [RBACRoleSourceUnion.AsAny] method to switch on the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type RBACRoleSourceUnion struct {
+	// Any of "built_in", "custom".
+	Type string `json:"type"`
+	JSON struct {
+		Type respjson.Field
+		raw  string
+	} `json:"-"`
+}
+
+// anyRBACRoleSource is implemented by each variant of [RBACRoleSourceUnion] to add
+// type safety for the return type of [RBACRoleSourceUnion.AsAny]
+type anyRBACRoleSource interface {
+	implRBACRoleSourceUnion()
+}
+
+func (RBACRoleSourceBuiltIn) implRBACRoleSourceUnion() {}
+func (RBACRoleSourceCustom) implRBACRoleSourceUnion()  {}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := RBACRoleSourceUnion.AsAny().(type) {
+//	case anthropic.RBACRoleSourceBuiltIn:
+//	case anthropic.RBACRoleSourceCustom:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u RBACRoleSourceUnion) AsAny() anyRBACRoleSource {
+	switch u.Type {
+	case "built_in":
+		return u.AsBuiltIn()
+	case "custom":
+		return u.AsCustom()
+	}
+	return nil
+}
+
+func (u RBACRoleSourceUnion) AsBuiltIn() (v RBACRoleSourceBuiltIn) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u RBACRoleSourceUnion) AsCustom() (v RBACRoleSourceCustom) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u RBACRoleSourceUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *RBACRoleSourceUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type RBACRoleSourceBuiltIn struct {
+	// Anthropic provisions the RBAC Role, and the organization's administrators cannot
+	// change or delete it.
+	Type constant.BuiltIn `json:"type" default:"built_in"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RBACRoleSourceBuiltIn) RawJSON() string { return r.JSON.raw }
+func (r *RBACRoleSourceBuiltIn) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type RBACRoleSourceCustom struct {
+	// The organization's administrators can change and delete the RBAC Role.
+	Type constant.Custom `json:"type" default:"custom"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RBACRoleSourceCustom) RawJSON() string { return r.JSON.raw }
+func (r *RBACRoleSourceCustom) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

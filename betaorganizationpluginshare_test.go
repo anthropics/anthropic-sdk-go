@@ -32,7 +32,7 @@ func TestBetaOrganizationPluginShareListWithOptionalParams(t *testing.T) {
 			OrganizationID: anthropic.String("organization_id"),
 			Page:           anthropic.String("page"),
 			TargetType:     anthropic.BetaOrganizationPluginShareListParamsTargetTypeOrganization,
-			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:          []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

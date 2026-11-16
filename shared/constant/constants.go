@@ -97,7 +97,10 @@ type Browser string                                            // Always "browse
 type BrowserState string                                       // Always "browser_state"
 type BrowserToolset20260801 string                             // Always "browser_toolset_20260801"
 type BudgetReached string                                      // Always "budget_reached"
+type BuiltIn string                                            // Always "built_in"
 type Bundle string                                             // Always "bundle"
+type BetaBundleAttachmentNotSupportedErrorCode string          // Always "bundle_attachment_not_supported"
+type BetaBundleOnCallErrorCode string                          // Always "bundle_on_call"
 type BundleTargetDeleted string                                // Always "bundle_target_deleted"
 type Caller string                                             // Always "caller"
 type Canceled string                                           // Always "canceled"
@@ -355,6 +358,7 @@ type OrganizationTypeNotSupportedErrorCode string              // Always "organi
 type OutcomeEvaluation string                                  // Always "outcome_evaluation"
 type OverloadedError string                                    // Always "overloaded_error"
 type PageLocation string                                       // Always "page_location"
+type ParentOrganizationRequiredErrorCode string                // Always "parent_organization_required"
 type PermissionError string                                    // Always "permission_error"
 type Plugin string                                             // Always "plugin"
 type PluginDeleted string                                      // Always "plugin_deleted"
@@ -377,6 +381,7 @@ type RBACGroupMember string                                    // Always "rbac_g
 type RBACGroupMemberDeleted string                             // Always "rbac_group_member_deleted"
 type RBACGroupOwnerAccessUnconfirmedErrorCode string           // Always "rbac_group_owner_access_unconfirmed"
 type RBACRole string                                           // Always "rbac_role"
+type RBACRoleNotFoundErrorCode string                          // Always "rbac_role_not_found"
 type RBACRolePermission string                                 // Always "rbac_role_permission"
 type Read string                                               // Always "read"
 type ReadConsole string                                        // Always "read_console"
@@ -717,10 +722,15 @@ func (c Browser) Default() Browser                               { return "brows
 func (c BrowserState) Default() BrowserState                     { return "browser_state" }
 func (c BrowserToolset20260801) Default() BrowserToolset20260801 { return "browser_toolset_20260801" }
 func (c BudgetReached) Default() BudgetReached                   { return "budget_reached" }
+func (c BuiltIn) Default() BuiltIn                               { return "built_in" }
 func (c Bundle) Default() Bundle                                 { return "bundle" }
-func (c BundleTargetDeleted) Default() BundleTargetDeleted       { return "bundle_target_deleted" }
-func (c Caller) Default() Caller                                 { return "caller" }
-func (c Canceled) Default() Canceled                             { return "canceled" }
+func (c BetaBundleAttachmentNotSupportedErrorCode) Default() BetaBundleAttachmentNotSupportedErrorCode {
+	return "bundle_attachment_not_supported"
+}
+func (c BetaBundleOnCallErrorCode) Default() BetaBundleOnCallErrorCode { return "bundle_on_call" }
+func (c BundleTargetDeleted) Default() BundleTargetDeleted             { return "bundle_target_deleted" }
+func (c Caller) Default() Caller                                       { return "caller" }
+func (c Canceled) Default() Canceled                                   { return "canceled" }
 func (c CannotInviteEmailsWithUnverifiedDomainsErrorCode) Default() CannotInviteEmailsWithUnverifiedDomainsErrorCode {
 	return "cannot_invite_emails_with_unverified_domains"
 }
@@ -1107,9 +1117,12 @@ func (c OrganizationTypeNotSupportedErrorCode) Default() OrganizationTypeNotSupp
 func (c OutcomeEvaluation) Default() OutcomeEvaluation { return "outcome_evaluation" }
 func (c OverloadedError) Default() OverloadedError     { return "overloaded_error" }
 func (c PageLocation) Default() PageLocation           { return "page_location" }
-func (c PermissionError) Default() PermissionError     { return "permission_error" }
-func (c Plugin) Default() Plugin                       { return "plugin" }
-func (c PluginDeleted) Default() PluginDeleted         { return "plugin_deleted" }
+func (c ParentOrganizationRequiredErrorCode) Default() ParentOrganizationRequiredErrorCode {
+	return "parent_organization_required"
+}
+func (c PermissionError) Default() PermissionError { return "permission_error" }
+func (c Plugin) Default() Plugin                   { return "plugin" }
+func (c PluginDeleted) Default() PluginDeleted     { return "plugin_deleted" }
 func (c PluginInstallationSetting) Default() PluginInstallationSetting {
 	return "plugin_installation_setting"
 }
@@ -1144,18 +1157,19 @@ func (c RBACGroupMemberDeleted) Default() RBACGroupMemberDeleted { return "rbac_
 func (c RBACGroupOwnerAccessUnconfirmedErrorCode) Default() RBACGroupOwnerAccessUnconfirmedErrorCode {
 	return "rbac_group_owner_access_unconfirmed"
 }
-func (c RBACRole) Default() RBACRole                     { return "rbac_role" }
-func (c RBACRolePermission) Default() RBACRolePermission { return "rbac_role_permission" }
-func (c Read) Default() Read                             { return "read" }
-func (c ReadConsole) Default() ReadConsole               { return "read_console" }
-func (c ReadNetwork) Default() ReadNetwork               { return "read_network" }
-func (c ReadPage) Default() ReadPage                     { return "read_page" }
-func (c Redacted) Default() Redacted                     { return "redacted" }
-func (c RedactedThinking) Default() RedactedThinking     { return "redacted_thinking" }
-func (c Redeemed) Default() Redeemed                     { return "redeemed" }
-func (c Redirect) Default() Redirect                     { return "redirect" }
-func (c Ref) Default() Ref                               { return "ref" }
-func (c Refusal) Default() Refusal                       { return "refusal" }
+func (c RBACRole) Default() RBACRole                                   { return "rbac_role" }
+func (c RBACRoleNotFoundErrorCode) Default() RBACRoleNotFoundErrorCode { return "rbac_role_not_found" }
+func (c RBACRolePermission) Default() RBACRolePermission               { return "rbac_role_permission" }
+func (c Read) Default() Read                                           { return "read" }
+func (c ReadConsole) Default() ReadConsole                             { return "read_console" }
+func (c ReadNetwork) Default() ReadNetwork                             { return "read_network" }
+func (c ReadPage) Default() ReadPage                                   { return "read_page" }
+func (c Redacted) Default() Redacted                                   { return "redacted" }
+func (c RedactedThinking) Default() RedactedThinking                   { return "redacted_thinking" }
+func (c Redeemed) Default() Redeemed                                   { return "redeemed" }
+func (c Redirect) Default() Redirect                                   { return "redirect" }
+func (c Ref) Default() Ref                                             { return "ref" }
+func (c Refusal) Default() Refusal                                     { return "refusal" }
 func (c BetaRegistrationPendingErrorCode) Default() BetaRegistrationPendingErrorCode {
 	return "registration_pending"
 }
@@ -1609,10 +1623,15 @@ func (c Browser) MarshalJSON() ([]byte, error)                              { re
 func (c BrowserState) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c BrowserToolset20260801) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c BudgetReached) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c BuiltIn) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Bundle) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c BundleTargetDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c Caller) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c Canceled) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c BetaBundleAttachmentNotSupportedErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c BetaBundleOnCallErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c BundleTargetDeleted) MarshalJSON() ([]byte, error)       { return marshalString(c) }
+func (c Caller) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c Canceled) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c CannotInviteEmailsWithUnverifiedDomainsErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
@@ -1899,6 +1918,7 @@ func (c OrganizationTypeNotSupportedErrorCode) MarshalJSON() ([]byte, error) { r
 func (c OutcomeEvaluation) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c OverloadedError) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c PageLocation) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c ParentOrganizationRequiredErrorCode) MarshalJSON() ([]byte, error)   { return marshalString(c) }
 func (c PermissionError) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Plugin) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c PluginDeleted) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
@@ -1923,6 +1943,7 @@ func (c RBACGroupOwnerAccessUnconfirmedErrorCode) MarshalJSON() ([]byte, error) 
 	return marshalString(c)
 }
 func (c RBACRole) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c RBACRoleNotFoundErrorCode) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c RBACRolePermission) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Read) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c ReadConsole) MarshalJSON() ([]byte, error)                         { return marshalString(c) }

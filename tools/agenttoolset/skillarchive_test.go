@@ -93,6 +93,33 @@ func TestExtractSkillArchive_TarGz(t *testing.T) {
 	}
 }
 
+func TestExtractSkillArchive_CreatesSkillDirOwnerOnly(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("unix permission bits")
+	}
+	for name, data := range map[string][]byte{
+		"zip":    zipBytes(t, map[string]string{"SKILL.md": "hi"}),
+		"tar.gz": tarGzBytes(t, map[string]string{"SKILL.md": "hi"}),
+	} {
+		t.Run(name, func(t *testing.T) {
+			skills := filepath.Join(t.TempDir(), "skills")
+			dest := filepath.Join(skills, "s")
+			if err := extractArchiveBytes(t, data, dest); err != nil {
+				t.Fatalf("extract: %v", err)
+			}
+			for _, dir := range []string{skills, dest} {
+				info, err := os.Stat(dir)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if got := info.Mode().Perm(); got != 0o700 {
+					t.Fatalf("%s mode = %#o, want 0o700", dir, got)
+				}
+			}
+		})
+	}
+}
+
 func TestArchiveTopDir(t *testing.T) {
 	cases := []struct {
 		desc  string

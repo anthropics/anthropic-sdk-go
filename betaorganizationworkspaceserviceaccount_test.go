@@ -29,7 +29,7 @@ func TestBetaOrganizationWorkspaceServiceAccountGetWithOptionalParams(t *testing
 		"service_account_id",
 		anthropic.BetaOrganizationWorkspaceServiceAccountGetParams{
 			WorkspaceID: "workspace_id",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -60,7 +60,7 @@ func TestBetaOrganizationWorkspaceServiceAccountUpdateWithOptionalParams(t *test
 		anthropic.BetaOrganizationWorkspaceServiceAccountUpdateParams{
 			WorkspaceID:   "workspace_id",
 			WorkspaceRole: anthropic.BetaNoBillingWorkspaceRoleWorkspaceAdmin,
-			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -91,7 +91,7 @@ func TestBetaOrganizationWorkspaceServiceAccountListWithOptionalParams(t *testin
 		anthropic.BetaOrganizationWorkspaceServiceAccountListParams{
 			Limit: anthropic.Int(1),
 			Page:  anthropic.String("page"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -122,7 +122,7 @@ func TestBetaOrganizationWorkspaceServiceAccountAddWithOptionalParams(t *testing
 		anthropic.BetaOrganizationWorkspaceServiceAccountAddParams{
 			ServiceAccountID: "service_account_id",
 			WorkspaceRole:    anthropic.BetaNoBillingWorkspaceRoleWorkspaceAdmin,
-			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -152,7 +152,7 @@ func TestBetaOrganizationWorkspaceServiceAccountRemoveWithOptionalParams(t *test
 		"service_account_id",
 		anthropic.BetaOrganizationWorkspaceServiceAccountRemoveParams{
 			WorkspaceID: "workspace_id",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

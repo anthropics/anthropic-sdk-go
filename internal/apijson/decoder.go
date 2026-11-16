@@ -339,6 +339,10 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 
 	validationEntries := validationRegistry[t]
 
+	// Response structs keep metadata in a field named JSON. Param structs have
+	// none, and a failed look-up is slow, so check once per type.
+	_, hasMetadata := t.FieldByName("JSON")
+
 	for i := 0; i < t.NumField(); i++ {
 		idx := []int{i}
 		field := t.FieldByIndex(idx)
@@ -408,8 +412,8 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 	}
 
 	return func(node gjson.Result, value reflect.Value, state *decoderState) (err error) {
-		if field := value.FieldByName("JSON"); field.IsValid() {
-			if raw := field.FieldByName("raw"); raw.IsValid() {
+		if hasMetadata {
+			if raw := value.FieldByName("JSON").FieldByName("raw"); raw.IsValid() {
 				setUnexportedField(raw, node.Raw)
 			}
 		}
@@ -448,7 +452,9 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 					status: valid,
 				}
 			}
-			setMetadataSubField(value, inlineDecoder.idx, inlineDecoder.goname, meta)
+			if hasMetadata {
+				setMetadataSubField(value, inlineDecoder.idx, inlineDecoder.goname, meta)
+			}
 		}
 
 		typedExtraType := reflect.Type(nil)
@@ -457,7 +463,10 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 			typedExtraType = value.FieldByIndex(extraDecoder.idx).Type()
 			typedExtraFields = reflect.MakeMap(typedExtraType)
 		}
-		untypedExtraFields := map[string]Field{}
+		var untypedExtraFields map[string]Field
+		if hasMetadata {
+			untypedExtraFields = map[string]Field{}
+		}
 		seenRequired := 0
 
 		for fieldName, itemNode := range node.Map() {
@@ -515,11 +524,14 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 				}
 			}
 
-			if explicit {
+			if explicit && hasMetadata {
 				setMetadataSubField(value, df.idx, df.goname, meta)
 			}
 			if !explicit {
-				untypedExtraFields[fieldName] = meta
+				state.exactness.noteExtras()
+				if hasMetadata {
+					untypedExtraFields[fieldName] = meta
+				}
 			}
 			if !explicit && extraDecoder != nil {
 				typedExtraFields.SetMapIndex(reflect.ValueOf(fieldName), dest)
@@ -535,7 +547,6 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 		}
 
 		if len(untypedExtraFields) > 0 {
-			state.exactness.noteExtras()
 			setMetadataExtraFields(value, []int{-1}, "ExtraFields", untypedExtraFields)
 		}
 		return nil

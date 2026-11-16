@@ -33,7 +33,7 @@ func TestBetaOrganizationClaudeTagBundleTargetNewWithOptionalParams(t *testing.T
 					SlackChannelID: "xxxxxxxx",
 				},
 			},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -63,7 +63,7 @@ func TestBetaOrganizationClaudeTagBundleTargetGetWithOptionalParams(t *testing.T
 		"btgt_01SvpyRQK3nN6eH9uhRA7n1qHq8TzW5mKc2YbX7vNd4RfJ",
 		anthropic.BetaOrganizationClaudeTagBundleTargetGetParams{
 			BundleID: "capp_011CZkZjLP1cWxj5EtMmdgbq",
-			Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -94,7 +94,7 @@ func TestBetaOrganizationClaudeTagBundleTargetListWithOptionalParams(t *testing.
 		anthropic.BetaOrganizationClaudeTagBundleTargetListParams{
 			Limit: anthropic.Int(0),
 			Page:  anthropic.String("page"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -124,7 +124,7 @@ func TestBetaOrganizationClaudeTagBundleTargetDeleteWithOptionalParams(t *testin
 		"btgt_01SvpyRQK3nN6eH9uhRA7n1qHq8TzW5mKc2YbX7vNd4RfJ",
 		anthropic.BetaOrganizationClaudeTagBundleTargetDeleteParams{
 			BundleID: "capp_011CZkZjLP1cWxj5EtMmdgbq",
-			Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

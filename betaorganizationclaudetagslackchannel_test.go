@@ -41,7 +41,7 @@ func TestBetaOrganizationClaudeTagSlackChannelNewWithOptionalParams(t *testing.T
 				OfAutomatic: &anthropic.BetaClaudeTagReplyModeAutomaticParam{},
 			},
 		},
-		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -70,7 +70,7 @@ func TestBetaOrganizationClaudeTagSlackChannelGetWithOptionalParams(t *testing.T
 		"slch_01SvpyRQK3nN6eH9uhRA7n1q",
 		anthropic.BetaOrganizationClaudeTagSlackChannelGetParams{
 			IncludeInherited: anthropic.Bool(true),
-			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -111,7 +111,7 @@ func TestBetaOrganizationClaudeTagSlackChannelUpdateWithOptionalParams(t *testin
 					OfAutomatic: &anthropic.BetaClaudeTagReplyModeAutomaticParam{},
 				},
 			},
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -142,7 +142,7 @@ func TestBetaOrganizationClaudeTagSlackChannelListWithOptionalParams(t *testing.
 		Limit:            anthropic.Int(0),
 		Page:             anthropic.String("page"),
 		SlackChannelID:   anthropic.String("slack_channel_id"),
-		Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -170,7 +170,7 @@ func TestBetaOrganizationClaudeTagSlackChannelDeleteWithOptionalParams(t *testin
 		context.TODO(),
 		"slch_01SvpyRQK3nN6eH9uhRA7n1q",
 		anthropic.BetaOrganizationClaudeTagSlackChannelDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

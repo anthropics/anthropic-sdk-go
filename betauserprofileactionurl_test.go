@@ -31,7 +31,7 @@ func TestBetaUserProfileActionURLNewWithOptionalParams(t *testing.T) {
 			Action: anthropic.BetaUserProfileActionUnionParam{
 				OfEnrollEndUser: &anthropic.BetaUserProfileEnrollEndUserActionParam{},
 			},
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 			WorkspaceID: anthropic.String("wrkspc_011CZkZaBF1tNoB5wlCeusgy"),
 		},
 	)

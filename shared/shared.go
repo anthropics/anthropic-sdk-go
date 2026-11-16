@@ -260,6 +260,7 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [WorkspacePolicyViolationErrorDetails], [ExternalKeyChangedErrorDetails],
 // [WorkspaceMemberLimitExceededErrorDetails],
 // [OrganizationTypeNotSupportedErrorDetails],
+// [ParentOrganizationRequiredErrorDetails], [RBACRoleNotFoundErrorDetails],
 // [BetaEnvironmentCreateDisabledErrorDetails],
 // [BetaEnvironmentArchivedErrorDetails],
 // [BetaInvalidConfigTypeChangeErrorDetails],
@@ -283,7 +284,8 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [BetaOrganizationLevelScopedAPIKeyRequiredErrorDetails],
 // [BetaEnvironmentNotFoundErrorDetails],
 // [BetaSlackChannelSetUpEnvironmentNotFoundErrorDetails],
-// [BetaSlackChannelSetUpSettingsConflictErrorDetails].
+// [BetaSlackChannelSetUpSettingsConflictErrorDetails],
+// [BetaBundleAttachmentNotSupportedErrorDetails], [BetaBundleOnCallErrorDetails].
 //
 // Use the [ErrorDetailsUnion.AsAny] method to switch on the variant.
 //
@@ -313,6 +315,7 @@ type ErrorDetailsUnion struct {
 	// "external_key_validation_failed", "external_key_validation_timed_out",
 	// "key_profile_mismatch", "workspace_policy_violation", "external_key_changed",
 	// "workspace_member_limit_exceeded", "organization_type_not_supported",
+	// "parent_organization_required", "rbac_role_not_found",
 	// "environment_create_disabled", "environment_archived",
 	// "invalid_config_type_change", "environment_update_disabled",
 	// "heartbeat_precondition_failed", "invalid_metadata",
@@ -327,7 +330,8 @@ type ErrorDetailsUnion struct {
 	// "compliance_configuration_restricted",
 	// "organization_level_scoped_api_key_required", "environment_not_found",
 	// "slack_channel_set_up_environment_not_found",
-	// "slack_channel_set_up_settings_conflict".
+	// "slack_channel_set_up_settings_conflict", "bundle_attachment_not_supported",
+	// "bundle_on_call".
 	ErrorCode string `json:"error_code"`
 	// This field is from variant [OrganizationOnHoldErrorDetails].
 	AppealURL string `json:"appeal_url"`
@@ -419,6 +423,8 @@ type anyErrorDetails interface {
 //	case shared.ExternalKeyChangedErrorDetails:
 //	case shared.WorkspaceMemberLimitExceededErrorDetails:
 //	case shared.OrganizationTypeNotSupportedErrorDetails:
+//	case shared.ParentOrganizationRequiredErrorDetails:
+//	case shared.RBACRoleNotFoundErrorDetails:
 //	case shared.BetaEnvironmentCreateDisabledErrorDetails:
 //	case shared.BetaEnvironmentArchivedErrorDetails:
 //	case shared.BetaInvalidConfigTypeChangeErrorDetails:
@@ -447,6 +453,8 @@ type anyErrorDetails interface {
 //	case shared.BetaEnvironmentNotFoundErrorDetails:
 //	case shared.BetaSlackChannelSetUpEnvironmentNotFoundErrorDetails:
 //	case shared.BetaSlackChannelSetUpSettingsConflictErrorDetails:
+//	case shared.BetaBundleAttachmentNotSupportedErrorDetails:
+//	case shared.BetaBundleOnCallErrorDetails:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -560,6 +568,10 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsWorkspaceMemberLimitExceeded()
 	case "organization_type_not_supported":
 		return u.AsOrganizationTypeNotSupported()
+	case "parent_organization_required":
+		return u.AsParentOrganizationRequired()
+	case "rbac_role_not_found":
+		return u.AsRBACRoleNotFound()
 	case "environment_create_disabled":
 		return u.AsEnvironmentCreateDisabled()
 	case "environment_archived":
@@ -616,6 +628,10 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsSlackChannelSetUpEnvironmentNotFound()
 	case "slack_channel_set_up_settings_conflict":
 		return u.AsSlackChannelSetUpSettingsConflict()
+	case "bundle_attachment_not_supported":
+		return u.AsBundleAttachmentNotSupported()
+	case "bundle_on_call":
+		return u.AsBundleOnCall()
 	}
 	return nil
 }
@@ -890,6 +906,16 @@ func (u ErrorDetailsUnion) AsOrganizationTypeNotSupported() (v OrganizationTypeN
 	return
 }
 
+func (u ErrorDetailsUnion) AsParentOrganizationRequired() (v ParentOrganizationRequiredErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsRBACRoleNotFound() (v RBACRoleNotFoundErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 func (u ErrorDetailsUnion) AsEnvironmentCreateDisabled() (v BetaEnvironmentCreateDisabledErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
@@ -1026,6 +1052,16 @@ func (u ErrorDetailsUnion) AsSlackChannelSetUpEnvironmentNotFound() (v BetaSlack
 }
 
 func (u ErrorDetailsUnion) AsSlackChannelSetUpSettingsConflict() (v BetaSlackChannelSetUpSettingsConflictErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsBundleAttachmentNotSupported() (v BetaBundleAttachmentNotSupportedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsBundleOnCall() (v BetaBundleOnCallErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1326,6 +1362,26 @@ func (r *OverloadedError) UnmarshalJSON(data []byte) error {
 }
 
 func (OverloadedError) ImplErrorObjectUnion() {}
+
+// The endpoint serves only organizations that belong to a parent organization, and
+// this organization belongs to none.
+type ParentOrganizationRequiredErrorDetails struct {
+	ErrorCode constant.ParentOrganizationRequiredErrorCode `json:"error_code" default:"parent_organization_required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ParentOrganizationRequiredErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ParentOrganizationRequiredErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (ParentOrganizationRequiredErrorDetails) ImplErrorDetailsUnion() {}
 
 type PermissionError struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
@@ -2210,9 +2266,9 @@ func (r *ExternalKeyValidationTimedOutErrorDetails) UnmarshalJSON(data []byte) e
 
 func (ExternalKeyValidationTimedOutErrorDetails) ImplErrorDetailsUnion() {}
 
-// The External Key is bound to a user profile, and the Workspace does not have
-// that user profile. A Workspace can use only a key bound to its own user profile
-// or a key that isn't bound to one.
+// After this request, the External Key and the Workspace would not have the same
+// user profile. A key and its Workspace must have the same user profile, or both
+// have none.
 type KeyProfileMismatchErrorDetails struct {
 	ErrorCode constant.KeyProfileMismatchErrorCode `json:"error_code" default:"key_profile_mismatch"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -2301,6 +2357,25 @@ func (r *WorkspaceMemberLimitExceededErrorDetails) UnmarshalJSON(data []byte) er
 }
 
 func (WorkspaceMemberLimitExceededErrorDetails) ImplErrorDetailsUnion() {}
+
+// No RBAC Role with this ID was found.
+type RBACRoleNotFoundErrorDetails struct {
+	ErrorCode constant.RBACRoleNotFoundErrorCode `json:"error_code" default:"rbac_role_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r RBACRoleNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *RBACRoleNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (RBACRoleNotFoundErrorDetails) ImplErrorDetailsUnion() {}
 
 // Anthropic has turned off creating environments for this organization. Existing
 // environments still work.
@@ -2924,3 +2999,43 @@ func (r *BetaSlackChannelSetUpSettingsConflictErrorDetails) UnmarshalJSON(data [
 }
 
 func (BetaSlackChannelSetUpSettingsConflictErrorDetails) ImplErrorDetailsUnion() {}
+
+// The Bundle has an attachment this API does not support editing, so its
+// instructions can be changed only in claude.ai.
+type BetaBundleAttachmentNotSupportedErrorDetails struct {
+	ErrorCode constant.BetaBundleAttachmentNotSupportedErrorCode `json:"error_code" default:"bundle_attachment_not_supported"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaBundleAttachmentNotSupportedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaBundleAttachmentNotSupportedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaBundleAttachmentNotSupportedErrorDetails) ImplErrorDetailsUnion() {}
+
+// This Bundle's instructions are managed in claude.ai and can't be changed through
+// the API.
+type BetaBundleOnCallErrorDetails struct {
+	ErrorCode constant.BetaBundleOnCallErrorCode `json:"error_code" default:"bundle_on_call"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaBundleOnCallErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaBundleOnCallErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaBundleOnCallErrorDetails) ImplErrorDetailsUnion() {}

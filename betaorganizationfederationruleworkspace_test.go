@@ -30,7 +30,7 @@ func TestBetaOrganizationFederationRuleWorkspaceListWithOptionalParams(t *testin
 		anthropic.BetaOrganizationFederationRuleWorkspaceListParams{
 			Limit: anthropic.Int(1),
 			Page:  anthropic.String("page"),
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -60,7 +60,7 @@ func TestBetaOrganizationFederationRuleWorkspaceAddWithOptionalParams(t *testing
 		"federation_rule_id",
 		anthropic.BetaOrganizationFederationRuleWorkspaceAddParams{
 			WorkspaceID: "workspace_id",
-			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -90,7 +90,7 @@ func TestBetaOrganizationFederationRuleWorkspaceRemoveWithOptionalParams(t *test
 		"workspace_id",
 		anthropic.BetaOrganizationFederationRuleWorkspaceRemoveParams{
 			FederationRuleID: "federation_rule_id",
-			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

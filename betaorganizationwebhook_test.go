@@ -25,11 +25,11 @@ func TestBetaOrganizationWebhookNewWithOptionalParams(t *testing.T) {
 		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Webhooks.New(context.TODO(), anthropic.BetaOrganizationWebhookNewParams{
-		EnabledEvents: []string{"user_profile.enforcement_action_opened"},
-		URL:           "x",
+		EnabledEvents: []string{"user_profile.enforcement_action_opened", "user_profile.enforcement_action_resolved"},
+		URL:           "https://example.com/anthropic-webhooks",
 		Description:   anthropic.String("description"),
-		Name:          anthropic.String("name"),
-		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Name:          anthropic.String("Enforcement actions"),
+		Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -57,7 +57,7 @@ func TestBetaOrganizationWebhookGetWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"webhook_endpoint_id",
 		anthropic.BetaOrganizationWebhookGetParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -91,7 +91,7 @@ func TestBetaOrganizationWebhookUpdateWithOptionalParams(t *testing.T) {
 			Name:          anthropic.String("name"),
 			State:         anthropic.BetaOrganizationWebhookUpdateParamsStateDisabled,
 			URL:           anthropic.String("x"),
-			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -121,7 +121,7 @@ func TestBetaOrganizationWebhookListWithOptionalParams(t *testing.T) {
 		BeforeID: anthropic.String("before_id"),
 		Limit:    anthropic.Int(0),
 		Order:    anthropic.BetaOrganizationWebhookListParamsOrderAsc,
-		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+		Betas:    []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -149,7 +149,7 @@ func TestBetaOrganizationWebhookDeleteWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		"webhook_endpoint_id",
 		anthropic.BetaOrganizationWebhookDeleteParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -178,7 +178,7 @@ func TestBetaOrganizationWebhookRegenerateSigningSecretWithOptionalParams(t *tes
 		context.TODO(),
 		"webhook_endpoint_id",
 		anthropic.BetaOrganizationWebhookRegenerateSigningSecretParams{
-			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24},
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {

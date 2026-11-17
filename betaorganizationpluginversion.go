@@ -80,6 +80,7 @@ func NewBetaOrganizationPluginVersionService(opts ...option.RequestOption) (r Be
 //   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
 //   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
 //   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 //   - [ErrorCodeBetaSkillNameTaken] (HTTP 409)
 //   - [ErrorCodeBetaRegistrationPending] (HTTP 503)
 func (r *BetaOrganizationPluginVersionService) New(ctx context.Context, pluginID string, params BetaOrganizationPluginVersionNewParams, opts ...option.RequestOption) (res *BetaPluginVersion, err error) {
@@ -247,6 +248,7 @@ func (r *BetaOrganizationPluginVersionService) ListAutoPaging(ctx context.Contex
 //
 //   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
 //   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationPluginVersionService) Download(ctx context.Context, version string, params BetaOrganizationPluginVersionDownloadParams, opts ...option.RequestOption) (res *http.Response, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

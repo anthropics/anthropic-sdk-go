@@ -95,6 +95,11 @@ func (r *BetaOrganizationPluginMarketplaceService) Get(ctx context.Context, mark
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationPluginMarketplaceService) Update(ctx context.Context, marketplaceID string, params BetaOrganizationPluginMarketplaceUpdateParams, opts ...option.RequestOption) (res *BetaPluginMarketplace, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -226,6 +231,7 @@ func (r *BetaOrganizationPluginMarketplaceService) ListAutoPaging(ctx context.Co
 // [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationPluginMarketplaceService) ValidateArchive(ctx context.Context, params BetaOrganizationPluginMarketplaceValidateArchiveParams, opts ...option.RequestOption) (res *BetaPluginMarketplaceValidationReport, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -277,6 +283,11 @@ func (r *BetaOrganizationPluginMarketplaceService) ValidateArchive(ctx context.C
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationPluginMarketplaceService) ValidateRepository(ctx context.Context, params BetaOrganizationPluginMarketplaceValidateRepositoryParams, opts ...option.RequestOption) (res *BetaPluginMarketplaceValidationReport, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

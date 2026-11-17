@@ -93,6 +93,7 @@ func NewBetaOrganizationPluginService(opts ...option.RequestOption) (r BetaOrgan
 //   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
 //   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
 //   - [ErrorCodeBetaUnsupportedCharset] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 //   - [ErrorCodeBetaPluginNameTaken] (HTTP 409)
 //   - [ErrorCodeBetaSkillNameTaken] (HTTP 409)
 //   - [ErrorCodeBetaRegistrationPending] (HTTP 503)
@@ -196,6 +197,7 @@ func (r *BetaOrganizationPluginService) Get(ctx context.Context, pluginID string
 //   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
 //   - [ErrorCodeCMEKKeyNetworkBlocked] (HTTP 400)
 //   - [ErrorCodeBetaScanFailed] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 //   - [ErrorCodeBetaScanPending] (HTTP 409)
 //   - [ErrorCodeBetaSkillNameTaken] (HTTP 409)
 func (r *BetaOrganizationPluginService) Update(ctx context.Context, pluginID string, params BetaOrganizationPluginUpdateParams, opts ...option.RequestOption) (res *BetaPlugin, err error) {
@@ -321,6 +323,7 @@ func (r *BetaOrganizationPluginService) ListAutoPaging(ctx context.Context, para
 // [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationPluginService) Delete(ctx context.Context, pluginID string, body BetaOrganizationPluginDeleteParams, opts ...option.RequestOption) (res *BetaDeletedPlugin, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))

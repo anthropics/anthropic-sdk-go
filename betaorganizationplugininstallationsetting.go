@@ -139,6 +139,11 @@ func (r *BetaOrganizationPluginInstallationSettingService) ListAutoPaging(ctx co
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationPluginInstallationSettingService) Remove(ctx context.Context, target string, params BetaOrganizationPluginInstallationSettingRemoveParams, opts ...option.RequestOption) (res *BetaDeletedPluginInstallationSetting, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -189,6 +194,11 @@ func (r *BetaOrganizationPluginInstallationSettingService) Remove(ctx context.Co
 // available to Claude Enterprise organizations only. It is not available to Claude
 // Platform (Claude Console) organizations, or to organizations with HIPAA
 // readiness enabled.
+//
+// When the returned error is an [*apierror.Error], compare the
+// [apierror.Error.ErrorCode] against these values.
+//
+//   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 func (r *BetaOrganizationPluginInstallationSettingService) Set(ctx context.Context, target string, params BetaOrganizationPluginInstallationSettingSetParams, opts ...option.RequestOption) (res *BetaPluginInstallationSetting, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

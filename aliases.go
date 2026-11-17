@@ -485,7 +485,7 @@ const ErrorCodeBetaEnvironmentUpdateDisabled = apierror.ErrorCodeBetaEnvironment
 const ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired = apierror.ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired
 
 // The request came from a Claude sandbox with restricted network access, which is
-// not allowed to make this change. Send it from outside the sandbox, or from a
+// not allowed to make this request. Send it from outside the sandbox, or from a
 // sandbox with unrestricted network access.
 //
 // Returned with HTTP status 403 and [shared.SandboxEgressRestrictedErrorDetails]
@@ -830,7 +830,7 @@ type RequestBodyEncodingUnsupportedErrorDetails = shared.RequestBodyEncodingUnsu
 type RequestBodyTooLargeAfterDecodingErrorDetails = shared.RequestBodyTooLargeAfterDecodingErrorDetails
 
 // The request came from a Claude sandbox with restricted network access, which is
-// not allowed to make this change. Send it from outside the sandbox, or from a
+// not allowed to make this request. Send it from outside the sandbox, or from a
 // sandbox with unrestricted network access.
 //
 // This is an alias to an internal type.
